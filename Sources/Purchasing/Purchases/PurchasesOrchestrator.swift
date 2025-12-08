@@ -907,19 +907,59 @@ final class PurchasesOrchestrator {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
-        let block: @Sendable () async -> Void = {
-            do {
-                _ = try await manager.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
-            } catch {
-                Logger.error(Strings.paywalls.event_flush_failed(error))
-            }
-        }
+        #if os(iOS) || os(tvOS) || VISION_OS
+        let isAppExtension = self.systemInfo.isAppExtension
+        #endif
 
         if delayed {
+            // For delayed calls, background task is requested inside the block
+            // after the delay expires to avoid holding it during the jitter period.
+            let block: @Sendable () async -> Void = {
+                #if os(iOS) || os(tvOS) || VISION_OS
+                let endBackgroundTask: (@Sendable () -> Void)?
+                if !isAppExtension {
+                    endBackgroundTask = await Self.beginBackgroundTaskAsync(
+                        named: "com.revenuecat.flushAllEvents"
+                    )
+                } else {
+                    endBackgroundTask = nil
+                }
+                defer {
+                    endBackgroundTask?()
+                }
+                #endif
+
+                do {
+                    _ = try await manager.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
+                } catch {
+                    Logger.error(Strings.paywalls.event_flush_failed(error))
+                }
+            }
             self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long, block: block)
         } else {
+            // For immediate calls, request background task BEFORE spawning async work
+            // to prevent the system from suspending the app before the task starts.
+            #if os(iOS) || os(tvOS) || VISION_OS
+            let endBackgroundTask: (@Sendable () -> Void)?
+            if !isAppExtension {
+                endBackgroundTask = Self.beginBackgroundTask(named: "com.revenuecat.flushAllEvents")
+            } else {
+                endBackgroundTask = nil
+            }
+            #endif
+
             Task {
-                await block()
+                #if os(iOS) || os(tvOS) || VISION_OS
+                defer {
+                    endBackgroundTask?()
+                }
+                #endif
+
+                do {
+                    _ = try await manager.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
+                } catch {
+                    Logger.error(Strings.paywalls.event_flush_failed(error))
+                }
             }
         }
     }
@@ -928,19 +968,59 @@ final class PurchasesOrchestrator {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
-        let block: @Sendable () async -> Void = {
-            do {
-                _ = try await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
-            } catch {
-                Logger.error(Strings.paywalls.event_flush_failed(error))
-            }
-        }
+        #if os(iOS) || os(tvOS) || VISION_OS
+        let isAppExtension = self.systemInfo.isAppExtension
+        #endif
 
         if delayed {
+            // For delayed calls, background task is requested inside the block
+            // after the delay expires to avoid holding it during the jitter period.
+            let block: @Sendable () async -> Void = {
+                #if os(iOS) || os(tvOS) || VISION_OS
+                let endBackgroundTask: (@Sendable () -> Void)?
+                if !isAppExtension {
+                    endBackgroundTask = await Self.beginBackgroundTaskAsync(
+                        named: "com.revenuecat.flushFeatureEvents"
+                    )
+                } else {
+                    endBackgroundTask = nil
+                }
+                defer {
+                    endBackgroundTask?()
+                }
+                #endif
+
+                do {
+                    _ = try await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
+                } catch {
+                    Logger.error(Strings.paywalls.event_flush_failed(error))
+                }
+            }
             self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long, block: block)
         } else {
+            // For immediate calls, request background task BEFORE spawning async work
+            // to prevent the system from suspending the app before the task starts.
+            #if os(iOS) || os(tvOS) || VISION_OS
+            let endBackgroundTask: (@Sendable () -> Void)?
+            if !isAppExtension {
+                endBackgroundTask = Self.beginBackgroundTask(named: "com.revenuecat.flushFeatureEvents")
+            } else {
+                endBackgroundTask = nil
+            }
+            #endif
+
             Task {
-                await block()
+                #if os(iOS) || os(tvOS) || VISION_OS
+                defer {
+                    endBackgroundTask?()
+                }
+                #endif
+
+                do {
+                    _ = try await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
+                } catch {
+                    Logger.error(Strings.paywalls.event_flush_failed(error))
+                }
             }
         }
     }
@@ -2306,3 +2386,52 @@ fileprivate extension DiagnosticsEvent.PurchaseResult {
     }
 
 }
+
+// MARK: - Background Task Helpers
+
+#if os(iOS) || os(tvOS) || VISION_OS
+private extension PurchasesOrchestrator {
+
+    /// Begins a background task synchronously and returns a closure to end it.
+    /// This should be called BEFORE spawning async work to prevent the system from
+    /// suspending the app before the task starts executing.
+    ///
+    /// - Parameter taskName: A name for the background task for debugging purposes.
+    /// - Returns: A closure to end the background task, or `nil` if the task couldn't be started.
+    static func beginBackgroundTask(named taskName: String) -> (@Sendable () -> Void)? {
+        guard let application = SystemInfo.sharedUIApplication else {
+            Logger.debug(Strings.events.background_task_unavailable)
+            return nil
+        }
+
+        var backgroundTaskID: UIBackgroundTaskIdentifier?
+        backgroundTaskID = application.beginBackgroundTask(withName: taskName) {
+            Logger.warn(Strings.events.background_task_expired(taskName))
+            if let taskID = backgroundTaskID {
+                application.endBackgroundTask(taskID)
+                backgroundTaskID = .invalid
+            }
+        }
+
+        if backgroundTaskID == .invalid {
+            Logger.warn(Strings.events.background_task_failed(taskName))
+            return nil
+        }
+
+        Logger.debug(Strings.events.background_task_started(taskName))
+        return {
+            if let taskID = backgroundTaskID {
+                application.endBackgroundTask(taskID)
+            }
+        }
+    }
+
+    /// Async version of `beginBackgroundTask` for use within async contexts.
+    /// This dispatches to the main actor to call UIApplication methods.
+    @MainActor
+    static func beginBackgroundTaskAsync(named taskName: String) -> (@Sendable () -> Void)? {
+        return beginBackgroundTask(named: taskName)
+    }
+
+}
+#endif
