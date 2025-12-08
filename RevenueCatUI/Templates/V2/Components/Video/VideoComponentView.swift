@@ -105,7 +105,7 @@ struct VideoComponentView: View {
                                             for: viewData.url,
                                             withChecksum: viewData.checksum
                                         )
-                                    guard url != cachedURL else { return }
+                                    guard url != cachedURL, !Task.isCancelled else { return }
                                     await MainActor.run {
                                         self.stagedURL = url
                                     }
@@ -158,10 +158,11 @@ struct VideoComponentView: View {
                     .padding(style.margin)
                     .onReceive(
                         stagedURL.publisher
-                            // in the event that the download of the high res video is so fast that it tries to set the
+                            // In the event that the download of the high res video is so fast that it tries to set the
                             // url moments after the low_res was set, we need to delay a bit to ensure the re-render
                             // actually occurs. This happens consistently with small file sizes and great connection
-                            .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
+                            // at 60fps, this is a generous delay but is not a notable delay to the human eye
+                            .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
                             .receive(on: RunLoop.main)
                             .eraseToAnyPublisher()
                             .removeDuplicates()
