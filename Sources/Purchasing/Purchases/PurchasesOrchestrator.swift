@@ -907,18 +907,19 @@ final class PurchasesOrchestrator {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
-        let delay: JitterableDelay
-        if delayed {
-            delay = .long
-        } else {
-            // When backgrounding, the app only has about 5 seconds to perform work
-            delay = .none
-        }
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
+        let block: @Sendable () async -> Void = {
             do {
                 _ = try await manager.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
             } catch {
                 Logger.error(Strings.paywalls.event_flush_failed(error))
+            }
+        }
+
+        if delayed {
+            self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long, block: block)
+        } else {
+            Task {
+                await block()
             }
         }
     }
@@ -927,18 +928,19 @@ final class PurchasesOrchestrator {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
-        let delay: JitterableDelay
-        if delayed {
-            delay = .long
-        } else {
-            // When backgrounding, the app only has about 5 seconds to perform work
-            delay = .none
-        }
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
+        let block: @Sendable () async -> Void = {
             do {
                 _ = try await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
             } catch {
                 Logger.error(Strings.paywalls.event_flush_failed(error))
+            }
+        }
+
+        if delayed {
+            self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long, block: block)
+        } else {
+            Task {
+                await block()
             }
         }
     }
