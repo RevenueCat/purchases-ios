@@ -126,6 +126,22 @@ extension BaseStoreKitIntegrationTests {
                                            line: line)
     }
 
+    /// Use this method to check a transaction was finished for a specific product identifier
+    /// when you don't have access to the specific `StoreTransaction` object.
+    func verifyTransactionWasFinishedForProductIdentifier(
+        _ productIdentifier: String,
+        count: Int? = 1,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        let expectedLogRegexPattern = Self.finishingTransactionLogRegexPattern(productIdentifier: productIdentifier)
+        self.logger.verifyMessageWasLogged(regexPattern: expectedLogRegexPattern,
+                                           level: .info,
+                                           expectedCount: count,
+                                           file: file,
+                                           line: line)
+    }
+
     func verifyNoTransactionsWereFinished(
         file: FileString = #file,
         line: UInt = #line
@@ -142,7 +158,7 @@ extension BaseStoreKitIntegrationTests {
         self.logger.verifyMessageWasNotLogged(expectedLog, file: file, line: line)
     }
 
-    func verifyTransactionIsEventuallyFinished(
+    func verifyAnyTransactionIsEventuallyFinished(
         count: Int? = nil,
         file: FileString = #file,
         line: UInt = #line
@@ -156,6 +172,10 @@ extension BaseStoreKitIntegrationTests {
             file: file,
             line: line
         )
+
+        let matchingLogs = self.logger.messages.filter { $0.message.contains(Self.finishingAnyTransactionLog) }
+
+        print(matchingLogs)
     }
 
     func verifyCustomerInfoWasComputedOffline(

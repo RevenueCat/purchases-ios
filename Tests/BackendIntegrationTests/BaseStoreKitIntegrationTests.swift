@@ -329,6 +329,11 @@ extension BaseStoreKitIntegrationTests {
         return "Finishing transaction '\(transaction.id)' for product '\(transaction.productIdentifier)'"
     }
 
+    static func finishingTransactionLogRegexPattern(productIdentifier: String) -> String {
+        // Regex pattern for any integer number
+        return "Finishing transaction '\\d+' for product '\(productIdentifier)'"
+    }
+
 }
 
 // MARK: - Extensions
