@@ -246,7 +246,8 @@ extension Transaction {
         await currentTransactions().map(\.productID)
     }
 
-    /// This includes `Transaction.currentEntitlements` which is limited to subscribed or inGracePeriod, however it does not check validity
+    /// This includes `Transaction.currentEntitlements` which is limited to subscribed or inGracePeriod,
+    /// however it does not check validity
     static func currentTransactions() async -> [Transaction] {
         var transactions = [Transaction]()
         // Iterate through all of the user's purchased products.
@@ -255,10 +256,12 @@ extension Transaction {
                 let transaction = try result.payloadValue
                 transactions.append(transaction)
             } catch {
-                print("currentTransactions transaction error, skipping: \(result.unsafePayloadValue.productID) \(error)")
+                print(
+                    "currentTransactions transaction error, " +
+                    "skipping: \(result.unsafePayloadValue.productID) \(error)"
+                )
             }
         }
         return transactions
     }
 }
-
