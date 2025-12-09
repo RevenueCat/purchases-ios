@@ -77,11 +77,11 @@ struct Template5View: TemplateViewType {
                     self.features
                 }
                 .padding(.top, self.defaultVerticalPaddingLength)
-                .scrollableIfNecessaryWhenAvailable()
+                .scrollableIfNecessaryWhenAvailableForV1()
 
                 self.packages
                     .padding(.top, self.defaultVerticalPaddingLength)
-                    .scrollableIfNecessaryWhenAvailable()
+                    .scrollableIfNecessaryWhenAvailableForV1()
             }
 
             Spacer()
@@ -108,7 +108,7 @@ struct Template5View: TemplateViewType {
                         // Compensate for additional padding on condensed mode + iPad
                         : self.defaultVerticalPaddingLength.map { $0 * -1 }
                     )
-                    .scrollableIfNecessaryWhenAvailable(apply: self.configuration.mode.isFullScreen)
+                    .scrollableIfNecessaryWhenAvailableForV1(enabled: self.configuration.mode.isFullScreen)
             }
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {
@@ -410,6 +410,32 @@ struct Template5View_Previews: PreviewProvider {
                 Template5View($0)
             }
         }
+    }
+
+}
+
+
+@available(iOS 15.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template5ViewLandscape_Previews: PreviewProvider {
+
+    // Matches `BaseSnapshotTest.landscapeSize` (950x460) used in `Template5ViewTests.testLandscapePaywall`
+    private static let landscapeSize: CGSize = .init(width: 1900, height: 920)
+
+    static var previews: some View {
+        PreviewableTemplate(
+            offering: TestData.offeringWithTemplate5Paywall,
+            mode: .default
+        ) {
+            Template5View($0)
+        }
+        .previewDisplayName("Template 5 – Landscape")
+        .previewLayout(.fixed(width: self.landscapeSize.width,
+                              height: self.landscapeSize.height))
+        .environment(\.verticalSizeClass, .compact)
+        .previewInterfaceOrientation(.landscapeLeft)
     }
 
 }

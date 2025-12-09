@@ -108,7 +108,7 @@ struct Template7View: TemplateViewType {
                     Spacer()
                 }
                 .padding(.top, self.defaultVerticalPaddingLength)
-                .scrollableIfNecessaryWhenAvailable()
+                .scrollableIfNecessaryWhenAvailableForV1()
 
                 VStack {
                     self.tierSelectorView
@@ -117,7 +117,7 @@ struct Template7View: TemplateViewType {
                     Spacer()
                 }
                 .padding(.top, self.defaultVerticalPaddingLength)
-                .scrollableIfNecessaryWhenAvailable()
+                .scrollableIfNecessaryWhenAvailableForV1()
             }
 
             Spacer()
@@ -144,7 +144,7 @@ struct Template7View: TemplateViewType {
                         // Compensate for additional padding on condensed mode + iPad
                         : self.defaultVerticalPaddingLength.map { $0 * -1 }
                     )
-                    .scrollableIfNecessaryWhenAvailable(apply: self.configuration.mode.isFullScreen)
+                    .scrollableIfNecessaryWhenAvailableForV1(enabled: self.configuration.mode.isFullScreen)
             }
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {

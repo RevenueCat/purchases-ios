@@ -170,7 +170,7 @@ fileprivate extension View {
             case .horizontal(let verticalAlignment, let distribution):
                 self.scrollableIfNecessaryWhenAvailable(
                     .horizontal,
-                    shouldExpand: size.width == .fill,
+                    fillContent: size.width == .fill,
                     alignment: Alignment(
                         horizontal: distribution.horizontalFrameAlignment.horizontal,
                         vertical: verticalAlignment.frameAlignment.vertical
@@ -179,7 +179,7 @@ fileprivate extension View {
             case .vertical(let horizontalAlignment, let distribution):
                 self.scrollableIfNecessaryWhenAvailable(
                     .vertical,
-                    shouldExpand: size.height == .fill,
+                    fillContent: size.height == .fill,
                     alignment: Alignment(
                         horizontal: horizontalAlignment.frameAlignment.horizontal,
                         vertical: distribution.verticalFrameAlignment.vertical
