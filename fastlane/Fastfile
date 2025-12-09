@@ -1807,10 +1807,12 @@ lane :check_pods do
   )
 end
 
-desc "Removes the Examples directory before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj)"
+desc "Removes some directories before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj or v3LoadShedderIntegration.xcodeproj). Also removes v3LoadShedderIntegration and v4LoadShedderIntegration directories to prevent xcodebuild from timing out when scanning for projects."
 lane :prepare_for_carthage do
   Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("rm", "-rf", "Examples")
+    sh("rm", "-rf", "Tests/v3LoadShedderIntegration")
+    sh("rm", "-rf", "Tests/v4LoadShedderIntegration")
   end
 end
 
