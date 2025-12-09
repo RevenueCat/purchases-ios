@@ -19,7 +19,6 @@
 
 import Foundation
 import Nimble
-import XCTest
 
 /// Provides a `Logger.VerboseLogHandler` that wraps the default implementation
 /// and allows introspecting logged messages.
@@ -259,7 +258,10 @@ extension TestLogHandler {
     }
 
     private static func regexEntryCondition(pattern: String, level: LogLevel?) -> EntryCondition {
-        let regex = try XCTUnwrap(NSRegularExpression(pattern: pattern, options: []), "invalid regex pattern")
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+            fail("Invalid regular expression: \(pattern)")
+            return { _ in false }
+        }
 
         return { entry in
             let range = NSRange(location: 0, length: entry.message.utf16.count)
