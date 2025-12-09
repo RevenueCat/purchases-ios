@@ -936,6 +936,10 @@ platform :ios do
         './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m'
       ]
     )
+
+    # V3LoadShedderIntegrationTests.swift and V4LoadShedderIntegrationTests.swift are missing when
+    # running Carthage installation tests because they are removed in the prepare_for_carthage lane.
+    # Passing skip_missing_files: true prevents the replace_text_in_files action from failing in this case.
     replace_text_in_files(
       previous_text: "REVENUECAT_LOAD_SHEDDER_API_KEY",
       new_text: ENV["REVENUECAT_LOAD_SHEDDER_API_KEY"],
@@ -943,7 +947,8 @@ platform :ios do
         './Tests/BackendIntegrationTests/Constants.swift',
         './Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTests.swift',
         './Tests/v4LoadShedderIntegration/v4LoadShedderIntegrationTests/V4LoadShedderIntegrationTests.swift'
-      ]
+      ],
+      skip_missing_files: true
     )
     replace_text_in_files(
       previous_text: "REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY",
