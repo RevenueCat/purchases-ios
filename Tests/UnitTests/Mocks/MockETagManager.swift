@@ -13,9 +13,10 @@ import Foundation
 // swiftlint:disable type_name
 class MockETagManager: ETagManager {
 
+    let mockCache: MockSimpleCache
     init() {
-        super.init(largeItemCache: .init(cache: FileManager.default, basePath: "tests"))
-        // TO DO: Fix this…
+        self.mockCache = MockSimpleCache()
+        super.init(largeItemCache: .init(cache: mockCache, basePath: "MockETagManager-\(UUID().uuidString)"))
     }
 
     struct ETagHeaderRequest {
