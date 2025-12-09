@@ -114,13 +114,14 @@ extension BaseStoreKitIntegrationTests {
 
     func verifySpecificTransactionWasFinished(
         _ storeTransaction: StoreTransaction,
+        count: Int? = 1,
         file: FileString = #file,
         line: UInt = #line
     ) {
         let expectedLog = Self.finishingSpecificTransactionLog(transaction: storeTransaction)
         self.logger.verifyMessageWasLogged(expectedLog,
                                            level: .info,
-                                           expectedCount: 1,
+                                           expectedCount: count,
                                            file: file,
                                            line: line)
     }
