@@ -18,8 +18,7 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist,
-        temp-carthage-installation-tests
+        tuist
       ]
     default: default
   generate_snapshots:
@@ -1775,14 +1774,6 @@ workflows:
       equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
     jobs:
       - docs-deploy
-
-  temp-carthage-intallation-tests:
-    when:
-      equal: [temp-carthage-installation-tests, << pipeline.parameters.action >>]
-    jobs:
-      - installation-tests-carthage:
-          context:
-            - slack-secrets
 
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
   # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields
