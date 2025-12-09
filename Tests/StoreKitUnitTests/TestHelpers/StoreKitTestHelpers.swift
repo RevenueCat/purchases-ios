@@ -159,7 +159,7 @@ enum StoreKitTestMessage: LogMessage {
 }
 
 // Greatly inspired by https://github.com/dropbox/StoreKitTestHelpers
-
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension SKTestSession {
     @MainActor
     @discardableResult func spinUntilNoActiveTransactions(
@@ -181,7 +181,7 @@ private extension SKTestSession {
     }
 }
 
-@available(iOS 16.0, *)
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension Task where Failure == Never, Success == Never {
     enum SpinError: Error { case exceededTimeout(String) }
 
@@ -197,7 +197,7 @@ private extension Task where Failure == Never, Success == Never {
         let start = Date()
 
         var lastConditionResults: [Bool] = []
-        for i in 0 ... maxTries {
+        for attempt in 0 ... maxTries {
             let prefix = "\(((file.description) as NSString).lastPathComponent) L\(line)"
 
             if !lastConditionResults.isEmpty, lastConditionResults.count > minimumConsecutiveConsistency {
@@ -210,31 +210,37 @@ private extension Task where Failure == Never, Success == Never {
                 let end = Date()
                 let duration = end.timeIntervalSince(start)
                 let formattedDuration = "(\(duration.formatted(.number.precision(.fractionLength(1)))) seconds)"
-                if i > minimumConsecutiveConsistency {
+                if attempt > minimumConsecutiveConsistency {
                     print(
-                        "\(prefix): Took \(i + 1) tries \(formattedDuration) until conditions are what we expect"
+                        "\(prefix): Took \(attempt + 1) tries \(formattedDuration) until conditions are what we expect"
                     )
                 } else {
                     print(
-                        "\(prefix): condition hit on the first \(minimumConsecutiveConsistency) tries \(formattedDuration), nice!"
+                        "\(prefix): condition hit on the first \(minimumConsecutiveConsistency) tries " +
+                        "\(formattedDuration), nice!"
                     )
                 }
-                return i
+                return attempt
             }
-            if i > maxTries / 2 {
-                try await Task.sleep(for: .nanoseconds(UInt64(TimeInterval(NSEC_PER_SEC) * sleepDuration)))
+            if attempt > maxTries / 2 {
+                if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+                    try await Task.sleep(for: .seconds(sleepDuration))
+                } else {
+                    try await Task.sleep(nanoseconds: UInt64(TimeInterval(NSEC_PER_SEC) * sleepDuration))
+                }
             } else {
                 await Task.yield()
             }
         }
         let end = Date()
         let duration = end.timeIntervalSince(start)
-        let failureMessage =
-            "Internal state failed to update after \(maxTries) tries (\(duration.formatted(.number.precision(.fractionLength(1)))) seconds), this is a known flake"
+        let failureMessage = "Internal state failed to update after \(maxTries) tries " +
+        "(\(duration.formatted(.number.precision(.fractionLength(1)))) seconds), this is a known flake"
         throw SpinError.exceededTimeout(failureMessage)
     }
 }
 
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension Transaction {
     static func activeProductIDs() async -> [String] {
         await currentTransactions().map(\.productID)
