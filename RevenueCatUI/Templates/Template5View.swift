@@ -414,7 +414,6 @@ struct Template5View_Previews: PreviewProvider {
 
 }
 
-
 @available(iOS 15.0, *)
 @available(watchOS, unavailable)
 @available(macOS, unavailable)

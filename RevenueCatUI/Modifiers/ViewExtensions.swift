@@ -181,7 +181,7 @@ extension View {
                 .scrollable(if: true)
         }
     }
-    
+
     /// Equivalent to `scrollableIfNecessary` except that it's always scrollable on iOS 15
     /// to work around issues with that iOS 15 implementation in some instances.
     /// This function should be used by v1 paywalls since it doesn't respect fit/fill configurations
