@@ -25,6 +25,12 @@ public struct PaywallData {
     /// The type of template used to display this paywall.
     public var templateName: String
 
+    /// Public identifier for this paywall as defined in the dashboard.
+    public var rcPublicIdentifier: String? {
+        get { return self._rcPublicIdentifier }
+        set { self._rcPublicIdentifier = newValue }
+    }
+
     /// Generic configuration for any paywall.
     public var config: Configuration
 
@@ -55,6 +61,9 @@ public struct PaywallData {
 
     @DefaultDecodable.EmptyDictionary
     internal private(set) var localizationByTier: [String: [String: LocalizedConfiguration]]
+
+    @NonEmptyStringDecodable
+    private var _rcPublicIdentifier: String?
 
 }
 
@@ -350,6 +359,9 @@ extension PaywallData {
             set { self._colorsByTier = newValue }
         }
 
+        /// The exit offers configured for this paywall.
+        public var exitOffers: ExitOffers?
+
         /// Creates a single-tier ``PaywallData/Configuration``.
         public init(
             packages: [String],
@@ -360,7 +372,8 @@ extension PaywallData {
             blurredBackgroundImage: Bool = false,
             displayRestorePurchases: Bool = true,
             termsOfServiceURL: URL? = nil,
-            privacyURL: URL? = nil
+            privacyURL: URL? = nil,
+            exitOffers: ExitOffers? = nil
         ) {
             self._packages = packages
             self.defaultPackage = defaultPackage
@@ -371,6 +384,7 @@ extension PaywallData {
             self._displayRestorePurchases = displayRestorePurchases
             self._termsOfServiceURL = termsOfServiceURL
             self._privacyURL = privacyURL
+            self.exitOffers = exitOffers
         }
 
         /// Creates a multi-tier ``PaywallData/Configuration``.
@@ -383,7 +397,8 @@ extension PaywallData {
             blurredBackgroundImage: Bool = false,
             displayRestorePurchases: Bool = true,
             termsOfServiceURL: URL? = nil,
-            privacyURL: URL? = nil
+            privacyURL: URL? = nil,
+            exitOffers: ExitOffers? = nil
         ) {
             self._packages = []
             self.defaultPackage = nil
@@ -396,6 +411,7 @@ extension PaywallData {
             self._displayRestorePurchases = displayRestorePurchases
             self._termsOfServiceURL = termsOfServiceURL
             self._privacyURL = privacyURL
+            self.exitOffers = exitOffers
         }
 
         @DefaultDecodable.EmptyArray
@@ -494,6 +510,23 @@ extension PaywallData.Configuration {
         }
 
         return result
+    }
+
+}
+
+extension PaywallData.Configuration {
+
+    /// Exit offers configured for the paywall.
+    public struct ExitOffers: Codable, Equatable, Hashable {
+
+        /// Paywall to present after a manual dismissal (close button).
+        public var dismiss: String?
+
+        // swiftlint:disable:next missing_docs
+        public init(dismiss: String? = nil) {
+            self.dismiss = dismiss
+        }
+
     }
 
 }
@@ -764,6 +797,7 @@ extension PaywallData.Configuration: Codable {
         case colors
         case _colorsByTier = "colorsByTier"
         case _imagesByTier = "imagesByTier"
+        case exitOffers = "exit_offers"
     }
 
 }
@@ -773,6 +807,7 @@ extension PaywallData: Codable {
     // Note: these are camel case but converted by the decoder
     private enum CodingKeys: String, CodingKey {
         case templateName
+        case _rcPublicIdentifier = "rc_public_id"
         case config
         case localization = "localizedStrings"
         case localizationByTier = "localizedStringsByTier"

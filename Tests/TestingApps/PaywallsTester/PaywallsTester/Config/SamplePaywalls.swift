@@ -36,9 +36,6 @@ final class SamplePaywallLoader {
         return .init(
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
-            metadata: [
-                "rc_exit_offering_id": Self.offeringIdentifier2
-            ],
             paywall: self.paywall(for: template),
             availablePackages: self.packages,
             webCheckoutUrl: nil
@@ -50,9 +47,6 @@ final class SamplePaywallLoader {
         return .init(
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
-            metadata: [
-                "rc_exit_offering_id": Self.offeringIdentifier2
-            ],
             availablePackages: self.packages,
             webCheckoutUrl: nil
         )
@@ -63,9 +57,6 @@ final class SamplePaywallLoader {
         return .init(
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
-            metadata: [
-                "rc_exit_offering_id": Self.offeringIdentifier2
-            ],
             paywall: nil,
             availablePackages: self.packages,
             webCheckoutUrl: nil
@@ -76,9 +67,6 @@ final class SamplePaywallLoader {
         return .init(
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
-            metadata: [
-                "rc_exit_offering_id": Self.offeringIdentifier2
-            ],
             paywall: Self.unrecognizedTemplate(),
             availablePackages: self.packages,
             webCheckoutUrl: nil
@@ -124,7 +112,7 @@ private extension SamplePaywallLoader {
 private extension SamplePaywallLoader {
 
     static func template1() -> PaywallData {
-        return .init(
+        var paywall = PaywallData(
             templateName: PaywallTemplate.template1.rawValue,
             config: .init(
                 packages: [Package.string(from: PackageType.monthly)!],
@@ -146,7 +134,8 @@ private extension SamplePaywallLoader {
                         accent1: "#B022BB"
                     )
                 ),
-                termsOfServiceURL: Self.tosURL
+                termsOfServiceURL: Self.tosURL,
+                exitOffers: .init(dismiss: Self.paywallPublicIdentifier)
             ),
             localization: .init(
                 title: "Ignite your child's curiosity",
@@ -158,10 +147,12 @@ private extension SamplePaywallLoader {
             ),
             assetBaseURL: Self.paywallAssetBaseURL
         )
+        paywall.rcPublicIdentifier = Self.paywallPublicIdentifier
+        return paywall
     }
 
     static func template2() -> PaywallData {
-        return .init(
+        var paywall = PaywallData(
             templateName: PaywallTemplate.template2.rawValue,
             config: .init(
                 packages: Array<PackageType>([.weekly, .monthly, .annual, .lifetime])
@@ -186,7 +177,8 @@ private extension SamplePaywallLoader {
                     )
                 ),
                 blurredBackgroundImage: true,
-                termsOfServiceURL: Self.tosURL
+                termsOfServiceURL: Self.tosURL,
+                exitOffers: .init(dismiss: Self.paywallPublicIdentifier)
             ),
             localization: .init(
                 title: "Call to action for better conversion.",
@@ -198,10 +190,12 @@ private extension SamplePaywallLoader {
             ),
             assetBaseURL: Self.paywallAssetBaseURL
         )
+        paywall.rcPublicIdentifier = Self.paywallPublicIdentifier
+        return paywall
     }
 
     static func template3() -> PaywallData {
-        return .init(
+        var paywall = PaywallData(
             templateName: PaywallTemplate.template3.rawValue,
             config: .init(
                 packages: [Package.string(from: .annual)!],
@@ -228,7 +222,8 @@ private extension SamplePaywallLoader {
                         closeButton: "#00FF00"
                     )
                 ),
-                termsOfServiceURL: Self.tosURL
+                termsOfServiceURL: Self.tosURL,
+                exitOffers: .init(dismiss: Self.paywallPublicIdentifier)
             ),
             localization: .init(
                 title: "How your free trial works",
@@ -249,10 +244,12 @@ private extension SamplePaywallLoader {
                 ]),
             assetBaseURL: Self.paywallAssetBaseURL
         )
+        paywall.rcPublicIdentifier = Self.paywallPublicIdentifier
+        return paywall
     }
 
     static func template4() -> PaywallData {
-        return .init(
+        var paywall = PaywallData(
             templateName: PaywallTemplate.template4.rawValue,
             config: .init(
                 packages: Array<PackageType>([.monthly, .annual, .lifetime])
@@ -269,7 +266,8 @@ private extension SamplePaywallLoader {
                         accent2: "#DFDFDF"
                     )
                 ),
-                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
+                exitOffers: .init(dismiss: Self.paywallPublicIdentifier)
             ),
             localization: .init(
                 title: "Get _unlimited_ access",
@@ -280,10 +278,12 @@ private extension SamplePaywallLoader {
             ),
             assetBaseURL: Self.paywallAssetBaseURL
         )
+        paywall.rcPublicIdentifier = Self.paywallPublicIdentifier
+        return paywall
     }
 
     static func template5() -> PaywallData {
-        return .init(
+        var paywall = PaywallData(
             templateName: PaywallTemplate.template5.rawValue,
             config: .init(
                 packages: [PackageType.annual.identifier,
@@ -316,7 +316,8 @@ private extension SamplePaywallLoader {
                         accent3: "#D1D1D1"
                     )
                 ),
-                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
+                exitOffers: .init(dismiss: Self.paywallPublicIdentifier)
             ),
             localization: .init(
                 title: "Spice Up Your Kitchen - Go Pro for Exclusive Benefits!",
@@ -334,10 +335,12 @@ private extension SamplePaywallLoader {
             ),
             assetBaseURL: Self.paywallAssetBaseURL
         )
+        paywall.rcPublicIdentifier = Self.paywallPublicIdentifier
+        return paywall
     }
 
     static func template7() -> PaywallData {
-        return .init(
+        var paywall = PaywallData(
             templateName: PaywallTemplate.template7.rawValue,
             config: .init(
                 images: .init(),
@@ -437,7 +440,8 @@ private extension SamplePaywallLoader {
                         defaultPackage: Self.annualPackage.identifier
                     )
                 ],
-                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
+                exitOffers: .init(dismiss: Self.paywallPublicIdentifier)
             ),
             localizationByTier: [
                 "basic": .init(
@@ -524,10 +528,12 @@ private extension SamplePaywallLoader {
             ],
             assetBaseURL: Self.paywallAssetBaseURL
         )
+        paywall.rcPublicIdentifier = Self.paywallPublicIdentifier
+        return paywall
     }
 
     static func unrecognizedTemplate() -> PaywallData {
-        return .init(
+        var paywall = PaywallData(
             templateName: "unrecognized_template_name",
             config: .init(
                 packages: [Package.string(from: PackageType.monthly)!],
@@ -541,7 +547,8 @@ private extension SamplePaywallLoader {
                         accent1: "#BC66FF"
                     )
                 ),
-                termsOfServiceURL: Self.tosURL
+                termsOfServiceURL: Self.tosURL,
+                exitOffers: .init(dismiss: Self.paywallPublicIdentifier)
             ),
             localization: .init(
                 title: "Ignite your child's curiosity",
@@ -553,6 +560,8 @@ private extension SamplePaywallLoader {
             ),
             assetBaseURL: Self.paywallAssetBaseURL
         )
+        paywall.rcPublicIdentifier = Self.paywallPublicIdentifier
+        return paywall
     }
 
 }
@@ -572,7 +581,7 @@ private extension SamplePaywallLoader {
     )
 
     static let offeringIdentifier = "offering"
-    static let offeringIdentifier2 = "alpha"
+    static let paywallPublicIdentifier = "sample_paywall_public_id"
     static let paywallAssetBaseURL = URL(string: "https://assets.pawwalls.com")!
     static let tosURL = URL(string: "https://revenuecat.com/tos")!
 
@@ -594,4 +603,3 @@ extension PaywallColor: ExpressibleByStringLiteral {
 }
 
 #endif
-

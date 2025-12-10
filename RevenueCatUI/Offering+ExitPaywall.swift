@@ -17,9 +17,16 @@ extension Offering {
 
     var exitPaywallContent: PaywallViewConfiguration.Content? {
         guard let identifier = self.metadata[ExitPaywallMetadataKeys.offeringIdentifier] as? String else {
-            return nil
+            guard let identifier = self.paywall?.config.exitOffers?.dismiss else {
+                Logger.debug("Exit offer: none configured for offering \(self.identifier)")
+                return nil
+            }
+
+            Logger.debug("Exit offer (config) for offering \(self.identifier) -> \(identifier)")
+            return .offeringIdentifier(identifier, presentedOfferingContext: nil)
         }
 
+        Logger.debug("Exit offer (metadata) for offering \(self.identifier) -> \(identifier)")
         return .offeringIdentifier(identifier, presentedOfferingContext: nil)
     }
 

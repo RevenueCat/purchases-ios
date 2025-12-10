@@ -98,3 +98,7 @@ extension PaywallViewConfiguration.Content {
     }
 
 }
+
+// MARK: - Exit paywall
+
+// (exit paywall helpers live in PaywallViewConfiguration+ExitPaywall.swift)

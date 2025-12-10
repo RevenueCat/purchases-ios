@@ -24,6 +24,9 @@ extension PaywallViewConfiguration.Content {
         switch self {
         case let .offering(offering):
             return offering.exitPaywallContent
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            // If the payload already provides an offering identifier, just forward it.
+            return .offeringIdentifier(identifier, presentedOfferingContext: presentedOfferingContext)
         default:
             return nil
         }

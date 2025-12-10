@@ -25,7 +25,6 @@ import SwiftUI
 // swiftlint:disable:next type_body_length
 public struct PaywallView: View {
 
-    private let contentToDisplay: PaywallViewConfiguration.Content
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
@@ -52,6 +51,30 @@ public struct PaywallView: View {
     private var customerInfo: CustomerInfo?
     @State
     private var error: NSError?
+
+    @State
+    private var activeContent: PaywallViewConfiguration.Content
+    @State
+    private var exitContent: PaywallViewConfiguration.Content?
+    @State
+    private var exitPaywallRequested: Bool = false
+    @State
+    private var exitPaywallAlreadyPresented: Bool = false
+
+    private var activeContentID: String {
+        switch self.activeContent {
+        case let .offering(offering):
+            return "offering:\(offering.identifier)"
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            if let context = presentedOfferingContext {
+                return "identifier:\(identifier):\(context.offeringIdentifier ?? "")"
+            } else {
+                return "identifier:\(identifier)"
+            }
+        case .defaultOffering:
+            return "default_offering"
+        }
+    }
 
 //    @StateObject
 //    private var defaultPaywallPromoOfferCache = PaywallPromoOfferCache()
@@ -164,7 +187,8 @@ public struct PaywallView: View {
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
         )
 
-        self.contentToDisplay = configuration.content
+        self._activeContent = .init(initialValue: configuration.content)
+        self._exitContent = .init(initialValue: configuration.content.exitPaywallContent)
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
@@ -206,11 +230,7 @@ public struct PaywallView: View {
     public var body: some View {
         self.content
             .displayError(self.$error) {
-                guard let onRequestedDismissal = self.onRequestedDismissal else {
-                    self.dismiss()
-                    return
-                }
-                onRequestedDismissal()
+                self.handlePaywallDismissal()
             }
             // If the parent view uses refreshable, it can be inherited by the paywall view
             // and pulling down in the paywall would execute the parent's refreshable action
@@ -231,6 +251,10 @@ public struct PaywallView: View {
                                      fonts: self.fonts,
                                      checker: self.introEligibility,
                                      purchaseHandler: self.purchaseHandler)
+                    .id(self.activeContentID)
+                    .onAppear {
+                        self.updateExitContent(with: offering)
+                    }
                     .transition(Self.transition)
                 } else {
                     #if os(macOS)
@@ -290,7 +314,6 @@ public struct PaywallView: View {
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) -> some View {
-
         let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
             countries: offering.paywall?.zeroDecimalPlaceCountries
         )
@@ -316,7 +339,8 @@ public struct PaywallView: View {
                     introEligibility: checker,
                     purchaseHandler: purchaseHandler,
                     locale: purchaseHandler.preferredLocaleOverride ?? .current,
-                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                    onDismiss: { self.handlePaywallDismissal() }
                 )
             #endif
             // Show the actually V2 paywall for full screen
@@ -341,13 +365,8 @@ public struct PaywallView: View {
                     purchaseHandler: purchaseHandler,
                     introEligibilityChecker: checker,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                    onDismiss: {
-                        guard let onRequestedDismissal = self.onRequestedDismissal else {
-                            self.dismiss()
-                            return
-                        }
-                        onRequestedDismissal()
-                    },
+                    onDismiss: { self.handlePaywallDismissal() },
+                    onExitRequested: { self.exitPaywallRequested = true },
                     fallbackContent: .paywallV1View(dataForV1DefaultPaywall),
                     failedToLoadFont: { fontConfig in
                         if Purchases.isConfigured {
@@ -376,7 +395,8 @@ public struct PaywallView: View {
                 introEligibility: checker,
                 purchaseHandler: purchaseHandler,
                 locale: displayedLocale,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                onDismiss: { self.handlePaywallDismissal() }
             )
 
             if let error {
@@ -413,7 +433,7 @@ private extension PaywallView {
     }
 
     func loadOffering() async throws -> Offering {
-        switch self.contentToDisplay {
+        switch self.activeContent {
         case let .offering(offering):
             return offering
 
@@ -430,6 +450,81 @@ private extension PaywallView {
             }
 
             return offering
+        }
+    }
+
+    @MainActor
+    private func handlePaywallDismissal() {
+        if self.exitPaywallRequested,
+           !self.exitPaywallAlreadyPresented,
+           let exitContent {
+            self.exitPaywallAlreadyPresented = true
+            self.exitPaywallRequested = false
+            self.exitContent = nil
+
+            self.setActiveContent(exitContent)
+
+            Task {
+                guard Purchases.isConfigured else { return }
+
+                do {
+                    let loadedOffering = try await self.loadOffering()
+                    self.offering = loadedOffering
+                    self.customerInfo = try? await Purchases.shared.customerInfo()
+                } catch {
+                    self.error = error as NSError
+                }
+            }
+
+            return
+        }
+
+        self.exitPaywallRequested = false
+        self.exitPaywallAlreadyPresented = false
+
+        if let onRequestedDismissal = self.onRequestedDismissal {
+            onRequestedDismissal()
+        } else {
+            self.dismiss()
+        }
+    }
+
+    private func setActiveContent(_ content: PaywallViewConfiguration.Content) {
+        self.activeContent = content
+        self.exitContent = content.exitPaywallContent
+        self.offering = content.extractInitialOffering()
+        self.customerInfo = nil
+        self.error = nil
+    }
+
+    private func updateExitContent(with offering: Offering) {
+        let content = PaywallViewConfiguration.Content.offering(offering)
+
+        guard let exit = content.exitPaywallContent else {
+            self.exitContent = nil
+            return
+        }
+
+        self.exitContent = exit
+
+        if case let .offeringIdentifier(identifier, presentedOfferingContext) = exit {
+            Task.detached {
+                guard Purchases.isConfigured else { return }
+
+                if let resolved = try? await Purchases.shared.offerings()
+                    .offering(identifier: identifier)
+                    .map({ offering -> Offering in
+                        if let context = presentedOfferingContext {
+                            return offering.withPresentedOfferingContext(context)
+                        }
+                        return offering
+                    }) {
+                    await MainActor.run {
+                        // Prefetch and replace the exit content with the resolved offering.
+                        self.exitContent = .offering(resolved)
+                    }
+                }
+            }
         }
     }
 
@@ -492,6 +587,7 @@ struct LoadedOfferingPaywallView: View {
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
     private let showZeroDecimalPlacePrices: Bool
+    private let onDismiss: (() -> Void)?
 
     @StateObject
     private var introEligibility: IntroEligibilityViewModel
@@ -520,7 +616,8 @@ struct LoadedOfferingPaywallView: View {
         introEligibility: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler,
         locale: Locale,
-        showZeroDecimalPlacePrices: Bool
+        showZeroDecimalPlacePrices: Bool,
+        onDismiss: (() -> Void)? = nil
     ) {
         self.offering = offering
         self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
@@ -535,6 +632,7 @@ struct LoadedOfferingPaywallView: View {
         self._purchaseHandler = .init(initialValue: purchaseHandler)
         self.locale = locale
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        self.onDismiss = onDismiss
     }
 
     var body: some View {
@@ -580,14 +678,7 @@ struct LoadedOfferingPaywallView: View {
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
             .onChangeOf(self.purchaseHandler.purchased) { purchased in
                 if purchased {
-                    guard let onRequestedDismissal = self.onRequestedDismissal else {
-                        if self.mode.isFullScreen {
-                            Logger.debug(Strings.dismissing_paywall)
-                            self.dismiss()
-                        }
-                        return
-                    }
-                    onRequestedDismissal()
+                    self.dismissPaywall()
                 }
             }
 
@@ -640,11 +731,7 @@ struct LoadedOfferingPaywallView: View {
     private func makeToolbar(color: Color?) -> some ToolbarContent {
         ToolbarItem(placement: .destructiveAction) {
             Button {
-                guard let onRequestedDismissal = self.onRequestedDismissal else {
-                    self.dismiss()
-                    return
-                }
-                onRequestedDismissal()
+                self.dismissPaywall()
             } label: {
                 Image(systemName: "xmark")
                     .foregroundColor(color)
@@ -655,6 +742,20 @@ struct LoadedOfferingPaywallView: View {
                 ? Constants.purchaseInProgressButtonOpacity
                 : 1
             )
+        }
+    }
+
+    private func dismissPaywall() {
+        if let onDismiss {
+            onDismiss()
+            return
+        }
+
+        if let onRequestedDismissal = self.onRequestedDismissal {
+            onRequestedDismissal()
+        } else if self.mode.isFullScreen {
+            Logger.debug(Strings.dismissing_paywall)
+            self.dismiss()
         }
     }
 

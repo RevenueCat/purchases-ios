@@ -44,6 +44,9 @@ enum OfferingStrings {
     case custom_package_type(Package)
     case overriding_package(old: String, new: String)
     case known_issue_ios_18_4_simulator_products_not_found
+    // Exit offers
+    case exit_offer_dismiss(offeringIdentifier: String, target: String)
+    case exit_offer_missing(offeringIdentifier: String)
 
 }
 
@@ -163,6 +166,11 @@ extension OfferingStrings: LogMessage {
             "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version with " +
             "your simulator." +
             "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
+        // Exit offers
+        case let .exit_offer_dismiss(offeringIdentifier, target):
+            return "Exit offers: \(offeringIdentifier) dismiss -> \(target)"
+        case let .exit_offer_missing(offeringIdentifier):
+            return "Exit offers: \(offeringIdentifier) has no dismiss target"
         }
     }
 

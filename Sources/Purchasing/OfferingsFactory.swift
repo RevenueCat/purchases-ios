@@ -15,6 +15,10 @@
 import Foundation
 import StoreKit
 
+private enum ExitPaywallMetadataKeys {
+    static let offeringIdentifier = "rc_exit_offering_id"
+}
+
 class OfferingsFactory {
 
     func createOfferings(from storeProductsByID: [String: StoreProduct],
@@ -80,9 +84,16 @@ class OfferingsFactory {
             return nil
         }()
 
+        var metadata = offering.metadata.mapValues(\.asAny)
+        // Temporary: force all exit offers to point to the "rick" offering for testing.
+        let hardcodedExitOfferIdentifier = "rick"
+        metadata[ExitPaywallMetadataKeys.offeringIdentifier] = hardcodedExitOfferIdentifier
+        Logger.debug(OfferingStrings.exit_offer_dismiss(offeringIdentifier: offering.identifier,
+                                                        target: hardcodedExitOfferIdentifier))
+
         return Offering(identifier: offering.identifier,
                         serverDescription: offering.description,
-                        metadata: offering.metadata.mapValues(\.asAny),
+                        metadata: metadata,
                         paywall: offering.paywall,
                         paywallComponents: paywallComponents,
                         draftPaywallComponents: paywallDraftComponents,
