@@ -67,7 +67,7 @@ extension TargetDependency {
     /// - Returns: A TargetDependency for RevenueCat from Xcode project
     static var revenueCatUIXcodeProjectDependency: TargetDependency {
         .project(
-            target: "RevenueCat",
+            target: "RevenueCatUI",
             path: .relativeToRoot("Projects/RevenueCatUI"))
     }
 
