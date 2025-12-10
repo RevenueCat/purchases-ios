@@ -22,14 +22,234 @@ import SwiftUI
 /// [Documentation](https://rev.cat/paywalls)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
-// swiftlint:disable:next type_body_length
 public struct PaywallView: View {
+
+    private let configuration: PaywallViewConfiguration
+    private let paywallViewOwnsPurchaseHandler: Bool
+
+    @State
+    private var exitContent: PaywallViewConfiguration.Content?
+    @State
+    private var exitRequested: Bool = false
+    @State
+    private var showingPrimary: Bool = true
+    @State
+    private var showingExit: Bool = false
+
+    @Environment(\.onRequestedDismissal)
+    private var onRequestedDismissal: (() -> Void)?
+
+    @Environment(\.dismiss)
+    private var dismiss
+
+    /// Create a view to display the paywall in `Offerings.current`.
+    ///
+    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    ///
+    /// - Note: If loading the current `Offering` fails (if the user is offline, for example),
+    /// an error will be displayed.
+    /// - Warning: `Purchases` must have been configured prior to displaying it.
+    /// If you want to handle that, you can use ``init(offering:)`` instead.
+    init(
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+        self.init(
+            configuration: .init(
+                fonts: fonts,
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: purchaseHandler
+            )
+        )
+    }
+
+    /// Create a view to display the paywall in a given `Offering`.
+    ///
+    /// - Parameter offering: The `Offering` containing the desired paywall to display.
+    /// - Parameter fonts: An optional `PaywallFontProvider`.
+    /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    ///
+    /// - Note: if `offering` does not have a current paywall (`hasPaywall == false`), or it fails to load
+    /// due to invalid data, a default paywall will be displayed.
+    /// - Note: Specifying this parameter means that it will ignore the offering configured in an active experiment.
+    /// - Warning: `Purchases` must have been configured prior to displaying it.
+    init(
+        offering: Offering,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        self.init(
+            offering: offering,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            useDraftPaywall: false,
+            performPurchase: performPurchase,
+            performRestore: performRestore
+            )
+    }
+
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
+        offering: Offering,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        useDraftPaywall: Bool,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+
+        self.init(
+            configuration: .init(
+                offering: offering,
+                fonts: fonts,
+                displayCloseButton: displayCloseButton,
+                useDraftPaywall: useDraftPaywall,
+                introEligibility: introEligibility,
+                purchaseHandler: purchaseHandler
+            )
+        )
+    }
+
+    init(configuration: PaywallViewConfiguration,
+         paywallViewOwnsPurchaseHandler: Bool = true) {
+        self.configuration = configuration
+        self.paywallViewOwnsPurchaseHandler = paywallViewOwnsPurchaseHandler
+        self._exitContent = .init(initialValue: configuration.exitPaywallContent)
+    }
+
+    public var body: some View {
+        self.baseLayer
+            .fullScreenCover(isPresented: self.$showingPrimary, onDismiss: { self.handlePrimaryCoverDismissal() }) {
+                SinglePaywallView(
+                    configuration: self.configuration,
+                    paywallViewOwnsPurchaseHandler: self.paywallViewOwnsPurchaseHandler,
+                    onDismiss: { self.showingPrimary = false },
+                    onExitRequested: { self.exitRequested = true },
+                    onOfferingResolved: { offering in
+                        self.updateExitContent(with: offering)
+                    }
+                )
+            }
+            .transaction { transaction in
+                // Disable animations for the primary presentation.
+                transaction.animation = nil
+            }
+            .fullScreenCover(isPresented: self.$showingExit, onDismiss: { self.finishDismissal() }) {
+                if let exitContent {
+                    SinglePaywallView(
+                        configuration: self.configuration(for: exitContent),
+                        paywallViewOwnsPurchaseHandler: self.paywallViewOwnsPurchaseHandler,
+                        onDismiss: { self.showingExit = false }
+                    )
+                }
+            }
+    }
+
+    @ViewBuilder
+    private var baseLayer: some View {
+        Color.black
+            .opacity(self.showingExit ? 0.06 : 0)
+            .ignoresSafeArea()
+            .animation(.easeInOut(duration: 0.2), value: self.showingExit)
+    }
+
+    @MainActor
+    private func handlePrimaryCoverDismissal() {
+        guard let _ = self.exitContent, self.exitRequested else {
+            self.finishDismissal()
+            return
+        }
+
+        self.exitRequested = false
+        self.showingExit = true
+    }
+
+    // MARK: - Exit flow
+
+    @MainActor
+    private func handlePrimaryDismissal() {
+        guard let _ = self.exitContent, self.exitRequested else {
+            self.finishDismissal()
+            return
+        }
+
+        self.exitRequested = false
+        self.showingExit = true
+    }
+
+    @MainActor
+    private func finishDismissal() {
+        self.exitRequested = false
+        self.showingExit = false
+
+        if let onRequestedDismissal = self.onRequestedDismissal {
+            onRequestedDismissal()
+        } else {
+            self.dismiss()
+        }
+    }
+
+    @MainActor
+    private func updateExitContent(with offering: Offering) {
+        let content = PaywallViewConfiguration.Content.offering(offering)
+
+        guard let exit = content.exitPaywallContent else {
+            self.exitContent = nil
+            return
+        }
+
+        self.exitContent = exit
+
+        if case let .offeringIdentifier(identifier, presentedOfferingContext) = exit {
+            Task.detached {
+                guard Purchases.isConfigured else { return }
+
+                if let resolved = try? await Purchases.shared.offerings()
+                    .offering(identifier: identifier)
+                    .map({ offering -> Offering in
+                        if let context = presentedOfferingContext {
+                            return offering.withPresentedOfferingContext(context)
+                        }
+                        return offering
+                    }) {
+                    await MainActor.run {
+                        self.exitContent = .offering(resolved)
+                    }
+                }
+            }
+        }
+    }
+
+    private func configuration(for content: PaywallViewConfiguration.Content) -> PaywallViewConfiguration {
+        var updatedConfiguration = self.configuration
+        updatedConfiguration.content = content
+        return updatedConfiguration
+    }
+
+}
+
+/// A SwiftUI view for displaying a single paywall for an `Offering`.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
+// swiftlint:disable:next type_body_length
+struct SinglePaywallView: View {
 
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
     private let paywallViewOwnsPurchaseHandler: Bool
     private let useDraftPaywall: Bool
+    private let onDismissOverride: (() -> Void)?
+    private let onExitRequested: (() -> Void)?
+    private let onOfferingResolved: ((Offering) -> Void)?
 
     @StateObject
     private var internalPurchaseHandler: PurchaseHandler
@@ -54,12 +274,6 @@ public struct PaywallView: View {
 
     @State
     private var activeContent: PaywallViewConfiguration.Content
-    @State
-    private var exitContent: PaywallViewConfiguration.Content?
-    @State
-    private var exitPaywallRequested: Bool = false
-    @State
-    private var exitPaywallAlreadyPresented: Bool = false
 
     private var activeContentID: String {
         switch self.activeContent {
@@ -166,7 +380,11 @@ public struct PaywallView: View {
         )
     }
 
-    init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
+    init(configuration: PaywallViewConfiguration,
+         paywallViewOwnsPurchaseHandler: Bool = true,
+         onDismiss: (() -> Void)? = nil,
+         onExitRequested: (() -> Void)? = nil,
+         onOfferingResolved: ((Offering) -> Void)? = nil) {
         self.paywallViewOwnsPurchaseHandler = paywallViewOwnsPurchaseHandler
         if paywallViewOwnsPurchaseHandler {
             self._internalPurchaseHandler = .init(wrappedValue: configuration.purchaseHandler)
@@ -188,11 +406,13 @@ public struct PaywallView: View {
         )
 
         self._activeContent = .init(initialValue: configuration.content)
-        self._exitContent = .init(initialValue: configuration.content.exitPaywallContent)
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
         self.useDraftPaywall = configuration.useDraftPaywall
+        self.onDismissOverride = onDismiss
+        self.onExitRequested = onExitRequested
+        self.onOfferingResolved = onOfferingResolved
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
@@ -247,14 +467,12 @@ public struct PaywallView: View {
                 if let offering = self.offering, let customerInfo = self.customerInfo {
                     self.paywallView(for: offering,
                                      useDraftPaywall: self.useDraftPaywall,
-                                     activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
-                                     fonts: self.fonts,
-                                     checker: self.introEligibility,
-                                     purchaseHandler: self.purchaseHandler)
+                    activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
+                    fonts: self.fonts,
+                    checker: self.introEligibility,
+                    purchaseHandler: self.purchaseHandler)
                     .id(self.activeContentID)
-                    .onAppear {
-                        self.updateExitContent(with: offering)
-                    }
+                    .onAppear { self.onOfferingResolved?(offering) }
                     .transition(Self.transition)
                 } else {
                     #if os(macOS)
@@ -366,7 +584,7 @@ public struct PaywallView: View {
                     introEligibilityChecker: checker,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                     onDismiss: { self.handlePaywallDismissal() },
-                    onExitRequested: { self.exitPaywallRequested = true },
+                    onExitRequested: { self.onExitRequested?() },
                     fallbackContent: .paywallV1View(dataForV1DefaultPaywall),
                     failedToLoadFont: { fontConfig in
                         if Purchases.isConfigured {
@@ -422,7 +640,7 @@ public struct PaywallView: View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
-private extension PaywallView {
+private extension SinglePaywallView {
 
     static func loadCachedCustomerInfoIfPossible() -> CustomerInfo? {
         if Purchases.isConfigured {
@@ -455,76 +673,15 @@ private extension PaywallView {
 
     @MainActor
     private func handlePaywallDismissal() {
-        if self.exitPaywallRequested,
-           !self.exitPaywallAlreadyPresented,
-           let exitContent {
-            self.exitPaywallAlreadyPresented = true
-            self.exitPaywallRequested = false
-            self.exitContent = nil
-
-            self.setActiveContent(exitContent)
-
-            Task {
-                guard Purchases.isConfigured else { return }
-
-                do {
-                    let loadedOffering = try await self.loadOffering()
-                    self.offering = loadedOffering
-                    self.customerInfo = try? await Purchases.shared.customerInfo()
-                } catch {
-                    self.error = error as NSError
-                }
-            }
-
+        if let onDismissOverride {
+            onDismissOverride()
             return
         }
-
-        self.exitPaywallRequested = false
-        self.exitPaywallAlreadyPresented = false
 
         if let onRequestedDismissal = self.onRequestedDismissal {
             onRequestedDismissal()
         } else {
             self.dismiss()
-        }
-    }
-
-    private func setActiveContent(_ content: PaywallViewConfiguration.Content) {
-        self.activeContent = content
-        self.exitContent = content.exitPaywallContent
-        self.offering = content.extractInitialOffering()
-        self.customerInfo = nil
-        self.error = nil
-    }
-
-    private func updateExitContent(with offering: Offering) {
-        let content = PaywallViewConfiguration.Content.offering(offering)
-
-        guard let exit = content.exitPaywallContent else {
-            self.exitContent = nil
-            return
-        }
-
-        self.exitContent = exit
-
-        if case let .offeringIdentifier(identifier, presentedOfferingContext) = exit {
-            Task.detached {
-                guard Purchases.isConfigured else { return }
-
-                if let resolved = try? await Purchases.shared.offerings()
-                    .offering(identifier: identifier)
-                    .map({ offering -> Offering in
-                        if let context = presentedOfferingContext {
-                            return offering.withPresentedOfferingContext(context)
-                        }
-                        return offering
-                    }) {
-                    await MainActor.run {
-                        // Prefetch and replace the exit content with the resolved offering.
-                        self.exitContent = .offering(resolved)
-                    }
-                }
-            }
         }
     }
 
