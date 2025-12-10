@@ -81,6 +81,30 @@ class FileHandlerTests: BaseFileHandlerTests {
         expect(data).to(matchLines(line1, line2))
     }
 
+    func testAppendSynchronizesDataToDisk() async throws {
+        let line = Self.sampleLine()
+
+        try await self.handler.append(line: line)
+
+        let newHandler = try FileHandler(await self.handler.url)
+        let data = try await newHandler.readFile()
+
+        expect(data).to(matchLines(line))
+    }
+
+    func testMultipleAppendsSynchronizeDataToDisk() async throws {
+        let line1 = Self.sampleLine()
+        let line2 = Self.sampleLine()
+
+        try await self.handler.append(line: line1)
+        try await self.handler.append(line: line2)
+
+        let newHandler = try FileHandler(await self.handler.url)
+        let data = try await newHandler.readFile()
+
+        expect(data).to(matchLines(line1, line2))
+    }
+
     // MARK: - emptyFile
 
     func testEmptyFileWhenEmpty() async throws {

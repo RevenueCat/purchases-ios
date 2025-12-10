@@ -1268,7 +1268,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     func testFullHTTPRequestTimeoutFlow() async {
 
         enum MainBackendTimeoutRequestPath: HTTPRequestPath {
-            static let serverHostURL = URL(string: "http://10.255.255.255")! // Unroutable IP to force a timeout
+            static let serverHostURL = URL(string: "http://this-is-a-main-host.com")!
 
             case first
             case second
@@ -1286,7 +1286,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             }
 
             var fallbackUrls: [URL] {
-                [URL(string: "https://this-is-a-fallback.com\(relativePath)-fallback")!]
+                [URL(string: "https://this-is-a-fallback.com/\(relativePath)-fallback")!]
             }
         }
 
@@ -1307,16 +1307,20 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
 
+        stub(condition: isHost(MainBackendTimeoutRequestPath.serverHostURL.host!)) { _ in
+            return .timeoutResponse()
+        }
+
         // Stub request to the fallback URL
         var fallbackCalled = false
         stub(condition: isAbsoluteURLString(firstRequest.path.fallbackUrls.first!.absoluteString)) { request in
-            fallbackCalled = true
-
             // The fallback request should use the default timeout
             XCTAssertEqual(
                 request.timeoutInterval,
                 self.defaultRequestTimeout
             )
+
+            fallbackCalled = true
 
             return .emptySuccessResponse()
         }
@@ -1324,18 +1328,18 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // Stub second request
         var secondRequestCalled = false
         stub(condition: isPath(secondRequest.path)) { request in
-            secondRequestCalled = true
-
             // The fallback request should use the default timeout
             XCTAssertEqual(
                 request.timeoutInterval,
                 HTTPRequestTimeoutManager.Timeout.reduced.rawValue
             )
 
+            secondRequestCalled = true
+
             return .emptySuccessResponse()
         }
 
-        await waitUntil(timeout: .seconds(Int(defaultRequestTimeout) + 1)) { completion in
+        await waitUntil { completion in
             self.client.perform(firstRequest) { (_: DataResponse) in
                 // A new request that supports fallback to the main backend
                 // should use the default timeout since previously a timeout was received

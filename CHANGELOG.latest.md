@@ -1,9 +1,10 @@
-## RevenueCatUI SDK
-### Customer Center
-#### 🐞 Bugfixes
-* Fix missing Customer Center actions on SK1 purchases (#5883) via Cesar de la Vega (@vegaro)
+## RevenueCat SDK
+### ✨ New Features
+* Support introductoryOfferEligibilityJWS and promotionalOfferJWS in CUSTOM_ENTITLEMENT_COMPUTATION mode (#5908) via Will Taylor (@fire-at-will)
+### 🐞 Bugfixes
+* Flush events in a background task to fix missing events (#5899) via Cesar de la Vega (@vegaro)
+* Add missing synchronize when appending event (#5900) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* Automated E2E tests for the Test Store (#5859) via Antonio Pallares (@ajpallares)
-* Bump fastlane from 2.229.0 to 2.229.1 (#5882) via dependabot[bot] (@dependabot[bot])
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5876) via RevenueCat Git Bot (@RCGitBot)
+* Improve log message when no products found in any offerings (#5905) via Antonio Pallares (@ajpallares)
+* Exclude APITester from Danger checks (#5910) via Facundo Menzella (@facumenzella)
