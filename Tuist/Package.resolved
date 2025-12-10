@@ -1,5 +1,5 @@
 {
-  "originHash" : "3bcfa291d27ec030a344d3eef7f8b9bd7635ca7d6723fe99439012d6dcb24f10",
+  "originHash" : "d3dfe8ddc09047dea2624c6a63b78c191d0d7f11946fd378510a6498cd4ca12b",
   "pins" : [
     {
       "identity" : "cwlcatchexception",
@@ -35,15 +35,6 @@
       "state" : {
         "branch" : "9.1.0",
         "revision" : "12f19662426d0434d6c330c6974d53e2eb10ecd9"
-      }
-    },
-    {
-      "identity" : "purchases-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/RevenueCat/purchases-ios",
-      "state" : {
-        "branch" : "main",
-        "revision" : "292b90b8455643b61b589ff4c407c88ca1f9bb76"
       }
     },
     {

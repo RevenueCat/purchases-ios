@@ -30,10 +30,6 @@ let package = Package(
             revision: "26ed3a2b4a2df47917ca9b790a57f91285b923fb"
         ),
         .package(
-            url: "https://github.com/RevenueCat/purchases-ios",
-            branch: "main"
-        ),
-        .package(
             url: "https://github.com/AliSoftware/OHHTTPStubs",
             revision: "9.1.0"
         )
