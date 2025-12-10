@@ -60,7 +60,10 @@ final class ExternalPurchasesManager: NSObject {
                 await transaction.finish()
             }
 
-            Logger.rcPurchaseSuccess(Message.purchasedSK2Product)
+            let productId = transaction.productID
+            let transactionId = transaction.id
+            Logger.rcPurchaseSuccess(Message.purchasedSK2Product(productId: transaction.productID,
+                                                                 transactionId: transaction.id))
 
         case let .success(.unverified(transaction, error)):
             if self.finishTransactions {
@@ -115,15 +118,20 @@ extension ExternalPurchasesManager: SKPaymentTransactionObserver {
                 completion(transaction)
             }
 
+            let transactionId = transaction.transactionIdentifier ?? "unknown"
+            let productId = transaction.productIdentifier ?? "unknown"
+
             switch transaction.transactionState {
             case .purchasing: break
 
             case .restored, .purchased:
-                Logger.rcPurchaseSuccess(Message.purchasedSK1Product)
+                Logger.rcPurchaseSuccess(Message.purchasedSK1Product(productId: productId,
+                                                                     transactionId: transactionId))
                 finishAndReportCompletion()
 
             case .failed:
-                Logger.rcPurchaseError(Message.errorPurchasingSK1Product)
+                Logger.rcPurchaseError(Message.errorPurchasingSK1Product(productId: productId,
+                                                                         transactionId: transactionId))
                 finishAndReportCompletion()
 
             case .deferred:
@@ -139,18 +147,18 @@ extension ExternalPurchasesManager: SKPaymentTransactionObserver {
 
 private enum Message: LogMessage {
 
-    case purchasedSK1Product
-    case errorPurchasingSK1Product
-    case purchasedSK2Product
+    case purchasedSK1Product(productId: String, transactionId: String)
+    case errorPurchasingSK1Product(productId: String, transactionId: String)
+    case purchasedSK2Product(productId: String, transactionId: UInt64)
 
     var description: String {
         switch self {
-        case .purchasedSK1Product:
-            return "Successfully purchased SK1 product"
-        case .errorPurchasingSK1Product:
-            return "Error purchasing SK1 product"
-        case .purchasedSK2Product:
-            return "Successfully purchased SK2 product"
+        case let .purchasedSK1Product(productId, transactionId):
+            return "Successfully purchased SK1 product '\(productId)' with transaction ID '\(transactionId)'"
+        case let .errorPurchasingSK1Product(productId, transactionId):
+            return "Error purchasing SK1 product '\(productId)' with transaction ID '\(transactionId)'"
+        case let .purchasedSK2Product(productId, transactionId):
+            return "Successfully purchased SK2 product '\(productId)' with transaction ID '\(transactionId)'"
         }
     }
 
