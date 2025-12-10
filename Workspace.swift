@@ -22,7 +22,8 @@ var additionalFiles: [FileElement] = [
 ]
 if FileManager.default.fileExists(atPath: "CI.xcconfig") {
     additionalFiles.append(.glob(pattern: "CI.xcconfig"))
-} else if FileManager.default.fileExists(atPath: "Local.xcconfig") {
+}
+if FileManager.default.fileExists(atPath: "Local.xcconfig") {
     additionalFiles.append(.glob(pattern: "Local.xcconfig"))
 }
 
