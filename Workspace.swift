@@ -15,12 +15,6 @@ var projects: [Path] = [
     "./Projects/RevenueCatUI"
 ]
 
-if !Environment.dependencyMode.isLocal != .localXcodeProject {
-    // Needs 3.0.0 of Purchases.
-    // Only when TUIST_RC_LOCAL=false tuist generate
-    projects.append("./Projects/v3LoadShedderIntegration")
-}
-
 var additionalFiles: [FileElement] = [
     .glob(pattern: "Global.xcconfig"),
     .glob(pattern: "Tests/TestPlans/**/*.xctestplan"),
