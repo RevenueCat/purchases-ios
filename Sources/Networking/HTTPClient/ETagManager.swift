@@ -116,7 +116,8 @@ class ETagManager {
     func clearCaches() {
         Logger.debug(Strings.etag.clearing_cache)
 
-        self.cache.removeObject(forKey: CacheKey(rawValue: ETagManager.suiteName))
+        // remove all objects in the base path
+        self.cache.removeObject(forKey: CacheKey(rawValue: ""))
     }
 
     struct CacheKey: DeviceCacheKeyType {
@@ -129,7 +130,7 @@ extension ETagManager {
 
     // Visible for tests
     static func cacheKey(for request: URLRequest) -> CacheKey? {
-        return (request.url?.absoluteString).map(ETagManager.CacheKey.init)
+        return (request.url?.absoluteString.asData.md5String).map(ETagManager.CacheKey.init)
     }
 
 }

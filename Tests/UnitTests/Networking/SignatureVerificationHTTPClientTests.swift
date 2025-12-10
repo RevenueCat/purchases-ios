@@ -23,14 +23,15 @@ import XCTest
 class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager, HTTPRequestTimeoutManager> {
 
     private var suiteName: String!
-    fileprivate lazy var largeItemCache = SynchronizedLargeItemCache(
-        cache: FileManager.default,
-        basePath: self.suiteName
-    )
+    fileprivate var largeItemCache: SynchronizedLargeItemCache!
 
     override func setUpWithError() throws {
         // Note: these tests use the real `ETagManager` and `HTTPRequestTimeoutManager`
         self.suiteName = UUID().uuidString
+        self.largeItemCache = SynchronizedLargeItemCache(
+            cache: FileManager.default,
+            basePath: self.suiteName
+        )
         self.eTagManager = ETagManager(largeItemCache: largeItemCache)
         self.timeoutManager = HTTPRequestTimeoutManager(defaultTimeout: defaultTimeout.timeInterval)
 
@@ -38,8 +39,8 @@ class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager,
     }
 
     override func tearDown() {
-        // Clean up to avoid leaving leftover data in the simulator
-        largeItemCache.removeObject(forKey: SampleCacheKey(rawValue: "../\(self.suiteName ?? "")"))
+        largeItemCache.removeObject(forKey: SampleCacheKey(rawValue: ""))
+        largeItemCache = nil
         self.suiteName = nil
         super.tearDown()
     }

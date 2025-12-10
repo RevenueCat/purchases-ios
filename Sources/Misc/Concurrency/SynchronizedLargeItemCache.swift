@@ -91,6 +91,10 @@ internal final class SynchronizedLargeItemCache {
         }
 
         self.write { _, _ in
+            if key.rawValue.isEmpty, let documentURL = self.documentURL {
+                try? self.cache.remove(documentURL)
+                return
+            }
             try? self.cache.remove(fileURL)
         }
     }
