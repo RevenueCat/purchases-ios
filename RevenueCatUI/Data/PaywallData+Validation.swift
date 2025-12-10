@@ -71,6 +71,22 @@ extension Offering {
         }
     }
 
+    func validatedOrFallbackPaywall(for locale: Locale) -> Either<ValidationResult, Any> {
+        if let paywall = self.paywall {
+            switch paywall.validate() {
+            case .success(let template):
+                return Either.left((paywall, paywall.locale ?? locale, template, nil))
+            case .failure(let error):
+                return .right(true) // handle the fallback paywall w/ error
+            }
+        } else {
+            return .right(true) // handle the fallback paywall for no paywall
+        }
+    }
+}
+
+enum Either<Left, Right> {
+    case left(Left), right(Right)
 }
 
 // MARK: - PaywallData validation

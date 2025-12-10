@@ -14,6 +14,10 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
+#if canImport(AppKit)
+import AppKit
+#endif
+
 #if !os(tvOS)
 
 /// A SwiftUI view for displaying the paywall for an `Offering`.
@@ -740,3 +744,292 @@ private extension PaywallViewMode {
 #endif
 
 #endif
+
+fileprivate extension Color {
+    static let revenueCatBrandRed = Color(red: 0.949, green: 0.329, blue: 0.357) // #f2545b
+}
+
+/// Default Paywall View
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+public struct DefaultPaywallView: View {
+
+    /// Default Paywall View
+    public init() { }
+
+    @State private var warning: PaywallWarning?
+    @State private var products: [Package] = []
+    @State private var selected: Package?
+
+    func getHostAppName() -> String {
+        let bundle = Bundle.main
+        // Try to get the "Display Name" first (localized)
+        if let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String {
+            return displayName
+        }
+        // Fallback to the "Bundle Name"
+        if let bundleName = bundle.object(forInfoDictionaryKey: "CFBundleName") as? String {
+            return bundleName
+        }
+        return ""
+    }
+
+    func appIconName() -> String {
+        guard let icons = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
+                  let primaryIcon = icons["CFBundlePrimaryIcon"] as? [String: Any],
+                  let iconFiles = primaryIcon["CFBundleIconFiles"] as? [String],
+                  let lastIconName = iconFiles.last else {
+                return ""
+            }
+        return lastIconName
+    }
+
+    private var mainColor: Color {
+        return warning != nil ? .revenueCatBrandRed : .accentColor
+    }
+
+    /// Default Paywall View
+    public var body: some View {
+        VStack {
+            if warning != nil {
+                Text("RevenueCat Paywalls")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+            Spacer()
+
+            if let warning {
+                DefaultPaywallWarning(warning: warning, hasProducts: !products.isEmpty)
+            } else {
+                VStack(alignment: .center, spacing: 16) {
+
+                    #if canImport(UIKit)
+                    let image = Image(uiImage: UIImage(named: appIconName()) ?? UIImage())
+                        .resizable()
+                        .frame(width: 120, height: 120)
+                    #elseif canImport(AppKit)
+                    let image = Image(platformImage: NSApplication.shared.applicationIconImage)
+                    #endif
+                    ZStack {
+                        image
+                            .blur(radius: 48)
+                            .opacity(0.2)
+                            .accessibilityHidden(true)
+                        image
+                            .clipShape(RoundedRectangle(cornerRadius: 31))
+                            .accessibilityHidden(true)
+                    }
+                    .frame(width: 120, height: 120)
+                    .shadow(color: mainColor.opacity(0.2), radius: 6, x: 0, y: 2)
+                    .accessibilityAddTraits(.isImage)
+                    .accessibilityLabel("App Icon Image")
+
+                    Text(getHostAppName())
+                        .font(.title2)
+                        .bold()
+                        .padding(.horizontal)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+            }
+            Spacer()
+
+            VStack {
+                ForEach(products) { product in
+                    DefaultProductCell(product: product, selected: $selected)
+                }
+            }
+        }
+        .padding()
+        .safeAreaInset(edge: .bottom) {
+            if !products.isEmpty {
+                VStack {
+                    Button {
+                        // Purchase
+                    } label: {
+                        Text("Purchase")
+                            .bold()
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+
+                    Button {
+                        // Restore
+                    } label: {
+                        Text("Restore Purchases")
+                    }
+                    .controlSize(.large)
+                    .tint(Color.primary)
+                    .padding(.top, 8)
+                }
+                .padding()
+            }
+
+        }
+        .fillWithReadableContentWidth()
+        .background {
+            LinearGradient(colors: [
+                mainColor.opacity(0.2),
+                mainColor.opacity(0)
+            ], startPoint: .top, endPoint: .bottom)
+            .ignoresSafeArea()
+        }
+        .task {
+            await fetchProductAsync()
+        }
+        .tint(mainColor)
+    }
+
+    func fetchProductAsync() async {
+        do {
+            // Things to discover… should I make this call…?
+            let offerings = try await Purchases.shared.offerings()
+            if let packages = offerings.current?.availablePackages {
+                withAnimation {
+                    self.products = packages
+                }
+            }
+        } catch {
+            self.warning = .noProducts(error)
+        }
+    }
+
+    func fetchProduct() {
+        Purchases.shared.getOfferings { (offerings, error) in
+            if let error {
+                self.warning = .noProducts(error)
+            }
+            if let packages = offerings?.current?.availablePackages {
+                withAnimation {
+                    self.products = packages
+                }
+            }
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct DefaultProductCell: View {
+    let product: Package
+    @Binding var selected: Package?
+
+    private var isSelected: Bool {
+        selected == product
+    }
+
+    var body: some View {
+        Button {
+            withAnimation {
+                selected = product
+            }
+        } label: {
+            HStack {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .opacity(isSelected ? 1 : 0.5)
+                    .accessibilityHidden(true)
+                Text(product.storeProduct.localizedTitle)
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(product.localizedPriceString)
+                    .font(.subheadline)
+                    .monospacedDigit()
+            }
+            .foregroundColor(isSelected ? .white : Color.primary)
+            .padding()
+            .background {
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(isSelected ? Color.accentColor : .secondary.opacity(0.3))
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 18))
+        }
+        #if os(macOS)
+        .buttonStyle(.plain)
+        #endif
+        .frame(maxWidth: 560)
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct DefaultPaywallWarning: View {
+    let warning: PaywallWarning
+    let hasProducts: Bool
+
+    var body: some View {
+        VStack(alignment: .center, spacing: 16) {
+
+            Image("default-paywall")
+                .accessibilityHidden(true)
+
+            VStack(alignment: .center, spacing: 8) {
+                Text(warning.title)
+                    .font(.title3)
+                    .bold()
+                Text(warning.bodyText)
+                    .font(.subheadline)
+            }
+            if hasProducts {
+                Text("This Paywall will not be available in production.")
+                    .font(.subheadline.bold())
+            }
+            if let url = warning.helpURL {
+                Link(destination: url) {
+                    Text("Go to Dashboard")
+                        .bold()
+                }
+                .tint(.revenueCatBrandRed)
+                .buttonStyle(.bordered)
+            }
+
+        }
+        .multilineTextAlignment(.center)
+    }
+}
+
+private enum PaywallWarning {
+    case noOffering
+    case noProducts(Error)
+    case noPaywall
+
+    var title: LocalizedStringKey {
+        switch self {
+        case .noPaywall:
+            "No Paywall configured"
+        case .noOffering:
+            "No Offering found"
+        case .noProducts:
+            "Could not fetch products"
+        }
+    }
+
+    var bodyText: LocalizedStringKey {
+        switch self {
+        case .noPaywall:
+            "Your %@ offering has no configured paywalls. Set one up in the RevenueCat Dashboard to begin."
+        case .noOffering:
+            "We could not detect any offerings. Set one up in the RevenueCat Dashboard to begin."
+        case .noProducts(let error):
+            "We could not fetch any products: \(error.localizedDescription)"
+        }
+    }
+
+    var helpURL: URL? {
+        switch self {
+        case .noPaywall:
+            URL(string: "https://www.revenuecat.com/docs/tools/paywalls")
+        case .noOffering:
+            URL(string: "https://www.revenuecat.com/docs/offerings/overview")
+        case .noProducts:
+            URL(string: "https://www.revenuecat.com/docs/offerings/products-overview")
+        }
+    }
+}
+
+extension View {
+    // centers content but doesn't allow it to get too wide, this looks better on full screens like an ipad
+    func fillWithReadableContentWidth() -> some View {
+        self
+        // UIKit used to have readable content guides, they started around 624 pixels and scaled up with dynamic fonts
+        // This is just a sensible default that is close to the readable guide
+            .frame(maxWidth: 630)
+            .frame(maxWidth: .infinity)
+    }
+}
