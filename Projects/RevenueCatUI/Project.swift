@@ -29,25 +29,6 @@ let project = Project(
                 .revenueCat
             ]
         ),
-
-                // MARK: – RevenueCat Tests
-        .target(
-            name: "RevenueCatUITests",
-            destinations: .allRevenueCat,
-            product: .unitTests,
-            bundleId: "com.revenuecat.sampleapp.tests",
-            deploymentTargets: .allRevenueCat,
-            infoPlist: .default,
-            sources: [
-                "../../Tests/RevenueCatUITests/**/*.swift"
-            ],
-            dependencies: [
-                .target(name: "RevenueCatUI"),
-                .nimble,
-                .snapshotTesting,
-                .ohHTTPStubsSwift
-            ]
-        )
     ],
     schemes: [
         .scheme(

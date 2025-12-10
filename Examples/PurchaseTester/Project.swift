@@ -88,7 +88,7 @@ let project = Project(
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
-                .receiptparser,
+                .receiptParser,
             ],
             settings: .framework
         ),
