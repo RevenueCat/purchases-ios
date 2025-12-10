@@ -86,7 +86,7 @@ let project = Project(
                 ]
             ),
             dependencies: [
-                .receiptparser
+                .receiptParser
             ],
             metadata: .metadata(tags: ["APITester"])
         ),

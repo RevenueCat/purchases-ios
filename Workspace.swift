@@ -11,6 +11,7 @@ var projects: [Path] = [
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",
+    "./Projects/RevenueCatTests",
     "./Projects/RevenueCat",
     "./Projects/RevenueCatUI"
 ]
