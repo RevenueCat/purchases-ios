@@ -10,13 +10,12 @@ var projects: [Path] = [
     "./Examples/PurchaseTester/",
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
-    "./Projects/PaywallValidationTester"
+    "./Projects/PaywallValidationTester",
+    "./Projects/RevenueCat",
+    "./Projects/RevenueCatUI"
 ]
 
-if Environment.dependencyMode == .localXcodeProject {
-    projects.append("./Projects/RevenueCat")
-    projects.append("./Projects/RevenueCatUI")
-} else {
+if !Environment.dependencyMode.isLocal != .localXcodeProject {
     // Needs 3.0.0 of Purchases.
     // Only when TUIST_RC_LOCAL=false tuist generate
     projects.append("./Projects/v3LoadShedderIntegration")
