@@ -266,7 +266,7 @@ extension TestLogHandler {
         return { entry in
             let range = NSRange(location: 0, length: entry.message.utf16.count)
             let match = regex.firstMatch(in: entry.message, options: [], range: range)
-            
+
             guard match != nil else {
                 return false
             }
