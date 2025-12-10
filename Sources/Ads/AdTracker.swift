@@ -38,7 +38,7 @@ import Foundation
      mediatorName: .appLovin,
      placement: "home_screen",
      adUnitId: "ca-app-pub-123",
-     adInstanceId: "instance-456"
+     impressionId: "impression-456"
  ))
 
  // Track ad revenue
@@ -47,7 +47,7 @@ import Foundation
      mediatorName: .appLovin,
      placement: "home_screen",
      adUnitId: "ca-app-pub-123",
-     adInstanceId: "instance-456",
+     impressionId: "impression-456",
      revenueMicros: 1500000,  // $1.50
      currency: "USD",
      precision: .exact
@@ -66,6 +66,54 @@ public final class AdTracker: NSObject {
     }
 
     /**
+     Tracks when an ad fails to load.
+
+     Call this method from your ad SDK's failure callback to report load failures to RevenueCat.
+     Include the optional `mediatorErrorCode` if provided by the mediation SDK to aid debugging.
+
+     - Parameter data: The failed to load ad event data, including optional `mediatorErrorCode`
+
+     ## Example:
+     ```swift
+     await Purchases.shared.adTracker.trackAdFailedToLoad(.init(
+         networkName: "AdMob",
+         mediatorName: .appLovin,
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123",
+         mediatorErrorCode: 3
+     ))
+     ```
+     */
+    @_spi(Experimental) public func trackAdFailedToLoad(_ data: AdFailedToLoad) async {
+        let event = AdEvent.failedToLoad(.init(id: UUID(), date: Date()), data)
+        await self.eventsManager?.track(adEvent: event)
+    }
+
+    /**
+     Tracks when an ad successfully loads.
+
+     Call this method from your ad SDK's load callback to report successful ad loads to RevenueCat.
+     Tracking load events helps correlate mediation performance with revenue and impressions.
+
+     - Parameter data: The loaded ad event data
+
+     ## Example:
+     ```swift
+     await Purchases.shared.adTracker.trackAdLoaded(.init(
+         networkName: "AdMob",
+         mediatorName: .appLovin,
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123",
+         impressionId: "impression-456"
+     ))
+     ```
+     */
+    @_spi(Experimental) public func trackAdLoaded(_ data: AdLoaded) async {
+        let event = AdEvent.loaded(.init(id: UUID(), date: Date()), data)
+        await self.eventsManager?.track(adEvent: event)
+    }
+
+    /**
      Tracks when an ad impression is displayed.
 
      Call this method from your ad SDK's impression callback to report ad displays to RevenueCat.
@@ -80,7 +128,7 @@ public final class AdTracker: NSObject {
          mediatorName: .appLovin,
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
-         adInstanceId: "instance-456"
+         impressionId: "impression-456"
      ))
      ```
      */
@@ -103,7 +151,7 @@ public final class AdTracker: NSObject {
          mediatorName: .appLovin,
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
-         adInstanceId: "instance-456"
+         impressionId: "impression-456"
      ))
      ```
      */
@@ -127,7 +175,7 @@ public final class AdTracker: NSObject {
          mediatorName: .appLovin,
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
-         adInstanceId: "instance-456",
+         impressionId: "impression-456",
          revenueMicros: 1500000,  // $1.50
          currency: "USD",
          precision: .exact
@@ -140,6 +188,44 @@ public final class AdTracker: NSObject {
     }
 
     // MARK: - Objective-C Compatible Methods
+
+    /**
+     Tracks when an ad fails to load (Objective-C compatible).
+
+     Call this method from your ad SDK's failure callback to report load failures to RevenueCat.
+     Include the optional `mediatorErrorCode` if provided by the mediation SDK.
+     This is the completion handler version for Objective-C compatibility.
+
+     - Parameters:
+       - data: The failed to load ad event data
+       - completion: Called when the tracking is complete
+     */
+    @_spi(Experimental) @objc public func trackAdFailedToLoad(
+        _ data: AdFailedToLoad,
+        completion: @escaping () -> Void
+    ) {
+        Task {
+            await self.trackAdFailedToLoad(data)
+            completion()
+        }
+    }
+
+    /**
+     Tracks when an ad successfully loads (Objective-C compatible).
+
+     Call this method from your ad SDK's load callback to report successful ad loads to RevenueCat.
+     This is the completion handler version for Objective-C compatibility.
+
+     - Parameters:
+       - data: The loaded ad event data
+       - completion: Called when the tracking is complete
+     */
+    @_spi(Experimental) @objc public func trackAdLoaded(_ data: AdLoaded, completion: @escaping () -> Void) {
+        Task {
+            await self.trackAdLoaded(data)
+            completion()
+        }
+    }
 
     /**
      Tracks when an ad impression is displayed (Objective-C compatible).

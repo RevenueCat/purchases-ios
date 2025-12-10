@@ -59,6 +59,38 @@ extension String {
         }
     }
 
+    private static let remainderStartLength = 2
+    private static let remainderEndLength = 4
+    private static let redactionPlaceholder = "********"
+
+    var asRedactedAPIKey: String {
+        let prefix: String.SubSequence
+        let remainder: String.SubSequence
+
+        if let underscoreIndex = self.firstIndex(of: "_") {
+            // Prefix including underscore
+            prefix = self[..<self.index(after: underscoreIndex)]
+
+            // Remainder after underscore
+            remainder = self[self.index(after: underscoreIndex)...]
+        } else {
+            // Legacy API keys without a prefix
+            prefix = ""
+            remainder = self[...]
+        }
+
+        // If fewer than 6 characters to redact → return unredacted
+        let minimumLengthToRedact = Self.remainderStartLength + Self.remainderEndLength
+        guard remainder.count >= minimumLengthToRedact else {
+            return self
+        }
+
+        // Take first 2 and last 4 characters
+        let start = remainder.prefix(Self.remainderStartLength)
+        let end = remainder.suffix(Self.remainderEndLength)
+
+        return "\(prefix)\(start)********\(end)"
+    }
 }
 
 // MARK: -

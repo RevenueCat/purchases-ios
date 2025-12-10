@@ -350,7 +350,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
         )
 
-        apiKeyValidationResult.checkForSimulatedStoreAPIKeyInRelease(systemInfo: systemInfo)
+        apiKeyValidationResult.checkForSimulatedStoreAPIKeyInRelease(systemInfo: systemInfo, apiKey: apiKey)
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()
@@ -486,13 +486,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     store: try FeatureEventStore.createDefault(
                         applicationSupportDirectory: applicationSupportDirectory
                     ),
+                    systemInfo: systemInfo,
                     adEventStore: adEventStore
                 )
                 #else
                 eventsManager = EventsManager(
                     internalAPI: backend.internalAPI,
                     userProvider: identityManager,
-                    store: try FeatureEventStore.createDefault(applicationSupportDirectory: applicationSupportDirectory)
+                    store: try FeatureEventStore.createDefault(
+                        applicationSupportDirectory: applicationSupportDirectory
+                    ),
+                    systemInfo: systemInfo
                 )
                 #endif
                 Logger.verbose(Strings.paywalls.event_manager_initialized)
@@ -2130,8 +2134,6 @@ internal extension Purchases {
         self.offeringsManager.invalidateCachedOfferings(appUserID: self.appUserID)
     }
 
-    /// - Throws: if posting events fails
-    /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushPaywallEvents(count: Int) async throws -> Int {
         return try await self.eventsManager?.flushFeatureEvents(batchSize: count) ?? 0

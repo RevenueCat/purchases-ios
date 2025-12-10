@@ -264,7 +264,7 @@ extension AdDisplayed {
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-\(UUID().uuidString)",
-            impressionId: "instance-\(UUID().uuidString)"
+            impressionId: "impression-\(UUID().uuidString)"
         )
     }
 

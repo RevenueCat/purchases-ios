@@ -255,8 +255,7 @@ private extension SubscriptionDetailView {
                         .padding(.vertical, 16)
                 }
 
-                if viewModel.shouldShowCreateTicketButton(supportTickets: support?.supportTickets),
-                   viewModel.shouldShowContactSupport {
+                if viewModel.shouldShowCreateTicketButton(supportTickets: support?.supportTickets) {
                     createTicketButton
                         .padding(.vertical, 16)
                 } else if let url = support?.supportURL(

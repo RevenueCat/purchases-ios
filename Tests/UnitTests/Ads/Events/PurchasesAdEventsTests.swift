@@ -30,13 +30,67 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
+    func testTrackAdFailedToLoadStoresEvent() async throws {
+        let failedData = AdFailedToLoad(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            mediatorErrorCode: 3
+        )
+
+        await self.purchases.adTracker.trackAdFailedToLoad(failedData)
+
+        let trackedEvents = try await self.mockEventsManager.trackedEvents
+
+        expect(trackedEvents).to(haveCount(1))
+
+        guard case let .failedToLoad(_, eventData) = trackedEvents.first as? AdEvent else {
+            fail("Expected AdEvent.failedToLoad but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .appLovin
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect((eventData as? AdFailedToLoad)?.mediatorErrorCode?.intValue) == 3
+    }
+
+    func testTrackAdLoadedStoresEvent() async throws {
+        let loadedData = AdLoaded(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        await self.purchases.adTracker.trackAdLoaded(loadedData)
+
+        let trackedEvents = try await self.mockEventsManager.trackedEvents
+
+        expect(trackedEvents).to(haveCount(1))
+
+        guard case let .loaded(_, eventData) = trackedEvents.first as? AdEvent else {
+            fail("Expected AdEvent.loaded but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .appLovin
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect((eventData as? AdLoaded)?.impressionId) == "impression-123"
+    }
+
     func testTrackAdDisplayedStoresEvent() async throws {
         let displayedData = AdDisplayed(
             networkName: "AdMob",
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            impressionId: "instance-123"
+            impressionId: "impression-123"
         )
 
         await self.purchases.adTracker.trackAdDisplayed(displayedData)
@@ -54,7 +108,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.mediatorName) == .appLovin
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
-        expect(eventData.impressionId) == "instance-123"
+        expect(eventData.impressionId) == "impression-123"
     }
 
     func testTrackAdOpenedStoresEvent() async throws {
@@ -63,7 +117,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            impressionId: "instance-123"
+            impressionId: "impression-123"
         )
 
         await self.purchases.adTracker.trackAdOpened(openedData)
@@ -81,7 +135,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.mediatorName) == .appLovin
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
-        expect(eventData.impressionId) == "instance-123"
+        expect(eventData.impressionId) == "impression-123"
     }
 
     func testTrackAdRevenueStoresEvent() async throws {
@@ -90,7 +144,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            impressionId: "instance-123",
+            impressionId: "impression-123",
             revenueMicros: 1500000,
             currency: "USD",
             precision: .exact
@@ -111,7 +165,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.mediatorName) == .appLovin
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
-        expect(eventData.impressionId) == "instance-123"
+        expect(eventData.impressionId) == "impression-123"
         expect(eventData.revenueMicros) == 1500000
         expect(eventData.currency) == "USD"
         expect(eventData.precision) == .exact

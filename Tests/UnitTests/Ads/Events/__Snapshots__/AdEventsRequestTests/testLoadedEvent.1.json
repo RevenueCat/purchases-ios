@@ -1,0 +1,25 @@
+{
+  "impression_id": "impression-123",
+  "ad_unit_id": "ca-app-pub-123456789",
+  "app_session_id": "83164C05-2BDC-4807-8918-A4105F727DEB",
+  "app_user_id": "test-user-id",
+  "id": "72164C05-2BDC-4807-8918-A4105F727DEB",
+  "mediator_name": "AppLovin",
+  "network_name": "AdMob",
+  "placement": "home_screen",
+  "timestamp_ms": 1694029328000,
+  "type": "rc_ads_ad_loaded",
+  "version": 1
+}
+{
+  "ad_unit_id": "ca-app-pub-123456789",
+  "app_session_id": "83164C05-2BDC-4807-8918-A4105F727DEB",
+  "app_user_id": "test-user-id",
+  "id": "72164C05-2BDC-4807-8918-A4105F727DEB",
+  "mediator_name": "AppLovin",
+  "network_name": "AdMob",
+  "placement": "home_screen",
+  "timestamp_ms": 1694029328000,
+  "type": "rc_ads_ad_loaded",
+  "version": 1
+}

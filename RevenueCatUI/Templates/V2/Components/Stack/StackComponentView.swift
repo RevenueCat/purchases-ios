@@ -131,6 +131,7 @@ struct StackComponentView: View {
         })
         .scrollableIfEnabled(
             style.dimension,
+            size: style.size,
             enabled: style.scrollable ?? self.isScrollableByDefault
         )
         .shape(border: nil,
@@ -158,22 +159,32 @@ private extension Axis {
 fileprivate extension View {
 
     @ViewBuilder
+
     func scrollableIfEnabled(
         _ dimension: PaywallComponent.Dimension,
+        size: PaywallComponent.Size,
         enabled: Bool = true
     ) -> some View {
         if enabled {
             switch dimension {
-            case .horizontal:
-                ScrollView(.horizontal) {
-                    self
-                }
-                .scrollBounceBehaviorBasedOnSize()
-            case .vertical:
-                ScrollView(.vertical) {
-                    self
-                }
-                .scrollBounceBehaviorBasedOnSize()
+            case .horizontal(let verticalAlignment, let distribution):
+                self.scrollableIfNecessaryWhenAvailable(
+                    .horizontal,
+                    fillContent: size.width == .fill,
+                    alignment: Alignment(
+                        horizontal: distribution.horizontalFrameAlignment.horizontal,
+                        vertical: verticalAlignment.frameAlignment.vertical
+                    )
+                )
+            case .vertical(let horizontalAlignment, let distribution):
+                self.scrollableIfNecessaryWhenAvailable(
+                    .vertical,
+                    fillContent: size.height == .fill,
+                    alignment: Alignment(
+                        horizontal: horizontalAlignment.frameAlignment.horizontal,
+                        vertical: distribution.verticalFrameAlignment.vertical
+                    )
+                )
             case .zlayer:
                 self
             }

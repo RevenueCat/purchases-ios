@@ -85,7 +85,7 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
 
     /// Calling this method will show an alert indicating that a Test Store API key
     /// is being used in a release build, which is not supported.
-    func showTestKeyInReleaseAlert() async {
+    func showTestKeyInReleaseAlert(redactedApiKey: String) async {
         await Task { @MainActor in
             return await withUnsafeContinuation { continuation in
 
@@ -93,7 +93,7 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
 
                 let alert = Alert(
                     title: TestKeyInReleaseAlert.title,
-                    message: TestKeyInReleaseAlert.message,
+                    message: TestKeyInReleaseAlert.message(redactedApiKey: redactedApiKey),
                     actions: [
                         .init(title: TestKeyInReleaseAlert.actionTitle,
                               callback: { _ in completion() },
@@ -152,10 +152,12 @@ private extension DefaultSimulatedStorePurchaseUI {
 private enum TestKeyInReleaseAlert {
 
     static let title = "Wrong API Key"
-    static let message = "This app is using a test API key. " +
-    "To prepare for release, update your RevenueCat settings to use a production key.\n\n" +
-    "For more info, visit the RevenueCat dashboard.\n\n" +
-    "The app will close now to protect the security of test purchases."
+    static func message(redactedApiKey: String) -> String {
+        return "This app is using a test API key: \(redactedApiKey)\n\n" +
+        "To prepare for release, update your RevenueCat settings to use a production key.\n\n" +
+        "For more info, visit the RevenueCat dashboard.\n\n" +
+        "The app will close now to protect the security of test purchases."
+    }
 
     static let actionTitle = "OK"
 }

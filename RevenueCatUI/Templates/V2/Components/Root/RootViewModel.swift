@@ -42,6 +42,23 @@ class RootViewModel {
         self.localizationProvider = localizationProvider
     }
 
+    var frameAlignment: Alignment {
+        switch stackViewModel.component.dimension {
+        case .vertical(let horizontalAlignment, let distribution):
+            return Alignment(
+                horizontal: horizontalAlignment.frameAlignment.horizontal,
+                vertical: distribution.verticalFrameAlignment.vertical
+            )
+        case .horizontal(let verticalAlignment, let distribution):
+            return Alignment(
+                horizontal: distribution.horizontalFrameAlignment.horizontal,
+                vertical: verticalAlignment.frameAlignment.vertical
+            )
+        case .zlayer(let alignment):
+            return alignment.stackAlignment
+        }
+    }
+
 }
 
 #endif

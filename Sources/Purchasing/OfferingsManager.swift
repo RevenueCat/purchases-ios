@@ -231,7 +231,9 @@ private extension OfferingsManager {
         let productIdentifiers = contents.response.productIdentifiers
 
         guard !productIdentifiers.isEmpty else {
-            let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
+            let errorMessage = Strings.offering.configuration_error_no_products_for_offering(
+                apiKeyValidationResult: self.systemInfo.apiKeyValidationResult
+            ).description
             completion(.failure(.configurationError(errorMessage, underlyingError: nil)))
             return
         }

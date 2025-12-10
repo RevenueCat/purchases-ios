@@ -3,6 +3,10 @@ danger.import_dangerfile(github: 'RevenueCat/Dangerfile')
 require 'pathname'
 require 'set'
 
+EXCLUDED_SWIFT_PATH_PREFIXES = [
+  'Tests/APITesters/'
+].freeze
+
 # Check for submodules
 submodules = `git submodule status`.strip
 if !submodules.empty?
@@ -16,8 +20,13 @@ end
 
 def relevant_swift_file?(path)
   path = normalize_path(path)
-  path.end_with?('.swift') &&
-    (path.start_with?('Sources/') || path.start_with?('RevenueCatUI/') || path.start_with?('Tests/'))
+  return false unless path.end_with?('.swift')
+  return false if EXCLUDED_SWIFT_PATH_PREFIXES.any? { |prefix| path.start_with?(prefix) }
+
+  in_project_sources = path.start_with?('Sources/') || path.start_with?('RevenueCatUI/')
+  in_tests = path.start_with?('Tests/')
+
+  in_project_sources || in_tests
 end
 
 def project_swift_file_paths(project_file)
