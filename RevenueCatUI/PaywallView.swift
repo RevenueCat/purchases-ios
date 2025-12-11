@@ -1466,7 +1466,7 @@ private struct DefaultPaywallWarning: View {
     var body: some View {
         VStack(alignment: .center, spacing: 16) {
 
-            Image("default-paywall")
+            Image("default-paywall", bundle: .module)
                 .accessibilityHidden(true)
 
             VStack(alignment: .center, spacing: 8) {
