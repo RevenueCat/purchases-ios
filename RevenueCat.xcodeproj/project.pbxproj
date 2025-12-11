@@ -72,6 +72,10 @@
 		164933242E5808BE00CE43A9 /* PaywallTransitionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */; };
 		167D67092EA151C400B4503F /* SynchronizedLargeItemCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */; };
 		1699BC292EEB450D002001FB /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1699BC282EEB450D002001FB /* Media.xcassets */; };
+		1699BC2D2EEB4DBC002001FB /* PaywallWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1699BC2C2EEB4DBC002001FB /* PaywallWarning.swift */; };
+		1699BC342EEB4DFD002001FB /* ColorComputationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1699BC332EEB4DFD002001FB /* ColorComputationHelpers.swift */; };
+		1699BC362EEB4EAE002001FB /* DefaultPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1699BC352EEB4EAE002001FB /* DefaultPaywallView.swift */; };
+		1699BC382EEB4EFA002001FB /* AppStyleExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1699BC372EEB4EFA002001FB /* AppStyleExtractor.swift */; };
 		16A7F4C12E563B89001F9FC8 /* PaywallTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */; };
 		16A7F4C32E563B91001F9FC8 /* PaywallAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */; };
 		16A7F4C62E564B97001F9FC8 /* TransitionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */; };
@@ -1562,6 +1566,10 @@
 		164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransitionTest.swift; sourceTree = "<group>"; };
 		167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedLargeItemCache.swift; sourceTree = "<group>"; };
 		1699BC282EEB450D002001FB /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
+		1699BC2C2EEB4DBC002001FB /* PaywallWarning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWarning.swift; sourceTree = "<group>"; };
+		1699BC332EEB4DFD002001FB /* ColorComputationHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorComputationHelpers.swift; sourceTree = "<group>"; };
+		1699BC352EEB4EAE002001FB /* DefaultPaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultPaywallView.swift; sourceTree = "<group>"; };
+		1699BC372EEB4EFA002001FB /* AppStyleExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStyleExtractor.swift; sourceTree = "<group>"; };
 		16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransition.swift; sourceTree = "<group>"; };
 		16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallAnimation.swift; sourceTree = "<group>"; };
 		16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransitionModifier.swift; sourceTree = "<group>"; };
@@ -5329,6 +5337,9 @@
 		887A5FE72C1D037000E1A461 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				1699BC372EEB4EFA002001FB /* AppStyleExtractor.swift */,
+				1699BC332EEB4DFD002001FB /* ColorComputationHelpers.swift */,
+				1699BC2C2EEB4DBC002001FB /* PaywallWarning.swift */,
 				0387D3C72EC51F09008E4A6B /* FileImageLoader.swift */,
 				16216FEE2EBB8641008ACFE9 /* ResumeAction.swift */,
 				16E146B12E99FC7E0089B609 /* PurchaseResultComparator.swift */,
@@ -5462,6 +5473,7 @@
 		887A605F2C1D037000E1A461 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				1699BC352EEB4EAE002001FB /* DefaultPaywallView.swift */,
 				88A543DE2C37A45B0039C6A5 /* TemplatePackageSetting.swift */,
 				887A60532C1D037000E1A461 /* AsyncButton.swift */,
 				887A60542C1D037000E1A461 /* DebugErrorView.swift */,
@@ -7708,6 +7720,7 @@
 				0354AA4B2D4029C300F9E330 /* TabControlToggleComponentViewModel.swift in Sources */,
 				0354AA4C2D4029C300F9E330 /* TabControlToggleComponentView.swift in Sources */,
 				1DEF758A2ECF0EFE00614CB2 /* CreateTicketView.swift in Sources */,
+				1699BC342EEB4DFD002001FB /* ColorComputationHelpers.swift in Sources */,
 				0354AA4D2D4029C300F9E330 /* TabControlComponentView.swift in Sources */,
 				887A60C22C1D037000E1A461 /* ErrorDisplay.swift in Sources */,
 				887A60692C1D037000E1A461 /* IntroEligibilityViewModel.swift in Sources */,
@@ -7738,6 +7751,7 @@
 				887A60682C1D037000E1A461 /* TemplateError.swift in Sources */,
 				887A60792C1D037000E1A461 /* UserInterfaceIdiom.swift in Sources */,
 				03C06FCC2D479C7C00600693 /* CarouselComponentViewModel.swift in Sources */,
+				1699BC382EEB4EFA002001FB /* AppStyleExtractor.swift in Sources */,
 				887A60742C1D037000E1A461 /* Strings.swift in Sources */,
 				887A60712C1D037000E1A461 /* PaywallViewConfiguration.swift in Sources */,
 				88B1BAFA2C813A3C001B7EE5 /* PaywallsV2View.swift in Sources */,
@@ -7820,6 +7834,7 @@
 				5798C9522DF1985700F44400 /* CustomerCenterViewModel.swift in Sources */,
 				5798C9532DF1985700F44400 /* NoSubscriptionsCardView.swift in Sources */,
 				5798C9542DF1985700F44400 /* CompatibilityLabeledContent.swift in Sources */,
+				1699BC2D2EEB4DBC002001FB /* PaywallWarning.swift in Sources */,
 				5798C9552DF1985700F44400 /* CompatibilityNavigationStack.swift in Sources */,
 				5798C9562DF1985700F44400 /* PromotionalOfferData.swift in Sources */,
 				839F34392E3BC575006355B0 /* PlatformColor.swift in Sources */,
@@ -7844,6 +7859,7 @@
 				5798C96A2DF1985700F44400 /* ErrorView.swift in Sources */,
 				5798C96B2DF1985700F44400 /* View+PresentCustomerCenter.swift in Sources */,
 				5798C96C2DF1985700F44400 /* ScrollViewSection.swift in Sources */,
+				1699BC362EEB4EAE002001FB /* DefaultPaywallView.swift in Sources */,
 				5798C96D2DF1985700F44400 /* ContactSupportUtilities.swift in Sources */,
 				5798C96E2DF1985700F44400 /* CompatibilityContentUnavailableView.swift in Sources */,
 				5798C96F2DF1985700F44400 /* PurchaseDetailView.swift in Sources */,
