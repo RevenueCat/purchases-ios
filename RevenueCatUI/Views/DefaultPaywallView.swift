@@ -44,7 +44,7 @@ struct DefaultPaywallView: View {
 
     @State var colors: [Color] = []
 
-    var activeColor: Color {
+    var iconColor: Color {
         if colors.isEmpty {
             return .accentColor
         }
@@ -53,13 +53,13 @@ struct DefaultPaywallView: View {
     }
 
     var foregroundOnAccentColor: Color {
-        if colors.isEmpty {
-            return .primary
+        if shouldShowWarning {
+            return .white
         }
 
         return selectColorWithBestContrast(
             from: colors + [colorScheme == .dark ? .black : .white],
-            againstColor: activeColor
+            againstColor: iconColor
         )
     }
 
@@ -67,9 +67,9 @@ struct DefaultPaywallView: View {
 
     private var mainColor: Color {
         if shouldShowWarning {
-            return warning != nil ? .revenueCatBrandRed : activeColor
+            return .revenueCatBrandRed
         } else {
-            return activeColor
+            return iconColor
         }
     }
 
