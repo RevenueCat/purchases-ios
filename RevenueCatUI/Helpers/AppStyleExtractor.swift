@@ -69,7 +69,7 @@ enum AppStyleExtractor {
         var image = Image("")
         #if os(macOS)
         image = Image(nsImage: NSApplication.shared.applicationIconImage)
-        #elseif canImport(UIKit)
+        #else
         if let uiImage = UIImage(named: appIconName()) {
             image = Image(uiImage: uiImage)
         }
@@ -254,11 +254,9 @@ enum AppStyleExtractor {
             var rect = NSRect(x: 0, y: 0, width: nsImage.size.width, height: nsImage.size.height)
             return nsImage.cgImage(forProposedRect: &rect, context: nil, hints: nil)
         }
-        #elseif canImport(UIKit)
+        #else
         guard let uiImage = UIImage(named: appIconName()) else { return nil }
         return uiImage.cgImage
-        #else
-        return nil
         #endif
     }
 
@@ -275,13 +273,11 @@ enum AppStyleExtractor {
             return (0, 0, 0)
         }
         return (Double(rgbColor.redComponent), Double(rgbColor.greenComponent), Double(rgbColor.blueComponent))
-        #elseif canImport(UIKit)
+        #else
         let uiColor = UIColor(color)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
         uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         return (Double(red), Double(green), Double(blue))
-        #else
-        return (0, 0, 0)
         #endif
     }
 
