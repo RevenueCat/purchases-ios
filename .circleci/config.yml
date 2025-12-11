@@ -150,8 +150,8 @@ commands:
       runtime-name:
         type: string
     steps:
-      - install-brew-dependency:
-          dependency_name: "xcodes"
+      - install-dependencies:
+          install_xcodes: true
       - run:
           name: Install simulator
           command: | # Print all available simulators and install required one
@@ -218,12 +218,23 @@ commands:
       install_swiftlint:
         type: boolean
         default: true
+      install_xcodes:
+        type: boolean
+        default: false
     steps:
       - install-bundle-dependencies:
           directory: << parameters.directory >>
+      - run:
+          name: Generate homebrew cache key
+          command: |
+            echo "xcbeautify:<< parameters.install_xcbeautify >>" > .homebrew-deps
+            echo "mint:<< parameters.install_mint >>" >> .homebrew-deps
+            echo "mint_0_17_5:<< parameters.install_mint_0_17_5 >>" >> .homebrew-deps
+            echo "swiftlint:<< parameters.install_swiftlint >>" >> .homebrew-deps
+            echo "xcodes:<< parameters.install_xcodes >>" >> .homebrew-deps
       - restore_cache:
           keys:
-            - homebrew-cache-{{ checksum "Brewfile" }}-{{ arch }}
+            - homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
       - when:
           condition: << parameters.install_xcbeautify >>
           steps:
@@ -240,14 +251,20 @@ commands:
             - install-mint-0_17_5
       - when:
           condition: << parameters.install_swiftlint >>
-          steps:
+          steps:  
             - install-brew-dependency:
                 dependency_name: "swiftlint"
+      - when:
+          condition: << parameters.install_xcodes >>
+          steps:
+            - install-brew-dependency:
+                dependency_name: "xcodes"
       - save_cache:
-          key: homebrew-cache-{{ checksum "Brewfile" }}-{{ arch }}
+          key: homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
           paths:
             - /usr/local/Cellar/swiftlint/
             - /usr/local/Cellar/xcbeautify/
+            - /usr/local/Cellar/xcodes/
             - /Users/$USER/Library/Caches/Homebrew/
 
   install-brew-dependency:
