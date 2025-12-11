@@ -50,10 +50,16 @@ enum PaywallsStrings {
     case event_flush_with_empty_store
     case event_flush_starting(count: Int)
     case event_sync_failed(Error)
+    case event_flush_failed(Error)
     case event_cannot_serialize
     case event_cannot_get_encoded_event
     case event_cannot_deserialize(Error)
     case event_missing_app_session_id
+
+    case background_task_started(String)
+    case background_task_expired(String)
+    case background_task_failed(String)
+    case background_task_unavailable
 
 }
 
@@ -137,6 +143,9 @@ extension PaywallsStrings: LogMessage {
         case let .event_sync_failed(error):
             return "Paywall event flushing failed, will retry. Error: \((error as NSError).localizedDescription)"
 
+        case let .event_flush_failed(error):
+            return "Paywall event flush failed: \((error as NSError).localizedDescription)"
+
         case .event_cannot_serialize:
             return "Couldn't serialize PaywallEvent to storage."
 
@@ -150,6 +159,15 @@ extension PaywallsStrings: LogMessage {
             return "Event is missing the app session ID."
         case .warming_up_videos(videoURLs: let videoURLs):
             return "Warming up paywall video cache: \(videoURLs)"
+
+        case let .background_task_started(taskName):
+            return "Background task started: \(taskName)"
+        case let .background_task_expired(taskName):
+            return "Background task expired: \(taskName)"
+        case let .background_task_failed(taskName):
+            return "Background task failed to start: \(taskName)"
+        case .background_task_unavailable:
+            return "Background tasks unavailable (app extension or no UIApplication access)"
         }
     }
 

@@ -150,8 +150,10 @@ commands:
       runtime-name:
         type: string
     steps:
-      - install-brew-dependency:
-          dependency_name: "xcodes"
+      - install-dependencies:
+          install_xcbeautify: false
+          install_swiftlint: false
+          install_xcodes: true
       - run:
           name: Install simulator
           command: | # Print all available simulators and install required one
@@ -218,12 +220,23 @@ commands:
       install_swiftlint:
         type: boolean
         default: true
+      install_xcodes:
+        type: boolean
+        default: false
     steps:
       - install-bundle-dependencies:
           directory: << parameters.directory >>
+      - run:
+          name: Generate homebrew cache key
+          command: |
+            echo "xcbeautify:<< parameters.install_xcbeautify >>" > .homebrew-deps
+            echo "mint:<< parameters.install_mint >>" >> .homebrew-deps
+            echo "mint_0_17_5:<< parameters.install_mint_0_17_5 >>" >> .homebrew-deps
+            echo "swiftlint:<< parameters.install_swiftlint >>" >> .homebrew-deps
+            echo "xcodes:<< parameters.install_xcodes >>" >> .homebrew-deps
       - restore_cache:
           keys:
-            - homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
+            - homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
       - when:
           condition: << parameters.install_xcbeautify >>
           steps:
@@ -240,15 +253,20 @@ commands:
             - install-mint-0_17_5
       - when:
           condition: << parameters.install_swiftlint >>
-          steps:
+          steps:  
             - install-brew-dependency:
                 dependency_name: "swiftlint"
-      - run: brew tap robotsandpencils/made
+      - when:
+          condition: << parameters.install_xcodes >>
+          steps:
+            - install-brew-dependency:
+                dependency_name: "xcodes"
       - save_cache:
-          key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
+          key: homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
           paths:
             - /usr/local/Cellar/swiftlint/
             - /usr/local/Cellar/xcbeautify/
+            - /usr/local/Cellar/xcodes/
             - /Users/$USER/Library/Caches/Homebrew/
 
   install-brew-dependency:
@@ -1168,6 +1186,10 @@ jobs:
       backend_environment:
         type: enum
         enum: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
+      store:
+        type: enum
+        enum: ["app_store", "test_store"]
+        default: "app_store"
     executor:
       name: macos-executor
       xcode_version: "26.0.1"
@@ -1183,14 +1205,17 @@ jobs:
       - tuist-generate-workspace:
           query: "Maestro"
       - run:
+          name: Set API key for e2e tests
+          command: |
+            if [ "<< parameters.store >>" == "test_store" ]; then
+              echo 'export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_TEST_STORE}"' >> $BASH_ENV
+            else
+              echo 'export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}"' >> $BASH_ENV
+            fi
+      - run:
           name: Run e2e tests (<< parameters.backend_environment >>)
-          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:<< parameters.backend_environment >>
+          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:<< parameters.backend_environment >> store:<< parameters.store >>
           no_output_timeout: 15m
-          environment:
-            REVENUECAT_API_KEY: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
-
-        # todo: implement error / success notifications through Slack
-
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -1728,6 +1753,13 @@ workflows:
         - equal: ["maestro_e2e_tests", << pipeline.schedule.name >>]
     jobs:
       - <<: *maestro-e2e-test-job
+      - run-maestro-e2e-tests:
+          name: run-maestro-e2e-tests-production-test-store
+          backend_environment: "production"
+          store: "test_store"
+          context:
+            - e2e-tests
+            - slack-secrets
 
   manual-trigger-bump:
     when:
@@ -1779,6 +1811,13 @@ workflows:
             ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
     jobs:
       - <<: *maestro-e2e-test-job
+      - run-maestro-e2e-tests:
+          name: run-maestro-e2e-tests-production-test-store
+          backend_environment: "production"
+          store: "test_store"
+          context:
+            - e2e-tests
+            - slack-secrets
       - backend-integration-tests-SK1:
           context:
             - slack-secrets

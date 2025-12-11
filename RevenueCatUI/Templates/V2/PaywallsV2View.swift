@@ -309,7 +309,8 @@ private struct LoadedPaywallsV2View: View {
             VStack(spacing: 0) {
                 ComponentsView(
                     componentViewModels: [.root(paywallState.rootViewModel)],
-                    onDismiss: self.onDismiss
+                    onDismiss: self.onDismiss,
+                    defaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage
                 )
                 .fixMacButtons()
             }
@@ -323,7 +324,9 @@ private struct LoadedPaywallsV2View: View {
                 view
                     .edgesIgnoringSafeArea(.top)
             })
-            .frame(maxHeight: .infinity, alignment: .topLeading)
+            .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height == .fill, apply: { view in
+                view.frame(maxHeight: .infinity, alignment: paywallState.rootViewModel.frameAlignment)
+            })
             .backgroundStyle(
                 self.paywallState.componentsConfig.background
                     .asDisplayable(

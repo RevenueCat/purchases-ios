@@ -30,10 +30,14 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.trackedCustomerInfo.modify { $0.append(customerInfo) }
     }
 
+    // swiftlint:disable large_tuple
+    // swiftlint:disable line_length
     let trackedHttpRequestPerformedParams: Atomic<[
-        // swiftlint:disable:next large_tuple
-        (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)
+        (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool, ConnectionErrorReason?)
     ]> = .init([])
+    // swiftlint:enable large_tuple
+    // swiftlint:enable line_length
+
     // swiftlint:disable:next function_parameter_count
     func trackHttpRequestPerformed(endpointName: String,
                                    host: String?,
@@ -43,7 +47,8 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: VerificationResult,
-                                   isRetry: Bool) {
+                                   isRetry: Bool,
+                                   connectionErrorReason: ConnectionErrorReason? = nil) {
         self.trackedHttpRequestPerformedParams.modify {
             $0.append(
                 (endpointName,
@@ -54,7 +59,8 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                  backendErrorCode,
                  resultOrigin,
                  verificationResult,
-                 isRetry)
+                 isRetry,
+                 connectionErrorReason)
             )
         }
     }
