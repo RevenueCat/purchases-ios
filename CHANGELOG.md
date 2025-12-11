@@ -1,3 +1,106 @@
+## 5.50.1
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Respect paywall distribution if content shorter than device (#5825) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Fix compilation of RevenueCatUI in watchOS with Xcode 16 (#5923) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `efca663` to `76a3a08` (#5921) via dependabot[bot] (@dependabot[bot])
+* Remove the use of scan_with_flaky_test_retries and rely on the retry mechanism of xcodebuild through the regular scan action (#5914) via Rick (@rickvdl)
+* Fix flaky test (#5920) via Antonio Pallares (@ajpallares)
+
+## 5.50.0
+## RevenueCat SDK
+### ✨ New Features
+* Support introductoryOfferEligibilityJWS and promotionalOfferJWS in CUSTOM_ENTITLEMENT_COMPUTATION mode (#5908) via Will Taylor (@fire-at-will)
+### 🐞 Bugfixes
+* Flush events in a background task to fix missing events (#5899) via Cesar de la Vega (@vegaro)
+* Add missing synchronize when appending event (#5900) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Improve log message when no products found in any offerings (#5905) via Antonio Pallares (@ajpallares)
+* Exclude APITester from Danger checks (#5910) via Facundo Menzella (@facumenzella)
+
+## 5.49.3
+## RevenueCat SDK
+### 🐞 Bugfixes
+* fix: Call onRestoreCompleted if there are no subscriptions / non subscriptions (#5813) via Facundo Menzella (@facumenzella)
+
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Remove extra check for showing new support ticket creation button (#5896) via Rosie Watson (@RosieWatson)
+
+### 🔄 Other Changes
+* Add custom purchase and restore logic handlers to UIKit paywalls (#5902) via Antonio Pallares (@ajpallares)
+* Add extra non subscription events (#5895) via Pol Miro (@polmiro)
+* Show redacted Test Api key in alert when detected in Release configuration (#5897) via Antonio Pallares (@ajpallares)
+* Improve flakiness of some tests (#5893) via Antonio Pallares (@ajpallares)
+* Improve DangerFile detection of added / deleted files (#5845) via Facundo Menzella (@facumenzella)
+* Fix flaky test (#5887) via Antonio Pallares (@ajpallares)
+* Remove CI step to install unused dependency (#5890) via Antonio Pallares (@ajpallares)
+* Disable Emerge snapshots for mac catalyst because of flakiness (#5885) via Rick (@rickvdl)
+
+## 5.49.2
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Fix missing Customer Center actions on SK1 purchases (#5883) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Automated E2E tests for the Test Store (#5859) via Antonio Pallares (@ajpallares)
+* Bump fastlane from 2.229.0 to 2.229.1 (#5882) via dependabot[bot] (@dependabot[bot])
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5876) via RevenueCat Git Bot (@RCGitBot)
+
+## 5.49.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* [MON-1122] Changes the rounding mode to `.down` instead of `.plain` (#5821) via Pol Piella Abadia (@polpielladev)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Select default package on `BottomSheetView` dismissal (#5797) via Cesar de la Vega (@vegaro)
+* Set paywall as non-scrolling if shorter than screen (#5857) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Bump fastlane from 2.228.0 to 2.229.0 (#5855) via dependabot[bot] (@dependabot[bot])
+* Track `connection_error_reason` property in diagnostics for HTTP errors (#5860) via Rick (@rickvdl)
+* Add client side timeout logic for endpoints that support fallback URLs (#5760) via Rick (@rickvdl)
+* Prevent CI from editing root Package.resolved (#5856) via Antonio Pallares (@ajpallares)
+* Fixed daily integration-tests-all run missing the Circle CI context (#5853) via Rick (@rickvdl)
+* Bump fastlane-plugin-revenuecat_internal from `083ced9` to `efca663` (#5854) via dependabot[bot] (@dependabot[bot])
+
+## 5.49.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix: Ensure the initial tab selects the package on first appearance (#5850) via Jacob Rakidzich (@JZDesign)
+* Fix icon not updating on selection of package (#5846) via Jacob Rakidzich (@JZDesign)
+* Fix Crashes: Move large object cacheing off of user defaults to file storage (#5652) via Jacob Rakidzich (@JZDesign)
+* Prevent duplicate post receipt requests (#5795) via Antonio Pallares (@ajpallares)
+
+## RevenueCatUI SDK
+### Customer Center
+#### ✨ New Features
+* CC-582 |  Allow for support ticket creation (#5779) via Rosie Watson (@RosieWatson)
+#### 🐞 Bugfixes
+* Fix SK1 products always showing Lifetime badge (#5811) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Allow downloads of paywall assets in parallel when warming up cache (#5849) via Antonio Pallares (@ajpallares)
+* Simplify cache warming (#5847) via Antonio Pallares (@ajpallares)
+* Update backend integration test reference snapshots (#5839) via Rick (@rickvdl)
+* Add missing files to workspace (#5833) via Rick (@rickvdl)
+* Runs plugin actions from correct directory (#5830) via JayShortway (@JayShortway)
+* Clearing documents and cache directories used by the SDK in tests (#5831) via Rick (@rickvdl)
+* Fixed passing major version as integer to send Slack alert action which accepts a string instead (#5829) via Rick (@rickvdl)
+* Uses some git+GitHub lanes from Fastlane plugin (#5823) via JayShortway (@JayShortway)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5824) via RevenueCat Git Bot (@RCGitBot)
+* Fix strong retain cycle on `Purchases` instance (#5818) via Antonio Pallares (@ajpallares)
+* Removed Slack actions from CircleCI config for release jobs that don't add much value and were not working before (#5808) via Rick (@rickvdl)
+* Migrate to slack-secrets context again after fixing conflict between orb and Fastlane Slack action (#5806) via Rick (@rickvdl)
+
 ## 5.48.0
 ## RevenueCat SDK
 ### 🐞 Bugfixes

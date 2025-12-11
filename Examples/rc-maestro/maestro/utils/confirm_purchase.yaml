@@ -1,0 +1,38 @@
+# This flow requires passing some parameters:
+#  MAESTRO_STORE environment variable. app_store or test_store. Defaults to test_store.
+#  SCREENSHOT_PREFIX environment variable. Used to prefix the screenshot name.
+# Example:
+# maestro test -e MAESTRO_STORE=test_store -e SCREENSHOT_PREFIX=subscribe_from_v1_paywall confirm_purchase.yml
+
+appId: com.revenuecat.maestro.ios
+name: Confirm purchase - handles both IAP Sheet and Test Store Purchase Alert
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'app_store'}
+
+---
+# Validate MAESTRO_STORE parameter - fail if invalid
+- assertTrue:
+    condition: ${MAESTRO_STORE == 'app_store' || MAESTRO_STORE == 'test_store'}
+    label: "MAESTRO_STORE is set to ${MAESTRO_STORE}, but expected app_store or test_store"
+
+# Handle Test Store Purchase Alert flow
+- runFlow:
+    when:
+      true: ${MAESTRO_STORE == 'test_store'}
+    commands:
+      - takeScreenshot: "${SCREENSHOT_PREFIX} - Test Store Purchase Alert"
+      - assertVisible: "Test purchase"
+      - tapOn:
+          text: "Test valid purchase"
+
+# Handle regular IAP Sheet flow (default)
+- runFlow:
+    when:
+      true: ${MAESTRO_STORE == 'app_store'}
+    commands:
+      - takeScreenshot: "${SCREENSHOT_PREFIX} - IAP Sheet"
+      - tapOn:
+          text: "Subscribe"
+      - takeScreenshot: "${SCREENSHOT_PREFIX} - IAP Confirmation"
+      - tapOn:
+          text: "OK"

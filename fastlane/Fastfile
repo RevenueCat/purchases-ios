@@ -382,7 +382,7 @@ platform :ios do
     # November 2025: Emerge snapshots for these platforms are flaky, disabling for now.
     # build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
     # build_paywalls_tester_for_emerge_mac(platform: "mac-native")
-    build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-optimized-for-mac")
+    # build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-optimized-for-mac")
 
 
     # As of July 2025, Emerge Tools does not support iOS apps on Mac yet.
@@ -604,7 +604,7 @@ platform :ios do
       test_plan = "CI-AllTests"
     end
 
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       ensure_devices_found: true,
@@ -616,14 +616,13 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
-      fail_build: !generate_snapshots,
-      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots
     )
   end
 
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV",
       ensure_devices_found: true,
@@ -634,9 +633,7 @@ platform :ios do
       result_bundle: true,
       testplan: "CI-AllTests",
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/tvos",
-
-      number_of_flaky_retries: 5 # Number of xcodebuild runs to retry
+      output_directory: "fastlane/test_output/xctest/tvos"
     )
   end
 
@@ -649,7 +646,7 @@ platform :ios do
       test_plan = "CI-RevenueCat"
     end
 
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - watchOS",
       device: ENV['SCAN_DEVICE'] || "Apple Watch Series 10 (46mm)",
       ensure_devices_found: true,
@@ -662,9 +659,7 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/watchos",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
-      fail_build: !generate_snapshots,
-
-      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots
     )
   end
 
@@ -766,7 +761,7 @@ platform :ios do
       configuration: 'release',
     )
   end
-  
+
   desc "Setup XCConfig file for E2E tests"
   private_lane :setup_xcconfig do |options|
     api_key = options[:api_key] || UI.user_error!("api_key is required")
@@ -796,9 +791,16 @@ platform :ios do
     UI.success("✅ Created CI.xcconfig")
   end
 
+  # Runs Maestro E2E tests.
+  # Parameters:
+  #   - backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
+  #   - store: ["app_store", "test_store"]
+  #
+  # Note that currently the "test_store" store is only available in the production environment.
   desc "run_maestro_e2e_tests"
   lane :run_maestro_e2e_tests do |options|
     backend_environment = options[:backend_environment] || "production"
+    store = options[:store] || "app_store"
     base_path = "#{Dir.pwd}/.."
 
     UI.message("Running Maestro E2E tests for backend environment: #{backend_environment}")
@@ -831,7 +833,6 @@ platform :ios do
       customer_info_source = "offline_entitlements"
       heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_FALLBACK"]
     when "production"
-      # Use defaults
       entitlement_verification_result = "verified"
       customer_info_source = "main"
       heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_PRODUCTION"]
@@ -842,6 +843,7 @@ platform :ios do
     # Set environment variables for Maestro
     ENV["MAESTRO_EXPECTED_VERIFICATION_RESULT"] = entitlement_verification_result
     ENV["MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE"] = customer_info_source
+    ENV["MAESTRO_STORE"] = store
 
     UI.message("Setting Maestro environment variables:")
     UI.message("  MAESTRO_EXPECTED_VERIFICATION_RESULT: #{entitlement_verification_result}")
@@ -868,24 +870,26 @@ platform :ios do
       derivedDataPath: "./build"
     )
 
-    bundle_id = "com.revenuecat.maestro.ios"
-    storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
-
     # Install app to simulator
     UI.message("Installing app to simulator...")
     sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/Maestro.app")
 
-    # Start file watcher in background
-    UI.message("Starting StoreKit config file watcher...")
-    watcher_script = "#{base_path}/fastlane/storekit_config_file_watcher.rb"
-    watcher_pid = Process.spawn(
-      "ruby", watcher_script,
-      bundle_id, storekit_config_path
-    )
+    if store == "app_store"
+      bundle_id = "com.revenuecat.maestro.ios"
+      storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
 
-    # Give watcher time to start
-    sleep 1
-    UI.success("✓ StoreKit config watcher started (PID: #{watcher_pid})")
+      # Start file watcher in background
+      UI.message("Starting StoreKit config file watcher...")
+      watcher_script = "#{base_path}/fastlane/storekit_config_file_watcher.rb"
+      watcher_pid = Process.spawn(
+        "ruby", watcher_script,
+        bundle_id, storekit_config_path
+      )
+
+      # Give watcher time to start
+      sleep 1
+      UI.success("✓ StoreKit config watcher started (PID: #{watcher_pid})")
+    end
 
     success = false
     begin
@@ -900,23 +904,25 @@ platform :ios do
       UI.message("Using flow directory: #{flow_dir}")
 
       sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
-      
+
       success = true
     rescue => e
       raise e
     ensure
       slack_backend_integration_test_results(
-        environment: backend_environment, 
-        success: success, 
+        environment: backend_environment,
+        success: success,
         message_binary_solo_on_failure: false
       )
       ping_heartbeat_monitor(url: heartbeat_monitor_ping_url)
 
-      # Always stop the watcher, even if Maestro fails
-      UI.message("Stopping StoreKit config watcher...")
-      Process.kill('TERM', watcher_pid) rescue nil
-      Process.wait(watcher_pid) rescue nil
-      UI.success("✓ StoreKit config watcher stopped")
+      if store == "app_store"
+        # Always stop the watcher, even if Maestro fails
+        UI.message("Stopping StoreKit config watcher...")
+        Process.kill('TERM', watcher_pid) rescue nil
+        Process.wait(watcher_pid) rescue nil
+        UI.success("✓ StoreKit config watcher stopped")
+      end
     end
   end
 
@@ -930,6 +936,10 @@ platform :ios do
         './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m'
       ]
     )
+
+    # V3LoadShedderIntegrationTests.swift and V4LoadShedderIntegrationTests.swift are missing when
+    # running Carthage installation tests because they are removed in the prepare_for_carthage lane.
+    # Passing skip_missing_files: true prevents the replace_text_in_files action from failing in this case.
     replace_text_in_files(
       previous_text: "REVENUECAT_LOAD_SHEDDER_API_KEY",
       new_text: ENV["REVENUECAT_LOAD_SHEDDER_API_KEY"],
@@ -937,7 +947,8 @@ platform :ios do
         './Tests/BackendIntegrationTests/Constants.swift',
         './Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTests.swift',
         './Tests/v4LoadShedderIntegration/v4LoadShedderIntegrationTests/V4LoadShedderIntegrationTests.swift'
-      ]
+      ],
+      skip_missing_files: true
     )
     replace_text_in_files(
       previous_text: "REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY",
@@ -1141,8 +1152,8 @@ platform :ios do
 
     Dir.mktmpdir {|dir|
       xcodebuild(
-        project: 'RevenueCat.xcodeproj',
         scheme: 'RevenueCat',
+        workspace: 'RevenueCat.xcworkspace',
         derivedDataPath: dir,
         configuration: 'release',
         arch: arch,
@@ -1229,7 +1240,7 @@ platform :ios do
 
     success = false
     begin
-      scan_with_flaky_test_retries(
+      scan(
         scheme: "BackendIntegrationTests",
         ensure_devices_found: true,
         derived_data_path: "scan_derived_data",
@@ -1239,8 +1250,7 @@ platform :ios do
         testplan: options[:test_plan],
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios",
-
-        number_of_flaky_retries: 5 # Number of retries in an xcodebuild run
+        number_of_retries: 5 # Number of retries in an xcodebuild run
       )
       success = true
     rescue => exception
@@ -1249,8 +1259,8 @@ platform :ios do
       if options[:test_plan] == "BackendIntegrationTests-All-CI"
         # In the All CI backend integration test plan the load shedder tests are ran against us-east-1 and us-east-2 and all the other tests are ran against production
         slack_backend_integration_test_results(
-          environment: "production, load_shedder_us_east_1, load_shedder_us_east_2", 
-          success: success, 
+          environment: "production, load_shedder_us_east_1, load_shedder_us_east_2, fallback",
+          success: success,
           message_binary_solo_on_failure: false
         )
         ping_heartbeat_monitor(url: ENV['HEARTBEAT_MONITOR_URL_BACKEND_INTEGRATION_TESTS'])
@@ -1283,8 +1293,8 @@ platform :ios do
       raise exception
     ensure
       slack_backend_integration_test_results(
-        environment: "load_shedder_us_east_1", 
-        success: success, 
+        environment: "load_shedder_us_east_1",
+        success: success,
         version: major.to_s,
         message_binary_solo_on_failure: false
       )
@@ -1802,10 +1812,12 @@ lane :check_pods do
   )
 end
 
-desc "Removes the Examples directory before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj)"
+desc "Removes some directories before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj or v3LoadShedderIntegration.xcodeproj). Also removes v3LoadShedderIntegration and v4LoadShedderIntegration directories to prevent xcodebuild from timing out when scanning for projects."
 lane :prepare_for_carthage do
   Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("rm", "-rf", "Examples")
+    sh("rm", "-rf", "Tests/v3LoadShedderIntegration")
+    sh("rm", "-rf", "Tests/v4LoadShedderIntegration")
   end
 end
 

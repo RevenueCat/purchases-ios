@@ -197,7 +197,7 @@ class VariableHandlerV2Test: TestCase {
             locale: locale,
             localizations: localizations["en_US"]!
         )
-        expect(result).to(equal("$1.61"))
+        expect(result).to(equal("$1.60"))
     }
 
     func testProductPricePerMonth() {

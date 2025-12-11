@@ -20,16 +20,17 @@ import XCTest
 
 // swiftlint:disable type_name
 
-class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager> {
+class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager, HTTPRequestTimeoutManager> {
 
     private var userDefaultsSuiteName: String!
     fileprivate var userDefaults: UserDefaults!
 
     override func setUpWithError() throws {
-        // Note: these tests use the real `ETagManager`
+        // Note: these tests use the real `ETagManager` and `HTTPRequestTimeoutManager`
         self.userDefaultsSuiteName = UUID().uuidString
         self.userDefaults = .init(suiteName: self.userDefaultsSuiteName)!
         self.eTagManager = ETagManager(userDefaults: self.userDefaults)
+        self.timeoutManager = HTTPRequestTimeoutManager(defaultTimeout: defaultTimeout.timeInterval)
 
         try super.setUpWithError()
     }

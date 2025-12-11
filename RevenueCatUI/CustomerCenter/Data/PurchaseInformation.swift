@@ -550,7 +550,22 @@ extension PurchaseInformation {
     }
 
     var isAppStoreRenewableSubscription: Bool {
-        return productType == .autoRenewableSubscription && store == .appStore
+        guard store == .appStore else { return false }
+
+        if productType == .autoRenewableSubscription {
+            return true
+        }
+
+        if productType == .nonRenewableSubscription {
+            return false
+        }
+
+        // For SK1 products, productType always reports .nonConsumable regardless of actual type,
+        // so we cannot rely on it to distinguish auto-renewable subscriptions from other products.
+        // We fall back to isSubscription (from the backend), which correctly identifies subscriptions.
+        // This ensures SK1 auto-renewable subscriptions show proper management options like
+        // "Cancel subscription" and "Change plans" in the Customer Center.
+        return isSubscription
     }
 
     var storeLocalizationKey: CCLocalizedString {
