@@ -237,11 +237,8 @@ public struct PaywallView: View {
                                      purchaseHandler: self.purchaseHandler)
                     .transition(Self.transition)
                 } else {
-                    #if os(macOS)
-                    DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
-                    #else
-                    LoadingPaywallView(mode: self.mode,
-                                       displayCloseButton: self.displayCloseButton)
+                    DefaultPaywallView(offering: nil)
+                        .redacted(reason: .placeholder)
                         .transition(Self.transition)
                         .task {
                             do {
@@ -260,7 +257,6 @@ public struct PaywallView: View {
                                 self.error = error
                             }
                         }
-                    #endif
                 }
             } else {
                 DebugErrorView("Purchases has not been configured.", releaseBehavior: .fatalError)
@@ -782,7 +778,11 @@ struct DefaultPaywallView: View {
     @Environment(\.colorScheme) var colorScheme
 
     private var mainColor: Color {
-        return warning != nil ? .revenueCatBrandRed : activeColor
+        if shouldShowWarning {
+            return warning != nil ? .revenueCatBrandRed : activeColor
+        } else {
+            return activeColor
+        }
     }
 
     var shouldShowWarning: Bool {
