@@ -936,6 +936,10 @@ platform :ios do
         './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m'
       ]
     )
+
+    # V3LoadShedderIntegrationTests.swift and V4LoadShedderIntegrationTests.swift are missing when
+    # running Carthage installation tests because they are removed in the prepare_for_carthage lane.
+    # Passing skip_missing_files: true prevents the replace_text_in_files action from failing in this case.
     replace_text_in_files(
       previous_text: "REVENUECAT_LOAD_SHEDDER_API_KEY",
       new_text: ENV["REVENUECAT_LOAD_SHEDDER_API_KEY"],
@@ -943,7 +947,8 @@ platform :ios do
         './Tests/BackendIntegrationTests/Constants.swift',
         './Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTests.swift',
         './Tests/v4LoadShedderIntegration/v4LoadShedderIntegrationTests/V4LoadShedderIntegrationTests.swift'
-      ]
+      ],
+      skip_missing_files: true
     )
     replace_text_in_files(
       previous_text: "REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY",
@@ -1807,10 +1812,12 @@ lane :check_pods do
   )
 end
 
-desc "Removes the Examples directory before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj)"
+desc "Removes some directories before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj or v3LoadShedderIntegration.xcodeproj). Also removes v3LoadShedderIntegration and v4LoadShedderIntegration directories to prevent xcodebuild from timing out when scanning for projects."
 lane :prepare_for_carthage do
   Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("rm", "-rf", "Examples")
+    sh("rm", "-rf", "Tests/v3LoadShedderIntegration")
+    sh("rm", "-rf", "Tests/v4LoadShedderIntegration")
   end
 end
 
