@@ -802,7 +802,7 @@ struct DefaultPaywallView: View {
         }
     }
 
-    public var body: some View {
+    var body: some View {
         VStack {
             warningTitle
             Spacer()
@@ -1106,6 +1106,7 @@ enum AppDetails {
     ///
     /// - Parameter count: The maximum number of colors to return.
     /// - Returns: An array of distinct prominent colors, sorted by frequency.
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     static func extractProminentColors(count: Int, image: CGImage? = getPlatformAppIconCGImage()) -> [Color] {
         guard let cgImage = image else {
             return []
@@ -1145,21 +1146,21 @@ enum AppDetails {
         // Calculate step size to sample approximately maxPixelSamples pixels
         let sampleStep = max(1, totalPixels / ColorExtractionConstants.maxPixelSamples)
 
-        for i in stride(from: 0, to: totalPixels, by: sampleStep) {
-            let offset = i * ColorExtractionConstants.bytesPerPixel
-            let r = data[offset]
-            let g = data[offset + 1]
-            let b = data[offset + 2]
-            let a = data[offset + 3]
+        for pixel in stride(from: 0, to: totalPixels, by: sampleStep) {
+            let offset = pixel * ColorExtractionConstants.bytesPerPixel
+            let red = data[offset]
+            let green = data[offset + 1]
+            let blue = data[offset + 2]
+            let alpha = data[offset + 3]
 
             // Skip pixels that are mostly transparent
-            guard a > ColorExtractionConstants.minimumAlphaThreshold else { continue }
+            guard alpha > ColorExtractionConstants.minimumAlphaThreshold else { continue }
 
             // Quantize colors by reducing precision (groups similar colors together)
             let quantizationDivisor = ColorExtractionConstants.colorQuantizationDivisor
-            let quantizedR = (r / quantizationDivisor) * quantizationDivisor
-            let quantizedG = (g / quantizationDivisor) * quantizationDivisor
-            let quantizedB = (b / quantizationDivisor) * quantizationDivisor
+            let quantizedR = (red / quantizationDivisor) * quantizationDivisor
+            let quantizedG = (green / quantizationDivisor) * quantizationDivisor
+            let quantizedB = (blue / quantizationDivisor) * quantizationDivisor
 
             // Calculate simple brightness as sum of RGB components
             let brightness = Int(quantizedR) + Int(quantizedG) + Int(quantizedB)
@@ -1185,11 +1186,11 @@ enum AppDetails {
 
         for (colorKey, _) in sortedColors {
             // Unpack RGB values from the key and normalize to 0-1 range
-            let r = Double((colorKey >> 16) & 0xFF) / 255.0
-            let g = Double((colorKey >> 8) & 0xFF) / 255.0
-            let b = Double(colorKey & 0xFF) / 255.0
+            let red = Double((colorKey >> 16) & 0xFF) / 255.0
+            let green = Double((colorKey >> 8) & 0xFF) / 255.0
+            let blue = Double(colorKey & 0xFF) / 255.0
 
-            let colorTuple = (r, g, b)
+            let colorTuple = (red, green, blue)
 
             // Skip colors that are too close to pure black or pure white
             let distanceFromBlack = colorDistance(color1: colorTuple, color2: black)
@@ -1200,11 +1201,14 @@ enum AppDetails {
                 continue
             }
 
-            let newColor = Color(red: r, green: g, blue: b)
+            let newColor = Color(red: red, green: green, blue: blue)
 
             // Check if this color is too similar to any already-selected color
             let isTooSimilar = prominentColors.contains { existingColor in
-                colorDistance(color1: colorTuple, color2: extractRGB(from: existingColor)) < ColorExtractionConstants.minimumColorDistance
+                colorDistance(
+                    color1: colorTuple,
+                    color2: extractRGB(from: existingColor)
+                ) < ColorExtractionConstants.minimumColorDistance
             }
 
             if !isTooSimilar {
@@ -1252,9 +1256,9 @@ enum AppDetails {
         return (Double(rgbColor.redComponent), Double(rgbColor.greenComponent), Double(rgbColor.blueComponent))
         #elseif canImport(UIKit)
         let uiColor = UIColor(color)
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        uiColor.getRed(&r, green: &g, blue: &b, alpha: &a)
-        return (Double(r), Double(g), Double(b))
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        return (Double(red), Double(green), Double(blue))
         #else
         return (0, 0, 0)
         #endif
@@ -1274,10 +1278,10 @@ enum AppDetails {
     ///   - color2: Second color as (red, green, blue) tuple, values 0-1.
     /// - Returns: The Euclidean distance between the colors.
     private static func colorDistance(color1: (Double, Double, Double), color2: (Double, Double, Double)) -> Double {
-        let dr = color1.0 - color2.0
-        let dg = color1.1 - color2.1
-        let db = color1.2 - color2.2
-        return sqrt(dr * dr + dg * dg + db * db)
+        let dred = color1.0 - color2.0
+        let dgreen = color1.1 - color2.1
+        let dblue = color1.2 - color2.2
+        return sqrt(dred * dred + dgreen * dgreen + dblue * dblue)
     }
 }
 
@@ -1339,14 +1343,14 @@ private func relativeLuminance(of color: Color) -> Double {
     let rgb = extractRGBComponents(from: color)
 
     // Convert from sRGB to linear RGB
-    let r = linearize(rgb.0)
-    let g = linearize(rgb.1)
-    let b = linearize(rgb.2)
+    let red = linearize(rgb.0)
+    let green = linearize(rgb.1)
+    let blue = linearize(rgb.2)
 
     // Apply luminance coefficients (human eye sensitivity)
-    return WCAGConstants.redLuminanceCoefficient * r +
-           WCAGConstants.greenLuminanceCoefficient * g +
-           WCAGConstants.blueLuminanceCoefficient * b
+    return WCAGConstants.redLuminanceCoefficient * red +
+           WCAGConstants.greenLuminanceCoefficient * green +
+           WCAGConstants.blueLuminanceCoefficient * blue
 }
 
 /// Converts an sRGB color component to linear RGB.
@@ -1403,9 +1407,9 @@ private func extractRGBComponents(from color: Color) -> (Double, Double, Double)
     return (Double(rgbColor.redComponent), Double(rgbColor.greenComponent), Double(rgbColor.blueComponent))
     #elseif canImport(UIKit)
     let uiColor = UIColor(color)
-    var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-    uiColor.getRed(&r, green: &g, blue: &b, alpha: &a)
-    return (Double(r), Double(g), Double(b))
+    var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+    uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+    return (Double(red), Double(green), Double(blue))
     #else
     return (0, 0, 0)
     #endif
@@ -1539,6 +1543,8 @@ enum PaywallWarning {
         }
     }
 
+    // swiftlint:disable line_length
+
     var bodyText: String {
         switch self {
         case .noPaywall(let offeringID):
@@ -1563,6 +1569,8 @@ enum PaywallWarning {
             return "The following icon names are not valid: \(set.joined(separator: ", ")). Please check `PaywallIcon` for the list of valid icon names."
         }
     }
+
+    // swiftlint:enable line_length
 
     var helpURL: URL? {
         switch self {
