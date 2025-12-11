@@ -151,6 +151,8 @@ commands:
         type: string
     steps:
       - install-dependencies:
+          install_xcbeautify: false
+          install_swiftlint: false
           install_xcodes: true
       - run:
           name: Install simulator
