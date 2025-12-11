@@ -74,11 +74,11 @@ struct DefaultPaywallView: View {
     }
 
     var shouldShowWarning: Bool {
+        var showWarning = false
         #if DEBUG
-        return warning != nil
-        #else
-        return false
+        showWarning = (warning != nil)
         #endif
+        return showWarning
     }
 
     @ViewBuilder
@@ -152,8 +152,10 @@ struct DefaultPaywallView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                             .foregroundStyle(foregroundOnAccentColor)
                     }
+                    #if !os(tvOS)
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
+                    #endif
 
                     Button {
                         Task(priority: .userInitiated) {
@@ -162,7 +164,9 @@ struct DefaultPaywallView: View {
                     } label: {
                         Text("Restore Purchases")
                     }
+                    #if !os(tvOS)
                     .controlSize(.large)
+                    #endif
                     .tint(Color.primary)
                     .padding(.top, 8)
                 }
