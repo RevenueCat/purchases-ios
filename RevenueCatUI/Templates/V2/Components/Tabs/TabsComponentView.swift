@@ -190,34 +190,38 @@ struct LoadedTabsComponentView: View {
                 }
             }
             .onChangeOf(self.packageContext.package) { newPackage in
-                // MARK: - Sync parent package changes to tabs without packages
-                //
-                // This observer keeps tabs without packages in sync with parent package selections,
-                // while filtering out propagations from tabs that have their own packages.
-                //
-                // Flow example:
-                // 1. User selects Package B (parent) → packageContext updates to B
-                // 2. This observer fires, checks: is B a tab package? No.
-                // 3. Updates Tab 2's context (which has no packages) with Package B ✓
-                //
-                // Filtered example:
-                // 1. Tab 1 propagates Package C → packageContext updates to C
-                // 2. This observer fires, checks: is C a tab package? Yes (it's in Tab 1).
-                // 3. Does NOT update Tab 2's context - Tab 2 keeps showing parent's package ✓
-                //
-                guard let newPackage = newPackage else { return }
+                self.syncParentPackageToTabsWithoutPackages(newPackage)
+            }
+        }
+    }
 
-                let isTabPackage = self.tabPackageIdentifiers.contains(newPackage.identifier)
+    // MARK: - Sync parent package changes to tabs without packages
+    //
+    // This keeps tabs without packages in sync with parent package selections,
+    // while filtering out propagations from tabs that have their own packages.
+    //
+    // Flow example:
+    // 1. User selects Package B (parent) → packageContext updates to B
+    // 2. This function checks: is B a tab package? No.
+    // 3. Updates Tab 2's context (which has no packages) with Package B ✓
+    //
+    // Filtered example:
+    // 1. Tab 1 propagates Package C → packageContext updates to C
+    // 2. This function checks: is C a tab package? Yes (it's in Tab 1).
+    // 3. Does NOT update Tab 2's context - Tab 2 keeps showing parent's package ✓
+    //
+    private func syncParentPackageToTabsWithoutPackages(_ newPackage: Package?) {
+        guard let newPackage = newPackage else { return }
 
-                if !isTabPackage {
-                    // Parent package selection - update all tabs without packages
-                    for (tabId, tabViewModel) in self.viewModel.tabViewModels where tabViewModel.packages.isEmpty {
-                        self.tierPackageContexts[tabId]?.update(
-                            package: newPackage,
-                            variableContext: self.packageContext.variableContext
-                        )
-                    }
-                }
+        let isTabPackage = self.tabPackageIdentifiers.contains(newPackage.identifier)
+
+        if !isTabPackage {
+            // Parent package selection - update all tabs without packages
+            for (tabId, tabViewModel) in self.viewModel.tabViewModels where tabViewModel.packages.isEmpty {
+                self.tierPackageContexts[tabId]?.update(
+                    package: newPackage,
+                    variableContext: self.packageContext.variableContext
+                )
             }
         }
     }
