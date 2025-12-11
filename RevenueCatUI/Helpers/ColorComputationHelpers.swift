@@ -129,20 +129,22 @@ private func contrastRatio(luminance1: Double, luminance2: Double) -> Double {
 /// - Returns: A tuple of (red, green, blue) values in the range 0-1.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 func extractRGBComponents(from color: Color) -> (Double, Double, Double) {
+    var result = (0.0, 0.0, 0.0)
     #if os(macOS)
     let nsColor = NSColor(color)
     guard let rgbColor = nsColor.usingColorSpace(.deviceRGB) else {
         return (0, 0, 0)
     }
-    return (Double(rgbColor.redComponent), Double(rgbColor.greenComponent), Double(rgbColor.blueComponent))
+    result = (Double(rgbColor.redComponent), Double(rgbColor.greenComponent), Double(rgbColor.blueComponent))
     #elseif canImport(UIKit)
     let uiColor = UIColor(color)
     var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
     uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-    return (Double(red), Double(green), Double(blue))
+    result = (Double(red), Double(green), Double(blue))
     #else
     return (0, 0, 0)
     #endif
+    return result
 }
 
 /// Constants defined by WCAG 2.1 for calculating relative luminance and contrast ratios.

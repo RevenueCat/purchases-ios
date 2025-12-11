@@ -249,15 +249,17 @@ enum AppStyleExtractor {
     ///
     /// - Returns: The app icon as a `CGImage`, or `nil` if unavailable.
     private static func getPlatformAppIconCGImage() -> CGImage? {
+        var cgImage: CGImage?
         #if os(macOS)
         if let nsImage = NSApplication.shared.applicationIconImage {
             var rect = NSRect(x: 0, y: 0, width: nsImage.size.width, height: nsImage.size.height)
-            return nsImage.cgImage(forProposedRect: &rect, context: nil, hints: nil)
+            cgImage = nsImage.cgImage(forProposedRect: &rect, context: nil, hints: nil)
         }
         #else
         guard let uiImage = UIImage(named: appIconName()) else { return nil }
-        return uiImage.cgImage
+        cgImage = uiImage.cgImage
         #endif
+        return cgImage
     }
 
     /// Extracts RGB components from a SwiftUI `Color`.
@@ -267,18 +269,20 @@ enum AppStyleExtractor {
     /// - Parameter color: The SwiftUI `Color` to extract components from.
     /// - Returns: A tuple of (red, green, blue) values in the range 0-1.
     private static func extractRGB(from color: Color) -> (Double, Double, Double) {
+        var result = (0.0, 0.0, 0.0)
         #if os(macOS)
         let nsColor = NSColor(color)
         guard let rgbColor = nsColor.usingColorSpace(.deviceRGB) else {
             return (0, 0, 0)
         }
-        return (Double(rgbColor.redComponent), Double(rgbColor.greenComponent), Double(rgbColor.blueComponent))
+        result = (Double(rgbColor.redComponent), Double(rgbColor.greenComponent), Double(rgbColor.blueComponent))
         #else
         let uiColor = UIColor(color)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
         uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        return (Double(red), Double(green), Double(blue))
+        result = (Double(red), Double(green), Double(blue))
         #endif
+        return result
     }
 
     /// Calculates the Euclidean distance between two colors in RGB space.
