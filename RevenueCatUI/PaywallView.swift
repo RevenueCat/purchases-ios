@@ -754,7 +754,10 @@ fileprivate extension Color {
 public struct DefaultPaywallView: View {
 
     /// Default Paywall View
-    public init() { }
+    public init(warning: PaywallWarning? = nil, offering: Offering?) {
+        self.warning = warning
+        self.products = offering?.availablePackages ?? [ ]
+    }
 
     @State private var warning: PaywallWarning?
     @State private var products: [Package] = []
@@ -873,9 +876,6 @@ public struct DefaultPaywallView: View {
             ], startPoint: .top, endPoint: .bottom)
             .ignoresSafeArea()
         }
-        .task {
-            await fetchProductAsync()
-        }
         .tint(mainColor)
     }
 
@@ -890,19 +890,6 @@ public struct DefaultPaywallView: View {
             }
         } catch {
             self.warning = .noProducts(error)
-        }
-    }
-
-    func fetchProduct() {
-        Purchases.shared.getOfferings { (offerings, error) in
-            if let error {
-                self.warning = .noProducts(error)
-            }
-            if let packages = offerings?.current?.availablePackages {
-                withAnimation {
-                    self.products = packages
-                }
-            }
         }
     }
 }
@@ -984,7 +971,8 @@ private struct DefaultPaywallWarning: View {
     }
 }
 
-private enum PaywallWarning {
+// swiftlint:disable missing_docs
+public enum PaywallWarning {
     case noOffering
     case noProducts(Error)
     case noPaywall
