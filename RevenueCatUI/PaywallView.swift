@@ -763,29 +763,6 @@ public struct DefaultPaywallView: View {
     @State private var products: [Package] = []
     @State private var selected: Package?
 
-    func getHostAppName() -> String {
-        let bundle = Bundle.main
-        // Try to get the "Display Name" first (localized)
-        if let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String {
-            return displayName
-        }
-        // Fallback to the "Bundle Name"
-        if let bundleName = bundle.object(forInfoDictionaryKey: "CFBundleName") as? String {
-            return bundleName
-        }
-        return ""
-    }
-
-    func appIconName() -> String {
-        guard let icons = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
-                  let primaryIcon = icons["CFBundlePrimaryIcon"] as? [String: Any],
-                  let iconFiles = primaryIcon["CFBundleIconFiles"] as? [String],
-                  let lastIconName = iconFiles.last else {
-                return ""
-            }
-        return lastIconName
-    }
-
     private var mainColor: Color {
         return warning != nil ? .revenueCatBrandRed : .accentColor
     }
@@ -804,14 +781,7 @@ public struct DefaultPaywallView: View {
                 DefaultPaywallWarning(warning: warning, hasProducts: !products.isEmpty)
             } else {
                 VStack(alignment: .center, spacing: 16) {
-
-                    #if canImport(UIKit)
-                    let image = Image(uiImage: UIImage(named: appIconName()) ?? UIImage())
-                        .resizable()
-                        .frame(width: 120, height: 120)
-                    #elseif canImport(AppKit)
-                    let image = Image(platformImage: NSApplication.shared.applicationIconImage)
-                    #endif
+                    let image = AppDetails.appIcon()
                     ZStack {
                         image
                             .blur(radius: 48)
@@ -826,7 +796,7 @@ public struct DefaultPaywallView: View {
                     .accessibilityAddTraits(.isImage)
                     .accessibilityLabel("App Icon Image")
 
-                    Text(getHostAppName())
+                    Text(AppDetails.getAppName())
                         .font(.title2)
                         .bold()
                         .padding(.horizontal)
@@ -891,6 +861,43 @@ public struct DefaultPaywallView: View {
         } catch {
             self.warning = .noProducts(error)
         }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+enum AppDetails {
+    private static func appIconName() -> String {
+        guard let icons = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
+                  let primaryIcon = icons["CFBundlePrimaryIcon"] as? [String: Any],
+                  let iconFiles = primaryIcon["CFBundleIconFiles"] as? [String],
+                  let lastIconName = iconFiles.last else {
+                return ""
+            }
+        return lastIconName
+    }
+
+    static func getAppName() -> String {
+        let bundle = Bundle.main
+        // Try to get the "Display Name" first (localized)
+        if let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String {
+            return displayName
+        }
+        // Fallback to the "Bundle Name"
+        if let bundleName = bundle.object(forInfoDictionaryKey: "CFBundleName") as? String {
+            return bundleName
+        }
+        return ""
+    }
+
+    static func appIcon() -> Image {
+        #if os(macOS)
+        return Image(platformImage: NSApplication.shared.applicationIconImage)
+        #elseif canImport(UIKit)
+        if let image = UIImage(named: appIconName()) {
+            return Image(platformImage: image)
+        }
+        #endif
+        return Image("")
     }
 }
 
