@@ -106,18 +106,59 @@ struct LoadedTabsComponentView: View {
             defaultTabId: viewModel.defaultTabId
         ))
 
+        // MARK: - Package Context Inheritance for Tabs
+        //
+        // This handles a nuanced scenario where tabs may or may not have their own packages:
+        //
+        // Example structure:
+        //   - Package A (parent scope, default)
+        //   - Package B (parent scope)
+        //   - Tabs Component
+        //       - Tab 1: has Package C (its own package)
+        //       - Tab 2: no packages (should inherit from parent)
+        //
+        // Requirements:
+        // 1. Tabs WITH packages: use their own package context, propagate to parent for purchase button
+        // 2. Tabs WITHOUT packages: inherit from parent's selected package
+        // 3. Tabs WITHOUT packages should NOT be affected when tabs WITH packages propagate their package
+        // 4. Tabs WITHOUT packages SHOULD update when user selects a different parent package
+        //
+        // Solution:
+        // - Create a PackageContext for ALL tabs (not just those with packages)
+        // - Tabs with packages: initialized with their own packages
+        // - Tabs without packages: initialized with parent's current state, then kept in sync
+        //   via `onChangeOf` observer that filters out tab propagations (see body)
+        //
         self._tierPackageContexts = .init(initialValue: Dictionary(
-            uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel in
-                let packageContext = PackageContext(
-                    package: tabViewModel.defaultSelectedPackage,
-                    variableContext: .init(
-                        packages: tabViewModel.packages,
-                        showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
+            uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel -> (String, PackageContext) in
+                if !tabViewModel.packages.isEmpty {
+                    // Tab has its own packages - create context with tab's packages
+                    let packageContext = PackageContext(
+                        package: tabViewModel.defaultSelectedPackage,
+                        variableContext: .init(
+                            packages: tabViewModel.packages,
+                            showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
+                        )
                     )
-                )
-                return (key, packageContext)
+                    return (key, packageContext)
+                } else {
+                    // Tab has no packages - inherit from parent's current state.
+                    // This context will be kept in sync with parent changes via `onChangeOf`
+                    // in the body, which filters out propagations from tabs with packages.
+                    let packageContext = PackageContext(
+                        package: parentPackageContext.package,
+                        variableContext: parentPackageContext.variableContext
+                    )
+                    return (key, packageContext)
+                }
             }
         ))
+    }
+
+    /// Set of package identifiers that belong to tabs (not parent scope).
+    /// Used to distinguish between parent package selections and tab package propagations.
+    private var tabPackageIdentifiers: Set<String> {
+        Set(viewModel.tabViewModels.values.flatMap { $0.packages.map(\.identifier) })
     }
 
     var body: some View {
@@ -138,14 +179,42 @@ struct LoadedTabsComponentView: View {
             .onAppear {
                 if !wasConfigured {
                     self.wasConfigured = true
-                    // In the event that the tabs components contain unique selected packages, we need to ensure that
-                    // the first selected tab's selected package is propagated up to the purchase button. This sends
-                    // that signal only for the initially rendered tab, then the onChange passed into the loadedTabView
-                    // handles subsequent changes
+                    // Propagate the initial tab's package to parent context for the purchase button.
+                    // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
                     if let package = tierPackageContext.package {
                         self.packageContext.update(
                             package: package,
                             variableContext: tierPackageContext.variableContext
+                        )
+                    }
+                }
+            }
+            .onChangeOf(self.packageContext.package) { newPackage in
+                // MARK: - Sync parent package changes to tabs without packages
+                //
+                // This observer keeps tabs without packages in sync with parent package selections,
+                // while filtering out propagations from tabs that have their own packages.
+                //
+                // Flow example:
+                // 1. User selects Package B (parent) → packageContext updates to B
+                // 2. This observer fires, checks: is B a tab package? No.
+                // 3. Updates Tab 2's context (which has no packages) with Package B ✓
+                //
+                // Filtered example:
+                // 1. Tab 1 propagates Package C → packageContext updates to C
+                // 2. This observer fires, checks: is C a tab package? Yes (it's in Tab 1).
+                // 3. Does NOT update Tab 2's context - Tab 2 keeps showing parent's package ✓
+                //
+                guard let newPackage = newPackage else { return }
+
+                let isTabPackage = self.tabPackageIdentifiers.contains(newPackage.identifier)
+
+                if !isTabPackage {
+                    // Parent package selection - update all tabs without packages
+                    for (tabId, tabViewModel) in self.viewModel.tabViewModels where tabViewModel.packages.isEmpty {
+                        self.tierPackageContexts[tabId]?.update(
+                            package: newPackage,
+                            variableContext: self.packageContext.variableContext
                         )
                     }
                 }
