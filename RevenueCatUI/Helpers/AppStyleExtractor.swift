@@ -66,14 +66,15 @@ enum AppStyleExtractor {
     ///
     /// - Returns: A SwiftUI `Image` containing the app icon, or an empty image if unavailable.
     static func getAppIcon() -> Image {
+        var image = Image("")
         #if os(macOS)
-        return Image(nsImage: NSApplication.shared.applicationIconImage)
+        image = Image(nsImage: NSApplication.shared.applicationIconImage)
         #elseif canImport(UIKit)
-        if let image = UIImage(named: appIconName()) {
-            return Image(uiImage: image)
+        if let uiImage = UIImage(named: appIconName()) {
+            image = Image(uiImage: uiImage)
         }
         #endif
-        return Image("")
+        return image
     }
 
     /// Extracts the most prominent colors from the app icon asynchronously.
