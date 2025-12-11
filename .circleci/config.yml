@@ -223,7 +223,7 @@ commands:
           directory: << parameters.directory >>
       - restore_cache:
           keys:
-            - homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
+            - homebrew-cache-{{ checksum "Brewfile" }}-{{ arch }}
       - when:
           condition: << parameters.install_xcbeautify >>
           steps:
@@ -244,7 +244,7 @@ commands:
             - install-brew-dependency:
                 dependency_name: "swiftlint"
       - save_cache:
-          key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
+          key: homebrew-cache-{{ checksum "Brewfile" }}-{{ arch }}
           paths:
             - /usr/local/Cellar/swiftlint/
             - /usr/local/Cellar/xcbeautify/
