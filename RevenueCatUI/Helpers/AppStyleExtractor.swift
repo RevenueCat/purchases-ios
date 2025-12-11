@@ -256,8 +256,9 @@ enum AppStyleExtractor {
         #elseif canImport(UIKit)
         guard let uiImage = UIImage(named: appIconName()) else { return nil }
         return uiImage.cgImage
-        #endif
+        #else
         return nil
+        #endif
     }
 
     /// Extracts RGB components from a SwiftUI `Color`.
