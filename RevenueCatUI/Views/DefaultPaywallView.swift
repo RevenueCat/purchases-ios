@@ -25,7 +25,8 @@ fileprivate extension Color {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 struct DefaultPaywallView: View {
 
-    init(warning: PaywallWarning? = nil, offering: Offering?) {
+    init(handler: PurchaseHandler, warning: PaywallWarning? = nil, offering: Offering?) {
+        self.handler = handler
         self.warning = warning
         if let packages = offering?.availablePackages, !packages.isEmpty {
             self.products = packages
@@ -34,6 +35,8 @@ struct DefaultPaywallView: View {
             self.products = []
         }
     }
+
+    let handler: PurchaseHandler
 
     @State private var warning: PaywallWarning?
     @State private var products: [Package]
@@ -138,7 +141,11 @@ struct DefaultPaywallView: View {
             if !products.isEmpty {
                 VStack {
                     Button {
-                        // Purchase
+                        if let selected {
+                            Task(priority: .userInitiated) {
+                                try await handler.purchase(package: selected)
+                            }
+                        }
                     } label: {
                         Text("Purchase")
                             .bold()
@@ -149,7 +156,9 @@ struct DefaultPaywallView: View {
                     .controlSize(.large)
 
                     Button {
-                        // Restore
+                        Task(priority: .userInitiated) {
+                            try await handler.restorePurchases()
+                        }
                     } label: {
                         Text("Restore Purchases")
                     }

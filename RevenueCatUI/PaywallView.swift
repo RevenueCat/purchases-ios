@@ -237,7 +237,7 @@ public struct PaywallView: View {
                                      purchaseHandler: self.purchaseHandler)
                     .transition(Self.transition)
                 } else {
-                    DefaultPaywallView(offering: nil)
+                    DefaultPaywallView(handler: purchaseHandler, offering: nil)
                         .redacted(reason: .placeholder)
                         .transition(Self.transition)
                         .task {
@@ -363,7 +363,19 @@ public struct PaywallView: View {
             )
 
             if let error {
-                DefaultPaywallView(warning: .from(error), offering: offering)
+                DefaultPaywallView(handler: purchaseHandler, warning: .from(error), offering: offering)
+                    .preference(key: PurchaseInProgressPreferenceKey.self,
+                                value: self.purchaseHandler.packageBeingPurchased)
+                    .preference(key: PurchasedResultPreferenceKey.self,
+                                value: .init(data: self.purchaseHandler.purchaseResult))
+                    .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                                value: self.purchaseHandler.restoredCustomerInfo)
+                    .preference(key: RestoreInProgressPreferenceKey.self,
+                                value: self.purchaseHandler.restoreInProgress)
+                    .preference(key: PurchaseErrorPreferenceKey.self,
+                                value: self.purchaseHandler.purchaseError as NSError?)
+                    .preference(key: RestoreErrorPreferenceKey.self,
+                                value: self.purchaseHandler.restoreError as NSError?)
             } else {
                 #if os(macOS)
                 DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
