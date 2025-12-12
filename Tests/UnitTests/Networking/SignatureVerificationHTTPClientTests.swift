@@ -39,7 +39,7 @@ class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager,
     }
 
     override func tearDown() {
-        largeItemCache.removeObject(forKey: SampleCacheKey(rawValue: ""))
+        largeItemCache.clear()
         largeItemCache = nil
         self.suiteName = nil
         super.tearDown()

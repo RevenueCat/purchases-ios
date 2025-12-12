@@ -71,14 +71,12 @@ class SynchronizedLargeItemCacheTests: TestCase {
         XCTAssertEqual(mock.removeInvocations.count, 1)
     }
 
-    func testRemoveObjectWithEmptyKeyRemovesEntireDocumentDirectory() throws {
+    func testClearRemovesEntireDocumentDirectory() throws {
         let (mock, sut) = self.makeSystemUnderTest()
-        let emptyKey = TestCacheKey(rawValue: "")
 
-        sut.removeObject(forKey: emptyKey)
+        sut.clear()
 
         XCTAssertEqual(mock.removeInvocations.count, 1)
-        // When rawValue is empty, it should remove the document directory instead of a specific file
         XCTAssertEqual(mock.removeInvocations[0], mock.workingDocsDirectory)
     }
 

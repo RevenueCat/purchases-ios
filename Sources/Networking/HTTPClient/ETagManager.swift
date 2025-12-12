@@ -116,8 +116,7 @@ class ETagManager {
     func clearCaches() {
         Logger.debug(Strings.etag.clearing_cache)
 
-        // remove all objects in the base path
-        self.cache.removeObject(forKey: CacheKey(rawValue: ""))
+        self.cache.clear()
     }
 
     struct CacheKey: DeviceCacheKeyType {
