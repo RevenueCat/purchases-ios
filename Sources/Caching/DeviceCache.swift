@@ -33,7 +33,6 @@ class DeviceCache {
     private var userDefaultsObserver: NSObjectProtocol?
 
     private var offeringsCachePreferredLocales: [String] = []
-    private let cacheURL: URL?
 
     init(systemInfo: SystemInfo,
          userDefaults: UserDefaults,
@@ -44,7 +43,6 @@ class DeviceCache {
         self.userDefaults = .init(userDefaults: userDefaults)
         self._cachedAppUserID = .init(userDefaults.string(forKey: CacheKeys.appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults))
-        self.cacheURL = fileManager.createDocumentDirectoryIfNeeded(basePath: Self.defaultBasePath)
         self.largeItemCache = .init(cache: fileManager, basePath: Self.defaultBasePath)
 
         Logger.verbose(Strings.purchase.device_cache_init(self))
