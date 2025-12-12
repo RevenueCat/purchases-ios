@@ -363,7 +363,8 @@ class TransactionPosterTests: TestCase {
                                        localizedPriceString: "$9.99",
                                        productIdentifier: "fake_product",
                                        productType: .autoRenewableSubscription,
-                                       localizedDescription: "Fake product description")
+                                       localizedDescription: "Fake product description",
+                                       locale: .current)
 
         let transactionData = PurchasedTransactionData(
             appUserID: "user",

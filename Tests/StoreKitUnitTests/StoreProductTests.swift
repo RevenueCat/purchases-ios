@@ -376,6 +376,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     func testTestProduct() {
         let title = "Product"
         let price: Decimal = 3.99
+        let currencyCode = "USD"
         let localizedPrice = "$3.99"
         let identifier = "com.revenuecat.product"
         let type: StoreProduct.ProductType = .autoRenewableSubscription
@@ -388,6 +389,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let product = TestStoreProduct(
             localizedTitle: title,
             price: price,
+            currencyCode: currencyCode,
             localizedPriceString: localizedPrice,
             productIdentifier: identifier,
             productType: type,
@@ -396,7 +398,8 @@ class StoreProductTests: StoreKitConfigTestCase {
             subscriptionPeriod: period,
             isFamilyShareable: isFamilyShareable,
             introductoryDiscount: nil,
-            discounts: []
+            discounts: [],
+            locale: expectedLocale
         )
         let storeProduct = product.toStoreProduct()
 
@@ -410,9 +413,9 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.localizedDescription) == description
         expect(storeProduct.subscriptionGroupIdentifier) == subscriptionGroup
         expect(storeProduct.subscriptionPeriod) == period
-        expect(storeProduct.currencyCode) == expectedLocale.rc_currencyCode
+        expect(storeProduct.currencyCode) == currencyCode
         expect(storeProduct.priceFormatter?.locale) == expectedLocale
-        expect(storeProduct.priceFormatter?.currencyCode) == expectedLocale.rc_currencyCode
+        expect(storeProduct.priceFormatter?.currencyCode) == currencyCode
         expect(storeProduct.isFamilyShareable) == isFamilyShareable
     }
 
@@ -430,9 +433,9 @@ class StoreProductTests: StoreKitConfigTestCase {
         )
         let storeProduct = product.toStoreProduct()
 
-        expect(storeProduct.currencyCode) == "EUR"
+        expect(storeProduct.currencyCode) == locale.rc_currencyCode
         expect(storeProduct.priceFormatter?.locale) == locale
-        expect(storeProduct.priceFormatter?.currencyCode) == "EUR"
+        expect(storeProduct.priceFormatter?.currencyCode) == locale.rc_currencyCode
     }
 
     func testTestProductWithCustomLocaleAndCurrency() {
@@ -496,6 +499,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let product = TestStoreProduct(
             localizedTitle: "product",
             price: 3.98999999999,
+            currencyCode: "USD",
             localizedPriceString: "$3.99",
             productIdentifier: "identifier",
             productType: .autoRenewableSubscription,

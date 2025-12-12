@@ -160,7 +160,8 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
             localizedPriceString: "$9.99",
             productIdentifier: "test.product",
             productType: .autoRenewableSubscription,
-            localizedDescription: "Test subscription"
+            localizedDescription: "Test subscription",
+            locale: .current
         )
         return testProduct.toStoreProduct()
     }
