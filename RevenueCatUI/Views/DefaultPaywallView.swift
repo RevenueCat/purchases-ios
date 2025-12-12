@@ -44,6 +44,7 @@ struct DefaultPaywallView: View {
         self.appIcon = appIcon
         self.appIconCGImage = appIconCGImage
         if let packages = offering?.availablePackages, !packages.isEmpty {
+            self.selected = packages.first
             self.products = packages
         } else {
             self.warning = .noProducts(CocoaError.error(.coderInvalidValue))
