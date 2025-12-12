@@ -345,10 +345,42 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
+            appIcon: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
+            appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
+        )
+        .background(Color.white)
+        .previewDisplayName("Fallback Paywall R/G")
+
+        DefaultPaywallView(
+            handler: .mock(),
+            offering: offering,
+            appName: "RevenueCat",
+            appIcon: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
+            appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
+        )
+        .background(Color.black)
+        .environment(\.colorScheme, .dark)
+        .previewDisplayName("Fallback Paywall R/G Dark")
+
+        DefaultPaywallView(
+            handler: .mock(),
+            offering: offering,
+            appName: "RevenueCat",
+            appIcon: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
+            appIconCGImage: DualColorImageGenerator.purpleOrange?.cgImage
+        )
+        .background(Color.white)
+        .previewDisplayName("Fallback Paywall P/O")
+
+        DefaultPaywallView(
+            handler: .mock(),
+            offering: offering,
+            appName: "RevenueCat",
             appIcon: DualColorImageGenerator.blueGreen.unsafelyUnwrapped.image,
             appIconCGImage: DualColorImageGenerator.blueGreen?.cgImage
         )
-            .previewDisplayName("Fallback Paywall B/G")
+        .background(Color.white)
+        .previewDisplayName("Fallback Paywall B/G")
 
         DefaultPaywallView(
             handler: .mock(),
@@ -368,7 +400,8 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appIcon: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
             appIconCGImage: DualColorImageGenerator.purpleOrange?.cgImage
         )
-            .previewDisplayName("Fallback Paywall P/O")
+        .background(Color.white)
+        .previewDisplayName("Fallback Paywall P/O")
 
         DefaultPaywallView(
             handler: .mock(),
@@ -389,7 +422,8 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appIcon: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
             appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
         )
-            .previewDisplayName("Warning Paywall - localization")
+        .background(Color.white)
+        .previewDisplayName("Warning Paywall - localization")
 
         DefaultPaywallView(
             handler: .mock(),
@@ -411,7 +445,8 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appIcon: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
             appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
         )
-            .previewDisplayName("Warning Paywall - no paywall")
+        .background(Color.white)
+        .previewDisplayName("Warning Paywall - no paywall")
 
         DefaultPaywallView(
             handler: .mock(),
