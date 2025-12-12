@@ -46,7 +46,7 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
     override func tearDown() async throws {
         if let testSession = self.testSession {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                try await self.deleteAllTransactions(session: testSession)
+                await self.deleteAllTransactions(session: testSession)
             }
 
             testSession.clearTransactions()
@@ -72,7 +72,7 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
             // Despite calling `SKTestSession.clearTransactions` tests sometimes
             // begin with leftover transactions. This ensures that we remove them
             // to always start with a clean state.
-            try await self.deleteAllTransactions(session: self.testSession)
+            await self.deleteAllTransactions(session: self.testSession)
         }
     }
 

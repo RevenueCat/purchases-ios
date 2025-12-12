@@ -56,7 +56,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
             // Despite calling `SKTestSession.clearTransactions` tests sometimes
             // begin with leftover transactions. This ensures that we remove them
             // to always start with a clean state.
-            try await self.deleteAllTransactions(session: self.testSession)
+            await self.deleteAllTransactions(session: self.testSession)
         }
     }
 
