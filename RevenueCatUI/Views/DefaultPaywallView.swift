@@ -439,7 +439,6 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
         )
         .background(Color.white)
-        // Emerge snapshots will show yellow… But the actual previews will not
         .accentColor(.yellow)
         .previewDisplayName("Warning Paywall - localization")
 
@@ -453,7 +452,6 @@ struct DefaultPaywallPreviews: PreviewProvider {
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
-        // Emerge snapshots will show yellow… But the actual previews will not
         .accentColor(.yellow)
         .previewDisplayName("Warning Paywall - localization Dark")
 
@@ -466,7 +464,6 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
         )
         .background(Color.white)
-        // Emerge snapshots will show yellow… But the actual previews will not
         .accentColor(.yellow)
         .previewDisplayName("Warning Paywall - no paywall")
 
@@ -480,7 +477,6 @@ struct DefaultPaywallPreviews: PreviewProvider {
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
-        // Emerge snapshots will show yellow… But the actual previews will not
         .accentColor(.yellow)
         .previewDisplayName("Warning Paywall - no paywall Dark")
     }
