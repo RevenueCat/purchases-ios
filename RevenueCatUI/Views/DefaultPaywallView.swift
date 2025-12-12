@@ -22,7 +22,7 @@ fileprivate extension Color {
     static let revenueCatBrandRed = Color(red: 0.949, green: 0.329, blue: 0.357) // #f2545b
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct DefaultPaywallView: View {
 
     init(handler: PurchaseHandler, warning: PaywallWarning? = nil, offering: Offering?) {
@@ -140,7 +140,7 @@ struct DefaultPaywallView: View {
         .safeAreaInset(edge: .bottom) {
             if !products.isEmpty {
                 VStack {
-                    Button {
+                    let purchaseButton = Button {
                         if let selected {
                             Task(priority: .userInitiated) {
                                 try await handler.purchase(package: selected)
@@ -152,23 +152,30 @@ struct DefaultPaywallView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                             .foregroundStyle(foregroundOnAccentColor)
                     }
-                    #if !os(tvOS)
                     .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    #endif
 
-                    Button {
+                    if #available(watchOS 9.0, *) {
+                        purchaseButton.controlSize(.large)
+                    } else {
+                        purchaseButton
+                    }
+
+                    let restoreButton = Button {
                         Task(priority: .userInitiated) {
                             try await handler.restorePurchases()
                         }
                     } label: {
                         Text("Restore Purchases")
                     }
-                    #if !os(tvOS)
-                    .controlSize(.large)
-                    #endif
-                    .tint(Color.primary)
-                    .padding(.top, 8)
+                        .padding(.top, 8)
+
+                    if #available(watchOS 9.0, *) {
+                        restoreButton
+                            .controlSize(.large)
+                            .tint(Color.primary)
+                    } else {
+                        restoreButton
+                    }
                 }
                 .padding()
             }
@@ -182,14 +189,16 @@ struct DefaultPaywallView: View {
             ], startPoint: .top, endPoint: .bottom)
             .ignoresSafeArea()
         }
+        #if !os(watchOS)
         .tint(mainColor)
+        #endif
         .task {
             colors = await AppStyleExtractor.getProminentColorsFromAppIcon()
         }
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct DefaultProductCell: View {
     let product: Package
     let accentColor: Color
@@ -232,7 +241,7 @@ private struct DefaultProductCell: View {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct DefaultPaywallWarning: View {
     let warning: PaywallWarning
     let hasProducts: Bool
@@ -255,12 +264,16 @@ private struct DefaultPaywallWarning: View {
                     .font(.subheadline.bold())
             }
             if let url = warning.helpURL {
-                Link(destination: url) {
+                let link = Link(destination: url) {
                     Text("Go to Dashboard")
                         .bold()
+                }.buttonStyle(.bordered)
+
+                if #available(watchOS 9.0, *) {
+                    link.tint(.revenueCatBrandRed)
+                } else {
+                    link.foregroundStyle(Color.revenueCatBrandRed)
                 }
-                .tint(.revenueCatBrandRed)
-                .buttonStyle(.bordered)
             }
 
         }
