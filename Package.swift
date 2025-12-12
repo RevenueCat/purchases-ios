@@ -121,7 +121,8 @@ let package = Package(
                 resources: [
                     // Note: these have to match the values in RevenueCatUI.podspec
                     .copy("Resources/background.jpg"),
-                    .process("Resources/icons.xcassets")
+                    .process("Resources/icons.xcassets"),
+                    .process("Resources/Media.xcassets")
                 ],
                 swiftSettings: ciCompilerFlags + additionalCompilerFlags),
         .testTarget(name: "RevenueCatUITests",
