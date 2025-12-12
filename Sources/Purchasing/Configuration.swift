@@ -56,6 +56,7 @@ import Foundation
     let preferredLocale: String?
     let automaticDeviceIdentifierCollectionEnabled: Bool
     internal let diagnosticsEnabled: Bool
+    weak var eventsListener: EventsListener?
 
     private init(with builder: Builder) {
         self.apiKey = builder.apiKey
@@ -72,6 +73,7 @@ import Foundation
         self.diagnosticsEnabled = builder.diagnosticsEnabled
         self.preferredLocale = builder.preferredLocale
         self.automaticDeviceIdentifierCollectionEnabled = builder.automaticDeviceIdentifierCollectionEnabled
+        self.eventsListener = builder.eventsListener
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -114,6 +116,7 @@ import Foundation
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
+        private(set) weak var eventsListener: EventsListener? = nil
         private(set) var storeKitVersion: StoreKitVersion = .default
 
         /// The preferred locale for the requests.
@@ -183,7 +186,7 @@ import Foundation
         /**
          * Set `purchasesAreCompletedBy`.
          * - Parameter purchasesAreCompletedBy: Set this to ``PurchasesAreCompletedBy/myApp``
-         * if you have your own IAP implementation and want to use only RevenueCat's backend. 
+         * if you have your own IAP implementation and want to use only RevenueCat's backend.
          * Default is ``PurchasesAreCompletedBy/revenueCat``.
          * - Parameter storeKitVersion: Set the StoreKit version you're using to make purchases.
          */
@@ -229,6 +232,11 @@ import Foundation
         /// Set `platformInfo`.
         @objc public func with(platformInfo: Purchases.PlatformInfo) -> Builder {
             self.platformInfo = platformInfo
+            return self
+        }
+
+        @_spi(Internal) public func with(eventsListener: EventsListener?) -> Builder {
+            self.eventsListener = eventsListener
             return self
         }
 
@@ -280,7 +288,7 @@ import Foundation
         /// Enabling diagnostics will send some performance and debugging information from the SDK to our servers.
         /// Examples of this information include response times, cache hits or error codes.
         /// This information will be anonymous so it can't be traced back to the end-user
-        /// 
+        ///
         /// Defaults to `false`
         ///
         @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

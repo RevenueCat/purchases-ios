@@ -17,6 +17,10 @@ import Foundation
 import UIKit
 #endif
 
+@_spi(Internal) public protocol EventsListener: AnyObject {
+    func onTrackFeatureEvent(_ featureEvent: FeatureEvent)
+}
+
 protocol EventsManagerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -55,6 +59,7 @@ actor EventsManager: EventsManagerType {
     private let store: FeatureEventStoreType
     private var appSessionID: UUID
     private let systemInfo: SystemInfo
+    private weak var eventsListener: EventsListener?
 
     #if ENABLE_AD_EVENTS_TRACKING
     private let adEventStore: AdEventStoreType?
@@ -85,12 +90,14 @@ actor EventsManager: EventsManagerType {
         userProvider: CurrentUserProvider,
         store: FeatureEventStoreType,
         systemInfo: SystemInfo,
+        eventsListener: EventsListener?,
         appSessionID: UUID = SystemInfo.appSessionID
     ) {
         self.internalAPI = internalAPI
         self.userProvider = userProvider
         self.store = store
         self.systemInfo = systemInfo
+        self.eventsListener = eventsListener
         self.appSessionID = appSessionID
     }
     #endif
@@ -105,6 +112,7 @@ actor EventsManager: EventsManagerType {
             return
         }
         await self.store.store(event)
+        self.eventsListener?.onTrackFeatureEvent(featureEvent)
     }
 
     #if ENABLE_AD_EVENTS_TRACKING
