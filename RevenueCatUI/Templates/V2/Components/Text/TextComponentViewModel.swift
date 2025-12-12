@@ -292,11 +292,13 @@ enum GenericFont: String {
     func makeFont(fontSize: CGFloat, useDynamicType: Bool = true) -> Font {
         #if canImport(UIKit)
         if useDynamicType {
-            let baseUIFont = self.makeBaseUIFont(fontSize: fontSize)
-            return Font(UIFontMetrics.default.scaledFont(for: baseUIFont))
-        } else {
-            return self.makeStaticFont(fontSize: fontSize)
+            // Keep using `Font.system(...)` so downstream `.fontWeight(...)` / italic / markdown traits
+            // continue to work, while still respecting Dynamic Type via a scaled point size.
+            let scaledSize = UIFontMetrics.default.scaledValue(for: fontSize)
+            return self.makeStaticFont(fontSize: scaledSize)
         }
+
+        return self.makeStaticFont(fontSize: fontSize)
         #else
         return self.makeStaticFont(fontSize: fontSize)
         #endif
@@ -312,24 +314,6 @@ enum GenericFont: String {
             return Font.system(size: fontSize, weight: .regular, design: .default)
         }
     }
-
-    #if canImport(UIKit)
-    private func makeBaseUIFont(fontSize: CGFloat) -> UIFont {
-        switch self {
-        case .serif:
-            let systemFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
-            if let descriptor = systemFont.fontDescriptor.withDesign(.serif) {
-                return UIFont(descriptor: descriptor, size: fontSize)
-            } else {
-                return systemFont
-            }
-        case .monospace:
-            return UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
-        case .sansSerif:
-            return UIFont.systemFont(ofSize: fontSize, weight: .regular)
-        }
-    }
-    #endif
 
 }
 
