@@ -106,16 +106,40 @@ struct LoadedTabsComponentView: View {
             defaultTabId: viewModel.defaultTabId
         ))
 
+        // MARK: - Package Context Inheritance for Tabs
+        //
+        // This handles a nuanced scenario where tabs may or may not have their own packages:
+        //
+        // Example structure:
+        //   - Package A (parent scope, default)
+        //   - Package B (parent scope)
+        //   - Tabs Component
+        //       - Tab 1: has Package C (its own package)
+        //       - Tab 2: no packages (should inherit from parent)
+        //
+        // Solution:
+        // - Tabs WITH packages: create their own PackageContext with their packages
+        // - Tabs WITHOUT packages: use parentPackageContext directly (same instance)
+        //   This ensures they always reflect the current parent selection and stay in sync
+        //   automatically when the parent context changes.
+        //
         self._tierPackageContexts = .init(initialValue: Dictionary(
-            uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel in
-                let packageContext = PackageContext(
-                    package: tabViewModel.defaultSelectedPackage,
-                    variableContext: .init(
-                        packages: tabViewModel.packages,
-                        showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
+            uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel -> (String, PackageContext) in
+                if !tabViewModel.packages.isEmpty {
+                    // Tab has its own packages - create context with tab's packages
+                    let packageContext = PackageContext(
+                        package: tabViewModel.defaultSelectedPackage,
+                        variableContext: .init(
+                            packages: tabViewModel.packages,
+                            showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
+                        )
                     )
-                )
-                return (key, packageContext)
+                    return (key, packageContext)
+                } else {
+                    // Tab has no packages - use parent context directly.
+                    // This ensures the tab always shows the current parent selection.
+                    return (key, parentPackageContext)
+                }
             }
         ))
     }
@@ -138,10 +162,8 @@ struct LoadedTabsComponentView: View {
             .onAppear {
                 if !wasConfigured {
                     self.wasConfigured = true
-                    // In the event that the tabs components contain unique selected packages, we need to ensure that
-                    // the first selected tab's selected package is propagated up to the purchase button. This sends
-                    // that signal only for the initially rendered tab, then the onChange passed into the loadedTabView
-                    // handles subsequent changes
+                    // Propagate the initial tab's package to parent context for the purchase button.
+                    // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
                     if let package = tierPackageContext.package {
                         self.packageContext.update(
                             package: package,
