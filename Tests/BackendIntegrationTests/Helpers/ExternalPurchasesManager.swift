@@ -62,8 +62,8 @@ final class ExternalPurchasesManager: NSObject {
 
             let productId = transaction.productID
             let transactionId = transaction.id
-            Logger.rcPurchaseSuccess(Message.purchasedSK2Product(productId: transaction.productID,
-                                                                 transactionId: transaction.id))
+            Logger.rcPurchaseSuccess(Message.purchasedSK2Product(productId: productId,
+                                                                 transactionId: transactionId))
 
         case let .success(.unverified(transaction, error)):
             if self.finishTransactions {
