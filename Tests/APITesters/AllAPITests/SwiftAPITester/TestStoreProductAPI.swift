@@ -63,6 +63,20 @@ private func checkStoreProductCreation(discount: TestStoreProductDiscount) {
     _ = TestStoreProduct(
         localizedTitle: "",
         price: 1.99,
+        localizedPriceString: "",
+        productIdentifier: "",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "",
+        subscriptionGroupIdentifier: Optional<String>.some(""),
+        subscriptionPeriod: Optional<SubscriptionPeriod>.some(.init(value: 1, unit: .day)),
+        isFamilyShareable: true,
+        introductoryDiscount: Optional<TestStoreProductDiscount>.some(discount),
+        discounts: [discount]
+    )
+
+    _ = TestStoreProduct(
+        localizedTitle: "",
+        price: 1.99,
         currencyCode: "USD",
         localizedPriceString: "",
         productIdentifier: "",
