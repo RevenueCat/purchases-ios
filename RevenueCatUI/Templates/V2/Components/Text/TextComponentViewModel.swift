@@ -14,6 +14,10 @@
 import RevenueCat
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -285,7 +289,20 @@ enum GenericFont: String {
 
     case serif, monospace, sansSerif = "sans-serif"
 
-    func makeFont(fontSize: CGFloat) -> Font {
+    func makeFont(fontSize: CGFloat, useDynamicType: Bool = true) -> Font {
+        #if canImport(UIKit)
+        if useDynamicType {
+            let baseUIFont = self.makeBaseUIFont(fontSize: fontSize)
+            return Font(UIFontMetrics.default.scaledFont(for: baseUIFont))
+        } else {
+            return self.makeStaticFont(fontSize: fontSize)
+        }
+        #else
+        return self.makeStaticFont(fontSize: fontSize)
+        #endif
+    }
+
+    private func makeStaticFont(fontSize: CGFloat) -> Font {
         switch self {
         case .serif:
             return Font.system(size: fontSize, weight: .regular, design: .serif)
@@ -295,6 +312,24 @@ enum GenericFont: String {
             return Font.system(size: fontSize, weight: .regular, design: .default)
         }
     }
+
+    #if canImport(UIKit)
+    private func makeBaseUIFont(fontSize: CGFloat) -> UIFont {
+        switch self {
+        case .serif:
+            let systemFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+            if let descriptor = systemFont.fontDescriptor.withDesign(.serif) {
+                return UIFont(descriptor: descriptor, size: fontSize)
+            } else {
+                return systemFont
+            }
+        case .monospace:
+            return UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
+        case .sansSerif:
+            return UIFont.systemFont(ofSize: fontSize, weight: .regular)
+        }
+    }
+    #endif
 
 }
 
