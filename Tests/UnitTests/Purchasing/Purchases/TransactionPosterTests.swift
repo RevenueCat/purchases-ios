@@ -359,10 +359,12 @@ class TransactionPosterTests: TestCase {
 
         let product = TestStoreProduct(localizedTitle: "Fake product",
                                        price: 9.99,
+                                       currencyCode: "USD",
                                        localizedPriceString: "$9.99",
                                        productIdentifier: "fake_product",
                                        productType: .autoRenewableSubscription,
-                                       localizedDescription: "Fake product description")
+                                       localizedDescription: "Fake product description",
+                                       locale: .current)
 
         let transactionData = PurchasedTransactionData(
             appUserID: "user",
@@ -430,6 +432,7 @@ private extension TransactionPosterTests {
     static func createTestProduct(_ productType: StoreProduct.ProductType) -> TestStoreProduct {
         return .init(localizedTitle: "Title",
                      price: 1.99,
+                     currencyCode: "USD",
                      localizedPriceString: "$1.99",
                      productIdentifier: "product",
                      productType: productType,

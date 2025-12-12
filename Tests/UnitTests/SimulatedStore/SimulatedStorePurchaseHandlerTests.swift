@@ -182,10 +182,12 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
 
     private static let testStoreProduct = TestStoreProduct(localizedTitle: "Title",
                                                            price: 1.99,
+                                                           currencyCode: "USD",
                                                            localizedPriceString: "$1.99",
                                                            productIdentifier: "product",
                                                            productType: .autoRenewableSubscription,
-                                                           localizedDescription: "Description")
+                                                           localizedDescription: "Description",
+                                                           locale: .current)
 
     private static let mockDate = Date(millisecondsSince1970: 1756796794912) // Sep 02 2025 07:06:34.912 UTC
 }
