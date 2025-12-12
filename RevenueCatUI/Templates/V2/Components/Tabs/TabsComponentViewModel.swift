@@ -58,7 +58,6 @@ class TabViewModel {
     let stackViewModel: StackComponentViewModel
     let defaultSelectedPackage: Package?
     let packages: [Package]
-
     init(
         tab: PaywallComponent.TabsComponent.Tab,
         stackViewModel: StackComponentViewModel,
