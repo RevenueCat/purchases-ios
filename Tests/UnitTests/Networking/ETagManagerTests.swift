@@ -7,13 +7,13 @@ import XCTest
 class ETagManagerTests: TestCase {
     let baseDirectory = URL(string: "data:mock-dir").unsafelyUnwrapped
 
-    private var mockCache: MockSimpleCache!
+    private var mockCache: SynchronizedLargeItemCache.MockUnderlyingSynchronizedFileCache!
     private var eTagManager: ETagManager!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
         let basePath = "SynchronizedLargeItemCacheTests-\(UUID().uuidString)"
-        self.mockCache = MockSimpleCache(cacheDirectory: baseDirectory)
+        self.mockCache = SynchronizedLargeItemCache.MockUnderlyingSynchronizedFileCache(cacheDirectory: baseDirectory)
         self.eTagManager = .init(largeItemCache: SynchronizedLargeItemCache(cache: mockCache, basePath: basePath))
     }
 
@@ -25,7 +25,9 @@ class ETagManagerTests: TestCase {
     }
 
     func testETagIsEmptyIfThereIsNoETagSavedForThatRequest() {
-        mockCache.stubLoadFile(at: 0, with: .failure(SampleError()))
+        // Stub: any unstubbed URL returns failure
+        mockCache.stubDefaultLoadFile(with: .failure(SampleError()))
+
         let request = URLRequest(url: Self.testURL)
         let header = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
 
@@ -38,11 +40,13 @@ class ETagManagerTests: TestCase {
         let request2 = URLRequest(url: Self.testURL2)
 
         try self.mockStoredETagResponse(for: request1)
-        // Request2 will also try to load, stub a failure for it
-        mockCache.stubLoadFile(with: .failure(SampleError()))
+        mockCache.stubLoadFile(at: Self.testURL2, with: .failure(SampleError()))
 
-        let header = self.eTagManager.eTagHeader(for: request2, withSignatureVerification: false)
-        expect(header[ETagManager.eTagRequestHeader.rawValue]) == ""
+        let header1 = self.eTagManager.eTagHeader(for: request1, withSignatureVerification: false)
+        expect(header1[ETagManager.eTagRequestHeader.rawValue]) == Self.testETag
+
+        let header2 = self.eTagManager.eTagHeader(for: request2, withSignatureVerification: false)
+        expect(header2[ETagManager.eTagRequestHeader.rawValue]) == ""
     }
 
     func testETagIsAddedToHeadersIfThereIsACachedETagForThatURL() throws {
@@ -59,7 +63,7 @@ class ETagManagerTests: TestCase {
 
         let cachedResponse = try self.mockStoredETagResponse(for: request, statusCode: .success)
         // Stub for saving the updated validation time
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let response = try XCTUnwrap(
             self.eTagManager.httpResultFromCacheOrBackend(
@@ -88,7 +92,7 @@ class ETagManagerTests: TestCase {
                                                              statusCode: .success,
                                                              validationTime: validationTime)
         // Stub successful save for the updated response
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(url: Self.testURL,
@@ -113,7 +117,7 @@ class ETagManagerTests: TestCase {
 
         _ = try self.mockStoredETagResponse(for: request, statusCode: .success)
         // Stub for the new response being saved
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
         let requestDate = Date().addingTimeInterval(-100000)
 
@@ -154,7 +158,7 @@ class ETagManagerTests: TestCase {
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
 
         // Stub no cached data found
-        mockCache.stubLoadFile(with: .failure(SampleError()))
+        mockCache.stubLoadFile(at: Self.testURL, with: .failure(SampleError()))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(
@@ -178,7 +182,7 @@ class ETagManagerTests: TestCase {
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
 
         // Stub no cached data found
-        mockCache.stubLoadFile(with: .failure(SampleError()))
+        mockCache.stubLoadFile(at: Self.testURL, with: .failure(SampleError()))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(
@@ -199,7 +203,7 @@ class ETagManagerTests: TestCase {
         let request = URLRequest(url: Self.testURL)
 
         // Stub successful save
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
         let response = self.eTagManager.httpResultFromCacheOrBackend(
@@ -230,7 +234,7 @@ class ETagManagerTests: TestCase {
         let request = URLRequest(url: Self.testURL)
 
         // Stub successful save
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
         let response = self.eTagManager.httpResultFromCacheOrBackend(
@@ -358,7 +362,7 @@ class ETagManagerTests: TestCase {
                                  responseObject: [
                                     "response": AnyEncodable("cached")
                                  ])
-        mockCache.stubLoadFile(with: .success(try XCTUnwrap(wrapper.asData)))
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(try XCTUnwrap(wrapper.asData)))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(url: Self.testURL,
@@ -379,7 +383,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success("""
+        mockCache.stubLoadFile(at: Self.testURL, with: .success("""
         {
         "e_tag": "\(Self.testETag)",
         "status_code": 200,
@@ -397,7 +401,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success("""
+        mockCache.stubLoadFile(at: Self.testURL, with: .success("""
         {
         "e_tag": "\(Self.testETag)",
         "status_code": 200,
@@ -415,7 +419,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -433,7 +437,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -451,7 +455,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -469,7 +473,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -487,7 +491,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -505,7 +509,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -524,7 +528,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -543,7 +547,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -563,7 +567,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -585,7 +589,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -607,7 +611,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success("""
+        mockCache.stubLoadFile(at: Self.testURL, with: .success("""
         {
         "e_tag": "\(Self.testETag)",
         "status_code": 200,
@@ -615,7 +619,7 @@ class ETagManagerTests: TestCase {
         }
         """.asData))
         // Stub for saving the updated response
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(url: Self.testURL,
@@ -635,7 +639,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success("""
+        mockCache.stubLoadFile(at: Self.testURL, with: .success("""
         {
         "e_tag": "\(Self.testETag)",
         "status_code": 200,
@@ -644,7 +648,7 @@ class ETagManagerTests: TestCase {
         }
         """.asData))
         // Stub for saving the updated response
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         var headers = self.getHeaders(eTag: Self.testETag)
         headers[HTTPClient.ResponseHeader.isLoadShedder.rawValue] = "true"
@@ -674,7 +678,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success("""
+        mockCache.stubLoadFile(at: Self.testURL, with: .success("""
         {
         "e_tag": "\(Self.testETag)",
         "status_code": 200,
@@ -683,7 +687,7 @@ class ETagManagerTests: TestCase {
         }
         """.asData))
         // Stub for saving the updated response
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         var headers = self.getHeaders(eTag: Self.testETag)
         headers[HTTPClient.ResponseHeader.isLoadShedder.rawValue] = "true"
@@ -713,7 +717,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success("""
+        mockCache.stubLoadFile(at: Self.testURL, with: .success("""
         {
         "e_tag": "\(Self.testETag)",
         "status_code": 200,
@@ -721,7 +725,7 @@ class ETagManagerTests: TestCase {
         }
         """.asData))
         // Stub for saving the updated response
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(url: Self.testURL,
@@ -741,7 +745,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success("""
+        mockCache.stubLoadFile(at: Self.testURL, with: .success("""
         {
         "e_tag": "\(Self.testETag)",
         "status_code": 200,
@@ -749,7 +753,7 @@ class ETagManagerTests: TestCase {
         }
         """.asData))
         // Stub for saving the updated response
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(url: Self.testURL,
@@ -769,7 +773,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success("""
+        mockCache.stubLoadFile(at: Self.testURL, with: .success("""
         {
         "e_tag": "\(Self.testETag)",
         "status_code": 200,
@@ -777,7 +781,7 @@ class ETagManagerTests: TestCase {
         }
         """.asData))
         // Stub for saving the updated response
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(url: Self.testURL,
@@ -800,7 +804,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success("""
+        mockCache.stubLoadFile(at: Self.testURL, with: .success("""
         {
         "e_tag": "\(Self.testETag)",
         "status_code": 200,
@@ -809,7 +813,7 @@ class ETagManagerTests: TestCase {
         }
         """.asData))
         // Stub for saving the updated response
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(url: Self.testURL,
@@ -834,7 +838,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -843,7 +847,7 @@ class ETagManagerTests: TestCase {
             isFallbackUrlResponse: false
         ).asData()!))
         // Stub for saving the updated response
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(url: Self.testURL,
@@ -866,7 +870,7 @@ class ETagManagerTests: TestCase {
 
         let actualResponse = "response".asData
 
-        mockCache.stubLoadFile(with: .success(ETagManager.Response(
+        mockCache.stubLoadFile(at: Self.testURL, with: .success(ETagManager.Response(
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
@@ -875,7 +879,7 @@ class ETagManagerTests: TestCase {
             isFallbackUrlResponse: false
         ).asData()!))
         // Stub for saving the updated response
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(url: Self.testURL,
@@ -898,7 +902,7 @@ class ETagManagerTests: TestCase {
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
 
         // Stub successful save
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         var headers = self.getHeaders(eTag: Self.testETag)
         headers[HTTPClient.ResponseHeader.isLoadShedder.rawValue] = "true"
@@ -931,7 +935,7 @@ class ETagManagerTests: TestCase {
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
 
         // Stub successful save
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         // Test with header set to "false"
         var headers = self.getHeaders(eTag: Self.testETag)
@@ -962,7 +966,7 @@ class ETagManagerTests: TestCase {
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
 
         // Stub successful save
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let headers = self.getHeaders(eTag: Self.testETag)
         // No isLoadShedder header
@@ -992,7 +996,7 @@ class ETagManagerTests: TestCase {
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
 
         // Stub successful save
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(
@@ -1020,7 +1024,7 @@ class ETagManagerTests: TestCase {
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
 
         // Stub successful save
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(
@@ -1045,7 +1049,7 @@ class ETagManagerTests: TestCase {
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
 
         // Stub successful save
-        mockCache.stubSaveData(with: .success(.init(data: Data(), url: baseDirectory)))
+        mockCache.stubSaveData(at: Self.testURL, with: .success(.init(data: Data(), url: baseDirectory)))
 
         var headers = self.getHeaders(eTag: Self.testETag)
         headers[HTTPClient.ResponseHeader.isLoadShedder.rawValue] = "true"
@@ -1107,13 +1111,18 @@ private extension ETagManagerTests {
             isLoadShedderResponse: false,
             isFallbackUrlResponse: false
         )
-        mockCache.stubLoadFile(with: .success(try XCTUnwrap(etagAndResponse.asData())))
+
+        mockCache
+            .stubLoadFile(at: request.url.unsafelyUnwrapped, with: .success(try XCTUnwrap(etagAndResponse.asData())))
 
         return data
     }
 
     func getCachedResponse(for request: URLRequest) throws -> ETagManager.Response {
-        let savedData = try XCTUnwrap(self.mockCache.saveDataInvocations.last?.data)
+        let savedData = try XCTUnwrap(self.mockCache.saveDataInvocations.filter({ data in
+            data.url == request.url || data.url.absoluteString
+                .contains(request.url?.absoluteString.asData.md5String ?? "this should not happen")
+        }).first?.data)
         return try ETagManager.Response.with(savedData)
     }
 
