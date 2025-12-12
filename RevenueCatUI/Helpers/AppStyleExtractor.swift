@@ -90,9 +90,12 @@ enum AppStyleExtractor {
     /// 5. Removes colors that are too similar to already-selected colors
     ///
     /// - Parameter completion: Closure called on the main thread with an array of up to 4 prominent `Color` values.
-    static func getProminentColorsFromAppIcon(completion: @escaping ([Color]) -> Void) {
+    static func getProminentColorsFromAppIcon(
+        image: CGImage? = getPlatformAppIconCGImage(),
+        completion: @escaping ([Color]) -> Void
+    ) {
         DispatchQueue.global(qos: .userInitiated).async {
-            let colors = extractProminentColors(count: 2)
+            let colors = extractProminentColors(count: 2, image: image)
             DispatchQueue.main.async {
                 completion(colors)
             }
@@ -106,9 +109,9 @@ enum AppStyleExtractor {
     ///
     /// - Returns: An array of up to 4 prominent `Color` values from the app icon.
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    static func getProminentColorsFromAppIcon() async -> [Color] {
+    static func getProminentColorsFromAppIcon(image: CGImage? = getPlatformAppIconCGImage()) async -> [Color] {
         await withCheckedContinuation { continuation in
-            getProminentColorsFromAppIcon { colors in
+            getProminentColorsFromAppIcon(image: image) { colors in
                 continuation.resume(returning: colors)
             }
         }
@@ -248,7 +251,7 @@ enum AppStyleExtractor {
     /// - On iOS/tvOS: Loads the icon by name using `UIImage(named:)`.
     ///
     /// - Returns: The app icon as a `CGImage`, or `nil` if unavailable.
-    private static func getPlatformAppIconCGImage() -> CGImage? {
+    static func getPlatformAppIconCGImage() -> CGImage? {
         var cgImage: CGImage?
         #if os(macOS)
         if let nsImage = NSApplication.shared.applicationIconImage {

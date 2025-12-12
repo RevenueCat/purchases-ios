@@ -48,4 +48,10 @@ class OtherPaywallViewTests: BaseSnapshotTest {
 
 }
 
+// WIP:
+// Replace these tests
+// replace the paywall view localizations tests
+// replace template 4 tests
+// all use the giant background image
+
 #endif
