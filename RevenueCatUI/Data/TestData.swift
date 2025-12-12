@@ -83,7 +83,7 @@ enum TestData {
     static let threeMonthProductThailand = TestStoreProduct(
         localizedTitle: "3 months",
         price: 5.00,
-        currencyCode: "USD",
+        currencyCode: Locale.thailand.currencyCode!,
         localizedPriceString: "฿5.00",
         productIdentifier: "com.revenuecat.product_5",
         productType: .autoRenewableSubscription,
@@ -136,13 +136,13 @@ enum TestData {
         localizedTitle: "Annual",
         price: 60.00,
         currencyCode: "USD",
-        localizedPriceString: "$60.00",
+        localizedPriceString: "US$60.00",
         productIdentifier: "com.revenuecat.product_3",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO annual",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 1, unit: .year),
-        introductoryDiscount: Self.intro(14, .day, priceString: "$2.99"),
+        introductoryDiscount: Self.intro(14, .day, priceString: "US$2.99"),
         locale: Locale.taiwan
     )
     static let lifetimeProduct = TestStoreProduct(

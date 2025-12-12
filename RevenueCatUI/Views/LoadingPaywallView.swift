@@ -124,7 +124,8 @@ private extension LoadingPaywallView {
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO weekly",
         subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .week)
+        subscriptionPeriod: .init(value: 1, unit: .week),
+        locale: Locale(identifier: "en_US")
     )
     static let monthlyProduct = TestStoreProduct(
         localizedTitle: "Monthly",
@@ -135,7 +136,8 @@ private extension LoadingPaywallView {
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO monthly",
         subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .month)
+        subscriptionPeriod: .init(value: 1, unit: .month),
+        locale: Locale(identifier: "en_US")
     )
     static let annualProduct = TestStoreProduct(
         localizedTitle: "Annual",
@@ -146,7 +148,8 @@ private extension LoadingPaywallView {
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO annual",
         subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .year)
+        subscriptionPeriod: .init(value: 1, unit: .year),
+        locale: Locale(identifier: "en_US")
     )
 }
 
