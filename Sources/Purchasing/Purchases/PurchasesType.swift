@@ -435,7 +435,7 @@ public protocol PurchasesType: AnyObject {
      *
      * Most apps will not need to use this method; invalidating the cache can leave your app in an invalid state.
      * Refer to
-     * [Get User Information](https://docs.revenuecat.com/docs/purchaserinfo#section-get-user-information)
+     * [Get User Information](https://www.revenuecat.com/docs/customers/customer-info#getting-subscription-status-via-the-sdk)
      * for more information on using the cache properly.
      *
      * This is useful for cases where customer information might have been updated outside of the app, like if a
