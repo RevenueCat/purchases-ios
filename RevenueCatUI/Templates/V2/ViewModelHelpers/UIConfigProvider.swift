@@ -48,7 +48,11 @@ final class UIConfigProvider {
     }
 
     @MainActor
-    func resolveFont(size fontSize: CGFloat, name: String) -> Font? {
+    func resolveFont(
+        size fontSize: CGFloat,
+        name: String,
+        useDynamicType: Bool = true
+    ) -> Font? {
 
         guard let fontsConfig = self.uiConfig.app.fonts[name] else {
             self.logMessageIfNeeded(.fontMappingNotFound(name: name))
@@ -68,24 +72,26 @@ final class UIConfigProvider {
 
         // Check if the font name is a generic font (serif, sans-serif, monospace)
         if let genericFont = GenericFont(rawValue: fontName) {
-            return genericFont.makeFont(fontSize: fontSize)
-        }
-
-        guard let customFont = PlatformFont(name: fontName, size: fontSize) else {
+            return genericFont.makeFont(fontSize: fontSize, useDynamicType: useDynamicType)
+        } else if let customFont = PlatformFont(name: fontName, size: fontSize) {
+            // Apply dynamic type scaling
+            #if canImport(UIKit)
+            if useDynamicType {
+                let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
+                return Font(uiFont)
+            } else {
+                return Font(customFont)
+            }
+            #else
+            // macOS does not support dynamic type
+            // (see https://developer.apple.com/design/human-interface-guidelines/typography)
+            return Font(customFont)
+            #endif
+        } else {
             self.logMessageIfNeeded(.customFontFailedToLoad(fontName: fontName))
             self.failedToLoadFont?(fontsConfig)
             return nil
         }
-
-        // Apply dynamic type scaling
-        #if canImport(UIKit)
-        let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
-        return Font(uiFont)
-        #else
-        // macOS does not support dynamic type
-        // (see https://developer.apple.com/design/human-interface-guidelines/typography)
-        return Font(customFont)
-        #endif
     }
 }
 
