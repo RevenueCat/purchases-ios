@@ -349,6 +349,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
         )
         .background(Color.white)
+        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall R/G")
 
         DefaultPaywallView(
@@ -360,6 +361,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
+        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall R/G Dark")
 
         DefaultPaywallView(
@@ -370,6 +372,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appIconCGImage: DualColorImageGenerator.purpleOrange?.cgImage
         )
         .background(Color.white)
+        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall P/O")
 
         DefaultPaywallView(
@@ -380,6 +383,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appIconCGImage: DualColorImageGenerator.blueGreen?.cgImage
         )
         .background(Color.white)
+        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall B/G")
 
         DefaultPaywallView(
@@ -391,6 +395,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
+        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall B/G Dark")
 
         DefaultPaywallView(
@@ -401,6 +406,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appIconCGImage: DualColorImageGenerator.purpleOrange?.cgImage
         )
         .background(Color.white)
+        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall P/O")
 
         DefaultPaywallView(
@@ -412,6 +418,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
+        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall P/O Dark")
 
         DefaultPaywallView(
@@ -423,6 +430,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
         )
         .background(Color.white)
+        .accentColor(.yellow)
         .previewDisplayName("Warning Paywall - localization")
 
         DefaultPaywallView(
@@ -435,6 +443,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
+        .accentColor(.yellow)
         .previewDisplayName("Warning Paywall - localization Dark")
 
         DefaultPaywallView(
@@ -446,6 +455,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
         )
         .background(Color.white)
+        .accentColor(.yellow)
         .previewDisplayName("Warning Paywall - no paywall")
 
         DefaultPaywallView(
@@ -458,6 +468,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
+        .accentColor(.yellow)
         .previewDisplayName("Warning Paywall - no paywall Dark")
     }
 
