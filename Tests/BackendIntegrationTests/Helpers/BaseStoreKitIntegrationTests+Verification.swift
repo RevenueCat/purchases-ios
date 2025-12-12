@@ -172,10 +172,6 @@ extension BaseStoreKitIntegrationTests {
             file: file,
             line: line
         )
-
-        let matchingLogs = self.logger.messages.filter { $0.message.contains(Self.finishingAnyTransactionLog) }
-
-        print(matchingLogs)
     }
 
     func verifyCustomerInfoWasComputedOffline(

@@ -340,8 +340,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         let subscriptionPurchaseData = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
         do {
-            let data = try await self.purchaseConsumablePackage()
-            print(data)
+            try await self.purchaseConsumablePackage()
             fail("Consumable purchases should fail while offline")
         } catch {}
 
