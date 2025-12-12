@@ -38,12 +38,42 @@ public enum PaywallEvent {
 }
 
 @_spi(Internal) extension PaywallEvent: FeatureEvent {
+
+    /// Feature associated with paywall events.
     @_spi(Internal) public var feature: Feature {
         return .paywalls
     }
 
+    /// No discriminator is needed for paywall events.
     @_spi(Internal) public var eventDiscriminator: String? {
         return nil
+    }
+
+    /// Stable event name suitable for logging.
+    @_spi(Internal) public var eventName: String {
+        switch self {
+        case .impression: return "paywall_impression"
+        case .cancel: return "paywall_cancel"
+        case .close: return "paywall_close"
+        }
+    }
+
+    /// Stringified key-value parameters suitable for logging.
+    @_spi(Internal) public var parameters: [String: String] {
+        let creationData = self.creationData
+        let data = self.data
+
+        return [
+            "feature": self.feature.rawValue,
+            "id": creationData.id.uuidString,
+            "timestamp_ms": String(creationData.date.millisecondsSince1970),
+            "offering_identifier": data.offeringIdentifier,
+            "paywall_revision": String(data.paywallRevision),
+            "session_id": data.sessionIdentifier.uuidString,
+            "display_mode": data.displayMode.identifier,
+            "locale_identifier": data.localeIdentifier,
+            "dark_mode": String(data.darkMode)
+        ]
     }
 }
 
