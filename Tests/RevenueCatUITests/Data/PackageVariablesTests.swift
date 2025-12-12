@@ -127,7 +127,7 @@ class PackageVariablesTests: TestCase {
         let arabicPrice = "٣.٩٩ درهم"
 
         // swiftlint:disable line_length
-        expect(TestData.weeklyPackageArabic.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPriceAndPerMonth(Self.arabic))
+        expect(TestData.weeklyPackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPriceAndPerMonth(Self.arabic))
             .to(equalIgnoringRTL("٣.٩٩ درهم/أسبوع (‏8.64 ‏د.إ.‏/شهر)"))
         expect(TestData.monthlyPackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPriceAndPerMonth(Self.arabic))
             .to(equalIgnoringRTL("٣.٩٩ درهم/شهر"))
@@ -381,8 +381,7 @@ private extension Package {
             identifier: self.identifier,
             packageType: self.packageType,
             storeProduct: self.storeProduct
-                .toTestProduct()
-                .with(newLocalizedPrice, locale, currencyCode)
+                .asTestStoreProduct(newLocalizedPrice, locale, currencyCode)
                 .toStoreProduct(),
             offeringIdentifier: self.offeringIdentifier,
             webCheckoutUrl: nil
@@ -392,33 +391,21 @@ private extension Package {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension TestStoreProduct {
-
-    func with(_ newLocalizedPrice: String, _ locale: Locale, _ currencyCode: String) -> Self {
-        var copy = self
-        copy.localizedPriceString = newLocalizedPrice
-        copy.locale = locale
-        copy.currencyCode = currencyCode
-
-        return copy
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension StoreProduct {
 
-    func toTestProduct() -> TestStoreProduct {
+    func asTestStoreProduct(_ newLocalizedPrice: String, _ locale: Locale, _ currencyCode: String) -> TestStoreProduct {
         return .init(
             localizedTitle: self.localizedTitle,
             price: self.price,
-            localizedPriceString: self.localizedPriceString,
+            currencyCode: currencyCode,
+            localizedPriceString: newLocalizedPrice,
             productIdentifier: self.productIdentifier,
             productType: self.productType,
             localizedDescription: self.localizedDescription,
             subscriptionGroupIdentifier: self.subscriptionGroupIdentifier,
             subscriptionPeriod: self.subscriptionPeriod,
-            isFamilyShareable: self.isFamilyShareable
+            isFamilyShareable: self.isFamilyShareable,
+            locale: locale
         )
     }
 
