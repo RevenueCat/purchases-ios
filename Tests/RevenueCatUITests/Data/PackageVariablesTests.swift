@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 8/4/23.
 
 import Nimble
-import RevenueCat
+@testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -71,18 +71,20 @@ class PackageVariablesTests: TestCase {
     func testArabicLocalizedPricePerPeriod() {
         let arabicPrice = "٣.٩٩ درهم"
 
-        expect(TestData.weeklyPackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        // swiftlint:disable line_length
+        expect(TestData.weeklyPackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPricePerPeriod(Self.arabic))
         == "٣.٩٩ درهم/أسبوع"
-        expect(TestData.monthlyPackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        expect(TestData.monthlyPackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPricePerPeriod(Self.arabic))
         == "٣.٩٩ درهم/شهر"
-        expect(TestData.threeMonthPackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        expect(TestData.threeMonthPackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPricePerPeriod(Self.arabic))
         == "٣.٩٩ درهم/3شهر"
-        expect(TestData.sixMonthPackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        expect(TestData.sixMonthPackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPricePerPeriod(Self.arabic))
         == "٣.٩٩ درهم/6شهر"
-        expect(TestData.annualPackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        expect(TestData.annualPackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPricePerPeriod(Self.arabic))
         == "٣.٩٩ درهم/سنة"
-        expect(TestData.lifetimePackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        expect(TestData.lifetimePackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPricePerPeriod(Self.arabic))
         == "٣.٩٩ درهم"
+        // swiftlint:enable line_length
     }
 
     func testEnglishLocalizedPricePerPeriodFull() {
@@ -124,18 +126,20 @@ class PackageVariablesTests: TestCase {
     func testArabicLocalizedPriceAndPerMonth() {
         let arabicPrice = "٣.٩٩ درهم"
 
-        expect(TestData.weeklyPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+        // swiftlint:disable line_length
+        expect(TestData.weeklyPackageArabic.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPriceAndPerMonth(Self.arabic))
             .to(equalIgnoringRTL("٣.٩٩ درهم/أسبوع (‏8.64 ‏د.إ.‏/شهر)"))
-        expect(TestData.monthlyPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+        expect(TestData.monthlyPackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPriceAndPerMonth(Self.arabic))
             .to(equalIgnoringRTL("٣.٩٩ درهم/شهر"))
-        expect(TestData.threeMonthPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+        expect(TestData.threeMonthPackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPriceAndPerMonth(Self.arabic))
             .to(equalIgnoringRTL("٣.٩٩ درهم/3شهر (‏1.66 ‏د.إ.‏/شهر)"))
-        expect(TestData.sixMonthPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+        expect(TestData.sixMonthPackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPriceAndPerMonth(Self.arabic))
             .to(equalIgnoringRTL("٣.٩٩ درهم/6شهر (‏1.33 ‏د.إ.‏/شهر)"))
-        expect(TestData.annualPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+        expect(TestData.annualPackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPriceAndPerMonth(Self.arabic))
             .to(equalIgnoringRTL("٣.٩٩ درهم/سنة (‏4.49 ‏د.إ.‏/شهر)"))
-        expect(TestData.lifetimePackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+        expect(TestData.lifetimePackage.with(arabicPrice, Self.arabic, Self.arabic.rc_currencyCode!).localizedPriceAndPerMonth(Self.arabic))
         == arabicPrice
+        // swiftlint:enable line_length
     }
 
     func testEnglishLocalizedPriceAndPerMonthFull() {
@@ -317,7 +321,7 @@ class PackageVariablesTests: TestCase {
         expect(TestData
             .annualPackage60Taiwan
             .localizedPriceAndPerMonthFull(Locale.taiwan,
-                                           showZeroDecimalPlacePrices: true)) == "$60/年 ($5/個月)"
+                                           showZeroDecimalPlacePrices: true)) == "US$60/年 (US$5/個月)"
 
         expect(TestData
             .threeMonthPackageThailand
@@ -347,7 +351,7 @@ class PackageVariablesTests: TestCase {
         expect(TestData
             .annualPackage60Taiwan
             .localizedPriceAndPerMonthFull(Locale.taiwan,
-                                           showZeroDecimalPlacePrices: false)) == "$60.00/年 ($5.00/個月)"
+                                           showZeroDecimalPlacePrices: false)) == "US$60.00/年 (US$5.00/個月)"
 
         expect(TestData
             .threeMonthPackageThailand
@@ -372,13 +376,13 @@ private extension PackageVariablesTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension Package {
 
-    func with(_ newLocalizedPrice: String, _ locale: Locale) -> Package {
+    func with(_ newLocalizedPrice: String, _ locale: Locale, _ currencyCode: String) -> Package {
         return .init(
             identifier: self.identifier,
             packageType: self.packageType,
             storeProduct: self.storeProduct
                 .toTestProduct()
-                .with(newLocalizedPrice, locale)
+                .with(newLocalizedPrice, locale, currencyCode)
                 .toStoreProduct(),
             offeringIdentifier: self.offeringIdentifier,
             webCheckoutUrl: nil
@@ -390,10 +394,11 @@ private extension Package {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension TestStoreProduct {
 
-    func with(_ newLocalizedPrice: String, _ locale: Locale) -> Self {
+    func with(_ newLocalizedPrice: String, _ locale: Locale, _ currencyCode: String) -> Self {
         var copy = self
         copy.localizedPriceString = newLocalizedPrice
         copy.locale = locale
+        copy.currencyCode = currencyCode
 
         return copy
     }

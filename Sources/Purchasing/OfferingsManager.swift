@@ -387,7 +387,8 @@ private extension OfferingsManager {
                 subscriptionGroupIdentifier: productType.period == nil ? nil : "group",
                 subscriptionPeriod: productType.period,
                 introductoryDiscount: introductoryDiscount,
-                discounts: []
+                discounts: [],
+                locale: Locale(identifier: "en_US")
             )
 
             return testProduct.toStoreProduct()
