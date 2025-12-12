@@ -15,24 +15,18 @@
 import Foundation
 
 class ETagManager {
-
     static let eTagRequestHeader = HTTPClient.RequestHeader.eTag
     static let eTagValidationTimeRequestHeader = HTTPClient.RequestHeader.eTagValidationTime
     static let eTagResponseHeader = HTTPClient.ResponseHeader.eTag
 
-    private let userDefaults: SynchronizedUserDefaults
+    private let cache: SynchronizedLargeItemCache
 
     convenience init() {
-        self.init(
-            userDefaults: UserDefaults(suiteName: Self.suiteName)
-            // This should never return `nil` for this known `suiteName`,
-            // but `.standard` is a good fallback anyway.
-            ?? UserDefaults.standard
-        )
+        self.init(largeItemCache: .init(cache: FileManager.default, basePath: Self.suiteName) )
     }
 
-    init(userDefaults: UserDefaults) {
-        self.userDefaults = .init(userDefaults: userDefaults)
+    init(largeItemCache: SynchronizedLargeItemCache) {
+        self.cache = largeItemCache
     }
 
     /// - Parameter withSignatureVerification: whether requests require a signature.
@@ -122,9 +116,11 @@ class ETagManager {
     func clearCaches() {
         Logger.debug(Strings.etag.clearing_cache)
 
-        self.userDefaults.write {
-            $0.removePersistentDomain(forName: ETagManager.suiteName)
-        }
+        self.cache.clear()
+    }
+
+    struct CacheKey: DeviceCacheKeyType {
+        let rawValue: String
     }
 
 }
@@ -132,8 +128,8 @@ class ETagManager {
 extension ETagManager {
 
     // Visible for tests
-    static func cacheKey(for request: URLRequest) -> String? {
-        return request.url?.absoluteString
+    static func cacheKey(for request: URLRequest) -> CacheKey? {
+        return (request.url?.absoluteString.asData.md5String).map(ETagManager.CacheKey.init)
     }
 
 }
@@ -156,15 +152,10 @@ private extension ETagManager {
     }
 
     func storedETagAndResponse(for request: URLRequest) -> Response? {
-        return self.userDefaults.read {
-            if let cacheKey = Self.cacheKey(for: request),
-               let value = $0.object(forKey: cacheKey),
-               let data = value as? Data {
-                return try? JSONDecoder.default.decode(Response.self, jsonData: data)
-            }
-
-            return nil
+        if let cacheKey = Self.cacheKey(for: request) {
+            return self.cache.value(forKey: cacheKey)
         }
+        return nil
     }
 
     func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
@@ -192,13 +183,10 @@ private extension ETagManager {
     }
 
     func storeIfPossible(_ response: Response, for request: URLRequest) {
-        if let cacheKey = Self.cacheKey(for: request),
-           let dataToStore = response.asData() {
+        if let cacheKey = Self.cacheKey(for: request) {
             Logger.verbose(Strings.etag.storing_response(request, response))
 
-            self.userDefaults.write {
-                $0.set(dataToStore, forKey: cacheKey)
-            }
+            self.cache.set(codable: response, forKey: cacheKey)
         }
     }
 
