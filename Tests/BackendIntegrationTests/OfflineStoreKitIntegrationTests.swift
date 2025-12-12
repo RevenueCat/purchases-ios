@@ -144,7 +144,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         }
 
         // 4. Ensure transaction is eventually finished
-        try await self.verifyTransactionIsEventuallyFinished()
+        try await self.verifyAnyTransactionIsEventuallyFinished()
 
         // 5. Restart app again
         try self.purchases.invalidateCustomerInfoCache()
@@ -338,13 +338,14 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         // 1. Purchase while server is down
         self.serverDown()
 
-        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        let subscriptionPurchaseData = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
         do {
             try await self.purchaseConsumablePackage()
             fail("Consumable purchases should fail while offline")
         } catch {}
 
-        self.verifyNoTransactionsWereFinished()
+        let transaction = try XCTUnwrap(subscriptionPurchaseData.transaction)
+        self.verifySpecificTransactionWasNotFinished(transaction)
 
         // 2. Server is back
         self.allServersUp()
@@ -360,7 +361,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
 
         // 6. Ensure transactions are finished
-        try await self.verifyTransactionIsEventuallyFinished(count: 2)
+        try await self.verifyAnyTransactionIsEventuallyFinished(count: 2)
+
+        self.verifySpecificTransactionWasFinished(transaction)
+        self.verifyTransactionWasFinishedForProductIdentifier(Self.consumable10Coins)
     }
 
 }
