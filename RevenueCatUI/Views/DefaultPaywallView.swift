@@ -155,7 +155,10 @@ struct DefaultPaywallView: View {
                     .buttonStyle(.borderedProminent)
 
                     if #available(watchOS 9.0, *) {
-                        purchaseButton.controlSize(.large)
+                        purchaseButton
+                            #if !os(tvOS)
+                            .controlSize(.large)
+                            #endif
                     } else {
                         purchaseButton
                     }
@@ -171,7 +174,9 @@ struct DefaultPaywallView: View {
 
                     if #available(watchOS 9.0, *) {
                         restoreButton
+                            #if !os(tvOS)
                             .controlSize(.large)
+                            #endif
                             .tint(Color.primary)
                     } else {
                         restoreButton
