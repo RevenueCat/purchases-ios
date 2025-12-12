@@ -492,25 +492,20 @@ struct DefaultPaywallPreviews: PreviewProvider {
         ///   - color1: The first color (Left or Top).
         ///   - color2: The second color (Right or Bottom).
         ///   - size: The size of the resulting image in points.
-        ///   - verticalSplit: If true, splits Top/Bottom. If false, splits Left/Right.
         /// - Returns: A CGImage if creation is successful.
         static func createCGImage(
             color1: CGColor,
             color2: CGColor,
             size: CGSize = .init(width: 50, height: 50)
         ) -> CGImage? {
-            // Ensure size is valid
             guard size.width > 0, size.height > 0 else { return nil }
 
-            // Define the integer dimensions for the context
             let width = Int(size.width)
             let height = Int(size.height)
 
-            // Create a color space
             let colorSpace = CGColorSpaceCreateDeviceRGB()
 
-            // Create the bitmap context
-            // We use premultipliedLast for standard ARGB/RGBA handling
+            // Create the bitmap context. We use premultipliedLast for standard ARGB/RGBA handling
             guard let context = CGContext(
                 data: nil,
                 width: width,
@@ -523,7 +518,6 @@ struct DefaultPaywallPreviews: PreviewProvider {
                 return nil
             }
 
-            // Calculate Frames based on split direction
             let firstRect: CGRect
             let secondRect: CGRect
 
@@ -531,15 +525,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             firstRect = CGRect(x: 0, y: 0, width: splitWidth, height: CGFloat(height))
             secondRect = CGRect(x: splitWidth, y: 0, width: splitWidth, height: CGFloat(height))
 
-            // Draw Color 1
             context.setFillColor(color1)
             context.fill(firstRect)
 
-            // Draw Color 2
             context.setFillColor(color2)
             context.fill(secondRect)
 
-            // Generate and return the image
             return context.makeImage()
         }
 
@@ -551,7 +542,6 @@ struct DefaultPaywallPreviews: PreviewProvider {
             size: CGSize = .init(width: 200, height: 200)
         ) -> (image: Image, cgImage: CGImage)? {
 
-            // Resolve SwiftUI Color to CGColor using platform bridges
             let cgColor1 = platformColor(from: color1).cgColor
             let cgColor2 = platformColor(from: color2).cgColor
 
@@ -563,14 +553,11 @@ struct DefaultPaywallPreviews: PreviewProvider {
                 return nil
             }
 
-            // Create SwiftUI Image from CGImage
             let swiftUIImage = Image(cgImage, scale: 1.0, label: Text("Generated Dual Color Image"))
 
             return (swiftUIImage, cgImage)
         }
 
-        // Helper to bridge SwiftUI Color to Platform specific color (UIColor/NSColor)
-        // to reliably extract CGColor in iOS 15/macOS 12 environments.
         private static func platformColor(from color: Color) -> PlatformColor {
             #if os(macOS)
             return NSColor(color)
