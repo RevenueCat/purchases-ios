@@ -96,7 +96,7 @@ struct DefaultPaywallView: View {
             Spacer()
 
             if shouldShowWarning, let warning {
-                DefaultPaywallWarning(warning: warning, hasProducts: !products.isEmpty)
+                DefaultPaywallWarning(warning: warning)
             } else {
                 VStack(alignment: .center, spacing: 16) {
                     let image = AppStyleExtractor.getAppIcon()
@@ -153,6 +153,7 @@ struct DefaultPaywallView: View {
                             .foregroundStyle(foregroundOnAccentColor)
                     }
                     .buttonStyle(.borderedProminent)
+                    .frame(maxWidth: 480) // For iPad or macOS
 
                     if #available(watchOS 9.0, *) {
                         purchaseButton
@@ -249,7 +250,6 @@ private struct DefaultProductCell: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct DefaultPaywallWarning: View {
     let warning: PaywallWarning
-    let hasProducts: Bool
 
     var body: some View {
         VStack(alignment: .center, spacing: 16) {
@@ -263,10 +263,6 @@ private struct DefaultPaywallWarning: View {
                     .bold()
                 Text(warning.bodyText)
                     .font(.subheadline)
-            }
-            if hasProducts {
-                Text("This Paywall will not be available in production.")
-                    .font(.subheadline.bold())
             }
             if let url = warning.helpURL {
                 let link = Link(destination: url) {
