@@ -23,7 +23,7 @@ import SwiftUI
 /// including its name, icon, and prominent colors from the icon.
 ///
 /// All methods work across iOS, macOS, and tvOS platforms.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum AppStyleExtractor {
 
     /// Retrieves the name of the app's primary icon from the bundle.
