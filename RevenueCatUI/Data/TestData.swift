@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 // swiftlint:disable type_body_length file_length force_unwrapping
@@ -83,7 +83,7 @@ enum TestData {
     static let threeMonthProductThailand = TestStoreProduct(
         localizedTitle: "3 months",
         price: 5.00,
-        currencyCode: Locale.thailand.currencyCode!,
+        currencyCode: Locale.thailand.rc_languageCode!,
         localizedPriceString: "฿5.00",
         productIdentifier: "com.revenuecat.product_5",
         productType: .autoRenewableSubscription,
