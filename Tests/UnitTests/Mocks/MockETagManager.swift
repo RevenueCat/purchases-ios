@@ -13,9 +13,8 @@ import Foundation
 // swiftlint:disable type_name
 class MockETagManager: ETagManager {
 
-    let mockCache: MockSimpleCache
     init() {
-        self.mockCache = MockSimpleCache()
+        let mockCache = SynchronizedLargeItemCache.MockUnderlyingSynchronizedFileCache()
         super.init(largeItemCache: .init(cache: mockCache, basePath: "MockETagManager-\(UUID().uuidString)"))
     }
 
