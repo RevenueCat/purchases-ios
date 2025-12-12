@@ -117,17 +117,11 @@ struct LoadedTabsComponentView: View {
         //       - Tab 1: has Package C (its own package)
         //       - Tab 2: no packages (should inherit from parent)
         //
-        // Requirements:
-        // 1. Tabs WITH packages: use their own package context, propagate to parent for purchase button
-        // 2. Tabs WITHOUT packages: inherit from parent's selected package
-        // 3. Tabs WITHOUT packages should NOT be affected when tabs WITH packages propagate their package
-        // 4. Tabs WITHOUT packages SHOULD update when user selects a different parent package
-        //
         // Solution:
-        // - Create a PackageContext for ALL tabs (not just those with packages)
-        // - Tabs with packages: initialized with their own packages
-        // - Tabs without packages: initialized with parent's current state, then kept in sync
-        //   via `onChangeOf` observer that filters out tab propagations (see body)
+        // - Tabs WITH packages: create their own PackageContext with their packages
+        // - Tabs WITHOUT packages: use parentPackageContext directly (same instance)
+        //   This ensures they always reflect the current parent selection and stay in sync
+        //   automatically when the parent context changes.
         //
         self._tierPackageContexts = .init(initialValue: Dictionary(
             uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel -> (String, PackageContext) in
@@ -142,23 +136,12 @@ struct LoadedTabsComponentView: View {
                     )
                     return (key, packageContext)
                 } else {
-                    // Tab has no packages - inherit from parent's current state.
-                    // This context will be kept in sync with parent changes via `onChangeOf`
-                    // in the body, which filters out propagations from tabs with packages.
-                    let packageContext = PackageContext(
-                        package: parentPackageContext.package,
-                        variableContext: parentPackageContext.variableContext
-                    )
-                    return (key, packageContext)
+                    // Tab has no packages - use parent context directly.
+                    // This ensures the tab always shows the current parent selection.
+                    return (key, parentPackageContext)
                 }
             }
         ))
-    }
-
-    /// Set of package identifiers that belong to tabs (not parent scope).
-    /// Used to distinguish between parent package selections and tab package propagations.
-    private var tabPackageIdentifiers: Set<String> {
-        Set(viewModel.tabViewModels.values.flatMap { $0.packages.map(\.identifier) })
     }
 
     var body: some View {
@@ -188,40 +171,6 @@ struct LoadedTabsComponentView: View {
                         )
                     }
                 }
-            }
-            .onChangeOf(self.packageContext.package) { newPackage in
-                self.syncParentPackageToTabsWithoutPackages(newPackage)
-            }
-        }
-    }
-
-    // MARK: - Sync parent package changes to tabs without packages
-    //
-    // This keeps tabs without packages in sync with parent package selections,
-    // while filtering out propagations from tabs that have their own packages.
-    //
-    // Flow example:
-    // 1. User selects Package B (parent) → packageContext updates to B
-    // 2. This function checks: is B a tab package? No.
-    // 3. Updates Tab 2's context (which has no packages) with Package B ✓
-    //
-    // Filtered example:
-    // 1. Tab 1 propagates Package C → packageContext updates to C
-    // 2. This function checks: is C a tab package? Yes (it's in Tab 1).
-    // 3. Does NOT update Tab 2's context - Tab 2 keeps showing parent's package ✓
-    //
-    private func syncParentPackageToTabsWithoutPackages(_ newPackage: Package?) {
-        guard let newPackage = newPackage else { return }
-
-        let isTabPackage = self.tabPackageIdentifiers.contains(newPackage.identifier)
-
-        if !isTabPackage {
-            // Parent package selection - update all tabs without packages
-            for (tabId, tabViewModel) in self.viewModel.tabViewModels where tabViewModel.packages.isEmpty {
-                self.tierPackageContexts[tabId]?.update(
-                    package: newPackage,
-                    variableContext: self.packageContext.variableContext
-                )
             }
         }
     }
