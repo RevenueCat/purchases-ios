@@ -23,6 +23,7 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 let project = Project(
     name: "PaywallsTester",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .appProject,
     targets: [
         .target(
