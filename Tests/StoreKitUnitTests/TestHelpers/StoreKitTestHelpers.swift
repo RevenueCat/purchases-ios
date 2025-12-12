@@ -84,7 +84,7 @@ extension XCTestCase {
 
     func waitUntilUnfinishedTransactions(
         condition: @Sendable @escaping (Int) -> Bool,
-        file: FileString = #fileID,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async throws {
         try await asyncWait(
@@ -100,25 +100,18 @@ extension XCTestCase {
         try await self.waitUntilUnfinishedTransactions { $0 == 0 }
     }
 
-    func deleteAllTransactions(session: SKTestSession) async {
-        let sk1Transactions = session.allTransactions()
-        if !sk1Transactions.isEmpty {
-            Logger.debug(StoreKitTestMessage.deletingTransactions(count: sk1Transactions.count))
-
-            for transaction in sk1Transactions {
-                try? session.deleteTransaction(identifier: transaction.identifier)
-            }
-        }
-
+    func deleteAllTransactions(session: SKTestSession) async throws {
         let sk2Transactions = await self.unfinishedTransactions
         if !sk2Transactions.isEmpty {
             Logger.debug(StoreKitTestMessage.finishingTransactions(count: sk2Transactions.count))
 
             for transaction in sk2Transactions.map(\.underlyingTransaction) {
                 await transaction.finish()
-                try? session.deleteTransaction(identifier: UInt(transaction.id))
             }
         }
+
+        session.clearTransactions()
+        try await session.spinUntilNoActiveTransactions()
     }
 
     private var unfinishedTransactions: [StoreKit.VerificationResult<Transaction>] {
@@ -163,4 +156,112 @@ enum StoreKitTestMessage: LogMessage {
 
     var category: String { return "StoreKitConfigTestCase" }
 
+}
+
+// Greatly inspired by https://github.com/dropbox/StoreKitTestHelpers
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension SKTestSession {
+    @MainActor
+    @discardableResult func spinUntilNoActiveTransactions(
+        maxTries: Int = 1_000,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async throws -> Int {
+        let allTransactions = allTransactions()
+        XCTAssertTrue(
+            allTransactions.isEmpty,
+            "Precondition failed: non-empty transactions. Make sure to clearTransactions() in the test session first.")
+
+        let attempts = try await Task.spinUntilCondition(condition: {
+            let activeProductIDs = await Transaction.activeProductIDs()
+            return activeProductIDs.isEmpty
+        }, maxTries: maxTries, file: file, line: line)
+
+        return attempts
+    }
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension Task where Failure == Never, Success == Never {
+    enum SpinError: Error { case exceededTimeout(String) }
+
+    @MainActor
+    @discardableResult static func spinUntilCondition(
+        condition: () async throws -> Bool,
+        maxTries: Int = 1_000,
+        minimumConsecutiveConsistency: Int = 3,
+        sleepDuration: TimeInterval = 0.025,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async throws -> Int {
+        let start = Date()
+
+        var lastConditionResults: [Bool] = []
+        for attempt in 0 ... maxTries {
+            let prefix = "\(((file.description) as NSString).lastPathComponent) L\(line)"
+
+            if !lastConditionResults.isEmpty, lastConditionResults.count > minimumConsecutiveConsistency {
+                _ = lastConditionResults.removeFirst()
+            }
+            let conditionResult = try await condition()
+            lastConditionResults.append(conditionResult)
+            if lastConditionResults.count >= minimumConsecutiveConsistency,
+               lastConditionResults.allSatisfy({ $0 }) {
+                let end = Date()
+                let duration = end.timeIntervalSince(start)
+                let formattedDuration = "(\(duration.formatted(.number.precision(.fractionLength(1)))) seconds)"
+                if attempt > minimumConsecutiveConsistency {
+                    print(
+                        "\(prefix): Took \(attempt + 1) tries \(formattedDuration) until conditions are what we expect"
+                    )
+                } else {
+                    print(
+                        "\(prefix): condition hit on the first \(minimumConsecutiveConsistency) tries " +
+                        "\(formattedDuration), nice!"
+                    )
+                }
+                return attempt
+            }
+            if attempt > maxTries / 2 {
+                if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+                    try await Task.sleep(for: .seconds(sleepDuration))
+                } else {
+                    try await Task.sleep(nanoseconds: UInt64(TimeInterval(NSEC_PER_SEC) * sleepDuration))
+                }
+            } else {
+                await Task.yield()
+            }
+        }
+        let end = Date()
+        let duration = end.timeIntervalSince(start)
+        let failureMessage = "Internal state failed to update after \(maxTries) tries " +
+        "(\(duration.formatted(.number.precision(.fractionLength(1)))) seconds), this is a known flake"
+        throw SpinError.exceededTimeout(failureMessage)
+    }
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension Transaction {
+    static func activeProductIDs() async -> [String] {
+        await currentTransactions().map(\.productID)
+    }
+
+    /// This includes `Transaction.currentEntitlements` which is limited to subscribed or inGracePeriod,
+    /// however it does not check validity
+    static func currentTransactions() async -> [Transaction] {
+        var transactions = [Transaction]()
+        // Iterate through all of the user's purchased products.
+        for await result in Transaction.currentEntitlements {
+            do {
+                let transaction = try result.payloadValue
+                transactions.append(transaction)
+            } catch {
+                print(
+                    "currentTransactions transaction error, " +
+                    "skipping: \(result.unsafePayloadValue.productID) \(error)"
+                )
+            }
+        }
+        return transactions
+    }
 }
