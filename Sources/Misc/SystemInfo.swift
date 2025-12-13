@@ -346,6 +346,16 @@ extension SystemInfo {
         #endif
     }
 
+    static var applicationWillResignActiveNotification: Notification.Name {
+        #if os(iOS) || os(tvOS) || VISION_OS
+            UIApplication.willResignActiveNotification
+        #elseif os(macOS)
+            NSApplication.willResignActiveNotification
+        #elseif os(watchOS)
+            Notification.Name.NSExtensionHostWillResignActive
+        #endif
+    }
+
     static var applicationDidEnterBackgroundNotification: Notification.Name {
         #if os(iOS) || os(tvOS) || VISION_OS
             UIApplication.didEnterBackgroundNotification

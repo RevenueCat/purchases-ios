@@ -14,7 +14,7 @@
 import Foundation
 
 /// An event to be sent by the `RevenueCatUI` SDK.
-public enum PaywallEvent: FeatureEvent {
+public enum PaywallEvent {
 
     // swiftlint:disable type_name
 
@@ -26,14 +26,6 @@ public enum PaywallEvent: FeatureEvent {
     /// An identifier that represents a paywall session.
     public typealias SessionID = UUID
 
-    var feature: Feature {
-        return .paywalls
-    }
-
-    var eventDiscriminator: String? {
-        return nil
-    }
-
     /// A `PaywallView` was displayed.
     case impression(CreationData, Data)
 
@@ -43,6 +35,46 @@ public enum PaywallEvent: FeatureEvent {
     /// A `PaywallView` was closed.
     case close(CreationData, Data)
 
+}
+
+@_spi(Internal) extension PaywallEvent: FeatureEvent {
+
+    /// Feature associated with paywall events.
+    @_spi(Internal) public var feature: Feature {
+        return .paywalls
+    }
+
+    /// No discriminator is needed for paywall events.
+    @_spi(Internal) public var eventDiscriminator: String? {
+        return nil
+    }
+
+    /// Stable event name suitable for logging.
+    @_spi(Internal) public var eventName: String {
+        switch self {
+        case .impression: return "paywall_impression"
+        case .cancel: return "paywall_cancel"
+        case .close: return "paywall_close"
+        }
+    }
+
+    /// Stringified key-value parameters suitable for logging.
+    @_spi(Internal) public var parameters: [String: String] {
+        let creationData = self.creationData
+        let data = self.data
+
+        return [
+            "feature": self.feature.rawValue,
+            "id": creationData.id.uuidString,
+            "timestamp_ms": String(creationData.date.millisecondsSince1970),
+            "offering_identifier": data.offeringIdentifier,
+            "paywall_revision": String(data.paywallRevision),
+            "session_id": data.sessionIdentifier.uuidString,
+            "display_mode": data.displayMode.identifier,
+            "locale_identifier": data.localeIdentifier,
+            "dark_mode": String(data.darkMode)
+        ]
+    }
 }
 
 extension PaywallEvent {
