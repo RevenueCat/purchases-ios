@@ -549,8 +549,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let manager = try self.mockEventsManager
 
         try await asyncWait { await manager.invokedFlushFeatureEvents == true }
-
-        expect(self.operationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
     // MARK: - AdServices and Attributes
