@@ -271,7 +271,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     locale: Locale.current,
                     localizedStrings: [
                         // swiftlint:disable:next line_length
-                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n<u>underline</u>\n[RevenueCat](https://revenuecat.com)")
+                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n<u>underline</u>\n<u>**_underlined italic bold_**</u>\n[RevenueCat](https://revenuecat.com)")
                     ]
                 ),
                 uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
