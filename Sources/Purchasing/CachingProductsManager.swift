@@ -89,6 +89,10 @@ extension CachingProductsManager: ProductsManagerType {
 
     var requestTimeout: TimeInterval { return self.manager.requestTimeout }
 
+    func updatePriceFormattingRuleSet(_ ruleSet: PriceFormattingRuleSet?) {
+        self.manager.updatePriceFormattingRuleSet(ruleSet)
+    }
+
 }
 
 extension CachingProductsManager: Sendable {}

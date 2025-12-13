@@ -79,7 +79,7 @@ extension OfferingsManagerStoreKitTests {
 
         // Note: this test passes only because the method `invalidateAndReFetchCachedOfferingsIfAppropiate`
         // is manually executed. `OfferingsManager` does not detect Storefront changes to invalidate the
-        // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
+        // cache. The changes are now managed by `PurchasesOrchestrator`.
         offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: MockData.anyAppUserID)
 
         receivedOfferings = try await offeringsManager.offerings(appUserID: MockData.anyAppUserID)
@@ -114,7 +114,8 @@ private extension OfferingsManagerStoreKitTests {
             ],
             placements: nil,
             targeting: nil,
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         )
     }
 
