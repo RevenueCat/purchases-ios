@@ -120,11 +120,51 @@ private struct NonLocalizedMarkdownText: View {
             }
         }
 
+        // Handle underline with <u>text</u> syntax
+        attrString = Self.applyUnderlines(to: attrString)
+
         return attrString
 
         #else
         return nil
         #endif
+    }
+
+    /// Processes `<u>text</u>` syntax and applies underline styling
+    private static func applyUnderlines(to attrString: AttributedString) -> AttributedString {
+        var result = attrString
+        let plainString = String(result.characters)
+
+        // Find all <u>...</u> matches
+        guard let regex = try? NSRegularExpression(pattern: "<u>(.*?)</u>", options: []) else {
+            return result
+        }
+
+        let nsRange = NSRange(plainString.startIndex..., in: plainString)
+        let matches = regex.matches(in: plainString, options: [], range: nsRange)
+
+        // Process in reverse order to preserve indices
+        for match in matches.reversed() {
+            guard let fullRange = Range(match.range, in: plainString),
+                  let contentNSRange = Range(match.range(at: 1), in: plainString) else {
+                continue
+            }
+
+            // Convert String ranges to AttributedString ranges
+            guard let attrFullRange = result.range(of: String(plainString[fullRange])),
+                  let attrContentRange = result[attrFullRange].range(of: String(plainString[contentNSRange])) else {
+                continue
+            }
+
+            // Extract content with existing attributes, add underline
+            var content = AttributedString(result[attrContentRange])
+            content.underlineStyle = .single
+
+            // Replace <u>content</u> with just the underlined content
+            result.replaceSubrange(attrFullRange, with: content)
+        }
+
+        return result
     }
 
     var body: some View {
@@ -231,7 +271,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     locale: Locale.current,
                     localizedStrings: [
                         // swiftlint:disable:next line_length
-                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n[RevenueCat](https://revenuecat.com)")
+                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n<u>underline</u>\n[RevenueCat](https://revenuecat.com)")
                     ]
                 ),
                 uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
