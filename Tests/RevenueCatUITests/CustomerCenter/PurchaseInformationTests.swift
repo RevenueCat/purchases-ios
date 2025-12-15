@@ -69,6 +69,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -132,6 +133,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -192,6 +194,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -253,6 +256,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -312,6 +316,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -1148,6 +1153,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Premium Monthly Subscription",
             price: 9.99,
+            currencyCode: "USD",
             localizedPriceString: "$9.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -1197,6 +1203,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Premium Product",
             price: 19.99, // Different from transaction price
+            currencyCode: "USD",
             localizedPriceString: "$19.99",
             productIdentifier: "com.app.premium",
             productType: .autoRenewableSubscription,
@@ -1318,6 +1325,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Premium Product",
             price: 14.99,
+            currencyCode: "USD",
             localizedPriceString: "$14.99",
             productIdentifier: "com.app.premium",
             productType: .autoRenewableSubscription,
@@ -1700,10 +1708,12 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly",
             price: 9.99,
+            currencyCode: "USD",
             localizedPriceString: "$9.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
-            localizedDescription: "Monthly subscription"
+            localizedDescription: "Monthly subscription",
+            locale: Self.locale
         )
 
         let mockTransaction = MockTransaction(
@@ -1746,10 +1756,12 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Seasonal Pass",
             price: 19.99,
+            currencyCode: "USD",
             localizedPriceString: "$19.99",
             productIdentifier: "seasonal_pass",
             productType: .nonRenewableSubscription,
-            localizedDescription: "3-month pass"
+            localizedDescription: "3-month pass",
+            locale: Self.locale
         )
 
         let mockTransaction = MockTransaction(

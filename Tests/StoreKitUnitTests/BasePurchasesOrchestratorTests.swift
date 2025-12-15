@@ -285,10 +285,12 @@ extension BasePurchasesOrchestratorTests {
     static let testProduct = TestStoreProduct(
         localizedTitle: "Product",
         price: 3.99,
+        currencyCode: "USD",
         localizedPriceString: "$3.99",
         productIdentifier: "product",
         productType: .autoRenewableSubscription,
-        localizedDescription: "Description"
+        localizedDescription: "Description",
+        locale: Locale(identifier: "en_US")
     ).toStoreProduct()
 
     static let paywallEventCreationData: PaywallEvent.CreationData = .init(
