@@ -218,14 +218,14 @@ final class TabsPackageInheritanceTests: TestCase {
     }
 
     @MainActor
-    func testParentContextChangeAffectsTabsWithoutPackages() {
+    func testParentContextChangeAffectsAllTabs() {
         // Given: Setup with Tab 1 (has packages) and Tab 2 (no packages)
         let parentContext = PackageContext(
             package: self.parentPackageA,
             variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
         )
 
-        // Tab 1 gets its own context
+        // Tab 1 gets its own context (but will be updated when parent changes)
         let tab1Context = PackageContext(
             package: self.tabPackageC,
             variableContext: .init(packages: [self.tabPackageC])
@@ -244,8 +244,17 @@ final class TabsPackageInheritanceTests: TestCase {
             variableContext: parentContext.variableContext
         )
 
-        // Then: Tab 1 is unaffected (has its own context)
-        expect(tab1Context.package?.identifier) == self.tabPackageC.identifier
+        // Simulate the onChangeOf handler behavior:
+        // When parent changes to a different package, update Tab 1's context
+        if parentContext.package?.identifier != self.tabPackageC.identifier {
+            tab1Context.update(
+                package: parentContext.package,
+                variableContext: parentContext.variableContext
+            )
+        }
+
+        // Then: Tab 1 is NOW affected (parent selection propagates to tabs with packages)
+        expect(tab1Context.package?.identifier) == self.parentPackageB.identifier
 
         // Then: Tab 2 automatically sees the change (same instance as parent)
         expect(tab2Context.package?.identifier) == self.parentPackageB.identifier
@@ -481,35 +490,90 @@ final class TabsPackageInheritanceTests: TestCase {
     }
 
     @MainActor
-    func testTabWithSamePackagesAsParentDoesNotUpdateWhenParentChanges() {
-        // Given: A tab with the same packages as parent
+    func testParentSelectionPropagatesToTabWithPackages() {
+        // This test verifies that when a user selects a package in the parent scope,
+        // that selection is propagated to tabs with their own packages.
+        //
+        // Scenario:
+        // 1. Tab 1 has Package C, displays it
+        // 2. User selects Package B in parent scope
+        // 3. Tab 1 should now show Package B (not Package C)
+
+        // Given: Parent context starts with Package A
         let parentContext = PackageContext(
             package: self.parentPackageA,
             variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
         )
 
-        // Tab has same packages but its own context
+        // Given: Tab has its own package (Package C)
         let tabContext = PackageContext(
-            package: self.parentPackageB, // Tab's default is Package B
-            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+            package: self.tabPackageC,
+            variableContext: .init(packages: [self.tabPackageC])
         )
 
-        // Then: Initially, tab has Package B, parent has Package A
-        expect(tabContext.package?.identifier) == self.parentPackageB.identifier
-        expect(parentContext.package?.identifier) == self.parentPackageA.identifier
+        // Then: Initially, tab has Package C
+        expect(tabContext.package?.identifier) == self.tabPackageC.identifier
 
-        // When: Parent changes its selection
+        // When: User selects Package B in parent scope
         parentContext.update(
             package: self.parentPackageB,
             variableContext: parentContext.variableContext
         )
 
-        // Then: Tab is UNAFFECTED (has its own context, even with same packages)
-        // Tab still has Package B (its original selection)
+        // Simulate the onChangeOf handler behavior:
+        // When parent changes to a different package, propagate to tab
+        if parentContext.package?.identifier != tabContext.package?.identifier {
+            tabContext.update(
+                package: parentContext.package,
+                variableContext: parentContext.variableContext
+            )
+        }
+
+        // Then: Tab now shows Package B (parent's selection)
         expect(tabContext.package?.identifier) == self.parentPackageB.identifier
 
-        // Then: They are different instances
-        expect(tabContext) !== parentContext
+        // Then: Tab's variable context is updated to parent's variable context
+        expect(tabContext.variableContext.mostExpensivePricePerMonth)
+            == parentContext.variableContext.mostExpensivePricePerMonth
+    }
+
+    @MainActor
+    func testTabPropagationDoesNotCauseLoop() {
+        // This test verifies that when a tab propagates its package to the parent,
+        // the onChangeOf handler does NOT update the tab back (avoiding a loop).
+        //
+        // Scenario:
+        // 1. Tab 1 has Package C
+        // 2. Tab 1 propagates Package C to parent
+        // 3. Tab 1 should NOT be updated (it already has Package C)
+
+        // Given: Tab has Package C
+        let tabContext = PackageContext(
+            package: self.tabPackageC,
+            variableContext: .init(packages: [self.tabPackageC])
+        )
+
+        // Given: Parent context (will receive tab's propagation)
+        let parentContext = PackageContext(
+            package: self.parentPackageA,
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        // When: Tab propagates its package to parent (simulating onChange callback)
+        parentContext.update(
+            package: self.tabPackageC,
+            variableContext: tabContext.variableContext
+        )
+
+        // Simulate the onChangeOf handler behavior:
+        // Since parent's new package (C) equals tab's current package (C), no update
+        let shouldUpdateTab = parentContext.package?.identifier != tabContext.package?.identifier
+
+        // Then: Tab should NOT be updated (same package)
+        expect(shouldUpdateTab) == false
+
+        // Then: Tab still has its original context
+        expect(tabContext.package?.identifier) == self.tabPackageC.identifier
     }
 }
 

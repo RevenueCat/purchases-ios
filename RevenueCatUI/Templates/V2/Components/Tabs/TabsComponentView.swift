@@ -172,6 +172,24 @@ struct LoadedTabsComponentView: View {
                     }
                 }
             }
+            // MARK: - Parent Selection Propagation to Tabs
+            //
+            // When the user selects a package in the parent scope (outside the tabs),
+            // we need to propagate that selection to the current tab so it shows
+            // the correct variable values (e.g., price).
+            //
+            // We check if the parent's package is different from the tab's current package
+            // to avoid unnecessary updates when the tab itself propagates its package to parent.
+            //
+            .onChangeOf(self.packageContext.package) { newPackage in
+                if let newPackage = newPackage,
+                   newPackage.identifier != tierPackageContext.package?.identifier {
+                    tierPackageContext.update(
+                        package: newPackage,
+                        variableContext: self.packageContext.variableContext
+                    )
+                }
+            }
         }
     }
 
