@@ -99,7 +99,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseStoreKitIntegrationTests 
 
         self.verifySyncedAttribute(self.userID, [reserved(.email): invalidEmail])
 
-        expect(error.domain) == RCPurchasesErrorCodeDomain
+        expect(error.domain) == ErrorCode.errorDomain
         expect(error.code) == ErrorCode.invalidSubscriberAttributesError.rawValue
         expect(error.subscriberAttributesErrors) == [
             "$email": "Email address is not a valid email."
