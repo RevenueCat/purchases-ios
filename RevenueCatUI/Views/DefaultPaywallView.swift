@@ -30,8 +30,6 @@ fileprivate extension Color {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct DefaultPaywallView: View {
 
-    @ObservedObject var appIconDetailProvider: AppIconDetailProvider
-
     init(
         handler: PurchaseHandler,
         warning: PaywallWarning? = nil,
@@ -58,6 +56,8 @@ struct DefaultPaywallView: View {
     @State private var warning: PaywallWarning?
     @State private var products: [Package]
     @State private var selected: Package?
+
+    @ObservedObject var appIconDetailProvider: AppIconDetailProvider
 
     var iconColor: Color {
         if appIconDetailProvider.foundColors.isEmpty {
@@ -319,8 +319,8 @@ final class AppIconDetailProvider: ObservableObject {
         foundColors = []
 
         if let appIconCGImage {
-            Task(priority: .userInitiated) {
-                self.foundColors = await AppStyleExtractor.getProminentColorsFromAppIcon(image: appIconCGImage)
+            AppStyleExtractor.getProminentColorsFromAppIcon(image: appIconCGImage) {
+                self.foundColors = $0
             }
         }
     }
