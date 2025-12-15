@@ -73,20 +73,17 @@ final class UIConfigProvider {
         // Check if the font name is a generic font (serif, sans-serif, monospace)
         if let genericFont = GenericFont(rawValue: fontName) {
             return genericFont.makeFont(fontSize: fontSize, useDynamicType: useDynamicType)
-        } else if let customFont = PlatformFont(name: fontName, size: fontSize) {
-            // Apply dynamic type scaling
-            #if canImport(UIKit)
+        } else if PlatformFont(name: fontName, size: fontSize) != nil {
+#if canImport(UIKit)
             if useDynamicType {
-                let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
-                return Font(uiFont)
+                let scaledSize = UIFontMetrics.default.scaledValue(for: fontSize)
+                return Font.custom(fontName, size: scaledSize)
             } else {
-                return Font(customFont)
+                return Font.custom(fontName, size: fontSize)
             }
-            #else
-            // macOS does not support dynamic type
-            // (see https://developer.apple.com/design/human-interface-guidelines/typography)
-            return Font(customFont)
-            #endif
+#else
+            return Font.custom(fontName, size: fontSize)
+#endif
         } else {
             self.logMessageIfNeeded(.customFontFailedToLoad(fontName: fontName))
             self.failedToLoadFont?(fontsConfig)
