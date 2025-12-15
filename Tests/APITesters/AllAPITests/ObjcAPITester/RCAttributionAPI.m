@@ -68,6 +68,10 @@
     [a setCreative: @""];
     [a collectDeviceIdentifiers];
     [a enableAdServicesAttributionTokenCollection];
+
+    [a setAppsFlyerAttributionData:nil];
+    NSDictionary *dict = @{};
+    [a setAppsFlyerAttributionData:dict];
 }
 
 @end

@@ -98,4 +98,34 @@ func checkAttributionAPI() {
         attribution.enableAdServicesAttributionTokenCollection()
     }
     #endif
+
+    checkSetAppsFlyerAttributionDataAPI()
+}
+
+func checkSetAppsFlyerAttributionDataAPI() {
+    attribution.setAppsFlyerAttributionData(nil)
+
+    let anyHashableDict: [AnyHashable: Any] = [:]
+    attribution.setAppsFlyerAttributionData(anyHashableDict)
+
+    let optionalAnyHashableDict: [AnyHashable: Any]? = [:]
+    attribution.setAppsFlyerAttributionData(optionalAnyHashableDict)
+
+    let stringAnyDict: [String: Any] = [:]
+    attribution.setAppsFlyerAttributionData(stringAnyDict)
+
+    let stringStringDict: [String: String] = [:]
+    attribution.setAppsFlyerAttributionData(stringStringDict as [AnyHashable: Any])
+
+    let stringOptionalStringDict: [String: String?] = [:]
+    attribution.setAppsFlyerAttributionData(stringOptionalStringDict.mapValues { $0 as Any } as [AnyHashable: Any])
+
+    let stringIntDict: [String: Int] = [:]
+    attribution.setAppsFlyerAttributionData(stringIntDict as [AnyHashable: Any])
+
+    let stringOptionalIntDict: [String: Int?] = [:]
+    attribution.setAppsFlyerAttributionData(stringOptionalIntDict.mapValues { $0 as Any } as [AnyHashable: Any])
+
+    let nsDictionary: NSDictionary = [:]
+    attribution.setAppsFlyerAttributionData(nsDictionary as? [AnyHashable: Any])
 }

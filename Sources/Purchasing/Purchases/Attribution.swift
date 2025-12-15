@@ -451,6 +451,30 @@ public extension Attribution {
         self.subscriberAttributesManager.setCreative(creative, appUserID: appUserID)
     }
 
+    /**
+     * Sets attribution data from AppsFlyer's `onConversionDataSuccess` callback.
+     *
+     * This method extracts relevant attribution fields from the AppsFlyer conversion data
+     * and sets the corresponding RevenueCat subscriber attributes.
+     *
+     * The following attributes are set based on the conversion data:
+     * - `$mediaSource`: From `media_source`, or "Organic" if `af_status` is "Organic"
+     * - `$campaign`: From `campaign`
+     * - `$adGroup`: From `adgroup`, with fallback to `adset`
+     * - `$ad`: From `af_ad`, with fallback to `ad_id`
+     * - `$keyword`: From `af_keywords`, with fallback to `keyword`
+     * - `$creative`: From `creative`, with fallback to `af_creative`
+     *
+     * #### Related Articles
+     * - [AppsFlyer RevenueCat Integration](https://docs.revenuecat.com/docs/appsflyer)
+     * - [AppsFlyer Conversion Data](https://dev.appsflyer.com/hc/docs/conversion-data-ios)
+     *
+     * - Parameter data: The conversion data dictionary from AppsFlyer's `onConversionDataSuccess`.
+     */
+    @objc func setAppsFlyerAttributionData(_ data: [AnyHashable: Any]?) {
+        self.subscriberAttributesManager.setAppsFlyerAttributionData(data, appUserID: appUserID)
+    }
+
 }
 
 #endif

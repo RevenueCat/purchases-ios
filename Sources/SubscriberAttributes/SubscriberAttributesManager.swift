@@ -156,6 +156,41 @@ class SubscriberAttributesManager {
         setReservedAttribute(.creative, value: creative, appUserID: appUserID)
     }
 
+    func setAppsFlyerAttributionData(_ data: [AnyHashable: Any]?, appUserID: String) {
+        guard let data = data else {
+            return
+        }
+
+        let mediaSource = stringValue(from: data, forKey: "media_source")
+            ?? (stringValue(from: data, forKey: "af_status")?.caseInsensitiveCompare("Organic") == .orderedSame
+                ? "Organic" : nil)
+        if let mediaSource = mediaSource {
+            setReservedAttribute(.mediaSource, value: mediaSource, appUserID: appUserID)
+        }
+
+        if let campaign = stringValue(from: data, forKey: "campaign") {
+            setReservedAttribute(.campaign, value: campaign, appUserID: appUserID)
+        }
+
+        if let adGroup = stringValue(from: data, forKey: "adgroup") ?? stringValue(from: data, forKey: "adset") {
+            setReservedAttribute(.adGroup, value: adGroup, appUserID: appUserID)
+        }
+
+        // swiftlint:disable:next identifier_name
+        if let ad = stringValue(from: data, forKey: "af_ad") ?? stringValue(from: data, forKey: "ad_id") {
+            setReservedAttribute(.ad, value: ad, appUserID: appUserID)
+        }
+
+        if let keyword = stringValue(from: data, forKey: "af_keywords") ?? stringValue(from: data, forKey: "keyword") {
+            setReservedAttribute(.keyword, value: keyword, appUserID: appUserID)
+        }
+
+        if let creative = stringValue(from: data, forKey: "creative")
+            ?? stringValue(from: data, forKey: "af_creative") {
+            setReservedAttribute(.creative, value: creative, appUserID: appUserID)
+        }
+    }
+
     func collectDeviceIdentifiers(forAppUserID appUserID: String) {
         let identifierForAdvertisers = attributionFetcher.identifierForAdvertisers
         let identifierForVendor = attributionFetcher.identifierForVendor
@@ -276,6 +311,26 @@ extension SubscriberAttributesManager: AttributeSyncing {
 }
 
 private extension SubscriberAttributesManager {
+
+    /// Checks if a value wrapped in `Any` is actually `nil`.
+    /// This is necessary because when an `Optional` is stored in a dictionary with `Any` values,
+    /// the `nil` case gets boxed as `Optional<T>.none` inside `Any`, rather than being absent from the dictionary.
+    func isNilValue(_ value: Any) -> Bool {
+        let mirror = Mirror(reflecting: value)
+        return mirror.displayStyle == .optional && mirror.children.isEmpty
+    }
+
+    func stringValue(from data: [AnyHashable: Any], forKey key: String) -> String? {
+        guard let value = data[key as AnyHashable] else { return nil }
+        if value is NSNull { return nil }
+        if isNilValue(value) { return nil }
+        if let stringValue = value as? String {
+            return stringValue.isEmpty ? nil : stringValue
+        }
+        if let intValue = value as? Int { return String(intValue) }
+        if let doubleValue = value as? Double { return String(Int(doubleValue)) }
+        return String(describing: value)
+    }
 
     func storeAttributeLocallyIfNeeded(key: String, value: String?, appUserID: String) {
         let currentValue = currentValueForAttribute(key: key, appUserID: appUserID)
