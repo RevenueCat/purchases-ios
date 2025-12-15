@@ -436,7 +436,8 @@ private extension TransactionPosterTests {
                      localizedPriceString: "$1.99",
                      productIdentifier: "product",
                      productType: productType,
-                     localizedDescription: "Description")
+                     localizedDescription: "Description",
+                     locale: .init(identifier: "en_US"))
     }
 
     func createCustomerInfo(nonSubscriptionProductID: String?) -> CustomerInfo {

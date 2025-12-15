@@ -102,7 +102,7 @@ public struct TestStoreProduct {
     /// - Parameters:
     ///   - localizedTitle: The localized title of the product
     ///   - price: The price of the product
-    ///   - currencyCode: The currency code (e.g., "USD", "EUR"). Required.
+    ///   - currencyCode: The currency code (e.g., "USD", "EUR").
     ///   - localizedPriceString: The localized price string (e.g., "$3.99")
     ///   - productIdentifier: The product identifier
     ///   - productType: The type of product
