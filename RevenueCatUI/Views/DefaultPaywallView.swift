@@ -379,8 +379,6 @@ struct DefaultPaywallPreviews: PreviewProvider {
             )
         )
         .background(Color.white)
-        // Emerge snapshots will show yellow… But the actual previews will not
-        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall R/G")
 
         DefaultPaywallView(
@@ -396,25 +394,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
-        // Emerge snapshots will show yellow… But the actual previews will not
-        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall R/G Dark")
-
-        DefaultPaywallView(
-            handler: .mock(),
-            offering: offering,
-            appName: "RevenueCat",
-            iconDetailProvider: .init(
-                image: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
-                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
-                    image: DualColorImageGenerator.purpleOrange?.cgImage
-                )
-            )
-        )
-        .background(Color.white)
-        // Emerge snapshots will show yellow… But the actual previews will not
-        .accentColor(.yellow)
-        .previewDisplayName("Fallback Paywall P/O")
 
         DefaultPaywallView(
             handler: .mock(),
@@ -428,8 +408,6 @@ struct DefaultPaywallPreviews: PreviewProvider {
             )
         )
         .background(Color.white)
-        // Emerge snapshots will show yellow… But the actual previews will not
-        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall B/G")
 
         DefaultPaywallView(
@@ -445,8 +423,6 @@ struct DefaultPaywallPreviews: PreviewProvider {
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
-        // Emerge snapshots will show yellow… But the actual previews will not
-        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall B/G Dark")
 
         DefaultPaywallView(
@@ -461,8 +437,6 @@ struct DefaultPaywallPreviews: PreviewProvider {
             )
         )
         .background(Color.white)
-        // Emerge snapshots will show yellow… But the actual previews will not
-        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall P/O")
 
         DefaultPaywallView(
@@ -478,8 +452,6 @@ struct DefaultPaywallPreviews: PreviewProvider {
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
-        // Emerge snapshots will show yellow… But the actual previews will not
-        .accentColor(.yellow)
         .previewDisplayName("Fallback Paywall P/O Dark")
 
         DefaultPaywallView(
