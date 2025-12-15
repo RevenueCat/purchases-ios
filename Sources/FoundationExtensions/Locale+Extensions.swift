@@ -22,7 +22,7 @@ public extension Locale {
     }
 
     // swiftlint:disable identifier_name
-    /// Returns the currency code using the new API if available, falling back to the deprecate API
+    /// The code of the currency used by the locale.
     var rc_currencyCode: String? {
         #if swift(>=5.9)
         // `Locale.currencyCode` is deprecated
@@ -36,7 +36,7 @@ public extension Locale {
         #endif
     }
 
-    /// Returns the language code using the new API if available, falling back to the deprecate API
+    /// The language code that identifies the locale's language.
     var rc_languageCode: String? {
         #if swift(>=5.9)
         // `Locale.languageCode` is deprecated
