@@ -400,6 +400,18 @@ extension PurchaseHandler {
         self.track(.impression(.init(), eventData))
     }
 
+    func trackPaywallStartedLoading(offeringIdentifier: String) {
+        Task {
+            await purchases.trackPaywallStartedLoading(offeringIdentifier: offeringIdentifier)
+        }
+    }
+
+    func trackPaywallFailedToLoad(offeringIdentifier: String, error: Error) {
+        Task {
+            await purchases.trackPaywallFailedToLoad(offeringIdentifier: offeringIdentifier, error: error)
+        }
+    }
+
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallClose() -> Bool {
@@ -522,6 +534,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func track(paywallEvent: PaywallEvent) async {}
+
+    func trackPaywallStartedLoading(offeringIdentifier: String) async {}
+
+    func trackPaywallFailedToLoad(offeringIdentifier: String, error: Error) async {}
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {}
