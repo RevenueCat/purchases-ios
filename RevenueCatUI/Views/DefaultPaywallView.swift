@@ -371,12 +371,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: .init(
-                image: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
-                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
-                    image: DualColorImageGenerator.redGreen?.cgImage
-                )
-            )
+            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailprovider()
         )
         .background(Color.white)
         .previewDisplayName("Fallback Paywall R/G")
@@ -385,12 +380,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: .init(
-                image: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
-                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
-                    image: DualColorImageGenerator.redGreen?.cgImage
-                )
-            )
+            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailprovider()
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -400,12 +390,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: .init(
-                image: DualColorImageGenerator.blueGreen.unsafelyUnwrapped.image,
-                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
-                    image: DualColorImageGenerator.blueGreen?.cgImage
-                )
-            )
+            iconDetailProvider: DualColorImageGenerator.blueGreen.toAppIconDetailprovider()
         )
         .background(Color.white)
         .previewDisplayName("Fallback Paywall B/G")
@@ -414,12 +399,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: .init(
-                image: DualColorImageGenerator.blueGreen.unsafelyUnwrapped.image,
-                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
-                    image: DualColorImageGenerator.blueGreen?.cgImage
-                )
-            )
+            iconDetailProvider: DualColorImageGenerator.blueGreen.toAppIconDetailprovider()
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -429,12 +409,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: .init(
-                image: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
-                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
-                    image: DualColorImageGenerator.purpleOrange?.cgImage
-                )
-            )
+            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailprovider()
         )
         .background(Color.white)
         .previewDisplayName("Fallback Paywall P/O")
@@ -443,12 +418,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: .init(
-                image: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
-                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
-                    image: DualColorImageGenerator.purpleOrange?.cgImage
-                )
-            )
+            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailprovider()
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -459,12 +429,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .missingLocalization,
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: .init(
-                image: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
-                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
-                    image: DualColorImageGenerator.redGreen?.cgImage
-                )
-            )
+            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailprovider()
         )
         .background(Color.white)
         .accentColor(.yellow)
@@ -475,12 +440,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .missingLocalization,
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: .init(
-                image: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
-                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
-                    image: DualColorImageGenerator.purpleOrange?.cgImage
-                )
-            )
+            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailprovider()
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -492,12 +452,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .noPaywall("WAT"),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: .init(
-                image: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
-                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
-                    image: DualColorImageGenerator.redGreen?.cgImage
-                )
-            )
+            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailprovider()
         )
         .background(Color.white)
         .accentColor(.yellow)
@@ -508,12 +463,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .noPaywall("WAT"),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: .init(
-                image: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
-                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
-                    image: DualColorImageGenerator.purpleOrange?.cgImage
-                )
-            )
+            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailprovider()
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -523,9 +473,10 @@ struct DefaultPaywallPreviews: PreviewProvider {
 
     enum DualColorImageGenerator {
 
-        static let redGreen: (image: Image, cgImage: CGImage)? = create(color1: .red, color2: .green)
-        static let blueGreen: (image: Image, cgImage: CGImage)? = create(color1: .blue, color2: .green)
-        static let purpleOrange: (image: Image, cgImage: CGImage)? = create(color1: .purple, color2: .orange)
+        // swiftlint:disable force_unwrapping
+        static let redGreen = create(color1: .red, color2: .green)!
+        static let blueGreen = create(color1: .blue, color2: .green)!
+        static let purpleOrange = create(color1: .purple, color2: .orange)!
 
         /// Generates a CGImage split equally between two colors.
         /// - Parameters:
@@ -575,12 +526,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
         }
 
         /// Generates a SwiftUI Image and the underlying CGImage.
-        /// - Returns: A tuple containing the SwiftUI Image and the source CGImage.
+        /// - Returns: A PreviewAppIcon struct containing the SwiftUI Image and the source CGImage.
         static func create(
             color1: Color,
             color2: Color,
             size: CGSize = .init(width: 200, height: 200)
-        ) -> (image: Image, cgImage: CGImage)? {
+        ) -> PreviewAppIcon? {
 
             let cgColor1 = platformColor(from: color1).cgColor
             let cgColor2 = platformColor(from: color2).cgColor
@@ -595,7 +546,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
 
             let swiftUIImage = Image(cgImage, scale: 1.0, label: Text("Generated Dual Color Image"))
 
-            return (swiftUIImage, cgImage)
+            return PreviewAppIcon(image: swiftUIImage, cgImage: cgImage)
         }
 
         private static func platformColor(from color: Color) -> PlatformColor {
@@ -604,6 +555,15 @@ struct DefaultPaywallPreviews: PreviewProvider {
             #else
             return UIColor(color)
             #endif
+        }
+    }
+
+    struct PreviewAppIcon {
+        let image: Image
+        let cgImage: CGImage
+
+        func toAppIconDetailprovider() -> AppIconDetailProvider {
+            .init(image: image, foundColors: AppStyleExtractor.extractProminentColorsForPreview(image: cgImage))
         }
     }
 }
