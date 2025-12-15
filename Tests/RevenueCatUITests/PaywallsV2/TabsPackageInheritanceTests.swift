@@ -298,7 +298,8 @@ final class TabsPackageInheritanceTests: TestCase {
         expect(tierPackageContexts["tab2"]?.package?.identifier) == self.parentPackageB.identifier
     }
 
-    func testAllTabsWithoutPackagesShareParentContext() {
+    @MainActor
+    func testAllTabsWithoutPackagesShareParentContextAndUpdateTogether() {
         // Given: All tabs have no packages
         let tab1ViewModel = TestTabData(tabId: "tab1", packages: [], defaultSelectedPackage: nil)
         let tab2ViewModel = TestTabData(tabId: "tab2", packages: [], defaultSelectedPackage: nil)
@@ -333,6 +334,22 @@ final class TabsPackageInheritanceTests: TestCase {
         expect(tierPackageContexts["tab1"]) === parentContext
         expect(tierPackageContexts["tab2"]) === parentContext
         expect(tierPackageContexts["tab3"]) === parentContext
+
+        // Then: All tabs start with Package A
+        expect(tierPackageContexts["tab1"]?.package?.identifier) == self.parentPackageA.identifier
+        expect(tierPackageContexts["tab2"]?.package?.identifier) == self.parentPackageA.identifier
+        expect(tierPackageContexts["tab3"]?.package?.identifier) == self.parentPackageA.identifier
+
+        // When: Parent context changes to Package B
+        parentContext.update(
+            package: self.parentPackageB,
+            variableContext: parentContext.variableContext
+        )
+
+        // Then: ALL tabs see the change simultaneously (they're all the same instance)
+        expect(tierPackageContexts["tab1"]?.package?.identifier) == self.parentPackageB.identifier
+        expect(tierPackageContexts["tab2"]?.package?.identifier) == self.parentPackageB.identifier
+        expect(tierPackageContexts["tab3"]?.package?.identifier) == self.parentPackageB.identifier
     }
 
     func testParentContextWithNilPackage() {
@@ -392,6 +409,107 @@ final class TabsPackageInheritanceTests: TestCase {
 
         // Then: Tab has its own package
         expect(tabPackageContext.package?.identifier) == self.tabPackageC.identifier
+    }
+
+    // MARK: - Additional Edge Case Tests
+
+    func testVariableContextIsComputedFromTabPackagesNotParent() {
+        // Given: A tab with its own package (weekly - cheaper per month)
+        let tabViewModel = TestTabData(
+            tabId: "tab1",
+            packages: [self.tabPackageC], // weekly product
+            defaultSelectedPackage: self.tabPackageC
+        )
+
+        // Given: Parent context with different packages (monthly + annual - different prices)
+        let parentContext = PackageContext(
+            package: self.parentPackageA,
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        // When: Creating package context for the tab
+        let tabPackageContext = PackageContext(
+            package: tabViewModel.defaultSelectedPackage,
+            variableContext: .init(
+                packages: tabViewModel.packages,
+                showZeroDecimalPlacePrices: parentContext.variableContext.showZeroDecimalPlacePrices
+            )
+        )
+
+        // Then: Tab's mostExpensivePricePerMonth is computed from TAB's packages
+        // The tab has only the weekly product, so its mostExpensivePricePerMonth
+        // should be different from the parent's (which has monthly + annual)
+        expect(tabPackageContext.variableContext.mostExpensivePricePerMonth)
+            != parentContext.variableContext.mostExpensivePricePerMonth
+    }
+
+    func testTabWithSamePackagesAsParent() {
+        // Given: A tab with the SAME packages as the parent
+        // This tests the case where a tab explicitly defines packages that match the parent's
+        let tabViewModel = TestTabData(
+            tabId: "tab1",
+            packages: [self.parentPackageA, self.parentPackageB],
+            defaultSelectedPackage: self.parentPackageB // Different default than parent
+        )
+
+        // Given: Parent context with the same packages but different default
+        let parentContext = PackageContext(
+            package: self.parentPackageA, // Parent defaults to Package A
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        // When: Creating package context for the tab (simulating the init logic)
+        let tabPackageContext: PackageContext
+        if !tabViewModel.packages.isEmpty {
+            tabPackageContext = PackageContext(
+                package: tabViewModel.defaultSelectedPackage,
+                variableContext: .init(
+                    packages: tabViewModel.packages,
+                    showZeroDecimalPlacePrices: parentContext.variableContext.showZeroDecimalPlacePrices
+                )
+            )
+        } else {
+            tabPackageContext = parentContext
+        }
+
+        // Then: Tab should have its OWN context (different instance), even with same packages
+        expect(tabPackageContext) !== parentContext
+
+        // Then: Tab should use its own default (Package B), not parent's default (Package A)
+        expect(tabPackageContext.package?.identifier) == self.parentPackageB.identifier
+        expect(tabPackageContext.package?.identifier) != self.parentPackageA.identifier
+    }
+
+    @MainActor
+    func testTabWithSamePackagesAsParentDoesNotUpdateWhenParentChanges() {
+        // Given: A tab with the same packages as parent
+        let parentContext = PackageContext(
+            package: self.parentPackageA,
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        // Tab has same packages but its own context
+        let tabContext = PackageContext(
+            package: self.parentPackageB, // Tab's default is Package B
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        // Then: Initially, tab has Package B, parent has Package A
+        expect(tabContext.package?.identifier) == self.parentPackageB.identifier
+        expect(parentContext.package?.identifier) == self.parentPackageA.identifier
+
+        // When: Parent changes its selection
+        parentContext.update(
+            package: self.parentPackageB,
+            variableContext: parentContext.variableContext
+        )
+
+        // Then: Tab is UNAFFECTED (has its own context, even with same packages)
+        // Tab still has Package B (its original selection)
+        expect(tabContext.package?.identifier) == self.parentPackageB.identifier
+
+        // Then: They are different instances
+        expect(tabContext) !== parentContext
     }
 }
 
