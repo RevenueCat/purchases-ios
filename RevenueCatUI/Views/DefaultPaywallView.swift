@@ -319,14 +319,8 @@ final class AppIconDetailProvider: ObservableObject {
         foundColors = []
 
         if let appIconCGImage {
-            if #available(iOS 26, *) {
-                Task.immediate {
-                    self.foundColors = await AppStyleExtractor.getProminentColorsFromAppIcon(image: appIconCGImage)
-                }
-            } else {
-                Task(priority: .userInitiated) {
-                    self.foundColors = await AppStyleExtractor.getProminentColorsFromAppIcon(image: appIconCGImage)
-                }
+            Task(priority: .userInitiated) {
+                self.foundColors = await AppStyleExtractor.getProminentColorsFromAppIcon(image: appIconCGImage)
             }
         }
     }
