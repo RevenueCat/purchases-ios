@@ -117,6 +117,13 @@ enum AppStyleExtractor {
         }
     }
 
+    #if DEBUG
+    // exposes the private function to avoid dispatching to background thread (for emerge snapshot tests)
+    static func extractProminentColorsForPreview(image: CGImage?) -> [Color] {
+        return extractProminentColors(count: 2, image: image)
+    }
+    #endif
+
     /// Performs the actual color extraction from the app icon.
     ///
     /// This method:

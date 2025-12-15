@@ -30,19 +30,19 @@ fileprivate extension Color {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct DefaultPaywallView: View {
 
+    @ObservedObject var appIconDetailProvider: AppIconDetailProvider
+
     init(
         handler: PurchaseHandler,
         warning: PaywallWarning? = nil,
         offering: Offering?,
         appName: String = AppStyleExtractor.getAppName(),
-        appIcon: Image = AppStyleExtractor.getAppIcon(),
-        appIconCGImage: CGImage? = AppStyleExtractor.getPlatformAppIconCGImage()
+        iconDetailProvider: AppIconDetailProvider = AppIconDetailProvider()
     ) {
         self.handler = handler
         self.warning = warning
         self.appName = appName
-        self.appIcon = appIcon
-        self.appIconCGImage = appIconCGImage
+        self.appIconDetailProvider = iconDetailProvider
         if let packages = offering?.availablePackages, !packages.isEmpty {
             self.selected = packages.first
             self.products = packages
@@ -54,21 +54,20 @@ struct DefaultPaywallView: View {
 
     let handler: PurchaseHandler
     let appName: String
-    let appIcon: Image
-    let appIconCGImage: CGImage?
 
     @State private var warning: PaywallWarning?
     @State private var products: [Package]
     @State private var selected: Package?
 
-    @State var colors: [Color] = []
-
     var iconColor: Color {
-        if colors.isEmpty {
+        if appIconDetailProvider.foundColors.isEmpty {
             return .accentColor
         }
 
-        return selectColorWithBestContrast(from: colors, againstColor: colorScheme == .dark ? .black : .white)
+        return selectColorWithBestContrast(
+            from: appIconDetailProvider.foundColors,
+            againstColor: colorScheme == .dark ? .black : .white
+        )
     }
 
     var foregroundOnAccentColor: Color {
@@ -77,7 +76,7 @@ struct DefaultPaywallView: View {
         }
 
         return selectColorWithBestContrast(
-            from: colors + [colorScheme == .dark ? .black : .white],
+            from: appIconDetailProvider.foundColors + [colorScheme == .dark ? .black : .white],
             againstColor: iconColor
         )
     }
@@ -119,12 +118,12 @@ struct DefaultPaywallView: View {
             } else {
                 VStack(alignment: .center, spacing: 16) {
                     ZStack {
-                        appIcon
+                        appIconDetailProvider.image
                             .resizable()
                             .blur(radius: 48)
                             .opacity(0.2)
                             .accessibilityHidden(true)
-                        appIcon
+                        appIconDetailProvider.image
                             .resizable()
                             .clipShape(RoundedRectangle(cornerRadius: 31))
                             .accessibilityHidden(true)
@@ -216,11 +215,6 @@ struct DefaultPaywallView: View {
         #if !os(watchOS)
         .tint(mainColor)
         #endif
-        .task {
-            if let appIconCGImage {
-                colors = await AppStyleExtractor.getProminentColorsFromAppIcon(image: appIconCGImage)
-            }
-        }
     }
 }
 
@@ -313,6 +307,43 @@ extension View {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class AppIconDetailProvider: ObservableObject {
+
+    let image: Image
+    @Published var foundColors: [Color]
+
+    init() {
+        image = AppStyleExtractor.getAppIcon()
+        let appIconCGImage: CGImage? = AppStyleExtractor.getPlatformAppIconCGImage()
+        foundColors = []
+
+        if let appIconCGImage {
+            if #available(iOS 26, *) {
+                Task.immediate(priority: .userInitiated) {
+                    self.foundColors = await AppStyleExtractor.getProminentColorsFromAppIcon(image: appIconCGImage)
+                }
+            } else {
+                Task(priority: .userInitiated) {
+                    self.foundColors = await AppStyleExtractor.getProminentColorsFromAppIcon(image: appIconCGImage)
+                }
+            }
+        }
+    }
+
+    #if DEBUG
+    // For emerge snapshot tests to render correctly, we need scan the image on the main thread
+    // so there is no delay between initial render and the found colors being applied to the view
+    init(
+        image: Image,
+        foundColors: [Color]
+    ) {
+        self.image = image
+        self.foundColors = foundColors
+    }
+    #endif
+}
+
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -347,8 +378,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            appIcon: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
-            appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
+            iconDetailProvider: .init(
+                image: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
+                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
+                    image: DualColorImageGenerator.redGreen?.cgImage
+                )
+            )
         )
         .background(Color.white)
         // Emerge snapshots will show yellow… But the actual previews will not
@@ -359,8 +394,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            appIcon: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
-            appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
+            iconDetailProvider: .init(
+                image: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
+                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
+                    image: DualColorImageGenerator.redGreen?.cgImage
+                )
+            )
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -372,8 +411,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            appIcon: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
-            appIconCGImage: DualColorImageGenerator.purpleOrange?.cgImage
+            iconDetailProvider: .init(
+                image: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
+                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
+                    image: DualColorImageGenerator.purpleOrange?.cgImage
+                )
+            )
         )
         .background(Color.white)
         // Emerge snapshots will show yellow… But the actual previews will not
@@ -384,8 +427,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            appIcon: DualColorImageGenerator.blueGreen.unsafelyUnwrapped.image,
-            appIconCGImage: DualColorImageGenerator.blueGreen?.cgImage
+            iconDetailProvider: .init(
+                image: DualColorImageGenerator.blueGreen.unsafelyUnwrapped.image,
+                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
+                    image: DualColorImageGenerator.blueGreen?.cgImage
+                )
+            )
         )
         .background(Color.white)
         // Emerge snapshots will show yellow… But the actual previews will not
@@ -396,8 +443,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            appIcon: DualColorImageGenerator.blueGreen.unsafelyUnwrapped.image,
-            appIconCGImage: DualColorImageGenerator.blueGreen?.cgImage
+            iconDetailProvider: .init(
+                image: DualColorImageGenerator.blueGreen.unsafelyUnwrapped.image,
+                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
+                    image: DualColorImageGenerator.blueGreen?.cgImage
+                )
+            )
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -409,8 +460,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            appIcon: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
-            appIconCGImage: DualColorImageGenerator.purpleOrange?.cgImage
+            iconDetailProvider: .init(
+                image: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
+                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
+                    image: DualColorImageGenerator.purpleOrange?.cgImage
+                )
+            )
         )
         .background(Color.white)
         // Emerge snapshots will show yellow… But the actual previews will not
@@ -421,8 +476,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            appIcon: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
-            appIconCGImage: DualColorImageGenerator.purpleOrange?.cgImage
+            iconDetailProvider: .init(
+                image: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
+                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
+                    image: DualColorImageGenerator.purpleOrange?.cgImage
+                )
+            )
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -435,8 +494,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .missingLocalization,
             offering: offering,
             appName: "RevenueCat",
-            appIcon: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
-            appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
+            iconDetailProvider: .init(
+                image: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
+                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
+                    image: DualColorImageGenerator.redGreen?.cgImage
+                )
+            )
         )
         .background(Color.white)
         .accentColor(.yellow)
@@ -447,8 +510,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .missingLocalization,
             offering: offering,
             appName: "RevenueCat",
-            appIcon: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
-            appIconCGImage: DualColorImageGenerator.purpleOrange?.cgImage
+            iconDetailProvider: .init(
+                image: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
+                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
+                    image: DualColorImageGenerator.purpleOrange?.cgImage
+                )
+            )
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -460,8 +527,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .noPaywall("WAT"),
             offering: offering,
             appName: "RevenueCat",
-            appIcon: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
-            appIconCGImage: DualColorImageGenerator.redGreen?.cgImage
+            iconDetailProvider: .init(
+                image: DualColorImageGenerator.redGreen.unsafelyUnwrapped.image,
+                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
+                    image: DualColorImageGenerator.redGreen?.cgImage
+                )
+            )
         )
         .background(Color.white)
         .accentColor(.yellow)
@@ -472,8 +543,12 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .noPaywall("WAT"),
             offering: offering,
             appName: "RevenueCat",
-            appIcon: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
-            appIconCGImage: DualColorImageGenerator.purpleOrange?.cgImage
+            iconDetailProvider: .init(
+                image: DualColorImageGenerator.purpleOrange.unsafelyUnwrapped.image,
+                foundColors: AppStyleExtractor.extractProminentColorsForPreview(
+                    image: DualColorImageGenerator.purpleOrange?.cgImage
+                )
+            )
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
