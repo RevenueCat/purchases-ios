@@ -131,8 +131,9 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let virtualCurrenciesBeforePurchase = try await self.purchases.virtualCurrencies()
         assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
 
-        try await self.purchaseNonRenewingSubscriptionPackage()
-        self.verifyAnyTransactionWasFinished()
+        let purchaseResult = try await self.purchaseNonRenewingSubscriptionPackage()
+        let transaction = try XCTUnwrap(purchaseResult.transaction)
+        self.verifySpecificTransactionWasFinished(transaction)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
