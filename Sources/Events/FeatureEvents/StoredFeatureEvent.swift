@@ -22,8 +22,14 @@ struct StoredFeatureEvent {
     private(set) var appSessionID: UUID?
     private(set) var eventDiscriminator: String?
 
-    init?<T: Encodable>(event: T, userID: String, feature: Feature, appSessionID: UUID?, eventDiscriminator: String?) {
-        guard let encodedJSON = try? event.encodedJSON else {
+    init?<T: Encodable>(
+        event: T,
+        userID: String,
+        feature: Feature,
+        appSessionID: UUID?,
+        eventDiscriminator: String?
+    ) throws {
+        guard let encodedJSON = try event.encodedJSON else {
             return nil
         }
 
