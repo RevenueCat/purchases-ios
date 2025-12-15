@@ -45,7 +45,6 @@ struct DefaultPaywallView: View {
             self.selected = packages.first
             self.products = packages
         } else {
-            self.warning = .noProducts(CocoaError.error(.coderInvalidValue))
             self.products = []
         }
     }
