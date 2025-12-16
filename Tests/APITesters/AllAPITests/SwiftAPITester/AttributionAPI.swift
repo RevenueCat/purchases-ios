@@ -99,33 +99,33 @@ func checkAttributionAPI() {
     }
     #endif
 
-    checkSetAppsFlyerAttributionDataAPI()
+    checkSetAppsFlyerConversionDataAPI()
 }
 
-func checkSetAppsFlyerAttributionDataAPI() {
-    attribution.setAppsFlyerAttributionData(nil)
+func checkSetAppsFlyerConversionDataAPI() {
+    attribution.setAppsFlyerConversionData(nil)
 
     let anyHashableDict: [AnyHashable: Any] = [:]
-    attribution.setAppsFlyerAttributionData(anyHashableDict)
+    attribution.setAppsFlyerConversionData(anyHashableDict)
 
     let optionalAnyHashableDict: [AnyHashable: Any]? = [:]
-    attribution.setAppsFlyerAttributionData(optionalAnyHashableDict)
+    attribution.setAppsFlyerConversionData(optionalAnyHashableDict)
 
     let stringAnyDict: [String: Any] = [:]
-    attribution.setAppsFlyerAttributionData(stringAnyDict)
+    attribution.setAppsFlyerConversionData(stringAnyDict)
 
     let stringStringDict: [String: String] = [:]
-    attribution.setAppsFlyerAttributionData(stringStringDict as [AnyHashable: Any])
+    attribution.setAppsFlyerConversionData(stringStringDict as [AnyHashable: Any])
 
     let stringOptionalStringDict: [String: String?] = [:]
-    attribution.setAppsFlyerAttributionData(stringOptionalStringDict.mapValues { $0 as Any } as [AnyHashable: Any])
+    attribution.setAppsFlyerConversionData(stringOptionalStringDict.mapValues { $0 as Any } as [AnyHashable: Any])
 
     let stringIntDict: [String: Int] = [:]
-    attribution.setAppsFlyerAttributionData(stringIntDict as [AnyHashable: Any])
+    attribution.setAppsFlyerConversionData(stringIntDict as [AnyHashable: Any])
 
     let stringOptionalIntDict: [String: Int?] = [:]
-    attribution.setAppsFlyerAttributionData(stringOptionalIntDict.mapValues { $0 as Any } as [AnyHashable: Any])
+    attribution.setAppsFlyerConversionData(stringOptionalIntDict.mapValues { $0 as Any } as [AnyHashable: Any])
 
     let nsDictionary: NSDictionary = [:]
-    attribution.setAppsFlyerAttributionData(nsDictionary as? [AnyHashable: Any])
+    attribution.setAppsFlyerConversionData(nsDictionary as? [AnyHashable: Any])
 }

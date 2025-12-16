@@ -471,8 +471,8 @@ public extension Attribution {
      *
      * - Parameter data: The conversion data dictionary from AppsFlyer's `onConversionDataSuccess`.
      */
-    @objc func setAppsFlyerAttributionData(_ data: [AnyHashable: Any]?) {
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(data, appUserID: appUserID)
+    @objc func setAppsFlyerConversionData(_ data: [AnyHashable: Any]?) {
+        self.subscriberAttributesManager.setAppsFlyerConversionData(data, appUserID: appUserID)
     }
 
 }

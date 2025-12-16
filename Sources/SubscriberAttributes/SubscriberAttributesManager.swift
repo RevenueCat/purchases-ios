@@ -156,7 +156,7 @@ class SubscriberAttributesManager {
         setReservedAttribute(.creative, value: creative, appUserID: appUserID)
     }
 
-    func setAppsFlyerAttributionData(_ data: [AnyHashable: Any]?, appUserID: String) {
+    func setAppsFlyerConversionData(_ data: [AnyHashable: Any]?, appUserID: String) {
         guard let data = data else {
             return
         }

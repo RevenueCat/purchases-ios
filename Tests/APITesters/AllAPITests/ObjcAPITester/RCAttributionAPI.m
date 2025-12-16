@@ -69,9 +69,9 @@
     [a collectDeviceIdentifiers];
     [a enableAdServicesAttributionTokenCollection];
 
-    [a setAppsFlyerAttributionData:nil];
+    [a setAppsFlyerConversionData:nil];
     NSDictionary *dict = @{};
-    [a setAppsFlyerAttributionData:dict];
+    [a setAppsFlyerConversionData:dict];
 }
 
 @end

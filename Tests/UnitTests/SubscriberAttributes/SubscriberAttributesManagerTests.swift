@@ -2215,7 +2215,7 @@ class SubscriberAttributesManagerTests: TestCase {
     // endregion
     // region AppsFlyer Attribution Data
 
-    func testSetAppsFlyerAttributionDataSetsAllAttributesFromFullData() {
+    func testSetAppsFlyerConversionDataSetsAllAttributesFromFullData() {
         let fullData: [AnyHashable: Any] = [
             "media_source": "facebook",
             "campaign": "summer_sale",
@@ -2224,7 +2224,7 @@ class SubscriberAttributesManagerTests: TestCase {
             "af_keywords": "test_keywords",
             "creative": "test_creative"
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(fullData, appUserID: "kratos")
+        self.subscriberAttributesManager.setAppsFlyerConversionData(fullData, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 6
 
@@ -2236,7 +2236,7 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.findInvokedAttribute(withName: "$creative").value) == "test_creative"
     }
 
-    func testSetAppsFlyerAttributionDataUsesFallbackFields() {
+    func testSetAppsFlyerConversionDataUsesFallbackFields() {
         let fallbackData: [AnyHashable: Any] = [
             "af_status": "organic",
             "campaign": "test_campaign",
@@ -2245,7 +2245,7 @@ class SubscriberAttributesManagerTests: TestCase {
             "keyword": "test_keyword",
             "af_creative": "test_af_creative"
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(fallbackData, appUserID: "kratos")
+        self.subscriberAttributesManager.setAppsFlyerConversionData(fallbackData, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 6
 
@@ -2257,7 +2257,7 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.findInvokedAttribute(withName: "$creative").value) == "test_af_creative"
     }
 
-    func testSetAppsFlyerAttributionDataPrefersPrimaryFieldsOverFallbacks() {
+    func testSetAppsFlyerConversionDataPrefersPrimaryFieldsOverFallbacks() {
         let dataWithBothPrimaryAndFallback: [AnyHashable: Any] = [
             "media_source": "facebook",
             "af_status": "Organic",
@@ -2271,7 +2271,7 @@ class SubscriberAttributesManagerTests: TestCase {
             "creative": "primary_creative",
             "af_creative": "fallback_creative"
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(
+        self.subscriberAttributesManager.setAppsFlyerConversionData(
             dataWithBothPrimaryAndFallback,
             appUserID: "kratos"
         )
@@ -2286,18 +2286,18 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.findInvokedAttribute(withName: "$creative").value) == "primary_creative"
     }
 
-    func testSetAppsFlyerAttributionDataWithNilDoesNothing() {
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(nil, appUserID: "kratos")
+    func testSetAppsFlyerConversionDataWithNilDoesNothing() {
+        self.subscriberAttributesManager.setAppsFlyerConversionData(nil, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
-    func testSetAppsFlyerAttributionDataWithEmptyDictDoesNothing() {
-        self.subscriberAttributesManager.setAppsFlyerAttributionData([:], appUserID: "kratos")
+    func testSetAppsFlyerConversionDataWithEmptyDictDoesNothing() {
+        self.subscriberAttributesManager.setAppsFlyerConversionData([:], appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
-    func testSetAppsFlyerAttributionDataDoesNotSetMediaSourceWhenAfStatusIsNotOrganic() {
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(
+    func testSetAppsFlyerConversionDataDoesNotSetMediaSourceWhenAfStatusIsNotOrganic() {
+        self.subscriberAttributesManager.setAppsFlyerConversionData(
             ["af_status": "Non-organic"],
             appUserID: "kratos"
         )
@@ -2305,13 +2305,13 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
     }
 
-    func testSetAppsFlyerAttributionDataHandlesNilValuesInDictionary() {
+    func testSetAppsFlyerConversionDataHandlesNilValuesInDictionary() {
         let nilValue: String? = nil
         let dataWithNilValues: [AnyHashable: Any] = [
             "media_source": nilValue as Any,
             "campaign": "valid_campaign"
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(dataWithNilValues, appUserID: "kratos")
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithNilValues, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
@@ -2319,12 +2319,12 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.findInvokedAttribute(withName: "$campaign").value) == "valid_campaign"
     }
 
-    func testSetAppsFlyerAttributionDataHandlesEmptyStringValues() {
+    func testSetAppsFlyerConversionDataHandlesEmptyStringValues() {
         let dataWithEmptyStrings: [AnyHashable: Any] = [
             "media_source": "",
             "campaign": "valid_campaign"
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(dataWithEmptyStrings, appUserID: "kratos")
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithEmptyStrings, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
@@ -2332,39 +2332,39 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.findInvokedAttribute(withName: "$campaign").value) == "valid_campaign"
     }
 
-    func testSetAppsFlyerAttributionDataHandlesIntegerValues() {
+    func testSetAppsFlyerConversionDataHandlesIntegerValues() {
         let dataWithIntegers: [AnyHashable: Any] = [
             "ad_id": 12345,
             "campaign": "test"
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(dataWithIntegers, appUserID: "kratos")
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithIntegers, appUserID: "kratos")
 
         expect(self.findInvokedAttribute(withName: "$ad").value) == "12345"
         expect(self.findInvokedAttribute(withName: "$campaign").value) == "test"
     }
 
-    func testSetAppsFlyerAttributionDataHandlesDoubleValuesAsIntegers() {
+    func testSetAppsFlyerConversionDataHandlesDoubleValuesAsIntegers() {
         let dataWithDoubles: [AnyHashable: Any] = [
             "ad_id": 12345.0
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(dataWithDoubles, appUserID: "kratos")
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithDoubles, appUserID: "kratos")
 
         expect(self.findInvokedAttribute(withName: "$ad").value) == "12345"
     }
 
-    func testSetAppsFlyerAttributionDataWithTypicalOrganicInstall() {
+    func testSetAppsFlyerConversionDataWithTypicalOrganicInstall() {
         let organicData: [AnyHashable: Any] = [
             "af_status": "Organic",
             "af_message": "organic install",
             "is_first_launch": true
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(organicData, appUserID: "kratos")
+        self.subscriberAttributesManager.setAppsFlyerConversionData(organicData, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "Organic"
     }
 
-    func testSetAppsFlyerAttributionDataWithTypicalNonOrganicInstall() {
+    func testSetAppsFlyerConversionDataWithTypicalNonOrganicInstall() {
         let nonOrganicData: [AnyHashable: Any] = [
             "af_status": "Non-organic",
             "media_source": "Facebook Ads",
@@ -2378,7 +2378,7 @@ class SubscriberAttributesManagerTests: TestCase {
             "click_time": "2024-01-15 10:30:00.000",
             "install_time": "2024-01-15 10:35:12.050"
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(nonOrganicData, appUserID: "kratos")
+        self.subscriberAttributesManager.setAppsFlyerConversionData(nonOrganicData, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 6
         expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "Facebook Ads"
@@ -2389,7 +2389,7 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.findInvokedAttribute(withName: "$creative").value) == "creative_v2"
     }
 
-    func testSetAppsFlyerAttributionDataWithOnlyFallbackFields() {
+    func testSetAppsFlyerConversionDataWithOnlyFallbackFields() {
         let fallbackData: [AnyHashable: Any] = [
             "af_status": "Organic",
             "adset": "fallback_adset",
@@ -2397,7 +2397,7 @@ class SubscriberAttributesManagerTests: TestCase {
             "keyword": "fallback_keyword",
             "af_creative": "fallback_creative"
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(fallbackData, appUserID: "kratos")
+        self.subscriberAttributesManager.setAppsFlyerConversionData(fallbackData, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 5
         expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "Organic"
@@ -2407,7 +2407,7 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.findInvokedAttribute(withName: "$creative").value) == "fallback_creative"
     }
 
-    func testSetAppsFlyerAttributionDataIgnoresUnrelatedFields() {
+    func testSetAppsFlyerConversionDataIgnoresUnrelatedFields() {
         let dataWithExtraFields: [AnyHashable: Any] = [
             "media_source": "test",
             "click_time": "2024-01-15",
@@ -2417,31 +2417,31 @@ class SubscriberAttributesManagerTests: TestCase {
             "agency": NSNull(),
             "some_random_field": "value"
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(dataWithExtraFields, appUserID: "kratos")
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithExtraFields, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "test"
     }
 
-    func testSetAppsFlyerAttributionDataHandlesNSNullValues() {
+    func testSetAppsFlyerConversionDataHandlesNSNullValues() {
         let dataWithNSNull: [AnyHashable: Any] = [
             "media_source": NSNull(),
             "campaign": "valid_campaign"
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(dataWithNSNull, appUserID: "kratos")
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithNSNull, appUserID: "kratos")
 
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
         expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
         expect(invokedParams).to(containElementSatisfying({ $0.attribute.key == "$campaign" }))
     }
 
-    func testSetAppsFlyerAttributionDataWithNSDictionary() {
+    func testSetAppsFlyerConversionDataWithNSDictionary() {
         let nsDictionary: NSDictionary = [
             "media_source": "facebook",
             "campaign": "test_campaign",
             "ad_id": NSNumber(value: 12345)
         ]
-        self.subscriberAttributesManager.setAppsFlyerAttributionData(
+        self.subscriberAttributesManager.setAppsFlyerConversionData(
             nsDictionary as? [AnyHashable: Any],
             appUserID: "kratos"
         )
