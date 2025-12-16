@@ -89,6 +89,13 @@ enum Strings {
     case fontMappingNotFound(name: String)
     case customFontFailedToLoad(fontName: String)
     case googleFontsNotSupported
+
+    // Exit Offers
+    case error_fetching_offerings(Error)
+    case exit_offer_not_found(String)
+    case prefetched_exit_offer(String)
+    case presenting_exit_offer(String)
+    case error_loading_exit_offer(Error)
 }
 
 extension Strings: CustomStringConvertible {
@@ -290,6 +297,17 @@ extension Strings: CustomStringConvertible {
             return "Custom font '\(fontName)' could not be loaded. Falling back to system font."
         case .googleFontsNotSupported:
             return "Google Fonts are not supported on this platform"
+
+        case .error_fetching_offerings(let error):
+            return "Error fetching offerings: \(error)"
+        case .exit_offer_not_found(let offeringId):
+            return "Exit offer offering '\(offeringId)' not found"
+        case .prefetched_exit_offer(let offeringId):
+            return "Prefetched exit offer offering '\(offeringId)'"
+        case .presenting_exit_offer(let offeringId):
+            return "Presenting exit offer paywall for offering '\(offeringId)'"
+        case .error_loading_exit_offer(let error):
+            return "Error loading exit offer: \(error)"
         }
     }
 
