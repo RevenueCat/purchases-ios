@@ -394,6 +394,9 @@ public struct PaywallView: View {
                     "This error will be hidden in production.",
                     replacement: paywallView
                 )
+                .onAppear {
+                    purchaseHandler.trackPaywallFailedToLoad(offeringIdentifier: offering.identifier, error: error)
+                }
             } else {
                 paywallView
             }

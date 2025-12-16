@@ -173,9 +173,17 @@ struct PaywallsV2View: View {
             if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
                 // Show fallback paywall and debug error message that
                 // occurred while decoding the paywall
-                self.fallbackViewWithErrorMessage(
-                    "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
-                )
+                let errorMessage = "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
+                self.fallbackViewWithErrorMessage(errorMessage)
+                .onAppear {
+                    let userInfo: [String: Any] = [
+                        NSLocalizedDescriptionKey: errorMessage
+                    ]
+                    self.purchaseHandler.trackPaywallFailedToLoad(offeringIdentifier: self.offering.identifier,
+                                                                  error: NSError(domain: NSURLErrorDomain,
+                                                                                 code: NSURLErrorUnknown,
+                                                                                 userInfo: userInfo))
+                }
             } else {
                 switch self.paywallStateManager.state {
                 case .success(let paywallState):
@@ -232,9 +240,17 @@ struct PaywallsV2View: View {
                 case .failure(let error):
                     // Show fallback paywall and debug error message that
                     // occurred while validating data and view models
-                    self.fallbackViewWithErrorMessage(
-                        "Error validating paywall: \(error.localizedDescription)"
-                    )
+                    let errorMessage = "Error validating paywall: \(error.localizedDescription)"
+                    self.fallbackViewWithErrorMessage(errorMessage)
+                    .onAppear {
+                        let userInfo: [String: Any] = [
+                            NSLocalizedDescriptionKey: errorMessage
+                        ]
+                        self.purchaseHandler.trackPaywallFailedToLoad(offeringIdentifier: self.offering.identifier,
+                                                                      error: NSError(domain: NSURLErrorDomain,
+                                                                                     code: NSURLErrorUnknown,
+                                                                                     userInfo: userInfo))
+                    }
                 }
             }
         }
