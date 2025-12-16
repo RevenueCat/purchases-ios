@@ -37,8 +37,9 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let virtualCurrenciesBeforePurchase = try await self.purchases.virtualCurrencies()
         assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
 
-        try await self.purchaseConsumablePackage()
-        self.verifyAnyTransactionWasFinished()
+        let resultData = try await self.purchaseConsumablePackage()
+        let transaction = try XCTUnwrap(resultData.transaction)
+        self.verifySpecificTransactionWasFinished(transaction)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
@@ -69,8 +70,9 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let virtualCurrenciesBeforePurchase = try await self.purchases.virtualCurrencies()
         assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
 
-        try await self.purchaseNonConsumablePackage()
-        self.verifyAnyTransactionWasFinished()
+        let resultData = try await self.purchaseNonConsumablePackage()
+        let transaction = try XCTUnwrap(resultData.transaction)
+        self.verifySpecificTransactionWasFinished(transaction)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
