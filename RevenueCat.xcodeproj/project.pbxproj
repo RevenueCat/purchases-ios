@@ -11,7 +11,6 @@
 		030890842D2B77E70069677B /* VariableHandlerV2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */; };
 		030F918A2D55C1D20085103F /* LocaleFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F91892D55C1AB0085103F /* LocaleFinder.swift */; };
 		030F918C2D55C9DC0085103F /* LocaleFinderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F918B2D55C9D80085103F /* LocaleFinderTests.swift */; };
-		030F918E2D5664410085103F /* LocaleExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F918D2D5664410085103F /* LocaleExtensions.swift */; };
 		030F93B32D5ED90B0085103F /* ProgressViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */; };
 		0313FD41268A506400168386 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0313FD40268A506400168386 /* DateProvider.swift */; };
 		032B13C82E0263750099E1ED /* SubscriptionHistoryTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 032B13C72E0263750099E1ED /* SubscriptionHistoryTracker.swift */; };
@@ -1499,7 +1498,6 @@
 		030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2Tests.swift; sourceTree = "<group>"; };
 		030F91892D55C1AB0085103F /* LocaleFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinder.swift; sourceTree = "<group>"; };
 		030F918B2D55C9D80085103F /* LocaleFinderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinderTests.swift; sourceTree = "<group>"; };
-		030F918D2D5664410085103F /* LocaleExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleExtensions.swift; sourceTree = "<group>"; };
 		030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewModifier.swift; sourceTree = "<group>"; };
 		0313FD40268A506400168386 /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
 		032B13C72E0263750099E1ED /* SubscriptionHistoryTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionHistoryTracker.swift; sourceTree = "<group>"; };
@@ -2973,7 +2971,6 @@
 			isa = PBXGroup;
 			children = (
 				03F0B6502DD5700D00E82199 /* LocalizationDictionaryExtensions.swift */,
-				030F918D2D5664410085103F /* LocaleExtensions.swift */,
 				030F91892D55C1AB0085103F /* LocaleFinder.swift */,
 			);
 			path = Localizations;
@@ -7696,7 +7693,6 @@
 				77089F9E2CD39EC100848CD5 /* ShadowModifier.swift in Sources */,
 				0354AA462D4029C300F9E330 /* TabControlButtonComponentViewModel.swift in Sources */,
 				0387D3C82EC51F09008E4A6B /* FileImageLoader.swift in Sources */,
-				030F918E2D5664410085103F /* LocaleExtensions.swift in Sources */,
 				0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */,
 				0354AA482D4029C300F9E330 /* TabsComponentView.swift in Sources */,
 				0354AA492D4029C300F9E330 /* TabControlButtonComponentView.swift in Sources */,

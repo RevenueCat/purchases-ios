@@ -12,7 +12,7 @@
 //  Created by Andrés Boedo on 1/9/21.
 
 import Nimble
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 import StoreKitTest
 import XCTest
 
@@ -376,6 +376,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     func testTestProduct() {
         let title = "Product"
         let price: Decimal = 3.99
+        let currencyCode = "USD"
         let localizedPrice = "$3.99"
         let identifier = "com.revenuecat.product"
         let type: StoreProduct.ProductType = .autoRenewableSubscription
@@ -388,6 +389,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let product = TestStoreProduct(
             localizedTitle: title,
             price: price,
+            currencyCode: currencyCode,
             localizedPriceString: localizedPrice,
             productIdentifier: identifier,
             productType: type,
@@ -396,7 +398,8 @@ class StoreProductTests: StoreKitConfigTestCase {
             subscriptionPeriod: period,
             isFamilyShareable: isFamilyShareable,
             introductoryDiscount: nil,
-            discounts: []
+            discounts: [],
+            locale: expectedLocale
         )
         let storeProduct = product.toStoreProduct()
 
@@ -410,18 +413,57 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.localizedDescription) == description
         expect(storeProduct.subscriptionGroupIdentifier) == subscriptionGroup
         expect(storeProduct.subscriptionPeriod) == period
-        expect(storeProduct.currencyCode) == expectedLocale.rc_currencyCode
+        expect(storeProduct.currencyCode) == currencyCode
         expect(storeProduct.priceFormatter?.locale) == expectedLocale
-        expect(storeProduct.priceFormatter?.currencyCode) == expectedLocale.rc_currencyCode
+        expect(storeProduct.priceFormatter?.currencyCode) == currencyCode
         expect(storeProduct.isFamilyShareable) == isFamilyShareable
     }
 
+    // Legacy behavior: if no currencyCode is passed it will take the currencyCode from the locale
     func testTestProductWithCustomLocale() {
         let locale: Locale = .init(identifier: "es_ES")
         let product = TestStoreProduct(
             localizedTitle: "product",
             price: 3.99,
             localizedPriceString: "$3.99",
+            productIdentifier: "identifier",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            locale: locale
+        )
+        let storeProduct = product.toStoreProduct()
+
+        expect(storeProduct.currencyCode) == locale.rc_currencyCode
+        expect(storeProduct.priceFormatter?.locale) == locale
+        expect(storeProduct.priceFormatter?.currencyCode) == locale.rc_currencyCode
+    }
+
+    func testTestProductWithCustomLocaleAndCurrency() {
+        let locale: Locale = .init(identifier: "en_ES")
+        let product = TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.99,
+            currencyCode: "USD",
+            localizedPriceString: "$3.99",
+            productIdentifier: "identifier",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            locale: locale
+        )
+        let storeProduct = product.toStoreProduct()
+
+        expect(storeProduct.currencyCode) == "USD"
+        expect(storeProduct.priceFormatter?.locale) == locale
+        expect(storeProduct.priceFormatter?.currencyCode) == "USD"
+    }
+
+    func testTestProductWithCustomCurrency() {
+        let locale: Locale = .init(identifier: "en_US")
+        let product = TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.99,
+            currencyCode: "EUR",
+            localizedPriceString: "€3.99",
             productIdentifier: "identifier",
             productType: .autoRenewableSubscription,
             localizedDescription: "",
@@ -457,6 +499,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let product = TestStoreProduct(
             localizedTitle: "product",
             price: 3.98999999999,
+            currencyCode: "USD",
             localizedPriceString: "$3.99",
             productIdentifier: "identifier",
             productType: .autoRenewableSubscription,
