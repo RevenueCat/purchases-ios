@@ -90,6 +90,7 @@ extension PaywallsResponse.Paywall {
                     storeProduct: TestStoreProduct(
                         localizedTitle: $0,
                         price: 1.99,
+                        currencyCode: "USD",
                         localizedPriceString: "$39.99",
                         productIdentifier: "com.revenuecat.test_product",
                         productType: .autoRenewableSubscription,
@@ -103,7 +104,8 @@ extension PaywallsResponse.Paywall {
                             subscriptionPeriod: .init(value: 1, unit: .week),
                             numberOfPeriods: 1,
                             type: .introductory
-                        )
+                        ),
+                        locale: Locale(identifier: "en_US")
                     ).toStoreProduct(),
                     offeringIdentifier: offering.identifier,
                     webCheckoutUrl: nil

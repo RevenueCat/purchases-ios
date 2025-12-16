@@ -138,6 +138,7 @@ final class ProductPaidPriceTests: TestCase {
         let testProduct = TestStoreProduct(
             localizedTitle: "Test Product",
             price: 4.99,
+            currencyCode: "USD",
             localizedPriceString: "$4.99",
             productIdentifier: "test.product",
             productType: .autoRenewableSubscription,
