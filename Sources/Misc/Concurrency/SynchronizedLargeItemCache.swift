@@ -26,15 +26,12 @@ internal final class SynchronizedLargeItemCache {
         self.documentURL = cache.createDocumentDirectoryIfNeeded(basePath: basePath)
     }
 
-    private func read<T>(_ action: (LargeItemCacheType, URL?) throws -> T) rethrows -> T {
+    @inline(__always)
+    private func withLock<T>(
+        _ action: (_ cache: LargeItemCacheType, _ documentURL: URL?) throws -> T
+    ) rethrows -> T {
         return try self.lock.perform {
             return try action(self.cache, self.documentURL)
-        }
-    }
-
-    private func write(_ action: (LargeItemCacheType, URL?) throws -> Void) rethrows {
-        return try self.lock.perform {
-            try action(self.cache, self.documentURL)
         }
     }
 
@@ -59,7 +56,7 @@ internal final class SynchronizedLargeItemCache {
         }
 
         do {
-            try self.write { cache, _ in
+            try self.withLock { cache, _ in
                 try cache.saveData(data, to: fileURL)
             }
             return true
@@ -75,7 +72,7 @@ internal final class SynchronizedLargeItemCache {
             return nil
         }
 
-        return self.read { cache, _ in
+        return self.withLock { cache, _ in
             guard let data = try? cache.loadFile(at: fileURL) else {
                 return nil
             }
@@ -90,8 +87,29 @@ internal final class SynchronizedLargeItemCache {
             return
         }
 
-        self.write { _, _ in
-            try? self.cache.remove(fileURL)
+        self.withLock { cache, _ in
+            try? cache.remove(fileURL)
+        }
+    }
+
+    /// Move a cached item from one key to another
+    @discardableResult
+    func moveObject(fromKey oldKey: DeviceCacheKeyType, toKey newKey: DeviceCacheKeyType) -> Bool {
+        guard let oldFileURL = self.getFileURL(for: oldKey),
+              let newFileURL = self.getFileURL(for: newKey) else {
+            return false
+        }
+
+        do {
+            return try self.withLock { cache, _ in
+                let data = try cache.loadFile(at: oldFileURL)
+                try cache.saveData(data, to: newFileURL)
+                try cache.remove(oldFileURL)
+                return true
+            }
+        } catch {
+            Logger.error("Failed to move cached item: \(error)")
+            return false
         }
     }
 
