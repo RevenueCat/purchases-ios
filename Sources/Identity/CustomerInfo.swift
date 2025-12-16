@@ -359,11 +359,14 @@ extension CustomerInfo: HTTPResponseBody {
 
     /// Creates a copy of this ``CustomerInfo`` modifying only the `requestDate`.
     func copy(with newRequestDate: Date) -> CustomerInfo {
+        Logger.verbose(Strings.customerInfo.printEntitlements(self))
         Logger.verbose(Strings.customerInfo.updating_request_date(self, newRequestDate))
 
         var copy = self.data
         copy.response.requestDate = newRequestDate
-        return .init(data: copy)
+        let newCustomerInfo = CustomerInfo(data: copy)
+        Logger.verbose(Strings.customerInfo.printEntitlements(newCustomerInfo))
+        return newCustomerInfo
     }
 
 }

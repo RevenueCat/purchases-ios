@@ -36,6 +36,7 @@ enum CustomerInfoStrings {
     case sending_updated_customerinfo_to_delegate
     case vending_cache
     case error_encoding_customerinfo(Error)
+    case printEntitlements(CustomerInfo, line: Int = #line, file: String = #file)
 
 }
 
@@ -89,6 +90,9 @@ extension CustomerInfoStrings: LogMessage {
             return "Vending CustomerInfo from cache."
         case let .error_encoding_customerinfo(error):
             return "Couldn't encode CustomerInfo:\n\(error)"
+        case let .printEntitlements(customerInfo, line, file):
+            return "[\(file):\(line)] CustomerInfo \(customerInfo.originalAppUserId) - Entitlements: \(customerInfo.entitlements.debugDescription)"
+
         }
 
     }
