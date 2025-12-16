@@ -165,29 +165,29 @@ class SubscriberAttributesManager {
             ?? (stringValue(from: data, forKey: "af_status")?.caseInsensitiveCompare("Organic") == .orderedSame
                 ? "Organic" : nil)
         if let mediaSource = mediaSource {
-            setReservedAttribute(.mediaSource, value: mediaSource, appUserID: appUserID)
+            setMediaSource(mediaSource, appUserID: appUserID)
         }
 
         if let campaign = stringValue(from: data, forKey: "campaign") {
-            setReservedAttribute(.campaign, value: campaign, appUserID: appUserID)
+            setCampaign(campaign, appUserID: appUserID)
         }
 
         if let adGroup = stringValue(from: data, forKey: "adgroup") ?? stringValue(from: data, forKey: "adset") {
-            setReservedAttribute(.adGroup, value: adGroup, appUserID: appUserID)
+            setAdGroup(adGroup, appUserID: appUserID)
         }
 
         // swiftlint:disable:next identifier_name
         if let ad = stringValue(from: data, forKey: "af_ad") ?? stringValue(from: data, forKey: "ad_id") {
-            setReservedAttribute(.ad, value: ad, appUserID: appUserID)
+            setAd(ad, appUserID: appUserID)
         }
 
         if let keyword = stringValue(from: data, forKey: "af_keywords") ?? stringValue(from: data, forKey: "keyword") {
-            setReservedAttribute(.keyword, value: keyword, appUserID: appUserID)
+            setKeyword(keyword, appUserID: appUserID)
         }
 
         if let creative = stringValue(from: data, forKey: "creative")
             ?? stringValue(from: data, forKey: "af_creative") {
-            setReservedAttribute(.creative, value: creative, appUserID: appUserID)
+            setCreative(creative, appUserID: appUserID)
         }
     }
 
