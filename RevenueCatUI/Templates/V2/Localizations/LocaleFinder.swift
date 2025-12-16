@@ -12,6 +12,7 @@
 //  Created by Josh Holtz on 2/6/25.
 
 import Foundation
+@_spi(Internal) import RevenueCat
 
 extension Dictionary where Key == String {
 

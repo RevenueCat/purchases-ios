@@ -60,12 +60,14 @@ extension WebBillingProductsResponse.Product {
 
         let simulatedStoreProduct = SimulatedStoreProduct(localizedTitle: self.title,
                                                           price: decimalPrice,
+                                                          currencyCode: price.currency,
                                                           localizedPriceString: localizedPriceString,
                                                           productIdentifier: self.identifier,
                                                           productType: self.productType.storeProductType,
                                                           localizedDescription: self.description ?? "",
                                                           subscriptionPeriod: period,
-                                                          introductoryDiscount: introDiscount)
+                                                          introductoryDiscount: introDiscount,
+                                                          locale: locale)
         return simulatedStoreProduct.toStoreProduct()
     }
 
