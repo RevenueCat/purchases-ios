@@ -452,10 +452,12 @@ public extension Attribution {
     }
 
     /**
-     * Sets attribution data from AppsFlyer's `onConversionDataSuccess` callback.
+     * Sets conversion data from AppsFlyer's `onConversionDataSuccess` callback.
      *
      * This method extracts relevant attribution fields from the AppsFlyer conversion data
-     * and sets the corresponding RevenueCat subscriber attributes.
+     * and sets the corresponding RevenueCat subscriber attributes. Note that this method will
+     * never unset any attributes, even when passed `nil`. To unset attributes, call the setter
+     * method for the individual attribute that should be unset with a `nil` value.
      *
      * The following attributes are set based on the conversion data:
      * - `$mediaSource`: From `media_source`, or "Organic" if `af_status` is "Organic"
