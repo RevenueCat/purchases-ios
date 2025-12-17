@@ -136,7 +136,7 @@ private struct NonLocalizedMarkdownText: View {
         let plainString = String(result.characters)
 
         // Find all <u>...</u> matches
-        guard let regex = try? NSRegularExpression(pattern: "<u>(.*?)</u>", options: []) else {
+        guard let regex = NSRegularExpression.underlineHTML else {
             return result
         }
 
@@ -201,6 +201,10 @@ private extension Font.Weight {
             return false
         }
     }
+}
+
+private extension NSRegularExpression {
+    static let underlineHTML = try? NSRegularExpression(pattern: "<u>(.*?)</u>", options: [])
 }
 
 #if DEBUG
