@@ -39,7 +39,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         await self.purchases.adTracker.trackAdFailedToLoad(failedData)
 
-        let trackedEvents = try await self.mockEventsManager.trackedEvents
+        let trackedEvents = await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
 
@@ -66,7 +66,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         await self.purchases.adTracker.trackAdLoaded(loadedData)
 
-        let trackedEvents = try await self.mockEventsManager.trackedEvents
+        let trackedEvents = await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
 
@@ -93,7 +93,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         await self.purchases.adTracker.trackAdDisplayed(displayedData)
 
-        let trackedEvents = try await self.mockEventsManager.trackedEvents
+        let trackedEvents = await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
 
@@ -120,7 +120,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         await self.purchases.adTracker.trackAdOpened(openedData)
 
-        let trackedEvents = try await self.mockEventsManager.trackedEvents
+        let trackedEvents = await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
 
@@ -150,7 +150,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         await self.purchases.adTracker.trackAdRevenue(revenueData)
 
-        let trackedEvents = try await self.mockEventsManager.trackedEvents
+        let trackedEvents = await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
 
