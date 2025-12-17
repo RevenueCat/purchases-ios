@@ -2343,13 +2343,13 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.findInvokedAttribute(withName: "$campaign").value) == "test"
     }
 
-    func testSetAppsFlyerConversionDataHandlesDoubleValuesAsIntegers() {
+    func testSetAppsFlyerConversionDataHandlesDoubleValues() {
         let dataWithDoubles: [AnyHashable: Any] = [
-            "ad_id": 12345.0
+            "ad_id": 12345.67
         ]
         self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithDoubles, appUserID: "kratos")
 
-        expect(self.findInvokedAttribute(withName: "$ad").value) == "12345"
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "12345.67"
     }
 
     func testSetAppsFlyerConversionDataWithTypicalOrganicInstall() {
