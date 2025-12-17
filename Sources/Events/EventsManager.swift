@@ -316,12 +316,6 @@ private extension EventsManager {
         }
     }
 
-    /// Async version of `beginBackgroundTask` for use within async contexts.
-    /// This dispatches to the main actor to call UIApplication methods.
-    @MainActor
-    static func beginBackgroundTaskAsync(named taskName: String) -> (@Sendable () -> Void)? {
-        return beginBackgroundTask(named: taskName)
-    }
 }
 #endif
 
