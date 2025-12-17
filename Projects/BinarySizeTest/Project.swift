@@ -5,7 +5,12 @@ let project = Project(
     name: "BinarySizeTest",
     organizationName: .revenueCatOrgName,
     settings: .settings(
-        base: .projectBase,
+        base: [
+            "SWIFT_COMPILATION_MODE": "wholemodule",
+            "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
+            "CODE_SIGN_STYLE": "Manual",
+            "DEVELOPMENT_TEAM": "8SXR2327BM"
+        ],
         configurations: [
             .debug(
                 name: "Debug",
@@ -59,7 +64,8 @@ let project = Project(
             name: "BinarySizeTest",
             shared: true,
             buildAction: .buildAction(targets: ["BinarySizeTest"]),
-            runAction: .runAction(configuration: "Debug")
+            runAction: .runAction(configuration: "Debug"),
+            archiveAction: .archiveAction(configuration: "Release")
         )
     ]
 )
