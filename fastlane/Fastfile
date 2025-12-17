@@ -728,12 +728,11 @@ platform :ios do
   end
 
   desc "Build BinarySizeTest app and upload to Emerge"
-  lane :build_and_upload_emerge_binary_size_tests do
+  lane :build_and_upload_emerge_binary_size_analysis do
     archive_path = build_binary_size_test_app
     
     send_to_emerge(
-      archive_path: archive_path,
-      app_id_suffix: "binary-size-test"
+      archive_path: archive_path
     )
   end
 

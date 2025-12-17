@@ -1547,7 +1547,7 @@ jobs:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
 
-  emerge_binary_size_tests:
+  emerge_binary_size_analysis:
     executor:
       name: macos-executor
     steps:
@@ -1558,7 +1558,7 @@ jobs:
       - update-spm-installation-commit
       - run:
           name: Build BinarySizeTest and upload to Emerge
-          command: bundle exec fastlane build_and_upload_emerge_binary_size_tests
+          command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis
           no_output_timeout: 30m
 
   test-tuist-generate-workspace:
@@ -1671,7 +1671,7 @@ workflows:
       - run-revenuecat-ui-ios-18
       - run-revenuecat-ui-ios-26
       - emerge_purchases_ui_snapshot_tests
-      - emerge_binary_size_tests
+      - emerge_binary_size_analysis
 
   create-tag:
     when:
@@ -1927,7 +1927,7 @@ workflows:
           dry_run: true
           context:
             - slack-secrets
-      - emerge_binary_size_tests:
+      - emerge_binary_size_analysis:
           context:
             - slack-secrets
 
