@@ -186,10 +186,10 @@ macOS build
 
 visionOS build
 
-### ios build_and_upload_emerge_binary_size_tests
+### ios build_and_upload_emerge_binary_size_analysis
 
 ```sh
-[bundle exec] fastlane ios build_and_upload_emerge_binary_size_tests
+[bundle exec] fastlane ios build_and_upload_emerge_binary_size_analysis
 ```
 
 Build BinarySizeTest app and upload to Emerge

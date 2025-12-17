@@ -764,7 +764,7 @@ platform :ios do
       archive_path: archive_path,
       export_method: "app-store",
       export_options: {
-        signingStyle: "automatic",
+        signingStyle: "manual",
         stripSwiftSymbols: false,
         thinning: "<none>",
         provisioningProfiles: {
