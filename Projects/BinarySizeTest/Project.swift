@@ -5,26 +5,6 @@ let project = Project(
     name: "BinarySizeTest",
     organizationName: .revenueCatOrgName,
     settings: .settings(
-        base: [
-            "SWIFT_COMPILATION_MODE": "wholemodule",
-            "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
-            "CODE_SIGN_STYLE": "Manual",
-            "DEVELOPMENT_TEAM": "8SXR2327BM"
-        ],
-        configurations: [
-            .debug(
-                name: "Debug",
-                settings: [
-                    "SWIFT_COMPILATION_MODE": "incremental"
-                ]
-            ),
-            .release(
-                name: "Release",
-                settings: [
-                    "SWIFT_COMPILATION_MODE": "wholemodule"
-                ]
-            )
-        ],
         defaultSettings: .recommended
     ),
     targets: [
@@ -52,8 +32,9 @@ let project = Project(
             settings: .settings(
                 base: [
                     "CODE_SIGN_STYLE": "Manual",
-                    "CODE_SIGN_IDENTITY": "Apple Distribution",
-                    "DEVELOPMENT_TEAM": "8SXR2327BM"
+                    "DEVELOPMENT_TEAM": "8SXR2327BM",
+                    "CODE_SIGN_IDENTITY": "Apple Distribution: RevenueCat, Inc. (8SXR2327BM)",
+                    "PROVISIONING_PROFILE_SPECIFIER": "match AppStore com.revenuecat.BinarySizeTestLocalSource"
                 ],
                 defaultSettings: .essential
             )
