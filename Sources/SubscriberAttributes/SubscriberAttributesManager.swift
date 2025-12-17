@@ -312,18 +312,8 @@ extension SubscriberAttributesManager: AttributeSyncing {
 
 private extension SubscriberAttributesManager {
 
-    /// Checks if a value wrapped in `Any` is actually `nil`.
-    /// This is necessary because when an `Optional` is stored in a dictionary with `Any` values,
-    /// the `nil` case gets boxed as `Optional<T>.none` inside `Any`, rather than being absent from the dictionary.
-    func isNilValue(_ value: Any) -> Bool {
-        let mirror = Mirror(reflecting: value)
-        return mirror.displayStyle == .optional && mirror.children.isEmpty
-    }
-
     func stringValueForPrimitive(from data: [AnyHashable: Any], forKey key: String) -> String? {
         guard let value = data[key as AnyHashable] else { return nil }
-        if value is NSNull { return nil }
-        if isNilValue(value) { return nil }
         if let stringValue = value as? String {
             return stringValue.isEmpty ? nil : stringValue
         }
