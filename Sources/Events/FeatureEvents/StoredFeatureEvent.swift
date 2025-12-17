@@ -36,13 +36,9 @@ struct StoredFeatureEvent {
 
 }
 
-/// Internal feature identifier for feature events.
 @_spi(Internal) public enum Feature: String, Codable, Sendable {
 
-    /// RevenueCatUI paywalls feature.
     case paywalls
-
-    /// RevenueCatUI customer center feature.
     case customerCenter
 
 }

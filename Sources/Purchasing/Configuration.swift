@@ -116,7 +116,7 @@ import Foundation
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
-        private(set) weak var eventsListener: EventsListener?
+        private(set) weak var eventsListener: EventsListener? = nil
         private(set) var storeKitVersion: StoreKitVersion = .default
 
         /// The preferred locale for the requests.
@@ -235,7 +235,6 @@ import Foundation
             return self
         }
 
-        /// Sets an internal events listener used for debugging.
         @_spi(Internal) public func with(eventsListener: EventsListener?) -> Builder {
             self.eventsListener = eventsListener
             return self

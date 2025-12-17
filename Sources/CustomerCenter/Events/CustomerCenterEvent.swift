@@ -18,7 +18,6 @@ import Foundation
 
 extension CustomerCenterEventType {
 
-    /// Feature associated with customer center events.
     @_spi(Internal) public var feature: Feature { .customerCenter }
 
 }
@@ -50,28 +49,7 @@ enum CustomerCenterEventDiscriminator: String {
 /// An event to be sent by the `RevenueCatUI` SDK.
 @_spi(Internal) public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
 
-    /// Discriminator used by the backend to route customer center events.
     @_spi(Internal) public var eventDiscriminator: String? { CustomerCenterEventDiscriminator.lifecycle.rawValue }
-
-    /// Stable event name suitable for logging.
-    @_spi(Internal) public var eventName: String { "customer_center_impression" }
-
-    /// Stringified key-value parameters suitable for logging.
-    @_spi(Internal) public var parameters: [String: String] {
-        let creationData = self.creationData
-        let data = self.data
-
-        return [
-            "feature": self.feature.rawValue,
-            "event_discriminator": self.eventDiscriminator ?? "",
-            "id": creationData.id.uuidString,
-            "timestamp_ms": String(creationData.date.millisecondsSince1970),
-            "locale_identifier": data.localeIdentifier,
-            "dark_mode": String(data.darkMode),
-            "is_sandbox": String(data.isSandbox),
-            "display_mode": data.displayMode.identifier
-        ]
-    }
 
     /// The Customer Center was displayed.
     case impression(CustomerCenterEventCreationData, Data)
@@ -81,40 +59,7 @@ enum CustomerCenterEventDiscriminator: String {
 /// An event to be sent by the `RevenueCatUI` SDK.
 @_spi(Internal) public enum CustomerCenterAnswerSubmittedEvent: FeatureEvent, CustomerCenterEventType {
 
-    /// Discriminator used by the backend to route customer center events.
     @_spi(Internal) public var eventDiscriminator: String? { CustomerCenterEventDiscriminator.answerSubmitted.rawValue }
-
-    /// Stable event name suitable for logging.
-    @_spi(Internal) public var eventName: String { "customer_center_survey_option_chosen" }
-
-    /// Stringified key-value parameters suitable for logging.
-    @_spi(Internal) public var parameters: [String: String] {
-        let creationData = self.creationData
-        let data = self.data
-
-        var result: [String: String] = [
-            "feature": self.feature.rawValue,
-            "event_discriminator": self.eventDiscriminator ?? "",
-            "id": creationData.id.uuidString,
-            "timestamp_ms": String(creationData.date.millisecondsSince1970),
-            "locale_identifier": data.localeIdentifier,
-            "dark_mode": String(data.darkMode),
-            "is_sandbox": String(data.isSandbox),
-            "display_mode": data.displayMode.identifier,
-            "path": data.path.rawValue,
-            "survey_option_id": data.surveyOptionID,
-            "revision_id": String(data.revisionID)
-        ]
-
-        if let url = data.url {
-            result["url"] = url.absoluteString
-        }
-        if let additionalContext = data.additionalContext {
-            result["additional_context"] = additionalContext
-        }
-
-        return result
-    }
 
     /// A feedback survey was completed with a particular option.
     case answerSubmitted(CustomerCenterEventCreationData, Data)

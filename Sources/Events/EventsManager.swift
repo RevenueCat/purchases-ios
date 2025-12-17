@@ -11,17 +11,13 @@
 //
 //  Created by Nacho Soto on 9/6/23.
 
-// swiftlint:disable file_length
-
 import Foundation
 
 #if os(iOS) || os(tvOS) || VISION_OS
 import UIKit
 #endif
 
-/// Listener for internal events, intended for debugging/logging.
 @_spi(Internal) public protocol EventsListener: AnyObject {
-    /// Called whenever a feature event is tracked.
     func onTrackFeatureEvent(_ featureEvent: FeatureEvent)
 }
 
