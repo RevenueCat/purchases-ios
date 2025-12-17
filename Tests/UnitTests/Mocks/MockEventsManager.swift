@@ -16,6 +16,18 @@ import Foundation
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 actor MockEventsManager: EventsManagerType {
+    nonisolated func flushAllEventsWithBackgroundTask(batchSize: Int) {
+        Task {
+            _ = try? await flushAllEvents(batchSize: batchSize)
+        }
+    }
+    
+    nonisolated func flushFeatureEventsWithBackgroundTask(batchSize: Int) {
+        Task {
+            _ = try? await flushFeatureEvents(batchSize: batchSize)
+        }
+    }
+
 
     var trackedEvents: [FeatureEvent] = []
 
