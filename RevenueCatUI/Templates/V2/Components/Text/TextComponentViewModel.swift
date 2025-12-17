@@ -14,6 +14,10 @@
 import RevenueCat
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -285,7 +289,22 @@ enum GenericFont: String {
 
     case serif, monospace, sansSerif = "sans-serif"
 
-    func makeFont(fontSize: CGFloat) -> Font {
+    func makeFont(fontSize: CGFloat, useDynamicType: Bool = true) -> Font {
+        #if canImport(UIKit)
+        if useDynamicType {
+            // Keep using `Font.system(...)` so downstream `.fontWeight(...)` / italic / markdown traits
+            // continue to work, while still respecting Dynamic Type via a scaled point size.
+            let scaledSize = UIFontMetrics.default.scaledValue(for: fontSize)
+            return self.makeStaticFont(fontSize: scaledSize)
+        }
+
+        return self.makeStaticFont(fontSize: fontSize)
+        #else
+        return self.makeStaticFont(fontSize: fontSize)
+        #endif
+    }
+
+    private func makeStaticFont(fontSize: CGFloat) -> Font {
         switch self {
         case .serif:
             return Font.system(size: fontSize, weight: .regular, design: .serif)
