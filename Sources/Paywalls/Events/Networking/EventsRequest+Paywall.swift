@@ -36,8 +36,7 @@ extension FeatureEventsRequest {
 extension FeatureEventsRequest.PaywallEvent {
 
     enum EventType: String {
-        case startLoading = "start_loading"
-        case failedToLoad = "failed_to_load"
+
         case impression = "paywall_impression"
         case cancel = "paywall_cancel"
         case close = "paywall_close"

@@ -34,25 +34,12 @@ import UIKit
     ///  - error: The JSON encoding error that occurred when encoding `featureEvent`, `nil` if the failure was when
     ///  trying to initialize a `String` with the JSON encoded data using UTF-8.
     func failedToTrackFeatureEvent(_ featureEvent: FeatureEvent, error: Error?)
-
-    /// Called whenever the EventsManager failed to be created.
-    func failedToCreateEventsManager(error: Error)
-
-    /// Called when the paywall starts loading.
-    func trackPaywallStartedLoading(offeringIdentifier: String)
-
-    /// Called whenever the paywall fails to load.
-    func trackPaywallFailedToLoad(offeringIdentifier: String, error: Error)
 }
 
 protocol EventsManagerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(featureEvent: FeatureEvent) async
-
-    func trackPaywallStartedLoading(offeringIdentifier: String) async
-
-    func trackPaywallFailedToLoad(offeringIdentifier: String, error: Error) async
 
     #if ENABLE_AD_EVENTS_TRACKING
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -147,14 +134,6 @@ actor EventsManager: EventsManagerType {
         } catch {
             self.eventsListener?.failedToTrackFeatureEvent(featureEvent, error: error)
         }
-    }
-
-    func trackPaywallStartedLoading(offeringIdentifier: String) {
-        self.eventsListener?.trackPaywallStartedLoading(offeringIdentifier: offeringIdentifier)
-    }
-
-    func trackPaywallFailedToLoad(offeringIdentifier: String, error: Error) {
-        self.eventsListener?.trackPaywallFailedToLoad(offeringIdentifier: offeringIdentifier, error: error)
     }
 
     #if ENABLE_AD_EVENTS_TRACKING

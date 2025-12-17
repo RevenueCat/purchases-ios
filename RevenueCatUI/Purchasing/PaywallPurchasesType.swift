@@ -44,12 +44,6 @@ protocol PaywallPurchasesType: Sendable {
     @Sendable
     func track(paywallEvent: PaywallEvent) async
 
-    @Sendable
-    func trackPaywallStartedLoading(offeringIdentifier: String) async
-
-    @Sendable
-    func trackPaywallFailedToLoad(offeringIdentifier: String, error: Error) async
-
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache()
 #endif

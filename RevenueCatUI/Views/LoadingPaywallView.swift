@@ -197,10 +197,6 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         // Ignoring font loading errors from paywall view
     }
 
-    func trackPaywallStartedLoading(offeringIdentifier: String) async {}
-
-    func trackPaywallFailedToLoad(offeringIdentifier: String, error: Error) async {}
-
 }
 
 // MARK: - Shimmer

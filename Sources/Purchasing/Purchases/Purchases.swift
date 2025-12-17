@@ -508,7 +508,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             }
         } catch {
             Logger.verbose(Strings.paywalls.event_manager_failed_to_initialize(error))
-            eventsListener?.failedToCreateEventsManager(error: error)
             eventsManager = nil
         }
 
@@ -1442,14 +1441,6 @@ public extension Purchases {
     func track(paywallEvent: PaywallEvent) async {
         self.purchasesOrchestrator.track(paywallEvent: paywallEvent)
         await self.eventsManager?.track(featureEvent: paywallEvent)
-    }
-
-    func trackPaywallStartedLoading(offeringIdentifier: String) async {
-        await self.eventsManager?.trackPaywallStartedLoading(offeringIdentifier: offeringIdentifier)
-    }
-
-    func trackPaywallFailedToLoad(offeringIdentifier: String, error: Error) async {
-        await self.eventsManager?.trackPaywallFailedToLoad(offeringIdentifier: offeringIdentifier, error: error)
     }
 
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.

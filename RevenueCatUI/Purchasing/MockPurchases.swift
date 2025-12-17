@@ -77,10 +77,6 @@ final class MockPurchases: PaywallPurchasesType {
         await self.trackEventBlock(paywallEvent)
     }
 
-    func trackPaywallStartedLoading(offeringIdentifier: String) async {}
-
-    func trackPaywallFailedToLoad(offeringIdentifier: String, error: Error) async {}
-
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {
         // No-op, this is a mock implementation.

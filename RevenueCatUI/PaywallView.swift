@@ -241,9 +241,6 @@ public struct PaywallView: View {
                         .transition(Self.transition)
                         .task {
                             do {
-                                self.purchaseHandler.trackPaywallStartedLoading(
-                                    offeringIdentifier: self.contentToDisplay.offeringIdentifier
-                                )
                                 guard Purchases.isConfigured else {
                                     throw PaywallError.purchasesNotConfigured
                                 }
@@ -256,10 +253,6 @@ public struct PaywallView: View {
                                     self.customerInfo = try await Purchases.shared.customerInfo()
                                 }
                             } catch let error as NSError {
-                                self.purchaseHandler.trackPaywallFailedToLoad(
-                                    offeringIdentifier: self.contentToDisplay.offeringIdentifier,
-                                    error: error
-                                )
                                 self.error = error
                             }
                         }

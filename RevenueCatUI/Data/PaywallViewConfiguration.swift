@@ -54,17 +54,6 @@ extension PaywallViewConfiguration {
         case offering(Offering)
         case offeringIdentifier(String, presentedOfferingContext: PresentedOfferingContext?)
 
-        /// Empty for the default offering.
-        var offeringIdentifier: String {
-            switch self {
-            case .defaultOffering:
-                return ""
-            case .offering(let offering):
-                return offering.identifier
-            case .offeringIdentifier(let identifier, _):
-                return identifier
-            }
-        }
     }
 
 }
