@@ -39,7 +39,7 @@ final class PromotionalOfferViewTests: TestCase {
             timestamp: 1234)
         let discount = MockStoreProductDiscount(
             offerIdentifier: "offerIdentifier",
-            currencyCode: "usd",
+            currencyCode: "USD",
             price: 1,
             localizedPriceString: "$1.00",
             paymentMode: .payAsYouGo,
@@ -50,10 +50,12 @@ final class PromotionalOfferViewTests: TestCase {
         let product = TestStoreProduct(
             localizedTitle: "localizedTitle",
             price: 0,
+            currencyCode: "USD",
             localizedPriceString: "",
             productIdentifier: "productIdentifier",
             productType: .nonRenewableSubscription,
-            localizedDescription: "localizedDescription"
+            localizedDescription: "localizedDescription",
+            locale: Locale(identifier: "en_US")
         )
         let promotionalOfferView = PromotionalOfferView(
             promotionalOffer: PromotionalOffer(discount: discount, signedData: signedData),

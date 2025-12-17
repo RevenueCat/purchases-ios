@@ -604,7 +604,7 @@ platform :ios do
       test_plan = "CI-AllTests"
     end
 
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       ensure_devices_found: true,
@@ -616,14 +616,13 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
-      fail_build: !generate_snapshots,
-      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots
     )
   end
 
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV",
       ensure_devices_found: true,
@@ -634,9 +633,7 @@ platform :ios do
       result_bundle: true,
       testplan: "CI-AllTests",
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/tvos",
-
-      number_of_flaky_retries: 5 # Number of xcodebuild runs to retry
+      output_directory: "fastlane/test_output/xctest/tvos"
     )
   end
 
@@ -649,7 +646,7 @@ platform :ios do
       test_plan = "CI-RevenueCat"
     end
 
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - watchOS",
       device: ENV['SCAN_DEVICE'] || "Apple Watch Series 10 (46mm)",
       ensure_devices_found: true,
@@ -662,9 +659,7 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/watchos",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
-      fail_build: !generate_snapshots,
-
-      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots
     )
   end
 
@@ -941,6 +936,10 @@ platform :ios do
         './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m'
       ]
     )
+
+    # V3LoadShedderIntegrationTests.swift and V4LoadShedderIntegrationTests.swift are missing when
+    # running Carthage installation tests because they are removed in the prepare_for_carthage lane.
+    # Passing skip_missing_files: true prevents the replace_text_in_files action from failing in this case.
     replace_text_in_files(
       previous_text: "REVENUECAT_LOAD_SHEDDER_API_KEY",
       new_text: ENV["REVENUECAT_LOAD_SHEDDER_API_KEY"],
@@ -948,7 +947,8 @@ platform :ios do
         './Tests/BackendIntegrationTests/Constants.swift',
         './Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTests.swift',
         './Tests/v4LoadShedderIntegration/v4LoadShedderIntegrationTests/V4LoadShedderIntegrationTests.swift'
-      ]
+      ],
+      skip_missing_files: true
     )
     replace_text_in_files(
       previous_text: "REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY",
@@ -1240,7 +1240,7 @@ platform :ios do
 
     success = false
     begin
-      scan_with_flaky_test_retries(
+      scan(
         scheme: "BackendIntegrationTests",
         ensure_devices_found: true,
         derived_data_path: "scan_derived_data",
@@ -1250,8 +1250,7 @@ platform :ios do
         testplan: options[:test_plan],
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios",
-
-        number_of_flaky_retries: 5 # Number of retries in an xcodebuild run
+        number_of_retries: 5 # Number of retries in an xcodebuild run
       )
       success = true
     rescue => exception
@@ -1813,10 +1812,12 @@ lane :check_pods do
   )
 end
 
-desc "Removes the Examples directory before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj)"
+desc "Removes some directories before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj or v3LoadShedderIntegration.xcodeproj). Also removes v3LoadShedderIntegration and v4LoadShedderIntegration directories to prevent xcodebuild from timing out when scanning for projects."
 lane :prepare_for_carthage do
   Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("rm", "-rf", "Examples")
+    sh("rm", "-rf", "Tests/v3LoadShedderIntegration")
+    sh("rm", "-rf", "Tests/v4LoadShedderIntegration")
   end
 end
 
