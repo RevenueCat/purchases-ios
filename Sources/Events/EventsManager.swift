@@ -125,18 +125,6 @@ actor EventsManager: EventsManagerType {
     #endif
 
     func flushAllEvents(batchSize: Int) async throws -> Int {
-        #if os(iOS) || os(tvOS) || VISION_OS
-        let endBackgroundTask: (() -> Void)?
-        if !self.systemInfo.isAppExtension {
-            endBackgroundTask = await Self.beginBackgroundTask(named: "com.revenuecat.flushAllEvents")
-        } else {
-            endBackgroundTask = nil
-        }
-        defer {
-            endBackgroundTask?()
-        }
-        #endif
-
         let featureEventsFlushed = try await self.flushFeatureEventsInternal(batchSize: batchSize)
 
         #if ENABLE_AD_EVENTS_TRACKING

@@ -913,7 +913,7 @@ final class PurchasesOrchestrator {
             }
         } else {
             // When backgrounding, the app only has about 5 seconds to perform work
-            manager.flushFeatureEventsWithBackgroundTask(batchSize: EventsManager.defaultEventBatchSize)
+            manager.flushAllEventsWithBackgroundTask(batchSize: EventsManager.defaultEventBatchSize)
         }
     }
 
