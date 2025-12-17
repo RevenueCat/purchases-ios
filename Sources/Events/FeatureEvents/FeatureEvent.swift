@@ -11,7 +11,7 @@
 //
 //  Created by Cesar de la Vega on 6/11/24.
 
-@_spi(Internal) public protocol FeatureEvent: Encodable, Sendable {
+protocol FeatureEvent: Encodable, Sendable {
 
     var feature: Feature { get }
     var eventDiscriminator: String? { get }

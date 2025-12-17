@@ -18,7 +18,7 @@ import Foundation
 
 extension CustomerCenterEventType {
 
-    @_spi(Internal) public var feature: Feature { .customerCenter }
+    var feature: Feature { .customerCenter }
 
 }
 
@@ -49,7 +49,7 @@ enum CustomerCenterEventDiscriminator: String {
 /// An event to be sent by the `RevenueCatUI` SDK.
 @_spi(Internal) public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
 
-    @_spi(Internal) public var eventDiscriminator: String? { CustomerCenterEventDiscriminator.lifecycle.rawValue }
+    var eventDiscriminator: String? { CustomerCenterEventDiscriminator.lifecycle.rawValue }
 
     /// The Customer Center was displayed.
     case impression(CustomerCenterEventCreationData, Data)
@@ -59,7 +59,7 @@ enum CustomerCenterEventDiscriminator: String {
 /// An event to be sent by the `RevenueCatUI` SDK.
 @_spi(Internal) public enum CustomerCenterAnswerSubmittedEvent: FeatureEvent, CustomerCenterEventType {
 
-    @_spi(Internal) public var eventDiscriminator: String? { CustomerCenterEventDiscriminator.answerSubmitted.rawValue }
+    var eventDiscriminator: String? { CustomerCenterEventDiscriminator.answerSubmitted.rawValue }
 
     /// A feedback survey was completed with a particular option.
     case answerSubmitted(CustomerCenterEventCreationData, Data)

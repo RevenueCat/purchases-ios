@@ -36,7 +36,7 @@ struct StoredFeatureEvent {
 
 }
 
-@_spi(Internal) public enum Feature: String, Codable, Sendable {
+enum Feature: String, Codable {
 
     case paywalls
     case customerCenter
