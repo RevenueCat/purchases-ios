@@ -204,7 +204,7 @@ private extension Font.Weight {
 }
 
 private extension NSRegularExpression {
-    static let underlineHTML = try? NSRegularExpression(pattern: "<u>(.*?)</u>", options: [])
+    static let underlineHTML = try? NSRegularExpression(pattern: "<u>(.*?)</u>", options: [.dotMatchesLineSeparators])
 }
 
 #if DEBUG
