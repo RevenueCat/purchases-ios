@@ -140,22 +140,7 @@ actor EventsManager: EventsManagerType {
     }
 
     nonisolated func flushAllEventsWithBackgroundTask(batchSize: Int) {
-        #if os(iOS) || os(tvOS) || VISION_OS
-        let endBackgroundTask: (@Sendable () -> Void)?
-        if !self.systemInfo.isAppExtension {
-            endBackgroundTask = Self.beginBackgroundTask(named: "com.revenuecat.flushAllEvents")
-        } else {
-            endBackgroundTask = nil
-        }
-        #endif
-
-        Task {
-            #if os(iOS) || os(tvOS) || VISION_OS
-            defer {
-                endBackgroundTask?()
-            }
-            #endif
-
+        self.withBackgroundTask(name: "com.revenuecat.flushAllEvents") {
             do {
                 _ = try await self.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
             } catch {
@@ -165,22 +150,7 @@ actor EventsManager: EventsManagerType {
     }
 
     nonisolated func flushFeatureEventsWithBackgroundTask(batchSize: Int) {
-        #if os(iOS) || os(tvOS) || VISION_OS
-        let endBackgroundTask: (() -> Void)?
-        if !self.systemInfo.isAppExtension {
-            endBackgroundTask = Self.beginBackgroundTask(named: "com.revenuecat.flushFeatureEvents")
-        } else {
-            endBackgroundTask = nil
-        }
-        #endif
-
-        Task {
-            #if os(iOS) || os(tvOS) || VISION_OS
-            defer {
-                endBackgroundTask?()
-            }
-            #endif
-
+        self.withBackgroundTask(name: "com.revenuecat.flushFeatureEvents") {
             do {
                 _ = try await self.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
             } catch {
@@ -286,6 +256,24 @@ private extension EventsManager {
     }
     #endif
 
+    nonisolated func withBackgroundTask(name: String, do work: @escaping () async -> Void) {
+        #if os(iOS) || os(tvOS) || VISION_OS
+        let endBackgroundTask: (() -> Void)?
+        if !self.systemInfo.isAppExtension {
+            endBackgroundTask = Self.beginBackgroundTask(named: name)
+        } else {
+            endBackgroundTask = nil
+        }
+        #endif
+
+        Task {
+            await work()
+
+            #if os(iOS) || os(tvOS) || VISION_OS
+            endBackgroundTask?()
+            #endif
+        }
+    }
 }
 
 // MARK: - Private Helpers
