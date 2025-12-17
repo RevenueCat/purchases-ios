@@ -1556,7 +1556,8 @@ jobs:
       - trust-github-key
       - install-dependencies
       - update-spm-installation-commit
-      - revenuecat/install-tuist
+      - tuist-generate-workspace:
+          query: "BinarySizeTest"
       - run:
           name: Build BinarySizeTest and upload to Emerge
           command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis
