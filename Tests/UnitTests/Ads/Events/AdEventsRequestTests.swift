@@ -31,7 +31,7 @@ class AdFeatureEventsRequestTests: TestCase {
         let storedEvent = try Self.createStoredAdEvent(from: event)
         let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(matching: requestEvent, as: .formattedJson, record: true)
     }
 
     func testLoadedEvent() throws {
@@ -39,7 +39,7 @@ class AdFeatureEventsRequestTests: TestCase {
         let storedEvent = try Self.createStoredAdEvent(from: event)
         let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(matching: requestEvent, as: .formattedJson, record: true)
     }
 
     func testDisplayedEvent() throws {
@@ -47,7 +47,7 @@ class AdFeatureEventsRequestTests: TestCase {
         let storedEvent = try Self.createStoredAdEvent(from: event)
         let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(matching: requestEvent, as: .formattedJson, record: true)
     }
 
     func testOpenedEvent() throws {
@@ -55,7 +55,7 @@ class AdFeatureEventsRequestTests: TestCase {
         let storedEvent = try Self.createStoredAdEvent(from: event)
         let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(matching: requestEvent, as: .formattedJson, record: true)
     }
 
     func testRevenueEvent() throws {
@@ -63,7 +63,7 @@ class AdFeatureEventsRequestTests: TestCase {
         let storedEvent = try Self.createStoredAdEvent(from: event)
         let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(matching: requestEvent, as: .formattedJson, record: true)
     }
 
     func testCanInitFromDeserializedEvent() throws {
@@ -91,7 +91,7 @@ class AdFeatureEventsRequestTests: TestCase {
 
         let requestEvent = try XCTUnwrap(AdEventsRequest.AdEventRequest(storedEvent: deserializedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(matching: requestEvent, as: .formattedJson, record: true)
     }
 
     // MARK: -
