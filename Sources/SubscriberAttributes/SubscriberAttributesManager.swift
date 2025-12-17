@@ -161,9 +161,10 @@ class SubscriberAttributesManager {
             return
         }
 
-        let mediaSource = stringValueForPrimitive(from: data, forKey: "media_source")
-            ?? (stringValueForPrimitive(from: data, forKey: "af_status")?.caseInsensitiveCompare("Organic") == .orderedSame
-                ? "Organic" : nil)
+        let mediaSource = stringValueForPrimitive(from: data, forKey: "media_source") ?? (
+            stringValueForPrimitive(from: data, forKey: "af_status")?.caseInsensitiveCompare("Organic") == .orderedSame
+                ? "Organic" : nil
+        )
         if let mediaSource = mediaSource {
             setMediaSource(mediaSource, appUserID: appUserID)
         }
@@ -172,16 +173,19 @@ class SubscriberAttributesManager {
             setCampaign(campaign, appUserID: appUserID)
         }
 
-        if let adGroup = stringValueForPrimitive(from: data, forKey: "adgroup") ?? stringValueForPrimitive(from: data, forKey: "adset") {
+        if let adGroup = stringValueForPrimitive(from: data, forKey: "adgroup")
+            ?? stringValueForPrimitive(from: data, forKey: "adset") {
             setAdGroup(adGroup, appUserID: appUserID)
         }
 
         // swiftlint:disable:next identifier_name
-        if let ad = stringValueForPrimitive(from: data, forKey: "af_ad") ?? stringValueForPrimitive(from: data, forKey: "ad_id") {
+        if let ad = stringValueForPrimitive(from: data, forKey: "af_ad")
+            ?? stringValueForPrimitive(from: data, forKey: "ad_id") {
             setAd(ad, appUserID: appUserID)
         }
 
-        if let keyword = stringValueForPrimitive(from: data, forKey: "af_keywords") ?? stringValueForPrimitive(from: data, forKey: "keyword") {
+        if let keyword = stringValueForPrimitive(from: data, forKey: "af_keywords")
+            ?? stringValueForPrimitive(from: data, forKey: "keyword") {
             setKeyword(keyword, appUserID: appUserID)
         }
 
