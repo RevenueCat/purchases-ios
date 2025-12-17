@@ -21,19 +21,8 @@ import UIKit
 
 /// Listener for internal events, intended for debugging/logging.
 @_spi(Internal) public protocol EventsListener: AnyObject {
-    /// Called whenever a feature event is about to be tracked.
-    func willTrackFeatureEvent(_ featureEvent: FeatureEvent)
-
-    /// Called whenever a feature event was just tracked.
-    func didTrackFeatureEvent(_ featureEvent: FeatureEvent)
-
-    /// Called whenever tracking a feature event failed.
-    ///
-    /// - Parameters:
-    ///  - featureEvent: The feature event that failed to be tracked.
-    ///  - error: The JSON encoding error that occurred when encoding `featureEvent`, `nil` if the failure was when
-    ///  trying to initialize a `String` with the JSON encoded data using UTF-8.
-    func failedToTrackFeatureEvent(_ featureEvent: FeatureEvent, error: Error?)
+    /// Called whenever a feature event is tracked.
+    func onTrackFeatureEvent(_ featureEvent: FeatureEvent)
 }
 
 protocol EventsManagerType {
@@ -118,22 +107,16 @@ actor EventsManager: EventsManagerType {
     #endif
 
     func track(featureEvent: FeatureEvent) async {
-        do {
-            self.eventsListener?.willTrackFeatureEvent(featureEvent)
-            guard let event: StoredFeatureEvent = try .init(event: featureEvent,
-                                                            userID: self.userProvider.currentAppUserID,
-                                                            feature: featureEvent.feature,
-                                                            appSessionID: self.appSessionID,
-                                                            eventDiscriminator: featureEvent.eventDiscriminator) else {
-                self.eventsListener?.failedToTrackFeatureEvent(featureEvent, error: nil)
-                Logger.error(Strings.paywalls.event_cannot_serialize)
-                return
-            }
-            await self.store.store(event)
-            self.eventsListener?.didTrackFeatureEvent(featureEvent)
-        } catch {
-            self.eventsListener?.failedToTrackFeatureEvent(featureEvent, error: error)
+        guard let event: StoredFeatureEvent = .init(event: featureEvent,
+                                                    userID: self.userProvider.currentAppUserID,
+                                                    feature: featureEvent.feature,
+                                                    appSessionID: self.appSessionID,
+                                                    eventDiscriminator: featureEvent.eventDiscriminator) else {
+            Logger.error(Strings.paywalls.event_cannot_serialize)
+            return
         }
+        await self.store.store(event)
+        self.eventsListener?.onTrackFeatureEvent(featureEvent)
     }
 
     #if ENABLE_AD_EVENTS_TRACKING
