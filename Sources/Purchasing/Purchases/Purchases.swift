@@ -278,7 +278,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
 
-#if ENABLE_AD_EVENTS_TRACKING
     private var _adTracker: Any?
 
     /// The ad tracker for reporting ad impressions, clicks, and revenue to RevenueCat.
@@ -291,7 +290,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         _adTracker = tracker
         return tracker
     }
-#endif
 
     private let trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
     private let purchasedProductsFetcher: PurchasedProductsFetcherType?
@@ -476,7 +474,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let eventsManager: EventsManagerType?
         do {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                #if ENABLE_AD_EVENTS_TRACKING
                 let adEventStore: AdEventStoreType? = try? AdEventStore.createDefault(
                     applicationSupportDirectory: applicationSupportDirectory
                 )
@@ -489,16 +486,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     systemInfo: systemInfo,
                     adEventStore: adEventStore
                 )
-                #else
-                eventsManager = EventsManager(
-                    internalAPI: backend.internalAPI,
-                    userProvider: identityManager,
-                    store: try FeatureEventStore.createDefault(
-                        applicationSupportDirectory: applicationSupportDirectory
-                    ),
-                    systemInfo: systemInfo
-                )
-                #endif
                 Logger.verbose(Strings.paywalls.event_manager_initialized)
             } else {
                 Logger.verbose(Strings.paywalls.event_manager_not_initialized_not_available)

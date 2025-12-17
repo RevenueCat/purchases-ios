@@ -22,10 +22,8 @@ protocol EventsManagerType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(featureEvent: FeatureEvent) async
 
-    #if ENABLE_AD_EVENTS_TRACKING
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(adEvent: AdEvent) async
-    #endif
 
     /// - Throws: if posting events fails
     /// - Returns: the number of events posted
@@ -51,14 +49,11 @@ actor EventsManager: EventsManagerType {
     private var appSessionID: UUID
     private let systemInfo: SystemInfo
 
-    #if ENABLE_AD_EVENTS_TRACKING
     private let adEventStore: AdEventStoreType?
     private var adFlushInProgress = false
-    #endif
 
     private var flushInProgress = false
 
-    #if ENABLE_AD_EVENTS_TRACKING
     init(
         internalAPI: InternalAPI,
         userProvider: CurrentUserProvider,
@@ -74,21 +69,6 @@ actor EventsManager: EventsManagerType {
         self.appSessionID = appSessionID
         self.adEventStore = adEventStore
     }
-    #else
-    init(
-        internalAPI: InternalAPI,
-        userProvider: CurrentUserProvider,
-        store: FeatureEventStoreType,
-        systemInfo: SystemInfo,
-        appSessionID: UUID = SystemInfo.appSessionID
-    ) {
-        self.internalAPI = internalAPI
-        self.userProvider = userProvider
-        self.store = store
-        self.systemInfo = systemInfo
-        self.appSessionID = appSessionID
-    }
-    #endif
 
     func track(featureEvent: FeatureEvent) async {
         guard let event: StoredFeatureEvent = .init(event: featureEvent,
@@ -102,7 +82,6 @@ actor EventsManager: EventsManagerType {
         await self.store.store(event)
     }
 
-    #if ENABLE_AD_EVENTS_TRACKING
     func track(adEvent: AdEvent) async {
         guard let store = self.adEventStore else {
             Logger.warn(EventsManagerStrings.ad_event_tracking_disabled)
@@ -117,7 +96,6 @@ actor EventsManager: EventsManagerType {
         }
         await store.store(event)
     }
-    #endif
 
     func flushAllEvents(batchSize: Int) async throws -> Int {
         #if os(iOS) || os(tvOS) || VISION_OS
@@ -134,12 +112,8 @@ actor EventsManager: EventsManagerType {
 
         let featureEventsFlushed = try await self.flushFeatureEventsInternal(batchSize: batchSize)
 
-        #if ENABLE_AD_EVENTS_TRACKING
         let adEventsFlushed = try await self.flushAdEvents(count: batchSize)
         return featureEventsFlushed + adEventsFlushed
-        #else
-        return featureEventsFlushed
-        #endif
     }
 
     func flushFeatureEvents(batchSize: Int) async throws -> Int {
@@ -212,7 +186,6 @@ private extension EventsManager {
         return totalFlushed
     }
 
-    #if ENABLE_AD_EVENTS_TRACKING
     func flushAdEvents(count: Int) async throws -> Int {
         guard let store = self.adEventStore else {
             Logger.warn(EventsManagerStrings.ad_event_tracking_disabled)
@@ -253,7 +226,6 @@ private extension EventsManager {
             throw error
         }
     }
-    #endif
 
 }
 
@@ -306,7 +278,6 @@ private enum EventsManagerStrings {
     case background_task_failed(String)
     case background_task_started(String)
 
-    #if ENABLE_AD_EVENTS_TRACKING
     case ad_event_tracking_disabled
     case ad_event_cannot_serialize
     case ad_event_flush_already_in_progress
@@ -314,7 +285,6 @@ private enum EventsManagerStrings {
     case ad_event_flush_starting(Int)
     case ad_events_flushed_successfully
     case ad_event_sync_failed(Error)
-    #endif
 
 }
 // swiftlint:enable identifier_name
@@ -336,7 +306,6 @@ extension EventsManagerStrings: LogMessage {
         case .background_task_started(let taskName):
             return "Background task started: \(taskName)"
 
-        #if ENABLE_AD_EVENTS_TRACKING
         case .ad_event_tracking_disabled:
             return "Ad event tracking is disabled - no ad event store configured"
 
@@ -357,7 +326,6 @@ extension EventsManagerStrings: LogMessage {
 
         case let .ad_event_sync_failed(error):
             return "Ad event sync failed: \(error)"
-        #endif
         }
     }
 

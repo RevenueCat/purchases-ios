@@ -41,12 +41,10 @@ actor MockEventsManager: EventsManagerType {
         return 0
     }
 
-    #if ENABLE_AD_EVENTS_TRACKING
     var trackedAdEvents: [AdEvent] = []
 
     func track(adEvent: AdEvent) async {
         self.trackedAdEvents.append(adEvent)
     }
-    #endif
 
 }

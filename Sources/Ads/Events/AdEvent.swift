@@ -15,8 +15,6 @@
 
 import Foundation
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 // MARK: - Public Types
 
 // MARK: - Internal Protocol
@@ -604,5 +602,3 @@ extension AdLoaded: Codable {}
 extension AdFailedToLoad: Codable {}
 extension AdEvent.CreationData: Equatable, Codable, Sendable {}
 extension AdEvent: Equatable, Codable, Sendable {}
-
-#endif
