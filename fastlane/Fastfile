@@ -748,7 +748,8 @@ platform :ios do
       type: "appstore",
       readonly: true,
       platform: "ios",
-      app_identifier: "com.revenuecat.BinarySizeTestLocalSource"
+      app_identifier: "com.revenuecat.BinarySizeTestLocalSource",
+      git_url: ENV['CERTS_REPO_URL']
     )
 
     archive_path = File.join(project_root, "build/BinarySizeTest.xcarchive")
