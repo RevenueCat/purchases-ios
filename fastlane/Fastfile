@@ -727,6 +727,72 @@ platform :ios do
     )
   end
 
+  desc "Build BinarySizeTest app and upload to Emerge"
+  lane :build_and_upload_emerge_binary_size_tests do
+    archive_path = build_binary_size_test_app
+    
+    send_to_emerge(
+      archive_path: archive_path,
+      app_id_suffix: "binary-size-test"
+    )
+  end
+
+  private_lane :build_binary_size_test_app do
+    project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+    workspace_path = File.join(project_root, 'RevenueCat-Tuist.xcworkspace')
+    
+    # Generate Tuist workspace if it doesn't exist
+    unless File.directory?(workspace_path)
+      UI.message("Generating Tuist workspace...")
+      Dir.chdir(project_root) do
+        sh("tuist", "generate", "BinarySizeTest", "--no-open")
+      end
+    end
+    
+    unless File.directory?(workspace_path)
+      UI.user_error!("Failed to generate workspace at #{workspace_path}")
+    end
+
+    match(
+      type: "appstore",
+      readonly: true,
+      platform: "ios",
+      app_identifier: "com.revenuecat.BinarySizeTestLocalSource"
+    )
+
+    archive_path = File.join(project_root, "build/BinarySizeTest.xcarchive")
+    output_directory = File.join(project_root, "build")
+    
+    # Build, archive, and export IPA in one step
+    gym(
+      workspace: workspace_path,
+      scheme: "BinarySizeTest",
+      configuration: "Release",
+      destination: "generic/platform=iOS",
+      archive_path: archive_path,
+      export_method: "app-store",
+      export_options: {
+        signingStyle: "automatic",
+        stripSwiftSymbols: false,
+        thinning: "<none>",
+        provisioningProfiles: {
+          "com.revenuecat.BinarySizeTestLocalSource" => "match AppStore com.revenuecat.BinarySizeTestLocalSource"
+        }
+      },
+      output_directory: output_directory,
+      include_bitcode: false,
+      include_symbols: true,
+      clean: false
+    )
+    
+    ipa_path = lane_context[SharedValues::IPA_OUTPUT_PATH]
+    unless ipa_path && File.exist?(ipa_path)
+      UI.user_error!("IPA export completed but no IPA file found in lane context")
+    end
+    
+    archive_path
+  end
+
   desc "archive"
   lane :archive do
     match(type: "appstore", readonly: true)
