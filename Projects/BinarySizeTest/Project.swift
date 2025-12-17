@@ -44,7 +44,14 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI
             ],
-            settings: .appTarget
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "CODE_SIGN_IDENTITY": "Apple Distribution",
+                    "DEVELOPMENT_TEAM": "8SXR2327BM"
+                ],
+                defaultSettings: .essential
+            )
         )
     ],
     schemes: [
