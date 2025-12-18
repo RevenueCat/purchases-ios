@@ -257,7 +257,7 @@ private extension EventsManager {
     #endif
 
     nonisolated func withBackgroundTask(name: String, do work: @escaping () async -> Void) {
-        #if os(iOS) || os(tvOS) || VISION_OS
+        #if swift(>=5.9) && (os(iOS) || os(tvOS) || VISION_OS)
         let endBackgroundTask: (() -> Void)?
         if !self.systemInfo.isAppExtension {
             endBackgroundTask = Self.beginBackgroundTask(named: name)
@@ -269,7 +269,7 @@ private extension EventsManager {
         Task {
             await work()
 
-            #if os(iOS) || os(tvOS) || VISION_OS
+            #if swift(>=5.9) && (os(iOS) || os(tvOS) || VISION_OS)
             endBackgroundTask?()
             #endif
         }
@@ -278,7 +278,7 @@ private extension EventsManager {
 
 // MARK: - Private Helpers
 
-#if os(iOS) || os(tvOS) || VISION_OS
+#if swift(>=5.9) && (os(iOS) || os(tvOS) || VISION_OS)
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension EventsManager {
 
