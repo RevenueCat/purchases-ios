@@ -524,10 +524,6 @@ private struct PresentingPaywallModifier: ViewModifier {
     @State
     private var data: Data?
 
-    /// The currently displayed offering (used to check for exit offers)
-    @State
-    private var currentOffering: Offering?
-
     /// Data for presenting the exit offer paywall
     @State
     private var exitOfferData: Data?
@@ -692,51 +688,29 @@ private struct PresentingPaywallModifier: ViewModifier {
     private func loadCurrentOffering() async {
         guard Purchases.isConfigured else { return }
 
+        let offering: Offering?
         do {
             switch self.content {
-            case let .offering(offering):
-                self.currentOffering = offering
+            case let .offering(off):
+                offering = off
             case .defaultOffering:
-                self.currentOffering = try await Purchases.shared.offerings().current
+                offering = try await Purchases.shared.offerings().current
             case let .offeringIdentifier(identifier, _):
-                self.currentOffering = try await Purchases.shared.offerings().offering(identifier: identifier)
+                offering = try await Purchases.shared.offerings().offering(identifier: identifier)
             }
-
-            // Prefetch exit offer if configured for instant presentation on dismiss
-            await self.prefetchExitOfferOffering()
         } catch {
             Logger.error(Strings.error_fetching_offerings(error))
-            self.currentOffering = nil
+            offering = nil
         }
-    }
 
-    /// Prefetches the exit offer's offering in the background for instant presentation
-    private func prefetchExitOfferOffering() async {
-        let exitOfferOfferingId = self.currentOffering?.paywallComponents?.data.exitOffers?.dismiss?.offeringId
-            ?? "cats-demo"  // Hardcoded for testing
-
-        guard Purchases.isConfigured else { return }
-
-        do {
-            self.exitOfferOffering = try await Purchases.shared.offerings()
-                .offering(identifier: exitOfferOfferingId)
-
-            if self.exitOfferOffering != nil {
-                Logger.debug(Strings.prefetched_exit_offer(exitOfferOfferingId))
-            } else {
-                Logger.warning(Strings.exit_offer_not_found(exitOfferOfferingId))
-            }
-        } catch {
-            Logger.error(Strings.error_loading_exit_offer(error))
-            self.exitOfferOffering = nil
+        if let offering {
+            self.exitOfferOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
         }
     }
 
     /// Checks for exit offers and presents the exit offer paywall if available
     private func checkAndPresentExitOffer() async {
-        // Check if we have a prefetched exit offer offering ready
         guard let exitOffering = self.exitOfferOffering else {
-            // No exit offer prefetched, call the original onDismiss
             self.onDismiss?()
             return
         }
@@ -746,7 +720,6 @@ private struct PresentingPaywallModifier: ViewModifier {
             return
         }
 
-        // Get customer info for the exit offer paywall
         do {
             let customerInfo = try await Purchases.shared.customerInfo()
             self.exitOfferData = .init(customerInfo: customerInfo)
@@ -875,41 +848,17 @@ private struct PresentPaywallBindingModifier: ViewModifier {
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .task {
             if !isExitOffer {
-                await self.prefetchExitOfferOffering(for: offering)
+                self.exitOfferOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
             }
-        }
-    }
-
-    /// Prefetches the exit offer's offering in the background for instant presentation
-    private func prefetchExitOfferOffering(for offering: Offering) async {
-        let exitOfferOfferingId = offering.paywallComponents?.data.exitOffers?.dismiss?.offeringId
-            ?? "cats-demo"  // Hardcoded for testing
-
-        guard Purchases.isConfigured else { return }
-
-        do {
-            self.exitOfferOffering = try await Purchases.shared.offerings()
-                .offering(identifier: exitOfferOfferingId)
-
-            if self.exitOfferOffering != nil {
-                Logger.debug(Strings.prefetched_exit_offer(exitOfferOfferingId))
-            } else {
-                Logger.warning(Strings.exit_offer_not_found(exitOfferOfferingId))
-            }
-        } catch {
-            Logger.error(Strings.error_loading_exit_offer(error))
-            self.exitOfferOffering = nil
         }
     }
 
     /// Handles dismissal of the main paywall, checking for exit offers
     private func handleMainPaywallDismiss() {
         if self.exitOfferOffering != nil {
-            // Present exit offer
             Logger.debug(Strings.presenting_exit_offer(self.exitOfferOffering?.identifier ?? "unknown"))
             self.showExitOffer = true
         } else {
-            // No exit offer, complete dismissal
             self.onDismiss?()
         }
     }

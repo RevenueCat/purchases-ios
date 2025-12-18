@@ -24,11 +24,6 @@ public struct ExitOffer: Codable, Sendable, Hashable, Equatable {
     public init(offeringId: String) {
         self.offeringId = offeringId
     }
-
-    private enum CodingKeys: String, CodingKey {
-        case offeringId = "offering_id"
-    }
-
 }
 
 /// Contains exit offers for different dismissal triggers.

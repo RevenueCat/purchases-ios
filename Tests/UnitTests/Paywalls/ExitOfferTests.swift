@@ -15,7 +15,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-class ExitOfferTests: TestCase {
+final class ExitOfferTests: TestCase {
 
     func testExitOfferDecoding() throws {
         let json = """
@@ -24,7 +24,7 @@ class ExitOfferTests: TestCase {
         }
         """
 
-        let exitOffer = try JSONDecoder().decode(
+        let exitOffer = try JSONDecoder.default.decode(
             ExitOffer.self,
             from: json.data(using: .utf8)!
         )
@@ -35,7 +35,8 @@ class ExitOfferTests: TestCase {
     func testExitOfferEncoding() throws {
         let exitOffer = ExitOffer(offeringId: "test_offering_id")
 
-        let data = try JSONEncoder().encode(exitOffer)
+        // Use JSONEncoder.default which has .convertToSnakeCase strategy
+        let data = try JSONEncoder.default.encode(exitOffer)
         let decoded = try JSONSerialization.jsonObject(with: data) as? [String: Any]
 
         expect(decoded?["offering_id"] as? String) == "test_offering_id"
@@ -50,7 +51,7 @@ class ExitOfferTests: TestCase {
         }
         """
 
-        let exitOffers = try JSONDecoder().decode(
+        let exitOffers = try JSONDecoder.default.decode(
             ExitOffers.self,
             from: json.data(using: .utf8)!
         )
@@ -63,7 +64,7 @@ class ExitOfferTests: TestCase {
         {}
         """
 
-        let exitOffers = try JSONDecoder().decode(
+            let exitOffers = try JSONDecoder.default.decode(
             ExitOffers.self,
             from: json.data(using: .utf8)!
         )
@@ -74,7 +75,8 @@ class ExitOfferTests: TestCase {
     func testExitOffersEncoding() throws {
         let exitOffers = ExitOffers(dismiss: ExitOffer(offeringId: "test_id"))
 
-        let data = try JSONEncoder().encode(exitOffers)
+        // Use JSONEncoder.default which has .convertToSnakeCase strategy
+        let data = try JSONEncoder.default.encode(exitOffers)
         let decoded = try JSONSerialization.jsonObject(with: data) as? [String: Any]
 
         let dismiss = decoded?["dismiss"] as? [String: Any]

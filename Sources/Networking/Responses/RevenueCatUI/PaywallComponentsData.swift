@@ -103,7 +103,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         case defaultLocale
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
-        case exitOffers = "exit_offers"
+        case exitOffers
     }
 
     public init(templateName: String,
@@ -126,7 +126,6 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
 extension PaywallComponentsData {
 
-    // swiftlint:disable:next function_body_length
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         var errors: [String: EquatableError] = [:]
@@ -181,12 +180,7 @@ extension PaywallComponentsData {
             _revision = 0
         }
 
-        do {
-            exitOffers = try container.decodeIfPresent(ExitOffers.self, forKey: .exitOffers)
-        } catch {
-            errors["exitOffers"] = .init(error)
-            exitOffers = nil
-        }
+        exitOffers = try container.decodeIfPresent(ExitOffers.self, forKey: .exitOffers)
 
         if !errors.isEmpty {
             errorInfo = errors
