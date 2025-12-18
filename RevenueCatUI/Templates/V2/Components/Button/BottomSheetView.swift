@@ -66,24 +66,23 @@ struct BottomSheetOverlayModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             content
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
-
-            // Invisible tap area that covers the screen
-            if sheetViewModel != nil {
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        sheetViewModel = nil
+                .overlay {
+                    // Invisible tap area that covers the screen
+                    if sheetViewModel != nil {
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                sheetViewModel = nil
+                            }
                     }
-            }
+                }
 
             // Sheet content
             VStack {
-                Spacer()
-                    .allowsHitTesting(false)
                 if let sheetViewModel {
                     StackComponentView(
                         viewModel: sheetViewModel.sheetStackViewModel,
@@ -109,7 +108,6 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         .onAppear {
                             self.parentHeight = proxy.size.height
                         }
-                        .allowsHitTesting(false)
                 }
             )
             .animation(.spring(response: 0.35, dampingFraction: 1), value: sheetViewModel)
@@ -187,10 +185,10 @@ struct BottomSheetViewTestView: View {
 
                 VStack {
                     Text("This view will have a sheet over it")
-                        .bottomSheet(sheet: $sheetViewModel,
-                                     safeAreaInsets: proxy.safeAreaInsets)
                 }
             }
+            .bottomSheet(sheet: $sheetViewModel,
+                         safeAreaInsets: proxy.safeAreaInsets)
             .edgesIgnoringSafeArea(.all)
         }
         .previewRequiredPaywallsV2Properties()
