@@ -40,6 +40,17 @@ let binarySizeTestBundleId: String = {
     }
 }()
 
+let binarySizeTestDisplayName: String = {
+    switch binarySizeTestIntegrationMethod {
+    case .localSource:
+        return "BinarySizeTest (Local Source)"
+    case .cocoapods:
+        return "BinarySizeTest (Cocoapods)"
+    case .spm:
+        return "BinarySizeTest (SPM)"
+    }
+}()
+
 let binarySizeTestProvisioningProfileSpecifier = "match AppStore \(binarySizeTestBundleId)"
 let binarySizeTestProvisioningProfileSettingValue: SettingValue = .init(
     stringLiteral: binarySizeTestProvisioningProfileSpecifier
@@ -95,6 +106,7 @@ let project = Project(
                     "CODE_SIGN_STYLE": "Manual",
                     "DEVELOPMENT_TEAM": "8SXR2327BM",
                     "CODE_SIGN_IDENTITY": "Apple Distribution: RevenueCat, Inc. (8SXR2327BM)",
+                    "INFOPLIST_KEY_CFBundleDisplayName": binarySizeTestDisplayName,
                     "PROVISIONING_PROFILE_SPECIFIER": binarySizeTestProvisioningProfileSettingValue
                 ],
                 defaultSettings: .essential
