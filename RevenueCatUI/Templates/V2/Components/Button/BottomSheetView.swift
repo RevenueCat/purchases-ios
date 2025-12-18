@@ -66,23 +66,23 @@ struct BottomSheetOverlayModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             content
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
-
-            // Invisible tap area that covers the screen
-            if sheetViewModel != nil {
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        sheetViewModel = nil
+                .overlay {
+                    // Invisible tap area that covers the screen
+                    if sheetViewModel != nil {
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                sheetViewModel = nil
+                            }
                     }
-            }
+                }
 
             // Sheet content
             VStack {
-                Spacer()
                 if let sheetViewModel {
                     StackComponentView(
                         viewModel: sheetViewModel.sheetStackViewModel,
