@@ -103,10 +103,10 @@ let project = Project(
             dependencies: binarySizeTestDependencies,
             settings: .settings(
                 base: [
-                    "CODE_SIGN_STYLE": "Manual",
-                    "DEVELOPMENT_TEAM": "8SXR2327BM",
-                    "CODE_SIGN_IDENTITY": "Apple Distribution: RevenueCat, Inc. (8SXR2327BM)",
-                    "INFOPLIST_KEY_CFBundleDisplayName": binarySizeTestDisplayName,
+                    "CODE_SIGN_STYLE": .string("Manual"),
+                    "DEVELOPMENT_TEAM": .string("8SXR2327BM"),
+                    "CODE_SIGN_IDENTITY": .string("Apple Distribution: RevenueCat, Inc. (8SXR2327BM)"),
+                    "INFOPLIST_KEY_CFBundleDisplayName": .string(binarySizeTestDisplayName),
                     "PROVISIONING_PROFILE_SPECIFIER": binarySizeTestProvisioningProfileSettingValue
                 ],
                 defaultSettings: .essential
