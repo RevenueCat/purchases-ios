@@ -813,6 +813,7 @@
 		57A0FBF22749CF66009E2FC3 /* SynchronizedUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */; };
 		57A17727276A721D0052D3A8 /* Set+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A17726276A721D0052D3A8 /* Set+Extensions.swift */; };
 		57A1772B276A726C0052D3A8 /* SetExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */; };
+		57A54F732EF40E8C0071971C /* ExitOfferHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A54F722EF40E8C0071971C /* ExitOfferHelper.swift */; };
 		57A774612DF3608000EE03EF /* PurchaseInformation+Creation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A774602DF3608000EE03EF /* PurchaseInformation+Creation.swift */; };
 		57ABA76D28F08DDA003D9181 /* Either.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ABA76C28F08DDA003D9181 /* Either.swift */; };
 		57AC4C182770F55C00DDE30F /* SK2StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57AC4C172770F55C00DDE30F /* SK2StoreProduct.swift */; };
@@ -2342,6 +2343,7 @@
 		57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedUserDefaults.swift; sourceTree = "<group>"; };
 		57A17726276A721D0052D3A8 /* Set+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Set+Extensions.swift"; sourceTree = "<group>"; };
 		57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetExtensionsTests.swift; sourceTree = "<group>"; };
+		57A54F722EF40E8C0071971C /* ExitOfferHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExitOfferHelper.swift; sourceTree = "<group>"; };
 		57A774602DF3608000EE03EF /* PurchaseInformation+Creation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PurchaseInformation+Creation.swift"; sourceTree = "<group>"; };
 		57ABA76C28F08DDA003D9181 /* Either.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Either.swift; sourceTree = "<group>"; };
 		57AC4C172770F55C00DDE30F /* SK2StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK2StoreProduct.swift; sourceTree = "<group>"; };
@@ -5330,6 +5332,7 @@
 		887A5FE72C1D037000E1A461 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				57A54F722EF40E8C0071971C /* ExitOfferHelper.swift */,
 				0387D3C72EC51F09008E4A6B /* FileImageLoader.swift */,
 				16216FEE2EBB8641008ACFE9 /* ResumeAction.swift */,
 				16E146B12E99FC7E0089B609 /* PurchaseResultComparator.swift */,
@@ -7693,6 +7696,7 @@
 				887A60862C1D037000E1A461 /* FooterHidingModifier.swift in Sources */,
 				1DEF75932ECF130500614CB2 /* EmailValidator.swift in Sources */,
 				4D3BA5882D432E5900668AFC /* Fill.swift in Sources */,
+				57A54F732EF40E8C0071971C /* ExitOfferHelper.swift in Sources */,
 				DB55E6262ECE012600636909 /* FlexSpacer.swift in Sources */,
 				887A60C02C1D037000E1A461 /* AsyncButton.swift in Sources */,
 				831660B62E3AAA4E00855312 /* FixMacButtonsModifier.swift in Sources */,
