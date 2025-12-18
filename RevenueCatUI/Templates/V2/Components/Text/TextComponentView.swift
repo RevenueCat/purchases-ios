@@ -79,7 +79,7 @@ struct TextComponentView: View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 /// Parses markdown using AttributedString and does not use bundle assets for localization
-private struct NonLocalizedMarkdownText: View {
+struct NonLocalizedMarkdownText: View {
 
     let text: String
     let font: Font
@@ -131,7 +131,7 @@ private struct NonLocalizedMarkdownText: View {
     }
 
     /// Processes `<u>text</u>` syntax and applies underline styling
-    private static func applyUnderlines(to attrString: AttributedString) -> AttributedString {
+    static func applyUnderlines(to attrString: AttributedString) -> AttributedString {
         var result = attrString
         let plainString = String(result.characters)
 
@@ -151,8 +151,19 @@ private struct NonLocalizedMarkdownText: View {
             }
 
             // Convert String ranges to AttributedString ranges
-            guard let attrFullRange = result.range(of: String(plainString[fullRange])),
-                  let attrContentRange = result[attrFullRange].range(of: String(plainString[contentNSRange])) else {
+            guard let attrFullRange = result.range(of: String(plainString[fullRange])) else {
+                continue
+            }
+
+            let contentString = String(plainString[contentNSRange])
+
+            // Handle empty <u></u> tags by removing them entirely
+            if contentString.isEmpty {
+                result.replaceSubrange(attrFullRange, with: AttributedString())
+                continue
+            }
+
+            guard let attrContentRange = result[attrFullRange].range(of: contentString) else {
                 continue
             }
 

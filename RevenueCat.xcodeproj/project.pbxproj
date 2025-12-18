@@ -64,6 +64,7 @@
 		1622D3FB2E900DE000C20E3C /* ChecksumTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1622D3FA2E900DE000C20E3C /* ChecksumTests.swift */; };
 		1622D3FD2E900F8200C20E3C /* Checksum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1622D3FC2E900F8200C20E3C /* Checksum.swift */; };
 		1622D40E2E90189F00C20E3C /* URLWithValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1622D40D2E90189F00C20E3C /* URLWithValidation.swift */; };
+		16434BD82EF44EE00030B93B /* MarkdownTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16434BD72EF44EE00030B93B /* MarkdownTests.swift */; };
 		164681CE2E6B577600854AA5 /* VideoPlayerViewNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681CB2E6B577600854AA5 /* VideoPlayerViewNSView.swift */; };
 		164681CF2E6B577600854AA5 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681CA2E6B577600854AA5 /* VideoPlayerView.swift */; };
 		164681D02E6B577600854AA5 /* VideoComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681C82E6B577600854AA5 /* VideoComponentView.swift */; };
@@ -1553,6 +1554,7 @@
 		1622D3FA2E900DE000C20E3C /* ChecksumTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumTests.swift; sourceTree = "<group>"; };
 		1622D3FC2E900F8200C20E3C /* Checksum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checksum.swift; sourceTree = "<group>"; };
 		1622D40D2E90189F00C20E3C /* URLWithValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLWithValidation.swift; sourceTree = "<group>"; };
+		16434BD72EF44EE00030B93B /* MarkdownTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTests.swift; sourceTree = "<group>"; };
 		164681C82E6B577600854AA5 /* VideoComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentView.swift; sourceTree = "<group>"; };
 		164681C92E6B577600854AA5 /* VideoComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentViewModel.swift; sourceTree = "<group>"; };
 		164681CA2E6B577600854AA5 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
@@ -2962,6 +2964,7 @@
 				83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */,
 				038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */,
 				030F918B2D55C9D80085103F /* LocaleFinderTests.swift */,
+				16434BD72EF44EE00030B93B /* MarkdownTests.swift */,
 				03C06FC42D4553BB00600693 /* PresentedPartialsTests.swift */,
 				030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */,
 				75909EAA2E74286E009ABBA7 /* UIConfigProviderTests.swift */,
@@ -7923,6 +7926,7 @@
 				35A99C842CCB95A70074AB41 /* PurchaseInformationTests.swift in Sources */,
 				777FB4882C661C0600CD4749 /* SemanticVersionTests.swift in Sources */,
 				88AD4C482C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift in Sources */,
+				16434BD82EF44EE00030B93B /* MarkdownTests.swift in Sources */,
 				887A633D2C1D177800E1A461 /* Template2ViewTests.swift in Sources */,
 				887A633E2C1D177800E1A461 /* Template3ViewTests.swift in Sources */,
 				755B63E52E7438D500919833 /* TestLogHandler.swift in Sources */,
