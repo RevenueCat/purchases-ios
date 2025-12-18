@@ -43,6 +43,9 @@ class PurchasesPaywallEventsTests: BasePurchasesTests {
 
         let manager = try self.mockEventsManager
 
+        /// There are other methods (e.g. health check) that also dispatch async on worker thread,
+        /// so we reset the flag here to make sure we check that no new invocations happened.
+        self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThread = false
         await expect(manager.invokedFlushAllEventsWithBackgroundTask.value).toEventually(beTrue())
 
         expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThread) == false
