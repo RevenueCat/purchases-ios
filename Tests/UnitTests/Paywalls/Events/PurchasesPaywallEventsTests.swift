@@ -33,19 +33,19 @@ class PurchasesPaywallEventsTests: BasePurchasesTests {
 
         let manager = try self.mockEventsManager
 
-        try await asyncWait { await manager.invokedFlushEvents == true }
+        await expect(manager.invokedFlushAllEventsWithBackgroundTask.value).toEventually(beTrue())
 
-        expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == .long
+        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == .long
     }
 
-    func testApplicationWillEnterBackgroundSendsEvents() async throws {
-        self.notificationCenter.fireApplicationDidEnterBackgroundNotification()
+    func testApplicationWillResignActiveSendsEvents() async throws {
+        self.notificationCenter.fireApplicationWillResignActiveNotification()
 
         let manager = try self.mockEventsManager
 
-        try await asyncWait { await manager.invokedFlushEvents == true }
+        await expect(manager.invokedFlushAllEventsWithBackgroundTask.value).toEventually(beTrue())
 
-        expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
+        expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThread) == false
     }
 
 }

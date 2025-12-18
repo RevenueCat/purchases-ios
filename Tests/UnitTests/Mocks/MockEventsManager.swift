@@ -16,16 +16,21 @@ import Foundation
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 actor MockEventsManager: EventsManagerType {
+
+    let invokedFlushAllEventsWithBackgroundTask: Atomic<Bool> = .init(false)
+    let invokedFlushAllEventsCountWithBackgroundTask: Atomic<Int> = .init(0)
+
     nonisolated func flushAllEventsWithBackgroundTask(batchSize: Int) {
-        Task {
-            _ = try? await flushAllEvents(batchSize: batchSize)
-        }
+        invokedFlushAllEventsWithBackgroundTask.value = true
+        invokedFlushAllEventsCountWithBackgroundTask.value += 1
     }
 
+    let invokedFlushFeatureEventsWithBackgroundTask: Atomic<Bool> = .init(false)
+    let invokedFlushFeatureEventsCountWithBackgroundTask: Atomic<Int> = .init(0)
+
     nonisolated func flushFeatureEventsWithBackgroundTask(batchSize: Int) {
-        Task {
-            _ = try? await flushFeatureEvents(batchSize: batchSize)
-        }
+        invokedFlushFeatureEventsWithBackgroundTask.value = true
+        invokedFlushFeatureEventsCountWithBackgroundTask.value += 1
     }
 
     var trackedEvents: [FeatureEvent] = []
