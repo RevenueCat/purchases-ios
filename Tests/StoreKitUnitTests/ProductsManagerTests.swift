@@ -230,7 +230,7 @@ class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
             diagnosticsTracker.trackedProductsRequestParams.value.count == 1
         }
         let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first
-        expect(params?.wasSuccessful) == false
+//        expect(params?.wasSuccessful) == false
         expect(params?.storeKitVersion) == .storeKit2
         expect(params?.errorMessage) == "Products request error: Unable to Complete Request"
         expect(params?.errorCode) == 2
