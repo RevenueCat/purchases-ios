@@ -2160,7 +2160,7 @@ private extension Purchases {
         purchasesOrchestrator.handleApplicationDidBecomeActive()
     }
 
-    @objc @MainActor func applicationWillEnterForeground() {
+    @objc func applicationWillEnterForeground() {
         Logger.debug(Strings.configure.application_foregrounded)
 
         self.systemInfo.isAppBackgroundedState = false
@@ -2184,11 +2184,11 @@ private extension Purchases {
         #endif
     }
 
-    @objc @MainActor func applicationDidEnterBackground() {
+    @objc func applicationDidEnterBackground() {
         self.systemInfo.isAppBackgroundedState = true
     }
 
-    @objc @MainActor func applicationWillResignActive() {
+    @objc func applicationWillResignActive() {
         self.dispatchSyncSubscriberAttributes()
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.purchasesOrchestrator.postEventsIfNeeded()
