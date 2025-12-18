@@ -109,7 +109,7 @@ extension View {
             .environment(\.userInterfaceIdiom, .pad)
             .snapshot(
                 size: BaseSnapshotTest.iPadSize,
-                file: file,
+                filename: file,
                 line: line
             )
     }
@@ -120,7 +120,7 @@ extension View {
             .environment(\.verticalSizeClass, .compact)
             .snapshot(
                 size: BaseSnapshotTest.landscapeSize,
-                file: file,
+                filename: file,
                 line: line
             )
     }

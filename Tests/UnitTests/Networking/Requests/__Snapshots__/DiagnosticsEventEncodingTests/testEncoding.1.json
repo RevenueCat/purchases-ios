@@ -1,0 +1,33 @@
+{
+  "app_session_id" : "16D1E479-56B7-4AD9-974C-D6CC7C3DB338",
+  "id" : "9193C8A3-CCE2-4A3A-8BAE-59EF38CAEFE9",
+  "name" : "http_request_performed",
+  "properties" : {
+    "backend_error_code" : 500,
+    "endpoint_name" : "log_in",
+    "error_code" : 1,
+    "error_message" : "OK",
+    "etag_hit" : false,
+    "fetch_policy" : "CACHED_OR_FETCHED",
+    "host" : "api.revenuecat.com",
+    "is_retry" : true,
+    "not_found_product_ids" : [
+      "test_product_id2"
+    ],
+    "product_id" : "test_productId",
+    "promotional_offer_id" : "promotionalOfferId",
+    "purchase_result" : "USER_CANCELLED",
+    "requested_product_ids" : [
+      "test_product_id1"
+    ],
+    "response_code" : 200,
+    "response_time_millis" : 3000,
+    "sk_error_description" : "test_skErrorDescription",
+    "store_kit_version" : "store_kit_1",
+    "successful" : true,
+    "verification_result" : "FAILED",
+    "win_back_offer_applied" : false
+  },
+  "timestamp" : "2022-03-08T17:42:58Z",
+  "version" : 1
+}

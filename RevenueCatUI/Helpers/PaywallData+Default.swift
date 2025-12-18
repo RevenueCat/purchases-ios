@@ -150,7 +150,8 @@ struct DefaultPaywall_Previews: PreviewProvider {
             ],
             locale: .current
         ),
-        availablePackages: TestData.packages
+        availablePackages: TestData.packages,
+        webCheckoutUrl: nil
     )
 
 }

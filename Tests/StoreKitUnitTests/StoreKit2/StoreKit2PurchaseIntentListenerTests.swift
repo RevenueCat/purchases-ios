@@ -87,7 +87,7 @@ class StoreKit2PurchaseIntentListenerTests: StoreKit2PurchaseIntentListenerBaseT
         expect(delegate.storeKit2PurchaseIntentListenerInvoked).to(beFalse())
         expect(delegate.storeKit2PurchaseIntentListenerPurchaseIntent).to(beNil())
 
-        #if compiler(>=5.10)
+        #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
         let purchaseIntent = StorePurchaseIntent(purchaseIntent: nil)
         #else
         let purchaseIntent = StorePurchaseIntent()

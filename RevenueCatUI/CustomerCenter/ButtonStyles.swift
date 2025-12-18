@@ -42,7 +42,40 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
         .applyIf(background != nil, apply: { $0.tint(background) })
         .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
     }
+}
 
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct CustomerCenterButtonStyle: ButtonStyle {
+    let normalColor: Color
+    let pressedColor: Color
+
+    func makeBody(configuration: ButtonStyleConfiguration) -> some View {
+        configuration.label
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+            .background(configuration.isPressed ? pressedColor : normalColor)
+            .cornerRadius(10)
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension ButtonStyle where Self == CustomerCenterButtonStyle {
+    static func customerCenterButtonStyle(for colorScheme: ColorScheme) -> CustomerCenterButtonStyle {
+        CustomerCenterButtonStyle(
+            normalColor: Color(colorScheme == .light
+                               ? UIColor.systemBackground
+                               : UIColor.secondarySystemBackground),
+            pressedColor: Color(colorScheme == .light
+                                ? UIColor.secondarySystemBackground
+                                : UIColor.systemBackground)
+        )
+    }
 }
 
 @available(iOS 15.0, *)
@@ -51,12 +84,21 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
 @available(watchOS, unavailable)
 struct DismissCircleButton: View {
 
-    @Environment(\.localization) private var localization
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss)
+    private var dismiss
+
+    @Environment(\.localization)
+    private var localization
+
+    var customDismiss: (() -> Void)?
 
     var body: some View {
         Button {
-            self.dismiss()
+            if let customDismiss {
+                customDismiss()
+            } else {
+                self.dismiss()
+            }
         } label: {
             Circle()
                 .fill(Color(uiColor: .secondarySystemFill))
@@ -69,6 +111,7 @@ struct DismissCircleButton: View {
                 )
             }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("circled_close_button")
         .accessibilityLabel(Text(localization[.dismiss]))
     }
 
@@ -88,7 +131,7 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
             content
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        DismissCircleButton()
+                        DismissCircleButton(customDismiss: navigationOptions.onCloseHandler)
                     }
                 }
         } else {
@@ -104,7 +147,7 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
 @available(watchOS, unavailable)
 extension View {
     /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true.
-    func dismissCircleButtonToolbar() -> some View {
+    func dismissCircleButtonToolbarIfNeeded() -> some View {
         modifier(DismissCircleButtonToolbarModifier())
     }
 }
@@ -122,8 +165,8 @@ struct ButtonStyles_Previews: PreviewProvider {
 
             DismissCircleButton()
         }.padding()
-            .environment(\.appearance, CustomerCenterConfigTestData.standardAppearance)
-            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+            .environment(\.appearance, CustomerCenterConfigData.standardAppearance)
+            .environment(\.localization, CustomerCenterConfigData.default.localization)
     }
 
 }

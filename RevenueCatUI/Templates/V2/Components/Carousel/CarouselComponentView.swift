@@ -50,6 +50,7 @@ struct CarouselComponentView: View {
                 GeometryReader { reader in
                     CarouselView(
                         width: reader.size.width,
+                        pageAlignment: style.pageAlignment,
                         pages: self.viewModel.pageStackViewModels.map({ stackViewModel in
                             StackComponentView(
                                 viewModel: stackViewModel,
@@ -59,10 +60,11 @@ struct CarouselComponentView: View {
                         initialIndex: style.initialPageIndex,
                         loop: style.loop,
                         spacing: style.pageSpacing,
-                        cardWidth: reader.size.width - (style.pagePeek * 2) - style.pageSpacing,
+                        cardWidth: reader.size.width - (style.pagePeek * 2) - (style.pageSpacing * 2),
                         pageControl: style.pageControl,
                         msTimePerSlide: style.autoAdvance?.msTimePerPage,
-                        msTransitionTime: style.autoAdvance?.msTransitionTime
+                        msTransitionTime: style.autoAdvance?.msTransitionTime,
+                        autoAdvanceTransitionType: style.autoAdvance?.transitionType
                     ).clipped()
                 }
                 // Need to set height since geometry reader has no intrinsic height
@@ -72,7 +74,7 @@ struct CarouselComponentView: View {
                 }
                 // Style the carousel
                 .size(style.size)
-                .padding(style.padding)
+                .padding(style.padding.extend(by: style.border?.width ?? 0))
                 .shape(border: style.border,
                        shape: style.shape,
                        background: style.backgroundStyle,
@@ -102,6 +104,7 @@ private struct CarouselItem<Content: View>: Identifiable {
 private struct CarouselView<Content: View>: View {
     // MARK: - Configuration
 
+    private let pageAlignment: VerticalAlignment
     private let width: CGFloat
     private let initialIndex: Int
     private let originalPages: [Content]
@@ -131,13 +134,22 @@ private struct CarouselView<Content: View>: View {
 
     /// A timer for auto-play, if enabled.
     @State private var autoTimer: Timer?
+
     @State private var isPaused: Bool = false
     @State private var pauseEndDate: Date?
+    @State private var isInitialized = false
+
+    /// Used to keep the drag position for better animations
+    @State private var dragOffset: CGFloat = 0
+
+    /// Used to animate opacity for the loop transition
+    @State private var opacity: CGFloat = 1.0
 
     // MARK: - Init
 
     init(
         width: CGFloat,
+        pageAlignment: VerticalAlignment,
         pages: [Content],
         initialIndex: Int,
         loop: Bool,
@@ -146,9 +158,11 @@ private struct CarouselView<Content: View>: View {
         pageControl: DisplayablePageControl?,
         /// If either of these is nil, auto‐play is off.
         msTimePerSlide: Int?,
-        msTransitionTime: Int?
+        msTransitionTime: Int?,
+        autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType?
     ) {
         self.width = width
+        self.pageAlignment = pageAlignment
         self.initialIndex = initialIndex
         self.originalPages = pages
         self.loop = loop
@@ -157,34 +171,56 @@ private struct CarouselView<Content: View>: View {
         self.pageControl = pageControl
         self.msTimePerSlide = msTimePerSlide
         self.msTransitionTime = msTransitionTime
+        self.autoAdvanceTransitionType = autoAdvanceTransitionType
+            ?? PaywallComponent.CarouselComponent.AutoAdvanceTransitionType.default
     }
 
     // MARK: - Body
 
+    var transitionTime: Double {
+        guard let msTransitionTime = self.msTransitionTime else {
+            return 0.25
+        }
+
+        if !isInitialized {
+            // Prevents any animation when carousel is first coming into view
+            return 0
+        } else if isPaused {
+            return 0.25
+        } else {
+            return Double(msTransitionTime) / 1000
+        }
+    }
+
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             // If top page control
             if let pageControl = self.pageControl, pageControl.position == .top {
                 PageControlView(
                     originalCount: self.originalCount,
                     pageControl: pageControl,
-                    currentIndex: self.$index
+                    currentIndex: self.$index,
+                    animationDuration: fadeDuration.map { $0 / 2 }
                 )
             }
 
             // Main horizontal “strip” of pages:
-            HStack(spacing: spacing) {
+            HStack(alignment: self.pageAlignment, spacing: spacing) {
                 ForEach(data) { item in
                     item.view
                         .frame(width: cardWidth)
                 }
             }
             .frame(width: self.width, alignment: .leading)
-            .offset(x: xOffset(in: self.width))
-            // Animate only final snaps (or auto transitions), not real-time dragging
-            .animation(.spring(), value: index)
+            .offset(x: xOffset(in: self.width) + dragOffset) // Apply drag offset
+            .opacity(opacity)
+            .applyIf(autoAdvanceTransitionType == .slide, apply: { view in
+                // Animate only final snaps (or auto transitions), not real-time dragging
+                view.animation(.easeInOut(duration: self.transitionTime), value: index)
+            })
             .gesture(
                 DragGesture()
+
                     .onChanged({ _ in
                         pauseAutoPlay(for: 10)
                     })
@@ -192,6 +228,8 @@ private struct CarouselView<Content: View>: View {
                         state = value.translation.width
                     }
                     .onEnded { value in
+                        // Store drag offset to apply nice snap animation when done
+                        self.dragOffset = value.translation.width
                         handleDragEnd(translation: value.translation.width)
                     }
             )
@@ -207,7 +245,8 @@ private struct CarouselView<Content: View>: View {
                 PageControlView(
                     originalCount: self.originalCount,
                     pageControl: pageControl,
-                    currentIndex: self.$index
+                    currentIndex: self.$index,
+                    animationDuration: fadeDuration.map { $0 / 2 }
                 )
             }
         }
@@ -217,6 +256,10 @@ private struct CarouselView<Content: View>: View {
         .onAppear {
             setupData()
             startAutoPlayIfNeeded()
+
+            DispatchQueue.main.async {
+                self.isInitialized = true
+            }
         }
         .onDisappear {
             // Stop the timer if view disappears
@@ -226,6 +269,9 @@ private struct CarouselView<Content: View>: View {
     }
 
     // MARK: - Setup
+
+    /// When `loop` is `true`, and `fadeTransition` is turned on we don't setUp the animation view modifier
+    private let autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType
 
     private func setupData() {
         guard !originalPages.isEmpty else { return }
@@ -258,13 +304,34 @@ private struct CarouselView<Content: View>: View {
 
     // MARK: - Auto-Play
 
-    private func startAutoPlayIfNeeded() {
+    private var autoPlayTimerDuration: TimeInterval? {
         guard let msTimePerSlide = msTimePerSlide,
-              let msTransitionTime = msTransitionTime else { return }
+              let msTransitionTime = msTransitionTime else { return nil }
 
-        autoTimer?.invalidate() // Stop any existing timer
+        return Double(msTimePerSlide + msTransitionTime) / 1000
+    }
 
-        autoTimer = Timer.scheduledTimer(withTimeInterval: Double(msTimePerSlide) / 1000, repeats: true) { _ in
+    // arbitrary but works smoothly
+    private var fadeDuration: TimeInterval? {
+        guard let msTransitionTime else {
+            return nil
+        }
+        return TimeInterval(msTransitionTime) / 1000
+    }
+
+    private func startAutoPlayIfNeeded() {
+        guard
+            let autoPlayTimerDuration,
+            let msTransitionTime,
+            let fadeDuration
+        else { return }
+
+        autoTimer?.invalidate()
+
+        autoTimer = Timer.scheduledTimer(
+            withTimeInterval: autoPlayTimerDuration,
+            repeats: true
+        ) { _ in
             guard !isPaused else {
                 // If paused, check if 10 seconds have passed
                 if let pauseEndDate = pauseEndDate, Date() >= pauseEndDate {
@@ -273,13 +340,34 @@ private struct CarouselView<Content: View>: View {
                 return
             }
 
-            withAnimation(.easeInOut(duration: Double(msTransitionTime) / 1000)) {
-                index += 1
-                if loop {
-                    expandDataIfNeeded()
-                    pruneDataIfNeeded()
-                } else {
-                    index = min(index, data.count - 1)
+            switch autoAdvanceTransitionType {
+            case .fade:
+                // Fade out both slide + indicator
+                withAnimation(.easeInOut(duration: fadeDuration)) {
+                    opacity = 0
+                }
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + fadeDuration) {
+                    index = (index + 1) % data.count
+                    if loop {
+                        expandDataIfNeeded()
+                        pruneDataIfNeeded()
+                    }
+
+                    // Fade in both slide + indicator
+                    withAnimation(.easeInOut(duration: fadeDuration)) {
+                        opacity = 1
+                    }
+                }
+            case .slide:
+                withAnimation(.easeInOut(duration: Double(msTransitionTime) / 1000)) {
+                    index += 1
+                    if loop {
+                        expandDataIfNeeded()
+                        pruneDataIfNeeded()
+                    } else {
+                        index = min(index, data.count - 1)
+                    }
                 }
             }
         }
@@ -297,22 +385,26 @@ private struct CarouselView<Content: View>: View {
     // MARK: - Drag Handling
 
     private func handleDragEnd(translation: CGFloat) {
-        let threshold = cardWidth / 2
+        let threshold = cardWidth * 0.2
 
-        if translation < -threshold {
-            // Swipe left => next
-            index += 1
-        } else if translation > threshold {
-            // Swipe right => prev
-            index -= 1
-        }
+        withAnimation(.easeInOut(duration: 0.25)) {
+            self.dragOffset = 0
 
-        if loop {
-            expandDataIfNeeded()
-            pruneDataIfNeeded()
-        } else {
-            // Non-loop clamp
-            index = max(0, min(index, data.count - 1))
+            if translation < -threshold {
+                // Swipe left => next
+                index += 1
+            } else if translation > threshold {
+                // Swipe right => prev
+                index -= 1
+            }
+
+            if loop {
+                expandDataIfNeeded()
+                pruneDataIfNeeded()
+            } else {
+                // Non-loop clamp
+                index = max(0, min(index, data.count - 1))
+            }
         }
 
         // Pause auto-play for 10 seconds
@@ -397,6 +489,10 @@ struct PageControlView: View {
     let pageControl: DisplayablePageControl
     @Binding var currentIndex: Int
 
+    /// Used for fade transition
+    /// - Note: This needs to be half of whatever the fade duration is
+    let animationDuration: CGFloat?
+
     @State private var localCurrentIndex: Int = 0
 
     var activeIndicator: DisplayablePageControlIndicator {
@@ -411,13 +507,22 @@ struct PageControlView: View {
         if self.originalCount > 1 {
             HStack(spacing: self.pageControl.spacing) {
                 ForEach(0..<originalCount, id: \.self) { index in
-                    Capsule()
-                        .fill(localCurrentIndex == index ? activeIndicator.color : indicator.color)
-                        .frame(
-                            width: localCurrentIndex == index ? activeIndicator.width : indicator.width,
-                            height: localCurrentIndex == index ? activeIndicator.height : indicator.height
-                        )
-                        .animation(.easeInOut, value: self.localCurrentIndex)
+                    ZStack {
+                        Capsule()
+                            .fill(localCurrentIndex == index ? activeIndicator.color : indicator.color)
+                        Capsule()
+                            .strokeBorder(
+                                localCurrentIndex == index ? activeIndicator.strokeColor : indicator.strokeColor,
+                                style: StrokeStyle(lineWidth: localCurrentIndex == index
+                                                   ? activeIndicator.strokeWidth
+                                                   : indicator.strokeWidth)
+                            )
+                    }
+                    .frame(
+                        width: localCurrentIndex == index ? activeIndicator.width : indicator.width,
+                        height: localCurrentIndex == index ? activeIndicator.height : indicator.height
+                    )
+                    .animation(.easeInOut, value: self.localCurrentIndex)
                 }
             }
             .padding(self.pageControl.padding)
@@ -428,17 +533,28 @@ struct PageControlView: View {
             .shadow(shadow: pageControl.shadow, shape: pageControl.shape?.toInsettableShape())
             .padding(self.pageControl.margin)
             .onChangeOf(self.currentIndex) { newValue in
-                withAnimation {
-                    guard originalCount > 0 else {
-                        self.localCurrentIndex = 0
-                        return
+                if let animationDuration {
+                    withAnimation(.easeInOut(duration: animationDuration)) {
+                        self.localCurrentIndex = newValue % originalCount
                     }
-                    self.localCurrentIndex = newValue % originalCount
+                } else {
+                    withAnimation {
+                        guard originalCount > 0 else {
+                            self.localCurrentIndex = 0
+                            return
+                        }
+                        self.localCurrentIndex = newValue % originalCount
+                    }
                 }
+
             }
         }
     }
+}
 
+private extension PaywallComponent.CarouselComponent.AutoAdvanceTransitionType {
+
+    static let `default`: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType = .slide
 }
 
 #if DEBUG
@@ -499,12 +615,16 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#aeaeae"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#aeaeae")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             ),
                             active: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#000000"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#FFFF00")),
+                                strokeWidth: 0
                             )
                         )
                     ),
@@ -572,12 +692,16 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#cccccc"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#cccccc")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             ),
                             active: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#000000"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#00000000")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 1
                             )
                         )
                     ),
@@ -626,7 +750,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
                         pagePeek: 20,
                         initialPageIndex: 1,
                         loop: true,
-                        autoAdvance: .init(msTimePerPage: 1000, msTransitionTime: 500),
+                        autoAdvance: .init(msTimePerPage: 1000, msTransitionTime: 500, transitionType: .fade),
                         pageControl: .init(
                             position: .bottom,
                             padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 0, trailing: 0),
@@ -639,12 +763,16 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#4462e96e"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#4462e96e")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             ),
                             active: .init(
                                 width: 60,
                                 height: 20,
-                                color: PaywallComponent.ColorScheme(light: .hex("#4462e9"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#4462e9")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             )
                         )
                     ),

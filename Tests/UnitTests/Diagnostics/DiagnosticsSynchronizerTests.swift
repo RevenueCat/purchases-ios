@@ -22,6 +22,7 @@ class DiagnosticsSynchronizerTests: TestCase {
     fileprivate var api: MockInternalAPI!
     fileprivate var fileHandler: FileHandler!
     fileprivate var handler: DiagnosticsFileHandler!
+    fileprivate var tracker: MockDiagnosticsTracker!
     fileprivate var synchronizer: DiagnosticsSynchronizer!
     fileprivate var userDefaults: MockUserDefaults!
 
@@ -33,9 +34,11 @@ class DiagnosticsSynchronizerTests: TestCase {
         self.api = .init()
         self.fileHandler = try Self.createWithTemporaryFile()
         self.handler = .init(self.fileHandler)
+        self.tracker = MockDiagnosticsTracker()
         self.userDefaults = .init()
         self.synchronizer = .init(internalAPI: self.api,
                                   handler: self.handler,
+                                  tracker: self.tracker,
                                   userDefaults: .init(userDefaults: self.userDefaults))
     }
 
@@ -134,12 +137,95 @@ class DiagnosticsSynchronizerTests: TestCase {
                                            expectedCount: 1)
     }
 
-    func testClearsDiagnosticsFileAndRetriesIfMaxRetriesReached() async throws {
+    func testNoRetryOnInvalidRequestError() async throws {
         _ = await self.storeEvent()
 
         let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
 
         let expectedError: NetworkError = .errorResponse(.defaultResponse, .invalidRequest)
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 1]
+
+        do {
+            try await self.synchronizer.syncDiagnosticsIfNeeded()
+
+            fail("Should have errored")
+        } catch {
+            await self.verifyEmptyStore()
+            expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
+            expect(self.userDefaults.mockValues[cacheKey]).to(beNil())
+        }
+    }
+
+    func testNoRetryOnDecodingError() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .decoding(NSError(domain: "", code: 1), Data())
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 1]
+
+        do {
+            try await self.synchronizer.syncDiagnosticsIfNeeded()
+
+            fail("Should have errored")
+        } catch {
+            await self.verifyEmptyStore()
+            expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
+            expect(self.userDefaults.mockValues[cacheKey]).to(beNil())
+        }
+    }
+
+    func testRetryOnNetworkErrorNetworkError() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .networkError(NSError(domain: "", code: 1))
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 1]
+
+        do {
+            try await self.synchronizer.syncDiagnosticsIfNeeded()
+
+            fail("Should have errored")
+        } catch {
+            await verifyNonEmptyStore()
+            expect(self.userDefaults.removeObjectForKeyCalledValues).to(beEmpty())
+            expect(self.userDefaults.mockValues[cacheKey] as? Int) == 2
+        }
+    }
+
+    func testSendsTrackClearingDiagnosticsAfterFailedSyncCallsIfFailedEventIsConsideredSuccessfulSync() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .errorResponse(.defaultResponse, .invalidRequest)
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 1]
+
+        try? await self.synchronizer.syncDiagnosticsIfNeeded()
+
+        expect(self.tracker.trackedMaxDiagnosticsSyncRetriesReachedCalls.value) == 0
+        expect(self.tracker.trackedClearingDiagnosticsAfterFailedSyncCalls.value) == 1
+    }
+
+    func testClearsDiagnosticsFileAndRetriesIfMaxRetriesReached() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .errorResponse(.defaultResponse, .internalServerError)
 
         self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
 
@@ -153,6 +239,23 @@ class DiagnosticsSynchronizerTests: TestCase {
             await self.verifyEmptyStore()
             expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
         }
+    }
+
+    func testSendsTrackMaxDiagnosticsSyncRetriesReachedIfMaxRetriesReached() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .errorResponse(.defaultResponse, .internalServerError)
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 3]
+
+        try? await self.synchronizer.syncDiagnosticsIfNeeded()
+
+        expect(self.tracker.trackedMaxDiagnosticsSyncRetriesReachedCalls.value) == 1
+        expect(self.tracker.trackedClearingDiagnosticsAfterFailedSyncCalls.value) == 0
     }
 
     func testMultipleErrorsEventuallyClearDiagnosticsFileAndRetriesIfMaxRetriesReached() async throws {
@@ -177,15 +280,41 @@ class DiagnosticsSynchronizerTests: TestCase {
         expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
     }
 
+    func testSyncMultipleEventsWithInvalidEvent() async throws {
+        let event1 = await self.storeEvent()
+        await fileHandler.append(line: "Invalid entry line")
+        let event2 = await self.storeEvent(timestamp: Self.eventTimestamp2)
+
+        try await self.synchronizer.syncDiagnosticsIfNeeded()
+
+        expect(self.api.invokedPostDiagnosticsEvents) == true
+        expect(self.api.invokedPostDiagnosticsEventsParameters) == [[ event1, event2 ]]
+
+        await self.verifyEmptyStore()
+    }
+
+    func testOnFileSizeIncreasedBeyondAutomaticSyncLimitSyncsEvents() async throws {
+        let event1 = await self.storeEvent()
+        let event2 = await self.storeEvent(timestamp: Self.eventTimestamp2)
+
+        await self.synchronizer.onFileSizeIncreasedBeyondAutomaticSyncLimit()
+
+        expect(self.api.invokedPostDiagnosticsEvents) == true
+        expect(self.api.invokedPostDiagnosticsEventsParameters) == [[ event1, event2 ]]
+
+        await self.verifyEmptyStore()
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension DiagnosticsSynchronizerTests {
 
     func storeEvent(timestamp: Date = eventTimestamp1) async -> DiagnosticsEvent {
-        let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                     properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                     timestamp: timestamp)
+        let event = DiagnosticsEvent(name: .httpRequestPerformed,
+                                     properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                                     timestamp: timestamp,
+                                     appSessionId: UUID())
         await self.handler.appendEvent(diagnosticsEvent: event)
 
         return event
@@ -206,14 +335,19 @@ private extension DiagnosticsSynchronizerTests {
         return try FileHandler(Self.temporaryFileURL())
     }
 
-    func verifyEmptyStore(file: StaticString = #file, line: UInt = #line) async {
+    func verifyEmptyStore(file: FileString = #filePath, line: UInt = #line) async {
         let events = await self.handler.getEntries()
         expect(file: file, line: line, events).to(beEmpty())
     }
 
+    func verifyNonEmptyStore(file: FileString = #filePath, line: UInt = #line) async {
+        let events = await self.handler.getEntries()
+        expect(file: file, line: line, events).toNot(beEmpty())
+    }
+
     func verifyEvents(
         _ expected: [DiagnosticsEvent],
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async {
         let events = await self.handler.getEntries()

@@ -75,6 +75,7 @@ public struct CustomerCenterConfigData: Equatable {
             case defaultBody = "default_body"
             case defaultSubject = "default_subject"
             case dismiss = "dismiss"
+            case done = "done"
             case unknown = "unknown"
             case updateWarningTitle = "update_warning_title"
             case updateWarningDescription = "update_warning_description"
@@ -89,8 +90,10 @@ public struct CustomerCenterConfigData: Equatable {
             case goingToCheckPurchases = "going_to_check_purchases"
             case checkPastPurchases = "check_past_purchases"
             case purchasesRecovered = "purchases_recovered"
+            case purchasesRestoring = "purchases_restoring"
             case purchasesRecoveredExplanation = "purchases_recovered_explanation"
-            case purchasesNotRecovered = "purchases_not_recovered"
+            case purchasesNotFound = "purchases_not_found"
+            case purchasesNotRecoveredExplanation = "purchases_not_recovered"
             case manageSubscription = "manage_subscription"
             case youHavePromo = "you_have_promo"
             case youHaveLifetime = "you_have_lifetime"
@@ -139,6 +142,21 @@ public struct CustomerCenterConfigData: Equatable {
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
             case debugHeaderTitle = "Debug"
+            case youMayHaveDuplicatedSubscriptionsTitle = "you_may_have_duplicated_subscriptions_title"
+            case youMayHaveDuplicatedSubscriptionsSubtitle = "you_may_have_duplicated_subscriptions_subtitle"
+            case pricePaid = "price_paid"
+            case expiresOnDateWithoutChanges = "expires_on_date_without_changes"
+            case renewsOnDateForPrice = "renews_on_date_for_price"
+            case renewsOnDate = "renews_on_date"
+            case priceAfterwards = "price_afterwards"
+            case freeTrialUntilDate = "free_trial_until_date"
+            case priceExpiresOnDateWithoutChanges = "price_expires_on_date_without_changes"
+            case badgeCancelled = "badge_cancelled"
+            case badgeFreeTrial = "free_trial"
+            case refundSuccess = "refund_success"
+            case actionsSectionTitle = "actions_section_title"
+            case subscriptionsSectionTitle = "subscriptions_section_title"
+            case purchasesSectionTitle = "purchases_section_title"
 
             var defaultValue: String {
                 switch self {
@@ -157,12 +175,16 @@ public struct CustomerCenterConfigData: Equatable {
                 case .checkPastPurchases:
                     return "Check past purchases"
                 case .purchasesRecovered:
-                    return "Purchases recovered!"
+                    return "Purchases restored"
+                case .purchasesRestoring:
+                    return "Restoring..."
                 case .purchasesRecoveredExplanation:
-                    return "We applied the previously purchased items to your account. Sorry for the inconvenience."
-                case .purchasesNotRecovered:
-                    return "We couldn't find any additional purchases under this account. " +
-                    "Contact support for assistance if you think this is an error."
+                    return "We restored your past purchases and applied them to your account."
+                case .purchasesNotFound:
+                    return "No past purchases"
+                case .purchasesNotRecoveredExplanation:
+                    return "We could not find any purchases with your account. " +
+                    "If you think this is an error, please contact support."
                 case .cancel:
                     return "Cancel"
                 case .billingCycle:
@@ -197,6 +219,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Support Request"
                 case .dismiss:
                     return "Dismiss"
+                case .done:
+                    return "Done"
                 case .unknown:
                     return "Unknown"
                 case .updateWarningTitle:
@@ -220,8 +244,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "You have an active subscription from the Amazon Appstore. " +
                     "You can manage your subscription in the Amazon Appstore app."
                 case .webSubscriptionManage:
-                    return "You have an active subscription that was created on the web." +
-                    " You can manage your subscription by visiting your account."
+                    return "You have an active subscription that was purchased on the web."
+                    + " You can manage your subscription using the button below."
                 case .manageSubscription:
                     return "Manage your subscription"
                 case .youHavePromo:
@@ -318,6 +342,37 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Unknown Store"
                 case .debugHeaderTitle:
                     return "Debug"
+                case .youMayHaveDuplicatedSubscriptionsTitle:
+                    return "You may have duplicated subscriptions"
+                case .youMayHaveDuplicatedSubscriptionsSubtitle:
+                    return "You might be subscribed both on the web and through the App Store." +
+                        "To avoid being charged twice, please cancel your iOS subscription in your device settings."
+                case .pricePaid:
+                    return "Paid {{ price }}."
+                case .expiresOnDateWithoutChanges:
+                    return "Expires on {{ date }} without further charges."
+                case .renewsOnDateForPrice:
+                    return "Renews on {{ date }} for {{ price }}."
+                case .renewsOnDate:
+                    return "Renews on {{ date }}."
+                case .priceAfterwards:
+                    return "{{ price }} afterwards."
+                case .freeTrialUntilDate:
+                    return "Free trial until {{ date }}."
+                case .priceExpiresOnDateWithoutChanges:
+                     return "{{ price }}. Expires on {{ date }} without changes."
+                case .badgeCancelled:
+                    return "Cancelled"
+                case .badgeFreeTrial:
+                    return "Free trial"
+                case .refundSuccess:
+                    return "Apple has received the refund request"
+                case .actionsSectionTitle:
+                    return "Actions"
+                case .subscriptionsSectionTitle:
+                    return "Subscriptions"
+                case .purchasesSectionTitle:
+                    return "Purchases"
                 }
             }
         }
@@ -418,17 +473,33 @@ public struct CustomerCenterConfigData: Equatable {
             public let title: String
             public let subtitle: String
             public let productMapping: [String: String]
+            public let crossProductPromotions: [String: CrossProductPromotion]
+
+            public struct CrossProductPromotion: Equatable {
+                public let storeOfferIdentifier: String
+                public let targetProductId: String
+
+                public init(
+                    storeofferingidentifier: String,
+                    targetproductid: String
+                ) {
+                    self.storeOfferIdentifier = storeofferingidentifier
+                    self.targetProductId = targetproductid
+                }
+            }
 
             public init(iosOfferId: String,
                         eligible: Bool,
                         title: String,
                         subtitle: String,
-                        productMapping: [String: String]) {
+                        productMapping: [String: String],
+                        crossProductPromotions: [String: CrossProductPromotion] = [:]) {
                 self.iosOfferId = iosOfferId
                 self.eligible = eligible
                 self.title = title
                 self.subtitle = subtitle
                 self.productMapping = productMapping
+                self.crossProductPromotions = crossProductPromotions
             }
 
         }
@@ -552,15 +623,18 @@ public struct CustomerCenterConfigData: Equatable {
         public let email: String
         public let shouldWarnCustomerToUpdate: Bool
         public let displayPurchaseHistoryLink: Bool
+        public let shouldWarnCustomersAboutMultipleSubscriptions: Bool
 
         public init(
             email: String,
             shouldWarnCustomerToUpdate: Bool,
-            displayPurchaseHistoryLink: Bool
+            displayPurchaseHistoryLink: Bool,
+            shouldWarnCustomersAboutMultipleSubscriptions: Bool
         ) {
             self.email = email
             self.shouldWarnCustomerToUpdate = shouldWarnCustomerToUpdate
             self.displayPurchaseHistoryLink = displayPurchaseHistoryLink
+            self.shouldWarnCustomersAboutMultipleSubscriptions = shouldWarnCustomersAboutMultipleSubscriptions
         }
 
     }
@@ -671,6 +745,17 @@ extension CustomerCenterConfigData.HelpPath.PromotionalOffer {
         self.title = response.title
         self.subtitle = response.subtitle
         self.productMapping = response.productMapping
+        self.crossProductPromotions = response.crossProductPromotions?.mapValues { CrossProductPromotion(from: $0) }
+            ?? [:]
+    }
+
+}
+
+extension CustomerCenterConfigData.HelpPath.PromotionalOffer.CrossProductPromotion {
+
+    init(from response: CustomerCenterConfigResponse.HelpPath.PromotionalOffer.CrossProductPromotion) {
+        self.storeOfferIdentifier = response.storeOfferIdentifier
+        self.targetProductId = response.targetProductId
     }
 
 }
@@ -705,6 +790,8 @@ extension CustomerCenterConfigData.Support {
         self.email = response.email
         self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? true
         self.displayPurchaseHistoryLink = response.displayPurchaseHistoryLink ?? false
+        self.shouldWarnCustomersAboutMultipleSubscriptions = response.shouldWarnCustomersAboutMultipleSubscriptions
+            ?? false
     }
 
 }

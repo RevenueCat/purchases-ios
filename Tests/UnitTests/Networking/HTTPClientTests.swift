@@ -72,7 +72,7 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
-                          requestTimeout: defaultTimeout.seconds,
+                          requestTimeout: defaultTimeout.timeInterval,
                           operationDispatcher: operationDispatcher)
     }
 }
@@ -333,6 +333,23 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         expect(header.value) == "true"
+    }
+
+    func testAlwaysPassesIsBackgroundedHeader() {
+        let headerPresent: Atomic<Bool> = false
+
+        stub(condition: hasHeaderNamed("X-Is-Backgrounded")) { _ in
+            headerPresent.value = true
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(headerPresent.value) == true
     }
 
     func testRequestWithStorefrontSendsHeader() {
@@ -1148,7 +1165,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             }
         }
 
-        self.waitForExpectations(timeout: defaultTimeout.seconds)
+        self.waitForExpectations(timeout: defaultTimeout.timeInterval)
         expect(completionCallCount.value) == serialRequests
     }
 
@@ -1187,7 +1204,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             expectations[1].fulfill()
         }
 
-        self.waitForExpectations(timeout: defaultTimeout.seconds)
+        self.waitForExpectations(timeout: defaultTimeout.timeInterval)
 
         expect(firstRequestFinished.value) == true
         expect(secondRequestFinished.value) == true
@@ -1244,7 +1261,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             expectations[2].fulfill()
         }
 
-        self.waitForExpectations(timeout: defaultTimeout.seconds)
+        self.waitForExpectations(timeout: defaultTimeout.timeInterval)
 
         expect(firstRequestFinished.value) == true
         expect(secondRequestFinished.value) == true
@@ -1734,20 +1751,85 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
         expect(trackedParams).to(matchTrackParams((
             "log_in",
+            "api.revenuecat.com",
             -1, // Any
             true,
             200,
             nil,
             .backend,
-            .notRequested
+            .notRequested,
+            false
         )))
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testDiagnosticsHttpRequestPerformedTrackedOnError() throws {
+    func testDiagnosticsHttpRequestPerformedTrackedOnError() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let request = HTTPRequest(method: .get, path: .mockPath)
+
+        stub(condition: isPath(request.path)) { _ in
+            let json = "{\"code\": 7225, \"message\": \"Invalid API key\"}"
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!,
+                                     statusCode: .unauthorized,
+                                     headers: [
+                                        HTTPClient.ResponseHeader.contentType.rawValue: "application/json"
+                                    ])
+        }
+
+        await waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        await expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).toEventually(equal(1))
+        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.first else {
+            fail("Should have at least one call to tracked diagnostics")
+            return
+        }
+        expect(trackedParams).to(matchTrackParams((
+            "log_in",
+            "api.revenuecat.com",
+            -1, // Any
+            false,
+            401,
+            7225,
+            nil,
+            .notRequested,
+            false
+        )))
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsHttpRequestPerformedTrackedOnFallbackHost() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let mainPath = request.path
+        let fallbackHost = try XCTUnwrap(mainPath.fallbackHosts.first?.host,
+                                         "This test requires at least 1 fallback host")
+
+        let serverErrorResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.internalServerError,
+            headers: nil
+        )
+
+        let mainHost = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(mainHost)) { _ in
+            return serverErrorResponse
+        }
+
+        let successfulResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.success,
+            headers: nil
+        )
+
+        stub(condition: isHost(fallbackHost)) { _ in
+            return successfulResponse
+        }
 
         waitUntil { completion in
             self.client.perform(request) { (_: EmptyResponse) in completion() }
@@ -1755,19 +1837,31 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         // swiftlint:disable:next force_cast
         let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
-        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).toEventually(equal(1))
-        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.first else {
-            fail("Should have at least one call to tracked diagnostics")
-            return
-        }
-        expect(trackedParams).to(matchTrackParams((
-            "log_in",
-            -1, // Any
+        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).to(equal(2))
+
+        let trackedParams0 = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value[0]
+        let trackedParams1 = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value[1]
+        expect(trackedParams0).to(matchTrackParams((
+            "get_product_entitlement_mapping",
+            "api.revenuecat.com",
+            -1,
             false,
-            401,
-            7225,
+            500,
+            0,
             nil,
-            .notRequested
+            .notRequested,
+            false
+        )))
+        expect(trackedParams1).to(matchTrackParams((
+            "get_product_entitlement_mapping",
+            "api-production.8-lives-cat.io",
+            -1, // Any
+            true,
+            200,
+            nil,
+            .backend,
+            .notRequested,
+            false
         )))
     }
 
@@ -1795,13 +1889,36 @@ extension HTTPClientTests {
         expect(secondRetriedRequest.retryCount).to(equal(2))
     }
 
+    func testRetryingRequestKeepsFallbackHostIndex() throws {
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+        let nextFallbackHostRequest = try XCTUnwrap(request.requestWithNextFallbackHost(proxyURL: nil))
+
+        let retriedRequest = nextFallbackHostRequest.retriedRequest()
+        let secondRetriedRequest = nextFallbackHostRequest.retriedRequest()
+
+        expect(retriedRequest.fallbackHostIndex).to(equal(0))
+        expect(secondRetriedRequest.fallbackHostIndex).to(equal(0))
+    }
+
     private func buildEmptyRequest(
-        isRetryable: Bool
+        isRetryable: Bool,
+        hasFallbackHosts: Bool = false
     ) -> HTTPClient.Request {
         let completionHandler: HTTPClient.Completion<CustomerInfo> = { _ in return }
 
+        let path: HTTPRequest.Path
+        if hasFallbackHosts {
+            path = .getOfferings(appUserID: "abc123")
+            expect(path.fallbackHosts).toNot(
+                beEmpty(),
+                description: "This test requires a path that has at least 1 fallback host"
+            )
+        } else {
+            path = .getCustomerInfo(appUserID: "abc123")
+        }
+
         let request: HTTPClient.Request = .init(
-            httpRequest: .init(method: .get, path: .getCustomerInfo(appUserID: "abc123"), isRetryable: isRetryable),
+            httpRequest: .init(method: .get, path: path, isRetryable: isRetryable),
             authHeaders: .init(),
             defaultHeaders: .init(),
             verificationMode: .default,
@@ -2353,23 +2470,245 @@ extension HTTPClientTests {
         expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalCount).to(equal(1))
         expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalParam).to(equal(0))
     }
+
+    // MARK: - Fallback Host Retry Tests
+
+    func testNewRequestStartsWithMainPath() {
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+        expect(request.fallbackHostIndex).to(beNil())
+    }
+
+    func testNextFallbackHostRequestIncrementsFallbackHostIndex() throws {
+        var request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+
+        let fallbacksCount = request.httpRequest.path.fallbackHosts.count
+        for iteration in 0..<fallbacksCount {
+            request = try XCTUnwrap(request.requestWithNextFallbackHost(proxyURL: nil))
+            expect(request.fallbackHostIndex).to(equal(iteration))
+        }
+    }
+
+    func testNextFallbackHostRequestReturnsNilIfProxyURLIsUsed() throws {
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+
+        let proxyURL = try XCTUnwrap(URL(string: "https://proxy.com"))
+        let nextRequest = request.requestWithNextFallbackHost(proxyURL: proxyURL)
+
+        expect(nextRequest).to(beNil())
+    }
+
+    func testNextFallbackHostRequestKeepsRetryCount() throws {
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+
+        let retriedRequest = request.retriedRequest()
+        let nextFallbackHostRequest = try XCTUnwrap(retriedRequest.requestWithNextFallbackHost(proxyURL: nil))
+        expect(nextFallbackHostRequest.retryCount).to(equal(1))
+    }
+
+    func testRequestWithNextFallbackHostReturnsNilIfNoMoreHosts() throws {
+        var nextRequest = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+
+        let fallbacksCount = nextRequest.httpRequest.path.fallbackHosts.count
+        for _ in 0..<fallbacksCount {
+            nextRequest = try XCTUnwrap(nextRequest.requestWithNextFallbackHost(proxyURL: nil))
+        }
+        let noMoreHostsRequest = nextRequest.requestWithNextFallbackHost(proxyURL: nil)
+        expect(noMoreHostsRequest).to(beNil())
+    }
+
+    func testRetriesWithNextFallbackHostOnServerError() throws {
+        let request = HTTPRequest(method: .get, path: .mockPathWithFallbacks)
+        let mainPath = request.path
+        let fallbackHost = try XCTUnwrap(mainPath.fallbackHosts.first, "This test requires at least 1 fallback host")
+
+        let serverErrorResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.internalServerError,
+            headers: nil
+        )
+
+        let host1 = try XCTUnwrap(type(of: mainPath).serverHostURL.host)
+        stub(condition: isHost(host1)) { _ in
+            return serverErrorResponse
+        }
+
+        let successfulResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.success,
+            headers: nil
+        )
+
+        let host2 = try XCTUnwrap(fallbackHost.host)
+        stub(condition: isHost(host2)) { _ in
+            return successfulResponse
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.error).to(beNil())
+    }
+
+    func testReturnsLastErrorWhenRetriedWithNextFallbackHost() throws {
+        let request = HTTPRequest(method: .get, path: .mockPathWithFallbacks)
+        let mainPath = request.path
+        let fallbackHost = try XCTUnwrap(mainPath.fallbackHosts.first, "This test requires at least 1 fallback ost")
+
+        let serverErrorResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.internalServerError,
+            headers: nil
+        )
+
+        let host1 = try XCTUnwrap(type(of: mainPath).serverHostURL.host)
+        stub(condition: isHost(host1)) { _ in
+            return serverErrorResponse
+        }
+
+        let host2 = try XCTUnwrap(fallbackHost.host)
+        stub(condition: isHost(host2)) { _ in
+            return .emptyTooManyRequestsResponse()
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beFailure())
+        expect(result?.error) == .errorResponse(
+            .init(code: .unknownError,
+                  originalCode: 0,
+                  message: nil),
+            .tooManyRequests
+        )
+        expect(result?.error?.isServerDown) == false
+    }
+
+    func testRetriesWithNextFallbackHostImmediately() throws {
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.internalServerError.rawValue,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let didRetry = client.retryRequestWithNextFallbackHostIfNeeded(
+            request: request,
+            httpURLResponse: httpURLResponse
+        )
+
+        expect(didRetry).to(beTrue())
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeInterval).to(beFalse())
+    }
+
+    func testIncrementsHostIndexOnRetry() throws {
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.internalServerError.rawValue,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let didRetry = self.client.retryRequestWithNextFallbackHostIfNeeded(
+            request: request,
+            httpURLResponse: httpURLResponse
+        )
+
+        expect(didRetry).to(beTrue())
+        expect(request.fallbackHostIndex).to(beNil()) // Original request should not use a fallback host
+    }
+
+    func testDoesNotIncrementRetryCountOnHostRetry() throws {
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.internalServerError.rawValue,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let didRetry = self.client.retryRequestWithNextFallbackHostIfNeeded(
+            request: request,
+            httpURLResponse: httpURLResponse
+        )
+
+        expect(didRetry).to(beTrue())
+        expect(request.retryCount) == 0
+    }
+
+    func testDoesNotRetryWithNextFallbackHostForNonServerError() throws {
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let didRetry = self.client.retryRequestWithNextFallbackHostIfNeeded(
+            request: request,
+            httpURLResponse: httpURLResponse
+        )
+
+        expect(didRetry).to(beFalse())
+    }
+
+    func testDoesNotRetryWithNextFallbackHostWhenNoMorePathsAvailable() throws {
+        var nextRequest = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+        let fallbacksCount = nextRequest.httpRequest.path.fallbackHosts.count
+
+        for _ in 0..<fallbacksCount {
+            nextRequest = try XCTUnwrap(nextRequest.requestWithNextFallbackHost(proxyURL: nil))
+        }
+
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.internalServerError.rawValue,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let didRetry = self.client.retryRequestWithNextFallbackHostIfNeeded(
+            request: nextRequest,
+            httpURLResponse: httpURLResponse
+        )
+
+        expect(didRetry).to(beFalse())
+    }
+
 }
 
 // swiftlint:disable large_tuple
 
 private func matchTrackParams(
-    _ data: (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult)
-) -> Nimble.Predicate<(String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult)> {
+    _ data: (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)
+) -> Nimble.Predicate<(String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)> {
     return .init {
         let other = try $0.evaluate()
-        let timeInterval = other?.1 ?? -1
+        let timeInterval = other?.2 ?? -1
         let matches = (other?.0 == data.0 &&
+                       other?.1 == data.1 &&
                        timeInterval > 0 && timeInterval.isLess(than: 1) &&
-                       other?.2 == data.2 &&
                        other?.3 == data.3 &&
                        other?.4 == data.4 &&
                        other?.5 == data.5 &&
-                       other?.6 == data.6)
+                       other?.6 == data.6 &&
+                       other?.7 == data.7 &&
+                       other?.8 == data.8)
 
         return .init(bool: matches, message: .fail("Diagnostics tracked params do not match"))
     }
@@ -2462,6 +2801,7 @@ extension HTTPRequest.Path {
 
     // Doesn't matter which path this is, we stub requests to it.
     static let mockPath: Self = .logIn
+    static let mockPathWithFallbacks: Self = .getProductEntitlementMapping
     static let receiptPath: Self = .postReceiptData
 
 }

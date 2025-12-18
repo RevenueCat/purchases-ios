@@ -13,6 +13,7 @@
 //  Created by Cesar de la Vega on 27/5/24.
 //
 
+import Combine
 import Foundation
 import RevenueCat
 
@@ -24,14 +25,11 @@ import RevenueCat
 @available(watchOS, unavailable)
 @MainActor class CustomerCenterViewModel: ObservableObject {
 
-    private static let defaultAppIsLatestVersion = true
-
     typealias CurrentVersionFetcher = () -> String?
 
-    private lazy var currentAppVersion: String? = currentVersionFetcher()
+    private static let defaultAppIsLatestVersion = true
 
-    @Published
-    private(set) var purchaseInformation: PurchaseInformation?
+    private lazy var currentAppVersion: String? = currentVersionFetcher()
 
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
@@ -39,15 +37,9 @@ import RevenueCat
     @Published
     private(set) var onUpdateAppClick: (() -> Void)?
 
-    private(set) var purchasesProvider: CustomerCenterPurchasesType
-    private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
+    @Published
+    var manageSubscriptionsSheet = false
 
-    /// Whether or not the Customer Center should warn the customer that they're on an outdated version of the app.
-    var shouldShowAppUpdateWarnings: Bool {
-        return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? true)
-    }
-
-    // @PublicForExternalTesting
     @Published
     var state: CustomerCenterViewState {
         didSet {
@@ -56,6 +48,7 @@ import RevenueCat
             }
         }
     }
+
     @Published
     var configuration: CustomerCenterConfigData? {
         didSet {
@@ -73,14 +66,58 @@ import RevenueCat
         }
     }
 
+    @Published
+    var activeSubscriptionPurchases: [PurchaseInformation] = []
+
+    @Published
+    var activeNonSubscriptionPurchases: [PurchaseInformation] = []
+
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
+    private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
+
+    /// Whether or not the Customer Center should warn the customer that they're on an outdated version of the app.
+    var shouldShowAppUpdateWarnings: Bool {
+        return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? true)
+    }
+
+    var hasPurchases: Bool {
+        !activeSubscriptionPurchases.isEmpty || !activeNonSubscriptionPurchases.isEmpty
+    }
+
+    var shouldShowList: Bool {
+        activeSubscriptionPurchases.count + activeNonSubscriptionPurchases.count > 1
+    }
+
+    var  originalAppUserId: String {
+        customerInfo?.originalAppUserId ?? ""
+    }
+
+    var originalPurchaseDate: Date? {
+        customerInfo?.originalPurchaseDate
+    }
+
+    var shouldShowSeeAllPurchases: Bool {
+        configuration?.support.displayPurchaseHistoryLink == true
+        && customerInfo?.shouldShowSeeAllPurchasesButton(
+            maxNonSubscriptions: RelevantPurchasesListViewModel.maxNonSubscriptionsToShow
+        ) ?? false
+    }
+
     private let currentVersionFetcher: CurrentVersionFetcher
-    internal let customerCenterActionHandler: CustomerCenterActionHandler?
+
+    internal var customerInfo: CustomerInfo?
+
+    /// The action wrapper that handles both the deprecated handler and the new preference system
+    internal let actionWrapper: CustomerCenterActionWrapper
+
+    /// Used to make testing easier
+    internal var currentTask: Task<Void, Never>?
 
     private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
 
     init(
-        customerCenterActionHandler: CustomerCenterActionHandler?,
+        actionWrapper: CustomerCenterActionWrapper,
         currentVersionFetcher: @escaping CurrentVersionFetcher = {
             Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         },
@@ -89,28 +126,66 @@ import RevenueCat
     ) {
         self.state = .notLoaded
         self.currentVersionFetcher = currentVersionFetcher
-        self.customerCenterActionHandler = customerCenterActionHandler
+        self.actionWrapper = actionWrapper
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
+        self.customerInfo = nil
+    }
+
+    convenience init(
+        uiPreviewPurchaseProvider: CustomerCenterPurchasesType
+    ) {
+        self.init(
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
+            purchasesProvider: uiPreviewPurchaseProvider
+        )
     }
 
     #if DEBUG
 
     convenience init(
-        purchaseInformation: PurchaseInformation,
         configuration: CustomerCenterConfigData
     ) {
-        self.init(customerCenterActionHandler: nil)
-        self.purchaseInformation = purchaseInformation
+        self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
+        self.configuration = configuration
+        self.state = .success
+    }
+
+    convenience init(
+        activeSubscriptionPurchases: [PurchaseInformation],
+        activeNonSubscriptionPurchases: [PurchaseInformation],
+        configuration: CustomerCenterConfigData
+    ) {
+        self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
+        self.activeSubscriptionPurchases = activeSubscriptionPurchases
+        self.activeNonSubscriptionPurchases = activeNonSubscriptionPurchases
         self.configuration = configuration
         self.state = .success
     }
 
     #endif
 
-    func loadScreen() async {
+    func publisher(for purchase: PurchaseInformation?) -> AnyPublisher<PurchaseInformation, Never>? {
+        guard let productIdentifier = purchase?.productIdentifier else {
+            return nil
+        }
+
+        return $activeSubscriptionPurchases.combineLatest($activeNonSubscriptionPurchases)
+            .throttle(for: .seconds(0.3), scheduler: DispatchQueue.main, latest: true)
+            .compactMap {
+                $0.first(where: { $0.productIdentifier == productIdentifier })
+                ?? $1.first(where: { $0.productIdentifier == productIdentifier })
+            }
+            .eraseToAnyPublisher()
+    }
+
+    func loadScreen(shouldSync: Bool = false) async {
         do {
-            try await self.loadPurchaseInformation()
+            let customerInfo = shouldSync ?
+            try await self.purchasesProvider.syncPurchases() :
+            try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
+
+            try await self.loadPurchases(customerInfo: customerInfo)
             try await self.loadCustomerCenterConfig()
             self.state = .success
         } catch {
@@ -118,16 +193,9 @@ import RevenueCat
         }
     }
 
-    func performRestore() async -> RestorePurchasesAlert.AlertType {
-        self.customerCenterActionHandler?(.restoreStarted)
-        do {
-            let customerInfo = try await purchasesProvider.restorePurchases()
-            self.customerCenterActionHandler?(.restoreCompleted(customerInfo))
-            let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
-            return hasPurchases ? .purchasesRecovered : .purchasesNotFound
-        } catch {
-            self.customerCenterActionHandler?(.restoreFailed(error))
-            return .purchasesNotFound
+    func onDismissRestorePurchasesAlert() {
+        currentTask = Task {
+            await loadScreen()
         }
     }
 
@@ -145,7 +213,6 @@ import RevenueCat
         let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
         purchasesProvider.track(customerCenterEvent: event)
     }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -154,31 +221,64 @@ import RevenueCat
 @available(watchOS, unavailable)
 private extension CustomerCenterViewModel {
 
-    func loadPurchaseInformation() async throws {
-        let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
+    func loadPurchases(customerInfo: CustomerInfo) async throws {
+        self.customerInfo = customerInfo
 
-        let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty ||
-        !customerInfo.nonSubscriptions.isEmpty
+        let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
 
         if !hasActiveProducts {
-            self.purchaseInformation = nil
+            self.activeSubscriptionPurchases = []
+            self.activeNonSubscriptionPurchases = []
             self.state = .success
             return
         }
 
-        guard let activeTransaction = findActiveTransaction(customerInfo: customerInfo) else {
-            Logger.warning(Strings.could_not_find_subscription_information)
-            self.purchaseInformation = nil
-            throw CustomerCenterError.couldNotFindSubscriptionInformation
+        await loadActiveSubscriptions(customerInfo: customerInfo)
+        await loadActiveNonSubscriptionPurchases(customerInfo: customerInfo)
+    }
+
+    func loadActiveNonSubscriptionPurchases(customerInfo: CustomerInfo) async {
+        var activeNonSubscriptionPurchases: [PurchaseInformation] = []
+        for subscription in customerInfo.nonSubscriptions {
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == subscription.productIdentifier })
+
+            let purchaseInfo = await createPurchaseInformation(
+                for: subscription,
+                entitlement: entitlement,
+                customerInfo: customerInfo
+            )
+
+            activeNonSubscriptionPurchases.append(purchaseInfo)
+        }
+        self.activeNonSubscriptionPurchases = activeNonSubscriptionPurchases
+    }
+
+    func loadActiveSubscriptions(customerInfo: CustomerInfo) async {
+        var activeSubscriptionPurchases: [PurchaseInformation] = []
+        for subscription in customerInfo.activeSubscriptions
+            .compactMap({ id in customerInfo.subscriptionsByProductIdentifier[id] })
+            .sorted(by: {
+                guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
+                    return $0.expiresDate != nil
+                }
+
+                return date1 < date2
+            }) {
+
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == subscription.productIdentifier })
+
+            let purchaseInfo = await createPurchaseInformation(
+                for: subscription,
+                entitlement: entitlement,
+                customerInfo: customerInfo
+            )
+
+            activeSubscriptionPurchases.append(purchaseInfo)
         }
 
-        let entitlement = customerInfo.entitlements.all.values
-            .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
-
-        self.purchaseInformation = try await createPurchaseInformation(
-            for: activeTransaction,
-            entitlement: entitlement,
-            customerInfo: customerInfo)
+        self.activeSubscriptionPurchases = activeSubscriptionPurchases
     }
 
     func loadCustomerCenterConfig() async throws {
@@ -192,35 +292,9 @@ private extension CustomerCenterViewModel {
         }
     }
 
-    func findActiveTransaction(customerInfo: CustomerInfo) -> Transaction? {
-        let activeSubscriptions = customerInfo.subscriptionsByProductIdentifier.values
-            .filter(\.isActive)
-            .sorted(by: {
-                guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
-                    return $0.expiresDate != nil
-                }
-                return date1 < date2
-            })
-
-        let (activeAppleSubscriptions, otherActiveSubscriptions) = (
-            activeSubscriptions.filter { $0.store == .appStore },
-            activeSubscriptions.filter { $0.store != .appStore }
-        )
-
-        let (appleNonSubscriptions, otherNonSubscriptions) = (
-            customerInfo.nonSubscriptions.filter { $0.store == .appStore },
-            customerInfo.nonSubscriptions.filter { $0.store != .appStore }
-        )
-
-        return activeAppleSubscriptions.first ??
-        appleNonSubscriptions.first ??
-        otherActiveSubscriptions.first ??
-        otherNonSubscriptions.first
-    }
-
-    func createPurchaseInformation(for transaction: Transaction,
+    func createPurchaseInformation(for transaction: RevenueCatUI.Transaction,
                                    entitlement: EntitlementInfo?,
-                                   customerInfo: CustomerInfo) async throws -> PurchaseInformation {
+                                   customerInfo: CustomerInfo) async -> PurchaseInformation {
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -228,7 +302,8 @@ private extension CustomerCenterViewModel {
                     subscribedProduct: product,
                     transaction: transaction,
                     customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
-                    customerInfoRequestedDate: customerInfo.requestDate
+                    customerInfoRequestedDate: customerInfo.requestDate,
+                    managementURL: transaction.managementURL
                 )
             } else {
                 Logger.warning(
@@ -238,19 +313,21 @@ private extension CustomerCenterViewModel {
                 return PurchaseInformation(
                     entitlement: entitlement,
                     transaction: transaction,
-                    customerInfoRequestedDate: customerInfo.requestDate
+                    customerInfoRequestedDate: customerInfo.requestDate,
+                    managementURL: transaction.managementURL
                 )
             }
         }
+
         Logger.warning(Strings.active_product_is_not_apple_loading_without_product_information(transaction.store))
 
         return PurchaseInformation(
             entitlement: entitlement,
             transaction: transaction,
-            customerInfoRequestedDate: customerInfo.requestDate
+            customerInfoRequestedDate: customerInfo.requestDate,
+            managementURL: transaction.managementURL
         )
     }
-
 }
 
 fileprivate extension String {

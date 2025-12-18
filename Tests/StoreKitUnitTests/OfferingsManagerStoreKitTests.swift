@@ -28,6 +28,7 @@ class OfferingsManagerStoreKitTests: StoreKitConfigTestCase {
     var mockOfferings: MockOfferingsAPI!
     let mockOfferingsFactory = OfferingsFactory()
     var mockProductsManager: MockProductsManager!
+    var mockDiagnosticsTracker: DiagnosticsTrackerType!
     var offeringsManager: OfferingsManager!
 
     override func setUpWithError() throws {
@@ -37,12 +38,18 @@ class OfferingsManagerStoreKitTests: StoreKitConfigTestCase {
         self.mockProductsManager = MockProductsManager(diagnosticsTracker: nil,
                                                        systemInfo: self.mockSystemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.mockDiagnosticsTracker = MockDiagnosticsTracker()
+        } else {
+            self.mockDiagnosticsTracker = nil
+        }
         self.offeringsManager = OfferingsManager(deviceCache: self.mockDeviceCache,
                                                  operationDispatcher: self.mockOperationDispatcher,
                                                  systemInfo: self.mockSystemInfo,
                                                  backend: self.mockBackend,
                                                  offeringsFactory: self.mockOfferingsFactory,
-                                                 productsManager: self.mockProductsManager)
+                                                 productsManager: self.mockProductsManager,
+                                                 diagnosticsTracker: self.mockDiagnosticsTracker)
     }
 
 }
@@ -94,8 +101,11 @@ private extension OfferingsManagerStoreKitTests {
                 .init(identifier: "base",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: StoreKitConfigTestCase.productID)
-                      ])
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: StoreKitConfigTestCase.productID,
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
             ],
             placements: nil,
             targeting: nil,

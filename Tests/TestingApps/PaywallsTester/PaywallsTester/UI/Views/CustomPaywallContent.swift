@@ -5,7 +5,12 @@
 //  Created by Nacho Soto on 8/25/23.
 //
 
+#if DEBUG
+@testable import RevenueCatUI
+#else
 import RevenueCatUI
+#endif
+
 
 import SwiftUI
 
@@ -18,7 +23,9 @@ struct CustomPaywallContent: View {
 
     var body: some View {
         self.content
+            #if DEBUG
             .scrollableIfNecessary(.vertical)
+            #endif
             .background(CustomPaywallContent.backgroundColor)
     }
 

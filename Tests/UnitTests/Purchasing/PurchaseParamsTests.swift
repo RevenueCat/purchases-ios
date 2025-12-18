@@ -33,7 +33,12 @@ class PurchaseParamsTests: TestCase {
     }
 
     func testPurchaseParamsBuilderWithPackage() async throws {
-        let package = buildMockPackage()
+        let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: StoreProduct(sk1Product: product),
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
         let params = PurchaseParams.Builder(package: package).build()
         expect(params.package).to(equal(package))
         expect(params.product).to(beNil())
@@ -44,7 +49,8 @@ class PurchaseParamsTests: TestCase {
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: StoreProduct(sk1Product: product),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                 currencyCode: product.priceLocale.currencyCode,
                                                 price: 11.1,

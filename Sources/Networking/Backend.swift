@@ -158,6 +158,19 @@ extension Backend {
 
 }
 
+extension Backend {
+
+    /// Call the `/health_report` endpoint and perform a full validation of the SDK's configuration
+    /// - Parameter appUserID: An `appUserID` that allows the Backend to fetch offerings
+    /// - Returns: A report with all validation checks along with their status
+    func healthReportRequest(appUserID: String) async throws -> HealthReport {
+        try await Async.call { (completion: @escaping (Result<HealthReport, BackendError>) -> Void) in
+            self.internalAPI.healthReportRequest(appUserID: appUserID, completion: completion)
+        }
+    }
+
+}
+
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension Backend: @unchecked Sendable {}

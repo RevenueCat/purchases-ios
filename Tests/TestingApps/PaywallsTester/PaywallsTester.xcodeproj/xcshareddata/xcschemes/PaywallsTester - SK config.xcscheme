@@ -5,42 +5,6 @@
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
-      <PreActions>
-         <ExecutionAction
-            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
-            <ActionContent
-               title = "Run Script"
-               scriptText = "#!/bin/bash&#10;&#10;bash &quot;${PROJECT_DIR}/Preprocessor.sh&quot;&#10;">
-               <EnvironmentBuildable>
-                  <BuildableReference
-                     BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "4F6BED992A26A64200CD9322"
-                     BuildableName = "PaywallsTester.app"
-                     BlueprintName = "PaywallsTester"
-                     ReferencedContainer = "container:PaywallsTester.xcodeproj">
-                  </BuildableReference>
-               </EnvironmentBuildable>
-            </ActionContent>
-         </ExecutionAction>
-      </PreActions>
-      <PostActions>
-         <ExecutionAction
-            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
-            <ActionContent
-               title = "Run Script"
-               scriptText = "# Type a script or drag a script file from your workspace to insert its path.&#10;&#10;bash &quot;${PROJECT_DIR}/Postprocessor.sh&quot;&#10;">
-               <EnvironmentBuildable>
-                  <BuildableReference
-                     BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "4F6BED992A26A64200CD9322"
-                     BuildableName = "PaywallsTester.app"
-                     BlueprintName = "PaywallsTester"
-                     ReferencedContainer = "container:PaywallsTester.xcodeproj">
-                  </BuildableReference>
-               </EnvironmentBuildable>
-            </ActionContent>
-         </ExecutionAction>
-      </PostActions>
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"

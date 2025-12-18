@@ -76,6 +76,7 @@ class CustomerInfoManagerUIPreviewModeTests: BaseCustomerInfoManagerTests {
         for policy in policies {
             let info = try await self.customerInfoManager.customerInfo(
                 appUserID: "any_user",
+                trackDiagnostics: false,
                 fetchPolicy: policy
             )
 

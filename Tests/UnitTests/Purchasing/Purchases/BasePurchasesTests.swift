@@ -97,7 +97,8 @@ class BasePurchasesTests: TestCase {
                                                    currentUserProvider: self.identityManager,
                                                    backend: self.backend,
                                                    attributionFetcher: self.attributionFetcher,
-                                                   subscriberAttributesManager: self.subscriberAttributesManager)
+                                                   subscriberAttributesManager: self.subscriberAttributesManager,
+                                                   systemInfo: self.systemInfo)
         self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
                                        currentUserProvider: self.identityManager,
                                        attributionPoster: self.attributionPoster,
@@ -115,7 +116,8 @@ class BasePurchasesTests: TestCase {
                                                          systemInfo: self.systemInfo,
                                                          backend: self.backend,
                                                          offeringsFactory: self.offeringsFactory,
-                                                         productsManager: self.mockProductsManager)
+                                                         productsManager: self.mockProductsManager,
+                                                         diagnosticsTracker: self.diagnosticsTracker)
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: self.systemInfo,
                                                                   customerInfoManager: self.customerInfoManager,
                                                                   currentUserProvider: self.identityManager)
@@ -196,6 +198,13 @@ class BasePurchasesTests: TestCase {
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var mockDiagnosticsTracker: MockDiagnosticsTracker {
+        get throws {
+            return try XCTUnwrap(self.diagnosticsTracker as? MockDiagnosticsTracker)
+        }
+    }
+
     // swiftlint:disable:next weak_delegate
     var purchasesDelegate: MockPurchasesDelegate!
 
@@ -270,6 +279,7 @@ class BasePurchasesTests: TestCase {
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
+            diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             storeKit2ProductPurchaser: self.storeKit2ProductPurchaser,
             paywallEventsManager: self.paywallEventsManager,
@@ -282,7 +292,8 @@ class BasePurchasesTests: TestCase {
             backend: self.backend,
             currentUserProvider: self.identityManager,
             operationDispatcher: self.mockOperationDispatcher,
-            productsManager: self.mockProductsManager
+            productsManager: self.mockProductsManager,
+            diagnosticsTracker: self.diagnosticsTracker
         )
         self.cachingTrialOrIntroPriceEligibilityChecker = .init(checker: self.trialOrIntroPriceEligibilityChecker)
 
@@ -310,7 +321,8 @@ class BasePurchasesTests: TestCase {
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
                                    trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker,
-                                   storeMessagesHelper: self.mockStoreMessagesHelper)
+                                   storeMessagesHelper: self.mockStoreMessagesHelper,
+                                   diagnosticsTracker: self.diagnosticsTracker)
 
         self.purchasesOrchestrator.delegate = self.purchases
 

@@ -22,11 +22,16 @@ class OfflineCustomerInfoCreator {
 
     private let purchasedProductsFetcher: PurchasedProductsFetcherType
     private let productEntitlementMappingFetcher: ProductEntitlementMappingFetcher
+    private let tracker: DiagnosticsTrackerType?
     private let creator: Creator
 
-    static func createPurchasedProductsFetcherIfAvailable() -> PurchasedProductsFetcherType? {
+    static func createPurchasedProductsFetcherIfAvailable(
+        diagnosticsTracker: DiagnosticsTrackerType?
+    ) -> PurchasedProductsFetcherType? {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            return PurchasedProductsFetcher()
+            return PurchasedProductsFetcher(
+                storeKit2TransactionFetcher: StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
+            )
         } else {
             return nil
         }
@@ -35,6 +40,7 @@ class OfflineCustomerInfoCreator {
     static func createIfAvailable(
         with purchasedProductsFetcher: PurchasedProductsFetcherType?,
         productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
+        tracker: DiagnosticsTrackerType?,
         observerMode: Bool
     ) -> OfflineCustomerInfoCreator? {
         guard let fetcher = purchasedProductsFetcher, !observerMode else {
@@ -43,14 +49,17 @@ class OfflineCustomerInfoCreator {
         }
 
         return .init(purchasedProductsFetcher: fetcher,
-                     productEntitlementMappingFetcher: productEntitlementMappingFetcher)
+                     productEntitlementMappingFetcher: productEntitlementMappingFetcher,
+                     tracker: tracker)
     }
 
     convenience init(purchasedProductsFetcher: PurchasedProductsFetcherType,
-                     productEntitlementMappingFetcher: ProductEntitlementMappingFetcher) {
+                     productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
+                     tracker: DiagnosticsTrackerType?) {
         self.init(
             purchasedProductsFetcher: purchasedProductsFetcher,
             productEntitlementMappingFetcher: productEntitlementMappingFetcher,
+            tracker: tracker,
             creator: { products, mapping, userID in
                 CustomerInfo(from: products, mapping: mapping, userID: userID)
             }
@@ -60,34 +69,63 @@ class OfflineCustomerInfoCreator {
     init(
         purchasedProductsFetcher: PurchasedProductsFetcherType,
         productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
+        tracker: DiagnosticsTrackerType?,
         creator: @escaping Creator
     ) {
         self.purchasedProductsFetcher = purchasedProductsFetcher
         self.productEntitlementMappingFetcher = productEntitlementMappingFetcher
+        self.tracker = tracker
         self.creator = creator
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func create(for userID: String) async throws -> CustomerInfo {
-        Logger.info(Strings.offlineEntitlements.computing_offline_customer_info)
+        do {
+            Logger.info(Strings.offlineEntitlements.computing_offline_customer_info)
 
-        guard let mapping = self.productEntitlementMappingFetcher.productEntitlementMapping else {
-            Logger.warn(Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping)
-            throw Error.noEntitlementMappingAvailable
+            guard let mapping = self.productEntitlementMappingFetcher.productEntitlementMapping else {
+                Logger.warn(Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping)
+                throw Error.noEntitlementMappingAvailable
+            }
+
+            let products = try await self.purchasedProductsFetcher.fetchPurchasedProducts()
+
+            let offlineCustomerInfo = creator(products, mapping, userID)
+
+            self.tracker?.trackEnteredOfflineEntitlementsMode()
+
+            Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(
+                products, offlineCustomerInfo.entitlements
+            ))
+            Logger.debug(Strings.offlineEntitlements.computed_offline_customer_info_details(
+                products, offlineCustomerInfo.entitlements
+            ))
+
+            return offlineCustomerInfo
+        } catch {
+            let reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason
+            let errorMessage: String
+            switch error {
+            case let productsFetcherError as PurchasedProductsFetcher.Error:
+                switch productsFetcherError {
+                case .foundConsumablePurchase:
+                    reason = .oneTimePurchaseFound
+                    errorMessage = productsFetcherError.errorUserInfo[NSLocalizedDescriptionKey] as? String ?? ""
+                }
+            case let offlineCustomerInfoCreatorError as OfflineCustomerInfoCreator.Error:
+                switch offlineCustomerInfoCreatorError {
+                case .noEntitlementMappingAvailable:
+                    reason = .noEntitlementMappingAvailable
+                    errorMessage = offlineCustomerInfoCreatorError.description
+                }
+            default:
+                reason = .unknown
+                errorMessage = error.localizedDescription
+            }
+
+            self.tracker?.trackErrorEnteringOfflineEntitlementsMode(reason: reason, errorMessage: errorMessage)
+            throw error
         }
-
-        let products = try await self.purchasedProductsFetcher.fetchPurchasedProducts()
-
-        let offlineCustomerInfo = creator(products, mapping, userID)
-
-        Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(
-            products, offlineCustomerInfo.entitlements
-        ))
-        Logger.debug(Strings.offlineEntitlements.computed_offline_customer_info_details(
-            products, offlineCustomerInfo.entitlements
-        ))
-
-        return offlineCustomerInfo
     }
 
 }

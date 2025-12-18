@@ -45,7 +45,7 @@ class DebugViewSwiftUITests: TestCase {
             verificationMode: "Enforced",
             receiptURL: URL(string: "file://receipt")
         ))
-        model.diagnosticsResult = .loaded(())
+        model.diagnosticsResult = .loaded(.init(status: .healthy(warnings: [])))
         model.customerInfo = .loaded(try Self.mockCustomerInfo)
         model.currentAppUserID = "Nacho"
         model.offerings = .loaded(.init(

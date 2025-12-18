@@ -237,6 +237,10 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
         }
     }
     #endif
+    Task {
+        let _: RevenueCat.Storefront? = await purchases.getStorefront()
+        purchases.getStorefront { (_: RevenueCat.Storefront?) in }
+    }
 }
 
 @available(*, deprecated) // Ignore deprecation warnings

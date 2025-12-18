@@ -118,7 +118,6 @@ extension EventsRequest {
         var path: String
         var url: String?
         var surveyOptionID: String
-        var surveyOptionTitleKey: String
         var additionalContext: String?
         var revisionId: Int
 
@@ -134,7 +133,6 @@ extension EventsRequest {
              path: CustomerCenterConfigData.HelpPath.PathType,
              url: URL?,
              surveyOptionID: String,
-             surveyOptionTitleKey: String,
              additionalContext: String?,
              revisionId: Int) {
             self.id = id
@@ -150,7 +148,6 @@ extension EventsRequest {
             self.path = path.rawValue
             self.url = url?.absoluteString
             self.surveyOptionID = surveyOptionID
-            self.surveyOptionTitleKey = surveyOptionTitleKey
             self.additionalContext = additionalContext
             self.revisionId = revisionId
         }
@@ -188,7 +185,6 @@ extension EventsRequest {
                 path: data.path,
                 url: data.url,
                 surveyOptionID: data.surveyOptionID,
-                surveyOptionTitleKey: data.surveyOptionTitleKey,
                 additionalContext: data.additionalContext,
                 revisionId: data.revisionID
             )
@@ -252,7 +248,6 @@ extension EventsRequest.CustomerCenterAnswerSubmittedEventRequest: Encodable {
         case path
         case url
         case surveyOptionID = "surveyOptionId"
-        case surveyOptionTitleKey = "surveyOptionTitleKey"
         case additionalContext = "additionalContext"
         case revisionId = "revisionId"
 

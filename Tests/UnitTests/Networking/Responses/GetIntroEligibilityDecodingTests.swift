@@ -22,7 +22,7 @@ class GetIntroEligibilityDecodingTests: BaseHTTPResponseTest {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.response = try self.decodeFixture("GetIntroEligibility")
+        self.response = try Self.decodeFixture("GetIntroEligibility")
     }
 
     func testResponseDataIsCorrect() throws {

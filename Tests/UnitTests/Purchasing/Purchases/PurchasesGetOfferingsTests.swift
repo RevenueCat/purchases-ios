@@ -127,7 +127,8 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
             identifier: "offering",
             serverDescription: "",
             paywall: nil,
-            availablePackages: []
+            availablePackages: [],
+            webCheckoutUrl: nil
         )
         let offerings = Offerings(
             offerings: [
@@ -140,7 +141,11 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         )
 
         self.systemInfo.stubbedIsApplicationBackgrounded = false
-        self.mockOfferingsManager.stubbedUpdateOfferingsCompletionResult = .success(offerings)
+        self.mockOfferingsManager.stubbedUpdateOfferingsCompletionResult = .success(
+            OfferingsResultData(offerings: offerings,
+                                requestedProductIds: [offering.identifier],
+                                notFoundProductIds: [])
+        )
 
         self.setupPurchases()
 

@@ -44,6 +44,7 @@ struct PromotionalOfferView: View {
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
          promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
+         purchasesProvider: CustomerCenterPurchasesType,
          onDismissPromotionalOfferView: @escaping (PromotionalOfferViewAction) -> Void
     ) {
         _viewModel = StateObject(wrappedValue: PromotionalOfferViewModel(
@@ -51,7 +52,8 @@ struct PromotionalOfferView: View {
                 promotionalOffer: promotionalOffer,
                 product: product,
                 promoOfferDetails: promoOfferDetails
-            )
+            ),
+            purchasesProvider: purchasesProvider
         ))
         self.onDismissPromotionalOfferView = onDismissPromotionalOfferView
     }
@@ -93,9 +95,15 @@ struct PromotionalOfferView: View {
                 }
             }
         }
+        .navigationBarBackButtonHidden(true)
+        .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
         .onAppear {
             self.viewModel.onPromotionalOfferPurchaseFlowComplete = self.dismissPromotionalOfferView
         }
+    }
+
+    private var tintColor: Color? {
+        Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
     }
 
     // Called when the promotional offer flow is purchased, successfully or not
@@ -224,6 +232,7 @@ struct PromoOfferButtonView: View {
                     }
                 }
             }
+            .accessibilityIdentifier("promo-offer-primary-button")
             .buttonStyle(ProminentButtonStyle())
             .padding(.horizontal)
             .disabled(isLoading)

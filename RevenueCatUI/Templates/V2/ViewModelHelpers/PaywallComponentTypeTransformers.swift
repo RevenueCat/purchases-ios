@@ -229,6 +229,20 @@ extension PaywallComponent.Padding {
 
 }
 
+extension EdgeInsets {
+    func extend(by amount: CGFloat) -> EdgeInsets {
+        if amount == 0 {
+            return self
+        }
+        return .init(
+            top: self.top + amount,
+            leading: self.leading + amount,
+            bottom: self.bottom + amount,
+            trailing: self.trailing + amount
+        )
+    }
+}
+
 extension PaywallComponent.FitMode {
     var contentMode: ContentMode {
         switch self {

@@ -51,7 +51,8 @@ class TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests: StoreKitConfigTestC
             backend: self.mockBackend,
             currentUserProvider: userProvider,
             operationDispatcher: mockOperationDispatcher,
-            productsManager: self.mockProductsManager
+            productsManager: self.mockProductsManager,
+            diagnosticsTracker: nil
         )
     }
 

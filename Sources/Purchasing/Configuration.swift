@@ -11,6 +11,8 @@
 //
 //  Created by Joshua Liebowitz on 5/6/22.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 /**
@@ -70,10 +72,21 @@ import Foundation
         self.diagnosticsEnabled = builder.diagnosticsEnabled
     }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
     @objc public static func builder(withAPIKey apiKey: String) -> Builder {
         return Builder(withAPIKey: apiKey)
     }
+
+    #else
+
+    /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
+    @objc public static func builder(withAPIKey apiKey: String, appUserID: String) -> Builder {
+        return Builder(withAPIKey: apiKey, appUserID: appUserID)
+    }
+
+    #endif
 
     /// The Builder for ```Configuration```.
     @objc(RCConfigurationBuilder) public class Builder: NSObject {
@@ -101,6 +114,8 @@ import Foundation
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
 
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
         /**
          * Create a new builder with your API key.
          * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
@@ -109,12 +124,27 @@ import Foundation
             self.apiKey = apiKey
         }
 
+        #else
+
+        /**
+         * Create a new builder with your API key.
+         * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+         */
+        @objc public init(withAPIKey apiKey: String, appUserID: String) {
+            self.apiKey = apiKey
+            self.appUserID = appUserID
+            self.dangerousSettings = DangerousSettings(customEntitlementComputation: true)
+        }
+
+        #endif
+
         /// Update your API key.
         @objc public func with(apiKey: String) -> Builder {
             self.apiKey = apiKey
             return self
         }
 
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         /**
          * Set an `appUserID`.
          * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
@@ -194,6 +224,8 @@ import Foundation
             return self
         }
 
+        #endif
+
         /// Set `showStoreMessagesAutomatically`. Enabled by default.
         /// If enabled, if the user has billing issues, has yet to accept a price increase consent, is eligible for a
         /// win-back offer, or there are other messages from StoreKit, they will be displayed automatically when
@@ -210,6 +242,8 @@ import Foundation
             self.showStoreMessagesAutomatically = showStoreMessagesAutomatically
             return self
         }
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
         /// Set ``Configuration/EntitlementVerificationMode``.
         ///
@@ -246,6 +280,8 @@ import Foundation
             self.diagnosticsEnabled = diagnosticsEnabled
             return self
         }
+
+        #endif
 
         /// Set ``StoreKitVersion``.
         ///

@@ -77,7 +77,8 @@ struct PackageComponentView_Previews: PreviewProvider {
         return .init(identifier: "weekly",
                      packageType: .weekly,
                      storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
+                     offeringIdentifier: "default",
+                     webCheckoutUrl: nil)
     }
 
     static let packageContext = PackageContext(
@@ -154,7 +155,8 @@ struct PackageComponentView_Previews: PreviewProvider {
                 ),
                 offering: .init(identifier: "default",
                                 serverDescription: "",
-                                availablePackages: [package])
+                                availablePackages: [package],
+                                webCheckoutUrl: nil)
             ), onDismiss: {}
         )
         .previewRequiredEnvironmentProperties(
@@ -181,7 +183,8 @@ struct PackageComponentView_Previews: PreviewProvider {
                 ),
                 offering: .init(identifier: "default",
                                 serverDescription: "",
-                                availablePackages: [package])
+                                availablePackages: [package],
+                                webCheckoutUrl: nil)
             ), onDismiss: {}
         )
         .previewRequiredEnvironmentProperties(

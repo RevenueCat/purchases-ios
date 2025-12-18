@@ -25,6 +25,7 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
 
     private let internalAPI: InternalAPI
     private let handler: DiagnosticsFileHandlerType
+    private let tracker: DiagnosticsTrackerType?
     private let userDefaults: SynchronizedUserDefaults
 
     private var syncInProgress = false
@@ -32,10 +33,12 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
     init(
         internalAPI: InternalAPI,
         handler: DiagnosticsFileHandlerType,
+        tracker: DiagnosticsTrackerType?,
         userDefaults: SynchronizedUserDefaults
     ) {
         self.internalAPI = internalAPI
         self.handler = handler
+        self.tracker = tracker
         self.userDefaults = userDefaults
     }
 
@@ -48,15 +51,17 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
         self.syncInProgress = true
         defer { self.syncInProgress = false }
 
-        let events = await self.handler.getEntries()
-        let count = events.count
+        let optionalEvents = await self.handler.getEntries()
+        let count = optionalEvents.count
 
-        guard !events.isEmpty else {
+        guard !optionalEvents.isEmpty else {
             Logger.verbose(Strings.diagnostics.event_sync_with_empty_store)
             return
         }
 
         Logger.verbose(Strings.diagnostics.event_sync_starting(count: count))
+
+        let events = optionalEvents.compactMap { $0 }
 
         do {
             try await self.internalAPI.postDiagnosticsEvents(events: events)
@@ -68,22 +73,38 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
             Logger.error(Strings.diagnostics.could_not_synchronize_diagnostics(error: error))
 
             if let backendError = error as? BackendError,
-               backendError.successfullySynced {
-                await self.handler.cleanSentDiagnostics(diagnosticsSentCount: count)
-                self.clearSyncRetries()
-            } else {
+               backendError.shouldRetryDiagnosticsSync {
                 let currentSyncRetries = self.getCurrentSyncRetries()
 
                 if currentSyncRetries >= Self.maxSyncRetries {
                     Logger.error(Strings.diagnostics.failed_diagnostics_sync_more_than_max_retries)
                     await self.handler.emptyDiagnosticsFile()
+                    self.tracker?.trackMaxDiagnosticsSyncRetriesReached()
                     self.clearSyncRetries()
                 } else {
                     self.increaseSyncRetries(currentRetries: currentSyncRetries)
                 }
+            } else {
+                await self.handler.cleanSentDiagnostics(diagnosticsSentCount: count)
+                self.tracker?.trackClearingDiagnosticsAfterFailedSync()
+                self.clearSyncRetries()
             }
 
             throw error
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension DiagnosticsSynchronizer: DiagnosticsFileHandlerDelegate {
+
+    func onFileSizeIncreasedBeyondAutomaticSyncLimit() async {
+        Logger.verbose(Strings.diagnostics.syncing_events_due_to_enough_file_size_reached)
+        do {
+            try await self.syncDiagnosticsIfNeeded()
+        } catch {
+            Logger.error(Strings.diagnostics.could_not_synchronize_diagnostics(error: error))
         }
     }
 
@@ -113,6 +134,25 @@ private extension DiagnosticsSynchronizer {
     func getCurrentSyncRetries() -> Int {
         return self.userDefaults.read {
             $0.integer(forKey: CacheKeys.numberOfRetries.rawValue)
+        }
+    }
+
+}
+
+private extension BackendError {
+
+    var shouldRetryDiagnosticsSync: Bool {
+        guard case .networkError(let networkError) = self else {
+            return false
+        }
+
+        switch networkError {
+        case .networkError:
+            return true
+        case .errorResponse(_, let statusCode, _):
+            return statusCode.isServerError
+        default:
+            return false
         }
     }
 

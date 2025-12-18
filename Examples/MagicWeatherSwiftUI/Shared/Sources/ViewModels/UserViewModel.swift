@@ -13,7 +13,7 @@ import SwiftUI
 class UserViewModel: ObservableObject {
     static let shared = UserViewModel()
     
-    /* The latest CustomerInfo from RevenueCat. Updated by PurchasesDelegate whenever the Purchases SDK updates the cache */
+    /* The latest CustomerInfo from RevenueCat. Updated by the `customerInfoStream` in the initializer. */
     @Published var customerInfo: CustomerInfo? {
         didSet {
             subscriptionActive = customerInfo?.entitlements[Constants.entitlementID]?.isActive == true
@@ -25,6 +25,15 @@ class UserViewModel: ObservableObject {
     
     /* Set from the didSet method of customerInfo above, based on the entitlement set in Constants.swift */
     @Published var subscriptionActive: Bool = false
+    
+    private init() {
+        /* Listen to changes in the `customerInfo` object using an `AsyncStream` */
+        Task {
+            for await newCustomerInfo in Purchases.shared.customerInfoStream {
+                await MainActor.run { customerInfo = newCustomerInfo }
+            }
+        }
+    }
     
     /*
      How to login and identify your users with the Purchases SDK.

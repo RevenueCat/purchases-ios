@@ -50,9 +50,7 @@ struct TextComponentView: View {
             )
         ) { style in
             if style.visible {
-                Text(.init(style.text))
-                    .font(style.font)
-                    .fontWeight(style.fontWeight)
+                NonLocalizedMarkdownText(text: style.text, font: style.font, fontWeight: style.fontWeight)
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
@@ -67,7 +65,58 @@ struct TextComponentView: View {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+/// Parses markdown using AttributedString and does not use bundle assets for localization
+private struct NonLocalizedMarkdownText: View {
+
+    let text: String
+    let font: Font
+    let fontWeight: Font.Weight
+
+    var markdownText: AttributedString? {
+        #if swift(>=5.7)
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return try? AttributedString(
+                markdown: self.text,
+                // We want to only process inline markdown, preserving line feeds in the original text.
+                options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
+            )
+        } else {
+            return nil
+        }
+        #else
+        return nil
+        #endif
+    }
+
+    var body: some View {
+        #if swift(>=5.7)
+        Group {
+            if let markdownText = self.markdownText {
+                // Use markdown if we can successfully parse it
+                Text(markdownText)
+                    .font(self.font)
+                    .fontWeight(self.fontWeight)
+            } else {
+                // Display text as is because markdown is priority
+                Text(self.text)
+                    .font(self.font)
+                    .fontWeight(self.fontWeight)
+            }
+        }
+        #else
+        // Display text as is because markdown is priority
+        Text(self.text)
+            .font(self.font)
+            .fontWeight(self.fontWeight)
+        #endif
+    }
+}
+
 #if DEBUG
+
+// Needed for Xcode 14 since there are more than 10 previews
+#if swift(>=5.9)
 
 // swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -94,6 +143,70 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default")
+
+        // Markdown
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        // swiftlint:disable:next line_length
+                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n[RevenueCat](https://revenuecat.com)")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Markdown")
+
+        // Markdown - Invalid
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world\n**bold\n_italic\n`code \n[RevenueCat](https://revenuecat.com")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Markdown - Invalid")
+
+        // Blank line
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Before blank line.\n\nAfter blank line.")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Blank line")
 
         // Custom Font
         VStack {
@@ -544,6 +657,8 @@ struct TextComponentView_Previews: PreviewProvider {
 
     }
 }
+
+#endif
 
 #endif
 

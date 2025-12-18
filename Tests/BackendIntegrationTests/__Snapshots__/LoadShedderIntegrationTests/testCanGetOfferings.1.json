@@ -10,6 +10,10 @@
       },
       "packages" : [
         {
+          "identifier" : "$rc_lifetime",
+          "platform_product_identifier" : "lifetime"
+        },
+        {
           "identifier" : "$rc_monthly",
           "platform_product_identifier" : "com.revenuecat.loadShedder.monthly"
         }
@@ -97,6 +101,20 @@
         {
           "identifier" : "$rc_monthly",
           "platform_product_identifier" : "com.revenuecat.loadShedder.monthly"
+        }
+      ],
+      "paywall" : null
+    },
+    {
+      "description" : "Consumables",
+      "identifier" : "coins",
+      "metadata" : {
+
+      },
+      "packages" : [
+        {
+          "identifier" : "10.coins",
+          "platform_product_identifier" : "consumable.10_coins"
         }
       ],
       "paywall" : null

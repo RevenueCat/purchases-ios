@@ -22,7 +22,7 @@ class PaywallDataDecodingTests: BaseHTTPResponseTest {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.response = try self.decodeFixture("Offerings")
+        self.response = try Self.decodeFixture("Offerings")
     }
 
     func testDecodesPaywallData() throws {

@@ -32,7 +32,7 @@ extension Data {
     var uuid: UUID? {
         /// This implementation is equivalent to `return NSUUID(uuidBytes: [UInt8](self)) as UUID`
         /// but ensures that the `Data` isn't unnecessarily copied in memory.
-        return self.withUnsafeBytes {
+        return self.dataWithMinLengthForUUID.withUnsafeBytes {
             guard let baseAddress = $0.bindMemory(to: UInt8.self).baseAddress else {
                 return nil
             }
@@ -65,6 +65,13 @@ extension Data {
             .joined()
     }
 
+    private var dataWithMinLengthForUUID: Data {
+        let uuidMemorySize = MemoryLayout<UUID>.size
+        guard self.count >= uuidMemorySize else {
+            return self + Data(count: uuidMemorySize - self.count)
+        }
+        return self
+    }
 }
 
 extension Data {

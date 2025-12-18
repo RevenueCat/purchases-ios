@@ -22,7 +22,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.response = try self.decodeFixture("OfferingsWithPaywallComponents")
+        self.response = try Self.decodeFixture("OfferingsWithPaywallComponents")
     }
 
     func testDecodesPaywallComponentsNoDraftPaywallComponents() throws {
@@ -61,6 +61,26 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(components.componentsConfig.base.stack.spacing) == 16
         expect(components.componentsConfig.base.stack.dimension) == .vertical(.center, .center)
         expect(components.componentsConfig.base.stack.components).to(haveCount(1))
+
+        let draftComponents = try XCTUnwrap(offering.draftPaywallComponents)
+        expect(draftComponents.templateName) == "newComponentsTEST"
+        expect(draftComponents.revision) == 4
+        expect(draftComponents.componentsConfig.base.background) == .color(.init(light: .hex("#110000ff"), dark: nil))
+        expect(draftComponents.componentsConfig.base.stickyFooter) == nil
+        expect(draftComponents.componentsConfig.base.stack.spacing) == 0
+        expect(draftComponents.componentsConfig.base.stack.dimension) == .vertical(.leading, .end)
+        expect(draftComponents.componentsConfig.base.stack.components).to(haveCount(1))
+    }
+
+    func testDecodesPaywallComponentsWithOnlyDraftPaywallComponents() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 2])
+
+        expect(offering.identifier) == "only_draft_paywall_components"
+        expect(offering.description) == "Offering with only draft paywall"
+        expect(offering.metadata) == [:]
+        expect(offering.packages).to(haveCount(1))
+
+        XCTAssertNil(offering.paywallComponents)
 
         let draftComponents = try XCTUnwrap(offering.draftPaywallComponents)
         expect(draftComponents.templateName) == "newComponentsTEST"

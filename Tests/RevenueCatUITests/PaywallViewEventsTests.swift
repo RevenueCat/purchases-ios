@@ -10,6 +10,7 @@
 //  PaywallViewEventsTests.swift
 //
 //  Created by Nacho Soto on 9/7/23.
+// swiftlint:disable type_name
 
 import Nimble
 import RevenueCat
@@ -20,14 +21,38 @@ import XCTest
 #if !os(watchOS) && !os(macOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class PaywallViewEventsFullscreenLightModeTests: BasePaywallViewEventsTests {
+    override var mode: PaywallViewMode { .fullScreen }
+    override var scheme: ColorScheme { .light }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class PaywallViewEventsFooterDarkModeTests: BasePaywallViewEventsTests {
+    override var mode: PaywallViewMode { .footer }
+    override var scheme: ColorScheme { .dark }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-class PaywallViewEventsTests: TestCase {
+class BasePaywallViewEventsTests: TestCase {
+
+    // To be overridden by subclasses
+    var mode: PaywallViewMode { fatalError("Must override") }
+    var scheme: ColorScheme { fatalError("Must override") }
 
     private var events: [PaywallEvent] = []
     private var handler: PurchaseHandler!
 
-    private let mode: PaywallViewMode = .random
-    private let scheme: ColorScheme = Bool.random() ? .dark : .light
+    /// Prevents XCTest from running this base class directly.
+    /// This class is intended to be subclassed for concrete test cases,
+    /// each providing their own `mode` and `scheme` configurations.
+    /// By returning an empty test suite for the base class,
+    /// we ensure that shared test logic is only executed through subclasses.
+    override class var defaultTestSuite: XCTestSuite {
+        return self == BasePaywallViewEventsTests.self
+            ? XCTestSuite(name: "BasePaywallViewEventsTests")
+            : super.defaultTestSuite
+    }
 
     private var closeEventExpectation: XCTestExpectation!
     override func setUp() {
@@ -109,7 +134,7 @@ class PaywallViewEventsTests: TestCase {
 // MARK: -
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallViewEventsTests {
+private extension BasePaywallViewEventsTests {
 
     /// Invokes `createView` and runs the given `closure` during the lifetime of the view.
     /// Returns after the view has been completly removed from the hierarchy.
@@ -120,6 +145,9 @@ private extension PaywallViewEventsTests {
         try await Task {
             let dispose = try self.createView()
                 .addToHierarchy()
+
+            try await Task.sleep(nanoseconds: 3 * 1_000_000)
+
             try await closure()
             dispose()
         }.value
@@ -157,7 +185,7 @@ private extension PaywallViewEventsTests {
     }
 
     func waitForCloseEvent() async {
-        await self.fulfillment(of: [self.closeEventExpectation], timeout: 1)
+        await self.fulfillment(of: [self.closeEventExpectation], timeout: 3)
     }
 
 }

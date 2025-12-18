@@ -300,7 +300,9 @@ private enum FamilySharingTogglePreview {
                                     topTrailing: 16,
                                     bottomLeading: 16,
                                     bottomTrailing: 16))
-        )
+        ),
+        action: .inAppCheckout,
+        method: .inAppCheckout
     )
 
     static let purchaseButtonStack = PaywallComponent.StackComponent(
@@ -387,7 +389,8 @@ struct FamilySharingTogglePreview_Previews: PreviewProvider {
                                 PreviewMock.monthlyStandardPackage,
                                 PreviewMock.weeklyPremiumPackage,
                                 PreviewMock.monthlyPremiumPackage
-                               ]),
+                               ],
+                               webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,

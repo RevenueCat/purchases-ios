@@ -26,6 +26,7 @@ class OfferingsManagerTests: TestCase {
     var mockOfferings: MockOfferingsAPI!
     let mockOfferingsFactory = MockOfferingsFactory()
     var mockProductsManager: MockProductsManager!
+    var mockDiagnosticsTracker: DiagnosticsTrackerType!
     var offeringsManager: OfferingsManager!
 
     override func setUpWithError() throws {
@@ -35,12 +36,18 @@ class OfferingsManagerTests: TestCase {
         self.mockProductsManager = MockProductsManager(diagnosticsTracker: nil,
                                                        systemInfo: self.mockSystemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.mockDiagnosticsTracker = MockDiagnosticsTracker()
+        } else {
+            self.mockDiagnosticsTracker = nil
+        }
         self.offeringsManager = OfferingsManager(deviceCache: self.mockDeviceCache,
                                                  operationDispatcher: self.mockOperationDispatcher,
                                                  systemInfo: self.mockSystemInfo,
                                                  backend: self.mockBackend,
                                                  offeringsFactory: self.mockOfferingsFactory,
-                                                 productsManager: self.mockProductsManager)
+                                                 productsManager: self.mockProductsManager,
+                                                 diagnosticsTracker: self.mockDiagnosticsTracker)
     }
 
 }
@@ -232,7 +239,7 @@ extension OfferingsManagerTests {
         // then
         expect(result).to(beFailure())
 
-        let error = try XCTUnwrap(logger.messages.filter { $0.level == .error }.onlyElement)
+        let error = try XCTUnwrap(logger.messages.filter { $0.level == .error }.first)
 
         expect(error.message) == [
             LogIntent.appleError.prefix,
@@ -492,7 +499,8 @@ extension OfferingsManagerTests {
             systemInfo: mockSystemInfoWithPreviewMode,
             backend: self.mockBackend,
             offeringsFactory: self.mockOfferingsFactory,
-            productsManager: self.mockProductsManager
+            productsManager: self.mockProductsManager,
+            diagnosticsTracker: self.mockDiagnosticsTracker
         )
 
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
@@ -524,7 +532,8 @@ extension OfferingsManagerTests {
             systemInfo: mockSystemInfoWithPreviewMode,
             backend: self.mockBackend,
             offeringsFactory: self.mockOfferingsFactory,
-            productsManager: self.mockProductsManager
+            productsManager: self.mockProductsManager,
+            diagnosticsTracker: self.mockDiagnosticsTracker
         )
 
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
@@ -555,7 +564,8 @@ extension OfferingsManagerTests {
             systemInfo: mockSystemInfoWithPreviewMode,
             backend: self.mockBackend,
             offeringsFactory: self.mockOfferingsFactory,
-            productsManager: self.mockProductsManager
+            productsManager: self.mockProductsManager,
+            diagnosticsTracker: self.mockDiagnosticsTracker
         )
 
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
@@ -581,6 +591,120 @@ extension OfferingsManagerTests {
 
 }
 
+// MARK: - Diagnostics tracking
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension OfferingsManagerTests {
+
+    func testOfferingsTracksOfferingsStartAndResultEvent() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // given
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.mockDiagnosticsTracker as! MockDiagnosticsTracker
+
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+
+        // when
+        _ = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(mockDiagnosticsTracker.trackedOfferingsStartedCount.value) == 1
+        expect(mockDiagnosticsTracker.trackedOfferingsResultParams.value.count) == 1
+        let params = try XCTUnwrap(mockDiagnosticsTracker.trackedOfferingsResultParams.value.first)
+        expect(params.requestedProductIds) == ["monthly_freetrial"]
+        expect(params.notFoundProductIds) == []
+        expect(params.errorMessage) == nil
+        expect(params.errorCode) == nil
+        expect(params.verificationResult) == nil
+        expect(params.cacheStatus) == .notFound
+        expect(params.responseTime) >= 0
+    }
+
+    func testOfferingsTracksOfferingsResultEventWhenObtainingOfferingsFromCache() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // given
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.mockDiagnosticsTracker as! MockDiagnosticsTracker
+
+        self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
+        self.mockDeviceCache.stubbedOfferingCacheStatus = .valid
+
+        // when
+        _ = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(mockDiagnosticsTracker.trackedOfferingsResultParams.value.count) == 1
+        let params = try XCTUnwrap(mockDiagnosticsTracker.trackedOfferingsResultParams.value.first)
+        expect(params.requestedProductIds) == nil
+        expect(params.notFoundProductIds) == nil
+        expect(params.errorMessage) == nil
+        expect(params.errorCode) == nil
+        expect(params.verificationResult) == nil
+        expect(params.cacheStatus) == .valid
+        expect(params.responseTime) >= 0
+    }
+
+    func testOfferingsTracksOfferingsResultEventCorrectlyWhenFetchCurrent() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // given
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.mockDiagnosticsTracker as! MockDiagnosticsTracker
+
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+
+        // when
+        _ = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID, fetchCurrent: true) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(mockDiagnosticsTracker.trackedOfferingsStartedCount.value) == 1
+        expect(mockDiagnosticsTracker.trackedOfferingsResultParams.value.count) == 1
+        let params = try XCTUnwrap(mockDiagnosticsTracker.trackedOfferingsResultParams.value.first)
+        expect(params.requestedProductIds) == ["monthly_freetrial"]
+        expect(params.notFoundProductIds) == []
+        expect(params.errorMessage) == nil
+        expect(params.errorCode) == nil
+        expect(params.verificationResult) == nil
+        expect(params.cacheStatus) == .notChecked
+        expect(params.responseTime) >= 0
+    }
+
+    func testOfferingsDoesNotTrackEventsIfDiagnosticsTrackingDisabled() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // given
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.mockDiagnosticsTracker as! MockDiagnosticsTracker
+
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+
+        // when
+        _ = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID, trackDiagnostics: false) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(mockDiagnosticsTracker.trackedOfferingsStartedCount.value) == 0
+        expect(mockDiagnosticsTracker.trackedOfferingsResultParams.value.count) == 0
+    }
+}
+
 private extension OfferingsManagerTests {
 
     enum MockData {
@@ -592,8 +716,11 @@ private extension OfferingsManagerTests {
                 .init(identifier: "base",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
-                      ])
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "monthly_freetrial",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
             ],
             placements: nil,
             targeting: nil,
@@ -605,9 +732,14 @@ private extension OfferingsManagerTests {
                 .init(identifier: "base",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial"),
-                        .init(identifier: "$rc_yearly", platformProductIdentifier: "yearly_freetrial")
-                      ])
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "monthly_freetrial",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "$rc_yearly",
+                              platformProductIdentifier: "yearly_freetrial",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
             ],
             placements: nil,
             targeting: nil,
@@ -630,9 +762,11 @@ private extension OfferingsManagerTests {
                                     storeProduct: StoreProduct(sk1Product: MockSK1Product(
                                         mockProductIdentifier: package.platformProductIdentifier
                                     )),
-                                    offeringIdentifier: offering.identifier
+                                    offeringIdentifier: offering.identifier,
+                                    webCheckoutUrl: nil
                                 )
-                        }
+                        },
+                        webCheckoutUrl: nil
                     )
                 }
                 .dictionaryWithKeys(\.identifier),

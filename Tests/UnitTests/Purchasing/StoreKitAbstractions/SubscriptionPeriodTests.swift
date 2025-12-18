@@ -141,7 +141,7 @@ class SubscriptionPeriodTests: TestCase {
 
         let expectations: [(
             inputValue: Int, inputUnit: SKProduct.PeriodUnit,
-            expectedValue: Int, expectedUnit: SubscriptionPeriod.Unit
+            expectedValue: Int, expectedUnit: RevenueCat.SubscriptionPeriod.Unit
         )] = [
             // Test day simplification
             (1, .day, 1, .day),
@@ -222,17 +222,17 @@ extension SKProductSubscriptionPeriod {
 
 private extension SubscriptionPeriodTests {
 
-    func p(_ value: Int, _ unit: SubscriptionPeriod.Unit) -> SubscriptionPeriod {
+    func p(_ value: Int, _ unit: RevenueCat.SubscriptionPeriod.Unit) -> RevenueCat.SubscriptionPeriod {
         return .init(value: value, unit: unit)
     }
 
     struct Test {
-        var period: SubscriptionPeriod
+        var period: RevenueCat.SubscriptionPeriod
         var price: Decimal
         var expected: Decimal
         var line: UInt
 
-        init(_ period: SubscriptionPeriod, _ price: Decimal, _ expected: Decimal, line: UInt = #line) {
+        init(_ period: RevenueCat.SubscriptionPeriod, _ price: Decimal, _ expected: Decimal, line: UInt = #line) {
             self.period = period
             self.price = price
             self.expected = expected

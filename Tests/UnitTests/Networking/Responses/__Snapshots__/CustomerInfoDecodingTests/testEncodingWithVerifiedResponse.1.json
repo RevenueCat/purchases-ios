@@ -1,28 +1,28 @@
 {
   "entitlement_verification" : 1,
-  "request_date" : 668454178,
+  "request_date" : "2022-03-08T17:42:58Z",
   "schema_version" : "3",
   "subscriber" : {
     "entitlements" : {
       "premium" : {
-        "expires_date" : -326323164,
+        "expires_date" : "1990-08-30T02:40:36Z",
         "product_identifier" : "com.revenuecat.monthly_4.99.1_week_intro",
-        "purchase_date" : -326323164
+        "purchase_date" : "1990-08-30T02:40:36Z"
       },
       "tip" : {
         "product_identifier" : "com.revenuecat.product.tip",
-        "purchase_date" : -323644764
+        "purchase_date" : "1990-09-30T02:40:36Z"
       }
     },
-    "first_seen" : 668454178,
+    "first_seen" : "2022-03-08T17:42:58Z",
     "management_url" : "https:\/\/apps.apple.com\/account\/subscriptions",
     "non_subscriptions" : {
       "com.revenuecat.product.tip" : [
         {
           "id" : "17459f5ff7",
           "is_sandbox" : false,
-          "original_purchase_date" : 668563468,
-          "purchase_date" : 666230608,
+          "original_purchase_date" : "2022-03-10T00:04:28Z",
+          "purchase_date" : "2022-02-11T00:03:28Z",
           "store" : "app_store",
           "store_transaction_id" : "340001090153249"
         }
@@ -30,24 +30,24 @@
     },
     "original_app_user_id" : "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1",
     "original_application_version" : "1.0",
-    "original_purchase_date" : 671414604,
+    "original_purchase_date" : "2022-04-12T00:03:24Z",
     "subscriptions" : {
       "com.revenuecat.ABCDNA12U.ProductName" : {
-        "expires_date" : 671414615,
+        "expires_date" : "2022-04-12T00:03:35Z",
         "is_sandbox" : true,
-        "original_purchase_date" : 671414608,
+        "original_purchase_date" : "2022-04-12T00:03:28Z",
         "ownership_type" : "PURCHASED",
         "period_type" : "intro",
-        "purchase_date" : 671414608,
+        "purchase_date" : "2022-04-12T00:03:28Z",
         "store" : "app_store"
       },
       "com.revenuecat.monthly_4.99.1_week_intro" : {
-        "expires_date" : 671414615,
+        "expires_date" : "2022-04-12T00:03:35Z",
         "is_sandbox" : true,
-        "original_purchase_date" : 671414608,
+        "original_purchase_date" : "2022-04-12T00:03:28Z",
         "ownership_type" : "PURCHASED",
         "period_type" : "intro",
-        "purchase_date" : 671414608,
+        "purchase_date" : "2022-04-12T00:03:28Z",
         "store" : "app_store"
       }
     }

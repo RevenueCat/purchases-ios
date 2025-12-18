@@ -733,12 +733,12 @@ SWIFT_CLASS_NAMED("Builder")
 
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
+- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
 @end
 
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
+- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
 @end
 
 /// Specifies the behavior for a caching API.
@@ -968,10 +968,10 @@ SWIFT_CLASS_NAMED("CustomerInfo")
 
 
 
+
 @interface RCCustomerInfo (SWIFT_EXTENSION(RevenueCat))
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, id> * _Nonnull rawData;
 @end
-
 
 @class RCStoreTransaction;
 
@@ -1315,9 +1315,22 @@ SWIFT_CLASS("_TtC10RevenueCat37GetProductEntitlementMappingOperation")
 
 
 
+SWIFT_CLASS("_TtC10RevenueCat23GetWebProductsOperation")
+@interface GetWebProductsOperation : CacheableNetworkOperation
+@end
+
+
+
+
 
 SWIFT_CLASS("_TtC10RevenueCat15HealthOperation")
 @interface HealthOperation : CacheableNetworkOperation
+@end
+
+
+
+SWIFT_CLASS("_TtC10RevenueCat21HealthReportOperation")
+@interface HealthReportOperation : CacheableNetworkOperation
 @end
 
 
@@ -1398,6 +1411,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCLogLevel, "LogLevel", open) {
 
 
 
+@class RCProductPaidPrice;
+
 /// Information that represents a non-subscription purchase made by a user.
 /// This can be one of these types of product:
 /// <ul>
@@ -1423,6 +1438,10 @@ SWIFT_CLASS_NAMED("NonSubscriptionTransaction")
 @property (nonatomic, readonly, copy) NSString * _Nonnull storeTransactionIdentifier;
 /// The <code>Store</code> where this transaction was performed.
 @property (nonatomic, readonly) enum RCStore store;
+/// Paid price for the subscription
+@property (nonatomic, readonly, strong) RCProductPaidPrice * _Nullable price;
+/// Whether or not the purchase was made in sandbox mode.
+@property (nonatomic, readonly) BOOL isSandbox;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
@@ -1471,6 +1490,8 @@ SWIFT_CLASS_NAMED("Offering")
 @property (nonatomic, readonly, strong) RCPackage * _Nullable monthly;
 /// Weekly <code>Package</code> type configured in the RevenueCat dashboard, if available.
 @property (nonatomic, readonly, strong) RCPackage * _Nullable weekly;
+/// The url to purchase this package on the web
+@property (nonatomic, readonly, copy) NSURL * _Nullable webCheckoutUrl;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 /// Retrieves a specific <code>Package</code> by identifier, use this to access custom package types configured in the
 /// RevenueCat dashboard, e.g. <code>offering.package(identifier: "custom_package_id")</code> or
@@ -1478,7 +1499,7 @@ SWIFT_CLASS_NAMED("Offering")
 - (RCPackage * _Nullable)packageWithIdentifier:(NSString * _Nullable)identifier SWIFT_WARN_UNUSED_RESULT;
 - (RCPackage * _Nullable)objectForKeyedSubscript:(NSString * _Nonnull)key SWIFT_WARN_UNUSED_RESULT;
 /// Initialize an <code>Offering</code> given a list of <code>Package</code>s.
-- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier serverDescription:(NSString * _Nonnull)serverDescription metadata:(NSDictionary<NSString *, id> * _Nonnull)metadata availablePackages:(NSArray<RCPackage *> * _Nonnull)availablePackages;
+- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier serverDescription:(NSString * _Nonnull)serverDescription metadata:(NSDictionary<NSString *, id> * _Nonnull)metadata availablePackages:(NSArray<RCPackage *> * _Nonnull)availablePackages webCheckoutUrl:(NSURL * _Nullable)webCheckoutUrl;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -1572,10 +1593,12 @@ SWIFT_CLASS_NAMED("Package")
 /// returns:
 /// <code>nil</code> if there is no <code>introductoryDiscount</code>.
 @property (nonatomic, readonly, copy) NSString * _Nullable localizedIntroductoryPriceString;
+/// The url to purchase this package on the web
+@property (nonatomic, readonly, copy) NSURL * _Nullable webCheckoutUrl;
 /// Initialize a <code>Package</code>.
-- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier packageType:(enum RCPackageType)packageType storeProduct:(RCStoreProduct * _Nonnull)storeProduct offeringIdentifier:(NSString * _Nonnull)offeringIdentifier;
+- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier packageType:(enum RCPackageType)packageType storeProduct:(RCStoreProduct * _Nonnull)storeProduct offeringIdentifier:(NSString * _Nonnull)offeringIdentifier webCheckoutUrl:(NSURL * _Nullable)webCheckoutUrl;
 /// Initialize a <code>Package</code>.
-- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier packageType:(enum RCPackageType)packageType storeProduct:(RCStoreProduct * _Nonnull)storeProduct presentedOfferingContext:(RCPresentedOfferingContext * _Nonnull)presentedOfferingContext OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier packageType:(enum RCPackageType)packageType storeProduct:(RCStoreProduct * _Nonnull)storeProduct presentedOfferingContext:(RCPresentedOfferingContext * _Nonnull)presentedOfferingContext webCheckoutUrl:(NSURL * _Nullable)webCheckoutUrl OBJC_DESIGNATED_INITIALIZER;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -1956,6 +1979,7 @@ SWIFT_CLASS_NAMED("PurchaserInfo") SWIFT_AVAILABILITY(macos,obsoleted=1,message=
 @end
 
 @protocol RCPurchasesDelegate;
+@class RCStorefront;
 @class NSError;
 @class RCWebPurchaseRedemption;
 
@@ -1965,6 +1989,20 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// The <code>appUserID</code> used by <code>Purchases</code>.
 /// If not passed on initialization this will be generated and cached by <code>Purchases</code>.
 @property (nonatomic, readonly, copy) NSString * _Nonnull appUserID;
+/// The three-letter code representing the country or region
+/// associated with the App Store storefront.
+/// note:
+/// This property uses the ISO 3166-1 Alpha-3 country code representation.
+/// <h4>Related articles</h4>
+/// <ul>
+///   <li>
+///     <code>Purchases/getStorefront(completion:)</code>
+///   </li>
+///   <li>
+///     <code>Purchases/getStorefront()</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly, copy) NSString * _Nullable storeFrontCountryCode;
 /// The <code>appUserID</code> used by <code>Purchases</code>.
 /// If not passed on initialization this will be generated and cached by <code>Purchases</code>.
 @property (nonatomic, readonly) BOOL isAnonymous;
@@ -1979,6 +2017,31 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// note:
 /// this is not thread-safe.
 @property (nonatomic, strong) id <RCPurchasesDelegate> _Nullable delegate;
+/// Obtain the storefront currently used by the Apple account. This will use StoreKit 2 first,
+/// and if not possible, fallback to StoreKit 1. It will be <code>nil</code> if we can’t obtain Apple’s storefront.
+/// The <code>completion</code> block will be called with the latest Apple account storefront
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <code>Purchases/storeFrontCountryCode</code>
+///   </li>
+///   <li>
+///     <code>Purchases/getStorefront()</code>
+///   </li>
+/// </ul>
+- (void)getStorefrontWithCompletion:(void (^ _Nonnull)(RCStorefront * _Nullable))completion;
+/// Obtain the storefront currently used by the Apple account. This will use StoreKit 2 first,
+/// and if not possible, fallback to StoreKit 1. It will be <code>nil</code> if we can’t obtain Apple’s storefront.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <code>Purchases/storeFrontCountryCode</code>
+///   </li>
+///   <li>
+///     <code>Purchases/getStorefront(completion:)</code>
+///   </li>
+/// </ul>
+- (void)getStorefrontWithCompletionHandler:(void (^ _Nonnull)(RCStorefront * _Nullable))completionHandler;
 /// This function will log in the current user with an <code>appUserID</code>.
 /// The <code>completion</code> block will be called with the latest <code>CustomerInfo</code> and a <code>Bool</code> specifying
 /// whether the user was created for the first time in the RevenueCat backend.
@@ -2830,10 +2893,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _No
 + (NSString * _Nonnull)frameworkVersion SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly, strong) RCAttribution * _Nonnull attribution;
 @property (nonatomic) enum RCPurchasesAreCompletedBy purchasesAreCompletedBy;
-/// The three-letter code representing the country or region
-/// associated with the App Store storefront.
-/// note:
-/// This property uses the ISO 3166-1 Alpha-3 country code representation.
 @property (nonatomic, readonly, copy) NSString * _Nullable storeFrontCountryCode;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
@@ -2886,7 +2945,6 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 @end
 
 
-
 SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduced=11.0) SWIFT_AVAILABILITY(tvos,introduced=18.0) SWIFT_AVAILABILITY(macos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=18.0)
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Returns the win-back offers that the subscriber is eligible for on the provided product.
@@ -2912,15 +2970,6 @@ SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduce
 
 
 
-
-@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-- (void)logIn:(NSString * _Nonnull)appUserID completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completion;
-- (void)logIn:(NSString * _Nonnull)appUserID completionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler;
-- (void)logOutWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
-- (void)logOutWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler;
-- (void)syncAttributesAndOfferingsIfNeededWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
-- (void)syncAttributesAndOfferingsIfNeededWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
-@end
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -3046,6 +3095,18 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// \param networkUserId User Id that should be sent to the network. Default is the current App User Id.
 ///
 + (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
+@end
+
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+- (void)logIn:(NSString * _Nonnull)appUserID completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completion;
+- (void)logIn:(NSString * _Nonnull)appUserID completionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler;
+- (void)logOutWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
+- (void)logOutWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler;
+- (void)syncAttributesAndOfferingsIfNeededWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
+- (void)syncAttributesAndOfferingsIfNeededWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
+- (void)getStorefrontWithCompletion:(void (^ _Nonnull)(RCStorefront * _Nullable))completion;
+- (void)getStorefrontWithCompletionHandler:(void (^ _Nonnull)(RCStorefront * _Nullable))completionHandler;
 @end
 
 
@@ -3302,13 +3363,13 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 - (void)restorePurchasesWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler;
 - (void)purchaseWithParams:(RCPurchaseParams * _Nonnull)params completion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
 - (void)purchase:(RCPurchaseParams * _Nonnull)params completionHandler:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler;
-- (void)invalidateCustomerInfoCache;
-- (void)syncPurchasesWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
-- (void)syncPurchasesWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler;
 - (void)purchaseProduct:(RCStoreProduct * _Nonnull)product withPromotionalOffer:(RCPromotionalOffer * _Nonnull)promotionalOffer completion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
 - (void)purchaseWithProduct:(RCStoreProduct * _Nonnull)product promotionalOffer:(RCPromotionalOffer * _Nonnull)promotionalOffer completionHandler:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler;
 - (void)purchasePackage:(RCPackage * _Nonnull)package withPromotionalOffer:(RCPromotionalOffer * _Nonnull)promotionalOffer completion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
 - (void)purchaseWithPackage:(RCPackage * _Nonnull)package promotionalOffer:(RCPromotionalOffer * _Nonnull)promotionalOffer completionHandler:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler;
+- (void)invalidateCustomerInfoCache;
+- (void)syncPurchasesWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
+- (void)syncPurchasesWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler;
 - (void)checkTrialOrIntroDiscountEligibility:(NSArray<NSString *> * _Nonnull)productIdentifiers completion:(void (^ _Nonnull)(NSDictionary<NSString *, RCIntroEligibility *> * _Nonnull))completion;
 - (void)checkTrialOrIntroDiscountEligibilityWithProductIdentifiers:(NSArray<NSString *> * _Nonnull)productIdentifiers completionHandler:(void (^ _Nonnull)(NSDictionary<NSString *, RCIntroEligibility *> * _Nonnull))completionHandler;
 - (void)checkTrialOrIntroDiscountEligibilityForProduct:(RCStoreProduct * _Nonnull)product completion:(void (^ _Nonnull)(enum RCIntroEligibilityStatus))completion;
@@ -3411,13 +3472,14 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=defau
 
 
 @interface RCPurchasesDiagnostics (SWIFT_EXTENSION(RevenueCat))
-/// Perform tests to ensure SDK is configured correctly.
-/// <ul>
-///   <li>
-///     <code>Throws</code>: <code>PurchasesDiagnostics/Error</code> if any step fails
-///   </li>
-/// </ul>
-- (void)testSDKHealthWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completionHandler;
+/// Checks if the SDK is configured correctly.
+/// important:
+/// This method is intended solely for debugging configuration issues with the SDK implementation.
+/// It should not be invoked in production builds.
+///
+/// throws:
+/// <code>PurchasesDiagnostics/Error</code> if any step fails
+- (void)testSDKHealthWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completionHandler SWIFT_DEPRECATED_MSG("\n    Use the `PurchasesDiagnostics.shared.checkSDKHealth()` method instead.\n    ");
 @end
 
 
@@ -3439,11 +3501,12 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 
 
 
-
-
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
 - (BOOL)receiptHasTransactionsWithReceiptData:(NSData * _Nonnull)receiptData SWIFT_WARN_UNUSED_RESULT;
 @end
+
+
+
 
 
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
@@ -3451,7 +3514,6 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=default) PurchasesReceiptParser * _Nonnull default_;)
 + (PurchasesReceiptParser * _Nonnull)default SWIFT_WARN_UNUSED_RESULT;
 @end
-
 
 
 
@@ -3819,6 +3881,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCDiscountType, "DiscountType", open) {
 
 
 
+
+
 @interface RCStoreProductDiscount (SWIFT_EXTENSION(RevenueCat))
 /// The discount price of the product in the local currency.
 /// note:
@@ -3858,7 +3922,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCDiscountType, "DiscountType", open) {
 @property (nonatomic, readonly, strong) NSDecimalNumber * _Nullable pricePerYear SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=11.2) SWIFT_AVAILABILITY(macos,introduced=10.13.2) SWIFT_AVAILABILITY(ios,introduced=11.2);
 @end
 
-@class RCStorefront;
 
 /// Abstract class that provides access to properties of a transaction.
 /// <code>StoreTransaction</code>s can represent transactions from StoreKit 1, StoreKit 2 or
@@ -4027,13 +4090,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 

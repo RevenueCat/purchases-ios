@@ -23,10 +23,6 @@ import XCTest
 @MainActor
 final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
 
-    override var apiKey: String { return Constants.customEntitlementComputationApiKey }
-
-    var eventsManager: PaywallEventsManager!
-
     func testPostingPaywallsDoesNotFail() async throws {
         let events = [
             PaywallEvent.cancel(
@@ -41,28 +37,19 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
         ]
 
         for event in events {
-            await eventsManager.track(
-                featureEvent: event
+            await Purchases.shared.track(
+                paywallEvent: event
             )
         }
 
-        _ = try await eventsManager.flushEvents(count: 100)
-
-        self.logger.verifyMessageWasLogged(
-            Strings.paywalls.event_flush_starting(count: events.count)
-        )
-
-        try self.logger.verifyMessageWasLogged(
-            Strings.analytics.flush_events_success,
-            level: .debug,
-            expectedCount: 1
-        )
+        try await flushAndVerify(eventsCount: events.count)
     }
 
     func testPostingCustomerCenterDoesNotFail() async throws {
         let locale = Locale(identifier: "es_ES")
-        await eventsManager.track(
-            featureEvent: CustomerCenterEvent.impression(
+
+        Purchases.shared.track(
+            customerCenterEvent: CustomerCenterEvent.impression(
                 Self.customerCenterCreationData,
                 CustomerCenterEvent.Data(
                     locale: locale,
@@ -73,8 +60,8 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             )
         )
 
-        await eventsManager.track(
-            featureEvent: CustomerCenterAnswerSubmittedEvent.answerSubmitted(
+        Purchases.shared.track(
+            customerCenterEvent: CustomerCenterAnswerSubmittedEvent.answerSubmitted(
                 Self.customerCenterCreationData,
                 CustomerCenterAnswerSubmittedEvent.Data(
                     locale: locale,
@@ -84,19 +71,31 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
                     path: .cancel,
                     url: nil,
                     surveyOptionID: "",
-                    surveyOptionTitleKey: "",
                     revisionID: 1
                 )
             )
         )
+        // give background task a chance to run
+        await Task.yield()
 
-        _ = try await eventsManager.flushEvents(count: 2)
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            "Storing event:",
+            expectedCount: 2,
+            timeout: .seconds(3),
+            pollInterval: .seconds(1)
+        )
+
+        try await flushAndVerify(eventsCount: 2)
+    }
+
+    private func flushAndVerify(eventsCount: Int) async throws {
+        _ = try await Purchases.shared.flushPaywallEvents(count: 2)
 
         self.logger.verifyMessageWasLogged(
             Strings.paywalls.event_flush_starting(count: 2)
         )
 
-        try self.logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.analytics.flush_events_success,
             level: .debug,
             expectedCount: 1

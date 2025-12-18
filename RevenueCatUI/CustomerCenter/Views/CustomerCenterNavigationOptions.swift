@@ -34,12 +34,23 @@ public struct CustomerCenterNavigationOptions {
     /// - `false`: Does not display a close button, avoiding redundancy with the back button in a stacked navigation.
     public let shouldShowCloseButton: Bool
 
-    /// The default configuration for `CustomerCenterNavigationOptions`.
+    /// A custom handler to execute when closing the Customer Center from the close button in the navigation bar.
     ///
-    /// - `usesNavigationStack`: `true` (default to modern navigation).
-    /// - `usesExistingNavigation`: `false` (wraps content in a new navigation stack by default).
-    /// - `shouldShowCloseButton`: `true` (displays a close button by default).
-    public static let `default` = CustomerCenterNavigationOptions()
+    /// `onCloseHandler` allows developers to define a custom method for handling the dismissal of
+    /// the Customer Center. This is useful in cases where the default SwiftUI dismissal (`@Environment(\.dismiss)`)
+    /// is insufficient, such as when integrating with hybrid frameworks.
+    ///
+    /// If provided, this closure is called instead of the default dismissal behavior, giving the developer
+    /// full control over the dismissal process.
+    ///
+    /// - Example Usage in SwiftUI:
+    /// ```swift
+    /// let options = CustomerCenterNavigationOptions(onCloseHandler: {
+    ///     dismiss()
+    /// })
+    /// ```
+    ///
+    public let onCloseHandler: (() -> Void)?
 
     /// Initializes a new instance of `CustomerCenterNavigationOptions`.
     ///
@@ -47,13 +58,28 @@ public struct CustomerCenterNavigationOptions {
     ///   - usesNavigationStack: Whether to use the modern iOS 16+ `NavigationStack` system. Defaults to `true`.
     ///   - usesExistingNavigation: Whether to push onto an existing navigation stack. Defaults to `false`.
     ///   - shouldShowCloseButton: Whether to display a close button in the toolbar. Defaults to `true`.
+    ///   - onCloseHandler: Custom handler to be called when tapping on the close button. When set to `nil`,
+    ///   environment `dismiss` is called
     public init(
         usesNavigationStack: Bool = true,
         usesExistingNavigation: Bool = false,
-        shouldShowCloseButton: Bool = true
+        shouldShowCloseButton: Bool = true,
+        onCloseHandler: (() -> Void)? = nil
     ) {
         self.usesNavigationStack = usesNavigationStack
         self.usesExistingNavigation = usesExistingNavigation
         self.shouldShowCloseButton = shouldShowCloseButton
+        self.onCloseHandler = onCloseHandler
     }
+}
+
+public extension CustomerCenterNavigationOptions {
+
+    /// The default configuration for `CustomerCenterNavigationOptions`.
+    ///
+    /// - `usesNavigationStack`: `true` (default to modern navigation).
+    /// - `usesExistingNavigation`: `false` (wraps content in a new navigation stack by default).
+    /// - `shouldShowCloseButton`: `true` (displays a close button by default).
+    /// - `onCloseHandler`: `nil` (environment dismiss is used instead when showing the close button).
+    static let `default` = CustomerCenterNavigationOptions()
 }

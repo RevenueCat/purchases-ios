@@ -137,7 +137,22 @@ platform :ios do
       scheme: "PaywallsTester - Live Config",
       build_for_testing: true,
     )
-    emerge(repo_name: "RevenueCat/purchases-ios")
+
+    pr_url = ENV["CIRCLE_PULL_REQUEST"]
+    branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
+    pr_number = nil
+    # Try to parse the PR number from the pr_url variable first
+    if pr_url && pr_url.include?("/")
+      pr_number = pr_url.split("/").last
+    # Try to parse the PR number from the merge queue branch name. In this case,
+    # there's no CIRCLE_PULL_REQUEST environment variable.
+    elsif branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
+      pr_number = $1
+    end
+
+    emerge_args = {repo_name: "RevenueCat/purchases-ios"}
+    emerge_args[:pr_number] = pr_number if pr_number
+    emerge(emerge_args)
   end
 
   desc "Runs all the iOS tests"
@@ -367,12 +382,12 @@ platform :ios do
 
   desc "Release to CocoaPods"
   lane :push_revenuecat_pod do |options|
-    pod_push(path: "RevenueCat.podspec", synchronous: true)
+    pod_push_with_error_handling(path: "RevenueCat.podspec", synchronous: true)
   end
 
   desc "Release to CocoaPods"
   lane :push_revenuecatui_pod do |options|
-    pod_push(path: "RevenueCatUI.podspec", synchronous: true)
+    pod_push_with_error_handling(path: "RevenueCatUI.podspec", synchronous: true)
   end
 
   desc "Tag current branch with current version number"
@@ -629,17 +644,25 @@ platform :ios do
   desc "Run LoadShedder tests"
   lane :v3_loadshedder_integration_tests do |options|
     replace_api_key_integration_tests
-    scan(
-      project: "./Tests/v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj",
-      scheme: "v3LoadShedderIntegration",
-      ensure_devices_found: true,
-      derived_data_path: "scan_derived_data",
-      output_types: 'junit',
-      output_style: 'raw',
-      result_bundle: true,
-      configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/ios"
-    )
+    success = false
+    begin
+      scan(
+        project: "./Tests/v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj",
+        scheme: "v3LoadShedderIntegration",
+        ensure_devices_found: true,
+        derived_data_path: "scan_derived_data",
+        output_types: 'junit',
+        output_style: 'raw',
+        result_bundle: true,
+        configuration: 'Debug',
+        output_directory: "fastlane/test_output/xctest/ios"
+      )
+      success = true
+    rescue => exception
+      raise exception
+    ensure
+      send_slack_load_shedder_integration_test_v3(success: success)
+    end
   end
 
 
@@ -1114,3 +1137,20 @@ def update_snapshots_commit(hash)
   File.write(snapshots_commit_file, hash)
 end
 
+# Slack
+
+lane :send_slack_load_shedder_integration_test_v3 do |options|
+  success = options[:success] || false
+  message =
+      if success
+          "iOS load shedder integration tests V3 finished successfully"
+      else
+          "iOS load shedder integration tests V3 failed"
+      end
+  slack(
+    message: message,
+    slack_url: ENV["SLACK_URL_LOAD_SHEDDER_INTEGRATION_TESTS"],
+    success: success,
+    default_payloads: [:git_branch]
+  )
+end

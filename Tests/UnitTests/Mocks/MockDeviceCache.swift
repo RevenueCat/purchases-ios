@@ -112,6 +112,7 @@ class MockDeviceCache: DeviceCache {
     var stubbedIsOfferingsCacheStale = false
     var stubbedOfferings: Offerings?
     var stubbedCachedOfferingsData: Data?
+    var stubbedOfferingCacheStatus: CacheStatus?
 
     override var cachedOfferings: Offerings? {
         return stubbedOfferings
@@ -138,6 +139,10 @@ class MockDeviceCache: DeviceCache {
 
     override func cachedOfferingsResponseData(appUserID: String) -> Data? {
         return self.stubbedCachedOfferingsData
+    }
+
+    override func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {
+        return self.stubbedOfferingCacheStatus ?? super.offeringsCacheStatus(isAppBackgrounded: isAppBackgrounded)
     }
 
     // MARK: SubscriberAttributes

@@ -26,6 +26,8 @@ struct RootView: View {
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
 
+    @State private var sheetViewModel: SheetViewModel?
+
     internal init(viewModel: RootViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
@@ -53,6 +55,10 @@ struct RootView: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .environment(\.openSheet, { sheet in
+            self.sheetViewModel = sheet
+        })
+        .bottomSheet(sheet: $sheetViewModel, safeAreaInsets: self.safeAreaInsets)
     }
 
 }

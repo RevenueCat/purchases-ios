@@ -39,6 +39,12 @@ protocol StoreKit2TransactionFetcherType: Sendable {
 
 final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
 
+    private let diagnosticsTracker: DiagnosticsTrackerType?
+
+    init(diagnosticsTracker: DiagnosticsTrackerType?) {
+        self.diagnosticsTracker = diagnosticsTracker
+    }
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var unfinishedVerifiedTransactions: [StoreTransaction] {
         get async {
@@ -113,7 +119,12 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     var appTransactionJWS: String? {
         get async {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                return try? await AppTransaction.shared.jwsRepresentation
+                do {
+                    return try await AppTransaction.shared.jwsRepresentation
+                } catch {
+                    self.trackAppleAppTransactionError(error)
+                    return nil
+                }
             } else {
                 return nil
             }
@@ -133,7 +144,12 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     func appTransactionJWS(_ completion: @escaping (String?) -> Void) {
         Async.call(with: completion) {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                return try? await AppTransaction.shared.jwsRepresentation
+                do {
+                    return try await AppTransaction.shared.jwsRepresentation
+                } catch {
+                    self.trackAppleAppTransactionError(error)
+                    return nil
+                }
             } else {
                 return nil
             }
@@ -291,10 +307,22 @@ extension StoreKit2TransactionFetcher {
                     return nil
                 }
             } catch {
-                Logger.warn(Strings.storeKit.sk2_error_fetching_app_transaction(error))
+                self.trackAppleAppTransactionError(error)
                 return nil
             }
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private func trackAppleAppTransactionError(_ error: Error) {
+        let purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
+        let errorMessage: String = (purchasesError.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription
+            ?? purchasesError.localizedDescription
+        let errorCode = purchasesError.errorCode
+        let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
+        self.diagnosticsTracker?.trackAppleAppTransactionError(errorMessage: errorMessage,
+                                                               errorCode: errorCode,
+                                                               storeKitErrorDescription: storeKitErrorDescription)
+        Logger.warn(Strings.storeKit.sk2_error_fetching_app_transaction(error))
+    }
 }

@@ -242,22 +242,6 @@ class PaywallEventsManagerTests: TestCase {
     }
     #endif
 
-    func testResetAppSessionID() async throws {
-        _ = await self.storeRandomEvent()
-        var storedEvents = await self.store.storedEvents
-        let storedEvent1 = try XCTUnwrap(storedEvents.first)
-        let initialSessionID = storedEvent1.appSessionID
-
-        await self.manager.resetAppSessionID()
-
-        _ = await self.storeRandomEvent()
-        storedEvents = await self.store.storedEvents
-        let storedEvent2 = try XCTUnwrap(storedEvents.last)
-        let newSessionID = storedEvent2.appSessionID
-
-        expect(initialSessionID) != newSessionID
-    }
-
     // MARK: -
 
     private static let userID = "nacho"
@@ -276,14 +260,14 @@ private extension PaywallEventsManagerTests {
         return event
     }
 
-    func verifyEmptyStore(file: StaticString = #file, line: UInt = #line) async {
+    func verifyEmptyStore(file: FileString = #filePath, line: UInt = #line) async {
         let events = await self.store.storedEvents
         expect(file: file, line: line, events).to(beEmpty())
     }
 
     func verifyEvents(
         _ expected: [StoredEvent],
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async {
         let events = await self.store.storedEvents

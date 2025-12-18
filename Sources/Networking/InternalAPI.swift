@@ -16,13 +16,16 @@ import Foundation
 class InternalAPI {
 
     typealias ResponseHandler = (BackendError?) -> Void
+    typealias HealthReportResponseHandler = (Result<HealthReport, BackendError>) -> Void
 
     private let backendConfig: BackendConfiguration
     private let healthCallbackCache: CallbackCache<HealthOperation.Callback>
+    private let healthReportCallbackCache: CallbackCache<HealthReportOperation.Callback>
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.healthCallbackCache = .init()
+        self.healthReportCallbackCache = .init()
     }
 
     func healthRequest(signatureVerification: Bool, completion: @escaping ResponseHandler) {
@@ -32,6 +35,19 @@ class InternalAPI {
 
         let callback = HealthOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.healthCallbackCache.add(callback)
+
+        self.backendConfig.addCacheableOperation(with: factory,
+                                                 delay: .none,
+                                                 cacheStatus: cacheStatus)
+    }
+
+    func healthReportRequest(appUserID: String, completion: @escaping HealthReportResponseHandler) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let factory = HealthReportOperation.createFactory(configuration: config,
+                                                          callbackCache: self.healthReportCallbackCache)
+        let callback = HealthReportOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.healthReportCallbackCache.add(callback)
 
         self.backendConfig.addCacheableOperation(with: factory,
                                                  delay: .none,

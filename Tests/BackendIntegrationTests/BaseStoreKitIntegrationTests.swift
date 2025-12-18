@@ -219,7 +219,7 @@ extension BaseStoreKitIntegrationTests {
 
     @discardableResult
     func purchaseConsumablePackage(
-        file: FileString = #file,
+        file: StaticString = #filePath,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
         let offering = try await XCTAsyncUnwrap(

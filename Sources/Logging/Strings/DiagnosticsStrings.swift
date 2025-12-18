@@ -24,6 +24,8 @@ enum DiagnosticsStrings {
     case event_sync_with_empty_store
     case event_sync_starting(count: Int)
 
+    case syncing_events_due_to_enough_file_size_reached
+
     case error_fetching_events(error: Error)
 
     case could_not_synchronize_diagnostics(error: Error)
@@ -56,6 +58,9 @@ extension DiagnosticsStrings: LogMessage {
 
         case let .event_sync_starting(count):
             return "Diagnostics event flush: posting \(count) events."
+
+        case .syncing_events_due_to_enough_file_size_reached:
+            return "Syncing diagnostics events since enough file size reached"
 
         case let .error_fetching_events(error):
             return "Failed to read lines from file: \(error.localizedDescription)"

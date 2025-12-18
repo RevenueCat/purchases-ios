@@ -28,7 +28,7 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.customerInfo = try self.decodeFixture("CustomerInfo")
+        self.customerInfo = try Self.decodeFixture("CustomerInfo")
     }
 
     func testSchemaVersion() {
@@ -162,7 +162,7 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.customerInfo = try self.decodeFixture("CustomerInfo-v2")
+        self.customerInfo = try Self.decodeFixture("CustomerInfo-v2")
     }
 
     func testSchemaVersion() {
@@ -244,7 +244,7 @@ class CustomerInfoInvalidDataDecodingTests: BaseHTTPResponseTest {
 
     func testDecodingCustomerInfoWithInvalidSubscriptionFailsToDecode() throws {
         expect {
-            let _: CustomerInfo = try self.decodeFixture("CustomerInfoWithInvalidSubscription")
+            let _: CustomerInfo = try Self.decodeFixture("CustomerInfoWithInvalidSubscription")
         }
         .to(throwError(ErrorCode.customerInfoError))
     }

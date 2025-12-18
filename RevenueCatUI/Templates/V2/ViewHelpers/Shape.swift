@@ -11,6 +11,8 @@
 //
 //  Created by Josh Holtz on 9/30/24.
 
+// swiftlint:disable nesting
+
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -41,9 +43,63 @@ struct ShapeModifier: ViewModifier {
         case concave
         case convex
 
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case radius
+        }
+
+        private enum ShapeType: String, Codable {
+            case rectangle
+            case pill
+            case circle
+            case concave
+            case convex
+        }
+
+        init(from decoder: Decoder) throws {
+            do {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let type = try container.decode(ShapeType.self, forKey: .type)
+
+                switch type {
+                case .rectangle:
+                    let radius = try container.decodeIfPresent(RadiusInfo.self, forKey: .radius)
+                    self = .rectangle(radius)
+                case .pill:
+                    self = .pill
+                case .circle:
+                    self = .circle
+                case .concave:
+                    self = .concave
+                case .convex:
+                    self = .convex
+                }
+            } catch {
+                self = .rectangle(nil)
+            }
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .rectangle(let radius):
+                try container.encode(ShapeType.rectangle, forKey: .type)
+                try container.encodeIfPresent(radius, forKey: .radius)
+            case .pill:
+                try container.encode(ShapeType.pill, forKey: .type)
+            case .circle:
+                try container.encode(ShapeType.circle, forKey: .type)
+            case .concave:
+                try container.encode(ShapeType.concave, forKey: .type)
+            case .convex:
+                try container.encode(ShapeType.convex, forKey: .type)
+            }
+        }
+
     }
 
-    struct RadiusInfo: Hashable {
+    struct RadiusInfo: Hashable, Codable {
 
         let topLeft: Double?
         let topRight: Double?
@@ -74,12 +130,17 @@ struct ShapeModifier: ViewModifier {
             if let shape = self.shape.toInsettableShape() {
                 content
                     .backgroundStyle(background)
-                // We want to clip only in case there is a non-Rectangle shape
-                // or if there's a border, otherwise we let the background color
-                // extend behind the safe areas
-                    .applyIf(!shape.isRectangle()) { view in
-                        view.clipShape(shape)
+                    // We want to clip only in case there is a non-Rectangle shape
+                    // or if there's a border
+                    .applyIf(!shape.isRectangle() || border != nil) { view in
+                        view
+                            .clipShape(
+                                // Adding inset to clip contents within the border
+                                // Mainly to handle transparent borders not showing content
+                                shape.inset(by: border?.width ?? 0 / 2)
+                            )
                     }
+                    // Place border on top of content
                     .applyIfLet(border) { view, border in
                         view.clipShape(shape).overlay {
                             shape.strokeBorder(border.color, lineWidth: border.width)
@@ -441,7 +502,7 @@ struct CornerBorder_Previews: PreviewProvider {
                     heic: lightUrl,
                     heicLowRes: lightUrl
                 )
-            )),
+            ), .fill),
             nil
         ]
 

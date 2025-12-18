@@ -68,13 +68,24 @@ import Foundation
 
     /**
      Paywall configuration defined in RevenueCat dashboard.
+
+     Use ``hasPaywall`` to check if the offering has a paywall.
      */
     public let paywall: PaywallData?
 
     /**
      Paywall components configuration defined in RevenueCat dashboard.
+
+     Use ``hasPaywall`` to check if the offering has a paywall.
      */
     public let paywallComponents: PaywallComponents?
+
+    /**
+     Whether the offering contains a paywall.
+     */
+    public var hasPaywall: Bool {
+        return paywall != nil || paywallComponents != nil
+    }
 
     /**
      Draft paywall components configuration defined in RevenueCat dashboard.
@@ -120,6 +131,11 @@ import Foundation
      Weekly ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc public let weekly: Package?
+
+    /**
+     The url to purchase this package on the web
+     */
+    @objc public let webCheckoutUrl: URL?
 
     public override var description: String {
         return """
@@ -168,7 +184,8 @@ import Foundation
         identifier: String,
         serverDescription: String,
         metadata: [String: Any] = [:],
-        availablePackages: [Package]
+        availablePackages: [Package],
+        webCheckoutUrl: URL?
     ) {
         self.init(
             identifier: identifier,
@@ -176,7 +193,8 @@ import Foundation
             metadata: metadata,
             paywall: nil,
             paywallComponents: nil,
-            availablePackages: availablePackages
+            availablePackages: availablePackages,
+            webCheckoutUrl: webCheckoutUrl
         )
     }
 
@@ -187,7 +205,8 @@ import Foundation
         metadata: [String: Any] = [:],
         paywall: PaywallData? = nil,
         paywallComponents: PaywallComponents? = nil,
-        availablePackages: [Package]
+        availablePackages: [Package],
+        webCheckoutUrl: URL?
     ) {
         self.init(
             identifier: identifier,
@@ -196,7 +215,8 @@ import Foundation
             paywall: paywall,
             paywallComponents: paywallComponents,
             draftPaywallComponents: nil,
-            availablePackages: availablePackages
+            availablePackages: availablePackages,
+            webCheckoutUrl: webCheckoutUrl
         )
     }
 
@@ -207,7 +227,8 @@ import Foundation
         paywall: PaywallData? = nil,
         paywallComponents: PaywallComponents? = nil,
         draftPaywallComponents: PaywallComponents?,
-        availablePackages: [Package]
+        availablePackages: [Package],
+        webCheckoutUrl: URL?
     ) {
         self.identifier = identifier
         self.serverDescription = serverDescription
@@ -216,6 +237,7 @@ import Foundation
         self.paywall = paywall
         self.paywallComponents = paywallComponents
         self.draftPaywallComponents = draftPaywallComponents
+        self.webCheckoutUrl = webCheckoutUrl
 
         var foundPackages: [PackageType: Package] = [:]
 

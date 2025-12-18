@@ -1,0 +1,8 @@
+appId: com.revenuecat.maestro.ios  
+
+--- 
+
+- tapOn: "Buy something"
+- tapOn: "Buy ${PRODUCT_ID}"
+- tapOn: \b(Subscribe|Purchase)\b
+- tapOn: "Ok"

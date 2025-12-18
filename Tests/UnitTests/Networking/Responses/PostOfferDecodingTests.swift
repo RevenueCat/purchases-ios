@@ -22,7 +22,7 @@ class PostOfferDecodingTests: BaseHTTPResponseTest {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.response = try self.decodeFixture("PostOffer")
+        self.response = try Self.decodeFixture("PostOffer")
     }
 
     func testResponseDataIsCorrect() throws {

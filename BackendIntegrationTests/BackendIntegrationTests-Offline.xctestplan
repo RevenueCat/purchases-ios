@@ -45,6 +45,7 @@
         "DisabledSignatureVerificationIntegrationTests",
         "DynamicModeSignatureVerificationIntegrationTests",
         "EnforcedSignatureVerificationIntegrationTests",
+	"EventsManagerIntegrationTests",
         "InformationalSignatureVerificationIntegrationTests",
         "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests",
         "LoadShedderStoreKit1IntegrationTests",

@@ -53,8 +53,47 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         )
     }
 
-    func testCanPurchasePackage() async throws {
+    func testCanPurchaseSubsPackage() async throws {
         try await self.purchaseMonthlyOffering()
+
+        self.logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
+            level: .debug
+        )
+
+        self.verifyCustomerInfoWasNotComputedOffline(logger: self.logger)
+    }
+
+    func testCanPurchaseConsumablePackage() async throws {
+        // WIP: remove this check so we also verify in this case once backend supports this case
+        if disableHeaderSignatureVerification {
+            throw XCTSkip("Currently does not work with disabled header signature verification.")
+        }
+        let purchaseData = try await self.purchaseConsumablePackage()
+
+        let purchasedProductIds = purchaseData.customerInfo.allPurchasedProductIdentifiers
+        expect(purchasedProductIds.count) == 1
+
+        let purchasedProductId = try XCTUnwrap(purchasedProductIds.first)
+
+        expect(purchasedProductId) == "consumable.10_coins"
+
+        self.logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
+            level: .debug
+        )
+
+        self.verifyCustomerInfoWasNotComputedOffline(logger: self.logger)
+    }
+
+    func testCanPurchaseNonConsumablePackage() async throws {
+        // WIP: remove this check so we also verify in this case once backend supports this case
+        if disableHeaderSignatureVerification {
+            throw XCTSkip("Currently does not work with disabled header signature verification.")
+        }
+        let purchaseData = try await self.purchaseNonConsumablePackage()
+
+        try await self.verifyEntitlementWentThrough(purchaseData.customerInfo)
 
         self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
@@ -67,8 +106,10 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let result = try await self.purchases.productEntitlementMapping()
-        expect(result.entitlementsByProduct).to(haveCount(1))
+        expect(result.entitlementsByProduct).to(haveCount(3))
         expect(result.entitlementsByProduct["com.revenuecat.loadShedder.monthly"]) == ["premium"]
+        expect(result.entitlementsByProduct["consumable.10_coins"]) == []
+        expect(result.entitlementsByProduct["lifetime"]) == ["premium"]
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

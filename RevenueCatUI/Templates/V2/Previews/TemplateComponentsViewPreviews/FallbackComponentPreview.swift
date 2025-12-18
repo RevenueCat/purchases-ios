@@ -136,7 +136,8 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
 
     static let offering = Offering(identifier: "default",
                                    serverDescription: "",
-                                   availablePackages: [])
+                                   availablePackages: [],
+                                   webCheckoutUrl: nil)
 
     static var previews: some View {
 

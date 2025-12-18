@@ -53,7 +53,8 @@ class BackendSubscriberAttributesTests: TestCase {
         finishTransactions: true,
         storefrontProvider: MockStorefrontProvider(),
         storeKitVersion: .versionForTests,
-        responseVerificationMode: .disabled
+        responseVerificationMode: .disabled,
+        isAppBackgrounded: false
     )
 
     override func setUpWithError() throws {

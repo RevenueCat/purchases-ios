@@ -5,6 +5,7 @@
     "X-Client-Build-Version" : "12345",
     "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
     "X-Client-Version" : "17.0.0",
+    "X-Is-Backgrounded" : "false",
     "X-Is-Debug-Build" : "true",
     "X-Is-Sandbox" : "false",
     "X-Observer-Mode-Enabled" : "false",
@@ -23,6 +24,8 @@
     "body" : {
       "entries" : [
         {
+          "app_session_id" : "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42",
+          "id" : "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC",
           "name" : "customer_info_verification_result",
           "properties" : {
             "verification_result" : "FAILED"
@@ -31,6 +34,8 @@
           "version" : 1
         },
         {
+          "app_session_id" : "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42",
+          "id" : "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF",
           "name" : "customer_info_verification_result",
           "properties" : {
             "verification_result" : "FAILED"

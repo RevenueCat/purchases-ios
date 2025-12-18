@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 5/12/22.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 class OfferingsDecodingTests: BaseHTTPResponseTest {
@@ -22,7 +22,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.response = try self.decodeFixture("Offerings")
+        self.response = try Self.decodeFixture("Offerings")
     }
 
     func testDecodesAllOfferings() throws {

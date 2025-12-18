@@ -247,6 +247,8 @@ NSURL *url;
         [p presentCodeRedemptionSheet];
     }
 #endif
+
+    [p getStorefrontWithCompletion:^(RCStorefront * _Nullable s) { }];
 }
 
 + (void)checkEnums {

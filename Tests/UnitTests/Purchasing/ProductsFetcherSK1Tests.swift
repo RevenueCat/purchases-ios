@@ -9,7 +9,7 @@ class ProductsFetcherSK1Tests: TestCase {
     var productsFetcherSK1: ProductsFetcherSK1!
 
     private static let defaultTimeout: TimeInterval = 2
-    private static let defaultTimeoutInterval: DispatchTimeInterval = .init(ProductsFetcherSK1Tests.defaultTimeout)
+    private static let defaultTimeoutInterval: NimbleTimeInterval = defaultTimeout.nimbleInterval
 
     override func setUp() {
         super.setUp()
@@ -93,10 +93,10 @@ class ProductsFetcherSK1Tests: TestCase {
         productsRequestFactory.stubbedRequestResult = failingRequest
 
         // This test checks errors, so no need to wait long for the retry mechanism
-        let timeout: DispatchTimeInterval = .milliseconds(10)
+        let timeout: TimeInterval = 0.01
 
         let fetcher = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
-                                         requestTimeout: timeout.seconds)
+                                         requestTimeout: timeout)
 
         var receivedResult: Result<Set<SK1StoreProduct>, PurchasesError>?
 
@@ -104,7 +104,7 @@ class ProductsFetcherSK1Tests: TestCase {
             receivedResult = result
         }
 
-        expect(receivedResult).toEventuallyNot(beNil(), timeout: timeout + .seconds(1))
+        expect(receivedResult).toEventuallyNot(beNil(), timeout: (timeout + 1).nimbleInterval)
         expect(receivedResult).to(beFailure())
     }
 
@@ -148,8 +148,9 @@ class ProductsFetcherSK1Tests: TestCase {
             completionCallCount += 1
         }
 
+        let timeout = (productsRequestResponseTime + .milliseconds(30)).seconds.nimbleInterval
         expect(completionCallCount).toEventually(equal(1),
-                                                 timeout: productsRequestResponseTime + .milliseconds(30))
+                                                 timeout: timeout)
         expect(self.productsRequestFactory.invokedRequestCount) == 1
 
         expect(receivedResult).to(beFailure())
@@ -176,7 +177,8 @@ class ProductsFetcherSK1Tests: TestCase {
             completionCallCount += 1
         }
 
-        expect(completionCallCount).toEventually(equal(1), timeout: tolerance + .milliseconds(10))
+        let timeout = (tolerance + .milliseconds(10)).seconds.nimbleInterval
+        expect(completionCallCount).toEventually(equal(1), timeout: timeout)
         expect(self.productsRequestFactory.invokedRequestCount) == 1
 
         let unwrappedProducts = try XCTUnwrap(receivedResult).get()

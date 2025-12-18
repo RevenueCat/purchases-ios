@@ -21,8 +21,6 @@ import UIKit
 import AppKit
 #endif
 
-#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
 /**
  * ``PurchaseParams`` can be used to add configuration options when making a purchase.
  * This class follows the builder pattern.
@@ -42,28 +40,45 @@ import AppKit
     let package: Package?
     let product: StoreProduct?
     let promotionalOffer: PromotionalOffer?
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     let winBackOffer: WinBackOffer?
     let metadata: [String: String]?
+
+    #endif
 
     /// Options for the confirmIn: parameter of the `purchase(confirmIn:options:)` SK2 APIs.
     let storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
 
     private init(with builder: Builder) {
         self.promotionalOffer = builder.promotionalOffer
-        self.metadata = builder.metadata
         self.product = builder.product
         self.package = builder.package
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
         self.winBackOffer = builder.winBackOffer
+        self.metadata = builder.metadata
+
+        #endif
+
         self.storeKit2ConfirmInOptions = builder.storeKit2ConfirmInOptions
     }
 
     /// The Builder for ```PurchaseParams```.
     @objc(RCPurchaseParamsBuilder) public class Builder: NSObject {
         private(set) var promotionalOffer: PromotionalOffer?
-        private(set) var metadata: [String: String]?
         private(set) var package: Package?
         private(set) var product: StoreProduct?
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
         private(set) var winBackOffer: WinBackOffer?
+        private(set) var metadata: [String: String]?
+
+        #endif
+
         private(set) var storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
 
         /**
@@ -95,6 +110,8 @@ import AppKit
             self.promotionalOffer = promotionalOffer
             return self
         }
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
         #if ENABLE_TRANSACTION_METADATA
         /**
@@ -154,11 +171,11 @@ import AppKit
             return self
         }
 
+        #endif
+
         /// Generate a ``Configuration`` object given the values configured by this builder.
         @objc public func build() -> PurchaseParams {
             return PurchaseParams(with: self)
         }
     }
 }
-
-#endif

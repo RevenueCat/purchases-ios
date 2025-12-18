@@ -18,8 +18,14 @@ import SwiftUI
 // swiftlint:disable file_length
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-// @PublicForExternalTesting
 final class PurchaseHandler: ObservableObject {
+
+    enum ActionType {
+
+        case purchase
+        case restore
+
+    }
 
     private let purchases: PaywallPurchasesType
 
@@ -37,7 +43,12 @@ final class PurchaseHandler: ObservableObject {
 
     /// Whether a purchase or restore is currently in progress
     @Published
-    fileprivate(set) var actionInProgress: Bool = false
+    fileprivate(set) var actionTypeInProgress: ActionType?
+
+    /// Whether a purchase or restore is currently in progress
+    var actionInProgress: Bool {
+        return actionTypeInProgress != nil
+    }
 
     /// Whether a purchase was successfully completed.
     @Published
@@ -76,7 +87,6 @@ final class PurchaseHandler: ObservableObject {
 
     private var eventData: PaywallEvent.Data?
 
-    // @PublicForExternalTesting
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
                      performRestore: PerformRestore? = nil) {
@@ -100,7 +110,6 @@ final class PurchaseHandler: ObservableObject {
 
     /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
     /// has been configured, and using a PurchaseHandler that cannot be used for purchases otherwise.
-    // @PublicForExternalTesting
     static func `default`(performPurchase: PerformPurchase? = nil,
                           performRestore: PerformRestore? = nil) -> Self {
         return Purchases.isConfigured ? .init(performPurchase: performPurchase,
@@ -109,7 +118,6 @@ final class PurchaseHandler: ObservableObject {
                                                            performRestore: performRestore)
     }
 
-    // @PublicForExternalTesting
     static func `default`(performPurchase: PerformPurchase? = nil,
                           performRestore: PerformRestore? = nil,
                           customerInfo: CustomerInfo,
@@ -159,10 +167,10 @@ extension PurchaseHandler {
 
         defer {
             self.packageBeingPurchased = nil
-            self.actionInProgress = false
+            self.actionTypeInProgress = nil
         }
 
-        self.startAction()
+        self.startAction(.purchase)
 
         do {
             let result = try await self.purchases.purchase(package: package)
@@ -196,10 +204,10 @@ extension PurchaseHandler {
 
         defer {
             self.restoreInProgress = false
-            self.actionInProgress = false
+            self.actionTypeInProgress = nil
         }
 
-        self.startAction()
+        self.startAction(.purchase)
 
         let result = await externalPurchaseMethod(package)
 
@@ -250,10 +258,10 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = nil
         self.restoreError = nil
 
-        self.startAction()
+        self.startAction(.restore)
         defer {
             self.restoreInProgress = false
-            self.actionInProgress = false
+            self.actionTypeInProgress = nil
         }
 
         do {
@@ -277,14 +285,14 @@ extension PurchaseHandler {
 
         defer {
             self.restoreInProgress = false
-            self.actionInProgress = false
+            self.actionTypeInProgress = nil
         }
 
         self.restoreInProgress = true
         self.restoredCustomerInfo = nil
         self.restoreError = nil
 
-        self.startAction()
+        self.startAction(.restore)
 
         let result = await externalRestoreMethod()
 
@@ -336,9 +344,9 @@ extension PurchaseHandler {
         return true
     }
 
-    private func startAction() {
+    private func startAction(_ type: PurchaseHandler.ActionType) {
         withAnimation(Constants.fastAnimation) {
-            self.actionInProgress = true
+            self.actionTypeInProgress = type
         }
     }
 

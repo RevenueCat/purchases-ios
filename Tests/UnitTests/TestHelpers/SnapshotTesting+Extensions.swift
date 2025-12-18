@@ -91,14 +91,13 @@ func verifySnapshot<Value, Format>(
 
 extension Snapshotting where Value == Encodable, Format == String {
 
-    /// Equivalent to `.json`, but with `JSONEncoder.KeyEncodingStrategy.convertToSnakeCase`
-    /// and `JSONEncoder.OutputFormatting.withoutEscapingSlashes` if available.
+    /// Uses a copy of the SDK's `JSONEncoder.prettyPrinted`,
+    /// but with `JSONEncoder.OutputFormatting.withoutEscapingSlashes`.
     static var formattedJson: Snapshotting {
         return self.formattedJson(backwardsCompatible: false)
     }
 
-    /// Equivalent to `.formattedJson`, but not using `JSONEncoder.OutputFormatting.withoutEscapingSlashes`
-    /// so its output is equivalent regardless of iOS version.
+    /// Uses a copy of the SDK's `JSONEncoder.prettyPrinted`
     static var backwardsCompatibleFormattedJson: Snapshotting {
         return self.formattedJson(backwardsCompatible: true)
     }
@@ -121,7 +120,8 @@ extension SwiftUI.View {
 
     func snapshot(
         size: CGSize,
-        file: StaticString = #file,
+        file: FileString = #filePath,
+        filename: StaticString = #file, // Used to generate the snapshot file name
         line: UInt = #line
     ) {
         UIView.setAnimationsEnabled(false)
@@ -139,7 +139,7 @@ extension SwiftUI.View {
             haveValidSnapshot(
                 as: .image(perceptualPrecision: perceptualPrecision, size: size, traits: traits),
                 named: "1", // Force each retry to end in `.1.png`
-                file: file,
+                file: filename,
                 line: line
             ),
             timeout: timeout,
@@ -155,8 +155,8 @@ private let traits: UITraitCollection = .init(displayScale: 1)
 #endif
 
 private let perceptualPrecision: Float = 0.93
-private let timeout: DispatchTimeInterval = .seconds(3)
-private let pollInterval: DispatchTimeInterval = .milliseconds(100)
+private let timeout: NimbleTimeInterval = .seconds(3)
+private let pollInterval: NimbleTimeInterval = .milliseconds(100)
 
 // MARK: - Private
 
@@ -175,27 +175,22 @@ private extension Encodable {
     }
 
     func asFormattedData(backwardsCompatible: Bool) throws -> Data {
+        // Copy the encoder used in the SDK to get similar results
+        let sdkEncoder = JSONEncoder.prettyPrinted
+
         let encoder = JSONEncoder()
-        encoder.keyEncodingStrategy = .convertToSnakeCase
-        encoder.outputFormatting = backwardsCompatible
-            ? backwardsCompatibleOutputFormatting
-            : outputFormatting
+        encoder.keyEncodingStrategy = sdkEncoder.keyEncodingStrategy
+        encoder.dateEncodingStrategy = sdkEncoder.dateEncodingStrategy
+        encoder.dataEncodingStrategy = sdkEncoder.dataEncodingStrategy
+        encoder.nonConformingFloatEncodingStrategy = sdkEncoder.nonConformingFloatEncodingStrategy
+        encoder.userInfo = sdkEncoder.userInfo
+        var outputFormatting = sdkEncoder.outputFormatting
+        if !backwardsCompatible {
+            outputFormatting.update(with: .withoutEscapingSlashes)
+        }
+        encoder.outputFormatting = outputFormatting
 
         return try encoder.encode(self)
     }
 
 }
-
-private let backwardsCompatibleOutputFormatting: JSONEncoder.OutputFormatting = {
-    return [
-        .prettyPrinted,
-        .sortedKeys
-    ]
-}()
-
-private let outputFormatting: JSONEncoder.OutputFormatting = {
-    var result = backwardsCompatibleOutputFormatting
-    result.update(with: .withoutEscapingSlashes)
-
-    return result
-}()

@@ -48,24 +48,6 @@ class PurchasesPaywallEventsTests: BasePurchasesTests {
         expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
-    func testLogInWithSuccessResetsAppSessionID() async throws {
-        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
-
-        _ = try await self.purchases.logIn("Static string")
-
-        let manager = try self.mockPaywallEventsManager
-        try await asyncWait { await manager.invokedResetAppSessionID == true }
-    }
-
-    func testLogOutWithSuccessResetsAppSessionID() async throws {
-        self.identityManager.mockLogOutError = nil
-
-        _ = try await self.purchases.logOut()
-
-        let manager = try self.mockPaywallEventsManager
-        try await asyncWait { await manager.invokedResetAppSessionID == true }
-    }
-
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

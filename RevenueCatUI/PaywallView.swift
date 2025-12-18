@@ -16,7 +16,7 @@ import SwiftUI
 
 #if !os(macOS) && !os(tvOS)
 
-/// A SwiftUI view for displaying a `PaywallData` for an `Offering`.
+/// A SwiftUI view for displaying the paywall for an `Offering`.
 ///
 /// ### Related Articles
 /// [Documentation](https://rev.cat/paywalls)
@@ -91,12 +91,12 @@ public struct PaywallView: View {
 
     /// Create a view to display the paywall in a given `Offering`.
     ///
-    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// - Parameter offering: The `Offering` containing the desired paywall to display.
     /// - Parameter fonts: An optional `PaywallFontProvider`.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
     ///
-    /// - Note: if `offering` does not have a current paywall, or it fails to load due to invalid data,
-    /// a default paywall will be displayed.
+    /// - Note: if `offering` does not have a current paywall (`hasPaywall == false`), or it fails to load
+    /// due to invalid data, a default paywall will be displayed.
     /// - Note: Specifying this parameter means that it will ignore the offering configured in an active experiment.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     public init(
@@ -137,7 +137,6 @@ public struct PaywallView: View {
         )
     }
 
-    // @PublicForExternalTesting
     init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
         self.paywallViewOwnsPurchaseHandler = paywallViewOwnsPurchaseHandler
         if paywallViewOwnsPurchaseHandler {

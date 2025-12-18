@@ -1,0 +1,9 @@
+appId: com.revenuecat.maestro.ios
+
+---
+- tapOn: "Manage subscriptions"
+- tapOn: ${SUBSCRIPTION_GROUP}
+- tapOn: "Cancel Subscription"
+- tapOn: "Confirm"
+- tapOn:
+    id: "right_bar_button_item"

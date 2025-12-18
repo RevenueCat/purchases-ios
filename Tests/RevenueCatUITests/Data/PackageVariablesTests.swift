@@ -380,7 +380,8 @@ private extension Package {
                 .toTestProduct()
                 .with(newLocalizedPrice, locale)
                 .toStoreProduct(),
-            offeringIdentifier: self.offeringIdentifier
+            offeringIdentifier: self.offeringIdentifier,
+            webCheckoutUrl: nil
         )
     }
 

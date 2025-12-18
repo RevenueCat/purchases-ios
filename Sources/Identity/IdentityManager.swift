@@ -207,7 +207,7 @@ private extension IdentityManager {
 
     private func shouldInvalidateCaches(for appUserID: String) -> Bool {
         guard self.backend.signatureVerificationEnabled,
-              let info = self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID) else {
+              let info = try? self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID) else {
             return false
         }
 

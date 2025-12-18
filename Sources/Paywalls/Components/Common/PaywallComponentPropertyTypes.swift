@@ -157,15 +157,19 @@ public extension PaywallComponent {
         }
 
         public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let type = try container.decode(ShapeType.self, forKey: .type)
+            do {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let type = try container.decode(ShapeType.self, forKey: .type)
 
-            switch type {
-            case .rectangle:
-                let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
-                self = .rectangle(value)
-            case .pill:
-                self = .pill
+                switch type {
+                case .rectangle:
+                    let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
+                    self = .rectangle(value)
+                case .pill:
+                    self = .pill
+                }
+            } catch {
+                self = .rectangle(nil)
             }
         }
 
@@ -205,15 +209,19 @@ public extension PaywallComponent {
         }
 
         public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let type = try container.decode(ShapeType.self, forKey: .type)
+            do {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let type = try container.decode(ShapeType.self, forKey: .type)
 
-            switch type {
-            case .rectangle:
-                let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
-                self = .rectangle(value)
-            case .circle:
-                self = .circle
+                switch type {
+                case .rectangle:
+                    let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
+                    self = .rectangle(value)
+                case .circle:
+                    self = .circle
+                }
+            } catch {
+                self = .rectangle(nil)
             }
         }
 
@@ -260,18 +268,23 @@ public extension PaywallComponent {
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            let type = try container.decode(MaskShapeType.self, forKey: .type)
 
-            switch type {
-            case .rectangle:
-                let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
-                self = .rectangle(value)
-            case .circle:
-                self = .circle
-            case .concave:
-                self = .concave
-            case .convex:
-                self = .convex
+            do {
+                let type = try container.decode(MaskShapeType.self, forKey: .type)
+
+                switch type {
+                case .rectangle:
+                    let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
+                    self = .rectangle(value)
+                case .circle:
+                    self = .circle
+                case .concave:
+                    self = .concave
+                case .convex:
+                    self = .convex
+                }
+            } catch {
+                self = .rectangle(nil)
             }
         }
 
@@ -363,6 +376,9 @@ public extension PaywallComponent {
         case fill
         case fixed(UInt)
 
+        // Only used for button sheet for now
+        case relative(Double)
+
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -374,21 +390,31 @@ public extension PaywallComponent {
             case .fixed(let value):
                 try container.encode(SizeConstraintType.fixed.rawValue, forKey: .type)
                 try container.encode(value, forKey: .value)
+            case .relative(let value):
+                try container.encode(SizeConstraintType.relative.rawValue, forKey: .type)
+                try container.encode(value, forKey: .value)
             }
         }
 
         public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let type = try container.decode(SizeConstraintType.self, forKey: .type)
+            do {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let type = try container.decode(SizeConstraintType.self, forKey: .type)
 
-            switch type {
-            case .fit:
+                switch type {
+                case .fit:
+                    self = .fit
+                case .fill:
+                    self = .fill
+                case .fixed:
+                    let value = try container.decode(UInt.self, forKey: .value)
+                    self = .fixed(value)
+                case .relative:
+                    let value = try container.decode(Double.self, forKey: .value)
+                    self = .relative(value)
+                }
+            } catch {
                 self = .fit
-            case .fill:
-                self = .fill
-            case .fixed:
-                let value = try container.decode(UInt.self, forKey: .value)
-                self = .fixed(value)
             }
         }
 
@@ -406,6 +432,7 @@ public extension PaywallComponent {
             case fit
             case fill
             case fixed
+            case relative
 
         }
 
@@ -420,6 +447,12 @@ public extension PaywallComponent {
         case spaceAround = "space_around"
         case spaceEvenly = "space_evenly"
 
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let rawValue = try container.decode(String.self)
+            self = FlexDistribution(rawValue: rawValue) ?? .start
+        }
+
     }
 
     enum HorizontalAlignment: String, Codable, Sendable, Hashable, Equatable {
@@ -428,6 +461,12 @@ public extension PaywallComponent {
         case center
         case trailing
 
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let rawValue = try container.decode(String.self)
+            self = HorizontalAlignment(rawValue: rawValue) ?? .leading
+        }
+
     }
 
     enum VerticalAlignment: String, Codable, Sendable, Hashable, Equatable {
@@ -435,6 +474,12 @@ public extension PaywallComponent {
         case top
         case center
         case bottom
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let rawValue = try container.decode(String.self)
+            self = VerticalAlignment(rawValue: rawValue) ?? .top
+        }
 
     }
 
@@ -450,6 +495,12 @@ public extension PaywallComponent {
         case bottomLeading = "bottom_leading"
         case bottomTrailing = "bottom_trailing"
 
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let rawValue = try container.decode(String.self)
+            self = TwoDimensionAlignment(rawValue: rawValue) ?? .top
+        }
+
     }
 
     enum FontWeight: String, Codable, Sendable, Hashable, Equatable {
@@ -463,6 +514,12 @@ public extension PaywallComponent {
         case bold
         case extraBold = "extra_bold"
         case black
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let rawValue = try container.decode(String.self)
+            self = FontWeight(rawValue: rawValue) ?? .regular
+        }
 
     }
 
@@ -479,12 +536,24 @@ public extension PaywallComponent {
         case bodyM = "body_m"
         case bodyS = "body_s"
 
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let rawValue = try container.decode(String.self)
+            self = FontSize(rawValue: rawValue) ?? .bodyM
+        }
+
     }
 
     enum FitMode: String, Codable, Sendable, Hashable, Equatable {
 
         case fit
         case fill
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let rawValue = try container.decode(String.self)
+            self = FitMode(rawValue: rawValue) ?? .fit
+        }
 
     }
 
@@ -512,6 +581,12 @@ public extension PaywallComponent {
         case edgeToEdge = "edge_to_edge"
         case overlaid = "overlay"
         case nested = "nested"
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let rawValue = try container.decode(String.self)
+            self = BadgeStyle(rawValue: rawValue) ?? .overlaid
+        }
 
     }
 

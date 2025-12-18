@@ -162,8 +162,9 @@ private extension ProductsManager {
                                                     errorMessage: errorMessage,
                                                     errorCode: errorCode,
                                                     storeKitErrorDescription: storeKitErrorDescription,
-                                                    requestedProductIds: Array(requestedProductIds),
-                                                    notFoundProductIds: Array(notFoundProductIds),
+                                                    storefront: self.systemInfo.storefront?.countryCode,
+                                                    requestedProductIds: requestedProductIds,
+                                                    notFoundProductIds: notFoundProductIds,
                                                     responseTime: responseTime)
         }
     }
@@ -182,6 +183,8 @@ extension ProductsManagerType {
     }
 
     /// `async` overload for `sk2Products(withIdentifiers:)`
+    ///
+    /// - Throws: `PurchasesError`.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2Products(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
         return try await Async.call { completion in

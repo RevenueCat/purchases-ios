@@ -118,12 +118,26 @@ struct ViewModelFactory {
                 offering: offering
             )
 
+            var sheetStackViewModel: StackComponentViewModel?
+
+            if case let .navigateTo(.sheet(sheet)) = component.action {
+                sheetStackViewModel = try toStackViewModel(
+                    component: sheet.stack,
+                    packageValidator: packageValidator,
+                    firstImageInfo: nil,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering
+                )
+            }
+
             return .button(
                 try ButtonComponentViewModel(
                     component: component,
                     localizationProvider: localizationProvider,
                     offering: offering,
-                    stackViewModel: stackViewModel
+                    stackViewModel: stackViewModel,
+                    sheetStackViewModel: sheetStackViewModel
                 )
             )
         case .package(let component):
@@ -158,7 +172,12 @@ struct ViewModelFactory {
             )
 
             return .purchaseButton(
-                PurchaseButtonComponentViewModel(stackViewModel: stackViewModel)
+                try PurchaseButtonComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    component: component,
+                    offering: offering,
+                    stackViewModel: stackViewModel
+                )
             )
         case .stickyFooter(let component):
             let stackViewModel = try toStackViewModel(
@@ -186,7 +205,7 @@ struct ViewModelFactory {
                         component: descriptionComponent
                     )
                 }
-                return TimelineItemViewModel(
+                return try TimelineItemViewModel(
                     component: item,
                     title: try TextComponentViewModel(
                         localizationProvider: localizationProvider,
@@ -363,7 +382,7 @@ struct ViewModelFactory {
             switch image.size.width {
             case .fill:
                 return .init(imageComponent: image, parentZStack: nil)
-            case .fit, .fixed:
+            case .fit, .fixed, .relative:
                 return nil
             }
         case .icon:
