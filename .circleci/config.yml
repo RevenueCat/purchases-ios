@@ -1556,11 +1556,41 @@ jobs:
       - trust-github-key
       - install-dependencies
       - update-spm-installation-commit
+      
+      # LOCAL_SOURCE
+      - run:
+          name: Set BinarySizeTest integration method (LOCAL_SOURCE)
+          command: |
+            echo 'export TUIST_BINARY_SIZE_TEST_INTEGRATION_METHOD=LOCAL_SOURCE' >> "$BASH_ENV"
       - tuist-generate-workspace:
           query: "BinarySizeTest"
       - run:
-          name: Build BinarySizeTest and upload to Emerge
-          command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis
+          name: Build BinarySizeTest (LOCAL_SOURCE) and upload to Emerge
+          command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:LOCAL_SOURCE
+          no_output_timeout: 30m
+
+      # CocoaPods
+      - run:
+          name: Set BinarySizeTest integration method (COCOAPODS)
+          command: |
+            echo 'export TUIST_BINARY_SIZE_TEST_INTEGRATION_METHOD=COCOAPODS' >> "$BASH_ENV"
+      - tuist-generate-workspace:
+          query: "BinarySizeTest"
+      - run:
+          name: Build BinarySizeTest (COCOAPODS) and upload to Emerge
+          command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:COCOAPODS
+          no_output_timeout: 30m
+
+      # SPM
+      - run:
+          name: Set BinarySizeTest integration method (SPM)
+          command: |
+            echo 'export TUIST_BINARY_SIZE_TEST_INTEGRATION_METHOD=SPM' >> "$BASH_ENV"
+      - tuist-generate-workspace:
+          query: "BinarySizeTest"
+      - run:
+          name: Build BinarySizeTest (SPM) and upload to Emerge
+          command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:SPM
           no_output_timeout: 30m
 
   test-tuist-generate-workspace:
