@@ -109,6 +109,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         .onAppear {
                             self.parentHeight = proxy.size.height
                         }
+                        .allowsHitTesting(false)
                 }
             )
             .animation(.spring(response: 0.35, dampingFraction: 1), value: sheetViewModel)
