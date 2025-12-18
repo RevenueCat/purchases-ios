@@ -2245,7 +2245,7 @@ private extension Purchases {
         // To avoid this, we skip the health check when running integration tests.
         // This is not ideal, and we should consider making the tests more resilient
         // in the future.
-        guard !ProcessInfo.isRunningIntegrationTests else { return }
+        guard !ProcessInfo.isRunningIntegrationTests && !ProcessInfo.isRunningUnitTests else { return }
 
         self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
             guard self?.systemInfo.isAppBackgroundedState == false,
