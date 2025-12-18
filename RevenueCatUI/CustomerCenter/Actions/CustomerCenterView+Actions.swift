@@ -52,124 +52,117 @@ extension CustomerCenterView {
     public typealias ManagementOptionSelectedHandler =
     @MainActor @Sendable (_ managementOption: CustomerCenterActionable) -> Void
 
-    typealias PromotionalOfferSuccessHandler = @MainActor @Sendable () -> Void
+    /// A closure used for notifying when a custom action is selected in the Customer Center.
+    public typealias CustomActionHandler =
+    @MainActor @Sendable (_ actionIdentifier: String, _ purchaseIdentifier: String?) -> Void
+
+    /// A closure used for notifying when a promotional offer succeeded.
+    public typealias PromotionalOfferSuccessHandler = @MainActor @Sendable () -> Void
+
+    /// A closure used for notifying when the change plan button has been selected
+    public typealias ChangePlansHandler = @MainActor @Sendable (_ optionId: String) -> Void
 
     // MARK: - View Modifiers
 
     fileprivate struct OnRestoreStartedModifier: ViewModifier {
         let handler: RestoreStartedHandler
-
         func body(content: Content) -> some View {
-            content
-                .onPreferenceChange(RestoreStartedPreferenceKey.self) { wrappedStarted in
-                    if wrappedStarted != nil {
-                        self.handler()
-                    }
-                }
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.restoreStarted = handler as @MainActor @Sendable () -> Void
+            }
         }
     }
 
     fileprivate struct OnRestoreFailedModifier: ViewModifier {
         let handler: RestoreFailedHandler
-
         func body(content: Content) -> some View {
-            content
-                .onPreferenceChange(CustomerCenterView.RestoreFailedPreferenceKey.self) { wrappedError in
-                    if let error = wrappedError?.value {
-                        self.handler(error)
-                    }
-                }
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.restoreFailed = handler as @MainActor @Sendable (Error) -> Void
+            }
         }
     }
 
     fileprivate struct OnRestoreCompletedModifier: ViewModifier {
         let handler: RestoreCompletedHandler
-
         func body(content: Content) -> some View {
-            content
-                .onPreferenceChange(RestoreCompletedPreferenceKey.self) { wrappedCustomerInfo in
-                    if let customerInfo = wrappedCustomerInfo?.value {
-                        self.handler(customerInfo)
-                    }
-                }
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.restoreCompleted = handler as @MainActor @Sendable (CustomerInfo) -> Void
+            }
         }
     }
 
     fileprivate struct OnShowingManageSubscriptionsModifier: ViewModifier {
         let handler: ShowingManageSubscriptionsHandler
-
         func body(content: Content) -> some View {
-            content
-                .onPreferenceChange(ShowingManageSubscriptionsPreferenceKey.self) { wrappedIsShowing in
-                    if wrappedIsShowing != nil {
-                        self.handler()
-                    }
-                }
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.showingManageSubscriptions = handler as @MainActor @Sendable () -> Void
+            }
         }
     }
 
     fileprivate struct OnRefundRequestStartedModifier: ViewModifier {
         let handler: RefundRequestStartedHandler
-
         func body(content: Content) -> some View {
-            content
-                .onPreferenceChange(RefundRequestStartedPreferenceKey.self) { wrappedProductId in
-                    if let productId = wrappedProductId?.value {
-                        self.handler(productId)
-                    }
-                }
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.refundRequestStarted = handler as @MainActor @Sendable (String) -> Void
+            }
         }
     }
 
     fileprivate struct OnRefundRequestCompletedModifier: ViewModifier {
         let handler: RefundRequestCompletedHandler
-
         func body(content: Content) -> some View {
-            content
-                .onPreferenceChange(RefundRequestCompletedPreferenceKey.self) { wrapped in
-                    if let (productId, status) = wrapped?.value {
-                        self.handler(productId, status)
-                    }
-                }
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.refundRequestCompleted =
+                    handler as @MainActor @Sendable (String, RefundRequestStatus) -> Void
+            }
         }
     }
 
     fileprivate struct OnFeedbackSurveyCompletedModifier: ViewModifier {
         let handler: FeedbackSurveyCompletedHandler
-
         func body(content: Content) -> some View {
-            content
-                .onPreferenceChange(FeedbackSurveyCompletedPreferenceKey.self) { wrappedOptionId in
-                    if let optionId = wrappedOptionId?.value {
-                        self.handler(optionId)
-                    }
-                }
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.feedbackSurveyCompleted = handler as @MainActor @Sendable (String) -> Void
+            }
         }
     }
 
     fileprivate struct OnManagementOptionModifier: ViewModifier {
         let handler: ManagementOptionSelectedHandler
-
         func body(content: Content) -> some View {
-            content
-                .onPreferenceChange(ManagementOptionSelectedPreferenceKey.self) { wrapper in
-                    if let wrapper = wrapper {
-                        handler(wrapper.value)
-                    }
-                }
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.managementOptionSelected =
+                    handler as @MainActor @Sendable (CustomerCenterActionable) -> Void
+            }
         }
     }
 
     struct OnPromotionalOfferSuccess: ViewModifier {
         let handler: PromotionalOfferSuccessHandler
-
         func body(content: Content) -> some View {
-            content
-                .onPreferenceChange(PromotionalOfferSuccessPreferenceKey.self) { wrappedStarted in
-                    if wrappedStarted != nil {
-                        self.handler()
-                    }
-                }
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.promotionalOfferSuccess = handler as @MainActor @Sendable () -> Void
+            }
+        }
+    }
+
+    struct OnChangePlansSelected: ViewModifier {
+        let handler: ChangePlansHandler
+        func body(content: Content) -> some View {
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.changePlansSelected = handler as @MainActor @Sendable (String) -> Void
+            }
+        }
+    }
+
+    fileprivate struct OnCustomActionModifier: ViewModifier {
+        let handler: CustomActionHandler
+        func body(content: Content) -> some View {
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.customActionSelected =
+                    handler as @MainActor @Sendable (String, String?) -> Void
+            }
         }
     }
 }
@@ -316,24 +309,11 @@ extension View {
     }
 
     /// Invokes the given closure when a management option is selected in the Customer Center.
-    /// Example:
     /// ```swift
-    ///  var body: some View {
-    ///     ContentView()
-    ///         .sheet(isPresented: self.$displayCustomerCenter) {
-    ///             CustomerCenterView()
-    ///                 .onCustomerCenterManagementOptionSelected { action in
-    ///                     switch action {
-    ///                     case is CustomerCenterManagementOption.Cancel:
-    ///                         print("Cancel action triggered")
-    ///                     case let customUrl as CustomerCenterManagementOption.CustomUrl:
-    ///                         print("Opening URL: \(customUrl.url)")
-    ///                     default:
-    ///                         print("Unknown action")
-    ///                     }
-    ///                 }
-    ///         }
-    ///  }
+    /// CustomerCenterView()
+    ///     .onCustomerCenterManagementOptionSelected { action in
+    ///         handleManagementAction(action)
+    ///     }
     /// ```
     public func onCustomerCenterManagementOptionSelected(
         _ handler: @escaping CustomerCenterView.ManagementOptionSelectedHandler
@@ -341,10 +321,45 @@ extension View {
         return self.modifier(CustomerCenterView.OnManagementOptionModifier(handler: handler))
     }
 
-    func onCustomerCenterPromotionalOfferSuccess(
+    /// Invokes the given closure when a promotional offer purchase completes successfully in the Customer Center.
+    /// Example:
+    /// ```swift
+    /// CustomerCenterView()
+    ///     .onCustomerCenterPromotionalOfferSuccess {
+    ///         // Refresh UI or reload data
+    ///     }
+    /// ```
+    public func onCustomerCenterPromotionalOfferSuccess(
         _ handler: @escaping CustomerCenterView.PromotionalOfferSuccessHandler
     ) -> some View {
         return self.modifier(CustomerCenterView.OnPromotionalOfferSuccess(handler: handler))
+    }
+
+    /// Invokes the given closure when the user chooses the Change Plans option in the Customer Center.
+    /// Example:
+    /// ```swift
+    /// CustomerCenterView()
+    ///     .onCustomerCenterChangePlansSelected { subscriptionGroupID in
+    ///         // Present change plans UI using StoreKit SubscriptionStoreView
+    ///     }
+    /// ```
+    public func onCustomerCenterChangePlansSelected(
+        _ handler: @escaping CustomerCenterView.ChangePlansHandler
+    ) -> some View {
+        return self.modifier(CustomerCenterView.OnChangePlansSelected(handler: handler))
+    }
+
+    /// Invokes the given closure when a custom action is selected in the Customer Center.
+    /// ```swift
+    /// CustomerCenterView()
+    ///     .onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
+    ///         handleCustomAction(actionIdentifier, purchaseIdentifier)
+    ///     }
+    /// ```
+    public func onCustomerCenterCustomActionSelected(
+        _ handler: @escaping CustomerCenterView.CustomActionHandler
+    ) -> some View {
+        return self.modifier(CustomerCenterView.OnCustomActionModifier(handler: handler))
     }
 }
 

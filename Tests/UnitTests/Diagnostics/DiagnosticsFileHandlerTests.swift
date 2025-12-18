@@ -87,8 +87,8 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - getEntries
 
     func testGetEntries() async throws {
-        await self.fileHandler.append(line: Self.line1)
-        await self.fileHandler.append(line: Self.line2)
+        try await self.fileHandler.append(line: Self.line1)
+        try await self.fileHandler.append(line: Self.line2)
 
         let content1 = DiagnosticsEvent(id: UUID(uuidString: "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC")!,
                                         name: .customerInfoVerificationResult,
@@ -110,8 +110,8 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - emptyFile
 
     func testEmptyFile() async throws {
-        await self.fileHandler.append(line: Self.line1)
-        await self.fileHandler.append(line: Self.line2)
+        try await self.fileHandler.append(line: Self.line1)
+        try await self.fileHandler.append(line: Self.line2)
 
         var data = try await self.fileHandler.readFile()
         expect(data).toNot(beEmpty())
@@ -153,7 +153,7 @@ class DiagnosticsFileHandlerTests: TestCase {
               "version": \(iterator)
             }
             """.trimmingWhitespacesAndNewLines
-            await self.fileHandler.append(line: line)
+            try await self.fileHandler.append(line: line)
         }
 
         let data = try await self.fileHandler.readFile()
@@ -177,7 +177,7 @@ class DiagnosticsFileHandlerTests: TestCase {
               "version": \(iterator)
             }
             """.trimmingWhitespacesAndNewLines
-            await self.fileHandler.append(line: line)
+            try await self.fileHandler.append(line: line)
         }
 
         let data = try await self.fileHandler.readFile()
@@ -219,9 +219,9 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - Invalid entries
 
     func testGetEntriesWithInvalidLine() async throws {
-        await self.fileHandler.append(line: Self.invalidEntryLine)
-        await self.fileHandler.append(line: Self.line1)
-        await self.fileHandler.append(line: Self.line2)
+        try await self.fileHandler.append(line: Self.invalidEntryLine)
+        try await self.fileHandler.append(line: Self.line1)
+        try await self.fileHandler.append(line: Self.line2)
 
         let content1 = DiagnosticsEvent(id: UUID(uuidString: "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC")!,
                                         name: .customerInfoVerificationResult,
@@ -239,6 +239,23 @@ class DiagnosticsFileHandlerTests: TestCase {
         expect(entries[0]).to(beNil())
         expect(entries[1]).to(equal(content1))
         expect(entries[2]).to(equal(content2))
+    }
+
+    // MARK: - FileHandler throwing errors
+
+    func testAppendEventWhenFileManagerAppendLineThrowsError() async throws {
+        struct FakeError: Error {}
+
+        let fileHandler = MockFileHandler()
+        await fileHandler.setAppendLineError(FakeError())
+
+        self.handler = DiagnosticsFileHandler(fileHandler)
+
+        await self.handler.appendEvent(diagnosticsEvent: Self.sampleEvent())
+
+        expect(self.logger.messages).to(containElementSatisfying {
+            $0.message.contains("Failed to store diagnostics event: ")
+        })
     }
 
 }

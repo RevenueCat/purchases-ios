@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 2/13/25.
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 import SwiftUI
 
@@ -40,7 +40,7 @@ struct ProgressViewModifier: ViewModifier {
             let colorInfo = displayableColorScheme.effectiveColor(for: colorScheme)
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle(tint: bestTint(for: colorInfo)))
-        case .image, .none:
+        case .image, .video, .none:
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle(tint: .gray))
         }

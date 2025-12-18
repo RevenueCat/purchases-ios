@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 class LocaleExtensionsTests: TestCase {
 

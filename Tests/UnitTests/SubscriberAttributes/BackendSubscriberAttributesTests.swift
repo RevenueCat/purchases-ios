@@ -54,7 +54,8 @@ class BackendSubscriberAttributesTests: TestCase {
         storefrontProvider: MockStorefrontProvider(),
         storeKitVersion: .versionForTests,
         responseVerificationMode: .disabled,
-        isAppBackgrounded: false
+        isAppBackgrounded: false,
+        preferredLocalesProvider: .mock(locales: ["en-US"])
     )
 
     override func setUpWithError() throws {
@@ -408,6 +409,77 @@ class BackendSubscriberAttributesTests: TestCase {
 
         })
         expect(self.mockHTTPClient.calls).to(beEmpty())
+    }
+
+    func testPostReceiptCachesRequestsWhenOnlyConsentStatusTimestampDiffers() async {
+        // Snapshot of Post receipt is already recorded in other tests
+        self.mockHTTPClient.disableSnapshotTesting()
+
+        // This ensures that the date provider returns a different date each time.
+        // So the consentStatus timestamp will differ between requests
+        let subsequentNows: [Date] = (1...100).map { offset in
+            self.referenceDate.advanced(by: .seconds(offset))
+        }
+        let dateProvider = MockDateProvider(stubbedNow: self.referenceDate, subsequentNows: subsequentNows)
+
+        let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                    systemInfo: self.systemInfo)
+
+        let config = BackendConfiguration(httpClient: self.mockHTTPClient,
+                                          operationDispatcher: MockOperationDispatcher(),
+                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                                          systemInfo: self.systemInfo,
+                                          offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
+                                          dateProvider: dateProvider)
+
+        let backend = Backend(backendConfig: config, attributionFetcher: attributionFetcher)
+
+        let subscriberAttributesByKey: [String: SubscriberAttribute] = [
+            subscriberAttribute1.key: subscriberAttribute1,
+            subscriberAttribute2.key: subscriberAttribute2
+        ]
+
+        self.mockHTTPClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: self.validSubscriberResponse, delay: .milliseconds(200))
+        )
+
+        let postReceiptCall = {
+            await withUnsafeContinuation { continuation in
+                // First POST receipt call
+                backend.post(receipt: self.receipt,
+                             productData: nil,
+                             transactionData: .init(
+                                appUserID: self.appUserID,
+                                presentedOfferingContext: nil,
+                                unsyncedAttributes: subscriberAttributesByKey,
+                                storefront: nil,
+                                source: .init(isRestore: false, initiationSource: .purchase)
+                             ),
+                             observerMode: false) { _ in
+                    continuation.resume()
+                }
+            }
+        }
+
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask {
+                // First POST receipt call
+                await postReceiptCall()
+            }
+
+            group.addTask {
+                // Second identical POST receipt call (only change should be the consentStatus timestamp)
+                await postReceiptCall()
+            }
+        }
+
+        expect(dateProvider.invokedNowCount) > 1
+
+        // Should only make one HTTP call because cache keys are the same
+        // (consentStatus has ignoreTimeInCacheIdentity: true)
+        expect(self.mockHTTPClient.calls).to(haveCount(1))
     }
 
     func createClient() -> MockHTTPClient {

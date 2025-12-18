@@ -15,7 +15,7 @@
 import Foundation
 import RevenueCat
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 /// Protocol defining how partial components can be combined
 protocol PresentedPartial {
@@ -52,6 +52,7 @@ extension PresentedPartial {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
         with presentedOverrides: PresentedOverrides<Self>?
     ) -> Self? {
         guard let presentedOverrides else {
@@ -64,7 +65,9 @@ extension PresentedPartial {
             for: presentedOverride.conditions,
             state: state,
             activeCondition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer) {
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer
+        ) {
             presentedPartial = Self.combine(presentedPartial, with: presentedOverride.properties)
         }
 
@@ -75,7 +78,8 @@ extension PresentedPartial {
         for conditions: [PaywallComponent.Condition],
         state: ComponentViewState,
         activeCondition: ScreenCondition,
-        isEligibleForIntroOffer: Bool
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool
     ) -> Bool {
         // Early return when any condition evaluates to false
         for condition in conditions {
@@ -86,6 +90,10 @@ extension PresentedPartial {
                 }
             case .introOffer:
                 if !isEligibleForIntroOffer {
+                    return false
+                }
+            case .promoOffer:
+                if !isEligibleForPromoOffer {
                     return false
                 }
             case .selected:
@@ -125,7 +133,7 @@ extension Array {
         P: PresentedPartial
     >(
         convert: (T) throws -> P
-    ) throws -> PresentedOverrides<P>
+    ) rethrows -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
         return try self.compactMap { partial in
             let presentedPartial = try convert(partial.properties)

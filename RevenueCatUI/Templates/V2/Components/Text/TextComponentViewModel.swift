@@ -14,7 +14,11 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if canImport(UIKit)
+import UIKit
+#endif
+
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewModel {
@@ -43,17 +47,22 @@ class TextComponentViewModel {
     }
 
     @ViewBuilder
+    @MainActor
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
+        promoOffer: PromotionalOffer?,
+        countdownTime: CountdownTime? = nil,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: promoOffer != nil,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
@@ -67,10 +76,12 @@ class TextComponentViewModel {
                 packageContext: packageContext,
                 variableConfig: uiConfigProvider.variableConfig,
                 locale: self.localizationProvider.locale,
-                localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale)
+                localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
+                promoOffer: promoOffer,
+                countdownTime: countdownTime
             ),
             fontName: partial?.fontName ?? self.component.fontName,
-            fontWeight: partial?.fontWeight ?? self.component.fontWeight,
+            fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
             color: partial?.color ?? self.component.color,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
             size: partial?.size ?? self.component.size,
@@ -83,17 +94,24 @@ class TextComponentViewModel {
         apply(style)
     }
 
-    private static func processText(_ text: String,
-                                    packageContext: PackageContext,
-                                    variableConfig: UIConfig.VariableConfig,
-                                    locale: Locale,
-                                    localizations: [String: String]) -> String {
+    private static func processText(
+        _ text: String,
+        packageContext: PackageContext,
+        variableConfig: UIConfig.VariableConfig,
+        locale: Locale,
+        localizations: [String: String],
+        promoOffer: PromotionalOffer? = nil,
+        countdownTime: CountdownTime? = nil
+    ) -> String {
+
         let processedWithV2 = Self.processTextV2(
             text,
             packageContext: packageContext,
             variableConfig: variableConfig,
             locale: locale,
-            localizations: localizations
+            localizations: localizations,
+            promoOffer: promoOffer,
+            countdownTime: countdownTime
         )
         // Note: This is temporary while in closed beta and shortly after
         let processedWithV2AndV1 = Self.processTextV1(
@@ -105,11 +123,15 @@ class TextComponentViewModel {
         return processedWithV2AndV1
     }
 
-    private static func processTextV2(_ text: String,
-                                      packageContext: PackageContext,
-                                      variableConfig: UIConfig.VariableConfig,
-                                      locale: Locale,
-                                      localizations: [String: String]) -> String {
+    private static func processTextV2(
+        _ text: String,
+        packageContext: PackageContext,
+        variableConfig: UIConfig.VariableConfig,
+        locale: Locale,
+        localizations: [String: String],
+        promoOffer: PromotionalOffer? = nil,
+        countdownTime: CountdownTime? = nil
+    ) -> String {
         guard let package = packageContext.package else {
             return text
         }
@@ -130,7 +152,9 @@ class TextComponentViewModel {
             in: text,
             with: package,
             locale: locale,
-            localizations: localizations
+            localizations: localizations,
+            promoOffer: promoOffer,
+            countdownTime: countdownTime
         )
     }
 
@@ -183,7 +207,7 @@ struct LocalizedTextPartial: PresentedPartial {
                 visible: otherPartial?.visible ?? basePartial?.visible,
                 text: otherPartial?.text ?? basePartial?.text,
                 fontName: otherPartial?.fontName ?? basePartial?.fontName,
-                fontWeight: otherPartial?.fontWeight ?? basePartial?.fontWeight,
+                fontWeight: otherPartial?.fontWeightResolved ?? basePartial?.fontWeightResolved,
                 color: otherPartial?.color ?? basePartial?.color,
                 backgroundColor: otherPartial?.backgroundColor ?? basePartial?.backgroundColor,
                 padding: otherPartial?.padding ?? basePartial?.padding,
@@ -213,6 +237,7 @@ extension LocalizedTextPartial {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
 struct TextComponentStyle {
 
     let visible: Bool
@@ -264,7 +289,22 @@ enum GenericFont: String {
 
     case serif, monospace, sansSerif = "sans-serif"
 
-    func makeFont(fontSize: CGFloat) -> Font {
+    func makeFont(fontSize: CGFloat, useDynamicType: Bool = true) -> Font {
+        #if canImport(UIKit)
+        if useDynamicType {
+            // Keep using `Font.system(...)` so downstream `.fontWeight(...)` / italic / markdown traits
+            // continue to work, while still respecting Dynamic Type via a scaled point size.
+            let scaledSize = UIFontMetrics.default.scaledValue(for: fontSize)
+            return self.makeStaticFont(fontSize: scaledSize)
+        }
+
+        return self.makeStaticFont(fontSize: fontSize)
+        #else
+        return self.makeStaticFont(fontSize: fontSize)
+        #endif
+    }
+
+    private func makeStaticFont(fontSize: CGFloat) -> Font {
         switch self {
         case .serif:
             return Font.system(size: fontSize, weight: .regular, design: .serif)
@@ -280,39 +320,15 @@ enum GenericFont: String {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TextComponentStyle {
 
+    @MainActor
     static func makeFont(size fontSize: CGFloat, name: String?, uiConfigProvider: UIConfigProvider) -> Font {
         // Use default font if no name given
         guard let name = name else {
             return GenericFont.sansSerif.makeFont(fontSize: fontSize)
         }
 
-        let customFont = self.resolveFont(size: fontSize, name: name, uiConfigProvider: uiConfigProvider)
+        let customFont = uiConfigProvider.resolveFont(size: fontSize, name: name)
         return customFont ?? GenericFont.sansSerif.makeFont(fontSize: fontSize)
-    }
-
-    static private func resolveFont(
-        size fontSize: CGFloat,
-        name: String,
-        uiConfigProvider: UIConfigProvider
-    ) -> Font? {
-        guard let familyName = uiConfigProvider.getFontFamily(for: name)  else {
-            Logger.warning("Mapping for '\(name)' could not be found. Falling back to system font.")
-            return nil
-        }
-
-        // Check if the family name is a generic font (serif, sans-serif, monospace)
-        if let genericFont = GenericFont(rawValue: familyName) {
-            return genericFont.makeFont(fontSize: fontSize)
-        }
-
-        guard let customFont = UIFont(name: familyName, size: fontSize) else {
-            Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
-            return nil
-        }
-
-        // Apply dynamic type scaling
-        let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
-        return Font(uiFont)
     }
 
 }

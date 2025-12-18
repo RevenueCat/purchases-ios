@@ -47,7 +47,7 @@ class BaseBackendIntegrationTests: TestCase {
 
     private var mainThreadMonitor: MainThreadMonitor!
 
-    fileprivate var serverIsDown: Bool = false
+    var forceServerErrorStrategy: ForceServerErrorStrategy?
 
     static var isSandbox: Bool = true {
         didSet {
@@ -83,7 +83,8 @@ class BaseBackendIntegrationTests: TestCase {
                             networkTimeout: Configuration.networkTimeoutDefault,
                             dangerousSettings: self.dangerousSettings,
                             showStoreMessagesAutomatically: true,
-                            diagnosticsEnabled: false)
+                            diagnosticsEnabled: false,
+                            preferredLocale: nil)
     }
 
     // MARK: -
@@ -123,6 +124,8 @@ class BaseBackendIntegrationTests: TestCase {
     }
 
     override func tearDown() {
+        self.clearAppDocumentsAndCaches()
+
         super.tearDown()
 
         self.mainThreadMonitor = nil
@@ -156,14 +159,16 @@ class BaseBackendIntegrationTests: TestCase {
 
 private extension BaseBackendIntegrationTests {
 
-    func clearReceiptIfExists() {
-        let manager = FileManager.default
+    var fileManager: FileManager {
+        .default
+    }
 
-        guard let url = Bundle.main.appStoreReceiptURL, manager.fileExists(atPath: url.path) else { return }
+    func clearReceiptIfExists() {
+        guard let url = Bundle.main.appStoreReceiptURL, fileManager.fileExists(atPath: url.path) else { return }
 
         do {
             Logger.info(TestMessage.removing_receipt(url))
-            try manager.removeItem(at: url)
+            try fileManager.removeItem(at: url)
         } catch {
             Logger.appleWarning(TestMessage.error_removing_url(url, error))
         }
@@ -184,6 +189,23 @@ private extension BaseBackendIntegrationTests {
                 beNil(),
                 description: "Found existing user after clearing UserDefaults"
             )
+    }
+
+    func clearAppDocumentsAndCaches() {
+        let storageDirectoryURLs = [
+            fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first,
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        ].compactMap(\.self)
+
+        for directoryURL in storageDirectoryURLs {
+            guard fileManager.fileExists(atPath: directoryURL.path) else { continue }
+
+            do {
+                try fileManager.removeItem(at: directoryURL)
+            } catch {
+                Logger.appleWarning(TestMessage.error_removing_directory(directoryURL, error))
+            }
+        }
     }
 
     func createPurchases() async {
@@ -238,12 +260,20 @@ private extension BaseBackendIntegrationTests {
 
 extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
 
-    var forceServerErrors: Bool { return self.serverIsDown }
     var forceSignatureFailures: Bool { return false }
     var disableHeaderSignatureVerification: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
 
-    final func serverDown() { self.serverIsDown = true }
-    final func serverUp() { self.serverIsDown = false }
+    final func serverDown() {
+        self.forceServerErrorStrategy = .allServersDown
+    }
+
+    final func mainServerDown() {
+        self.forceServerErrorStrategy = .failExceptFallbackUrls
+    }
+
+    final func allServersUp() {
+        self.forceServerErrorStrategy = nil
+    }
 
 }

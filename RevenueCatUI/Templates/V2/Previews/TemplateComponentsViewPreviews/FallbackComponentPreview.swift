@@ -16,7 +16,7 @@ import SwiftUI
 
 // swiftlint:disable force_try
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
@@ -114,16 +114,18 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
         component: PaywallComponent,
         packageValidator: PackageValidator,
         offering: Offering,
-        localizationProvider: LocalizationProvider
+        localizationProvider: LocalizationProvider,
+        colorScheme: ColorScheme
     ) -> PaywallComponentViewModel {
         let factory = ViewModelFactory()
         return try! factory.toViewModel(
             component: component,
             packageValidator: packageValidator,
-            firstImageInfo: nil,
+            firstItemIgnoresSafeAreaInfo: nil,
             offering: offering,
             localizationProvider: localizationProvider,
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            colorScheme: colorScheme
         )
     }
 
@@ -148,12 +150,13 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
                     component: componentWithFallback,
                     packageValidator: PackageValidator(),
                     offering: offering,
-                    localizationProvider: localizationProvider
+                    localizationProvider: localizationProvider,
+                    colorScheme: .light
                 )
             ],
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Component With Fallback")
     }

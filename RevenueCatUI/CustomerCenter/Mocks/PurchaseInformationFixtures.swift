@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 10/25/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -62,7 +62,8 @@ enum PurchaseInformationFixtures {
                 )),
                 refundWindowDuration: .forever
             )
-        ]
+        ],
+        offering: nil
     )
 
     static func screenWithPromo(offerID: String) -> CustomerCenterConfigData.Screen {
@@ -86,7 +87,8 @@ enum PurchaseInformationFixtures {
                     )),
                     refundWindowDuration: .forever
                 )
-            ]
+            ],
+            offering: nil
         )
     }
 

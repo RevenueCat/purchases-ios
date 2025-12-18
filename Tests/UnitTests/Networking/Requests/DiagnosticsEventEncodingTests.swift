@@ -47,7 +47,8 @@ class DiagnosticsEventEncodingTests: TestCase {
             winBackOfferApplied: false,
             purchaseResult: .userCancelled,
             cacheFetchPolicy: .cachedOrFetched,
-            isRetry: true
+            isRetry: true,
+            connectionErrorReason: .noNetwork
         ),
         timestamp: dateFormatter.date(from: "2022-03-08T17:42:58Z")!,
         appSessionId: UUID(uuidString: "16D1E479-56B7-4AD9-974C-D6CC7C3DB338")!

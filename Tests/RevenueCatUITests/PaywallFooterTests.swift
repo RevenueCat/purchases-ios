@@ -13,7 +13,7 @@
 
 import Nimble
 import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
 
@@ -125,7 +125,7 @@ class PaywallFooterTests: TestCase {
         Task {
             _ = try await Self.purchaseHandler.restorePurchases()
             // Simulates what `RestorePurchasesButton` does after dismissing the alert.
-            Self.purchaseHandler.setRestored(TestData.customerInfo)
+            Self.purchaseHandler.setRestored(TestData.customerInfo, success: false)
         }
 
         expect(customerInfo).toEventually(be(TestData.customerInfo))

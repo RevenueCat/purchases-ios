@@ -43,18 +43,18 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
 
     private weak var delegate: DiagnosticsFileHandlerDelegate?
 
-    private let fileHandler: FileHandler
+    private let fileHandler: FileHandlerType
 
     init?() {
         do {
-            self.fileHandler = try .init(Self.diagnosticsFile)
+            self.fileHandler = try FileHandler(Self.diagnosticsFile)
         } catch {
             Logger.error("Initialization error: \(error.localizedDescription)")
             return nil
         }
     }
 
-    init(_ fileHandler: FileHandler) {
+    init(_ fileHandler: FileHandlerType) {
         self.fileHandler = fileHandler
     }
 
@@ -68,7 +68,11 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
             return
         }
 
-        await self.fileHandler.append(line: jsonString)
+        do {
+            try await self.fileHandler.append(line: jsonString)
+        } catch {
+            Logger.error(Strings.diagnostics.failed_to_store_diagnostics_event(error: error))
+        }
 
         if await self.isDiagnosticsFileBigEnoughToSync() {
             await self.delegate?.onFileSizeIncreasedBeyondAutomaticSyncLimit()

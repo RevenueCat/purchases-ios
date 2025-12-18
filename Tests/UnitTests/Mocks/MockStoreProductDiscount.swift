@@ -11,6 +11,7 @@
 //
 //  Created by Nacho Soto on 1/17/22.
 
+import Foundation
 @_spi(Internal) @testable import RevenueCat
 
 struct MockStoreProductDiscount {

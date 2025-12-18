@@ -11,7 +11,7 @@
 //
 //  Created by JayShortway on 16/08/2024.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -78,9 +78,8 @@ struct AppUpdateWarningView: View {
                     }
                     .padding(.horizontal, 24)
                 })
-                .scrollableIfNecessary(.vertical)
+                .scrollableIfNecessaryWhenAvailableForV1(.vertical)
             }
-            .dismissCircleButtonToolbarIfNeeded()
     }
 }
 

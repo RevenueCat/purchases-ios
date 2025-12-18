@@ -14,12 +14,14 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum BackgroundStyle: Hashable {
 
     case color(DisplayableColorScheme)
-    case image(PaywallComponent.ThemeImageUrls, PaywallComponent.FitMode)
+    case image(PaywallComponent.ThemeImageUrls, PaywallComponent.FitMode, DisplayableColorScheme?)
+    case video(VideoComponentViewModel, DisplayableColorScheme?)
 
 }
 
@@ -29,16 +31,20 @@ struct BackgroundStyleModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme
 
+    @State var size: CGSize?
+
     var backgroundStyle: BackgroundStyle?
     var alignment: Alignment
 
     func body(content: Content) -> some View {
         if let backgroundStyle {
             content
+                .onSizeChange { size = $0 }
                 .apply(
                     backgroundStyle: backgroundStyle,
                     colorScheme: colorScheme,
-                    alignment: alignment
+                    alignment: alignment,
+                    size: size
                 )
         } else {
             content
@@ -54,36 +60,17 @@ fileprivate extension View {
     func apply(
         backgroundStyle: BackgroundStyle,
         colorScheme: ColorScheme,
-        alignment: Alignment
+        alignment: Alignment,
+        size: CGSize? = nil
     ) -> some View {
         switch backgroundStyle {
         case .color(let color):
-            switch color.effectiveColor(for: colorScheme) {
-            case .hex:
-                self.background(
-                    color.toDynamicColor()
-                        .edgesIgnoringSafeArea(.all)
-                )
-            case .linear(let degrees, _):
-                self.background {
-                    GradientView(
-                        lightGradient: color.light.toGradient(),
-                        darkGradient: color.dark?.toGradient(),
-                        gradientStyle: .linear(degrees)
-                    )
+            self.background(
+                color
+                    .toView(colorScheme: colorScheme)
                     .edgesIgnoringSafeArea(.all)
-                }
-            case .radial:
-                self.background {
-                    GradientView(
-                        lightGradient: color.light.toGradient(),
-                        darkGradient: color.dark?.toGradient(),
-                        gradientStyle: .radial
-                    )
-                    .edgesIgnoringSafeArea(.all)
-                }
-            }
-        case .image(let imageInfo, let fitMode):
+            )
+        case let .image(imageInfo, fitMode, colorOverlay):
             self.background(alignment: alignment) {
                 RemoteImage(
                     url: imageInfo.light.heic,
@@ -95,8 +82,40 @@ fileprivate extension View {
                         .resizable()
                         .aspectRatio(contentMode: fitMode.contentMode)
                         .ignoresSafeArea()
+                }.overlay {
+                    ZStack {
+                        HStack { Spacer() }
+                        VStack { Spacer() }
+                        if let colorOverlay {
+                            colorOverlay
+                                .toView(colorScheme: colorScheme)
+                        }
+                    }
+                    .edgesIgnoringSafeArea(.all)
                 }
                 .edgesIgnoringSafeArea(.all)
+            }
+        case let .video(viewModel, colorOverlay):
+            self.background(alignment: alignment) {
+                ZStack {
+                    VideoComponentView(viewModel: viewModel)
+                        .overlay {
+                            ZStack {
+                                HStack { Spacer() }
+                                VStack { Spacer() }
+                                if let colorOverlay {
+                                    colorOverlay
+                                        .toView(colorScheme: colorScheme)
+                                }
+                            }
+                            .edgesIgnoringSafeArea(.all)
+                        }
+                        // enforces video clipping to the exact bounds of the view where .clipped does not
+                        .mask(self.overlay(content: {
+                            Color.black
+                        }))
+                        .edgesIgnoringSafeArea(.all)
+                }
             }
         }
     }
@@ -104,27 +123,38 @@ fileprivate extension View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension DisplayableColorScheme {
+    @ViewBuilder
+    func toView(colorScheme: ColorScheme) -> some View {
+        switch self.effectiveColor(for: colorScheme) {
+        case .hex:
+            toDynamicColor(with: colorScheme)
+        case .linear(let degrees, _):
+            GradientView(
+                lightGradient: light.toGradient(),
+                darkGradient: dark?.toGradient(),
+                gradientStyle: .linear(degrees)
+            )
+        case .radial:
+            GradientView(
+                lightGradient: light.toGradient(),
+                darkGradient: dark?.toGradient(),
+                gradientStyle: .radial
+            )
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
-    func backgroundStyle(_ backgroundStyle: BackgroundStyle?, alignment: Alignment = .center) -> some View {
+    func backgroundStyle(_ backgroundStyle: BackgroundStyle?, alignment: Alignment = .center ) -> some View {
         self.modifier(BackgroundStyleModifier(backgroundStyle: backgroundStyle, alignment: alignment))
     }
 
 }
 
-extension BackgroundStyle {
-
-    var backgroundStyle: BackgroundStyle? {
-        switch self {
-        case .color(let value):
-            return .color(value)
-        case .image(let value, let fitMode):
-            return .image(value, fitMode)
-        }
-    }
-
-}
-
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension DisplayableColorScheme {
 
     var backgroundStyle: BackgroundStyle {
@@ -181,69 +211,95 @@ struct BackgrounDStyle_Previews: PreviewProvider {
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Color - Dark (should be red because fallback)")
 
-        // Image (Fill) - Light (should be pink cat)
-        testContent
-            .backgroundStyle(.image(.init(
-                light: .init(
-                    width: 750,
-                    height: 530,
-                    original: lightUrl,
-                    heic: lightUrl,
-                    heicLowRes: lightUrl
-                ),
-                dark: .init(
-                    width: 1024,
-                    height: 853,
-                    original: darkUrl,
-                    heic: darkUrl,
-                    heicLowRes: darkUrl
-                )
-            ), .fill))
-            .previewLayout(.sizeThatFits)
-            .previewDisplayName("Image (Fill) - Light (should be pink cat)")
+        // Images
+        Group {
+            // Image (Fill) - Light (should be pink cat)
+            testContent
+                .backgroundStyle(.image(.init(
+                    light: .init(
+                        width: 750,
+                        height: 530,
+                        original: lightUrl,
+                        heic: lightUrl,
+                        heicLowRes: lightUrl
+                    ),
+                    dark: .init(
+                        width: 1024,
+                        height: 853,
+                        original: darkUrl,
+                        heic: darkUrl,
+                        heicLowRes: darkUrl
+                    )
+                ), .fill, nil))
+                .previewLayout(.sizeThatFits)
+                .previewDisplayName("Image (Fill) - Light (should be pink cat)")
 
-        // Image (Fill) - Dark (should be japan cats)
-        testContent
-            .backgroundStyle(.image(.init(
-                light: .init(
-                    width: 750,
-                    height: 530,
-                    original: lightUrl,
-                    heic: lightUrl,
-                    heicLowRes: lightUrl
-                ),
-                dark: .init(
-                    width: 1024,
-                    height: 853,
-                    original: darkUrl,
-                    heic: darkUrl,
-                    heicLowRes: darkUrl
-                )
-            ), .fill))
-            .preferredColorScheme(.dark)
-            .previewLayout(.sizeThatFits)
-            .previewDisplayName("Image - Dark (should be japan cats)")
+            // Image (Fill) - Dark (should be japan cats)
+            testContent
+                .backgroundStyle(.image(.init(
+                    light: .init(
+                        width: 750,
+                        height: 530,
+                        original: lightUrl,
+                        heic: lightUrl,
+                        heicLowRes: lightUrl
+                    ),
+                    dark: .init(
+                        width: 1024,
+                        height: 853,
+                        original: darkUrl,
+                        heic: darkUrl,
+                        heicLowRes: darkUrl
+                    )
+                ), .fill, nil))
+                .preferredColorScheme(.dark)
+                .previewLayout(.sizeThatFits)
+                .previewDisplayName("Image - Dark (should be japan cats)")
 
-        // Image (Fit) - Light (should be pink cat)
-        testContent
-            .backgroundStyle(.image(.init(
-                light: .init(
-                    width: 750,
-                    height: 530,
-                    original: lightUrl,
-                    heic: lightUrl,
-                    heicLowRes: lightUrl
-                ),
-                dark: .init(
-                    width: 1024,
-                    height: 853,
-                    original: darkUrl,
-                    heic: darkUrl,
-                    heicLowRes: darkUrl
+            // Image (Fill) - Light - with overlay gradient
+            testContent
+                .backgroundStyle(
+                    .image(
+                        .init(
+                            light: .init(
+                                width: 750,
+                                height: 530,
+                                original: lightUrl,
+                                heic: lightUrl,
+                                heicLowRes: lightUrl
+                            )
+                        ),
+                        .fill,
+                        .init(light: .linear(0, [
+                            .init(color: "#ff000088", percent: 30),
+                            .init(color: "#00000000", percent: 100)
+                        ]))
+                    )
                 )
-            ), .fit))
-            .previewLayout(.sizeThatFits)
-            .previewDisplayName("Image (Fit) - Light (should be pink cat)")
+                .previewLayout(.sizeThatFits)
+                .previewDisplayName("Image (Fill) - Light - with overlay gradient")
+
+            // Image (Fit) - Light (should be pink cat)
+            testContent
+                .backgroundStyle(.image(.init(
+                    light: .init(
+                        width: 750,
+                        height: 530,
+                        original: lightUrl,
+                        heic: lightUrl,
+                        heicLowRes: lightUrl
+                    ),
+                    dark: .init(
+                        width: 1024,
+                        height: 853,
+                        original: darkUrl,
+                        heic: darkUrl,
+                        heicLowRes: darkUrl
+                    )
+                ), .fit, nil))
+                .previewLayout(.sizeThatFits)
+                .previewDisplayName("Image (Fit) - Light (should be pink cat)")
+        }
 
         testContent
             .backgroundStyle(

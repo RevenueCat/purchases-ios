@@ -37,7 +37,7 @@ class IdentityManagerTests: TestCase {
 
         self.mockSystemInfo = MockSystemInfo(finishTransactions: false)
 
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
         self.mockCustomerInfoManager = MockCustomerInfoManager(
             offlineEntitlementsManager: MockOfflineEntitlementsManager(),
             operationDispatcher: MockOperationDispatcher(),
@@ -81,7 +81,10 @@ class IdentityManagerTests: TestCase {
     }
 
     func testConfigureDoesNotInvalidateCachesIfVerificationIsDisabled() {
-        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(with: .notRequested)
+        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(
+            with: .notRequested,
+            httpResponseOriginalSource: .mainServer
+        )
         self.mockBackend.stubbedSignatureVerificationEnabled = false
         self.create(appUserID: "nacho")
 
@@ -101,7 +104,10 @@ class IdentityManagerTests: TestCase {
     }
 
     func testConfigureDoesNotInvalidateCachesIfCachedUserIsVerified() {
-        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(with: .verified)
+        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(
+            with: .verified,
+            httpResponseOriginalSource: .mainServer
+        )
         self.mockBackend.stubbedSignatureVerificationEnabled = true
         self.create(appUserID: "nacho")
 
@@ -111,7 +117,10 @@ class IdentityManagerTests: TestCase {
     }
 
     func testConfigureInvalidesCacheIfVerificationIsEnabledButCachedUserIsNotVerified() throws {
-        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(with: .notRequested)
+        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(
+            with: .notRequested,
+            httpResponseOriginalSource: .mainServer
+        )
         self.mockBackend.stubbedSignatureVerificationEnabled = true
         self.create(appUserID: "nacho")
 
@@ -400,7 +409,8 @@ class IdentityManagerTests: TestCase {
         self.mockSystemInfo = MockSystemInfo(
             platformInfo: nil,
             finishTransactions: false,
-            dangerousSettings: dangerousSettings
+            dangerousSettings: dangerousSettings,
+            preferredLocalesProvider: .mock()
         )
 
         let manager = create(appUserID: nil)
@@ -414,7 +424,8 @@ class IdentityManagerTests: TestCase {
         self.mockSystemInfo = MockSystemInfo(
             platformInfo: nil,
             finishTransactions: false,
-            dangerousSettings: dangerousSettings
+            dangerousSettings: dangerousSettings,
+            preferredLocalesProvider: .mock()
         )
 
         let manager = create(appUserID: "test_user")

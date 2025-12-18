@@ -15,9 +15,9 @@ import Nimble
 import XCTest
 
 #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-@testable import RevenueCat_CustomEntitlementComputation
+@_spi(Internal) @testable import RevenueCat_CustomEntitlementComputation
 #else
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 #endif
 
 @MainActor
@@ -89,10 +89,10 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
     }
 
     private func flushAndVerify(eventsCount: Int) async throws {
-        _ = try await Purchases.shared.flushPaywallEvents(count: 2)
+        _ = try await Purchases.shared.flushPaywallEvents(count: eventsCount)
 
         self.logger.verifyMessageWasLogged(
-            Strings.paywalls.event_flush_starting(count: 2)
+            Strings.paywalls.event_flush_starting(count: eventsCount)
         )
 
         self.logger.verifyMessageWasLogged(

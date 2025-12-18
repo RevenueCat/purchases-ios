@@ -273,7 +273,7 @@ class TransactionPosterTests: TestCase {
     // MARK: - shouldFinishTransaction
 
     func testShouldNotFinishWithOfflineCustomerInfo() throws {
-        let info = Self.mockCustomerInfo.copy(with: .verifiedOnDevice)
+        let info = Self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
 
         expect(
             TransactionPoster.shouldFinish(
@@ -350,15 +350,57 @@ class TransactionPosterTests: TestCase {
         ) == true
     }
 
+    func testPostReceiptForPurchaseInSimulatedStore() throws {
+        self.setUp(observerMode: false, storeKitVersion: .storeKit2, apiKeyValidationResult: .simulatedStore)
+        let purchaseDate = Date()
+        let purchaseToken = "test_\(purchaseDate.millisecondsSince1970)_\(UUID().uuidString)"
+
+        self.mockTransaction = MockStoreTransaction(jwsRepresentation: purchaseToken)
+
+        let product = TestStoreProduct(localizedTitle: "Fake product",
+                                       price: 9.99,
+                                       currencyCode: "USD",
+                                       localizedPriceString: "$9.99",
+                                       productIdentifier: "fake_product",
+                                       productType: .autoRenewableSubscription,
+                                       localizedDescription: "Fake product description",
+                                       locale: .current)
+
+        let transactionData = PurchasedTransactionData(
+            appUserID: "user",
+            source: .init(isRestore: false, initiationSource: .queue)
+        )
+
+        self.productsManager.stubbedProductsCompletionResult = .success([product.toStoreProduct()])
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let result = try self.handleTransaction(transactionData)
+        expect(result).to(beSuccess())
+        expect(result.value) === Self.mockCustomerInfo
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(purchaseToken)
+        expect(self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier) == "fake_product"
+        expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
+
+        expect(self.receiptFetcher.receiptDataCalled) == false
+        expect(self.transactionFetcher.appTransactionJWSCalled.value) == false
+    }
+
 }
 
 // MARK: -
 
 private extension TransactionPosterTests {
 
-    func setUp(observerMode: Bool, storeKitVersion: StoreKitVersion = .default) {
+    func setUp(observerMode: Bool,
+               storeKitVersion: StoreKitVersion = .default,
+               apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform) {
         self.operationDispatcher = .init()
-        self.systemInfo = .init(finishTransactions: !observerMode, storeKitVersion: storeKitVersion)
+        self.systemInfo = .init(finishTransactions: !observerMode,
+                                storeKitVersion: storeKitVersion,
+                                apiKeyValidationResult: apiKeyValidationResult)
         self.productsManager = .init(diagnosticsTracker: nil, systemInfo: self.systemInfo, requestTimeout: 0)
         self.receiptFetcher = .init(requestFetcher: .init(operationDispatcher: self.operationDispatcher),
                                     systemInfo: self.systemInfo)
@@ -390,10 +432,12 @@ private extension TransactionPosterTests {
     static func createTestProduct(_ productType: StoreProduct.ProductType) -> TestStoreProduct {
         return .init(localizedTitle: "Title",
                      price: 1.99,
+                     currencyCode: "USD",
                      localizedPriceString: "$1.99",
                      productIdentifier: "product",
                      productType: productType,
-                     localizedDescription: "Description")
+                     localizedDescription: "Description",
+                     locale: .init(identifier: "en_US"))
     }
 
     func createCustomerInfo(nonSubscriptionProductID: String?) -> CustomerInfo {
@@ -429,12 +473,13 @@ private extension TransactionPosterTests {
         )
         return CustomerInfo(response: response,
                             entitlementVerification: .notRequested,
-                            sandboxEnvironmentDetector: self.systemInfo)
+                            sandboxEnvironmentDetector: self.systemInfo,
+                            httpResponseOriginalSource: .mainServer)
     }
 
 }
 
-private func match(_ data: PurchasedTransactionData) -> Nimble.Predicate<PurchasedTransactionData> {
+private func match(_ data: PurchasedTransactionData) -> Nimble.Matcher<PurchasedTransactionData> {
     return .init {
         let other = try $0.evaluate()
         let matches = (other?.appUserID == data.appUserID &&

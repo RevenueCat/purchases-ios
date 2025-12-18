@@ -16,7 +16,7 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BadgeModifier: ViewModifier {
@@ -33,7 +33,7 @@ struct BadgeModifier: ViewModifier {
         let uiConfigProvider: UIConfigProvider
 
         var backgroundStyle: BackgroundStyle? {
-            stack.background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+            stack.background?.asDisplayable(uiConfigProvider: uiConfigProvider)
                 ?? stack.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         }
     }
@@ -62,7 +62,7 @@ fileprivate extension View {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
-                            .shape(border: nil, shape: effectiveShape(badge: badge))
+                            .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
                     }
                     .fixedSize()
                     .padding(effectiveMargin(badge: badge).edgeInsets)
@@ -81,7 +81,7 @@ fileprivate extension View {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
-                            .shape(border: nil, shape: effectiveShape(badge: badge))
+                            .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
                     }
                     .fixedSize()
                     .padding(effectiveMargin(badge: badge).edgeInsets)
@@ -109,7 +109,7 @@ fileprivate extension View {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
-                            .shape(border: nil, shape: effectiveShape(badge: badge))
+                            .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
                     }
                     .fixedSize()
                 }
@@ -310,14 +310,9 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
                 badgeView
             }
             content
-                .background(
-                    GeometryReader { geometry in
-                        Color.clear
-                            .onAppear {
-                                stackSize = geometry.size
-                            }
-                    }
-                )
+                .onSizeChange { size in
+                    stackSize = size
+                }
             if badge.alignment == .bottom {
                 badgeView
             }
@@ -326,7 +321,7 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
             VStack {}
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .backgroundStyle(badge.backgroundStyle)
-                .shape(border: nil,
+                .shape(border: badge.stackBorder,
                        shape: effectiveShape(badge: badge,
                                              pillStackRadius: min(stackSize.width, stackSize.height)/2))
         }
@@ -401,7 +396,8 @@ struct BadgePreviews: View {
                         "text_1": .string("Feature 1\nFeature 2\nFeature 3\nFeature 4"),
                         "text_2": .string("Special Discount\nSave 50%")
                     ]
-                )
+                ),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
@@ -432,7 +428,7 @@ struct BadgePreviews: View {
         .previewLayout(.sizeThatFits)
         .padding(30)
         .padding(.vertical, 50)
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
     }
 }
 

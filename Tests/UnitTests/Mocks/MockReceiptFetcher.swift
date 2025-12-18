@@ -10,6 +10,7 @@
 //  MockReceiptFetcher.swift
 //
 
+import Foundation
 @testable import RevenueCat
 
 class MockReceiptFetcher: ReceiptFetcher {

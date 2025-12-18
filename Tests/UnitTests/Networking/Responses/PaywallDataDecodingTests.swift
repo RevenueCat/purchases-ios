@@ -72,9 +72,9 @@ class PaywallDataDecodingTests: BaseHTTPResponseTest {
         expect(esConfig.offerName).to(beNil())
         expect(esConfig.features).to(beEmpty())
 
-        // This test relies on this
-        expect(Locale.current.identifier) == "en_US"
-        expect(paywall.localizedConfiguration) == paywall.config(for: Locale.current)
+        // This test relies on locale being en_US (though region override is ok)
+        expect(Locale.current.identifier).to(beginWith("en_US"))
+        expect(paywall.localizedConfiguration) == enConfig
 
         expect(paywall.config(for: Locale(identifier: "gl_ES"))).to(beNil())
     }

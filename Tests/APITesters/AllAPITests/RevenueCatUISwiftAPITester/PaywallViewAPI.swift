@@ -9,7 +9,7 @@ import RevenueCat
 import RevenueCatUI
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct App: View {
 
@@ -23,6 +23,9 @@ struct App: View {
     private var purchaseCancelled: PurchaseCancelledHandler = { () in }
     private var restoreStarted: RestoreStartedHandler = { }
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
+
+    private var purchaseInitiated = { (_: Package, _: ResumeAction) in }
+
     #if !os(watchOS)
     private var paywallTierChange: PaywallTierChangeHandler = { (_: PaywallData.Tier, _: String) in }
     #endif
@@ -724,6 +727,7 @@ struct App: View {
     @ViewBuilder
     var checkPaywallViewModifiers: some View {
         Text("")
+            .onPurchaseInitiated(self.purchaseInitiated)
             .onPurchaseStarted(self.purchaseOfPackageStarted)
             .onPurchaseCompleted(self.purchaseOrRestoreCompleted)
             .onPurchaseCompleted(self.purchaseCompleted)

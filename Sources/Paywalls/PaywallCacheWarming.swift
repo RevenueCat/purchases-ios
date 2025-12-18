@@ -9,10 +9,12 @@
 //
 //  PaywallCacheWarming.swift
 //
+
 //  Created by Nacho Soto on 8/7/23.
 
 import Foundation
 
+// swiftlint:disable file_length
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -21,6 +23,18 @@ protocol PaywallCacheWarmingType: Sendable {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallImagesCache(offerings: Offerings) async
 
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func warmUpPaywallVideosCache(offerings: Offerings) async
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func warmUpPaywallFontsCache(offerings: Offerings) async
+
+#if !os(tvOS) // For Paywalls
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async
+
+#endif
 }
 
 protocol PaywallImageFetcherType: Sendable {
@@ -30,21 +44,38 @@ protocol PaywallImageFetcherType: Sendable {
 
 }
 
+protocol PaywallFontManagerType: Sendable {
+
+    func fontIsAlreadyInstalled(fontName: String, fontFamily: String?) -> Bool
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func installFont(_ font: DownloadableFont) async throws
+
+}
+
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let imageFetcher: PaywallImageFetcherType
+    private let fontsManager: PaywallFontManagerType
+    private let fileRepository: FileRepositoryType
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
+    private var hasLoadedVideos = false
+    private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
-        imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher()
+        imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher(),
+        fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
+        fileRepository: FileRepositoryType = FileRepository.shared
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.imageFetcher = imageFetcher
+        self.fontsManager = fontsManager
+        self.fileRepository = fileRepository
     }
 
     func warmUpEligibilityCache(offerings: Offerings) {
@@ -67,14 +98,95 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: imageURLs))
 
-        for url in imageURLs {
+        await withTaskGroup(of: Void.self) { group in
+            for url in imageURLs {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    // Preferred method - load with FileRepository
+                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
+
+                    // Legacy method - load with URLSession
+                    do {
+                        try await self.imageFetcher.downloadImage(url)
+                    } catch {
+                        Logger.error(Strings.paywalls.error_prefetching_image(url, error))
+                    }
+                }
+            }
+        }
+    }
+
+    func warmUpPaywallVideosCache(offerings: Offerings) async {
+        guard !self.hasLoadedVideos else { return }
+        self.hasLoadedVideos = true
+
+        let videoURLs = offerings.allLowResVideosInPaywalls
+        guard !videoURLs.isEmpty else { return }
+
+        Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: videoURLs))
+        await withTaskGroup(of: Void.self) { group in
+            for source in videoURLs {
+                group.addTask { [weak self] in
+                    _ = try? await self?.fileRepository.generateOrGetCachedFileURL(
+                        for: source.url,
+                        withChecksum: source.checksum
+                    )
+                }
+            }
+        }
+    }
+
+    func warmUpPaywallFontsCache(offerings: Offerings) async {
+        let allFontsInPaywallsNamed = offerings.allFontsInPaywallsNamed
+        let allFontURLs = Set(allFontsInPaywallsNamed.map(\.url))
+        Logger.verbose(Strings.paywalls.warming_up_fonts(fontsURLS: allFontURLs))
+
+        await withTaskGroup(of: Void.self) { group in
+            for font in allFontsInPaywallsNamed {
+                group.addTask { [weak self] in
+                    await self?.installFont(from: font)
+                }
+            }
+        }
+    }
+
+#if !os(tvOS)
+
+    /// Downloads and installs the font if it is not already installed.
+    func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async {
+        guard let downloadableFont = fontsConfig.downloadableFont else { return }
+        await self.installFont(from: downloadableFont)
+    }
+
+#endif
+
+    private func installFont(from font: DownloadableFont) async {
+        if let existingTask = ongoingFontDownloads[font.url] {
+            // Already downloading, await the existing task.
+            Logger.debug(Strings.paywalls.font_download_already_in_progress(
+                name: font.name,
+                fontURL: font.url)
+            )
+            await existingTask.value
+            return
+        }
+
+        if self.fontsManager.fontIsAlreadyInstalled(fontName: font.name, fontFamily: font.fontFamily) {
+            // Font already available, no need to download.
+            return
+        }
+
+        let task = Task {
             do {
-                try await self.imageFetcher.downloadImage(url)
+                try await self.fontsManager.installFont(font)
             } catch {
-                Logger.error(Strings.paywalls.error_prefetching_image(url, error))
+                Logger.error(Strings.paywalls.error_installing_font(font.url, error))
             }
         }
 
+        ongoingFontDownloads[font.url] = task
+        await task.value
+        ongoingFontDownloads[font.url] = nil
     }
 
 }
@@ -151,7 +263,34 @@ private extension Offerings {
         )
     }
 
-    #if !os(macOS) && !os(tvOS) // For Paywalls V2
+    var allLowResVideosInPaywalls: Set<URLWithValidation> {
+        return .init(
+            self
+                .all
+                .values
+                .lazy
+                .compactMap(\.paywallComponents)
+                .flatMap(\.data.allLowResVideoUrls)
+        )
+    }
+
+#if !os(tvOS) // For Paywalls V2
+
+    var allFontsInPaywallsNamed: [DownloadableFont] {
+        response.uiConfig?
+            .app
+            .allDownloadableFonts ?? []
+    }
+
+#else
+
+    var allFontsInPaywallsNamed: [DownloadableFont] {
+        [ ]
+    }
+
+#endif
+
+    #if !os(tvOS) // For Paywalls V2
 
     var allImagesInPaywalls: Set<URL> {
         return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
@@ -175,7 +314,7 @@ private extension Offerings {
         )
     }
 
-    #if !os(macOS) && !os(tvOS) // For Paywalls V2
+    #if !os(tvOS) // For Paywalls V2
 
     private var allImagesInPaywallsV2: Set<URL> {
         // Attempting to warm up all low res images for all offerings for Paywalls V2.
@@ -209,7 +348,6 @@ private extension Offering {
                 .map(\.storeProduct.productIdentifier)
         )
     }
-
 }
 
 private extension PaywallData.Configuration.Images {
@@ -219,8 +357,51 @@ private extension PaywallData.Configuration.Images {
             self.header,
             self.background,
             self.icon
-        ]
-            .compactMap { $0 }
+        ].compactMap { $0 }
     }
-
 }
+
+/// Business logic object to easily manage the download of fonts.
+struct DownloadableFont: Sendable {
+
+    /// The font name.
+    let name: String
+
+    /// The font family name, if available.
+    let fontFamily: String?
+
+    let url: URL
+    let hash: String
+}
+
+#if !os(tvOS) // For Paywalls V2
+
+private extension UIConfig.AppConfig {
+    var allDownloadableFonts: [DownloadableFont] {
+        fonts.values.compactMap {
+            $0.downloadableFont
+        }
+    }
+}
+
+private extension UIConfig.FontsConfig {
+    var downloadableFont: DownloadableFont? {
+        if let webFontInfo = self.ios.webFontInfo {
+            guard let url = URL(string: webFontInfo.url) else {
+                Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(name: self.ios.value,
+                                                                                invalidURLString: webFontInfo.url))
+                return nil
+            }
+
+            return DownloadableFont(
+                name: self.ios.value,
+                fontFamily: webFontInfo.family,
+                url: url,
+                hash: webFontInfo.hash
+            )
+        }
+        return nil
+    }
+}
+
+#endif

@@ -16,7 +16,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
@@ -26,6 +26,7 @@ import SwiftUI
 // swiftlint:disable:next type_body_length
 private enum FamilySharingTogglePreview {
 
+    @MainActor
     static let paywallState = PackageContext(
         package: nil,
         variableContext: .init()
@@ -156,6 +157,7 @@ private enum FamilySharingTogglePreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }
@@ -226,7 +228,7 @@ private enum FamilySharingTogglePreview {
             ),
             tabs: [
                 // Tab 1
-                .init(stack: .init(
+                .init(id: "1", stack: .init(
                     components: [
                         .image(catImage),
                         .stack(.init(
@@ -252,7 +254,7 @@ private enum FamilySharingTogglePreview {
                     spacing: 0
                 )),
                 // Tab 2
-                .init(stack: .init(
+                .init(id: "2", stack: .init(
                     components: [
                         .image(catFamilyImage),
                         .stack(.init(
@@ -395,9 +397,11 @@ struct FamilySharingTogglePreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
+            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
+            failedToLoadFont: { _ in },
+            colorScheme: .light
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Family Sharing Toggle")
     }

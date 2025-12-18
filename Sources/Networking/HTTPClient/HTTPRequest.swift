@@ -36,7 +36,7 @@ struct HTTPRequest {
 
     init(
         method: Method,
-        path: HTTPRequest.PaywallPath,
+        path: HTTPRequest.FeatureEventsPath,
         nonce: Data? = nil,
         isRetryable: Bool = false
     ) {
@@ -61,7 +61,16 @@ struct HTTPRequest {
         self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
     }
 
-    private init(
+    init(
+        method: Method,
+        path: HTTPRequest.AdPath,
+        nonce: Data? = nil,
+        isRetryable: Bool = false
+    ) {
+        self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
+    }
+
+    internal init(
         method: Method,
         requestPath: HTTPRequestPath,
         nonce: Data? = nil,

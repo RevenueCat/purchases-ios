@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 extension CustomerCenterConfigData {
 
@@ -24,6 +24,8 @@ extension CustomerCenterConfigData {
         lastPublishedAppVersion: String? = "1.0.0",
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
+        displayUserDetailsSection: Bool = true,
+        displayVirtualCurrencies: Bool = false,
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever,
         shouldWarnCustomersAboutMultipleSubscriptions: Bool = false
     ) -> CustomerCenterConfigData {
@@ -96,7 +98,8 @@ extension CustomerCenterConfigData {
                                     )),
                                     refundWindowDuration: nil
                                 )
-                            ]
+                            ],
+                            offering: nil
                         ),
                 .noActive: .init(
                     type: .noActive,
@@ -112,7 +115,8 @@ extension CustomerCenterConfigData {
                             detail: nil,
                             refundWindowDuration: nil
                         )
-                    ]
+                    ],
+                    offering: nil
                 )
             ],
             appearance: standardAppearance,
@@ -127,8 +131,11 @@ extension CustomerCenterConfigData {
                 email: "test-support@revenuecat.com",
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
                 displayPurchaseHistoryLink: displayPurchaseHistoryLink,
+                displayUserDetailsSection: displayUserDetailsSection,
+                displayVirtualCurrencies: displayVirtualCurrencies,
                 shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
             ),
+            changePlans: [],
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
         )
@@ -144,5 +151,4 @@ extension CustomerCenterConfigData {
         buttonTextColor: .init(light: "#ffffff", dark: "#000000"),
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
-
 }

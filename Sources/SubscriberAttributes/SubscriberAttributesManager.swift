@@ -20,6 +20,7 @@ class SubscriberAttributesManager {
     private let operationDispatcher: OperationDispatcher
     private let attributionFetcher: AttributionFetcher
     private let attributionDataMigrator: AttributionDataMigrator
+    private let automaticDeviceIdentifierCollectionEnabled: Bool
     private let lock = Lock()
 
     weak var delegate: SubscriberAttributesManagerDelegate?
@@ -28,12 +29,14 @@ class SubscriberAttributesManager {
          deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
          attributionFetcher: AttributionFetcher,
-         attributionDataMigrator: AttributionDataMigrator) {
+         attributionDataMigrator: AttributionDataMigrator,
+         automaticDeviceIdentifierCollectionEnabled: Bool = true) {
         self.backend = backend
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.attributionFetcher = attributionFetcher
         self.attributionDataMigrator = attributionDataMigrator
+        self.automaticDeviceIdentifierCollectionEnabled = automaticDeviceIdentifierCollectionEnabled
     }
 
     func setAttributes(_ attributes: [String: String], appUserID: String) {
@@ -96,6 +99,10 @@ class SubscriberAttributesManager {
         setReservedAttribute(.cleverTapID, value: cleverTapID, appUserID: appUserID)
     }
 
+    func setAirbridgeDeviceID(_ airbridgeDeviceID: String?, appUserID: String) {
+        setAttributionID(airbridgeDeviceID, forNetworkID: .airbridgeDeviceID, appUserID: appUserID)
+    }
+
     func setKochavaDeviceID(_ kochavaDeviceID: String?, appUserID: String) {
         setAttributionID(kochavaDeviceID, forNetworkID: .kochavaDeviceID, appUserID: appUserID)
     }
@@ -114,6 +121,14 @@ class SubscriberAttributesManager {
 
     func setPostHogUserID(_ postHogUserID: String?, appUserID: String) {
         setReservedAttribute(.postHogUserID, value: postHogUserID, appUserID: appUserID)
+    }
+
+    func setAmplitudeUserID(_ amplitudeUserID: String?, appUserID: String) {
+        setReservedAttribute(.amplitudeUserID, value: amplitudeUserID, appUserID: appUserID)
+    }
+
+    func setAmplitudeDeviceID(_ amplitudeDeviceID: String?, appUserID: String) {
+        setReservedAttribute(.amplitudeDeviceID, value: amplitudeDeviceID, appUserID: appUserID)
     }
 
     func setMediaSource(_ mediaSource: String?, appUserID: String) {
@@ -139,6 +154,45 @@ class SubscriberAttributesManager {
 
     func setCreative(_ creative: String?, appUserID: String) {
         setReservedAttribute(.creative, value: creative, appUserID: appUserID)
+    }
+
+    func setAppsFlyerConversionData(_ data: [AnyHashable: Any]?, appUserID: String) {
+        guard let data = data else {
+            return
+        }
+
+        let mediaSource = stringValueForPrimitive(from: data, forKey: "media_source") ?? (
+            stringValueForPrimitive(from: data, forKey: "af_status")?.caseInsensitiveCompare("Organic") == .orderedSame
+                ? "Organic" : nil
+        )
+        if let mediaSource = mediaSource {
+            setMediaSource(mediaSource, appUserID: appUserID)
+        }
+
+        if let campaign = stringValueForPrimitive(from: data, forKey: "campaign") {
+            setCampaign(campaign, appUserID: appUserID)
+        }
+
+        if let adGroup = stringValueForPrimitive(from: data, forKey: "adgroup")
+            ?? stringValueForPrimitive(from: data, forKey: "adset") {
+            setAdGroup(adGroup, appUserID: appUserID)
+        }
+
+        // swiftlint:disable:next identifier_name
+        if let ad = stringValueForPrimitive(from: data, forKey: "af_ad")
+            ?? stringValueForPrimitive(from: data, forKey: "ad_id") {
+            setAd(ad, appUserID: appUserID)
+        }
+
+        if let keyword = stringValueForPrimitive(from: data, forKey: "af_keywords")
+            ?? stringValueForPrimitive(from: data, forKey: "keyword") {
+            setKeyword(keyword, appUserID: appUserID)
+        }
+
+        if let creative = stringValueForPrimitive(from: data, forKey: "creative")
+            ?? stringValueForPrimitive(from: data, forKey: "af_creative") {
+            setCreative(creative, appUserID: appUserID)
+        }
     }
 
     func collectDeviceIdentifiers(forAppUserID appUserID: String) {
@@ -262,6 +316,18 @@ extension SubscriberAttributesManager: AttributeSyncing {
 
 private extension SubscriberAttributesManager {
 
+    func stringValueForPrimitive(from data: [AnyHashable: Any], forKey key: String) -> String? {
+        guard let value = data[key as AnyHashable] else { return nil }
+        if let stringValue = value as? String {
+            return stringValue.isEmpty ? nil : stringValue
+        }
+        if let boolValue = value as? Bool { return String(boolValue) }
+        if let number = value as? NSNumber {
+            return number.stringValue
+        }
+        return nil
+    }
+
     func storeAttributeLocallyIfNeeded(key: String, value: String?, appUserID: String) {
         let currentValue = currentValueForAttribute(key: key, appUserID: appUserID)
         if currentValue == nil || currentValue != (value ?? "") {
@@ -305,7 +371,9 @@ private extension SubscriberAttributesManager {
     func setAttributionID(_ attributionID: String?,
                           forNetworkID networkID: ReservedSubscriberAttribute,
                           appUserID: String) {
-        collectDeviceIdentifiers(forAppUserID: appUserID)
+        if automaticDeviceIdentifierCollectionEnabled {
+            collectDeviceIdentifiers(forAppUserID: appUserID)
+        }
         setReservedAttribute(networkID, value: attributionID, appUserID: appUserID)
     }
 

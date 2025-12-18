@@ -20,12 +20,16 @@ struct LocalReceiptView: View {
 
     var body: some View {
         VStack {
+            #if !os(tvOS)
             if #available(iOS 16.0, macCatalyst 16.0, macOS 13.0, watchOS 9.0, *) {
                 self.form
                     .scrollContentBackground(.hidden)
             } else {
                 self.form
             }
+            #else
+            self.form
+            #endif
 
             Spacer(minLength: 10)
 

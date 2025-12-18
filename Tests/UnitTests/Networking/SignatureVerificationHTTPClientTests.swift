@@ -20,16 +20,17 @@ import XCTest
 
 // swiftlint:disable type_name
 
-class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager> {
+class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager, HTTPRequestTimeoutManager> {
 
     private var userDefaultsSuiteName: String!
     fileprivate var userDefaults: UserDefaults!
 
     override func setUpWithError() throws {
-        // Note: these tests use the real `ETagManager`
+        // Note: these tests use the real `ETagManager` and `HTTPRequestTimeoutManager`
         self.userDefaultsSuiteName = UUID().uuidString
         self.userDefaults = .init(suiteName: self.userDefaultsSuiteName)!
         self.eTagManager = ETagManager(userDefaults: self.userDefaults)
+        self.timeoutManager = HTTPRequestTimeoutManager(defaultTimeout: defaultTimeout.timeInterval)
 
         try super.setUpWithError()
     }
@@ -189,7 +190,9 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
                 statusCode: .success,
                 data: try cachedResponse.jsonEncodedData,
                 validationTime: Self.date1,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -366,7 +369,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 eTag: Self.eTag,
                 statusCode: .success,
                 data: body,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -503,7 +508,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 eTag: Self.eTag,
                 statusCode: .success,
                 data: .init(),
-                verificationResult: .notRequested
+                verificationResult: .notRequested,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -529,7 +536,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 eTag: Self.eTag,
                 statusCode: .success,
                 data: cachedResponse,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
         self.signing.stubbedVerificationResult = false
@@ -556,7 +565,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 statusCode: .success,
                 data: cachedResponse,
                 validationTime: Self.date1,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -584,7 +595,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 statusCode: .success,
                 data: cachedResponse,
                 validationTime: Self.date1,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -614,7 +627,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 statusCode: .success,
                 data: cachedResponse,
                 validationTime: Self.date1,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -639,7 +654,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 statusCode: .success,
                 data: cachedResponse,
                 validationTime: Self.date1,
-                verificationResult: .failed
+                verificationResult: .failed,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -701,7 +718,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 statusCode: .success,
                 data: cachedResponse,
                 validationTime: Self.date1,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -934,13 +953,18 @@ private extension ETagManager.Response {
         statusCode: HTTPStatusCode,
         data: Encodable,
         validationTime: Date? = nil,
-        verificationResult: VerificationResult
+        verificationResult: VerificationResult,
+        isLoadShedderResponse: Bool,
+        isFallbackUrlResponse: Bool
+
     ) throws {
         self.init(eTag: eTag,
                   statusCode: statusCode,
                   data: try data.jsonEncodedData,
                   validationTime: validationTime,
-                  verificationResult: verificationResult
+                  verificationResult: verificationResult,
+                  isLoadShedderResponse: isLoadShedderResponse,
+                  isFallbackUrlResponse: isFallbackUrlResponse
         )
     }
 

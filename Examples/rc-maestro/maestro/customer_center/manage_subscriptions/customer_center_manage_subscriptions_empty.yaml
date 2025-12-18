@@ -6,5 +6,6 @@ name: Manage Subscriptions Empty
 - runFlow: "../../utils/open_customer_center.yaml"
 - assertVisible: "No subscriptions found"
 - assertVisible: "Restore past purchases"
+- assertVisible: "Buy cool things!!"
 - tapOn:
     id: "circled_close_button"

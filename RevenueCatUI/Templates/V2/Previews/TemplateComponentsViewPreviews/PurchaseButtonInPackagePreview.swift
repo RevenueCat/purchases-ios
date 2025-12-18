@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
@@ -186,6 +186,7 @@ private enum PurchaseButtonInPackagePreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }
@@ -231,6 +232,7 @@ private enum PurchaseButtonInPackagePreview {
             .package(.init(
                 packageID: "lifetime",
                 isSelectedByDefault: false,
+                applePromoOfferProductCode: nil,
                 stack: packageLifetimeStack
             ))
         ],
@@ -344,9 +346,11 @@ struct PurchaseButtonInPackagePreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
+            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
+            failedToLoadFont: { _ in },
+            colorScheme: .light
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
     }

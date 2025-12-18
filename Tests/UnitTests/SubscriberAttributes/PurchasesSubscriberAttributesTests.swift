@@ -23,6 +23,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockProductsManager: MockProductsManager!
     let mockBackend = MockBackend()
     let mockStoreKit1Wrapper = MockStoreKit1Wrapper()
+    let mockSimulatedStorePurchaseHandler = MockSimulatedStorePurchaseHandler()
     let mockNotificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
     let mockOfferingsFactory = MockOfferingsFactory()
@@ -41,6 +42,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockTransactionsManager: MockTransactionsManager!
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
+    var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
     var transactionPoster: TransactionPoster!
 
     // swiftlint:disable:next weak_delegate
@@ -77,7 +79,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.clock = TestClock()
         self.systemInfo = MockSystemInfo(finishTransactions: true, clock: self.clock)
 
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.systemInfo,
                                                userDefaults: self.userDefaults)
 
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
@@ -95,6 +97,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                              receiptParser: mockReceiptParser)
+
+        self.mockVirtualCurrencyManager = MockVirtualCurrencyManager()
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
         let systemInfoAttribution = MockSystemInfo(platformInfo: platformInfo,
                                                    finishTransactions: true)
@@ -181,6 +185,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         let purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
+            simulatedStorePurchaseHandler: self.mockSimulatedStorePurchaseHandler,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.mockOperationDispatcher,
@@ -199,8 +204,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsTracker: nil,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
+            eventsManager: nil,
             storeKit2ProductPurchaser: self.storeKit2ProductPurchaser,
-            paywallEventsManager: nil,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: systemInfo,
@@ -211,6 +216,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
             operationDispatcher: mockOperationDispatcher,
             productsManager: mockProductsManager,
             diagnosticsTracker: nil
+        )
+        let healthManager = SDKHealthManager(
+            backend: self.mockBackend,
+            identityManager: self.mockIdentityManager
         )
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
@@ -229,7 +238,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               subscriberAttributes: attribution,
                               operationDispatcher: mockOperationDispatcher,
                               customerInfoManager: customerInfoManager,
-                              paywallEventsManager: nil,
+                              eventsManager: nil,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
@@ -239,7 +248,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                 with: trialOrIntroductoryPriceEligibilityChecker
                               ),
                               storeMessagesHelper: self.mockStoreMessagesHelper,
-                              diagnosticsTracker: nil)
+                              diagnosticsTracker: nil,
+                              virtualCurrencyManager: self.mockVirtualCurrencyManager,
+                              healthManager: healthManager)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -457,6 +468,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
             .to(equal((nil, purchases.appUserID)))
     }
 
+    func testSetAndClearAirbridgeDeviceID() {
+        setupPurchases()
+        purchases.attribution.setAirbridgeDeviceID("airbridge")
+        purchases.attribution.setAirbridgeDeviceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAirbridgeDeviceIDParametersList[0])
+            .to(equal(("airbridge", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetAirbridgeDeviceIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetAndClearKochavaDeviceID() {
         setupPurchases()
         purchases.attribution.setKochavaDeviceID("kochava")
@@ -504,6 +525,26 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetPostHogUserIDParametersList[0]) ==
         ("posthog", purchases.appUserID)
         expect(self.mockSubscriberAttributesManager.invokedSetPostHogUserIDParametersList[1]) ==
+        (nil, purchases.appUserID)
+    }
+
+    func testSetAndClearAmplitudeUserID() {
+        setupPurchases()
+        purchases.attribution.setAmplitudeUserID("amplitude")
+        purchases.attribution.setAmplitudeUserID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeUserIDParametersList[0]) ==
+        ("amplitude", purchases.appUserID)
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeUserIDParametersList[1]) ==
+        (nil, purchases.appUserID)
+    }
+
+    func testSetAndClearAmplitudeDeviceID() {
+        setupPurchases()
+        purchases.attribution.setAmplitudeDeviceID("amplitude")
+        purchases.attribution.setAmplitudeDeviceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDParametersList[0]) ==
+        ("amplitude", purchases.appUserID)
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDParametersList[1]) ==
         (nil, purchases.appUserID)
     }
 
@@ -719,6 +760,28 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetPostHogUserIDParameters?.postHogUserID) ==
         "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetPostHogUserIDParameters?.appUserID) ==
+        mockIdentityManager.currentAppUserID
+    }
+
+    func testSetAmplitudeUserIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.attribution.setAmplitudeUserID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeUserIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeUserIDParameters?.amplitudeUserID) ==
+        "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeUserIDParameters?.appUserID) ==
+        mockIdentityManager.currentAppUserID
+    }
+
+    func testSetAmplitudeDeviceIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.attribution.setAmplitudeDeviceID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDParameters?.amplitudeDeviceID) ==
+        "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDParameters?.appUserID) ==
         mockIdentityManager.currentAppUserID
     }
 

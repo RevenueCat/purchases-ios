@@ -9,9 +9,9 @@
 
 import RevenueCat
 #if DEBUG
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 #else
-import RevenueCatUI
+@_spi(Internal) import RevenueCatUI
 #endif
 
 import SwiftUI
@@ -36,7 +36,7 @@ struct SamplePaywallsList: View {
             self.view(for: display)
         }
         .navigationTitle("Paywalls")
-        .navigationViewStyle(StackNavigationViewStyle())
+        .navigationViewStyle(.automatic)
     }
 
     @ViewBuilder
@@ -52,8 +52,10 @@ struct SamplePaywallsList: View {
                     displayCloseButton: Self.displayCloseButton,
                     introEligibility: Self.introEligibility
                 ))
+            case .presentIfNeeded:
+                fatalError()
 
-            #if !os(watchOS)
+            #if !os(watchOS) && !os(macOS)
             case .footer, .condensedFooter:
                 CustomPaywall(offering: Self.loader.offering(for: template),
                               customerInfo: Self.loader.customerInfo,
@@ -128,7 +130,7 @@ struct SamplePaywallsList: View {
             #if DEBUG
             ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
                 Section(template.name) {
-                    ForEach(PaywallTesterViewMode.allCases, id: \.self) { mode in
+                    ForEach(PaywallTesterViewMode.allCases.filter(\.isAvailableOnExamples), id: \.self) { mode in
                         Button {
                             self.display = .template(template, mode)
                         } label: {
@@ -139,14 +141,14 @@ struct SamplePaywallsList: View {
                     Button {
                         self.display = .customFont(template)
                     } label: {
-                        TemplateLabel(name: "Custsom font", icon: "textformat")
+                        TemplateLabel(name: "Custom font", icon: "textformat")
                             .font(.body.italic())
                     }
                 }
             }
 
             Section("Other") {
-                #if !os(watchOS)
+                #if !os(watchOS) && !os(macOS)
                 Button {
                     self.display = .customPaywall(.footer)
                 } label: {
@@ -406,9 +408,7 @@ extension PaywallTemplate {
 
 struct SamplePaywallsList_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationView {
-            SamplePaywallsList()
-        }
+        SamplePaywallsList()
     }
 }
 

@@ -1,0 +1,11 @@
+# CODEOWNERS for purchases-ios
+
+# Default owners
+* @RevenueCat/coresdk
+
+# Customer Center code and related UI tests
+/RevenueCatUI/CustomerCenter/ @RevenueCat/customer-center
+/Tests/RevenueCatUITests/ @RevenueCat/customer-center
+
+# Paywalls
+/RevenueCatUI/Templates/ @RevenueCat/monetization

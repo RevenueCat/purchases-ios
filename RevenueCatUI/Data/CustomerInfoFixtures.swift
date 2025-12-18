@@ -11,12 +11,11 @@
 //
 //  Created by Cesar de la Vega on 28/10/24.
 
-import RevenueCat
+import Foundation
+@_spi(Internal) import RevenueCat
 
 // swiftlint:disable force_unwrapping
-
-import Foundation
-
+// swiftlint:disable:next type_body_length
 class CustomerInfoFixtures {
 
     private init() {}
@@ -275,6 +274,25 @@ class CustomerInfoFixtures {
         )
     }()
 
+    static let customerInfoWithPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(store: "paddle")
+    }()
+
+    static let customerInfoWithNonRenewingPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "paddle",
+            unsubscribeDetectedAt: "2023-04-12T00:03:35Z"
+        )
+    }()
+
+    static let customerInfoWithExpiredPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "paddle",
+            purchaseDate: "1999-04-12T00:03:28Z",
+            expirationDate: "2000-04-12T00:03:35Z"
+        )
+    }()
+
     static let customerInfoWithPromotional: CustomerInfo = {
         makeCustomerInfo(store: "promotional", productId: "rc_promo_pro_cat_yearly")
     }()
@@ -286,6 +304,10 @@ class CustomerInfoFixtures {
             purchaseDate: "2022-04-12T00:03:28Z",
             expirationDate: "2600-04-12T00:03:35Z"
         )
+    }()
+
+    static let customerInfoWithSimulatedStoreSubscriptions: CustomerInfo = {
+        makeCustomerInfo(store: "test_store")
     }()
 
 }

@@ -20,9 +20,15 @@ import XCTest
 
 class OtherIntegrationTests: BaseBackendIntegrationTests {
 
+    private var testSession: SKTestSession!
+
     override func setUp() async throws {
         // Some tests need to introspect logs during initialization.
         super.initializeLogger()
+
+        if self.testSession == nil {
+            try await self.configureTestSession()
+        }
 
         try await super.setUp()
     }
@@ -33,18 +39,47 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try await super.tearDown()
     }
 
+    func configureTestSession() async throws {
+        assert(self.testSession == nil, "SKTestSession already configured")
+
+        self.testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
+        self.testSession.resetToDefaultState()
+        self.testSession.disableDialogs = true
+        self.testSession.clearTransactions()
+        if #available(iOS 15.2, *) {
+            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
+        } else {
+            self.testSession.timeRate = .oneSecondIsOneDay
+        }
+
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            // Despite calling `SKTestSession.clearTransactions` tests sometimes
+            // begin with leftover transactions. This ensures that we remove them
+            // to always start with a clean state.
+            await self.deleteAllTransactions(session: self.testSession)
+        }
+    }
+
     func testGetCustomerInfo() async throws {
         let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.all).to(beEmpty())
+        expect(info.isLoadedFromCache) == false
+        expect(info.originalSource) == .main
         expect(info.isComputedOffline) == false
     }
 
     func testGetCustomerInfoCaching() async throws {
-        _ = try await self.purchases.customerInfo()
+        let info1 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(info1.isLoadedFromCache) == false
+        expect(info1.originalSource) == .main
+        expect(info1.isComputedOffline) == false
 
         self.logger.clearMessages()
 
-        _ = try await self.purchases.customerInfo()
+        let info2 = try await self.purchases.customerInfo()
+        expect(info2.isLoadedFromCache) == true
+        expect(info2.originalSource) == .main
+        expect(info2.isComputedOffline) == false
 
         self.logger.verifyMessageWasLogged(Strings.customerInfo.vending_cache, level: .debug)
         self.logger.verifyMessageWasNotLogged("API request started")
@@ -86,7 +121,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
     func testCustomerInfoIsOnlyFetchedOnceOnAppLaunch() async throws {
         // 1. Make sure any existing customer info requests finish
-        _ = try? await purchases.customerInfo(fetchPolicy: .fromCacheOnly)
+        var customerInfoIterator = try? purchases.customerInfoStream.makeAsyncIterator()
+        _ = await customerInfoIterator?.next()
 
         // 2. Verify only one CustomerInfo request was done
         try self.logger.verifyMessageWasLogged(
@@ -123,7 +159,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 2. Re-fetch user
-        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        let info2 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         let expectedRequest = HTTPRequest(method: .get,
                                           path: .getCustomerInfo(appUserID: try self.purchases.appUserID))
@@ -132,6 +168,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(expectedRequest, httpCode: .notModified, metadata: nil)
         )
+
+        expect(info2.isLoadedFromCache) == false
     }
 
     func testGetCustomerInfoAfterLogInReturnsNotModified() async throws {
@@ -142,7 +180,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 3. Re-fetch user
-        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        let info3 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         let expectedRequest = HTTPRequest(method: .get,
                                           path: .getCustomerInfo(appUserID: try self.purchases.appUserID))
@@ -151,6 +189,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(expectedRequest, httpCode: .notModified, metadata: nil)
         )
+
+        expect(info3.isLoadedFromCache) == false
     }
 
     func testOfferingsAreOnlyFetchedOnceOnSDKInitialization() async throws {
@@ -200,8 +240,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         )
     }
 
-    func testRequestPaywallImages() async throws {
-        let offering = try await XCTAsyncUnwrap(try await self.purchases.offerings().current)
+    func testRequestV1PaywallImages() async throws {
+        let offering = try await XCTAsyncUnwrap(try await self.purchases.offerings().all["alternate_offering"])
         let paywall = try XCTUnwrap(offering.paywall)
         let images = paywall.allImageURLs
 
@@ -223,7 +263,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
                 )
             expect(urlResponse.value(forHTTPHeaderField: "Content-Type"))
                 .to(
-                    equal("image/jpeg"),
+                    equal("image/heic"),
                     description: "Unexpected content type for image: \(imageURL)"
                 )
         }
@@ -248,6 +288,139 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(stubbedRequestCount).to(equal(1)) // Just the original request
     }
 
+    // MARK: - Virtual Currencies
+    func testGetVirtualCurrenciesWithBalancesOfZero() async throws {
+        let appUserIDWith0BalanceCurrencies = "integrationTestUserWithAllBalancesEqualTo0"
+        let purchases = try self.purchases
+
+        _ = try await purchases.logIn(appUserIDWith0BalanceCurrencies)
+
+        purchases.invalidateVirtualCurrenciesCache()
+        let virtualCurrencies = try await purchases.virtualCurrencies()
+        try validateAllZeroBalanceVirtualCurrenciesObject(virtualCurrencies)
+    }
+
+    func testGetVirtualCurrenciesWithBalancesWithSomeNonZeroValues() async throws {
+        let appUserIDWith0BalanceCurrencies = "integrationTestUserWithAllBalancesNonZero"
+        let purchases = try self.purchases
+
+        _ = try await purchases.logIn(appUserIDWith0BalanceCurrencies)
+
+        purchases.invalidateVirtualCurrenciesCache()
+        let virtualCurrencies = try await purchases.virtualCurrencies()
+
+        try validateAllNonZeroBalanceVirtualCurrenciesObject(virtualCurrencies)
+    }
+
+    func testGetVirtualCurrenciesMultipleTimesInParallel() async throws {
+        let requestCount = 3
+
+        let purchases = try self.purchases
+
+        // 1. Invalidate cache
+        purchases.invalidateVirtualCurrenciesCache()
+        self.logger.clearMessages()
+
+        // 2. Request offerings multiple times in parallel
+        await withThrowingTaskGroup(of: Void.self) {
+            for _ in 0..<requestCount {
+                $0.addTask { _ = try await purchases.virtualCurrencies() }
+            }
+        }
+
+        // 3. Verify N-1 requests were de-duped
+        self.logger.verifyMessageWasLogged(
+            "Network operation 'GetVirtualCurrenciesOperation' found with the same cache key",
+            level: .debug,
+            expectedCount: requestCount - 1
+        )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.network.api_request_completed(
+                .init(method: .get,
+                      path: .getVirtualCurrencies(appUserID: try self.purchases.appUserID)),
+                httpCode: .success,
+                metadata: nil
+            ),
+            level: .debug,
+            expectedCount: 1
+        )
+    }
+
+    func testGettingVirtualCurrenciesForNewUserReturnsVCsWith0Balance() async throws {
+        let newAppUserID = "integrationTestUser_\(UUID().uuidString)"
+        let purchases = try self.purchases
+
+        _ = try await purchases.logIn(newAppUserID)
+
+        purchases.invalidateVirtualCurrenciesCache()
+        let virtualCurrencies = try await purchases.virtualCurrencies()
+        try validateAllZeroBalanceVirtualCurrenciesObject(virtualCurrencies)
+    }
+
+    func testCachedVirtualCurrencies() async throws {
+        let appUserID = "integrationTestUserWithAllBalancesNonZero"
+        let purchases = try self.purchases
+
+        _ = try await purchases.logIn(appUserID)
+
+        purchases.invalidateVirtualCurrenciesCache()
+        let virtualCurrencies = try await purchases.virtualCurrencies()
+        try validateAllNonZeroBalanceVirtualCurrenciesObject(virtualCurrencies)
+
+        var cachedVirtualCurrencies = purchases.cachedVirtualCurrencies
+        try validateAllNonZeroBalanceVirtualCurrenciesObject(cachedVirtualCurrencies)
+
+        purchases.invalidateVirtualCurrenciesCache()
+        cachedVirtualCurrencies = purchases.cachedVirtualCurrencies
+        expect(cachedVirtualCurrencies).to(beNil())
+    }
+
+    private func validateAllZeroBalanceVirtualCurrenciesObject(_ virtualCurrencies: VirtualCurrencies?) throws {
+        let virtualCurrencies = try XCTUnwrap(virtualCurrencies)
+        expect(virtualCurrencies.all.count).to(equal(3))
+
+        let testCurrency = try XCTUnwrap(virtualCurrencies["TEST"])
+        expect(testCurrency.balance).to(equal(0))
+        expect(testCurrency.code).to(equal("TEST"))
+        expect(testCurrency.name).to(equal("Test Currency"))
+        expect(testCurrency.serverDescription).to(equal("This is a test currency"))
+
+        let testCurrency2 = try XCTUnwrap(virtualCurrencies["TEST2"])
+        expect(testCurrency2.balance).to(equal(0))
+        expect(testCurrency2.code).to(equal("TEST2"))
+        expect(testCurrency2.name).to(equal("Test Currency 2"))
+        expect(testCurrency2.serverDescription).to(equal("This is test currency 2"))
+
+        let testCurrency3 = try XCTUnwrap(virtualCurrencies["TEST3"])
+        expect(testCurrency3.balance).to(equal(0))
+        expect(testCurrency3.code).to(equal("TEST3"))
+        expect(testCurrency3.name).to(equal("Test Currency 3"))
+        expect(testCurrency3.serverDescription).to(beNil())
+    }
+
+    private func validateAllNonZeroBalanceVirtualCurrenciesObject(_ virtualCurrencies: VirtualCurrencies?) throws {
+        let virtualCurrencies = try XCTUnwrap(virtualCurrencies)
+        expect(virtualCurrencies.all.count).to(equal(3))
+
+        let testCurrency = try XCTUnwrap(virtualCurrencies["TEST"])
+        expect(testCurrency.balance).to(equal(100))
+        expect(testCurrency.code).to(equal("TEST"))
+        expect(testCurrency.name).to(equal("Test Currency"))
+        expect(testCurrency.serverDescription).to(equal("This is a test currency"))
+
+        let testCurrency2 = try XCTUnwrap(virtualCurrencies["TEST2"])
+        expect(testCurrency2.balance).to(equal(777))
+        expect(testCurrency2.code).to(equal("TEST2"))
+        expect(testCurrency2.name).to(equal("Test Currency 2"))
+        expect(testCurrency2.serverDescription).to(equal("This is test currency 2"))
+
+        let testCurrency3 = try XCTUnwrap(virtualCurrencies["TEST3"])
+        expect(testCurrency3.balance).to(equal(0))
+        expect(testCurrency3.code).to(equal("TEST3"))
+        expect(testCurrency3.name).to(equal("Test Currency 3"))
+        expect(testCurrency3.serverDescription).to(beNil())
+    }
 }
 
 private extension OtherIntegrationTests {

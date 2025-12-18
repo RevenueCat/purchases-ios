@@ -18,20 +18,20 @@ import Foundation
         let enableReceiptFetchRetry: Bool
 
         #if DEBUG
-        let forceServerErrors: Bool
+        let forceServerErrorStrategy: ForceServerErrorStrategy?
         let forceSignatureFailures: Bool
         let disableHeaderSignatureVerification: Bool
         let testReceiptIdentifier: String?
 
         init(
             enableReceiptFetchRetry: Bool = false,
-            forceServerErrors: Bool = false,
+            forceServerErrorStrategy: ForceServerErrorStrategy? = nil,
             forceSignatureFailures: Bool = false,
             disableHeaderSignatureVerification: Bool = false,
             testReceiptIdentifier: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
-            self.forceServerErrors = forceServerErrors
+            self.forceServerErrorStrategy = forceServerErrorStrategy
             self.forceSignatureFailures = forceSignatureFailures
             self.disableHeaderSignatureVerification = disableHeaderSignatureVerification
             self.testReceiptIdentifier = testReceiptIdentifier
@@ -60,7 +60,7 @@ import Foundation
 
     /**
      * if `true`, the SDK will return a set of mock products instead of the
-     * products obtained from StoreKit. This is useful for testing or preview purposes. 
+     * products obtained from StoreKit. This is useful for testing or preview purposes.
      */
     @_spi(Internal) public let uiPreviewMode: Bool
 
@@ -110,8 +110,8 @@ import Foundation
     /**
      * Used to initialize the SDK in UI preview mode.
      *
-     * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead of the
-     * products obtained from StoreKit. This is useful for testing or preview purposes. 
+     * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead
+     * of the products obtained from StoreKit. This is useful for testing or preview purposes.
      */
     @_spi(Internal) public convenience init(uiPreviewMode: Bool) {
         self.init(autoSyncPurchases: false, internalSettings: Internal.default, uiPreviewMode: uiPreviewMode)
@@ -139,8 +139,12 @@ internal protocol InternalDangerousSettingsType: Sendable {
     var enableReceiptFetchRetry: Bool { get }
 
     #if DEBUG
-    /// Whether `HTTPClient` will fake server errors
-    var forceServerErrors: Bool { get }
+    /// The strategy for the `HTTPClient` to fake server errors. Meant for tests only.
+    /// `nil` means no server errors are forced.
+    ///
+    /// This is done by routing the requests to https://api.revenuecat.com/force-server-failure,
+    /// which returns a 502 status code with a HTML response body.
+    var forceServerErrorStrategy: ForceServerErrorStrategy? { get }
 
     /// Whether `HTTPClient` will fake invalid signatures.
     var forceSignatureFailures: Bool { get }
@@ -155,3 +159,35 @@ internal protocol InternalDangerousSettingsType: Sendable {
     #endif
 
 }
+
+#if DEBUG
+
+struct ForceServerErrorStrategy {
+
+    // swiftlint:disable:next force_unwrapping
+    static let defaultServerErrorURL = URL(string: "https://api.revenuecat.com/force-server-failure")!
+
+    let serverErrorURL: URL
+
+    /// If this returns a non-nil pair of `(HTTPURLResponse, Data)`, the `HTTPClient` will not perform the request
+    /// and will just return the fake response.
+    ///
+    /// Takes precedence over `shouldForceServerError`.
+    let fakeResponseWithoutPerformingRequest: (HTTPClient.Request) -> (HTTPURLResponse, Data)?
+
+    /// If this returns `true`, the `HTTPClient` will route the request to `forceServerErrorURL`.
+    let shouldForceServerError: (HTTPClient.Request) -> Bool
+
+    init(
+        serverErrorURL: URL = Self.defaultServerErrorURL,
+        fakeResponseWithoutPerformingRequest: @escaping (HTTPClient.Request) -> (HTTPURLResponse, Data)? = { _ in nil },
+        shouldForceServerError: @escaping (HTTPClient.Request) -> Bool
+    ) {
+        self.serverErrorURL = serverErrorURL
+        self.fakeResponseWithoutPerformingRequest = fakeResponseWithoutPerformingRequest
+        self.shouldForceServerError = shouldForceServerError
+    }
+
+}
+
+#endif

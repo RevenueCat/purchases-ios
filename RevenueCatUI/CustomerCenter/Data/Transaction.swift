@@ -30,6 +30,9 @@ protocol Transaction {
     var refundedAtDate: Date? { get }
     var storeIdentifier: String? { get }
     var identifier: String? { get }
+    var isSandbox: Bool { get }
+    var originalPurchaseDate: Date? { get }
+    var isSubscription: Bool { get }
 }
 
 enum TransactionType {
@@ -70,6 +73,10 @@ enum TransactionType {
 
     var identifier: String? {
         nil
+    }
+
+    var isSubscription: Bool {
+        true
     }
 }
 
@@ -113,5 +120,13 @@ extension NonSubscriptionTransaction: Transaction {
 
     var identifier: String? {
         transactionIdentifier
+    }
+
+    var originalPurchaseDate: Date? {
+        nil
+    }
+
+    var isSubscription: Bool {
+        false
     }
 }

@@ -235,7 +235,7 @@ class VariablesTests: TestCase {
                 webCheckoutUrl: nil
             )
         )
-        expect(result) == "$53.99/yr ($4.50/mo)"
+        expect(result) == "$53.99/yr ($4.49/mo)"
     }
 
     func testRelativeDiscountWithNoDiscount() {

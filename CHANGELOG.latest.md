@@ -1,12 +1,10 @@
-## RevenueCat SDK
-### 🐞 Bugfixes
-* CAT-1975: Dont Call POST Receipt with No Receipt or AppTransaction when Syncing Purchases with SK2 (#5161) via Will Taylor (@fire-at-will)
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Respect paywall distribution if content shorter than device (#5825) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* Add isSanbox to NonSubscriptionTransaction (#5199) via Facundo Menzella (@facumenzella)
-* Add missing fields to PurchaseInformation (#5184) via Facundo Menzella (@facumenzella)
-* Improve descriptions for SDK Health errors (#5185) via Pol Piella Abadia (@polpielladev)
-* fix pre-commit hook to lint files with spaces in the path (#5186) via Facundo Menzella (@facumenzella)
-* Delete earliestExpiringTransaction from Customer Center code (#5183) via Facundo Menzella (@facumenzella)
-* Remove unused durationTitle from PurchaseInformation (#5181) via Facundo Menzella (@facumenzella)
-* Add new test cases for maestro + customer center (#5177) via Facundo Menzella (@facumenzella)
+* Fix compilation of RevenueCatUI in watchOS with Xcode 16 (#5923) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `efca663` to `76a3a08` (#5921) via dependabot[bot] (@dependabot[bot])
+* Remove the use of scan_with_flaky_test_retries and rely on the retry mechanism of xcodebuild through the regular scan action (#5914) via Rick (@rickvdl)
+* Fix flaky test (#5920) via Antonio Pallares (@ajpallares)

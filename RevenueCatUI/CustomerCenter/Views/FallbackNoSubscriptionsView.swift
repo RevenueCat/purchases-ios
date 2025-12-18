@@ -13,7 +13,7 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -36,46 +36,71 @@ struct FallbackNoSubscriptionsView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.navigationOptions)
+    var navigationOptions
+
     @ObservedObject
     private var customerCenterViewModel: CustomerCenterViewModel
 
     @State
     private var showRestoreAlert: Bool = false
 
+    @State
+    private var showAllInAppCurrenciesScreen: Bool = false
+
+    private let virtualCurrencies: RevenueCat.VirtualCurrencies?
+
+    private let purchasesProvider: CustomerCenterPurchasesType
+
     init(
         customerCenterViewModel: CustomerCenterViewModel,
-        actionWrapper: CustomerCenterActionWrapper
+        actionWrapper: CustomerCenterActionWrapper,
+        virtualCurrencies: RevenueCat.VirtualCurrencies?,
+        purchasesProvider: CustomerCenterPurchasesType
     ) {
         self.customerCenterViewModel = customerCenterViewModel
         self.actionWrapper = actionWrapper
+        self.virtualCurrencies = virtualCurrencies
+        self.purchasesProvider = purchasesProvider
     }
 
     var body: some View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
-                CompatibilityContentUnavailableView(
-                    localization[.noSubscriptionsFound],
-                    systemImage: "exclamationmark.triangle.fill",
-                    description: Text(localization[.tryCheckRestore])
+                NoSubscriptionsCardView(
+                    screenOffering: nil,
+                    screen: nil,
+                    localization: localization,
+                    purchasesProvider: purchasesProvider
                 )
-                .padding()
-                .fixedSize(horizontal: false, vertical: true)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(
-                            Color(colorScheme == .light
-                                  ? UIColor.systemBackground
-                                  : UIColor.secondarySystemBackground)
-                        )
-                        .padding(.horizontal)
-                        .padding(.top)
-                )
+                .padding(.horizontal)
                 .padding(.bottom, 32)
+
+                if let virtualCurrencies, !virtualCurrencies.all.isEmpty {
+                    VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                        virtualCurrencies: virtualCurrencies,
+                        onSeeAllInAppCurrenciesButtonTapped: { self.showAllInAppCurrenciesScreen = true }
+                    )
+
+                    Spacer().frame(height: 16)
+                }
 
                 restorePurchasesButton
             }
         }
-        .dismissCircleButtonToolbarIfNeeded()
+        .compatibleNavigation(
+            isPresented: $showAllInAppCurrenciesScreen,
+            usesNavigationStack: navigationOptions.usesNavigationStack
+        ) {
+            VirtualCurrencyBalancesScreen(
+                viewModel: VirtualCurrencyBalancesScreenViewModel(
+                    purchasesProvider: customerCenterViewModel.purchasesProvider
+                )
+            )
+            .environment(\.appearance, appearance)
+            .environment(\.localization, localization)
+            .environment(\.navigationOptions, navigationOptions)
+        }
         .overlay {
             RestorePurchasesAlert(
                 isPresented: $showRestoreAlert,
@@ -90,13 +115,13 @@ struct FallbackNoSubscriptionsView: View {
             showRestoreAlert = true
         } label: {
             CompatibilityLabeledContent(localization[.restorePurchases])
-            .padding(.horizontal)
-            .padding(.vertical, 12)
-            .background(Color(colorScheme == .light
-                              ? UIColor.systemBackground
-                              : UIColor.secondarySystemBackground))
-            .cornerRadius(10)
-            .padding(.horizontal)
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+                .background(Color(colorScheme == .light
+                                  ? UIColor.systemBackground
+                                  : UIColor.secondarySystemBackground))
+                .cornerRadius(CustomerCenterStylingUtilities.cornerRadius)
+                .padding(.horizontal)
         }
         .tint(colorScheme == .dark ? .white : .black)
     }
@@ -114,8 +139,29 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
     static var previews: some View {
         FallbackNoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
-            actionWrapper: CustomerCenterActionWrapper()
+            actionWrapper: CustomerCenterActionWrapper(),
+            virtualCurrencies: nil,
+            purchasesProvider: MockCustomerCenterPurchases()
         )
+        .previewDisplayName("No Subscriptions View")
+
+        FallbackNoSubscriptionsView(
+            customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
+            actionWrapper: CustomerCenterActionWrapper(),
+            virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+        .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
+        .previewDisplayName("4 Virtual Currencies")
+
+        FallbackNoSubscriptionsView(
+            customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
+            actionWrapper: CustomerCenterActionWrapper(),
+            virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+        .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
+        .previewDisplayName("5 Virtual Currencies")
     }
 
 }

@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 18/7/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
@@ -58,12 +58,16 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
 
     func purchase(
         product: StoreProduct,
-        promotionalOffer: PromotionalOffer
+        promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData {
-        try await Purchases.shared.purchase(
-            product: product,
-            promotionalOffer: promotionalOffer
-        )
+        if let promotionalOffer = promotionalOffer {
+            return try await Purchases.shared.purchase(
+                product: product,
+                promotionalOffer: promotionalOffer
+            )
+        } else {
+            return try await Purchases.shared.purchase(product: product)
+        }
     }
 
     func track(customerCenterEvent: any CustomerCenterEventType) {
@@ -80,6 +84,25 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
 
     func syncPurchases() async throws -> CustomerInfo {
         try await Purchases.shared.syncPurchases()
+    }
+
+    func invalidateVirtualCurrenciesCache() {
+        Purchases.shared.invalidateVirtualCurrenciesCache()
+    }
+
+    func virtualCurrencies() async throws -> VirtualCurrencies {
+        return try await Purchases.shared.virtualCurrencies()
+    }
+
+    func offerings() async throws -> Offerings {
+        return try await Purchases.shared.offerings()
+    }
+
+    func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
+        return try await Purchases.shared.createTicket(
+            customerEmail: customerEmail,
+            ticketDescription: ticketDescription
+        )
     }
 
     #if os(iOS) || os(visionOS)
