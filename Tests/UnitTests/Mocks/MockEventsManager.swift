@@ -21,13 +21,12 @@ actor MockEventsManager: EventsManagerType {
             _ = try? await flushAllEvents(batchSize: batchSize)
         }
     }
-    
+
     nonisolated func flushFeatureEventsWithBackgroundTask(batchSize: Int) {
         Task {
             _ = try? await flushFeatureEvents(batchSize: batchSize)
         }
     }
-
 
     var trackedEvents: [FeatureEvent] = []
 
