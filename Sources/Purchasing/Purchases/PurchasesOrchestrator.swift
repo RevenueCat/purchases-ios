@@ -778,7 +778,7 @@ final class PurchasesOrchestrator {
 
             if let transaction = transaction {
                 customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
-                self.postFeatureEventsIfNeeded()
+                await self.postFeatureEventsIfNeeded()
             } else {
                 // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
                 // `Product.PurchaseResult.userCancelled`.
@@ -903,13 +903,13 @@ final class PurchasesOrchestrator {
         }
     }
 
-    func postEventsIfNeeded(delayed: Bool = false) {
+    @MainActor func postEventsIfNeeded(delayed: Bool = false) {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
         if delayed {
             self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long) {
-                manager.flushAllEventsWithBackgroundTask(batchSize: EventsManager.defaultEventBatchSize)
+                await manager.flushAllEventsWithBackgroundTask(batchSize: EventsManager.defaultEventBatchSize)
             }
         } else {
             // When backgrounding, the app only has about 5 seconds to perform work
@@ -917,13 +917,13 @@ final class PurchasesOrchestrator {
         }
     }
 
-    func postFeatureEventsIfNeeded(delayed: Bool = false) {
+    @MainActor func postFeatureEventsIfNeeded(delayed: Bool = false) {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
         if delayed {
             self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long) {
-                manager.flushFeatureEventsWithBackgroundTask(batchSize: EventsManager.defaultEventBatchSize)
+                await manager.flushFeatureEventsWithBackgroundTask(batchSize: EventsManager.defaultEventBatchSize)
             }
         } else {
             // When backgrounding, the app only has about 5 seconds to perform work

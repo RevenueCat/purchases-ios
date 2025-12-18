@@ -17,7 +17,7 @@ import Foundation
 import UIKit
 #endif
 
-protocol EventsManagerType {
+protocol EventsManagerType: Sendable {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(featureEvent: FeatureEvent) async
@@ -33,7 +33,7 @@ protocol EventsManagerType {
     func flushAllEvents(batchSize: Int) async throws -> Int
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushAllEventsWithBackgroundTask(batchSize: Int)
+    @MainActor func flushAllEventsWithBackgroundTask(batchSize: Int)
 
     /// - Throws: if posting feature events fails
     /// - Returns: the number of feature events posted
@@ -41,7 +41,7 @@ protocol EventsManagerType {
     func flushFeatureEvents(batchSize: Int) async throws -> Int
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushFeatureEventsWithBackgroundTask(batchSize: Int)
+    @MainActor func flushFeatureEventsWithBackgroundTask(batchSize: Int)
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -139,7 +139,7 @@ actor EventsManager: EventsManagerType {
         return try await self.flushFeatureEventsInternal(batchSize: batchSize)
     }
 
-    nonisolated func flushAllEventsWithBackgroundTask(batchSize: Int) {
+    @MainActor func flushAllEventsWithBackgroundTask(batchSize: Int) {
         self.withBackgroundTask(name: "com.revenuecat.flushAllEvents") {
             do {
                 _ = try await self.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
@@ -149,7 +149,7 @@ actor EventsManager: EventsManagerType {
         }
     }
 
-    nonisolated func flushFeatureEventsWithBackgroundTask(batchSize: Int) {
+    @MainActor func flushFeatureEventsWithBackgroundTask(batchSize: Int) {
         self.withBackgroundTask(name: "com.revenuecat.flushFeatureEvents") {
             do {
                 _ = try await self.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
@@ -256,7 +256,7 @@ private extension EventsManager {
     }
     #endif
 
-    nonisolated func withBackgroundTask(name: String, do work: @escaping () async -> Void) {
+    @MainActor func withBackgroundTask(name: String, do work: @escaping () async -> Void) {
         #if os(iOS) || os(tvOS) || VISION_OS
         let endBackgroundTask: (() -> Void)?
         if !self.systemInfo.isAppExtension {
@@ -288,7 +288,7 @@ private extension EventsManager {
     ///
     /// - Parameter taskName: A name for the background task for debugging purposes.
     /// - Returns: A closure to end the background task, or `nil` if the task couldn't be started.
-    static func beginBackgroundTask(named taskName: String) -> (@Sendable () -> Void)? {
+    @MainActor static func beginBackgroundTask(named taskName: String) -> (@Sendable @MainActor () -> Void)? {
         guard let application = SystemInfo.sharedUIApplication else {
             Logger.warn(EventsManagerStrings.background_task_unavailable)
             return nil
