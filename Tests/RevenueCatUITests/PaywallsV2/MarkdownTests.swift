@@ -82,7 +82,10 @@ final class MarkdownTests: TestCase {
         XCTAssertEqual(plainText, "line1\nline2")
 
         let underlinedRuns = result.runs.filter { $0.underlineStyle == .single }
-        XCTAssertFalse(underlinedRuns.isEmpty)
+        let underlinedText = underlinedRuns.map { run in
+            String(result[run.range].characters)
+        }
+        XCTAssertEqual(underlinedText, ["line1\nline2"])
     }
 
     func testApplyUnderlines_withUnclosedTag() throws {
