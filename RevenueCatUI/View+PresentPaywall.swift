@@ -483,7 +483,6 @@ private extension PaywallView {
 
 }
 
-// swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 private struct PresentingPaywallModifier: ViewModifier {
@@ -578,13 +577,15 @@ private struct PresentingPaywallModifier: ViewModifier {
                         // can use PaywallView.
                         // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls
                         #if targetEnvironment(macCatalyst) || os(macOS)
-                            .frame(minHeight: 667)
+                            .frame(height: 667)
                         #endif
                     }
                     .sheet(item: self.$exitOfferItem, onDismiss: self.handleExitOfferDismiss) { item in
                         self.exitOfferPaywallView(for: item.offering)
                         #if targetEnvironment(macCatalyst) || os(macOS)
-                            .frame(minHeight: 667)
+                        // this should be minHeight, but for consistency with the first paywall it will be
+                        // like this for now
+                            .frame(height: 667)
                         #endif
                     }
             #if !os(macOS)
@@ -684,7 +685,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onAppear {
             // Reset purchased flag so we can track if a purchase happens in THIS session.
             // This is needed because PurchaseHandler is a @StateObject that persists.
-            self.purchaseHandler.resetPurchased()
+            self.purchaseHandler.resetSessionPurchaseResult()
         }
         .task {
             await self.prefetchExitOffer()
@@ -710,12 +711,12 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     /// Handles dismissal of the main paywall, checking for exit offers.
     ///
-    /// We check `purchaseHandler.purchased` instead of calling `shouldDisplay(customerInfo)` because:
-    /// - `purchased` is set immediately when purchase completes, with no timing issues
+    /// We check `purchaseHandler.hasPurchasedInSession` instead of calling `shouldDisplay(customerInfo)` because:
+    /// - `sessionPurchaseResult` is set immediately when purchase completes, with no timing issues
     /// - `shouldDisplay` would require fetching `CustomerInfo` which may return cached data
     ///   that hasn't been updated yet after the purchase
     private func handleMainPaywallDismiss() {
-        guard !self.purchaseHandler.purchased else {
+        guard !self.purchaseHandler.hasPurchasedInSession else {
             self.onDismiss?()
             return
         }
@@ -743,30 +744,15 @@ private struct PresentingPaywallModifier: ViewModifier {
     private func prefetchExitOffer() async {
         guard Purchases.isConfigured else { return }
 
-        let offering: Offering?
-        do {
-            switch self.content {
-            case let .offering(off):
-                offering = off
-            case .defaultOffering:
-                offering = try await Purchases.shared.offerings().current
-            case let .offeringIdentifier(identifier, _):
-                offering = try await Purchases.shared.offerings().offering(identifier: identifier)
-            }
-        } catch {
-            Logger.error(Strings.error_fetching_offerings(error))
-            offering = nil
-        }
+        guard let offering = await self.content.resolveOffering() else { return }
 
-        if let offering {
-            let exitOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
-            // Don't use exit offer if it's the same as the current offering
-            if let exitOffering, exitOffering.identifier == offering.identifier {
-                Logger.warning(Strings.exit_offer_same_as_current)
-                self.exitOfferOffering = nil
-            } else {
-                self.exitOfferOffering = exitOffering
-            }
+        let exitOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
+        // Don't use exit offer if it's the same as the current offering
+        if let exitOffering, exitOffering.identifier == offering.identifier {
+            Logger.warning(Strings.exit_offer_same_as_current)
+            self.exitOfferOffering = nil
+        } else {
+            self.exitOfferOffering = exitOffering
         }
     }
 
@@ -882,9 +868,9 @@ private struct PresentPaywallBindingModifier: ViewModifier {
             restoreFailure: self.restoreFailure
         )
         .onAppear {
-            // Reset purchased flag so we can track if a purchase happens in THIS session.
+            // Reset session purchase result so we can track if a purchase happens in THIS session.
             // This is needed because PurchaseHandler is a @StateObject that persists.
-            self.purchaseHandler.resetPurchased()
+            self.purchaseHandler.resetSessionPurchaseResult()
         }
         .task {
             let exitOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
@@ -921,11 +907,11 @@ private struct PresentPaywallBindingModifier: ViewModifier {
 
     /// Handles dismissal of the main paywall, checking for exit offers.
     ///
-    /// We check `purchaseHandler.purchased` instead of fetching `CustomerInfo` because:
-    /// - `purchased` is set immediately when purchase completes, with no timing issues
+    /// We check `purchaseHandler.hasPurchasedInSession` instead of fetching `CustomerInfo` because:
+    /// - `sessionPurchaseResult` is set immediately when purchase completes, with no timing issues
     /// - Fetching `CustomerInfo` may return cached data that hasn't been updated yet
     private func handleMainPaywallDismiss() {
-        guard !self.purchaseHandler.purchased else {
+        guard !self.purchaseHandler.hasPurchasedInSession else {
             self.onDismiss?()
             return
         }

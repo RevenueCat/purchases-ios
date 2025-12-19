@@ -97,4 +97,22 @@ extension PaywallViewConfiguration.Content {
         return offering.map(Self.offering) ?? .defaultOffering
     }
 
+    /// Resolves the content to an `Offering` by fetching from the backend if needed.
+    /// - Returns: The resolved `Offering`, or `nil` if it couldn't be fetched.
+    func resolveOffering() async -> Offering? {
+        do {
+            switch self {
+            case let .offering(offering):
+                return offering
+            case .defaultOffering:
+                return try await Purchases.shared.offerings().current
+            case let .offeringIdentifier(identifier, _):
+                return try await Purchases.shared.offerings().offering(identifier: identifier)
+            }
+        } catch {
+            Logger.error(Strings.error_fetching_offerings(error))
+            return nil
+        }
+    }
+
 }
