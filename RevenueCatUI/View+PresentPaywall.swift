@@ -657,8 +657,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.purchaseHandler.resetForNewSession()
         }
         .task {
-            // Prefetch the exit offer if available
-            await self.loadCurrentOffering()
+            await self.prefetchExitOffer()
         }
     }
 
@@ -708,8 +707,8 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.onDismiss?()
     }
 
-    /// Loads the current offering based on the content configuration and prefetches the exit offer if available
-    private func loadCurrentOffering() async {
+    /// Prefetches the exit offer for the current offering, if configured
+    private func prefetchExitOffer() async {
         guard Purchases.isConfigured else { return }
 
         let offering: Offering?
