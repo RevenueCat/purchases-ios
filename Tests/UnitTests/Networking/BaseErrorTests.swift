@@ -34,7 +34,7 @@ class BaseErrorTests: TestCase {
         expect(
             file: file, line: line,
             nsError.domain
-        ) == RCPurchasesErrorCodeDomain
+        ) == ErrorCode.errorDomain
         expect(
             file: file, line: line,
             nsError.code

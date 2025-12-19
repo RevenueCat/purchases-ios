@@ -2249,7 +2249,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// Invalidates the cache for customer information.
 /// Most apps will not need to use this method; invalidating the cache can leave your app in an invalid state.
 /// Refer to
-/// <a href="https://docs.revenuecat.com/docs/purchaserinfo#section-get-user-information">Get User Information</a>
+/// <a href="https://www.revenuecat.com/docs/customers/customer-info#getting-subscription-status-via-the-sdk">Get User Information</a>
 /// for more information on using the cache properly.
 /// This is useful for cases where customer information might have been updated outside of the app, like if a
 /// promotional subscription is granted through the RevenueCat dashboard.

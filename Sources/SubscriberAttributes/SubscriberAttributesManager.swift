@@ -156,6 +156,45 @@ class SubscriberAttributesManager {
         setReservedAttribute(.creative, value: creative, appUserID: appUserID)
     }
 
+    func setAppsFlyerConversionData(_ data: [AnyHashable: Any]?, appUserID: String) {
+        guard let data = data else {
+            return
+        }
+
+        let mediaSource = stringValueForPrimitive(from: data, forKey: "media_source") ?? (
+            stringValueForPrimitive(from: data, forKey: "af_status")?.caseInsensitiveCompare("Organic") == .orderedSame
+                ? "Organic" : nil
+        )
+        if let mediaSource = mediaSource {
+            setMediaSource(mediaSource, appUserID: appUserID)
+        }
+
+        if let campaign = stringValueForPrimitive(from: data, forKey: "campaign") {
+            setCampaign(campaign, appUserID: appUserID)
+        }
+
+        if let adGroup = stringValueForPrimitive(from: data, forKey: "adgroup")
+            ?? stringValueForPrimitive(from: data, forKey: "adset") {
+            setAdGroup(adGroup, appUserID: appUserID)
+        }
+
+        // swiftlint:disable:next identifier_name
+        if let ad = stringValueForPrimitive(from: data, forKey: "af_ad")
+            ?? stringValueForPrimitive(from: data, forKey: "ad_id") {
+            setAd(ad, appUserID: appUserID)
+        }
+
+        if let keyword = stringValueForPrimitive(from: data, forKey: "af_keywords")
+            ?? stringValueForPrimitive(from: data, forKey: "keyword") {
+            setKeyword(keyword, appUserID: appUserID)
+        }
+
+        if let creative = stringValueForPrimitive(from: data, forKey: "creative")
+            ?? stringValueForPrimitive(from: data, forKey: "af_creative") {
+            setCreative(creative, appUserID: appUserID)
+        }
+    }
+
     func collectDeviceIdentifiers(forAppUserID appUserID: String) {
         let identifierForAdvertisers = attributionFetcher.identifierForAdvertisers
         let identifierForVendor = attributionFetcher.identifierForVendor
@@ -276,6 +315,18 @@ extension SubscriberAttributesManager: AttributeSyncing {
 }
 
 private extension SubscriberAttributesManager {
+
+    func stringValueForPrimitive(from data: [AnyHashable: Any], forKey key: String) -> String? {
+        guard let value = data[key as AnyHashable] else { return nil }
+        if let stringValue = value as? String {
+            return stringValue.isEmpty ? nil : stringValue
+        }
+        if let boolValue = value as? Bool { return String(boolValue) }
+        if let number = value as? NSNumber {
+            return number.stringValue
+        }
+        return nil
+    }
 
     func storeAttributeLocallyIfNeeded(key: String, value: String?, appUserID: String) {
         let currentValue = currentValueForAttribute(key: key, appUserID: appUserID)

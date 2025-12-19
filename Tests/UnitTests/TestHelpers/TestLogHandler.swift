@@ -132,6 +132,40 @@ extension TestLogHandler {
         }
     }
 
+    func verifyMessageWasLogged(
+        regexPattern: String,
+        level: LogLevel? = nil,
+        expectedCount: Int? = nil,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        precondition(expectedCount == nil || expectedCount! > 0)
+
+        let condition = Self.regexEntryCondition(pattern: regexPattern, level: level)
+
+        expect(
+            file: file,
+            line: line,
+            self.messages
+        )
+        .to(
+            containElementSatisfying(condition),
+            description: "Message with pattern '\(regexPattern)' not found. Logged messages: \(self.messages)"
+        )
+
+        if let expectedCount = expectedCount {
+            expect(
+                file: file,
+                line: line,
+                self.messagesMatching(condition)
+            )
+            .to(
+                equal(expectedCount),
+                description: "Message with pattern '\(regexPattern)' expected \(expectedCount) times"
+            )
+        }
+    }
+
     func verifyMessageIsEventuallyLogged(
         _ message: CustomStringConvertible,
         level: LogLevel? = nil,
@@ -212,6 +246,28 @@ extension TestLogHandler {
     ) -> EntryCondition {
         return { entry in
             guard entry.message.contains(message.description) else {
+                return false
+            }
+
+            if let level = level, entry.level != level {
+                return false
+            }
+
+            return true
+        }
+    }
+
+    private static func regexEntryCondition(pattern: String, level: LogLevel?) -> EntryCondition {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+            fail("Invalid regular expression: \(pattern)")
+            return { _ in false }
+        }
+
+        return { entry in
+            let range = NSRange(location: 0, length: entry.message.utf16.count)
+            let match = regex.firstMatch(in: entry.message, options: [], range: range)
+
+            guard match != nil else {
                 return false
             }
 

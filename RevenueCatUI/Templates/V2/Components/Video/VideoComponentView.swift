@@ -105,11 +105,9 @@ struct VideoComponentView: View {
                                             for: viewData.url,
                                             withChecksum: viewData.checksum
                                         )
-                                    guard url != cachedURL else { return }
+                                    guard url != cachedURL, !Task.isCancelled else { return }
                                     await MainActor.run {
                                         self.stagedURL = url
-                                        // If we have a cached video, no need to display a fallback image
-                                        self.imageSource = nil
                                     }
                                 } catch {
                                     await MainActor.run {
@@ -160,15 +158,16 @@ struct VideoComponentView: View {
                     .padding(style.margin)
                     .onReceive(
                         stagedURL.publisher
+                            // In the event that the download of the high res video is so fast that it tries to set the
+                            // url moments after the low_res was set, we need to delay a bit to ensure the re-render
+                            // actually occurs. This happens consistently with small file sizes and great connection
+                            // at 60fps, this is a generous delay but is not a notable delay to the human eye
+                            .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
+                            .receive(on: RunLoop.main)
                             .eraseToAnyPublisher()
                             .removeDuplicates()
                     ) { output in
-                        // in the event that the download of the high res video is so fast that it tries to set the
-                        // url moments after the low_res was set, we need to delay a tiny bit to ensure the rerender
-                        // actually occurs. This happens consistently with small file sizes and great connection
-                        Task { @MainActor in
-                            self.cachedURL = output
-                        }
+                        self.cachedURL = output
                     }
                 }
             }
