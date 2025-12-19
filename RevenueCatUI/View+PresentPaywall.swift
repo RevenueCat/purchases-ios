@@ -453,6 +453,36 @@ extension View {
 
 }
 
+// MARK: - Shared PaywallView Configuration
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallView {
+
+    /// Applies all the standard event handlers to a PaywallView
+    // swiftlint:disable:next function_parameter_count
+    func withEventHandlers(
+        purchaseHandler: PurchaseHandler,
+        purchaseStarted: PurchaseOfPackageStartedHandler?,
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
+        purchaseCancelled: PurchaseCancelledHandler?,
+        restoreStarted: RestoreStartedHandler?,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler?,
+        purchaseFailure: PurchaseFailureHandler?,
+        restoreFailure: PurchaseFailureHandler?
+    ) -> some View {
+        self
+            .onPurchaseStarted { purchaseStarted?($0) }
+            .onPurchaseCompleted { purchaseCompleted?($0) }
+            .onPurchaseCancelled { purchaseCancelled?() }
+            .onRestoreStarted { restoreStarted?() }
+            .onRestoreCompleted { restoreCompleted?($0) }
+            .onPurchaseFailure { purchaseFailure?($0) }
+            .onRestoreFailure { restoreFailure?($0) }
+            .interactiveDismissDisabled(purchaseHandler.actionInProgress)
+    }
+
+}
+
 // swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
@@ -531,7 +561,6 @@ private struct PresentingPaywallModifier: ViewModifier {
     @State
     private var data: Data?
 
-    /// The exit offer item to present (nil when not showing)
     @State
     private var exitOfferItem: ExitOfferItem?
 
@@ -705,14 +734,12 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
     }
 
-    /// Handles dismissal of the exit offer paywall
     private func handleExitOfferDismiss() {
         self.exitOfferItem = nil
         self.exitOfferOffering = nil
         self.onDismiss?()
     }
 
-    /// Prefetches the exit offer for the current offering, if configured
     private func prefetchExitOffer() async {
         guard Purchases.isConfigured else { return }
 
@@ -743,7 +770,6 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
     }
 
-    /// Creates the paywall view for the exit offer
     private func exitOfferPaywallView(for offering: Offering) -> some View {
         PaywallView(
             configuration: .init(
@@ -754,28 +780,16 @@ private struct PresentingPaywallModifier: ViewModifier {
                 purchaseHandler: self.purchaseHandler
             )
         )
-        .onPurchaseStarted {
-            self.purchaseStarted?($0)
-        }
-        .onPurchaseCompleted { customerInfo in
-            self.purchaseCompleted?(customerInfo)
-        }
-        .onPurchaseCancelled {
-            self.purchaseCancelled?()
-        }
-        .onRestoreStarted {
-            self.restoreStarted?()
-        }
-        .onRestoreCompleted { customerInfo in
-            self.restoreCompleted?(customerInfo)
-        }
-        .onPurchaseFailure {
-            self.purchaseFailure?($0)
-        }
-        .onRestoreFailure {
-            self.restoreFailure?($0)
-        }
-        .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .withEventHandlers(
+            purchaseHandler: self.purchaseHandler,
+            purchaseStarted: self.purchaseStarted,
+            purchaseCompleted: self.purchaseCompleted,
+            purchaseCancelled: self.purchaseCancelled,
+            restoreStarted: self.restoreStarted,
+            restoreCompleted: self.restoreCompleted,
+            purchaseFailure: self.purchaseFailure,
+            restoreFailure: self.restoreFailure
+        )
     }
 
 }
@@ -788,12 +802,6 @@ private struct PresentingPaywallModifier: ViewModifier {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 private struct PresentPaywallBindingModifier: ViewModifier {
-
-    /// Wrapper to make Offering identifiable for sheet(item:)
-    private struct OfferingItem: Identifiable {
-        let offering: Offering
-        var id: String { offering.identifier }
-    }
 
     @Binding var offering: Offering?
 
@@ -809,44 +817,30 @@ private struct PresentPaywallBindingModifier: ViewModifier {
     var restoreFailure: PurchaseFailureHandler?
     var onDismiss: (() -> Void)?
 
-    /// Wrapper for exit offer to use with sheet(item:)
-    private struct ExitOfferItem: Identifiable {
-        let offering: Offering
-        var id: String { offering.identifier }
-    }
-
-    /// The offering loaded for exit offer presentation
+    /// The prefetched exit offer (set during .task, but not shown until main paywall dismisses)
     @State
     private var exitOfferOffering: Offering?
 
-    /// The exit offer item to present (nil when not showing)
+    /// The exit offer to actually present (set when main paywall dismisses without purchase)
     @State
-    private var exitOfferItem: ExitOfferItem?
+    private var presentedExitOffer: Offering?
 
     @StateObject
     private var purchaseHandler: PurchaseHandler = .default()
-
-    /// Binding to convert Offering? to OfferingItem? for sheet(item:)
-    private var offeringItemBinding: Binding<OfferingItem?> {
-        Binding(
-            get: { self.offering.map { OfferingItem(offering: $0) } },
-            set: { self.offering = $0?.offering }
-        )
-    }
 
     func body(content: Content) -> some View {
         Group {
             switch presentationMode {
             case .sheet:
                 content
-                    .sheet(item: offeringItemBinding, onDismiss: self.handleMainPaywallDismiss) { item in
-                        self.paywallView(for: item.offering)
+                    .sheet(item: self.$offering, onDismiss: self.handleMainPaywallDismiss) { offering in
+                        self.paywallView(for: offering)
                         #if targetEnvironment(macCatalyst) || os(macOS)
                             .frame(minHeight: 667)
                         #endif
                     }
-                    .sheet(item: self.$exitOfferItem, onDismiss: self.handleExitOfferDismiss) { item in
-                        self.exitOfferPaywallView(for: item.offering)
+                    .sheet(item: self.$presentedExitOffer, onDismiss: self.handleExitOfferDismiss) { exitOffering in
+                        self.exitOfferPaywallView(for: exitOffering)
                         #if targetEnvironment(macCatalyst) || os(macOS)
                             .frame(minHeight: 667)
                         #endif
@@ -854,11 +848,14 @@ private struct PresentPaywallBindingModifier: ViewModifier {
             #if !os(macOS)
             case .fullScreen:
                 content
-                    .fullScreenCover(item: offeringItemBinding, onDismiss: self.handleMainPaywallDismiss) { item in
-                        self.paywallView(for: item.offering)
+                    .fullScreenCover(item: self.$offering, onDismiss: self.handleMainPaywallDismiss) { offering in
+                        self.paywallView(for: offering)
                     }
-                    .fullScreenCover(item: self.$exitOfferItem, onDismiss: self.handleExitOfferDismiss) { item in
-                        self.exitOfferPaywallView(for: item.offering)
+                    .fullScreenCover(
+                        item: self.$presentedExitOffer,
+                        onDismiss: self.handleExitOfferDismiss
+                    ) { exitOffering in
+                        self.exitOfferPaywallView(for: exitOffering)
                     }
             #endif
             }
@@ -874,28 +871,16 @@ private struct PresentPaywallBindingModifier: ViewModifier {
                 purchaseHandler: self.purchaseHandler
             )
         )
-        .onPurchaseStarted {
-            self.purchaseStarted?($0)
-        }
-        .onPurchaseCompleted { customerInfo in
-            self.purchaseCompleted?(customerInfo)
-        }
-        .onPurchaseCancelled {
-            self.purchaseCancelled?()
-        }
-        .onRestoreStarted {
-            self.restoreStarted?()
-        }
-        .onRestoreCompleted { customerInfo in
-            self.restoreCompleted?(customerInfo)
-        }
-        .onPurchaseFailure {
-            self.purchaseFailure?($0)
-        }
-        .onRestoreFailure {
-            self.restoreFailure?($0)
-        }
-        .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .withEventHandlers(
+            purchaseHandler: self.purchaseHandler,
+            purchaseStarted: self.purchaseStarted,
+            purchaseCompleted: self.purchaseCompleted,
+            purchaseCancelled: self.purchaseCancelled,
+            restoreStarted: self.restoreStarted,
+            restoreCompleted: self.restoreCompleted,
+            purchaseFailure: self.purchaseFailure,
+            restoreFailure: self.restoreFailure
+        )
         .onAppear {
             // Reset purchased flag so we can track if a purchase happens in THIS session.
             // This is needed because PurchaseHandler is a @StateObject that persists.
@@ -913,7 +898,6 @@ private struct PresentPaywallBindingModifier: ViewModifier {
         }
     }
 
-    /// Creates the paywall view for the exit offer
     private func exitOfferPaywallView(for offering: Offering) -> some View {
         PaywallView(
             configuration: .init(
@@ -923,37 +907,16 @@ private struct PresentPaywallBindingModifier: ViewModifier {
                 purchaseHandler: self.purchaseHandler
             )
         )
-        .onPurchaseStarted {
-            self.purchaseStarted?($0)
-        }
-        .onPurchaseCompleted { customerInfo in
-            self.purchaseCompleted?(customerInfo)
-        }
-        .onPurchaseCancelled {
-            self.purchaseCancelled?()
-        }
-        .onRestoreStarted {
-            self.restoreStarted?()
-        }
-        .onRestoreCompleted { customerInfo in
-            self.restoreCompleted?(customerInfo)
-        }
-        .onPurchaseFailure {
-            self.purchaseFailure?($0)
-        }
-        .onRestoreFailure {
-            self.restoreFailure?($0)
-        }
-        .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
-    }
-
-    private func close() {
-        self.offering = nil
-    }
-
-    private func closeExitOffer() {
-        self.exitOfferItem = nil
-        self.exitOfferOffering = nil
+        .withEventHandlers(
+            purchaseHandler: self.purchaseHandler,
+            purchaseStarted: self.purchaseStarted,
+            purchaseCompleted: self.purchaseCompleted,
+            purchaseCancelled: self.purchaseCancelled,
+            restoreStarted: self.restoreStarted,
+            restoreCompleted: self.restoreCompleted,
+            purchaseFailure: self.purchaseFailure,
+            restoreFailure: self.restoreFailure
+        )
     }
 
     /// Handles dismissal of the main paywall, checking for exit offers.
@@ -975,15 +938,14 @@ private struct PresentPaywallBindingModifier: ViewModifier {
 
         if let exitOffering = self.exitOfferOffering {
             Logger.debug(Strings.presenting_exit_offer(exitOffering.identifier))
-            self.exitOfferItem = ExitOfferItem(offering: exitOffering)
+            self.presentedExitOffer = exitOffering
         } else {
             self.onDismiss?()
         }
     }
 
-    /// Handles dismissal of the exit offer paywall
     private func handleExitOfferDismiss() {
-        self.exitOfferItem = nil
+        self.presentedExitOffer = nil
         self.exitOfferOffering = nil
         self.onDismiss?()
     }

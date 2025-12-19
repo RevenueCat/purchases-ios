@@ -187,6 +187,10 @@ final class PurchaseHandler: ObservableObject {
     }
 
     /// Resets the purchased flag for a new paywall session.
+    ///
+    /// This is called when a paywall appears to ensure we track purchases for the current session only.
+    /// Since `PurchaseHandler` is a `@StateObject` that persists, the `purchased` flag would otherwise
+    /// remain `true` from a previous session, incorrectly preventing exit offers from showing.
     func resetPurchased() {
         self.purchased = false
     }
@@ -259,15 +263,17 @@ extension PurchaseHandler {
                 result = try await self.purchases.purchase(package: package)
             }
 
-            self.setResult(result)
-
             if result.userCancelled {
                 self.trackCancelledPurchase()
             } else {
+                // Set purchased BEFORE setResult so that handleMainPaywallDismiss
+                // sees the correct state when the sheet dismisses
                 withAnimation(Constants.defaultAnimation) {
                     self.purchased = true
                 }
             }
+
+            self.setResult(result)
 
         } catch {
             self.purchaseError = error
@@ -310,14 +316,15 @@ extension PurchaseHandler {
                                              customerInfo: try await self.purchases.customerInfo(),
                                             userCancelled: result.userCancelled)
 
-        self.setResult(resultInfo)
-
         if !result.userCancelled && result.error == nil {
-
+            // Set purchased BEFORE setResult so that handleMainPaywallDismiss
+            // sees the correct state when the sheet dismisses
             withAnimation(Constants.defaultAnimation) {
                 self.purchased = true
             }
         }
+
+        self.setResult(resultInfo)
 
     }
 
