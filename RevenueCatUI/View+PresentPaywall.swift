@@ -453,6 +453,7 @@ extension View {
 
 }
 
+// swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 private struct PresentingPaywallModifier: ViewModifier {
@@ -521,12 +522,18 @@ private struct PresentingPaywallModifier: ViewModifier {
     @StateObject
     private var purchaseHandler: PurchaseHandler
 
+    /// Wrapper to make Offering identifiable for sheet(item:)
+    private struct ExitOfferItem: Identifiable {
+        let offering: Offering
+        var id: String { offering.identifier }
+    }
+
     @State
     private var data: Data?
 
-    /// Data for presenting the exit offer paywall
+    /// The exit offer item to present (nil when not showing)
     @State
-    private var exitOfferData: Data?
+    private var exitOfferItem: ExitOfferItem?
 
     func body(content: Content) -> some View {
         Group {
@@ -534,7 +541,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             case .sheet:
                 content
                     .sheet(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { data in
-                        self.paywallView(data, isExitOffer: false)
+                        self.paywallView(data)
                         // The default height given to sheets on Mac Catalyst is too small, and looks terrible.
                         // So we need to give it a more reasonable default size. This is the height of an
                         // iPhone 6/7/8 screen. This aligns with our documentation that we will show a paywall
@@ -542,23 +549,23 @@ private struct PresentingPaywallModifier: ViewModifier {
                         // can use PaywallView.
                         // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls
                         #if targetEnvironment(macCatalyst) || os(macOS)
-                            .frame(height: 667)
+                            .frame(minHeight: 667)
                         #endif
                     }
-                    .sheet(item: self.$exitOfferData, onDismiss: self.onDismiss) { data in
-                        self.paywallView(data, isExitOffer: true)
+                    .sheet(item: self.$exitOfferItem, onDismiss: self.handleExitOfferDismiss) { item in
+                        self.exitOfferPaywallView(for: item.offering)
                         #if targetEnvironment(macCatalyst) || os(macOS)
-                            .frame(height: 667)
+                            .frame(minHeight: 667)
                         #endif
                     }
             #if !os(macOS)
             case .fullScreen:
                 content
                     .fullScreenCover(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { data in
-                        self.paywallView(data, isExitOffer: false)
+                        self.paywallView(data)
                     }
-                    .fullScreenCover(item: self.$exitOfferData, onDismiss: self.onDismiss) { data in
-                        self.paywallView(data, isExitOffer: true)
+                    .fullScreenCover(item: self.$exitOfferItem, onDismiss: self.handleExitOfferDismiss) { item in
+                        self.exitOfferPaywallView(for: item.offering)
                     }
             #endif
             }
@@ -601,18 +608,10 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
     }
 
-    // swiftlint:disable:next function_body_length
-    private func paywallView(_ data: Data, isExitOffer: Bool) -> some View {
-        let paywallContent: PaywallViewConfiguration.Content = {
-            if isExitOffer, let exitOffering = self.exitOfferOffering {
-                return .offering(exitOffering)
-            }
-            return self.content
-        }()
-
-        return PaywallView(
+    private func paywallView(_ data: Data) -> some View {
+        PaywallView(
             configuration: .init(
-                content: paywallContent,
+                content: self.content,
                 customerInfo: data.customerInfo,
                 fonts: self.fontProvider,
                 displayCloseButton: true,
@@ -623,8 +622,12 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
-        .onPurchaseCompleted {
-            self.purchaseCompleted?($0)
+        .onPurchaseCompleted { customerInfo in
+            self.purchaseCompleted?(customerInfo)
+
+            if !self.shouldDisplay(customerInfo) {
+                self.close()
+            }
         }
         .onPurchaseCancelled {
             self.purchaseCancelled?()
@@ -639,11 +642,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             guard let result else { return }
 
             if result.success && !self.shouldDisplay(result.customerInfo) {
-                if isExitOffer {
-                    self.closeExitOffer()
-                } else {
-                    self.close()
-                }
+                self.close()
             }
         }
         .onPurchaseFailure {
@@ -653,11 +652,13 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .onAppear {
+            // Reset purchase state for new paywall session
+            self.purchaseHandler.resetForNewSession()
+        }
         .task {
-            // Track the current offering for exit offer lookup (only for main paywall)
-            if !isExitOffer {
-                await self.loadCurrentOffering()
-            }
+            // Prefetch the exit offer if available
+            await self.loadCurrentOffering()
         }
     }
 
@@ -674,14 +675,37 @@ private struct PresentingPaywallModifier: ViewModifier {
     private func closeExitOffer() {
         Logger.debug(Strings.dismissing_paywall)
 
-        self.exitOfferData = nil
+        self.exitOfferItem = nil
+        self.exitOfferOffering = nil
     }
 
     /// Handles dismissal of the main paywall, checking for exit offers
     private func handleMainPaywallDismiss() {
-        Task {
-            await self.checkAndPresentExitOffer()
+        // Don't show exit offer if user purchased
+        guard !self.purchaseHandler.purchased else {
+            self.onDismiss?()
+            return
         }
+
+        // Don't show exit offer if main paywall is still showing
+        guard self.data == nil else {
+            self.onDismiss?()
+            return
+        }
+
+        if let exitOffering = self.exitOfferOffering {
+            Logger.debug(Strings.presenting_exit_offer(exitOffering.identifier))
+            self.exitOfferItem = ExitOfferItem(offering: exitOffering)
+        } else {
+            self.onDismiss?()
+        }
+    }
+
+    /// Handles dismissal of the exit offer paywall
+    private func handleExitOfferDismiss() {
+        self.exitOfferItem = nil
+        self.exitOfferOffering = nil
+        self.onDismiss?()
     }
 
     /// Loads the current offering based on the content configuration and prefetches the exit offer if available
@@ -704,34 +728,57 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
 
         if let offering {
-            self.exitOfferOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
+            let exitOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
+            // Don't use exit offer if it's the same as the current offering
+            if let exitOffering, exitOffering.identifier == offering.identifier {
+                Logger.warning(Strings.exit_offer_same_as_current)
+                self.exitOfferOffering = nil
+            } else {
+                self.exitOfferOffering = exitOffering
+            }
         }
     }
 
-    /// Checks for exit offers and presents the exit offer paywall if available
-    private func checkAndPresentExitOffer() async {
-        guard let exitOffering = self.exitOfferOffering else {
-            self.onDismiss?()
-            return
+    /// Creates the paywall view for the exit offer
+    private func exitOfferPaywallView(for offering: Offering) -> some View {
+        PaywallView(
+            configuration: .init(
+                content: .offering(offering),
+                fonts: self.fontProvider,
+                displayCloseButton: true,
+                introEligibility: self.introEligibility,
+                purchaseHandler: self.purchaseHandler
+            )
+        )
+        .onPurchaseStarted {
+            self.purchaseStarted?($0)
         }
-
-        guard Purchases.isConfigured else {
-            self.onDismiss?()
-            return
+        .onPurchaseCompleted { customerInfo in
+            self.purchaseCompleted?(customerInfo)
         }
-
-        do {
-            let customerInfo = try await Purchases.shared.customerInfo()
-            self.exitOfferData = .init(customerInfo: customerInfo)
-
-            Logger.debug(Strings.presenting_exit_offer(exitOffering.identifier))
-        } catch {
-            Logger.error(Strings.error_loading_exit_offer(error))
-            self.onDismiss?()
+        .onPurchaseCancelled {
+            self.purchaseCancelled?()
+        }
+        .onRestoreStarted {
+            self.restoreStarted?()
+        }
+        .onRestoreCompleted { customerInfo in
+            self.restoreCompleted?(customerInfo)
+        }
+        .onPurchaseFailure {
+            self.purchaseFailure?($0)
+        }
+        .onRestoreFailure {
+            self.restoreFailure?($0)
+        }
+        .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .onAppear {
+            self.purchaseHandler.resetForNewSession()
         }
     }
 
 }
+// swiftlint:enable type_body_length
 
 // MARK: - PresentPaywallBindingModifier
 
@@ -761,13 +808,19 @@ private struct PresentPaywallBindingModifier: ViewModifier {
     var restoreFailure: PurchaseFailureHandler?
     var onDismiss: (() -> Void)?
 
+    /// Wrapper for exit offer to use with sheet(item:)
+    private struct ExitOfferItem: Identifiable {
+        let offering: Offering
+        var id: String { offering.identifier }
+    }
+
     /// The offering loaded for exit offer presentation
     @State
     private var exitOfferOffering: Offering?
 
-    /// Whether the exit offer paywall is being presented
+    /// The exit offer item to present (nil when not showing)
     @State
-    private var showExitOffer: Bool = false
+    private var exitOfferItem: ExitOfferItem?
 
     @StateObject
     private var purchaseHandler: PurchaseHandler = .default()
@@ -786,36 +839,32 @@ private struct PresentPaywallBindingModifier: ViewModifier {
             case .sheet:
                 content
                     .sheet(item: offeringItemBinding, onDismiss: self.handleMainPaywallDismiss) { item in
-                        self.paywallView(for: item.offering, isExitOffer: false)
+                        self.paywallView(for: item.offering)
                         #if targetEnvironment(macCatalyst) || os(macOS)
-                            .frame(height: 667)
+                            .frame(minHeight: 667)
                         #endif
                     }
-                    .sheet(isPresented: self.$showExitOffer, onDismiss: self.handleExitOfferDismiss) {
-                        if let exitOffering = self.exitOfferOffering {
-                            self.paywallView(for: exitOffering, isExitOffer: true)
-                            #if targetEnvironment(macCatalyst) || os(macOS)
-                                .frame(height: 667)
-                            #endif
-                        }
+                    .sheet(item: self.$exitOfferItem, onDismiss: self.handleExitOfferDismiss) { item in
+                        self.exitOfferPaywallView(for: item.offering)
+                        #if targetEnvironment(macCatalyst) || os(macOS)
+                            .frame(minHeight: 667)
+                        #endif
                     }
             #if !os(macOS)
             case .fullScreen:
                 content
                     .fullScreenCover(item: offeringItemBinding, onDismiss: self.handleMainPaywallDismiss) { item in
-                        self.paywallView(for: item.offering, isExitOffer: false)
+                        self.paywallView(for: item.offering)
                     }
-                    .fullScreenCover(isPresented: self.$showExitOffer, onDismiss: self.handleExitOfferDismiss) {
-                        if let exitOffering = self.exitOfferOffering {
-                            self.paywallView(for: exitOffering, isExitOffer: true)
-                        }
+                    .fullScreenCover(item: self.$exitOfferItem, onDismiss: self.handleExitOfferDismiss) { item in
+                        self.exitOfferPaywallView(for: item.offering)
                     }
             #endif
             }
         }
     }
 
-    private func paywallView(for offering: Offering, isExitOffer: Bool) -> some View {
+    private func paywallView(for offering: Offering) -> some View {
         PaywallView(
             configuration: .init(
                 content: .offering(offering),
@@ -827,8 +876,8 @@ private struct PresentPaywallBindingModifier: ViewModifier {
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
-        .onPurchaseCompleted {
-            self.purchaseCompleted?($0)
+        .onPurchaseCompleted { customerInfo in
+            self.purchaseCompleted?(customerInfo)
         }
         .onPurchaseCancelled {
             self.purchaseCancelled?()
@@ -846,18 +895,85 @@ private struct PresentPaywallBindingModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .onAppear {
+            // Reset purchase state for new paywall session
+            self.purchaseHandler.resetForNewSession()
+        }
         .task {
-            if !isExitOffer {
-                self.exitOfferOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
+            let exitOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
+            // Don't use exit offer if it's the same as the current offering
+            if let exitOffering, exitOffering.identifier == offering.identifier {
+                Logger.warning(Strings.exit_offer_same_as_current)
+                self.exitOfferOffering = nil
+            } else {
+                self.exitOfferOffering = exitOffering
             }
         }
     }
 
+    /// Creates the paywall view for the exit offer
+    private func exitOfferPaywallView(for offering: Offering) -> some View {
+        PaywallView(
+            configuration: .init(
+                content: .offering(offering),
+                fonts: self.fontProvider,
+                displayCloseButton: true,
+                purchaseHandler: self.purchaseHandler
+            )
+        )
+        .onPurchaseStarted {
+            self.purchaseStarted?($0)
+        }
+        .onPurchaseCompleted { customerInfo in
+            self.purchaseCompleted?(customerInfo)
+        }
+        .onPurchaseCancelled {
+            self.purchaseCancelled?()
+        }
+        .onRestoreStarted {
+            self.restoreStarted?()
+        }
+        .onRestoreCompleted { customerInfo in
+            self.restoreCompleted?(customerInfo)
+        }
+        .onPurchaseFailure {
+            self.purchaseFailure?($0)
+        }
+        .onRestoreFailure {
+            self.restoreFailure?($0)
+        }
+        .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .onAppear {
+            self.purchaseHandler.resetForNewSession()
+        }
+    }
+
+    private func close() {
+        self.offering = nil
+    }
+
+    private func closeExitOffer() {
+        self.exitOfferItem = nil
+        self.exitOfferOffering = nil
+    }
+
     /// Handles dismissal of the main paywall, checking for exit offers
     private func handleMainPaywallDismiss() {
-        if self.exitOfferOffering != nil {
-            Logger.debug(Strings.presenting_exit_offer(self.exitOfferOffering?.identifier ?? "unknown"))
-            self.showExitOffer = true
+        // Don't show exit offer if user purchased
+        guard !self.purchaseHandler.purchased else {
+            self.onDismiss?()
+            return
+        }
+
+        // Don't show exit offer if main paywall is still showing
+        guard self.offering == nil else {
+            self.onDismiss?()
+            return
+        }
+
+        if let exitOffering = self.exitOfferOffering {
+            Logger.debug(Strings.presenting_exit_offer(exitOffering.identifier))
+            self.exitOfferItem = ExitOfferItem(offering: exitOffering)
         } else {
             self.onDismiss?()
         }
@@ -865,7 +981,7 @@ private struct PresentPaywallBindingModifier: ViewModifier {
 
     /// Handles dismissal of the exit offer paywall
     private func handleExitOfferDismiss() {
-        self.showExitOffer = false
+        self.exitOfferItem = nil
         self.exitOfferOffering = nil
         self.onDismiss?()
     }

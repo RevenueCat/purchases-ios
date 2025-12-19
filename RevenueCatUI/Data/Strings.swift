@@ -93,6 +93,7 @@ enum Strings {
     // Exit Offers
     case error_fetching_offerings(Error)
     case exit_offer_not_found(String)
+    case exit_offer_same_as_current
     case prefetched_exit_offer(String)
     case presenting_exit_offer(String)
     case error_loading_exit_offer(Error)
@@ -302,6 +303,8 @@ extension Strings: CustomStringConvertible {
             return "Error fetching offerings: \(error)"
         case .exit_offer_not_found(let offeringId):
             return "Exit offer offering '\(offeringId)' not found"
+        case .exit_offer_same_as_current:
+            return "Exit offer is the same as the current offering, skipping"
         case .prefetched_exit_offer(let offeringId):
             return "Prefetched exit offer offering '\(offeringId)'"
         case .presenting_exit_offer(let offeringId):

@@ -35,7 +35,6 @@ final class ExitOfferTests: TestCase {
     func testExitOfferEncoding() throws {
         let exitOffer = ExitOffer(offeringId: "test_offering_id")
 
-        // Use JSONEncoder.default which has .convertToSnakeCase strategy
         let data = try JSONEncoder.default.encode(exitOffer)
         let decoded = try JSONSerialization.jsonObject(with: data) as? [String: Any]
 
@@ -64,7 +63,7 @@ final class ExitOfferTests: TestCase {
         {}
         """
 
-            let exitOffers = try JSONDecoder.default.decode(
+        let exitOffers = try JSONDecoder.default.decode(
             ExitOffers.self,
             from: json.data(using: .utf8)!
         )
@@ -75,7 +74,6 @@ final class ExitOfferTests: TestCase {
     func testExitOffersEncoding() throws {
         let exitOffers = ExitOffers(dismiss: ExitOffer(offeringId: "test_id"))
 
-        // Use JSONEncoder.default which has .convertToSnakeCase strategy
         let data = try JSONEncoder.default.encode(exitOffers)
         let decoded = try JSONSerialization.jsonObject(with: data) as? [String: Any]
 
