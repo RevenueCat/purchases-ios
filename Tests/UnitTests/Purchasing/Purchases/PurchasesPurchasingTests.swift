@@ -438,7 +438,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         expect(receivedUserCancelled).toEventually(beFalse())
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.domain).toEventually(equal(ErrorCode.errorDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.productAlreadyPurchasedError.rawValue))
         expect(receivedUnderlyingError?.domain).toEventually(equal(unknownError.domain))
         expect(receivedUnderlyingError?.code).toEventually(equal(unknownError.code))
@@ -531,7 +531,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).toEventuallyNot(beNil())
         expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
 
-        expect(receivedError?.domain) == RCPurchasesErrorCodeDomain
+        expect(receivedError?.domain) == ErrorCode.errorDomain
         expect(receivedError?.code) == ErrorCode.missingReceiptFileError.rawValue
     }
 
@@ -611,7 +611,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postReceiptDataCalled) == false
         expect(self.storeKit1Wrapper.finishCalled) == false
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.domain).toEventually(equal(ErrorCode.errorDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.paymentPendingError.rawValue))
     }
 
@@ -784,7 +784,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedInfo).to(beNil())
-        expect(receivedError?.domain) == RCPurchasesErrorCodeDomain
+        expect(receivedError?.domain) == ErrorCode.errorDomain
         expect(receivedError?.code) == ErrorCode.operationAlreadyInProgressForProductError.rawValue
         expect(self.storeKit1Wrapper.addPaymentCallCount) == 1
         expect(receivedUserCancelled) == false
