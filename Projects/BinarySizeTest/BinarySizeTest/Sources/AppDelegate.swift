@@ -11,9 +11,9 @@
 //
 //  Created by Rick van der Linden on 17/12/2025.
 
-import UIKit
 import RevenueCat
 import RevenueCatUI
+import UIKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
