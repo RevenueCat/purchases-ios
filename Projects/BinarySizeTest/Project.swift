@@ -6,6 +6,75 @@ enum BinarySizeTestIntegrationMethod: String {
     case localSource = "LOCAL_SOURCE"
     case cocoapods = "COCOAPODS"
     case spm = "SPM"
+
+    static let bundleIdPrefix = "com.revenuecat.binary-size-test."
+    static let displayNamePrefix = "BinarySizeTest"
+
+    var identifier: String {
+        switch self {
+        case .localSource:
+            return "local-source"
+        case .cocoapods:
+            return "cocoapods"
+        case .spm:
+            return "spm"
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .localSource:
+            return "Local Source"
+        case .cocoapods:
+            return "Cocoapods"
+        case .spm:
+            return "SPM"
+        }
+    }
+}
+
+extension BinarySizeTestIntegrationMethod {
+    var bundleId: String {
+        return Self.bundleIdPrefix + identifier
+    }
+
+    var displayName: String {
+        return Self.displayNamePrefix + " (\(name))"
+    }
+
+    var dependencies: [TargetDependency] {
+        switch self {
+        case .localSource:
+            return [
+                .project(target: "RevenueCat", path: .relativeToRoot("Projects/RevenueCat")),
+                .project(target: "RevenueCatUI", path: .relativeToRoot("Projects/RevenueCatUI"))
+            ]
+        case .spm:
+            return [
+                .revenueCatLocal,
+                .revenueCatUILocal
+            ]
+        case .cocoapods:
+            return []
+        }
+    }
+
+    var packages: [ProjectDescription.Package] {
+        switch self {
+        case .localSource, .cocoapods:
+            return []
+        case .spm:
+            return [.package(path: "../..")]
+        }
+    }
+
+    var provisioningProfileSpecifier: String {
+        return "match AppStore \(bundleId)"
+    }
+
+    var provisioningProfileSettingValue: SettingValue {
+        return .init(stringLiteral: provisioningProfileSpecifier)
+    }
 }
 
 let binarySizeTestIntegrationMethod: BinarySizeTestIntegrationMethod = {
@@ -29,56 +98,10 @@ let binarySizeTestIntegrationMethod: BinarySizeTestIntegrationMethod = {
     }
 }()
 
-let binarySizeTestBundleId: String = {
-    switch binarySizeTestIntegrationMethod {
-    case .localSource:
-        return "com.revenuecat.binary-size-test.local-source"
-    case .cocoapods:
-        return "com.revenuecat.binary-size-test.cocoapods"
-    case .spm:
-        return "com.revenuecat.binary-size-test.spm"
-    }
-}()
-
-let binarySizeTestDisplayName: String = {
-    switch binarySizeTestIntegrationMethod {
-    case .localSource:
-        return "BinarySizeTest (Local Source)"
-    case .cocoapods:
-        return "BinarySizeTest (Cocoapods)"
-    case .spm:
-        return "BinarySizeTest (SPM)"
-    }
-}()
-
-let binarySizeTestProvisioningProfileSpecifier = "match AppStore \(binarySizeTestBundleId)"
-let binarySizeTestProvisioningProfileSettingValue: SettingValue = .init(
-    stringLiteral: binarySizeTestProvisioningProfileSpecifier
-)
-
-let binarySizeTestDependencies: [TargetDependency] = {
-    switch binarySizeTestIntegrationMethod {
-    case .localSource:
-        // Explicit local project dependencies (no reliance on other env vars).
-        return [
-            .project(target: "RevenueCat", path: .relativeToRoot("Projects/RevenueCat")),
-            .project(target: "RevenueCatUI", path: .relativeToRoot("Projects/RevenueCatUI"))
-        ]
-    case .spm:
-        // SDK provided via Tuist-managed SPM external dependencies.
-        return [
-            .revenueCatLocal,
-            .revenueCatUILocal
-        ]
-    case .cocoapods:
-        // SDK will be provided by CocoaPods (see Podfile in this directory).
-        return []
-    }
-}()
-
 let project = Project(
     name: "BinarySizeTest",
     organizationName: .revenueCatOrgName,
+    packages: binarySizeTestIntegrationMethod.packages,
     settings: .settings(
         defaultSettings: .recommended
     ),
@@ -87,7 +110,7 @@ let project = Project(
             name: "BinarySizeTest",
             destinations: .iOS,
             product: .app,
-            bundleId: binarySizeTestBundleId,
+            bundleId: binarySizeTestIntegrationMethod.bundleId,
             deploymentTargets: .iOS("13.0"),
             infoPlist: .extendingDefault(
                 with: [
@@ -100,14 +123,14 @@ let project = Project(
             sources: [
                 "BinarySizeTest/Sources/**/*.swift"
             ],
-            dependencies: binarySizeTestDependencies,
+            dependencies: binarySizeTestIntegrationMethod.dependencies,
             settings: .settings(
                 base: [
                     "CODE_SIGN_STYLE": .string("Manual"),
                     "DEVELOPMENT_TEAM": .string("8SXR2327BM"),
                     "CODE_SIGN_IDENTITY": .string("Apple Distribution: RevenueCat, Inc. (8SXR2327BM)"),
-                    "INFOPLIST_KEY_CFBundleDisplayName": .string(binarySizeTestDisplayName),
-                    "PROVISIONING_PROFILE_SPECIFIER": binarySizeTestProvisioningProfileSettingValue
+                    "INFOPLIST_KEY_CFBundleDisplayName": .string(binarySizeTestIntegrationMethod.displayName),
+                    "PROVISIONING_PROFILE_SPECIFIER": binarySizeTestIntegrationMethod.provisioningProfileSettingValue
                 ],
                 defaultSettings: .essential
             )
