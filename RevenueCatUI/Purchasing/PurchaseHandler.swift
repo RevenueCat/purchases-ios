@@ -186,14 +186,9 @@ final class PurchaseHandler: ObservableObject {
         cancellables.removeAll()
     }
 
-    /// Resets the purchase state for a new paywall session.
-    /// Call this when presenting a new paywall to clear any stale purchase data.
-    func resetForNewSession() {
+    /// Resets the purchased flag for a new paywall session.
+    func resetPurchased() {
         self.purchased = false
-        self.purchaseResult = nil
-        self.purchaseError = nil
-        self.restoreError = nil
-        self.restoredCustomerInfo = nil
     }
 
 }

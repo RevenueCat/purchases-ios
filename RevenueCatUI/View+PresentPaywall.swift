@@ -653,8 +653,9 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .onAppear {
-            // Reset purchase state for new paywall session
-            self.purchaseHandler.resetForNewSession()
+            // Reset purchased flag so we can track if a purchase happens in THIS session.
+            // This is needed because PurchaseHandler is a @StateObject that persists.
+            self.purchaseHandler.resetPurchased()
         }
         .task {
             await self.prefetchExitOffer()
@@ -678,9 +679,13 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.exitOfferOffering = nil
     }
 
-    /// Handles dismissal of the main paywall, checking for exit offers
+    /// Handles dismissal of the main paywall, checking for exit offers.
+    ///
+    /// We check `purchaseHandler.purchased` instead of calling `shouldDisplay(customerInfo)` because:
+    /// - `purchased` is set immediately when purchase completes, with no timing issues
+    /// - `shouldDisplay` would require fetching `CustomerInfo` which may return cached data
+    ///   that hasn't been updated yet after the purchase
     private func handleMainPaywallDismiss() {
-        // Don't show exit offer if user purchased
         guard !self.purchaseHandler.purchased else {
             self.onDismiss?()
             return
@@ -771,9 +776,6 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
-        .onAppear {
-            self.purchaseHandler.resetForNewSession()
-        }
     }
 
 }
@@ -895,8 +897,9 @@ private struct PresentPaywallBindingModifier: ViewModifier {
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .onAppear {
-            // Reset purchase state for new paywall session
-            self.purchaseHandler.resetForNewSession()
+            // Reset purchased flag so we can track if a purchase happens in THIS session.
+            // This is needed because PurchaseHandler is a @StateObject that persists.
+            self.purchaseHandler.resetPurchased()
         }
         .task {
             let exitOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
@@ -942,9 +945,6 @@ private struct PresentPaywallBindingModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
-        .onAppear {
-            self.purchaseHandler.resetForNewSession()
-        }
     }
 
     private func close() {
@@ -956,9 +956,12 @@ private struct PresentPaywallBindingModifier: ViewModifier {
         self.exitOfferOffering = nil
     }
 
-    /// Handles dismissal of the main paywall, checking for exit offers
+    /// Handles dismissal of the main paywall, checking for exit offers.
+    ///
+    /// We check `purchaseHandler.purchased` instead of fetching `CustomerInfo` because:
+    /// - `purchased` is set immediately when purchase completes, with no timing issues
+    /// - Fetching `CustomerInfo` may return cached data that hasn't been updated yet
     private func handleMainPaywallDismiss() {
-        // Don't show exit offer if user purchased
         guard !self.purchaseHandler.purchased else {
             self.onDismiss?()
             return
