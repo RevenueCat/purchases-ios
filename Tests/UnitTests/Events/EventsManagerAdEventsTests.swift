@@ -43,7 +43,6 @@ class EventsManagerAdEventsTests: TestCase {
             internalAPI: self.api,
             userProvider: self.userProvider,
             store: self.featureEventStore,
-            systemInfo: MockSystemInfo(finishTransactions: true),
             appSessionID: self.appSessionID,
             adEventStore: self.adEventStore
         )

@@ -220,8 +220,6 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let manager = try self.mockEventsManager
 
         try await asyncWait { await manager.invokedFlushFeatureEvents == true }
-
-        expect(self.operationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
     // MARK: - Purchasing, StoreKit 1 only

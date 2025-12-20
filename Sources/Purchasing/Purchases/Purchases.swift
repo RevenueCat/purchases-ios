@@ -486,7 +486,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     store: try FeatureEventStore.createDefault(
                         applicationSupportDirectory: applicationSupportDirectory
                     ),
-                    systemInfo: systemInfo,
                     adEventStore: adEventStore
                 )
                 #else
@@ -495,8 +494,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     userProvider: identityManager,
                     store: try FeatureEventStore.createDefault(
                         applicationSupportDirectory: applicationSupportDirectory
-                    ),
-                    systemInfo: systemInfo
+                    )
                 )
                 #endif
                 Logger.verbose(Strings.paywalls.event_manager_initialized)

@@ -23,6 +23,7 @@ enum Strings {
     static let diagnostics = DiagnosticsStrings.self
     static let eligibility = EligibilityStrings.self
     static let etag = ETagStrings.self
+    static let events = EventsStrings.self
     static let fileRepository = FileRepositoryStrings.self
     static let identity = IdentityStrings.self
     static let network = NetworkStrings.self
