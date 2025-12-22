@@ -91,12 +91,12 @@ enum Strings {
     case googleFontsNotSupported
 
     // Exit Offers
-    case error_fetching_offerings(Error)
-    case exit_offer_not_found(String)
-    case exit_offer_same_as_current
-    case prefetched_exit_offer(String)
-    case presenting_exit_offer(String)
-    case error_loading_exit_offer(Error)
+    case errorFetchingOfferings(Error)
+    case exitOfferNotFound(String)
+    case exitOfferSameAsCurrent
+    case prefetchedExitOffer(String)
+    case presentingExitOffer(String)
+    case errorLoadingExitOffer(Error)
 }
 
 extension Strings: CustomStringConvertible {
@@ -299,17 +299,17 @@ extension Strings: CustomStringConvertible {
         case .googleFontsNotSupported:
             return "Google Fonts are not supported on this platform"
 
-        case .error_fetching_offerings(let error):
+        case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
-        case .exit_offer_not_found(let offeringId):
+        case .exitOfferNotFound(let offeringId):
             return "Exit offer offering '\(offeringId)' not found"
-        case .exit_offer_same_as_current:
+        case .exitOfferSameAsCurrent:
             return "Exit offer is the same as the current offering, skipping"
-        case .prefetched_exit_offer(let offeringId):
+        case .prefetchedExitOffer(let offeringId):
             return "Prefetched exit offer offering '\(offeringId)'"
-        case .presenting_exit_offer(let offeringId):
+        case .presentingExitOffer(let offeringId):
             return "Presenting exit offer paywall for offering '\(offeringId)'"
-        case .error_loading_exit_offer(let error):
+        case .errorLoadingExitOffer(let error):
             return "Error loading exit offer: \(error)"
         }
     }

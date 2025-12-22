@@ -728,7 +728,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
 
         if let exitOffering = self.exitOfferOffering {
-            Logger.debug(Strings.presenting_exit_offer(exitOffering.identifier))
+            Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
             self.exitOfferItem = ExitOfferItem(offering: exitOffering)
         } else {
             self.onDismiss?()
@@ -749,7 +749,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         let exitOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
         // Don't use exit offer if it's the same as the current offering
         if let exitOffering, exitOffering.identifier == offering.identifier {
-            Logger.warning(Strings.exit_offer_same_as_current)
+            Logger.warning(Strings.exitOfferSameAsCurrent)
             self.exitOfferOffering = nil
         } else {
             self.exitOfferOffering = exitOffering
@@ -876,7 +876,7 @@ private struct PresentPaywallBindingModifier: ViewModifier {
             let exitOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
             // Don't use exit offer if it's the same as the current offering
             if let exitOffering, exitOffering.identifier == offering.identifier {
-                Logger.warning(Strings.exit_offer_same_as_current)
+                Logger.warning(Strings.exitOfferSameAsCurrent)
                 self.exitOfferOffering = nil
             } else {
                 self.exitOfferOffering = exitOffering
@@ -923,7 +923,7 @@ private struct PresentPaywallBindingModifier: ViewModifier {
         }
 
         if let exitOffering = self.exitOfferOffering {
-            Logger.debug(Strings.presenting_exit_offer(exitOffering.identifier))
+            Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
             self.presentedExitOffer = exitOffering
         } else {
             self.onDismiss?()

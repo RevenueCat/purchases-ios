@@ -36,14 +36,14 @@ enum ExitOfferHelper {
                 .offering(identifier: exitOfferOfferingId)
 
             if exitOffering != nil {
-                Logger.debug(Strings.prefetched_exit_offer(exitOfferOfferingId))
+                Logger.debug(Strings.prefetchedExitOffer(exitOfferOfferingId))
             } else {
-                Logger.warning(Strings.exit_offer_not_found(exitOfferOfferingId))
+                Logger.warning(Strings.exitOfferNotFound(exitOfferOfferingId))
             }
 
             return exitOffering
         } catch {
-            Logger.error(Strings.error_loading_exit_offer(error))
+            Logger.error(Strings.errorLoadingExitOffer(error))
             return nil
         }
     }

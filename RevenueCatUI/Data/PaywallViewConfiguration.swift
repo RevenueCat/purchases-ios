@@ -110,7 +110,7 @@ extension PaywallViewConfiguration.Content {
                 return try await Purchases.shared.offerings().offering(identifier: identifier)
             }
         } catch {
-            Logger.error(Strings.error_fetching_offerings(error))
+            Logger.error(Strings.errorFetchingOfferings(error))
             return nil
         }
     }
