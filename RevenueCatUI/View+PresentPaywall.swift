@@ -551,17 +551,12 @@ private struct PresentingPaywallModifier: ViewModifier {
     @StateObject
     private var purchaseHandler: PurchaseHandler
 
-    /// Wrapper to make Offering identifiable for sheet(item:)
-    private struct ExitOfferItem: Identifiable {
-        let offering: Offering
-        var id: String { offering.identifier }
-    }
-
     @State
     private var data: Data?
 
+    /// The exit offer to actually present (set when main paywall dismisses without purchase)
     @State
-    private var exitOfferItem: ExitOfferItem?
+    private var presentedExitOffer: Offering?
 
     func body(content: Content) -> some View {
         Group {
@@ -580,8 +575,8 @@ private struct PresentingPaywallModifier: ViewModifier {
                             .frame(height: 667)
                         #endif
                     }
-                    .sheet(item: self.$exitOfferItem, onDismiss: self.handleExitOfferDismiss) { item in
-                        self.exitOfferPaywallView(for: item.offering)
+                    .sheet(item: self.$presentedExitOffer, onDismiss: self.handleExitOfferDismiss) { offering in
+                        self.exitOfferPaywallView(for: offering)
                         #if targetEnvironment(macCatalyst) || os(macOS)
                         // this should be minHeight, but for consistency with the first paywall it will be
                         // like this for now
@@ -594,8 +589,11 @@ private struct PresentingPaywallModifier: ViewModifier {
                     .fullScreenCover(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { data in
                         self.paywallView(data)
                     }
-                    .fullScreenCover(item: self.$exitOfferItem, onDismiss: self.handleExitOfferDismiss) { item in
-                        self.exitOfferPaywallView(for: item.offering)
+                    .fullScreenCover(
+                        item: self.$presentedExitOffer,
+                        onDismiss: self.handleExitOfferDismiss
+                    ) { offering in
+                        self.exitOfferPaywallView(for: offering)
                     }
             #endif
             }
@@ -705,7 +703,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     private func closeExitOffer() {
         Logger.debug(Strings.dismissing_paywall)
 
-        self.exitOfferItem = nil
+        self.presentedExitOffer = nil
         self.exitOfferOffering = nil
     }
 
@@ -729,14 +727,14 @@ private struct PresentingPaywallModifier: ViewModifier {
 
         if let exitOffering = self.exitOfferOffering {
             Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
-            self.exitOfferItem = ExitOfferItem(offering: exitOffering)
+            self.presentedExitOffer = exitOffering
         } else {
             self.onDismiss?()
         }
     }
 
     private func handleExitOfferDismiss() {
-        self.exitOfferItem = nil
+        self.presentedExitOffer = nil
         self.exitOfferOffering = nil
         self.onDismiss?()
     }
