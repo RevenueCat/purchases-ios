@@ -140,7 +140,7 @@ actor EventsManager: EventsManagerType {
     nonisolated func flushAllEventsWithBackgroundTask(batchSize: Int) {
         self.withBackgroundTask(name: Self.flushAllEventsBackgroundTaskName) {
             do {
-                _ = try await self.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
+                _ = try await self.flushAllEvents(batchSize: batchSize)
             } catch {
                 Logger.error(Strings.paywalls.event_flush_failed(error))
             }
@@ -150,7 +150,7 @@ actor EventsManager: EventsManagerType {
     nonisolated func flushFeatureEventsWithBackgroundTask(batchSize: Int) {
         self.withBackgroundTask(name: Self.flushFeatureEventsBackgroundTaskName) {
             do {
-                _ = try await self.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
+                _ = try await self.flushFeatureEvents(batchSize: batchSize)
             } catch {
                 Logger.error(Strings.paywalls.event_flush_failed(error))
             }
