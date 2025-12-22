@@ -14,7 +14,8 @@ import Foundation
 class MockETagManager: ETagManager {
 
     init() {
-        super.init(userDefaults: MockUserDefaults())
+        let mockCache = SynchronizedLargeItemCache.MockUnderlyingSynchronizedFileCache()
+        super.init(largeItemCache: .init(cache: mockCache, basePath: "MockETagManager-\(UUID().uuidString)"))
     }
 
     struct ETagHeaderRequest {
