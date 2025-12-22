@@ -139,8 +139,11 @@ actor EventsManager: EventsManagerType {
         return try await self.flushFeatureEventsInternal(batchSize: batchSize)
     }
 
+    private static let flushAllEventsBackgroundTaskName = "com.revenuecat.flushAllEvents"
+    private static let flushFeatureEventsBackgroundTaskName = "com.revenuecat.flushFeatureEvents"
+
     nonisolated func flushAllEventsWithBackgroundTask(batchSize: Int) {
-        self.withBackgroundTask(name: "com.revenuecat.flushAllEvents") {
+        self.withBackgroundTask(name: Self.flushAllEventsBackgroundTaskName) {
             do {
                 _ = try await self.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
             } catch {
@@ -150,7 +153,7 @@ actor EventsManager: EventsManagerType {
     }
 
     nonisolated func flushFeatureEventsWithBackgroundTask(batchSize: Int) {
-        self.withBackgroundTask(name: "com.revenuecat.flushFeatureEvents") {
+        self.withBackgroundTask(name: Self.flushFeatureEventsBackgroundTaskName) {
             do {
                 _ = try await self.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
             } catch {
