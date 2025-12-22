@@ -742,7 +742,12 @@ platform :ios do
     }
 
     platforms.each do |platform, destination|
-      match(type: "appstore", platform: platform, readonly: true)
+      match_options = { type: "appstore", platform: platform, readonly: true }
+      # Catalyst apps require Mac Installer Distribution certificate for App Store export
+      if platform == 'catalyst'
+        match_options[:additional_cert_types] = "mac_installer_distribution"
+      end
+      match(match_options)
       gym(export_method: "app-store", destination: destination)
     end
   end
