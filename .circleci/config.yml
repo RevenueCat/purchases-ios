@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        run-installation-tests
       ]
     default: default
   generate_snapshots:
@@ -253,7 +254,7 @@ commands:
             - install-mint-0_17_5
       - when:
           condition: << parameters.install_swiftlint >>
-          steps:  
+          steps:
             - install-brew-dependency:
                 dependency_name: "swiftlint"
       - when:
@@ -1612,6 +1613,17 @@ jobs:
             git push --tags
 
 workflows:
+  run-installation-tests:
+    when:
+      equal: [run-installation-tests, << pipeline.parameters.action >>]
+    jobs:
+      - installation-tests-cocoapods
+      - installation-tests-swift-package-manager
+      - installation-tests-custom-entitlement-computation-swift-package-manager
+      - installation-tests-receipt-parser
+      - installation-tests-carthage
+      - installation-tests-xcode-direct-integration
+
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
