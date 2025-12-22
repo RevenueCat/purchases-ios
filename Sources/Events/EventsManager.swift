@@ -27,11 +27,6 @@ protocol EventsManagerType {
     func track(adEvent: AdEvent) async
     #endif
 
-    /// - Throws: if posting events fails
-    /// - Returns: the number of events posted
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushAllEvents(batchSize: Int) async throws -> Int
-
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushAllEventsWithBackgroundTask(batchSize: Int)
 
