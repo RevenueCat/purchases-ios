@@ -436,7 +436,7 @@ extension View {
         restoreFailure: PurchaseFailureHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
-        return self.modifier(PresentPaywallBindingModifier(
+        return self.modifier(PresentingPaywallBindingModifier(
             offering: offering,
             presentationMode: presentationMode,
             fontProvider: fonts,
@@ -781,13 +781,13 @@ private struct PresentingPaywallModifier: ViewModifier {
 }
 // swiftlint:enable type_body_length
 
-// MARK: - PresentPaywallBindingModifier
+// MARK: - PresentingPaywallBindingModifier
 
 /// A ViewModifier that presents a paywall based on a binding to an Offering.
 /// Supports exit offers on dismissal.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
-private struct PresentPaywallBindingModifier: ViewModifier {
+private struct PresentingPaywallBindingModifier: ViewModifier {
 
     @Binding var offering: Offering?
 
