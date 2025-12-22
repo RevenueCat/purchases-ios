@@ -971,7 +971,3 @@ private extension ETagManager.Response {
     }
 
 }
-
-struct SampleCacheKey: DeviceCacheKeyType {
-    let rawValue: String
-}

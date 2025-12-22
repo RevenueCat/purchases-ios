@@ -15,6 +15,9 @@ class ETagManagerTests: TestCase {
         let basePath = "SynchronizedLargeItemCacheTests-\(UUID().uuidString)"
         self.mockCache = SynchronizedLargeItemCache.MockUnderlyingSynchronizedFileCache(cacheDirectory: baseDirectory)
         self.eTagManager = .init(largeItemCache: SynchronizedLargeItemCache(cache: mockCache, basePath: basePath))
+
+        // Stub: any unstubbed URL returns failure
+        self.mockCache.stubDefaultLoadFile(with: .failure(SampleError()))
     }
 
     override func tearDown() {
@@ -25,9 +28,6 @@ class ETagManagerTests: TestCase {
     }
 
     func testETagIsEmptyIfThereIsNoETagSavedForThatRequest() {
-        // Stub: any unstubbed URL returns failure
-        mockCache.stubDefaultLoadFile(with: .failure(SampleError()))
-
         let request = URLRequest(url: Self.testURL)
         let header = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
 
@@ -177,12 +177,9 @@ class ETagManagerTests: TestCase {
         expect(response?.body) == responseObject
     }
 
-    func testReturnNullIf304AndCantFindCachedResponse() throws {
+    func testReturnNullIf304AndNoResponseCached() throws {
         let request = URLRequest(url: Self.testURL)
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
-
-        // Stub no cached data found
-        mockCache.stubLoadFile(at: Self.testURL, with: .failure(SampleError()))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(
