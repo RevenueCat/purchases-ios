@@ -686,7 +686,8 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.purchaseHandler.resetSessionPurchaseResult()
         }
         .task {
-            await self.prefetchExitOffer()
+            guard let offering = await self.content.resolveOffering() else { return }
+            self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
         }
     }
 
@@ -737,21 +738,6 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.presentedExitOffer = nil
         self.exitOfferOffering = nil
         self.onDismiss?()
-    }
-
-    private func prefetchExitOffer() async {
-        guard Purchases.isConfigured else { return }
-
-        guard let offering = await self.content.resolveOffering() else { return }
-
-        let exitOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
-        // Don't use exit offer if it's the same as the current offering
-        if let exitOffering, exitOffering.identifier == offering.identifier {
-            Logger.warning(Strings.exitOfferSameAsCurrent)
-            self.exitOfferOffering = nil
-        } else {
-            self.exitOfferOffering = exitOffering
-        }
     }
 
     private func exitOfferPaywallView(for offering: Offering) -> some View {
@@ -871,14 +857,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             self.purchaseHandler.resetSessionPurchaseResult()
         }
         .task {
-            let exitOffering = await ExitOfferHelper.fetchExitOfferOffering(for: offering)
-            // Don't use exit offer if it's the same as the current offering
-            if let exitOffering, exitOffering.identifier == offering.identifier {
-                Logger.warning(Strings.exitOfferSameAsCurrent)
-                self.exitOfferOffering = nil
-            } else {
-                self.exitOfferOffering = exitOffering
-            }
+            self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
         }
     }
 

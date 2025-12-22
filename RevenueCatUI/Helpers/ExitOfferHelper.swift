@@ -18,11 +18,33 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum ExitOfferHelper {
 
+    /// Fetches and validates the exit offer offering for the given offering.
+    /// Returns `nil` if:
+    /// - No exit offer is configured
+    /// - The exit offer is the same as the current offering
+    /// - Fetching fails
+    /// - Parameter offering: The offering to check for exit offers
+    /// - Returns: The exit offer's `Offering` if valid and different from current, `nil` otherwise
+    @MainActor
+    static func fetchValidExitOffer(for offering: Offering) async -> Offering? {
+        guard let exitOffering = await fetchExitOfferOffering(for: offering) else {
+            return nil
+        }
+
+        // Don't use exit offer if it's the same as the current offering
+        if exitOffering.identifier == offering.identifier {
+            Logger.warning(Strings.exitOfferSameAsCurrent)
+            return nil
+        }
+
+        return exitOffering
+    }
+
     /// Fetches the exit offer offering for the given offering, if configured.
     /// - Parameter offering: The offering to check for exit offers
     /// - Returns: The exit offer's `Offering` if found and successfully fetched, `nil` otherwise
     @MainActor
-    static func fetchExitOfferOffering(for offering: Offering) async -> Offering? {
+    private static func fetchExitOfferOffering(for offering: Offering) async -> Offering? {
         guard let exitOfferOfferingId = offering.exitOfferOfferingId else {
             return nil
         }
