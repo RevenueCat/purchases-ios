@@ -70,6 +70,8 @@
 		164681D22E6B577600854AA5 /* VideoComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681C92E6B577600854AA5 /* VideoComponentViewModel.swift */; };
 		164933242E5808BE00CE43A9 /* PaywallTransitionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */; };
 		167D67092EA151C400B4503F /* SynchronizedLargeItemCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */; };
+		1699BC6D2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1699BC6C2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift */; };
+		1699BC6E2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1699BC6C2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift */; };
 		16A7F4C12E563B89001F9FC8 /* PaywallTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */; };
 		16A7F4C32E563B91001F9FC8 /* PaywallAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */; };
 		16A7F4C62E564B97001F9FC8 /* TransitionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */; };
@@ -1561,6 +1563,7 @@
 		164681CC2E6B577600854AA5 /* VideoPlayerViewUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewUIView.swift; sourceTree = "<group>"; };
 		164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransitionTest.swift; sourceTree = "<group>"; };
 		167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedLargeItemCache.swift; sourceTree = "<group>"; };
+		1699BC6C2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockUnderlyingSynchronizedFileCache.swift; sourceTree = "<group>"; };
 		16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransition.swift; sourceTree = "<group>"; };
 		16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallAnimation.swift; sourceTree = "<group>"; };
 		16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransitionModifier.swift; sourceTree = "<group>"; };
@@ -3962,6 +3965,7 @@
 		2DDF41DD24F6F4F9005BC22D /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				1699BC6C2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift */,
 				903A065F2EB4B728009B9CE4 /* MockEventsManager.swift */,
 				16BCA3782E4D9C0400B39E7F /* MockSimpleNetworkService.swift */,
 				16BCA3752E4D9BF400B39E7F /* MockSimpleCache.swift */,
@@ -6723,6 +6727,7 @@
 				571E7AD4279F2D0C003B3606 /* StoreKitTestHelpers.swift in Sources */,
 				75E61CB62E2F9EF30034B41C /* MockTestStorePurchaseHandler.swift in Sources */,
 				2DFF6C56270CA28800ECAFAB /* MockRequestFetcher.swift in Sources */,
+				1699BC6D2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift in Sources */,
 				5738F489278CC2500096D623 /* MockTransaction.swift in Sources */,
 				576C8ABC27D2997C0058FA6E /* SnapshotTesting+Extensions.swift in Sources */,
 				F5355164286B7125009CA47A /* MockOfferingsFactory.swift in Sources */,
@@ -7223,6 +7228,7 @@
 				575F19B62D5A298F0089A64F /* ISODurationFormatterTests.swift in Sources */,
 				575A17AB2773A59300AA6F22 /* CurrentTestCaseTracker.swift in Sources */,
 				351B514326D449C100BD2BD7 /* MockSubscriberAttributesManager.swift in Sources */,
+				1699BC6E2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift in Sources */,
 				FD18BF4C2DF0DA5400140FD6 /* MockVirtualCurrencyManager.swift in Sources */,
 				B300E4C026D4371200B22262 /* SKPaymentTransactionExtensionsTests.swift in Sources */,
 				2DDF41C924F6F4C3005BC22D /* UInt8+ExtensionsTests.swift in Sources */,

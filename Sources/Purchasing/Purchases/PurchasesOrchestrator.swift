@@ -907,19 +907,13 @@ final class PurchasesOrchestrator {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
-        let delay: JitterableDelay
         if delayed {
-            delay = .long
+            self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long) {
+                manager.flushAllEventsWithBackgroundTask(batchSize: EventsManager.defaultEventBatchSize)
+            }
         } else {
             // When backgrounding, the app only has about 5 seconds to perform work
-            delay = .none
-        }
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            do {
-                _ = try await manager.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
-            } catch {
-                Logger.error(Strings.paywalls.event_flush_failed(error))
-            }
+            manager.flushAllEventsWithBackgroundTask(batchSize: EventsManager.defaultEventBatchSize)
         }
     }
 
@@ -927,19 +921,13 @@ final class PurchasesOrchestrator {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
-        let delay: JitterableDelay
         if delayed {
-            delay = .long
+            self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long) {
+                manager.flushFeatureEventsWithBackgroundTask(batchSize: EventsManager.defaultEventBatchSize)
+            }
         } else {
             // When backgrounding, the app only has about 5 seconds to perform work
-            delay = .none
-        }
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            do {
-                _ = try await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
-            } catch {
-                Logger.error(Strings.paywalls.event_flush_failed(error))
-            }
+            manager.flushFeatureEventsWithBackgroundTask(batchSize: EventsManager.defaultEventBatchSize)
         }
     }
 
