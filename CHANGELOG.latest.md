@@ -1,10 +1,15 @@
-## RevenueCatUI SDK
-### Paywallv2
-#### 🐞 Bugfixes
-* Respect paywall distribution if content shorter than device (#5825) via Cesar de la Vega (@vegaro)
+## RevenueCat SDK
+### ✨ New Features
+* Adds `setAppsFlyerConversionData` to conveniently track AppsFlyer conversion data (#5936) via JayShortway (@JayShortway)
+### 🐞 Bugfixes
+* Jzdesign/video component load bug (#5926) via Jacob Rakidzich (@JZDesign)
 
 ### 🔄 Other Changes
-* Fix compilation of RevenueCatUI in watchOS with Xcode 16 (#5923) via Antonio Pallares (@ajpallares)
-* Bump fastlane-plugin-revenuecat_internal from `efca663` to `76a3a08` (#5921) via dependabot[bot] (@dependabot[bot])
-* Remove the use of scan_with_flaky_test_retries and rely on the retry mechanism of xcodebuild through the regular scan action (#5914) via Rick (@rickvdl)
-* Fix flaky test (#5920) via Antonio Pallares (@ajpallares)
+* Fix flaky tests (#5938) via Antonio Pallares (@ajpallares)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5937) via RevenueCat Git Bot (@RCGitBot)
+* Format test store price strings with same currency code and locale as localizedPriceString (#5784) via Rick (@rickvdl)
+* Improve flakiness of some tests + add extra logs for easier debugging (#5919) via Antonio Pallares (@ajpallares)
+* Replace `RCPurchasesErrorCodeDomain` with `ErrorCode.errorDomain` in tests (#5924) via Antonio Pallares (@ajpallares)
+* Update broken docs links (#5933) via Jens-Fabian Goetzmann (@jefago)
+* Remove Brewfile + lock file and fix Homebrew formula caching in CircleCI (#5927) via Rick (@rickvdl)
+* Fix Carthage installation tests (#5922) via Antonio Pallares (@ajpallares)
