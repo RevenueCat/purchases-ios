@@ -1,15 +1,11 @@
 ## RevenueCat SDK
-### ✨ New Features
-* Adds `setAppsFlyerConversionData` to conveniently track AppsFlyer conversion data (#5936) via JayShortway (@JayShortway)
 ### 🐞 Bugfixes
-* Jzdesign/video component load bug (#5926) via Jacob Rakidzich (@JZDesign)
+* UserDefaults Crash Fix (#5917) via Jacob Rakidzich (@JZDesign)
 
 ### 🔄 Other Changes
-* Fix flaky tests (#5938) via Antonio Pallares (@ajpallares)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5937) via RevenueCat Git Bot (@RCGitBot)
-* Format test store price strings with same currency code and locale as localizedPriceString (#5784) via Rick (@rickvdl)
-* Improve flakiness of some tests + add extra logs for easier debugging (#5919) via Antonio Pallares (@ajpallares)
-* Replace `RCPurchasesErrorCodeDomain` with `ErrorCode.errorDomain` in tests (#5924) via Antonio Pallares (@ajpallares)
-* Update broken docs links (#5933) via Jens-Fabian Goetzmann (@jefago)
-* Remove Brewfile + lock file and fix Homebrew formula caching in CircleCI (#5927) via Rick (@rickvdl)
-* Fix Carthage installation tests (#5922) via Antonio Pallares (@ajpallares)
+* Revert to fastlane v2.229.1 from 2.230.0 (#5952) via Antonio Pallares (@ajpallares)
+* Flush events in will resign active (#5932) via Antonio Pallares (@ajpallares)
+* Bump fastlane from 2.229.1 to 2.230.0 (#5950) via dependabot[bot] (@dependabot[bot])
+* Bump aws-sdk-s3 from 1.205.0 to 1.208.0 (#5948) via dependabot[bot] (@dependabot[bot])
+* Bump aws-sdk-s3 from 1.182.0 to 1.208.0 in /Tests/InstallationTests/CocoapodsInstallation (#5947) via dependabot[bot] (@dependabot[bot])
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5945) via RevenueCat Git Bot (@RCGitBot)
