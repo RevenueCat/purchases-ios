@@ -57,9 +57,7 @@ extension Offering {
 
     /// Returns the exit offer's offering identifier, checking V2 paywalls first then V1.
     var exitOfferOfferingId: String? {
-        // Check V2 paywalls first, then fall back to V1 paywalls
         return self.paywallComponents?.data.exitOffers?.dismiss?.offeringId
-            ?? self.paywall?.exitOffers?.dismiss?.offeringId
     }
 
 }
