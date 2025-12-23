@@ -683,6 +683,9 @@ private struct PresentingPaywallModifier: ViewModifier {
     /// - If a purchase happened in this session, we use `shouldDisplay` with the result's `CustomerInfo`
     /// - This ensures consistent behavior with how the first paywall decides to show/close
     private func handleMainPaywallDismiss() {
+        // Prevent double processing
+        guard self.presentedExitOffer == nil else { return }
+
         guard !purchaseHandler.hasPurchasedInSession else {
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
@@ -959,6 +962,9 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     /// - `sessionPurchaseResult` is set immediately when purchase completes, with no timing issues
     /// - Fetching `CustomerInfo` may return cached data that hasn't been updated yet
     private func handleMainPaywallDismiss() {
+        // Prevent double processing
+        guard self.presentedExitOffer == nil else { return }
+
         guard !self.purchaseHandler.hasPurchasedInSession else {
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
