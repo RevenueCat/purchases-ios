@@ -654,10 +654,8 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
         .onPurchaseCompleted { customerInfo in
             self.purchaseCompleted?(customerInfo)
-
-            if !self.shouldDisplay(customerInfo) {
-                self.close()
-            }
+            // Always close on successful purchase - shouldDisplay drives when to show, not when to close
+            self.close()
         }
         .onPurchaseCancelled {
             self.purchaseCancelled?()
@@ -671,6 +669,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
             guard let result else { return }
 
+            // For restore, check shouldDisplay since restore might succeed without granting the expected entitlement
             if result.success && !self.shouldDisplay(result.customerInfo) {
                 self.close()
             }
@@ -758,10 +757,8 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
         .onPurchaseCompleted { customerInfo in
             self.purchaseCompleted?(customerInfo)
-
-            if !self.shouldDisplay(customerInfo) {
-                self.closeExitOffer()
-            }
+            // Always close on successful purchase - shouldDisplay drives when to show, not when to close
+            self.closeExitOffer()
         }
         .onPurchaseCancelled {
             self.purchaseCancelled?()
@@ -775,6 +772,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
             guard let result else { return }
 
+            // For restore, check shouldDisplay since restore might succeed without granting the expected entitlement
             if result.success && !self.shouldDisplay(result.customerInfo) {
                 self.closeExitOffer()
             }
