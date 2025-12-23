@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        temp-only-backend-integration-tests
       ]
     default: default
   generate_snapshots:
@@ -253,7 +254,7 @@ commands:
             - install-mint-0_17_5
       - when:
           condition: << parameters.install_swiftlint >>
-          steps:  
+          steps:
             - install-brew-dependency:
                 dependency_name: "swiftlint"
       - when:
@@ -1612,6 +1613,43 @@ jobs:
             git push --tags
 
 workflows:
+
+  temp-only-backend-integration-tests:
+    when:
+        equal: ["temp-only-backend-integration-tests", << pipeline.parameters.action >>]
+    jobs:
+      - backend-integration-tests-SK2:
+          name: backend-integration-tests-SK2-1
+          context:
+            - slack-secrets
+      - backend-integration-tests-SK2:
+          name: backend-integration-tests-SK2-2
+          context:
+            - slack-secrets
+      - backend-integration-tests-SK2:
+          name: backend-integration-tests-SK2-3
+          context:
+            - slack-secrets
+      - backend-integration-tests-SK2:
+          name: backend-integration-tests-SK2-4
+          context:
+            - slack-secrets
+      - backend-integration-tests-SK2:
+          name: backend-integration-tests-SK2-5
+          context:
+            - slack-secrets
+      - backend-integration-tests-SK2:
+          name: backend-integration-tests-SK2-6
+          context:
+            - slack-secrets
+      - backend-integration-tests-SK2:
+          name: backend-integration-tests-SK2-7
+          context:
+            - slack-secrets
+      - backend-integration-tests-SK2:
+          name: backend-integration-tests-SK2-8
+          context:
+            - slack-secrets
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:

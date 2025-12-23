@@ -49,6 +49,7 @@ class CustomerInfoResponseHandler {
                     _ = response.body.errorResponse.asBackendError(with: response.httpStatusCode)
                 }
 
+                Logger.verbose(Strings.customerInfo.printEntitlements(response.body.customerInfo))
                 return response.body.customerInfo.copy(with: response.verificationResult,
                                                        httpResponseOriginalSource: response.originalSource)
             }
