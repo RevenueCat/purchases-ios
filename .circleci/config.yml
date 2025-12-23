@@ -1764,7 +1764,7 @@ workflows:
           <<: *release-tags
       - bump-sdk-in-rc-mobile-app:
           requires:
-            - deploy-to-spm
+            - make-release
           <<: *release-tags
 
   snapshot-bump:
