@@ -36,9 +36,7 @@
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
 
-        #ifdef ENABLE_AD_EVENTS_TRACKING
         [RCAdTrackerAPI checkAPI];
-        #endif
 
         [RCAttributionAPI checkAPI];
         [RCAttributionNetworkAPI checkEnums];

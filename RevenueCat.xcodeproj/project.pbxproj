@@ -1156,7 +1156,6 @@
 		903A05962EB3AE3C009B9CE4 /* AdEventStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05952EB3AE3C009B9CE4 /* AdEventStoreTests.swift */; };
 		903A05982EB3AE81009B9CE4 /* AdEventsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05972EB3AE81009B9CE4 /* AdEventsRequestTests.swift */; };
 		903A059A2EB3AE9C009B9CE4 /* AdEventsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05992EB3AE9C009B9CE4 /* AdEventsRequest.swift */; };
-		903A059C2EB3AECE009B9CE4 /* EventsManagerAdEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A059B2EB3AECE009B9CE4 /* EventsManagerAdEventsTests.swift */; };
 		903A05AF2EB3B9B1009B9CE4 /* StoredFeatureEventSerializerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05AE2EB3B9B1009B9CE4 /* StoredFeatureEventSerializerTests.swift */; };
 		903A05B02EB3B9B1009B9CE4 /* FeatureEventStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05AD2EB3B9B1009B9CE4 /* FeatureEventStoreTests.swift */; };
 		903A05B12EB3B9B1009B9CE4 /* EventsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05AC2EB3B9B1009B9CE4 /* EventsManagerTests.swift */; };
@@ -2655,7 +2654,6 @@
 		903A05952EB3AE3C009B9CE4 /* AdEventStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventStoreTests.swift; sourceTree = "<group>"; };
 		903A05972EB3AE81009B9CE4 /* AdEventsRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventsRequestTests.swift; sourceTree = "<group>"; };
 		903A05992EB3AE9C009B9CE4 /* AdEventsRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventsRequest.swift; sourceTree = "<group>"; };
-		903A059B2EB3AECE009B9CE4 /* EventsManagerAdEventsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsManagerAdEventsTests.swift; sourceTree = "<group>"; };
 		903A05AC2EB3B9B1009B9CE4 /* EventsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsManagerTests.swift; sourceTree = "<group>"; };
 		903A05AD2EB3B9B1009B9CE4 /* FeatureEventStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureEventStoreTests.swift; sourceTree = "<group>"; };
 		903A05AE2EB3B9B1009B9CE4 /* StoredFeatureEventSerializerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredFeatureEventSerializerTests.swift; sourceTree = "<group>"; };
@@ -4363,7 +4361,6 @@
 		356E2DE62CD3CF890055AABB /* Events */ = {
 			isa = PBXGroup;
 			children = (
-				903A059B2EB3AECE009B9CE4 /* EventsManagerAdEventsTests.swift */,
 				903A05AC2EB3B9B1009B9CE4 /* EventsManagerTests.swift */,
 				903A05AD2EB3B9B1009B9CE4 /* FeatureEventStoreTests.swift */,
 				903A05AE2EB3B9B1009B9CE4 /* StoredFeatureEventSerializerTests.swift */,
@@ -7218,7 +7215,6 @@
 				903A05962EB3AE3C009B9CE4 /* AdEventStoreTests.swift in Sources */,
 				16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */,
 				5757EDE72DEE08C100AC4BE1 /* StoreKitVersionTests.swift in Sources */,
-				903A059C2EB3AECE009B9CE4 /* EventsManagerAdEventsTests.swift in Sources */,
 				57057FF828B0048900995F21 /* TestLogHandler.swift in Sources */,
 				57E415F12846997B00EA5460 /* PurchasesAttributionDataTests.swift in Sources */,
 				2DDF41CF24F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift in Sources */,
