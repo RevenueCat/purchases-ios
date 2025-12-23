@@ -92,9 +92,9 @@ final class ReceiptParserLogger: LoggerType {
 
     private static func log(level: LogLevel,
                             message: LogMessage,
-                            fileName: String?,
-                            functionName: String?,
-                            line: UInt) {
+                            fileName: String? = #fileID,
+                            functionName: String? = #function,
+                            line: UInt = #line) {
         defaultLogHandler(
             framework: Self.framework,
             verbose: false,
