@@ -199,8 +199,6 @@ final class PurchaseHandler: ObservableObject {
     /// Resets the session purchase result for a new paywall session.
     ///
     /// This is called when a paywall appears to ensure we track purchases for the current session only.
-    /// Since `PurchaseHandler` is a `@StateObject` that persists, the `sessionPurchaseResult` would
-    /// otherwise remain set from a previous session, incorrectly preventing exit offers from showing.
     func resetSessionPurchaseResult() {
         self.sessionPurchaseResult = nil
     }

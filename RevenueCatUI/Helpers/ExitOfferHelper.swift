@@ -77,7 +77,6 @@ enum ExitOfferHelper {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension Offering {
 
-    /// Returns the exit offer's offering identifier, checking V2 paywalls first then V1.
     var exitOfferOfferingId: String? {
         return self.paywallComponents?.data.exitOffers?.dismiss?.offeringId
     }
