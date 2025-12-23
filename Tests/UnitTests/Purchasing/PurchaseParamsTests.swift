@@ -245,6 +245,7 @@ extension PurchaseParamsTests {
         return Package(identifier: "package",
                        packageType: .monthly,
                        storeProduct: StoreProduct(sk1Product: product),
-                       offeringIdentifier: "offering")
+                       offeringIdentifier: "offering",
+                       webCheckoutUrl: nil)
     }
 }
