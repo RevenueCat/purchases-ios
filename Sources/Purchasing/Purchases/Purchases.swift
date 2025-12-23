@@ -743,17 +743,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             fatalError(Strings.configure.custom_entitlements_computation_enabled_but_no_app_user_id.description)
         }
 
-        Logger.debug(Strings.configure.debug_enabled, fileName: nil)
+        Logger.debug(Strings.configure.debug_enabled)
         if systemInfo.observerMode {
-            Logger.debug(Strings.configure.observer_mode_enabled, fileName: nil)
+            Logger.debug(Strings.configure.observer_mode_enabled)
         }
-        Logger.debug(Strings.configure.sdk_version(Self.frameworkVersion), fileName: nil)
-        Logger.debug(Strings.configure.bundle_id(SystemInfo.bundleIdentifier), fileName: nil)
-        Logger.debug(Strings.configure.system_version(SystemInfo.systemVersion), fileName: nil)
-        Logger.debug(Strings.configure.is_simulator(SystemInfo.isRunningInSimulator), fileName: nil)
-        Logger.user(Strings.configure.initial_app_user_id(isSet: appUserID != nil), fileName: nil)
-        Logger.debug(Strings.configure.response_verification_mode(systemInfo.responseVerificationMode), fileName: nil)
-        Logger.debug(Strings.configure.storekit_version(systemInfo.storeKitVersion), fileName: nil)
+        Logger.debug(Strings.configure.sdk_version(Self.frameworkVersion))
+        Logger.debug(Strings.configure.bundle_id(SystemInfo.bundleIdentifier))
+        Logger.debug(Strings.configure.system_version(SystemInfo.systemVersion))
+        Logger.debug(Strings.configure.is_simulator(SystemInfo.isRunningInSimulator))
+        Logger.user(Strings.configure.initial_app_user_id(isSet: appUserID != nil))
+        Logger.debug(Strings.configure.response_verification_mode(systemInfo.responseVerificationMode))
+        Logger.debug(Strings.configure.storekit_version(systemInfo.storeKitVersion))
 
         self.requestFetcher = requestFetcher
         self.receiptFetcher = receiptFetcher
