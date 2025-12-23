@@ -710,18 +710,19 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     /// Handles dismissal of the main paywall, checking for exit offers.
     ///
-    /// We check `purchaseHandler.hasPurchasedInSession` instead of calling `shouldDisplay(customerInfo)` because:
-    /// - `sessionPurchaseResult` is set immediately when purchase completes, with no timing issues
-    /// - `shouldDisplay` would require fetching `CustomerInfo` which may return cached data
-    ///   that hasn't been updated yet after the purchase
+    /// We check `purchaseHandler.sessionPurchaseResult` to determine if exit offer should be shown:
+    /// - If a purchase happened in this session, we use `shouldDisplay` with the result's `CustomerInfo`
+    /// - This ensures consistent behavior with how the first paywall decides to show/close
     private func handleMainPaywallDismiss() {
-        guard !self.purchaseHandler.hasPurchasedInSession else {
+        // Don't show exit offer if main paywall is still showing
+        guard self.data == nil else {
             self.onDismiss?()
             return
         }
 
-        // Don't show exit offer if main paywall is still showing
-        guard self.data == nil else {
+        // Check shouldDisplay with the purchase result if available
+        if let purchaseResult = self.purchaseHandler.sessionPurchaseResult,
+           !self.shouldDisplay(purchaseResult.customerInfo) {
             self.onDismiss?()
             return
         }
@@ -750,16 +751,39 @@ private struct PresentingPaywallModifier: ViewModifier {
                 purchaseHandler: self.purchaseHandler
             )
         )
-        .withEventHandlers(
-            purchaseHandler: self.purchaseHandler,
-            purchaseStarted: self.purchaseStarted,
-            purchaseCompleted: self.purchaseCompleted,
-            purchaseCancelled: self.purchaseCancelled,
-            restoreStarted: self.restoreStarted,
-            restoreCompleted: self.restoreCompleted,
-            purchaseFailure: self.purchaseFailure,
-            restoreFailure: self.restoreFailure
-        )
+        .onPurchaseStarted {
+            self.purchaseStarted?($0)
+        }
+        .onPurchaseCompleted { customerInfo in
+            self.purchaseCompleted?(customerInfo)
+
+            if !self.shouldDisplay(customerInfo) {
+                self.closeExitOffer()
+            }
+        }
+        .onPurchaseCancelled {
+            self.purchaseCancelled?()
+        }
+        .onRestoreStarted {
+            self.restoreStarted?()
+        }
+        .onRestoreCompleted { customerInfo in
+            self.restoreCompleted?(customerInfo)
+        }
+        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
+            guard let result else { return }
+
+            if result.success && !self.shouldDisplay(result.customerInfo) {
+                self.closeExitOffer()
+            }
+        }
+        .onPurchaseFailure {
+            self.purchaseFailure?($0)
+        }
+        .onRestoreFailure {
+            self.restoreFailure?($0)
+        }
+        .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
 
 }
@@ -769,6 +793,13 @@ private struct PresentingPaywallModifier: ViewModifier {
 
 /// A ViewModifier that presents a paywall based on a binding to an Offering.
 /// Supports exit offers on dismissal.
+///
+/// Unlike `PresentingPaywallModifier`, this modifier does not have a `shouldDisplay` function.
+/// The caller controls presentation via the binding and is responsible for dismissing when appropriate.
+/// If `shouldDisplay` logic were added, it would be used:
+/// 1. Before presenting the exit offer (skip if user already has entitlement)
+/// 2. After restore in both paywalls (dismiss if entitlement was granted)
+/// 3. After purchase in both paywalls (dismiss if entitlement was granted)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 private struct PresentingPaywallBindingModifier: ViewModifier {
