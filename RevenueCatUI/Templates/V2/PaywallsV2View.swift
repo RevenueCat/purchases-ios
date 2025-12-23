@@ -197,8 +197,8 @@ struct PaywallsV2View: View {
                         )
                     }
                     .onDisappear { self.purchaseHandler.trackPaywallClose() }
-                    .onChangeOf(self.purchaseHandler.purchased) { purchased in
-                        if purchased {
+                    .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
+                        if hasPurchased {
                             self.onDismiss()
                         }
                     }

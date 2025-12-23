@@ -304,6 +304,65 @@ struct App: View {
                                     onDismiss: nil)
     }
 
+    @State private var offeringBinding: Offering?
+    private var myAppPurchaseLogic: MyAppPurchaseLogic?
+
+    @ViewBuilder
+    var checkPresentPaywall: some View {
+        let _: Binding<Offering?> = self.$offeringBinding
+
+        Text("")
+            .presentPaywall(offering: self.$offeringBinding)
+            .presentPaywall(offering: self.$offeringBinding,
+                            fonts: self.fonts)
+            .presentPaywall(offering: self.$offeringBinding,
+                            presentationMode: .sheet)
+            .presentPaywall(offering: self.$offeringBinding,
+                            presentationMode: .fullScreen)
+            .presentPaywall(offering: self.$offeringBinding,
+                            myAppPurchaseLogic: self.myAppPurchaseLogic)
+            .presentPaywall(offering: self.$offeringBinding,
+                            purchaseStarted: self.purchaseOfPackageStarted)
+            .presentPaywall(offering: self.$offeringBinding,
+                            purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .presentPaywall(offering: self.$offeringBinding,
+                            purchaseCancelled: self.purchaseCancelled)
+            .presentPaywall(offering: self.$offeringBinding,
+                            restoreStarted: self.restoreStarted)
+            .presentPaywall(offering: self.$offeringBinding,
+                            restoreCompleted: self.purchaseOrRestoreCompleted)
+            .presentPaywall(offering: self.$offeringBinding,
+                            purchaseFailure: self.failureHandler)
+            .presentPaywall(offering: self.$offeringBinding,
+                            restoreFailure: self.failureHandler)
+            .presentPaywall(offering: self.$offeringBinding,
+                            onDismiss: self.paywallDismissed)
+            .presentPaywall(offering: self.$offeringBinding,
+                            fonts: self.fonts,
+                            presentationMode: .fullScreen,
+                            myAppPurchaseLogic: self.myAppPurchaseLogic,
+                            purchaseStarted: nil,
+                            purchaseCompleted: nil,
+                            purchaseCancelled: nil,
+                            restoreStarted: nil,
+                            restoreCompleted: nil,
+                            purchaseFailure: nil,
+                            restoreFailure: nil,
+                            onDismiss: nil)
+            .presentPaywall(offering: self.$offeringBinding,
+                            fonts: self.fonts,
+                            presentationMode: .sheet,
+                            myAppPurchaseLogic: self.myAppPurchaseLogic,
+                            purchaseStarted: self.purchaseOfPackageStarted,
+                            purchaseCompleted: self.purchaseOrRestoreCompleted,
+                            purchaseCancelled: self.purchaseCancelled,
+                            restoreStarted: self.restoreStarted,
+                            restoreCompleted: self.purchaseOrRestoreCompleted,
+                            purchaseFailure: self.failureHandler,
+                            restoreFailure: self.failureHandler,
+                            onDismiss: self.paywallDismissed)
+    }
+
     @available(*, deprecated) // Ignore deprecation warnings
     @ViewBuilder
     var checkDeprecatedPaywallFooter: some View {
