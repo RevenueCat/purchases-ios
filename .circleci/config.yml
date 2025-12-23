@@ -18,8 +18,7 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist,
-        test_bump-sdk-in-rc-mobile-app
+        tuist
       ]
     default: default
   generate_snapshots:
@@ -1556,7 +1555,7 @@ jobs:
       - setup-git-credentials
       - trust-github-key
       - install-dependencies
-      
+
       # LOCAL_SOURCE
       - run:
           name: Set BinarySizeTest integration method (LOCAL_SOURCE)
@@ -1669,12 +1668,6 @@ jobs:
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
 workflows:
-
-  test-bump-sdk-in-rc-mobile-app:
-    when:
-      equal: [test_bump-sdk-in-rc-mobile-app, << pipeline.parameters.action >>]
-    jobs:
-      - bump-sdk-in-rc-mobile-app
 
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
