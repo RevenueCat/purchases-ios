@@ -683,8 +683,8 @@ private struct PresentingPaywallModifier: ViewModifier {
     /// - If a purchase happened in this session, we use `shouldDisplay` with the result's `CustomerInfo`
     /// - This ensures consistent behavior with how the first paywall decides to show/close
     private func handleMainPaywallDismiss() {
-        // Don't show exit offer if main paywall is still showing
-        guard self.data == nil else {
+        guard !purchaseHandler.hasPurchasedInSession else {
+            self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
             return
         }
