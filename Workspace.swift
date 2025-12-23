@@ -10,7 +10,8 @@ var projects: [Path] = [
     "./Examples/PurchaseTester/",
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
-    "./Projects/PaywallValidationTester"
+    "./Projects/PaywallValidationTester",
+    "./Projects/BinarySizeTest"
 ]
 
 if Environment.local {

@@ -71,6 +71,39 @@ class SynchronizedLargeItemCacheTests: TestCase {
         XCTAssertEqual(mock.removeInvocations.count, 1)
     }
 
+    func testClearRemovesEntireDocumentDirectory() throws {
+        let (mock, sut) = self.makeSystemUnderTest()
+
+        sut.clear()
+
+        XCTAssertEqual(mock.removeInvocations.count, 1)
+        XCTAssertEqual(mock.removeInvocations[0], mock.workingDocsDirectory)
+    }
+
+    func testSetReturnsFalseWhenCacheWriteFails() throws {
+        let (mock, sut) = self.makeSystemUnderTest()
+        let key = TestCacheKey(rawValue: "fail-key")
+        let value = TestValue(identifier: "test", count: 1)
+
+        mock.stubSaveData(with: .failure(MockError()))
+
+        let didStore = sut.set(codable: value, forKey: key)
+
+        XCTAssertFalse(didStore)
+    }
+
+    func testValueReturnsNilWhenDecodingFails() throws {
+        let (mock, sut) = self.makeSystemUnderTest()
+        let key = TestCacheKey(rawValue: "bad-data-key")
+
+        // Return invalid JSON data that can't be decoded to TestValue
+        mock.stubLoadFile(with: .success(Data("invalid json".utf8)))
+
+        let cached: TestValue? = sut.value(forKey: key)
+
+        XCTAssertNil(cached)
+    }
+
     // MARK: - Helpers
 
     private func makeSystemUnderTest(

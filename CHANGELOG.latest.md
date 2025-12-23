@@ -1,10 +1,11 @@
-## RevenueCatUI SDK
-### Paywallv2
-#### 🐞 Bugfixes
-* Respect paywall distribution if content shorter than device (#5825) via Cesar de la Vega (@vegaro)
+## RevenueCat SDK
+### 🐞 Bugfixes
+* UserDefaults Crash Fix (#5917) via Jacob Rakidzich (@JZDesign)
 
 ### 🔄 Other Changes
-* Fix compilation of RevenueCatUI in watchOS with Xcode 16 (#5923) via Antonio Pallares (@ajpallares)
-* Bump fastlane-plugin-revenuecat_internal from `efca663` to `76a3a08` (#5921) via dependabot[bot] (@dependabot[bot])
-* Remove the use of scan_with_flaky_test_retries and rely on the retry mechanism of xcodebuild through the regular scan action (#5914) via Rick (@rickvdl)
-* Fix flaky test (#5920) via Antonio Pallares (@ajpallares)
+* Revert to fastlane v2.229.1 from 2.230.0 (#5952) via Antonio Pallares (@ajpallares)
+* Flush events in will resign active (#5932) via Antonio Pallares (@ajpallares)
+* Bump fastlane from 2.229.1 to 2.230.0 (#5950) via dependabot[bot] (@dependabot[bot])
+* Bump aws-sdk-s3 from 1.205.0 to 1.208.0 (#5948) via dependabot[bot] (@dependabot[bot])
+* Bump aws-sdk-s3 from 1.182.0 to 1.208.0 in /Tests/InstallationTests/CocoapodsInstallation (#5947) via dependabot[bot] (@dependabot[bot])
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5945) via RevenueCat Git Bot (@RCGitBot)

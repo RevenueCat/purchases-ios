@@ -36,7 +36,7 @@ class PurchasesDelegateTests: BasePurchasesTests {
     }
 
     func testSubscribesToUIApplicationWillEnterForeground() throws {
-        expect(self.notificationCenter.observers).to(haveCount(3))
+        expect(self.notificationCenter.observers).to(haveCount(4))
 
         let (_, _, name, _) = try XCTUnwrap(self.notificationCenter.observers.first)
         expect(name) == SystemInfo.applicationWillEnterForegroundNotification
@@ -80,7 +80,7 @@ class PurchasesDelegateTests: BasePurchasesTests {
     func testDoesntRemoveObservationWhenDelegateNil() {
         self.purchases.delegate = nil
 
-        expect(self.notificationCenter.observers).to(haveCount(3))
+        expect(self.notificationCenter.observers).to(haveCount(4))
     }
 
     // See https://github.com/RevenueCat/purchases-ios/issues/2410
