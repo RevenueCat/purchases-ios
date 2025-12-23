@@ -526,11 +526,14 @@ private struct PresentingPaywallModifier: ViewModifier {
     @State
     private var data: Data?
 
-    /// The prefetched exit offer (set during .task, but not shown until main paywall dismisses)
+    /// The prefetched exit offer, loaded while the main paywall is showing.
+    /// This enables immediate presentation when the main paywall dismisses (no loading delay).
+    /// Copied to `presentedExitOffer` when ready to show.
     @State
     private var exitOfferOffering: Offering?
 
-    /// The exit offer to actually present (set when main paywall dismisses without purchase)
+    /// The exit offer currently being presented. Controls the sheet/fullScreenCover.
+    /// Set from `exitOfferOffering` when the main paywall dismisses without a purchase.
     @State
     private var presentedExitOffer: Offering?
 
@@ -787,11 +790,14 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     var restoreFailure: PurchaseFailureHandler?
     var onDismiss: (() -> Void)?
 
-    /// The prefetched exit offer (set during .task, but not shown until main paywall dismisses)
+    /// The prefetched exit offer, loaded while the main paywall is showing.
+    /// This enables immediate presentation when the main paywall dismisses (no loading delay).
+    /// Copied to `presentedExitOffer` when ready to show.
     @State
     private var exitOfferOffering: Offering?
 
-    /// The exit offer to actually present (set when main paywall dismisses without purchase)
+    /// The exit offer currently being presented. Controls the sheet/fullScreenCover.
+    /// Set from `exitOfferOffering` when the main paywall dismisses without a purchase.
     @State
     private var presentedExitOffer: Offering?
 
@@ -921,6 +927,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             self.purchaseCompleted?(customerInfo)
             // Always close on successful purchase
             self.presentedExitOffer = nil
+            self.exitOfferOffering = nil
         }
         .onPurchaseCancelled {
             self.purchaseCancelled?()
@@ -935,6 +942,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             guard let result, result.success else { return }
             // Close on successful restore
             self.presentedExitOffer = nil
+            self.exitOfferOffering = nil
         }
         .onPurchaseFailure {
             self.purchaseFailure?($0)
