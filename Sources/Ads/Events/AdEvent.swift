@@ -15,8 +15,6 @@
 
 import Foundation
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 // MARK: - Public Types
 
 // MARK: - Internal Protocol
@@ -68,7 +66,9 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad failed to load events.
-@_spi(Experimental) @objc(RCAdFailedToLoad) public final class AdFailedToLoad: NSObject, AdEventData {
+@_spi(Experimental) @objc(RCAdFailedToLoad) public final class AdFailedToLoad: NSObject,
+                                                                                AdEventData,
+                                                                                @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String
@@ -162,7 +162,9 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad loaded events.
-@_spi(Experimental) @objc(RCAdLoaded) public final class AdLoaded: NSObject, AdImpressionEventData {
+@_spi(Experimental) @objc(RCAdLoaded) public final class AdLoaded: NSObject,
+                                                                    AdImpressionEventData,
+                                                                    @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String
@@ -226,7 +228,9 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad displayed events.
-@_spi(Experimental) @objc(RCAdDisplayed) public final class AdDisplayed: NSObject, AdImpressionEventData {
+@_spi(Experimental) @objc(RCAdDisplayed) public final class AdDisplayed: NSObject,
+                                                                          AdImpressionEventData,
+                                                                          @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String
@@ -290,7 +294,9 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad opened/clicked events.
-@_spi(Experimental) @objc(RCAdOpened) public final class AdOpened: NSObject, AdImpressionEventData {
+@_spi(Experimental) @objc(RCAdOpened) public final class AdOpened: NSObject,
+                                                                    AdImpressionEventData,
+                                                                    @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String
@@ -354,7 +360,9 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad revenue events.
-@_spi(Experimental) @objc(RCAdRevenue) public final class AdRevenue: NSObject, AdImpressionEventData {
+@_spi(Experimental) @objc(RCAdRevenue) public final class AdRevenue: NSObject,
+                                                                      AdImpressionEventData,
+                                                                      @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String
@@ -604,5 +612,3 @@ extension AdLoaded: Codable {}
 extension AdFailedToLoad: Codable {}
 extension AdEvent.CreationData: Equatable, Codable, Sendable {}
 extension AdEvent: Equatable, Codable, Sendable {}
-
-#endif

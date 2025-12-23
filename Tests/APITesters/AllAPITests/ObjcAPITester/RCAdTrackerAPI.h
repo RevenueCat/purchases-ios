@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#ifdef ENABLE_AD_EVENTS_TRACKING
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface RCAdTrackerAPI : NSObject
@@ -18,5 +16,3 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
-
-#endif

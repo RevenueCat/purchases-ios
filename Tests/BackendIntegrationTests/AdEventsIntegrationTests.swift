@@ -11,8 +11,6 @@
 //
 //  Created by RevenueCat.
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 import Nimble
 import XCTest
 
@@ -202,5 +200,3 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
     }
 
 }
-
-#endif
