@@ -217,7 +217,8 @@ class VariablesTests: TestCase {
                 identifier: "custom",
                 packageType: .custom,
                 storeProduct: TestData.monthlyProduct.toStoreProduct(),
-                offeringIdentifier: ""
+                offeringIdentifier: "",
+                webCheckoutUrl: nil
             )
         )
         expect(result) == "$6.99/mo"
@@ -230,10 +231,11 @@ class VariablesTests: TestCase {
                 identifier: "custom",
                 packageType: .custom,
                 storeProduct: TestData.annualProduct.toStoreProduct(),
-                offeringIdentifier: ""
+                offeringIdentifier: "",
+                webCheckoutUrl: nil
             )
         )
-        expect(result) == "$53.99/yr ($4.50/mo)"
+        expect(result) == "$53.99/yr ($4.49/mo)"
     }
 
     func testRelativeDiscountWithNoDiscount() {

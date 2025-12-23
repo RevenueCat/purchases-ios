@@ -41,7 +41,7 @@ class MockOfferingsAPI: OfferingsAPI {
     var invokedGetOfferingsForAppUserIDCount = 0
     var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)?
     var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)]()
-    var stubbedGetOfferingsCompletionResult: Result<OfferingsResponse, BackendError>?
+    var stubbedGetOfferingsCompletionResult: Result<Offerings.Contents, BackendError>?
 
     override func getOfferings(appUserID: String,
                                isAppBackgrounded: Bool,
@@ -52,6 +52,21 @@ class MockOfferingsAPI: OfferingsAPI {
         self.invokedGetOfferingsForAppUserIDParametersList.append((appUserID, isAppBackgrounded, completion))
 
         completion(self.stubbedGetOfferingsCompletionResult!)
+    }
+
+    var invokedGetWebOfferingProducts = false
+    var invokedGetWebOfferingProductsCount = 0
+    var invokedGetWebOfferingProductsParameters: (appUserID: String,
+                                                  completion: WebOfferingProductsResponseHandler)?
+    var stubbedGetWebOfferingProductsCompletionResult: Result<WebOfferingProductsResponse, BackendError>?
+
+    override func getWebOfferingProducts(appUserID: String,
+                                         completion: @escaping WebOfferingProductsResponseHandler) {
+        self.invokedGetWebOfferingProducts = true
+        self.invokedGetWebOfferingProductsCount += 1
+        self.invokedGetWebOfferingProductsParameters = (appUserID, completion)
+
+        completion(self.stubbedGetWebOfferingProductsCompletionResult!)
     }
 
     var invokedPostOffer = false

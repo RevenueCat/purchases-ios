@@ -28,21 +28,28 @@ class OfferingsManagerStoreKitTests: StoreKitConfigTestCase {
     var mockOfferings: MockOfferingsAPI!
     let mockOfferingsFactory = OfferingsFactory()
     var mockProductsManager: MockProductsManager!
+    var mockDiagnosticsTracker: DiagnosticsTrackerType!
     var offeringsManager: OfferingsManager!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
         self.mockOfferings = try XCTUnwrap(self.mockBackend.offerings as? MockOfferingsAPI)
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
         self.mockProductsManager = MockProductsManager(diagnosticsTracker: nil,
                                                        systemInfo: self.mockSystemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.mockDiagnosticsTracker = MockDiagnosticsTracker()
+        } else {
+            self.mockDiagnosticsTracker = nil
+        }
         self.offeringsManager = OfferingsManager(deviceCache: self.mockDeviceCache,
                                                  operationDispatcher: self.mockOperationDispatcher,
                                                  systemInfo: self.mockSystemInfo,
                                                  backend: self.mockBackend,
                                                  offeringsFactory: self.mockOfferingsFactory,
-                                                 productsManager: self.mockProductsManager)
+                                                 productsManager: self.mockProductsManager,
+                                                 diagnosticsTracker: self.mockDiagnosticsTracker)
     }
 
 }
@@ -54,7 +61,7 @@ extension OfferingsManagerStoreKitTests {
     func testInvalidateAndReFetchCachedOfferingsAfterStorefrontChanges() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
         var fetchedStoreProduct = try await fetchSk2StoreProduct()
         var storeProduct = StoreProduct(sk2Product: fetchedStoreProduct.underlyingSK2Product)
         mockProductsManager.stubbedProductsCompletionResult = .success(Set([storeProduct]))
@@ -88,14 +95,22 @@ private extension OfferingsManagerStoreKitTests {
     enum MockData {
         static let anyAppUserID = ""
 
+        static let anyBackendOfferingsContents = Offerings.Contents(
+            response: anyBackendOfferingsResponse,
+            httpResponseOriginalSource: .mainServer
+        )
+
         static let anyBackendOfferingsResponse: OfferingsResponse = .init(
             currentOfferingId: "base",
             offerings: [
                 .init(identifier: "base",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: StoreKitConfigTestCase.productID)
-                      ])
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: StoreKitConfigTestCase.productID,
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
             ],
             placements: nil,
             targeting: nil,

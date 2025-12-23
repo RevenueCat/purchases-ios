@@ -1,8 +1,8 @@
 // swift-tools-version:5.8
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
-import PackageDescription
 import class Foundation.ProcessInfo
+import PackageDescription
 
 // Only add DocC Plugin when building docs, so that clients of this library won't
 // unnecessarily also get the DocC Plugin
@@ -10,7 +10,7 @@ let environmentVariables = ProcessInfo.processInfo.environment
 let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "true"
 
 var dependencies: [Package.Dependency] = [
-    .package(url: "https://github.com/quick/nimble", revision: "1f3bde57bde12f5e7b07909848c071e9b73d6edc"),
+    .package(url: "https://github.com/quick/nimble", exact: "13.7.1"),
     // SST requires iOS 13 starting from version 1.13.0
     .package(
         url: "https://github.com/pointfreeco/swift-snapshot-testing",

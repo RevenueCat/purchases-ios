@@ -20,7 +20,7 @@ enum OfferingStrings {
 
     case cannot_find_product_configuration_error(identifiers: Set<String>)
     case fetching_offerings_error(error: OfferingsManager.Error, underlyingError: Error?)
-    case fetching_offerings_failed_server_down
+    case error_fetching_offerings_using_disk_cache
     case found_existing_product_request(identifiers: Set<String>)
     case no_cached_offerings_fetching_from_network
     case offerings_stale_updated_from_network
@@ -37,12 +37,13 @@ enum OfferingStrings {
     case fetching_products(identifiers: Set<String>)
     case completion_handlers_waiting_on_products(handlersCount: Int)
     case configuration_error_products_not_found
-    case configuration_error_no_products_for_offering
+    case configuration_error_no_products_for_offering(apiKeyValidationResult: Configuration.APIKeyValidationResult)
     case offering_empty(offeringIdentifier: String)
     case product_details_empty_title(productIdentifier: String)
     case unknown_package_type(Package)
     case custom_package_type(Package)
     case overriding_package(old: String, new: String)
+    case known_issue_ios_18_4_simulator_products_not_found
 
 }
 
@@ -68,8 +69,8 @@ extension OfferingStrings: LogMessage {
 
             return result
 
-        case .fetching_offerings_failed_server_down:
-            return "Error fetching offerings: server appears down"
+        case .error_fetching_offerings_using_disk_cache:
+            return "Error fetching offerings. Using disk cache"
 
         case .found_existing_product_request(let identifiers):
             return "Found an existing request for products: \(identifiers), appending " +
@@ -125,11 +126,20 @@ extension OfferingStrings: LogMessage {
             "dashboard could be fetched from App Store Connect (or the StoreKit Configuration file " +
             "if one is being used). \nMore information: https://rev.cat/why-are-offerings-empty"
 
-        case .configuration_error_no_products_for_offering:
-            return "There are no products registered in the RevenueCat dashboard for your offerings. " +
-            "If you don't want to use the offerings system, you can safely ignore this message. " +
+        case .configuration_error_no_products_for_offering(let apiKeyValidationResult):
+            var description: String
+            if let storeNameForLogging = apiKeyValidationResult.storeNameForLogging {
+                description = "You have configured the SDK with \(apiKeyValidationResult.indefiniteArticle) " +
+                "\(storeNameForLogging) API key, but there are no \(storeNameForLogging) products registered in the " +
+                "RevenueCat dashboard for your offerings."
+            } else {
+                description = "You have configured the SDK with an API key from a store that has no products " +
+                "registered in the RevenueCat dashboard for your offerings."
+            }
+            description += " If you don't want to use the offerings system, you can safely ignore this message. " +
             "To configure offerings and their products, follow the instructions in " +
             "https://rev.cat/how-to-configure-offerings.\nMore information: https://rev.cat/why-are-offerings-empty"
+            return description
 
         case .offering_empty(let offeringIdentifier):
             return "There's a problem with your configuration. No packages could be found for offering with  " +
@@ -155,9 +165,39 @@ extension OfferingStrings: LogMessage {
 
         case let .overriding_package(old, new):
             return "Package: \(old) already exists, overwriting with: \(new)"
+
+        case .known_issue_ios_18_4_simulator_products_not_found:
+            return "None of the products registered in the RevenueCat dashboard could be fetched from App Store " +
+            "Connect (or the StoreKit Configuration file if one is being used)." +
+            "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version with " +
+            "your simulator." +
+            "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
         }
     }
 
     var category: String { return "offering" }
 
+}
+
+private extension Configuration.APIKeyValidationResult {
+
+    var storeNameForLogging: String? {
+        switch self {
+        case .validApplePlatform, .legacy:
+            return "App Store"
+        case .simulatedStore:
+            return "Test Store"
+        case .otherPlatforms:
+            return nil
+        }
+    }
+
+    var indefiniteArticle: String {
+        switch self {
+        case .validApplePlatform, .legacy:
+            return "an" // "an App Store API key"
+        case .otherPlatforms, .simulatedStore:
+            return "a" // "a Test Store API key"
+        }
+    }
 }

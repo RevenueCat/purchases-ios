@@ -47,6 +47,98 @@ class PurchasesGetProductsTests: BasePurchasesTests {
         expect(products).to(haveCount(productIdentifiers.count))
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func testTracksExpectedProductStartEvent() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let productIdentifiers = ["com.product.id1", "com.product.id2"]
+
+        _ = waitUntilValue { completed in
+            self.purchases.getProducts(productIdentifiers, completion: completed)
+        }
+
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        let trackedProductStartedCalls = mockDiagnosticsTracker.trackedProductsStartedParams.value
+        expect(trackedProductStartedCalls.count) == 1
+        let firstTrackedProductsStartedCall = trackedProductStartedCalls[0]
+        expect(firstTrackedProductsStartedCall) == Set(productIdentifiers)
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func testTracksExpectedProductResultEventUponSuccess() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let productIdentifiers = ["com.product.id1", "com.product.id2"]
+
+        _ = waitUntilValue { completed in
+            self.purchases.getProducts(productIdentifiers, completion: completed)
+        }
+
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        let trackedProductResultCalls = mockDiagnosticsTracker.trackedProductsResultParams.value
+        expect(trackedProductResultCalls.count) == 1
+        let firstTrackedProductsResultCall = trackedProductResultCalls[0]
+        expect(firstTrackedProductsResultCall.requestedProductIds) == Set(productIdentifiers)
+        expect(firstTrackedProductsResultCall.notFoundProductIds) == Set()
+        expect(firstTrackedProductsResultCall.errorCode).to(beNil())
+        expect(firstTrackedProductsResultCall.errorMessage).to(beNil())
+        expect(firstTrackedProductsResultCall.responseTime).to(beGreaterThanOrEqualTo(0))
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func testTracksExpectedProductResultSuccessWithNotFoundProducts() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let productIdentifiers = ["com.product.id1", "com.product.id2", "com.product.id3"]
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .success(
+            Set([StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id2"))])
+        )
+
+        _ = waitUntilValue { completed in
+            self.purchases.getProducts(productIdentifiers, completion: completed)
+        }
+
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        let trackedProductResultCalls = mockDiagnosticsTracker.trackedProductsResultParams.value
+        expect(trackedProductResultCalls.count) == 1
+        let firstTrackedProductsResultCall = trackedProductResultCalls[0]
+        expect(firstTrackedProductsResultCall.requestedProductIds) == Set(productIdentifiers)
+        expect(firstTrackedProductsResultCall.notFoundProductIds) == Set(["com.product.id1", "com.product.id3"])
+        expect(firstTrackedProductsResultCall.errorCode) == nil
+        expect(firstTrackedProductsResultCall.errorMessage) == nil
+        expect(firstTrackedProductsResultCall.responseTime).to(beGreaterThanOrEqualTo(0))
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func testTracksExpectedProductResultEventUponError() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let productIdentifiers = ["com.product.id1", "com.product.id2"]
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .failure(
+            ErrorUtils.productNotAvailableForPurchaseError()
+        )
+
+        _ = waitUntilValue { completed in
+            self.purchases.getProducts(productIdentifiers, completion: completed)
+        }
+
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        let trackedProductResultCalls = mockDiagnosticsTracker.trackedProductsResultParams.value
+        expect(trackedProductResultCalls.count) == 1
+        let firstTrackedProductsResultCall = trackedProductResultCalls[0]
+        expect(firstTrackedProductsResultCall.requestedProductIds) == Set(productIdentifiers)
+        expect(firstTrackedProductsResultCall.notFoundProductIds) == Set(productIdentifiers)
+        expect(firstTrackedProductsResultCall.errorCode) == ErrorCode.productNotAvailableForPurchaseError.rawValue
+        expect(firstTrackedProductsResultCall.errorMessage) == "The product is not available for purchase."
+        expect(firstTrackedProductsResultCall.responseTime).to(beGreaterThanOrEqualTo(0))
+    }
+
     func testGetEligibility() {
         self.purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: ["product 1"]) { (_) in }
 
@@ -60,23 +152,28 @@ class PurchasesGetProductsTests: BasePurchasesTests {
             .init(identifier: "package1",
                   packageType: .weekly,
                   storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product1")),
-                  offeringIdentifier: "offering"),
+                  offeringIdentifier: "offering",
+                  webCheckoutUrl: nil),
             .init(identifier: "package2",
                   packageType: .monthly,
                   storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product2")),
-                  offeringIdentifier: "offering"),
+                  offeringIdentifier: "offering",
+                  webCheckoutUrl: nil),
             .init(identifier: "package3",
                   packageType: .annual,
                   storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product3")),
-                  offeringIdentifier: "offering"),
+                  offeringIdentifier: "offering",
+                  webCheckoutUrl: nil),
             .init(identifier: "package4",
                   packageType: .annual,
                   storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product4")),
-                  offeringIdentifier: "offering"),
+                  offeringIdentifier: "offering",
+                  webCheckoutUrl: nil),
             .init(identifier: "package5",
                   packageType: .annual,
                   storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product1")),
-                  offeringIdentifier: "offering")
+                  offeringIdentifier: "offering",
+                  webCheckoutUrl: nil)
         ]
 
         self.trialOrIntroPriceEligibilityChecker

@@ -28,7 +28,9 @@ class MockHTTPClient: HTTPClient {
             response: [String: Any] = [:],
             responseHeaders: HTTPResponse.Headers = [:],
             verificationResult: VerificationResult = .defaultValue,
-            delay: DispatchTimeInterval = .never
+            delay: DispatchTimeInterval = .never,
+            isLoadShedderResponse: Bool = false,
+            isFallbackUrlResponse: Bool = false
         ) {
             // swiftlint:disable:next force_try
             let data = try! JSONSerialization.data(withJSONObject: response)
@@ -39,7 +41,9 @@ class MockHTTPClient: HTTPClient {
                     responseHeaders: responseHeaders,
                     body: data
                 ),
-                verificationResult: verificationResult
+                verificationResult: verificationResult,
+                isLoadShedderResponse: isLoadShedderResponse,
+                isFallbackUrlResponse: isFallbackUrlResponse
             )
 
             self.init(response: .success(response), delay: delay)
@@ -53,6 +57,7 @@ class MockHTTPClient: HTTPClient {
 
     var mocks: [URL: Response] = [:]
     var calls: [Call] = []
+    private var shouldAssertSnapshot: Bool = true
 
     init(apiKey: String,
          systemInfo: SystemInfo,
@@ -71,6 +76,11 @@ class MockHTTPClient: HTTPClient {
                    dnsChecker: dnsChecker,
                    requestTimeout: requestTimeout,
                    operationDispatcher: MockOperationDispatcher())
+    }
+
+    /// Disables snapshot testing for this mock HTTP client.
+    func disableSnapshotTesting() {
+        self.shouldAssertSnapshot = false
     }
 
     private let sourceTestFile: StaticString
@@ -95,10 +105,12 @@ class MockHTTPClient: HTTPClient {
         DispatchQueue.main.async {
             self.calls.append(call)
 
-            assertSnapshot(matching: call,
-                           as: .formattedJson,
-                           file: self.sourceTestFile,
-                           testName: CurrentTestCaseTracker.osVersionAndTestName)
+            if self.shouldAssertSnapshot {
+                assertSnapshot(matching: call,
+                               as: .formattedJson,
+                               file: self.sourceTestFile,
+                               testName: CurrentTestCaseTracker.osVersionAndTestName)
+            }
 
             let mock = self.mocks[request.path.url!] ?? .init(statusCode: .success)
 
@@ -121,6 +133,10 @@ class MockHTTPClient: HTTPClient {
     }
 
     func mock(requestPath: HTTPRequest.DiagnosticsPath, response: Response) {
+        self.mock(path: requestPath, response: response)
+    }
+
+    func mock(requestPath: HTTPRequest.WebBillingPath, response: Response) {
         self.mock(path: requestPath, response: response)
     }
 

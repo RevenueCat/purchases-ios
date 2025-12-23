@@ -11,10 +11,11 @@
 //
 //  Created by Cesar de la Vega on 28/10/24.
 
-import RevenueCat
+import Foundation
+@_spi(Internal) import RevenueCat
 
 // swiftlint:disable force_unwrapping
-
+// swiftlint:disable:next type_body_length
 class CustomerInfoFixtures {
 
     private init() {}
@@ -28,7 +29,10 @@ class CustomerInfoFixtures {
              store: String,
              purchaseDate: String,
              expirationDate: String?,
-             unsubscribeDetectedAt: String? = nil) {
+             priceAmount: Decimal = 4.99,
+             currency: String = "USD",
+             unsubscribeDetectedAt: String? = nil,
+             periodType: PeriodType = .normal) {
             self.id = id
             self.json = """
             {
@@ -39,12 +43,17 @@ class CustomerInfoFixtures {
                 "is_sandbox": true,
                 "original_purchase_date": "\(purchaseDate)",
                 "ownership_type": "PURCHASED",
-                "period_type": "intro",
+                "period_type": "\(periodType.stringValue)",
                 "purchase_date": "\(purchaseDate)",
                 "refunded_at": null,
                 "store": "\(store)",
                 "store_transaction_id": "0",
-                "unsubscribe_detected_at": \(unsubscribeDetectedAt != nil ? "\"\(unsubscribeDetectedAt!)\"" : "null")
+                "unsubscribe_detected_at": \(unsubscribeDetectedAt != nil ? "\"\(unsubscribeDetectedAt!)\"" : "null"),
+                "display_name": "Weekly Scratched Sofa",
+                "price": {
+                  "amount": \(periodType == .trial ? 0 : priceAmount),
+                  "currency": \"\(currency)\"
+                }
             }
             """
         }
@@ -152,7 +161,8 @@ class CustomerInfoFixtures {
         productId: String = "com.revenuecat.product",
         purchaseDate: String = "2022-04-12T00:03:28Z",
         expirationDate: String? = "2062-04-12T00:03:35Z",
-        unsubscribeDetectedAt: String? = nil
+        unsubscribeDetectedAt: String? = nil,
+        periodType: PeriodType = .normal
     ) -> CustomerInfo {
         return customerInfo(
             subscriptions: [
@@ -161,7 +171,8 @@ class CustomerInfoFixtures {
                     store: store,
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDate,
-                    unsubscribeDetectedAt: unsubscribeDetectedAt
+                    unsubscribeDetectedAt: unsubscribeDetectedAt,
+                    periodType: periodType
                 )
             ],
             entitlements: [
@@ -236,20 +247,47 @@ class CustomerInfoFixtures {
         )
     }()
 
+    static let customerInfoWithExpiredStripeSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "stripe",
+            purchaseDate: "1999-04-12T00:03:28Z",
+            expirationDate: "2000-04-12T00:03:35Z"
+        )
+    }()
+
     static let customerInfoWithRCBillingSubscriptions: CustomerInfo = {
         makeCustomerInfo(store: "rc_billing")
     }()
 
     static let customerInfoWithNonRenewingRCBillingSubscriptions: CustomerInfo = {
         makeCustomerInfo(
-            store: "stripe",
+            store: "rc_billing",
             unsubscribeDetectedAt: "2023-04-12T00:03:35Z"
         )
     }()
 
-    static let customerInfoWithExpiredStripeSubscriptions: CustomerInfo = {
+    static let customerInfoWithExpiredRCBillingSubscriptions: CustomerInfo = {
         makeCustomerInfo(
-            store: "stripe",
+            store: "rc_billing",
+            purchaseDate: "1999-04-12T00:03:28Z",
+            expirationDate: "2000-04-12T00:03:35Z"
+        )
+    }()
+
+    static let customerInfoWithPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(store: "paddle")
+    }()
+
+    static let customerInfoWithNonRenewingPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "paddle",
+            unsubscribeDetectedAt: "2023-04-12T00:03:35Z"
+        )
+    }()
+
+    static let customerInfoWithExpiredPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "paddle",
             purchaseDate: "1999-04-12T00:03:28Z",
             expirationDate: "2000-04-12T00:03:35Z"
         )
@@ -266,6 +304,10 @@ class CustomerInfoFixtures {
             purchaseDate: "2022-04-12T00:03:28Z",
             expirationDate: "2600-04-12T00:03:35Z"
         )
+    }()
+
+    static let customerInfoWithSimulatedStoreSubscriptions: CustomerInfo = {
+        makeCustomerInfo(store: "test_store")
     }()
 
 }

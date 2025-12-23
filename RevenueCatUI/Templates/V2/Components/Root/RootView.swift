@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct RootView: View {
@@ -23,12 +23,23 @@ struct RootView: View {
     @Environment(\.safeAreaInsets)
     private var safeAreaInsets
 
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
+    private let defaultPackage: Package?
 
-    internal init(viewModel: RootViewModel, onDismiss: @escaping () -> Void) {
+    @State private var sheetViewModel: SheetViewModel?
+
+    internal init(
+        viewModel: RootViewModel,
+        onDismiss: @escaping () -> Void,
+        defaultPackage: Package?
+    ) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
+        self.defaultPackage = defaultPackage
     }
 
     var body: some View {
@@ -51,6 +62,17 @@ struct RootView: View {
                     )
                 )
                 .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .environment(\.openSheet, { sheet in
+            self.sheetViewModel = sheet
+        })
+        .bottomSheet(sheet: $sheetViewModel, safeAreaInsets: self.safeAreaInsets)
+        .onChangeOf(sheetViewModel) { newValue in
+            if newValue == nil {
+                // Reset package selection to default when sheet is dismissed to prevent
+                // purchasing a hidden package that was selected in the sheet
+                packageContext.package = defaultPackage
             }
         }
     }

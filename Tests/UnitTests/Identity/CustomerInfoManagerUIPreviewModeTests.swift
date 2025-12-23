@@ -26,7 +26,8 @@ class CustomerInfoManagerUIPreviewModeTests: BaseCustomerInfoManagerTests {
         self.mockSystemInfo = MockSystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(uiPreviewMode: true)
+            dangerousSettings: DangerousSettings(uiPreviewMode: true),
+            preferredLocalesProvider: .mock()
         )
 
         try super.setUpWithError()
@@ -76,6 +77,7 @@ class CustomerInfoManagerUIPreviewModeTests: BaseCustomerInfoManagerTests {
         for policy in policies {
             let info = try await self.customerInfoManager.customerInfo(
                 appUserID: "any_user",
+                trackDiagnostics: false,
                 fetchPolicy: policy
             )
 

@@ -55,9 +55,35 @@ enum AvailabilityChecks {
         }
     }
 
+    static func iOS184APIAvailableOrSkipTest() throws {
+        guard #available(iOS 18.4, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+    }
+
+    static func iOS26APIAvailableOrSkipTest() throws {
+        guard #available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, visionOS 26.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+    }
+
     /// Opposite of `iOS15APIAvailableOrSkipTest`.
     static func iOS15APINotAvailableOrSkipTest() throws {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            throw XCTSkip("Test only for older devices")
+        }
+    }
+
+    /// Opposite of `iOS16APIAvailableOrSkipTest`.
+    static func iOS16APINotAvailableOrSkipTest() throws {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            throw XCTSkip("Test only for older devices")
+        }
+    }
+
+    /// Opposite of `iOS26APIAvailableOrSkipTest`.
+    static func iOS26APINotAvailableOrSkipTest() throws {
+        if #available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, visionOS 26.0, *) {
             throw XCTSkip("Test only for older devices")
         }
     }

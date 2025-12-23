@@ -13,11 +13,14 @@
 //
 
 #if os(iOS)
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, *)
 struct PurchaseHistoryView: View {
+
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
@@ -28,104 +31,71 @@ struct PurchaseHistoryView: View {
     @StateObject var viewModel: PurchaseHistoryViewModel
 
     var body: some View {
-        List {
-            if viewModel.isLoading {
-                ProgressView()
-            } else if viewModel.errorMessage != nil {
-                ErrorView()
-            } else if let info = viewModel.customerInfo {
-                if !info.activeSubscriptions.isEmpty {
-                    Section(header: Text(
-                        localization[.activeSubscriptions]
-                    )) {
-                        ForEach(viewModel.activeSubscriptions) { activeSubscription in
-                            Button {
-                                viewModel.selectedPurchase = activeSubscription
-                            } label: {
-                                PurchaseLinkView(purchaseInfo: activeSubscription)
-                            }
-                        }
-                    }
-                }
-
-                if !viewModel.inactiveSubscriptions.isEmpty {
-                    Section(header: Text(
-                        localization[.expiredSubscriptions]
-                    )) {
-                        ForEach(viewModel.inactiveSubscriptions) { inactiveSubscription in
-                            Button {
-                                viewModel.selectedPurchase = inactiveSubscription
-                            } label: {
-                                PurchaseLinkView(purchaseInfo: inactiveSubscription)
-                            }
-                        }
-                    }
-                }
-
-                // Non-Subscription Purchases Section
-                if !viewModel.nonSubscriptions.isEmpty {
-                    Section(header: Text(
-                        localization[.otherPurchases]
-                    )) {
-                        ForEach(viewModel.nonSubscriptions) { inactiveSubscription in
-                            Button {
-                                viewModel.selectedPurchase = inactiveSubscription
-                            } label: {
-                                PurchaseLinkView(purchaseInfo: inactiveSubscription)
-                            }
-                        }
-                    }
-                }
-
-                // Account Details Section
-
-                Section(header: Text(
-                    localization[.accountDetails]
-                )) {
-                    if let originalPurchaseDate = info.originalPurchaseDate {
-                        CompatibilityLabeledContent(
-                            localization[.dateWhenAppWasPurchased],
-                            content: dateFormatter.string(from: originalPurchaseDate)
-                        )
-                    }
-
-                    CompatibilityLabeledContent(
-                        localization[.userId],
-                        content: info.originalAppUserId
-                    )
-                    .contextMenu {
-                        Button {
-                            UIPasteboard.general.string = info.originalAppUserId
-                        } label: {
-                            Text(localization[.copy])
-                            Image(systemName: "doc.on.clipboard")
-                        }
-                    }
-                }
-            }
-        }
+        contentView
         .compatibleNavigation(
             item: $viewModel.selectedPurchase,
             usesNavigationStack: navigationOptions.usesNavigationStack
         ) {
             PurchaseDetailView(
-                viewModel: PurchaseDetailViewModel(purchaseInfo: $0))
+                viewModel: PurchaseDetailViewModel(
+                    purchaseInfo: $0
+                )
+            )
             .environment(\.localization, localization)
         }
         .navigationTitle(localization[.purchaseHistory])
         .listStyle(.insetGrouped)
         .onAppear {
+#if DEBUG
+            guard !ProcessInfo.isRunningForPreviews else { return }
+#endif
             Task {
                 await viewModel.didAppear()
             }
         }
     }
 
-    private var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter
+    @ViewBuilder
+    private var contentView: some View {
+        ScrollViewWithOSBackground {
+            LazyVStack(spacing: 0) {
+                if viewModel.isLoading {
+                    ProgressView()
+                } else if viewModel.errorMessage != nil {
+                    ErrorView()
+                } else if !viewModel.isEmpty {
+                    if !viewModel.activeSubscriptions.isEmpty {
+                        PurchasesInformationSection(
+                            title: localization[.subscriptionsSectionTitle],
+                            items: viewModel.activeSubscriptions,
+                            localization: localization) { purchase in
+                                viewModel.selectedPurchase = purchase
+                            }
+                            .tint(colorScheme == .dark ? .white : .black)
+                    }
+
+                    if !viewModel.inactiveSubscriptions.isEmpty {
+                        PurchasesInformationSection(
+                            title: localization[.inactive],
+                            items: viewModel.inactiveSubscriptions,
+                            localization: localization) { purchase in
+                                viewModel.selectedPurchase = purchase
+                            }
+                            .tint(colorScheme == .dark ? .white : .black)
+                    }
+
+                    if !viewModel.nonSubscriptions.isEmpty {
+                        PurchasesInformationSection(
+                            title: localization[.purchasesSectionTitle],
+                            items: viewModel.nonSubscriptions,
+                            localization: localization) { purchase in
+                                viewModel.selectedPurchase = purchase
+                            }
+                            .tint(colorScheme == .dark ? .white : .black)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -133,8 +103,47 @@ struct PurchaseHistoryView: View {
 @available(iOS 15.0, *)
 struct PurchaseHistoryView_Previews: PreviewProvider {
     static var previews: some View {
+        let customerInfo = CustomerInfoFixtures.customerInfo(
+            subscriptions: [
+                CustomerInfoFixtures.Subscription(
+                    id: "id1",
+                    store: "\(Store.appStore.rawValue)",
+                    purchaseDate: "2022-03-08T17:42:58Z",
+                    expirationDate: nil
+                )
+            ],
+            entitlements: [],
+            nonSubscriptions: [
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    id: "id2",
+                    store: "\(Store.playStore.rawValue)",
+                    purchaseDate: "2022-03-08T17:42:58Z"
+                )
+            ])
+
+        let mock = MockCustomerCenterPurchases(
+            customerInfo: customerInfo
+        )
+
         CompatibilityNavigationStack {
-            PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+            PurchaseHistoryView(
+                viewModel: PurchaseHistoryViewModel(
+                    isLoading: false,
+                    activeSubscriptions: [
+                        .subscription,
+                        .free
+                    ],
+                    inactiveSubscriptions: [
+                        .mock(isExpired: true)
+                    ],
+                    nonSubscriptions: [
+                        .consumable
+                    ],
+                    purchasesProvider: mock,
+                    localization: CustomerCenterConfigData.mock().localization
+                )
+            )
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

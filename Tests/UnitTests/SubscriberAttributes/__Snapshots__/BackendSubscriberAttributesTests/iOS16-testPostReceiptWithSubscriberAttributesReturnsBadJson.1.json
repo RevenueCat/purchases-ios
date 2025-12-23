@@ -6,6 +6,7 @@
     "X-Client-Build-Version" : "12345",
     "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
     "X-Client-Version" : "17.0.0",
+    "X-Is-Backgrounded" : "false",
     "X-Is-Debug-Build" : "true",
     "X-Is-Sandbox" : "true",
     "X-Observer-Mode-Enabled" : "false",

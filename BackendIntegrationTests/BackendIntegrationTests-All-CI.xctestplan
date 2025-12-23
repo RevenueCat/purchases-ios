@@ -38,18 +38,18 @@
   "testTargets" : [
     {
       "skippedTests" : [
-         "EventsManagerIntegrationTests"
-       ],
+        "BaseLoadShedderStoreKitIntegrationTests"
+      ],
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "2DE20B6B264087FB004C597D",
+        "identifier" : "4B547C7901622A3858C2D9BC",
         "name" : "BackendIntegrationTests"
       }
     },
     {
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "4F6BEE042A27B02400CD9322",
+        "identifier" : "3D0A4517786928BDA9E0DD0F",
         "name" : "BackendCustomEntitlementsIntegrationTests"
       }
     }

@@ -83,6 +83,155 @@ class ErrorUtilsTests: TestCase {
         }
     }
 
+    func testPublicErrorsContainRootError() throws {
+        let underlyingError = ErrorUtils.offlineConnectionError().asPublicError
+
+        func throwing() throws {
+            throw ErrorUtils.customerInfoError(error: underlyingError).asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as NSError {
+            expect(error).to(matchError(ErrorCode.customerInfoError))
+            let rootErrorInfo = error.userInfo[ErrorDetails.rootErrorKey] as? [String: Any]
+            expect(rootErrorInfo).notTo(beNil())
+            expect(rootErrorInfo!["code"] as? Int) == 35
+            expect(rootErrorInfo!["domain"] as? String) == "RevenueCat.ErrorCode"
+            expect(rootErrorInfo!["localizedDescription"] as? String)
+                == "Error performing request because the internet connection appears to be offline."
+            expect(rootErrorInfo?.keys.count) == 3
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func testPublicErrorsRootErrorContainsSKErrorInfo() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let underlyingError = SKError(SKError.Code.paymentInvalid, userInfo: [:])
+
+        func throwing() throws {
+            throw ErrorUtils.purchaseInvalidError(error: underlyingError).asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as NSError {
+            let rootErrorInfo = error.userInfo[ErrorDetails.rootErrorKey] as? [String: Any]
+            expect(rootErrorInfo).notTo(beNil())
+            expect(rootErrorInfo!["code"] as? Int) == 3
+            expect(rootErrorInfo!["domain"] as? String) == "SKErrorDomain"
+            expect(rootErrorInfo!["localizedDescription"] as? String)
+                == "The operation couldn’t be completed. (SKErrorDomain error 3.)"
+            let storeKitError = rootErrorInfo!["storeKitError"] as? [String: Any]
+            expect(rootErrorInfo?.keys.count) == 4
+            expect(storeKitError).notTo(beNil())
+            expect(storeKitError!["skErrorCode"] as? Int) == 3
+            expect(storeKitError!["description"] as? String) == "payment_invalid"
+            expect(storeKitError?.keys.count) == 2
+
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func testPublicErrorsRootErrorContainsStoreKitErrorInfo() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let underlyingError = StoreKitError.systemError(NSError(domain: "StoreKitSystemError", code: 1234))
+
+        func throwing() throws {
+            throw ErrorUtils.purchaseInvalidError(error: underlyingError).asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as NSError {
+            let rootErrorInfo = error.userInfo[ErrorDetails.rootErrorKey] as? [String: Any]
+            expect(rootErrorInfo).notTo(beNil())
+            expect(rootErrorInfo!["code"] as? Int) == 1
+            expect(rootErrorInfo!["domain"] as? String) == "StoreKit.StoreKitError"
+            expect(rootErrorInfo!["localizedDescription"] as? String)
+                == "The operation couldn’t be completed. (StoreKitSystemError error 1234.)"
+            let storeKitError = rootErrorInfo!["storeKitError"] as? [String: Any]
+            expect(rootErrorInfo?.keys.count) == 4
+            expect(storeKitError).notTo(beNil())
+            expect(storeKitError!["description"] as? String)
+                == "system_error_Error Domain=StoreKitSystemError Code=1234 \"(null)\""
+            expect(storeKitError!["systemErrorDescription"] as? String)
+                == "The operation couldn’t be completed. (StoreKitSystemError error 1234.)"
+            expect(storeKitError?.keys.count) == 2
+
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func testPublicErrorsRootErrorContainsStoreKitProductPurchaseErrorInfo() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let underlyingError = StoreKit.Product.PurchaseError.productUnavailable
+
+        func throwing() throws {
+            throw ErrorUtils.purchaseInvalidError(error: underlyingError).asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as NSError {
+            let rootErrorInfo = error.userInfo[ErrorDetails.rootErrorKey] as? [String: Any]
+            expect(rootErrorInfo).notTo(beNil())
+            expect(rootErrorInfo!["code"] as? Int) == 1
+            expect(rootErrorInfo!["domain"] as? String) == "StoreKit.Product.PurchaseError"
+            // swiftlint:disable:next force_cast
+            let description = rootErrorInfo!["localizedDescription"] as! String
+            // In iOS 15, localizedDescription does not return "Item Unavailable",
+            // and returns "ERROR_UNAVAILABLE_DESC" instead.
+            let validDescriptions = Set(["Item Unavailable", "ERROR_UNAVAILABLE_DESC"])
+            expect(validDescriptions.contains(description)) == true
+            let storeKitError = rootErrorInfo!["storeKitError"] as? [String: Any]
+            expect(rootErrorInfo?.keys.count) == 4
+            expect(storeKitError).notTo(beNil())
+            expect(storeKitError!["description"] as? String)
+                == "product_unavailable"
+            expect(storeKitError?.keys.count) == 1
+        }
+    }
+
+    #if compiler(>=6.1)
+    @available(iOS 18.4, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)
+    func testPublicErrorsRootErrorContainsStoreKitErrorUnsupportedInfo() throws {
+        try AvailabilityChecks.iOS184APIAvailableOrSkipTest()
+
+        let underlyingError = StoreKitError.unsupported
+
+        func throwing() throws {
+            throw ErrorUtils.purchaseInvalidError(error: underlyingError).asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as NSError {
+            let rootErrorInfo = error.userInfo[ErrorDetails.rootErrorKey] as? [String: Any]
+            expect(rootErrorInfo).notTo(beNil())
+            expect(rootErrorInfo!["code"] as? Int) == 6
+            expect(rootErrorInfo!["domain"] as? String) == "StoreKit.StoreKitError"
+            // swiftlint:disable:next force_cast
+            let description = rootErrorInfo!["localizedDescription"] as! String
+            let validDescriptions = Set(["Unable to Complete Request"])
+            expect(validDescriptions.contains(description)) == true
+            let storeKitError = rootErrorInfo!["storeKitError"] as? [String: Any]
+            expect(rootErrorInfo?.keys.count) == 4
+            expect(storeKitError).notTo(beNil())
+            expect(storeKitError!["description"] as? String) == "unsupported"
+            expect(storeKitError?.keys.count) == 1
+        }
+    }
+    #endif
+
     func testPurchasesErrorWithUntypedErrorCode() throws {
         let error: ErrorCode = .apiEndpointBlockedError
 
@@ -92,10 +241,10 @@ class ErrorUtilsTests: TestCase {
     func testPurchasesErrorWithUntypedPublicError() throws {
         let error: PublicError = ErrorUtils.configurationError().asPublicError
         let purchasesError = ErrorUtils.purchasesError(withUntypedError: error)
-        let userInfo = try XCTUnwrap(purchasesError.userInfo as? [String: String])
+        let userInfoDescription = purchasesError.userInfo.description
 
         expect(error).to(matchError(purchasesError))
-        expect(userInfo) == error.userInfo as? [String: String]
+        expect(userInfoDescription) == error.userInfo.description
     }
 
     func testPurchasesErrorWithUntypedPurchasesError() throws {
@@ -161,7 +310,7 @@ class ErrorUtilsTests: TestCase {
         let underlyingError = NSError(domain: NSURLErrorDomain, code: NSURLErrorDNSLookupFailed)
         let networkError = ErrorUtils.networkError(withUnderlyingError: underlyingError)
 
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
+        let loggedMessage = try self.onlyLoggedMessageOrFail()
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == [
@@ -175,7 +324,7 @@ class ErrorUtilsTests: TestCase {
     func testLoggedErrorsWithNoMessage() throws {
         let error = ErrorUtils.customerInfoError()
 
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
+        let loggedMessage = try self.onlyLoggedMessageOrFail()
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == "\(LogIntent.rcError.prefix) \(error.localizedDescription)"
@@ -190,7 +339,7 @@ class ErrorUtilsTests: TestCase {
                                      attributeErrors: [:])
         let purchasesError = response.asBackendError(with: .notFoundError)
 
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
+        let loggedMessage = try self.onlyLoggedMessageOrFail()
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == [
@@ -205,7 +354,7 @@ class ErrorUtilsTests: TestCase {
         let message = Strings.customerInfo.no_cached_customerinfo.description
         _ = ErrorUtils.customerInfoError(withMessage: message)
 
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
+        let loggedMessage = try self.onlyLoggedMessageOrFail()
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == [
@@ -218,7 +367,7 @@ class ErrorUtilsTests: TestCase {
     func testLoggedErrorsDontDuplicateMessageIfEqualToErrorDescription() throws {
         _ = ErrorUtils.customerInfoError(withMessage: ErrorCode.customerInfoError.description)
 
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
+        let loggedMessage = try self.onlyLoggedMessageOrFail()
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == [
@@ -238,7 +387,7 @@ class ErrorUtilsTests: TestCase {
         let error: NetworkError = .errorResponse(errorResponse, .invalidRequest)
         _ = error.asPurchasesError
 
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
+        let loggedMessage = try self.onlyLoggedMessageOrFail()
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == [
@@ -258,7 +407,7 @@ class ErrorUtilsTests: TestCase {
         let error: NetworkError = .errorResponse(errorResponse, .invalidRequest)
         _ = error.asPurchasesError
 
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
+        let loggedMessage = try self.onlyLoggedMessageOrFail()
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == [
@@ -271,14 +420,28 @@ class ErrorUtilsTests: TestCase {
 
     // MARK: -
 
-    private var loggedMessages: [TestLogHandler.MessageData] {
-        return self.logger.messages
+    private func onlyLoggedMessageOrFail(
+        file: StaticString = #file,
+        line: UInt = #line
+    ) throws -> TestLogHandler.MessageData {
+        let messages = self.logger.messages
+
+        let allMessagesText = messages.map { "\($0.level): \($0.message)" }.joined(separator: "\n")
+
+        let onlyMessage = try XCTUnwrap(
+            messages.onlyElement,
+            "Expected exactly one logged message, found \(messages.count):\n\(allMessagesText)",
+            file: file,
+            line: line
+        )
+
+        return onlyMessage
     }
 
     private func expectLoggedError(
         _ error: Error,
         _ intent: LogIntent,
-        file: FileString = #fileID,
+        file: FileString = #filePath,
         line: UInt = #line
     ) {
         let expectedMessage = [
@@ -288,7 +451,7 @@ class ErrorUtilsTests: TestCase {
             .compactMap { $0 }
             .joined(separator: " ")
 
-        let messages = self.loggedMessages
+        let messages = self.logger.messages
 
         expect(
             file: file,

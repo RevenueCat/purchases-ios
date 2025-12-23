@@ -47,7 +47,9 @@
         case RCAmazon:
         case RCBilling:
         case RCUnknownStore:
+        case RCPaddle:
         case RCExternal:
+        case RCTestStore:
             NSLog(@"%ld", (long)rs);
             break;
     }

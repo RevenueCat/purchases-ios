@@ -15,9 +15,11 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 typealias PresentedTimelinePartial = PaywallComponent.PartialTimelineComponent
+
+typealias PresentedTimelineItemPartial = PaywallComponent.PartialTimelineItem
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TimelineComponentViewModel {
@@ -33,12 +35,12 @@ class TimelineComponentViewModel {
         component: PaywallComponent.TimelineComponent,
         items: [TimelineItemViewModel],
         uiConfigProvider: UIConfigProvider
-    ) throws {
+    ) {
         self.component = component
         self.items = items
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
     }
 
     @ViewBuilder
@@ -46,12 +48,14 @@ class TimelineComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
         @ViewBuilder apply: @escaping (TimelineComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedTimelinePartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
 
@@ -81,6 +85,8 @@ class TimelineItemViewModel {
     let description: TextComponentViewModel?
     let icon: IconComponentViewModel
 
+    private let presentedOverrides: PresentedOverrides<PresentedTimelineItemPartial>?
+
     init(component: PaywallComponent.TimelineComponent.Item,
          title: TextComponentViewModel,
          description: TextComponentViewModel?,
@@ -89,6 +95,35 @@ class TimelineItemViewModel {
         self.title = title
         self.description = description
         self.icon = icon
+        self.presentedOverrides = component.overrides?.toPresentedOverrides { $0 }
+    }
+
+    @ViewBuilder
+    func styles(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        @ViewBuilder apply: @escaping (TimelineItemStyle) -> some View
+    ) -> some View {
+        let partial = PresentedTimelineItemPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            with: self.presentedOverrides
+        )
+
+        let style = TimelineItemStyle(
+            id: self.id,
+            visible: partial?.visible ?? true,
+            connector: partial?.connector ?? self.component.connector,
+            title: self.title,
+            description: self.description,
+            icon: self.icon
+        )
+
+        apply(style)
     }
 
 }
@@ -118,6 +153,24 @@ extension PresentedTimelinePartial: PresentedPartial {
             size: size,
             padding: padding,
             margin: margin
+        )
+    }
+
+}
+
+extension PresentedTimelineItemPartial: PresentedPartial {
+
+    static func combine(
+        _ base: PaywallComponent.PartialTimelineItem?,
+        with other: PaywallComponent.PartialTimelineItem?
+    ) -> Self {
+
+        let connector = other?.connector ?? base?.connector
+        let visible = other?.visible ?? base?.visible
+
+        return .init(
+            visible: visible,
+            connector: connector
         )
     }
 
@@ -154,6 +207,34 @@ struct TimelineComponentStyle {
         self.size = size
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct TimelineItemStyle {
+
+    let visible: Bool
+    let id: UUID
+    let connector: PaywallComponent.TimelineComponent.Connector?
+    let title: TextComponentViewModel
+    let description: TextComponentViewModel?
+    let icon: IconComponentViewModel
+
+    init(
+        id: UUID,
+        visible: Bool,
+        connector: PaywallComponent.TimelineComponent.Connector?,
+        title: TextComponentViewModel,
+        description: TextComponentViewModel?,
+        icon: IconComponentViewModel
+    ) {
+        self.id = id
+        self.visible = visible
+        self.connector = connector
+        self.title = title
+        self.description = description
+        self.icon = icon
     }
 
 }

@@ -120,7 +120,8 @@ extension SwiftUI.View {
 
     func snapshot(
         size: CGSize,
-        file: StaticString = #file,
+        file: FileString = #filePath,
+        filename: StaticString = #file, // Used to generate the snapshot file name
         line: UInt = #line
     ) {
         UIView.setAnimationsEnabled(false)
@@ -138,7 +139,7 @@ extension SwiftUI.View {
             haveValidSnapshot(
                 as: .image(perceptualPrecision: perceptualPrecision, size: size, traits: traits),
                 named: "1", // Force each retry to end in `.1.png`
-                file: file,
+                file: filename,
                 line: line
             ),
             timeout: timeout,
@@ -154,8 +155,8 @@ private let traits: UITraitCollection = .init(displayScale: 1)
 #endif
 
 private let perceptualPrecision: Float = 0.93
-private let timeout: DispatchTimeInterval = .seconds(3)
-private let pollInterval: DispatchTimeInterval = .milliseconds(100)
+private let timeout: NimbleTimeInterval = .seconds(3)
+private let pollInterval: NimbleTimeInterval = .milliseconds(100)
 
 // MARK: - Private
 

@@ -35,6 +35,12 @@ struct PaywallsPreview: App {
     @State
     private var shouldShowWebPurchaseRedemptionResultAlert: Bool = false
 
+    @State
+    private var deepLinkAlertMessage: String?
+
+    @State
+    private var shouldShowDeepLinkAlert: Bool = false
+
     var body: some Scene {
         WindowGroup {
             AppContentView()
@@ -78,6 +84,13 @@ struct PaywallsPreview: App {
                         self.shouldShowWebPurchaseRedemptionResultAlert = false
                     })
                 }
+                .alert(isPresented: self.$shouldShowDeepLinkAlert) {
+                    return Alert(title: Text("Deep Link"),
+                                 message: Text(self.deepLinkAlertMessage ?? ""),
+                                 dismissButton: .cancel(Text("OK")) {
+                        self.shouldShowDeepLinkAlert = false
+                    })
+                }
                 .environmentObject(application)
         }
     }
@@ -88,9 +101,17 @@ struct PaywallsPreview: App {
 extension PaywallsPreview {
 
     func processURL(_ url: URL) {
-        // set to nil to trigger re-render if presenting same paywall with new data
-        paywallPreviewData = nil
-        paywallPreviewData = getPaywallDataFrom(incomingURL: url)
+        if isDeepLinkTest(url) {
+            showAlert(message: url.absoluteString)
+        } else {
+            // set to nil to trigger re-render if presenting same paywall with new data
+            paywallPreviewData = nil
+            paywallPreviewData = getPaywallDataFrom(incomingURL: url)
+        }
+    }
+
+    func isDeepLinkTest(_ url: URL) -> Bool {
+        return url.host == "deeplinktest"
     }
 
     func getPaywallDataFrom(incomingURL: URL) -> PaywallPreviewData? {
@@ -115,5 +136,10 @@ extension PaywallsPreview {
 
         return PaywallPreviewData(paywallIDToShow: paywallID, introOfferEligible: introElgibility)
     }
-    
+
+    func showAlert(message: String) {
+        self.deepLinkAlertMessage = message
+        self.shouldShowDeepLinkAlert = true
+    }
+
 }

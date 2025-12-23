@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 2/12/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -24,7 +24,7 @@ import SwiftUI
 struct ManageSubscriptionsButtonsView: View {
 
     @ObservedObject
-    var viewModel: ManageSubscriptionsViewModel
+    var viewModel: BaseManageSubscriptionViewModel
 
     var body: some View {
         ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
@@ -46,11 +46,13 @@ private struct ManageSubscriptionButton: View {
     let path: CustomerCenterConfigData.HelpPath
 
     @ObservedObject
-    var viewModel: ManageSubscriptionsViewModel
+    var viewModel: BaseManageSubscriptionViewModel
 
     var body: some View {
         AsyncButton(action: {
-            await self.viewModel.determineFlow(for: path)
+            await self.viewModel.handleHelpPath(
+                path,
+                withActiveProductId: viewModel.purchaseInformation?.productIdentifier)
         }, label: {
             if self.viewModel.loadingPath?.id == path.id {
                 TintedProgressView()

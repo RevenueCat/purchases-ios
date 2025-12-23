@@ -33,7 +33,8 @@ class PurchaseParamsTests: TestCase {
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: StoreProduct(sk1Product: product),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
         let params = PurchaseParams.Builder(package: package).build()
         expect(params.package).to(equal(package))
         expect(params.product).to(beNil())
@@ -44,7 +45,8 @@ class PurchaseParamsTests: TestCase {
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: StoreProduct(sk1Product: product),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                 currencyCode: product.priceLocale.currencyCode,
                                                 price: 11.1,
@@ -103,4 +105,91 @@ class PurchaseParamsTests: TestCase {
         }
     }
 
+    func testPurchaseParamsBuilderWithQuantity() async throws {
+        let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        let paramsDefault = PurchaseParams.Builder(product: storeProduct).build()
+        expect(paramsDefault.quantity).to(beNil())
+
+        let paramsWithQuantity = PurchaseParams.Builder(product: storeProduct)
+            .with(quantity: 5)
+            .build()
+        expect(paramsWithQuantity.quantity).to(equal(5))
+
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
+        let paramsWithAllOptions = PurchaseParams.Builder(package: package)
+            .with(quantity: 3)
+            .build()
+        expect(paramsWithAllOptions.quantity).to(equal(3))
+        expect(paramsWithAllOptions.package).to(equal(package))
+    }
+
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    func testPurchaseParamsBuilderWithIntoOfferJWS() async throws {
+        if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+            let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
+            let storeProduct = StoreProduct(sk1Product: product)
+
+            let paramsDefault = PurchaseParams.Builder(product: storeProduct).build()
+            expect(paramsDefault.introductoryOfferEligibilityJWS).to(beNil())
+
+            let paramsWithIntroOfferJWS = PurchaseParams.Builder(product: storeProduct)
+                .with(introductoryOfferEligibilityJWS: "abc")
+                .build()
+            expect(paramsWithIntroOfferJWS.introductoryOfferEligibilityJWS).to(equal("abc"))
+
+            let package = Package(identifier: "package",
+                                  packageType: .monthly,
+                                  storeProduct: storeProduct,
+                                  offeringIdentifier: "offering",
+                                  webCheckoutUrl: nil)
+            let paramsWithAllOptions = PurchaseParams.Builder(package: package)
+                .with(introductoryOfferEligibilityJWS: "abc")
+                .build()
+            expect(paramsWithAllOptions.introductoryOfferEligibilityJWS).to(equal("abc"))
+            expect(paramsWithAllOptions.package).to(equal(package))
+        }
+    }
+
+    func testPurchaseParamsBuilderWithPromotionalOfferPurchaseOptions() async throws {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+            let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
+            let storeProduct = StoreProduct(sk1Product: product)
+            let package = Package(identifier: "package",
+                                  packageType: .monthly,
+                                  storeProduct: storeProduct,
+                                  offeringIdentifier: "offering",
+                                  webCheckoutUrl: nil)
+
+            let promotionalOfferOptions = StoreKit2PromotionalOfferPurchaseOptions(
+                offerID: "offer-id",
+                compactJWS: "signed-jws"
+            )
+
+            let productParams = PurchaseParams.Builder(product: storeProduct)
+                .with(promotionalOfferOptions: promotionalOfferOptions)
+                .build()
+
+            expect(productParams.product) == storeProduct
+            expect(productParams.package).to(beNil())
+            expect(productParams.promotionalOfferOptions?.offerID) == promotionalOfferOptions.offerID
+            expect(productParams.promotionalOfferOptions?.compactJWS) == promotionalOfferOptions.compactJWS
+
+            let packageParams = PurchaseParams.Builder(package: package)
+                .with(promotionalOfferOptions: promotionalOfferOptions)
+                .build()
+
+            expect(packageParams.package) == package
+            expect(packageParams.product).to(beNil())
+            expect(packageParams.promotionalOfferOptions?.offerID) == promotionalOfferOptions.offerID
+            expect(packageParams.promotionalOfferOptions?.compactJWS) == promotionalOfferOptions.compactJWS
+        }
+    }
+
+    #endif
 }

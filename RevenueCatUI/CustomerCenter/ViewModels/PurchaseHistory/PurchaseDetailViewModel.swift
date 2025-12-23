@@ -16,7 +16,7 @@
 import Foundation
 import SwiftUI
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if os(iOS)
 
@@ -30,52 +30,30 @@ final class PurchaseDetailViewModel: ObservableObject {
     var debugItems: [PurchaseDetailItem] = []
 
     var localizedOwnership: CCLocalizedString? {
-        switch purchaseInfo {
-        case .subscription(let subscriptionInfo):
-            return subscriptionInfo.ownershipType == .familyShared
-                ? .sharedThroughFamilyMember
-                : nil
-        case .nonSubscription:
-            return nil
+        if purchaseInfo.ownershipType == .familyShared {
+            return .sharedThroughFamilyMember
         }
+
+        return nil
     }
 
-    init(purchaseInfo: PurchaseInfo) {
+    init(purchaseInfo: PurchaseInformation) {
         self.purchaseInfo = purchaseInfo
     }
 
-    func didAppear() async {
-        await fetchProduct()
+    func didAppear(localization: CustomerCenterConfigData.Localization) {
+        var items: [PurchaseDetailItem] = [
+            .productName(purchaseInfo.title)
+        ]
+
+        items.append(contentsOf: purchaseInfo.purchaseDetailItems(localization: localization))
+        self.debugItems = purchaseInfo.purchaseDetailDebugItems
+        self.items = items
     }
 
     // MARK: - Private
 
-    private let purchaseInfo: PurchaseInfo
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension PurchaseDetailViewModel {
-
-    func fetchProduct() async {
-        guard
-            let product = await Purchases.shared.products([purchaseInfo.productIdentifier]).first
-        else {
-            return
-        }
-
-        await MainActor.run {
-            var items: [PurchaseDetailItem] = [
-                .productName(product.localizedTitle)
-            ]
-
-            items.append(contentsOf: purchaseInfo.purchaseDetailItems)
-            self.debugItems = purchaseInfo.purchaseDetailDebugItems
-            self.items = items
-        }
-    }
+    private let purchaseInfo: PurchaseInformation
 }
 
 #endif

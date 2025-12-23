@@ -17,14 +17,17 @@ class OfferingsAPI {
 
     typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], BackendError?) -> Void
     typealias OfferSigningResponseHandler = Backend.ResponseHandler<PostOfferForSigningOperation.SigningData>
-    typealias OfferingsResponseHandler = Backend.ResponseHandler<OfferingsResponse>
+    typealias OfferingsResponseHandler = Backend.ResponseHandler<Offerings.Contents>
+    typealias WebOfferingProductsResponseHandler = Backend.ResponseHandler<WebOfferingProductsResponse>
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
+    private let webOfferingProductsCallbacksCache: CallbackCache<WebOfferingProductsCallback>
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.offeringsCallbacksCache = .init()
+        self.webOfferingProductsCallbacksCache = .init()
     }
 
     func getOfferings(appUserID: String,
@@ -49,6 +52,24 @@ class OfferingsAPI {
         self.backendConfig.addCacheableOperation(
             with: factory,
             delay: .default(forBackgroundedApp: isAppBackgrounded),
+            cacheStatus: cacheStatus
+        )
+    }
+
+    func getWebOfferingProducts(appUserID: String, completion: @escaping WebOfferingProductsResponseHandler) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let factory = GetWebOfferingProductsOperation.createFactory(
+            configuration: config,
+            webOfferingProductsCallbackCache: self.webOfferingProductsCallbacksCache
+        )
+
+        let webProductsCallback = WebOfferingProductsCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.webOfferingProductsCallbacksCache.add(webProductsCallback)
+
+        self.backendConfig.addCacheableOperation(
+            with: factory,
+            delay: .none,
             cacheStatus: cacheStatus
         )
     }

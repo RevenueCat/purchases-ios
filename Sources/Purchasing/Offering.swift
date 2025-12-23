@@ -132,6 +132,11 @@ import Foundation
      */
     @objc public let weekly: Package?
 
+    /**
+     The url to purchase this package on the web
+     */
+    @objc public let webCheckoutUrl: URL?
+
     public override var description: String {
         return """
         <Offering {
@@ -179,7 +184,8 @@ import Foundation
         identifier: String,
         serverDescription: String,
         metadata: [String: Any] = [:],
-        availablePackages: [Package]
+        availablePackages: [Package],
+        webCheckoutUrl: URL?
     ) {
         self.init(
             identifier: identifier,
@@ -187,7 +193,8 @@ import Foundation
             metadata: metadata,
             paywall: nil,
             paywallComponents: nil,
-            availablePackages: availablePackages
+            availablePackages: availablePackages,
+            webCheckoutUrl: webCheckoutUrl
         )
     }
 
@@ -198,7 +205,8 @@ import Foundation
         metadata: [String: Any] = [:],
         paywall: PaywallData? = nil,
         paywallComponents: PaywallComponents? = nil,
-        availablePackages: [Package]
+        availablePackages: [Package],
+        webCheckoutUrl: URL?
     ) {
         self.init(
             identifier: identifier,
@@ -207,7 +215,8 @@ import Foundation
             paywall: paywall,
             paywallComponents: paywallComponents,
             draftPaywallComponents: nil,
-            availablePackages: availablePackages
+            availablePackages: availablePackages,
+            webCheckoutUrl: webCheckoutUrl
         )
     }
 
@@ -218,7 +227,8 @@ import Foundation
         paywall: PaywallData? = nil,
         paywallComponents: PaywallComponents? = nil,
         draftPaywallComponents: PaywallComponents?,
-        availablePackages: [Package]
+        availablePackages: [Package],
+        webCheckoutUrl: URL?
     ) {
         self.identifier = identifier
         self.serverDescription = serverDescription
@@ -227,6 +237,7 @@ import Foundation
         self.paywall = paywall
         self.paywallComponents = paywallComponents
         self.draftPaywallComponents = draftPaywallComponents
+        self.webCheckoutUrl = webCheckoutUrl
 
         var foundPackages: [PackageType: Package] = [:]
 
@@ -278,6 +289,36 @@ import Foundation
 
     // swiftlint:enable cyclomatic_complexity
 
+}
+
+@_spi(Internal)
+public extension Offering {
+
+    /// Copies the Offering and sets the given `presentedOfferingContext` on all `availablePackages`
+    func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext) -> Self {
+        return Self(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: paywall,
+            paywallComponents: paywallComponents,
+            draftPaywallComponents: draftPaywallComponents,
+            availablePackages: availablePackages.map { $0.withPresentedOfferingContext(presentedOfferingContext) },
+            webCheckoutUrl: webCheckoutUrl
+        )
+    }
+}
+
+fileprivate extension Package {
+    func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext) -> Self {
+        return Self(
+            identifier: identifier,
+            packageType: packageType,
+            storeProduct: storeProduct,
+            presentedOfferingContext: presentedOfferingContext,
+            webCheckoutUrl: webCheckoutUrl
+        )
+    }
 }
 
 extension Offering {

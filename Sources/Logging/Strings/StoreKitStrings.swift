@@ -39,6 +39,10 @@ enum StoreKitStrings {
 
     case sk2_purchasing_added_winback_offer_option(String)
 
+    case sk2_purchasing_added_custom_introductory_offer_eligibility_jws
+
+    case sk2_purchasing_added_custom_promotional_offer_jws(offerID: String)
+
     case sk2_purchasing_added_uuid_option(UUID)
 
     case sk2_unknown_product_type(String)
@@ -91,7 +95,11 @@ enum StoreKitStrings {
 
     case error_displaying_store_message(Error)
 
+    case unknown_storekit_error(Error)
+
     case skunknown_purchase_result(String)
+
+    case sk2_sync_purchases_no_transaction_or_apptransaction_found
 
 }
 
@@ -134,6 +142,12 @@ extension StoreKitStrings: LogMessage {
 
         case let .sk2_purchasing_added_winback_offer_option(winBackOfferID):
             return "Adding Product.PurchaseOption for win-back offer with ID '\(winBackOfferID)'"
+
+        case .sk2_purchasing_added_custom_introductory_offer_eligibility_jws:
+            return "Adding Product.PurchaseOption for developer-provided introductoryOfferEligibilityJWS"
+
+        case let .sk2_purchasing_added_custom_promotional_offer_jws(offerID):
+            return "Adding Product.PurchaseOption for developer-provided promotionalOfferJWS with offer ID '\(offerID)'"
 
         case let .sk2_purchasing_added_uuid_option(uuid):
             return "Adding Product.PurchaseOption for .appAccountToken '\(uuid)'"
@@ -218,8 +232,14 @@ extension StoreKitStrings: LogMessage {
         case let .error_displaying_store_message(error):
             return "Error displaying StoreKit message: '\(error)'"
 
+        case let .unknown_storekit_error(error):
+            return "Unknown StoreKit error. Error: '\(error.localizedDescription)'"
+
         case let .skunknown_purchase_result(name):
             return "Unrecognized Product.PurchaseResult: \(name)"
+
+        case .sk2_sync_purchases_no_transaction_or_apptransaction_found:
+            return "Couldn't find previous transactions or an AppTransaction."
         }
     }
 

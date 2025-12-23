@@ -72,8 +72,14 @@ import Foundation
     /// Whether the subscription will renew at the next billing period.
     @objc public let willRenew: Bool
 
+    /// The display name of the subscription as configured in the RevenueCat dashboard.
+    @objc public let displayName: String?
+
     /// Paid price for the subscription
     @objc public let price: ProductPaidPrice?
+
+    /// Management purchase URL
+    @objc public let managementURL: URL?
 
     init(productIdentifier: String,
          purchaseDate: Date,
@@ -89,7 +95,9 @@ import Foundation
          refundedAt: Date?,
          storeTransactionId: String?,
          requestDate: Date,
-         price: ProductPaidPrice?) {
+         price: ProductPaidPrice?,
+         managementURL: URL?,
+         displayName: String?) {
         self.productIdentifier = productIdentifier
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
@@ -110,6 +118,8 @@ import Foundation
                                                                      billingIssueDetectedAt: billingIssuesDetectedAt,
                                                                      periodType: periodType)
         self.price = price
+        self.managementURL = managementURL
+        self.displayName = displayName
 
         super.init()
     }
@@ -130,7 +140,9 @@ import Foundation
             refundedAt: \(String(describing: refundedAt)),
             storeTransactionId: \(String(describing: storeTransactionId)),
             isActive: \(isActive),
-            willRenew: \(willRenew)
+            willRenew: \(willRenew),
+            managementURL: \(String(describing: managementURL)),
+            displayName: \(String(describing: displayName))
         }
         """
     }

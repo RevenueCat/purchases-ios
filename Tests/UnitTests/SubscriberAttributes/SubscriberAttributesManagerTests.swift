@@ -32,7 +32,7 @@ class SubscriberAttributesManagerTests: TestCase {
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
         let systemInfo = MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
 
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: systemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: systemInfo)
         self.mockBackend = MockBackend()
         self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
                                                              systemInfo: systemInfo)
@@ -42,7 +42,8 @@ class SubscriberAttributesManagerTests: TestCase {
             deviceCache: mockDeviceCache,
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
-            attributionDataMigrator: mockAttributionDataMigrator
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: true
         )
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
                                                              value: "183")
@@ -622,6 +623,24 @@ class SubscriberAttributesManagerTests: TestCase {
 
         checkDeviceIdentifiersAreSet()
     }
+
+    func testSetAdjustIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let adjustID = "adjustID"
+        self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
     // endregion
     // region AppsflyerID
     func testSetAppsflyerID() {
@@ -694,6 +713,24 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetAppsflyerIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let appsflyerID = "appsflyerID"
+        self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region FBAnonymousID
@@ -768,6 +805,24 @@ class SubscriberAttributesManagerTests: TestCase {
 
         checkDeviceIdentifiersAreSet()
     }
+
+    func testSetFBAnonymousIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let fbAnonID = "fbAnonID"
+        self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
     // endregion
     // region mParticle
     func testSetMparticleID() {
@@ -840,6 +895,24 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetMparticleIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let mparticleID = "mparticleID"
+        self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region OnesignalID
@@ -1134,6 +1207,97 @@ class SubscriberAttributesManagerTests: TestCase {
         checkDeviceIdentifiersAreNotSet()
     }
     // endregion
+    // region airbridgeDeviceID
+    func testSetAirbridgeDeviceID() {
+        let airbridgeDeviceId = "airbridgeDeviceID"
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$airbridgeDeviceId"
+        expect(receivedAttribute.value) == airbridgeDeviceId
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAirbridgeDeviceIDSetsEmptyIfNil() {
+        let airbridgeDeviceId = "airbridgeDeviceID"
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+
+        self.subscriberAttributesManager.setAirbridgeDeviceID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 10
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$airbridgeDeviceId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAirbridgeDeviceIDSkipsIfSameValue() {
+        let airbridgeDeviceId = "airbridgeDeviceID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airbridgeDeviceId",
+                                                                                    value: airbridgeDeviceId)
+
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
+    }
+
+    func testSetAirbridgeDeviceIDOverwritesIfNewValue() {
+        let oldSyncTime = Date()
+        let airbridgeDeviceId = "airbridgeDeviceID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airbridgeDeviceId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$airbridgeDeviceId"
+        expect(receivedAttribute.value) == airbridgeDeviceId
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetAirbridgeDeviceIDSetsDeviceIdentifiers() {
+        let airbridgeDeviceId = "airbridgeDeviceID"
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
+
+        checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetAirbridgeDeviceIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let airbridgeDeviceId = "airbridgeDeviceID"
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
+    // endregion
     // region kochavaDeviceID
     func testSetKochavaDeviceID() {
         let kochavaDeviceId = "kochavaDeviceID"
@@ -1205,6 +1369,24 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetKochavaDeviceIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let kochavaDeviceId = "kochavaDeviceID"
+        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceId, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region MixpanelDistinctID
@@ -1503,6 +1685,152 @@ class SubscriberAttributesManagerTests: TestCase {
     func testSetPostHogUserIDDoesNotSetDeviceIdentifiers() {
         let postHogUserID = "postHogUserID"
         self.subscriberAttributesManager.setPostHogUserID(postHogUserID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
+    // endregion
+    // region AmplitudeUserID
+    func testSetAmplitudeUserID() throws {
+        let amplitudeUserID = "amplitudeUserID"
+
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeUserId"
+        expect(receivedAttribute.value) == amplitudeUserID
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAmplitudeUserIDSetsEmptyIfNil() throws {
+        let amplitudeUserID = "amplitudeUserID"
+
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: "kratos")
+        self.subscriberAttributesManager.setAmplitudeUserID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeUserId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAmplitudeUserIDSkipsIfSameValue() {
+        let amplitudeUserID = "amplitudeUserID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$amplitudeUserId",
+                                                                                    value: amplitudeUserID)
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetAmplitudeUserIDOverwritesIfNewValue() throws {
+        let oldSyncTime = Date()
+        let amplitudeUserID = "amplitudeUserID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$amplitudeUserId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeUserId"
+        expect(receivedAttribute.value) == amplitudeUserID
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetAmplitudeUserIDDoesNotSetDeviceIdentifiers() {
+        let amplitudeUserID = "amplitudeUserID"
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
+    // endregion
+    // region AmplitudeDeviceID
+    func testSetAmplitudeDeviceID() throws {
+        let amplitudeDeviceID = "amplitudeDeviceID"
+
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeDeviceId"
+        expect(receivedAttribute.value) == amplitudeDeviceID
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAmplitudeDeviceIDSetsEmptyIfNil() throws {
+        let amplitudeDeviceID = "amplitudeDeviceID"
+
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: "kratos")
+        self.subscriberAttributesManager.setAmplitudeDeviceID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeDeviceId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAmplitudeDeviceIDSkipsIfSameValue() {
+        let amplitudeDeviceID = "amplitudeDeviceID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$amplitudeDeviceId",
+                                                                                    value: amplitudeDeviceID)
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetAmplitudeDeviceIDOverwritesIfNewValue() throws {
+        let oldSyncTime = Date()
+        let amplitudeDeviceID = "amplitudeDeviceID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$amplitudeDeviceId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeDeviceId"
+        expect(receivedAttribute.value) == amplitudeDeviceID
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetAmplitudeDeviceIDDoesNotSetDeviceIdentifiers() {
+        let amplitudeDeviceID = "amplitudeDeviceID"
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 1
 
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
@@ -1884,6 +2212,246 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime
     }
+    // endregion
+    // region AppsFlyer Attribution Data
+
+    func testSetAppsFlyerConversionDataSetsAllAttributesFromFullData() {
+        let fullData: [AnyHashable: Any] = [
+            "media_source": "facebook",
+            "campaign": "summer_sale",
+            "adgroup": "test_group",
+            "af_ad": "test_ad",
+            "af_keywords": "test_keywords",
+            "creative": "test_creative"
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(fullData, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 6
+
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "facebook"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "summer_sale"
+        expect(self.findInvokedAttribute(withName: "$adGroup").value) == "test_group"
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "test_ad"
+        expect(self.findInvokedAttribute(withName: "$keyword").value) == "test_keywords"
+        expect(self.findInvokedAttribute(withName: "$creative").value) == "test_creative"
+    }
+
+    func testSetAppsFlyerConversionDataUsesFallbackFields() {
+        let fallbackData: [AnyHashable: Any] = [
+            "af_status": "organic",
+            "campaign": "test_campaign",
+            "adset": "test_adset",
+            "ad_id": 12345,
+            "keyword": "test_keyword",
+            "af_creative": "test_af_creative"
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(fallbackData, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 6
+
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "Organic"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "test_campaign"
+        expect(self.findInvokedAttribute(withName: "$adGroup").value) == "test_adset"
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "12345"
+        expect(self.findInvokedAttribute(withName: "$keyword").value) == "test_keyword"
+        expect(self.findInvokedAttribute(withName: "$creative").value) == "test_af_creative"
+    }
+
+    func testSetAppsFlyerConversionDataPrefersPrimaryFieldsOverFallbacks() {
+        let dataWithBothPrimaryAndFallback: [AnyHashable: Any] = [
+            "media_source": "facebook",
+            "af_status": "Organic",
+            "campaign": "test_campaign",
+            "adgroup": "primary_adgroup",
+            "adset": "fallback_adset",
+            "af_ad": "primary_ad",
+            "ad_id": "fallback_ad_id",
+            "af_keywords": "primary_keywords",
+            "keyword": "fallback_keyword",
+            "creative": "primary_creative",
+            "af_creative": "fallback_creative"
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(
+            dataWithBothPrimaryAndFallback,
+            appUserID: "kratos"
+        )
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 6
+
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "facebook"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "test_campaign"
+        expect(self.findInvokedAttribute(withName: "$adGroup").value) == "primary_adgroup"
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "primary_ad"
+        expect(self.findInvokedAttribute(withName: "$keyword").value) == "primary_keywords"
+        expect(self.findInvokedAttribute(withName: "$creative").value) == "primary_creative"
+    }
+
+    func testSetAppsFlyerConversionDataWithNilDoesNothing() {
+        self.subscriberAttributesManager.setAppsFlyerConversionData(nil, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetAppsFlyerConversionDataWithEmptyDictDoesNothing() {
+        self.subscriberAttributesManager.setAppsFlyerConversionData([:], appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetAppsFlyerConversionDataDoesNotSetMediaSourceWhenAfStatusIsNotOrganic() {
+        self.subscriberAttributesManager.setAppsFlyerConversionData(
+            ["af_status": "Non-organic"],
+            appUserID: "kratos"
+        )
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+    }
+
+    func testSetAppsFlyerConversionDataHandlesNilValuesInDictionary() {
+        let nilValue: String? = nil
+        let dataWithNilValues: [AnyHashable: Any] = [
+            "media_source": nilValue as Any,
+            "campaign": "valid_campaign"
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithNilValues, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "valid_campaign"
+    }
+
+    func testSetAppsFlyerConversionDataHandlesEmptyStringValues() {
+        let dataWithEmptyStrings: [AnyHashable: Any] = [
+            "media_source": "",
+            "campaign": "valid_campaign"
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithEmptyStrings, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "valid_campaign"
+    }
+
+    func testSetAppsFlyerConversionDataHandlesIntegerValues() {
+        let dataWithIntegers: [AnyHashable: Any] = [
+            "ad_id": 12345,
+            "campaign": "test"
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithIntegers, appUserID: "kratos")
+
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "12345"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "test"
+    }
+
+    func testSetAppsFlyerConversionDataHandlesDoubleValues() {
+        let dataWithDoubles: [AnyHashable: Any] = [
+            "ad_id": 12345.67
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithDoubles, appUserID: "kratos")
+
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "12345.67"
+    }
+
+    func testSetAppsFlyerConversionDataWithTypicalOrganicInstall() {
+        let organicData: [AnyHashable: Any] = [
+            "af_status": "Organic",
+            "af_message": "organic install",
+            "is_first_launch": true
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(organicData, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "Organic"
+    }
+
+    func testSetAppsFlyerConversionDataWithTypicalNonOrganicInstall() {
+        let nonOrganicData: [AnyHashable: Any] = [
+            "af_status": "Non-organic",
+            "media_source": "Facebook Ads",
+            "campaign": "Summer Sale 2024",
+            "adgroup": "Lookalike Audience",
+            "adset": "US Users 25-35",
+            "af_ad": "video_ad_001",
+            "ad_id": "23847301457860211",
+            "af_keywords": "fitness app",
+            "creative": "creative_v2",
+            "click_time": "2024-01-15 10:30:00.000",
+            "install_time": "2024-01-15 10:35:12.050"
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(nonOrganicData, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 6
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "Facebook Ads"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "Summer Sale 2024"
+        expect(self.findInvokedAttribute(withName: "$adGroup").value) == "Lookalike Audience"
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "video_ad_001"
+        expect(self.findInvokedAttribute(withName: "$keyword").value) == "fitness app"
+        expect(self.findInvokedAttribute(withName: "$creative").value) == "creative_v2"
+    }
+
+    func testSetAppsFlyerConversionDataWithOnlyFallbackFields() {
+        let fallbackData: [AnyHashable: Any] = [
+            "af_status": "Organic",
+            "adset": "fallback_adset",
+            "ad_id": 99999,
+            "keyword": "fallback_keyword",
+            "af_creative": "fallback_creative"
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(fallbackData, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "Organic"
+        expect(self.findInvokedAttribute(withName: "$adGroup").value) == "fallback_adset"
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "99999"
+        expect(self.findInvokedAttribute(withName: "$keyword").value) == "fallback_keyword"
+        expect(self.findInvokedAttribute(withName: "$creative").value) == "fallback_creative"
+    }
+
+    func testSetAppsFlyerConversionDataIgnoresUnrelatedFields() {
+        let dataWithExtraFields: [AnyHashable: Any] = [
+            "media_source": "test",
+            "click_time": "2024-01-15",
+            "install_time": "2024-01-15",
+            "is_first_launch": true,
+            "http_referrer": NSNull(),
+            "agency": NSNull(),
+            "some_random_field": "value"
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithExtraFields, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "test"
+    }
+
+    func testSetAppsFlyerConversionDataHandlesNSNullValues() {
+        let dataWithNSNull: [AnyHashable: Any] = [
+            "media_source": NSNull(),
+            "campaign": "valid_campaign"
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(dataWithNSNull, appUserID: "kratos")
+
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(invokedParams).to(containElementSatisfying({ $0.attribute.key == "$campaign" }))
+    }
+
+    func testSetAppsFlyerConversionDataWithNSDictionary() {
+        let nsDictionary: NSDictionary = [
+            "media_source": "facebook",
+            "campaign": "test_campaign",
+            "ad_id": NSNumber(value: 12345)
+        ]
+        self.subscriberAttributesManager.setAppsFlyerConversionData(
+            nsDictionary as? [AnyHashable: Any],
+            appUserID: "kratos"
+        )
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 3
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "facebook"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "test_campaign"
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "12345"
+    }
+
     // endregion
     // region Attribution Data conversion
 

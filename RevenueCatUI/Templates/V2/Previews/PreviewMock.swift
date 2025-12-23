@@ -11,11 +11,11 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
 
@@ -71,9 +71,13 @@ enum PreviewUIConfig {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PreviewRequiredEnvironmentProperties: ViewModifier {
+struct PreviewRequiredPaywallsV2Properties: ViewModifier {
 
-    static let defaultPackageContext = PackageContext(package: nil, variableContext: .init(packages: []))
+    @MainActor
+    static let defaultPackageContext = PackageContext(
+        package: nil,
+        variableContext: .init(packages: [])
+    )
 
     let screenCondition: ScreenCondition
     let componentViewState: ComponentViewState
@@ -82,22 +86,25 @@ struct PreviewRequiredEnvironmentProperties: ViewModifier {
     func body(content: Content) -> some View {
         content
             .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: .default()))
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+            .environmentObject(PurchaseHandler.default())
             .environmentObject(self.packageContext ?? Self.defaultPackageContext)
             .environment(\.screenCondition, screenCondition)
             .environment(\.componentViewState, componentViewState)
             .environment(\.safeAreaInsets, EdgeInsets())
+            .fixMacButtons() // Matches the properties applied in LoadedPaywallsV2View
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
-    func previewRequiredEnvironmentProperties(
+    func previewRequiredPaywallsV2Properties(
         screenCondition: ScreenCondition = .compact,
         componentViewState: ComponentViewState = .default,
         packageContext: PackageContext? = nil
     ) -> some View {
-        self.modifier(PreviewRequiredEnvironmentProperties(
+        self.modifier(PreviewRequiredPaywallsV2Properties(
             screenCondition: screenCondition,
             componentViewState: componentViewState,
             packageContext: packageContext
@@ -115,7 +122,8 @@ enum PreviewMock {
             unit: .week,
             localizedTitle: "Weekly Standard"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var monthlyStandardPackage: Package = .init(
@@ -126,7 +134,8 @@ enum PreviewMock {
             unit: .month,
             localizedTitle: "Monthly Standard"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var annualStandardPackage: Package = .init(
@@ -137,7 +146,8 @@ enum PreviewMock {
             unit: .year,
             localizedTitle: "Annual Standard"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var weeklyPremiumPackage: Package = .init(
@@ -148,7 +158,8 @@ enum PreviewMock {
             unit: .week,
             localizedTitle: "Weekly Premium"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var monthlyPremiumPackage: Package = .init(
@@ -159,7 +170,8 @@ enum PreviewMock {
             unit: .month,
             localizedTitle: "Monthly Premium"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var annualPremiumPackage: Package = .init(
@@ -170,7 +182,8 @@ enum PreviewMock {
             unit: .year,
             localizedTitle: "Annual Premium"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var uiConfig: UIConfig = .init(

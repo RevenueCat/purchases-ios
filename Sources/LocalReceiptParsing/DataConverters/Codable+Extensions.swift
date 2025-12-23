@@ -59,6 +59,16 @@ extension JSONEncoder {
         return encoder
     }()
 
+    /// JSONEncoder with sorted keys (compact format)
+    static let sortedKeys: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.sortedKeys]
+
+        return encoder
+    }()
+
     /// JSONEncoder (just like the default one, but prettyPrinted and sortedKeys)
     static let prettyPrinted: JSONEncoder = {
         let encoder = JSONEncoder()

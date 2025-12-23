@@ -67,7 +67,8 @@ extension Offering {
             serverDescription: self.serverDescription,
             metadata: self.metadata,
             paywall: modifier(self.paywall),
-            availablePackages: self.availablePackages
+            availablePackages: self.availablePackages,
+            webCheckoutUrl: nil
         )
     }
 

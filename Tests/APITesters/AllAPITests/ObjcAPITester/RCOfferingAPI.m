@@ -37,8 +37,9 @@
     o = [[RCOffering alloc] initWithIdentifier:@""
                              serverDescription:@""
                                       metadata:@{}
-                             availablePackages:a];
-    
+                             availablePackages:a
+                                webCheckoutUrl:[NSURL URLWithString:@"https://revenuecat.com"]];
+
     NSLog(o, i, sd, a, l, an, s, t, tm, m, w, p, ok, md);
 }
 

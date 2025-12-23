@@ -16,7 +16,7 @@
 import Foundation
 
 /// Error produced when displaying the customer center.
-enum CustomerCenterError: Error {
+enum CustomerCenterError: Error, Comparable {
 
     /// Could not find information for an active subscription.
     case couldNotFindSubscriptionInformation

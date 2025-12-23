@@ -37,7 +37,7 @@ final class DebugViewModel: ObservableObject {
     var configuration: LoadingState<Configuration, Never> = .loading
 
     @Published
-    var diagnosticsResult: LoadingState<(), NSError> = .loading
+    var diagnosticsResult: LoadingState<PurchasesDiagnostics.SDKHealthReport, Never> = .loading
     @Published
     var offerings: LoadingState<Offerings, NSError> = .loading
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -62,8 +62,9 @@ final class DebugViewModel: ObservableObject {
     @MainActor
     func load() async {
         self.configuration = .loaded(.create())
-
-        self.diagnosticsResult = await .create { try await PurchasesDiagnostics.default.testSDKHealth() }
+        #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.diagnosticsResult = .loaded(await PurchasesDiagnostics.default.healthReport())
+        #endif
         self.offerings = await .create { try await Purchases.shared.offerings() }
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.customerInfo = await .create { try await Purchases.shared.customerInfo() }
@@ -83,8 +84,70 @@ extension DebugViewModel {
     var diagnosticsStatus: String {
         switch self.diagnosticsResult {
         case .loading: return "Loading..."
-        case .loaded: return "Configuration OK"
-        case let .failed(error): return "Error: \(error.localizedDescription)"
+        case let .loaded(healthReport):
+            switch healthReport.status {
+            case .healthy: return "Configuration OK"
+            case .unhealthy: return "Invalid Configuration"
+            }
+        }
+    }
+
+    var diagnosticsExplainer: String? {
+        switch self.diagnosticsResult {
+        case let .loaded(healthReport):
+            switch healthReport.status {
+            case let .healthy(warnings):
+                return warnings.count > 0 ? """
+                Your RevenueCat configuration is valid, however we encountered some potential issues \
+                during validation. Feel free to ignore them if your configuration works as expected.
+                """
+                : nil
+            case .unhealthy(let error): return error.localizedDescription
+            }
+        default: return nil
+        }
+    }
+
+    var diagnosticsActionURL: URL? {
+        switch self.diagnosticsResult {
+        case let .loaded(healthReport):
+            guard let appId = healthReport.appId, let projectId = healthReport.projectId else {
+                return nil
+            }
+            switch healthReport.status {
+            case .healthy: return nil
+            case .unhealthy(let error):
+                switch error {
+                case .offeringConfiguration:
+                    return URL(string: "https://app.revenuecat.com/projects/\(projectId)/offerings")
+                case .invalidBundleId:
+                    return URL(string: "https://app.revenuecat.com/projects/\(projectId)/apps/\(appId)")
+                case .invalidProducts:
+                    return URL(string: "https://app.revenuecat.com/projects/\(projectId)/products")
+                default: return nil
+                }
+            }
+        case .loading, .failed: return nil
+        }
+    }
+
+    var diagnosticsActionTitle: String? {
+        switch self.diagnosticsResult {
+        case .loading, .failed: return nil
+        case let .loaded(healthReport):
+            switch healthReport.status {
+            case .healthy: return nil
+            case .unhealthy(let error):
+                switch error {
+                case .offeringConfiguration:
+                    return "Open Offerings"
+                case .invalidBundleId:
+                    return "Open App Configuration"
+                case .invalidProducts:
+                    return "Open Products"
+                default: return nil
+                }
+            }
         }
     }
 
@@ -94,15 +157,25 @@ extension DebugViewModel {
         case .loading:
             Image(systemName: "gear.circle")
                 .foregroundColor(.gray)
-        case .loaded:
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(.green)
-        case .failed:
-            Image(systemName: "exclamationmark.triangle")
-                .foregroundColor(.red)
+        case let .loaded(healthReport):
+            healthReport.status.icon
         }
     }
 
+    var errorsToExpandOn: [PurchasesDiagnostics.SDKHealthError] {
+        switch self.diagnosticsResult {
+        case .loading: return []
+        case let .loaded(healthReport):
+            switch healthReport.status {
+            case let .healthy(warnings): return warnings
+            case let .unhealthy(error):
+                switch error {
+                case .invalidProducts, .offeringConfiguration: return [error]
+                default: return []
+                }
+            }
+        }
+    }
 }
 
 @available(iOS 16.0, macOS 13.0, *)

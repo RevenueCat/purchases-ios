@@ -13,7 +13,7 @@
 //  Created by Cesar de la Vega on 17/6/24.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
 
@@ -44,6 +44,8 @@ struct PromotionalOfferView: View {
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
          promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
+         purchasesProvider: CustomerCenterPurchasesType,
+         actionWrapper: CustomerCenterActionWrapper,
          onDismissPromotionalOfferView: @escaping (PromotionalOfferViewAction) -> Void
     ) {
         _viewModel = StateObject(wrappedValue: PromotionalOfferViewModel(
@@ -51,7 +53,9 @@ struct PromotionalOfferView: View {
                 promotionalOffer: promotionalOffer,
                 product: product,
                 promoOfferDetails: promoOfferDetails
-            )
+            ),
+            purchasesProvider: purchasesProvider,
+            actionWrapper: actionWrapper
         ))
         self.onDismissPromotionalOfferView = onDismissPromotionalOfferView
     }
@@ -93,6 +97,8 @@ struct PromotionalOfferView: View {
                 }
             }
         }
+        .navigationBarBackButtonHidden(true)
+        .applyIfLet(appearance.tintColor(colorScheme: colorScheme), apply: { $0.tint($1)})
         .onAppear {
             self.viewModel.onPromotionalOfferPurchaseFlowComplete = self.dismissPromotionalOfferView
         }
@@ -224,6 +230,7 @@ struct PromoOfferButtonView: View {
                     }
                 }
             }
+            .accessibilityIdentifier("promo-offer-primary-button")
             .buttonStyle(ProminentButtonStyle())
             .padding(.horizontal)
             .disabled(isLoading)

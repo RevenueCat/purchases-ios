@@ -259,7 +259,7 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
         expiration: Date?,
         originalPurchaseDate: Date,
         latestPurchaseDate: Date,
-        file: FileString = #file,
+        file: StaticString = #file,
         line: UInt = #line
     ) throws {
         let entitlement = try XCTUnwrap(entitlement, file: file, line: line)

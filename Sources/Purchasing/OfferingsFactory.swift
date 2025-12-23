@@ -17,7 +17,10 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(from storeProductsByID: [String: StoreProduct], data: OfferingsResponse) -> Offerings? {
+    func createOfferings(from storeProductsByID: [String: StoreProduct],
+                         contents: Offerings.Contents,
+                         loadedFromDiskCache: Bool) -> Offerings? {
+        let data = contents.response
         let offerings: [String: Offering] = data
             .offerings
             .compactMap { offeringData in
@@ -35,7 +38,8 @@ class OfferingsFactory {
                          currentOfferingID: data.currentOfferingId,
                          placements: createPlacement(with: data.placements),
                          targeting: data.targeting.flatMap { .init(revision: $0.revision, ruleId: $0.ruleId) },
-                         response: data)
+                         contents: contents,
+                         loadedFromDiskCache: loadedFromDiskCache)
     }
 
     func createOffering(
@@ -48,7 +52,11 @@ class OfferingsFactory {
         }
 
         guard !availablePackages.isEmpty else {
+            #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION && !DEBUG
+            Logger.debug(Strings.offering.offering_empty(offeringIdentifier: offering.identifier))
+            #else
             Logger.warn(Strings.offering.offering_empty(offeringIdentifier: offering.identifier))
+            #endif
             return nil
         }
 
@@ -78,7 +86,8 @@ class OfferingsFactory {
                         paywall: offering.paywall,
                         paywallComponents: paywallComponents,
                         draftPaywallComponents: paywallDraftComponents,
-                        availablePackages: availablePackages)
+                        availablePackages: availablePackages,
+                        webCheckoutUrl: offering.webCheckoutUrl)
     }
 
     func createPackage(
@@ -92,7 +101,8 @@ class OfferingsFactory {
 
         return .init(package: data,
                      product: product,
-                     offeringIdentifier: offeringIdentifier)
+                     offeringIdentifier: offeringIdentifier,
+                     webCheckoutUrl: data.webCheckoutUrl)
     }
 
     func createPlacement(
@@ -118,12 +128,14 @@ private extension Package {
     convenience init(
         package: OfferingsResponse.Offering.Package,
         product: StoreProduct,
-        offeringIdentifier: String
+        offeringIdentifier: String,
+        webCheckoutUrl: URL?
     ) {
         self.init(identifier: package.identifier,
                   packageType: Package.packageType(from: package.identifier),
                   storeProduct: product,
-                  offeringIdentifier: offeringIdentifier)
+                  offeringIdentifier: offeringIdentifier,
+                  webCheckoutUrl: webCheckoutUrl)
     }
 
 }

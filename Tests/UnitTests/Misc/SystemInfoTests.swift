@@ -16,26 +16,34 @@ class SystemInfoTests: TestCase {
     func testPlatformFlavor() {
         let flavor = "flavor"
         let platformInfo = Purchases.PlatformInfo(flavor: flavor, version: "foo")
-        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: false)
+        let systemInfo = SystemInfo(platformInfo: platformInfo,
+                                    finishTransactions: false,
+                                    preferredLocalesProvider: .mock())
         expect(systemInfo.platformFlavor) == flavor
     }
 
     func testPlatformFlavorVersion() {
         let flavorVersion = "flavorVersion"
         let platformInfo = Purchases.PlatformInfo(flavor: "foo", version: flavorVersion)
-        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: false)
+        let systemInfo = SystemInfo(platformInfo: platformInfo,
+                                    finishTransactions: false,
+                                    preferredLocalesProvider: .mock())
         expect(systemInfo.platformFlavorVersion) == flavorVersion
     }
 
     func testFinishTransactions() {
         var finishTransactions = false
-        var systemInfo = SystemInfo(platformInfo: nil, finishTransactions: finishTransactions)
+        var systemInfo = SystemInfo(platformInfo: nil,
+                                    finishTransactions: finishTransactions,
+                                    preferredLocalesProvider: .mock())
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
 
         finishTransactions = true
 
-        systemInfo = SystemInfo(platformInfo: nil, finishTransactions: finishTransactions)
+        systemInfo = SystemInfo(platformInfo: nil,
+                                finishTransactions: finishTransactions,
+                                preferredLocalesProvider: .mock())
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
     }
@@ -72,6 +80,24 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.default.dangerousSettings.internalSettings.enableReceiptFetchRetry) == false
     }
 
+    func testPreferredLocalesWithLocaleOverride() {
+        let localesProvider: PreferredLocalesProvider = .mock(preferredLocaleOverride: "es_ES",
+                                                              locales: ["fr_FR", "de_DE", "en_US"])
+        let info = SystemInfo(platformInfo: nil,
+                              finishTransactions: false,
+                              preferredLocalesProvider: localesProvider)
+        expect(info.preferredLocales).to(equal(["es_ES", "fr_FR", "de_DE", "en_US"]))
+    }
+
+    func testPreferredLocalesWithoutLocaleOverride() {
+        let localesProvider: PreferredLocalesProvider = .mock(preferredLocaleOverride: nil,
+                                                              locales: ["fr_FR", "de_DE", "en_US"])
+        let info = SystemInfo(platformInfo: nil,
+                              finishTransactions: false,
+                              preferredLocalesProvider: localesProvider)
+        expect(info.preferredLocales).to(equal(["fr_FR", "de_DE", "en_US"]))
+    }
+
     // MARK: - identifierForVendor
 
     #if os(iOS) || os(tvOS) || VISION_OS
@@ -92,7 +118,8 @@ class SystemInfoTests: TestCase {
         let info = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true)
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true),
+            preferredLocalesProvider: .mock()
         )
 
         expect(info.identifierForVendor) == MacDevice.identifierForVendor?.uuidString
@@ -102,7 +129,8 @@ class SystemInfoTests: TestCase {
         let info = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: false)
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: false),
+            preferredLocalesProvider: .mock()
         )
 
         expect(info.identifierForVendor).to(beNil())
@@ -115,6 +143,33 @@ class SystemInfoTests: TestCase {
     }
 
     #endif
+
+    // MARK: - apiBaseURL
+
+    func testDefaultAPIBaseURL() {
+        expect(SystemInfo.apiBaseURL.absoluteString) == "https://api.revenuecat.com"
+    }
+
+    func testSettingAPIBaseURL() {
+        let originalURL = SystemInfo.apiBaseURL
+        defer { SystemInfo.apiBaseURL = originalURL }
+
+        let customURL = URL(string: "https://custom.example.com")!
+        SystemInfo.apiBaseURL = customURL
+
+        expect(SystemInfo.apiBaseURL) == customURL
+    }
+
+    func testAPIBaseURLPersistsAcrossGets() {
+        let originalURL = SystemInfo.apiBaseURL
+        defer { SystemInfo.apiBaseURL = originalURL }
+
+        let customURL = URL(string: "https://test.example.com")!
+        SystemInfo.apiBaseURL = customURL
+
+        expect(SystemInfo.apiBaseURL) == customURL
+        expect(SystemInfo.apiBaseURL) == customURL
+    }
 
 }
 
@@ -132,11 +187,14 @@ private extension SystemInfo {
         return SystemInfo(platformInfo: nil,
                           finishTransactions: false,
                           bundle: bundle,
-                          sandboxEnvironmentDetector: sandboxDetector)
+                          sandboxEnvironmentDetector: sandboxDetector,
+                          preferredLocalesProvider: .mock())
     }
 
     static var `default`: SystemInfo {
-        return .init(platformInfo: nil, finishTransactions: true)
+        return .init(platformInfo: nil,
+                     finishTransactions: true,
+                     preferredLocalesProvider: .mock())
     }
 
 }

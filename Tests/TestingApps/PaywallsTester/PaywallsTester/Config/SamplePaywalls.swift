@@ -5,13 +5,17 @@
 //  Created by Nacho Soto on 7/27/23.
 //
 
-
-
 import Foundation
 import RevenueCat
-import RevenueCatUI
 
+#if DEBUG
+@testable import RevenueCatUI
+
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 final class SamplePaywallLoader {
 
@@ -34,17 +38,19 @@ final class SamplePaywallLoader {
             serverDescription: Self.offeringIdentifier,
             metadata: [:],
             paywall: self.paywall(for: template),
-            availablePackages: self.packages
+            availablePackages: self.packages,
+            webCheckoutUrl: nil
         )
     }
 
-    #if !os(macOS) && !os(tvOS) // For Paywalls V2
+    #if !os(tvOS) // For Paywalls V2
     func offering(with components: PaywallComponentsData) -> Offering {
         return .init(
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
             metadata: [:],
-            availablePackages: self.packages
+            availablePackages: self.packages,
+            webCheckoutUrl: nil
         )
     }
     #endif
@@ -55,7 +61,8 @@ final class SamplePaywallLoader {
             serverDescription: Self.offeringIdentifier,
             metadata: [:],
             paywall: nil,
-            availablePackages: self.packages
+            availablePackages: self.packages,
+            webCheckoutUrl: nil
         )
     }
 
@@ -65,7 +72,8 @@ final class SamplePaywallLoader {
             serverDescription: Self.offeringIdentifier,
             metadata: [:],
             paywall: Self.unrecognizedTemplate(),
-            availablePackages: self.packages
+            availablePackages: self.packages,
+            webCheckoutUrl: nil
         )
     }
 
@@ -94,140 +102,12 @@ final class SamplePaywallLoader {
 
 private extension SamplePaywallLoader {
 
-    static let weeklyPackage = Package(
-        identifier: Package.string(from: .weekly)!,
-        packageType: .weekly,
-        storeProduct: weeklyProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
-    )
-    static let monthlyPackage = Package(
-        identifier: Package.string(from: .monthly)!,
-        packageType: .monthly,
-        storeProduct: monthlyProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
-    )
-    static let sixMonthPackage = Package(
-        identifier: Package.string(from: .sixMonth)!,
-        packageType: .sixMonth,
-        storeProduct: sixMonthProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
-    )
-    static let threeMonthPackage = Package(
-        identifier: Package.string(from: .threeMonth)!,
-        packageType: .threeMonth,
-        storeProduct: threeMonthProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
-    )
-    static let annualPackage = Package(
-        identifier: Package.string(from: .annual)!,
-        packageType: .annual,
-        storeProduct: annualProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
-    )
-    static let lifetimePackage = Package(
-        identifier: Package.string(from: .lifetime)!,
-        packageType: .lifetime,
-        storeProduct: lifetimeProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
-    )
-
-    static let weeklyProduct = TestStoreProduct(
-        localizedTitle: "Weekly",
-        price: 1.99,
-        localizedPriceString: "$1.99",
-        productIdentifier: "com.revenuecat.product_1",
-        productType: .autoRenewableSubscription,
-        localizedDescription: "PRO weekly",
-        subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .week)
-    )
-    static let monthlyProduct = TestStoreProduct(
-        localizedTitle: "Monthly",
-        price: 6.99,
-        localizedPriceString: "$6.99",
-        productIdentifier: "com.revenuecat.product_2",
-        productType: .autoRenewableSubscription,
-        localizedDescription: "PRO monthly",
-        subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .month),
-        introductoryDiscount: .init(
-            identifier: "intro",
-            price: 0,
-            localizedPriceString: "$0.00",
-            paymentMode: .freeTrial,
-            subscriptionPeriod: .init(value: 1, unit: .week),
-            numberOfPeriods: 1,
-            type: .introductory
-        )
-    )
-    static let threeMonthProduct = TestStoreProduct(
-        localizedTitle: "Three Months",
-        price: 16.99,
-        localizedPriceString: "$16.99",
-        productIdentifier: "com.revenuecat.product_9",
-        productType: .autoRenewableSubscription,
-        localizedDescription: "PRO 3 months",
-        subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 3, unit: .month),
-        introductoryDiscount: .init(
-            identifier: "intro",
-            price: 0,
-            localizedPriceString: "$0.00",
-            paymentMode: .freeTrial,
-            subscriptionPeriod: .init(value: 7, unit: .day),
-            numberOfPeriods: 1,
-            type: .introductory
-        )
-    )
-    static let sixMonthProduct = TestStoreProduct(
-        localizedTitle: "Six Months",
-        price: 34.99,
-        localizedPriceString: "$34.99",
-        productIdentifier: "com.revenuecat.product_4",
-        productType: .autoRenewableSubscription,
-        localizedDescription: "PRO monthly",
-        subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 6, unit: .month),
-        introductoryDiscount: .init(
-            identifier: "intro",
-            price: 0,
-            localizedPriceString: "$0.00",
-            paymentMode: .freeTrial,
-            subscriptionPeriod: .init(value: 7, unit: .day),
-            numberOfPeriods: 1,
-            type: .introductory
-        )
-    )
-    static let annualProduct = TestStoreProduct(
-        localizedTitle: "Annual",
-        price: 53.99,
-        localizedPriceString: "$53.99",
-        productIdentifier: "com.revenuecat.product_3",
-        productType: .autoRenewableSubscription,
-        localizedDescription: "PRO annual",
-        subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .year),
-        introductoryDiscount: .init(
-            identifier: "intro",
-            price: 0,
-            localizedPriceString: "$0.00",
-            paymentMode: .freeTrial,
-            subscriptionPeriod: .init(value: 14, unit: .day),
-            numberOfPeriods: 1,
-            type: .introductory
-        )
-    )
-    static let lifetimeProduct = TestStoreProduct(
-        localizedTitle: "Lifetime",
-        price: 119.49,
-        localizedPriceString: "$119.49",
-        productIdentifier: "com.revenuecat.product_lifetime",
-        productType: .consumable,
-        localizedDescription: "Lifetime purchase",
-        subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: nil
-    )
-
+    static let weeklyPackage = TestData.weeklyPackage
+    static let monthlyPackage = TestData.monthlyPackage
+    static let sixMonthPackage = TestData.sixMonthPackage
+    static let threeMonthPackage = TestData.threeMonthPackage
+    static let annualPackage = TestData.annualPackage
+    static let lifetimePackage = TestData.lifetimePackage
 }
 
 // MARK: - Paywalls
@@ -687,6 +567,8 @@ private extension SamplePaywallLoader {
     static let tosURL = URL(string: "https://revenuecat.com/tos")!
 
 }
+
+#endif
 
 // This is provided by RevenueCatUI only for debug builds
 // But we want to be able to use it in release builds too.

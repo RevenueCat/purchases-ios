@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 typealias PresentedCarouselPartial = PaywallComponent.PartialCarouselComponent
 
@@ -34,26 +34,30 @@ class CarouselComponentViewModel {
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.CarouselComponent,
         pageStackViewModels: [StackComponentViewModel]
-    ) throws {
+    ) {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
         self.pageStackViewModels = pageStackViewModels
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (CarouselComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedCarouselPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
 
@@ -73,7 +77,8 @@ class CarouselComponentViewModel {
             initialPageIndex: partial?.initialPageIndex ?? self.component.initialPageIndex,
             loop: partial?.loop ?? self.component.loop,
             autoAdvance: partial?.autoAdvance ?? self.component.autoAdvance,
-            pageControl: partial?.pageControl ?? self.component.pageControl
+            pageControl: partial?.pageControl ?? self.component.pageControl,
+            colorScheme: colorScheme
         )
 
         apply(style)
@@ -137,7 +142,7 @@ struct CarouselComponentStyle {
     let border: ShapeModifier.BorderInfo?
     let shadow: ShadowModifier.ShadowInfo?
 
-    let pageAlignment: PaywallComponent.VerticalAlignment
+    let pageAlignment: SwiftUI.VerticalAlignment
     let pageSpacing: CGFloat
     let pagePeek: CGFloat
     let initialPageIndex: Int
@@ -162,24 +167,25 @@ struct CarouselComponentStyle {
         initialPageIndex: Int,
         loop: Bool,
         autoAdvance: PaywallComponent.CarouselComponent.AutoAdvanceSlides?,
-        pageControl: PaywallComponent.CarouselComponent.PageControl?
+        pageControl: PaywallComponent.CarouselComponent.PageControl?,
+        colorScheme: ColorScheme
     ) {
         self.visible = visible
         self.size = size ?? .init(width: .fit, height: .fit)
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
-        self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+        self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider)
         self.shape = shape?.shape
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
-        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
-        self.pageAlignment = pageAlignment
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider, colorScheme: colorScheme)
+        self.pageAlignment = pageAlignment.stackAlignment
         self.pageSpacing = CGFloat(pageSpacing)
         self.pagePeek = CGFloat(pagePeek)
         self.initialPageIndex = initialPageIndex
         self.loop = loop
         self.autoAdvance = autoAdvance
         self.pageControl = pageControl.flatMap {
-            DisplayablePageControl(uiConfigProvider: uiConfigProvider, pageControl: $0 )
+            DisplayablePageControl(uiConfigProvider: uiConfigProvider, pageControl: $0, colorScheme: colorScheme)
         }
     }
 
@@ -204,7 +210,8 @@ struct DisplayablePageControl {
 
     init(
         uiConfigProvider: UIConfigProvider,
-        pageControl: PaywallComponent.CarouselComponent.PageControl
+        pageControl: PaywallComponent.CarouselComponent.PageControl,
+        colorScheme: ColorScheme
     ) {
         self.position = pageControl.position
         self.padding = (pageControl.padding ?? .zero).edgeInsets
@@ -214,11 +221,19 @@ struct DisplayablePageControl {
         ).backgroundStyle
         self.shape = pageControl.shape?.shape
         self.border = pageControl.border?.border(uiConfigProvider: uiConfigProvider)
-        self.shadow = pageControl.shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.shadow = pageControl.shadow?.shadow(uiConfigProvider: uiConfigProvider, colorScheme: colorScheme)
 
         self.spacing = CGFloat(pageControl.spacing)
-        self.active = .init(uiConfigProvider: uiConfigProvider, pageControlIndicator: pageControl.active)
-        self.default = .init(uiConfigProvider: uiConfigProvider, pageControlIndicator: pageControl.default)
+        self.active = .init(
+            uiConfigProvider: uiConfigProvider,
+            pageControlIndicator: pageControl.active,
+            colorScheme: colorScheme
+        )
+        self.default = .init(
+            uiConfigProvider: uiConfigProvider,
+            pageControlIndicator: pageControl.default,
+            colorScheme: colorScheme
+        )
 
         self.uiConfigProvider = uiConfigProvider
     }
@@ -231,16 +246,25 @@ struct DisplayablePageControlIndicator {
     let width: CGFloat
     let height: CGFloat
     let color: Color
+    let strokeColor: Color
+    let strokeWidth: CGFloat
 
     let uiConfigProvider: UIConfigProvider
 
     init(
         uiConfigProvider: UIConfigProvider,
-        pageControlIndicator: PaywallComponent.CarouselComponent.PageControlIndicator
+        pageControlIndicator: PaywallComponent.CarouselComponent.PageControlIndicator,
+        colorScheme: ColorScheme
     ) {
         self.width = CGFloat(pageControlIndicator.width)
         self.height = CGFloat(pageControlIndicator.height)
-        self.color = pageControlIndicator.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor()
+
+        let color = pageControlIndicator.color.asDisplayable(uiConfigProvider: uiConfigProvider)
+            .toDynamicColor(with: colorScheme)
+        self.color = color
+        self.strokeColor = pageControlIndicator.strokeColor?
+            .asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(with: colorScheme) ?? color
+        self.strokeWidth = pageControlIndicator.strokeWidth ?? 0
 
         self.uiConfigProvider = uiConfigProvider
     }

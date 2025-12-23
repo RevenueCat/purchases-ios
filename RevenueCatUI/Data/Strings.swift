@@ -60,6 +60,12 @@ enum Strings {
     case paywall_could_not_find_any_packages
     case paywall_invalid_url(String)
     case no_in_app_browser_tvos
+    case failed_to_open_url_external_browser(String)
+    case successfully_opened_url_external_browser(String)
+    case failed_to_open_url_deep_link(String)
+    case successfully_opened_url_deep_link(String)
+    case no_selected_package_found
+    case no_web_checkout_url_found
 
     // Customer Center
     case could_not_find_subscription_information
@@ -67,10 +73,22 @@ enum Strings {
     case could_not_offer_for_active_subscriptions(String, String)
     case error_fetching_promotional_offer(Error)
     case promo_offer_not_loaded
+    case purchasing_promotional_offer(String, String)
+    case promo_offer_purchase_cancelled(String, String)
+    case promo_offer_purchase_succeeded(String, String, String)
+    case promo_offer_purchase_failed(String, String, Error)
     case could_not_determine_type_of_custom_url
     case active_product_is_not_apple_loading_without_product_information(Store)
     case could_not_find_product_loading_without_product_information(String)
+    case promo_offer_not_eligible_for_product(String, String)
+    case could_not_find_target_product(String, String)
+    case could_not_find_discount_for_target_product(String, String)
 
+    // UIConfigProvider
+    case localizationNotFound(identifier: String)
+    case fontMappingNotFound(name: String)
+    case customFontFailedToLoad(fontName: String)
+    case googleFontsNotSupported
 }
 
 extension Strings: CustomStringConvertible {
@@ -204,6 +222,19 @@ extension Strings: CustomStringConvertible {
         case .promo_offer_not_loaded:
             return "Promotional offer details not loaded"
 
+        case let .purchasing_promotional_offer(productId, offerId):
+            return "Attempting promotional offer purchase for product '\(productId)' with offer '\(offerId)'."
+
+        case let .promo_offer_purchase_cancelled(productId, offerId):
+            return "Promotional offer purchase cancelled for product '\(productId)' with offer '\(offerId)'."
+
+        case let .promo_offer_purchase_succeeded(productId, offerId, transactionId):
+            return "Promotional offer purchase succeeded for product '\(productId)' with offer '\(offerId)'. " +
+            "Transaction: \(transactionId)"
+
+        case let .promo_offer_purchase_failed(productId, offerId, error):
+            return "Promotional offer purchase failed for product '\(productId)' with offer '\(offerId)': \(error)"
+
         case .could_not_offer_for_any_active_subscriptions:
             return "Could not find offer with id for any active subscription"
 
@@ -220,6 +251,45 @@ extension Strings: CustomStringConvertible {
         case .could_not_find_product_loading_without_product_information(let product):
             return "Could not find product with id \(product). Loading without product information."
 
+        case let .promo_offer_not_eligible_for_product(promoOfferId, productId):
+            return """
+                User not eligible for promo with id '\(promoOfferId)'. Check eligibility configuration in the dashboard,
+                and make sure the user has an active/expired subscription for the product with id '\(productId)'."
+            """
+
+        case let .could_not_find_target_product(targetProductId, productIdentifier):
+            return "Could not find target product with id \(targetProductId) " +
+            "for active subscription \(productIdentifier)"
+
+        case let .could_not_find_discount_for_target_product(offerIdentifier, productIdentifier):
+            return "Could not find offer with id \(offerIdentifier) for target product \(productIdentifier)"
+
+        case .failed_to_open_url_external_browser(let url):
+            return "Failed to open URL in external browser: \(url)"
+
+        case .successfully_opened_url_external_browser(let url):
+            return "Successfully opened URL in external browser: \(url)"
+
+        case .failed_to_open_url_deep_link(let url):
+            return "Failed to open URL as deep link: \(url)"
+
+        case .successfully_opened_url_deep_link(let url):
+            return "Successfully opened URL as deep link: \(url)"
+
+        case .no_selected_package_found:
+            return "No selected package found."
+
+        case .no_web_checkout_url_found:
+            return "No web checkout url found."
+
+        case .localizationNotFound(let identifier):
+            return "Could not find localizations for '\(identifier)'"
+        case .fontMappingNotFound(let name):
+            return "Mapping for '\(name)' could not be found. Falling back to system font."
+        case .customFontFailedToLoad(let fontName):
+            return "Custom font '\(fontName)' could not be loaded. Falling back to system font."
+        case .googleFontsNotSupported:
+            return "Google Fonts are not supported on this platform"
         }
     }
 

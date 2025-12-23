@@ -35,6 +35,11 @@ final class MockPaymentQueue: SKPaymentQueue {
         finishedTransactions.append(transaction)
     }
 
+    var stubbedStorefront: SKStorefront?
+    override var storefront: SKStorefront? {
+        stubbedStorefront ?? super.storefront
+    }
+
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     func simulatePaymentQueueShouldShowPriceConsent() -> [Bool] {
@@ -44,6 +49,27 @@ final class MockPaymentQueue: SKPaymentQueue {
     }
 #endif
 
+}
+
+final class MockSK1Storefront: SKStorefront, @unchecked Sendable {
+    private let _countryCode: String
+
+    override var countryCode: String {
+        return _countryCode
+    }
+
+    override var identifier: String {
+        return _countryCode
+    }
+
+    init(countryCode: String) {
+        self._countryCode = countryCode
+        super.init()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }
 
 extension MockPaymentQueue: @unchecked Sendable {}

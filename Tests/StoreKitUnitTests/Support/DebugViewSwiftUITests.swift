@@ -45,7 +45,7 @@ class DebugViewSwiftUITests: TestCase {
             verificationMode: "Enforced",
             receiptURL: URL(string: "file://receipt")
         ))
-        model.diagnosticsResult = .loaded(())
+        model.diagnosticsResult = .loaded(.init(status: .healthy(warnings: [])))
         model.customerInfo = .loaded(try Self.mockCustomerInfo)
         model.currentAppUserID = "Nacho"
         model.offerings = .loaded(.init(
@@ -53,7 +53,8 @@ class DebugViewSwiftUITests: TestCase {
             currentOfferingID: nil,
             placements: nil,
             targeting: nil,
-            response: .mockResponse
+            contents: .mockContents,
+            loadedFromDiskCache: false
         ))
 
         self.snapshot(model, width: 450, height: 900)

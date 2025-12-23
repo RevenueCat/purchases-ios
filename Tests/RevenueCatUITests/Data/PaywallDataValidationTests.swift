@@ -259,7 +259,7 @@ private extension PaywallDataValidationTests {
     static func verifyPackages(
         in paywall: PaywallData,
         match other: PaywallData?,
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) {
         expect(
@@ -271,7 +271,7 @@ private extension PaywallDataValidationTests {
     static func verifyPackages(
         in paywall: PaywallData,
         match packages: [Package],
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) {
         expect(
@@ -283,7 +283,7 @@ private extension PaywallDataValidationTests {
     static func snapshot(
         _ paywall: PaywallData,
         file: StaticString = #file,
-        testName: String = #function,
+        testName: String = CurrentTestCaseTracker.osVersionAndTestName,
         line: UInt = #line
     ) {
         #if os(watchOS)
@@ -306,7 +306,8 @@ private extension PaywallDataValidationTests {
             identifier: "offering",
             serverDescription: "Offering",
             paywall: paywall,
-            availablePackages: TestData.packages
+            availablePackages: TestData.packages,
+            webCheckoutUrl: nil
         )
     }
 
@@ -324,7 +325,8 @@ private extension PaywallDataValidationTests {
             localizationByTier: [:],
             assetBaseURL: TestData.paywallAssetBaseURL
         ),
-        availablePackages: TestData.packages
+        availablePackages: TestData.packages,
+        webCheckoutUrl: nil
     )
 
     static let offeringWithMultiTierTemplateAndMissingLocalization = Offering(
@@ -341,7 +343,8 @@ private extension PaywallDataValidationTests {
             localization: TestData.localization1,
             assetBaseURL: TestData.paywallAssetBaseURL
         ),
-        availablePackages: TestData.packages
+        availablePackages: TestData.packages,
+        webCheckoutUrl: nil
     )
 
 }

@@ -11,14 +11,14 @@ import SwiftUI
 
 struct OfferingsList: View {
 
-    @Binding 
+    @Binding
     private var introEligility: IntroEligibilityStatus
 
     var body: some View {
         self.content
             .toolbar {
                 #if !os(watchOS)
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Menu {
                         Picker("Options", selection: $introEligility) {
                             Text("Show Intro Offer").tag(IntroEligibilityStatus.eligible)
@@ -68,10 +68,14 @@ struct OfferingsList: View {
                 Text("No data available.")
             }
         case .error(let error):
+            #if os(iOS) || os(macOS)
             CompatibilityContentUnavailableView("Error loading paywalls", systemImage: "exclamationmark.triangle.fill", description: Text(error.localizedDescription))
+            #else
+            ContentUnavailableView("Error loading paywalls", systemImage: "exclamationmark.triangle.fill", description: Text(error.localizedDescription))
+            #endif
         }
     }
-    
+
     @ViewBuilder
     private func offeringsList(with data: PaywallsData) -> some View {
         List {
@@ -100,6 +104,7 @@ struct OfferingsList: View {
                 }
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
         }
+        #if !os(macOS)
         .fullScreenCover(item: $viewModel.presentedPaywall) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: introEligility)
                 .onRestoreCompleted { _ in
@@ -107,6 +112,7 @@ struct OfferingsList: View {
                 }
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
         }
+        #endif
     }
 
     @ViewBuilder
@@ -134,8 +140,12 @@ struct OfferingsList: View {
 
     private func noPaywallsListItem() -> some View {
         VStack {
+            #if os(iOS) || os(macOS)
             CompatibilityContentUnavailableView("No configured paywalls",
                                                          systemImage: "exclamationmark.triangle.fill")
+            #else
+            ContentUnavailableView("No configured paywalls", systemImage: "exclamationmark.triangle.fill")
+            #endif
             Text(Self.pullToRefresh)
                 .font(.footnote)
             Text("Use the RevenueCat [web dashboard](https://app.revenuecat.com/) to configure a new paywall for one of this app's offerings.")

@@ -14,7 +14,7 @@
 import Foundation
 
 /// A protocol that represents a customer center event.
-public protocol CustomerCenterEventType {}
+@_spi(Internal) public protocol CustomerCenterEventType {}
 
 extension CustomerCenterEventType {
 
@@ -30,13 +30,13 @@ enum CustomerCenterEventDiscriminator: String {
 }
 
 /// Data that represents a customer center event creation.
-public struct CustomerCenterEventCreationData {
+@_spi(Internal) public struct CustomerCenterEventCreationData {
 
     let id: UUID
     let date: Date
 
     // swiftlint:disable:next missing_docs
-    public init(
+    @_spi(Internal) public init(
         id: UUID = .init(),
         date: Date = .init()
     ) {
@@ -47,7 +47,7 @@ public struct CustomerCenterEventCreationData {
 }
 
 /// An event to be sent by the `RevenueCatUI` SDK.
-public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
+@_spi(Internal) public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
 
     var eventDiscriminator: String? { CustomerCenterEventDiscriminator.lifecycle.rawValue }
 
@@ -57,7 +57,7 @@ public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
 }
 
 /// An event to be sent by the `RevenueCatUI` SDK.
-public enum CustomerCenterAnswerSubmittedEvent: FeatureEvent, CustomerCenterEventType {
+@_spi(Internal) public enum CustomerCenterAnswerSubmittedEvent: FeatureEvent, CustomerCenterEventType {
 
     var eventDiscriminator: String? { CustomerCenterEventDiscriminator.answerSubmitted.rawValue }
 
@@ -101,23 +101,22 @@ extension CustomerCenterEvent {
 extension CustomerCenterAnswerSubmittedEvent {
 
     /// The content of a ``CustomerCenterAnswerSubmittedEvent``.
-    public struct Data {
+    @_spi(Internal) public struct Data {
 
         // swiftlint:disable missing_docs
-        public var localeIdentifier: String { base.localeIdentifier }
-        public var darkMode: Bool { base.darkMode }
-        public var isSandbox: Bool { base.isSandbox }
-        public var displayMode: CustomerCenterPresentationMode { base.displayMode }
-        public let path: CustomerCenterConfigData.HelpPath.PathType
-        public let url: URL?
-        public let surveyOptionID: String
-        public let surveyOptionTitleKey: String
-        public let additionalContext: String?
-        public let revisionID: Int
+        @_spi(Internal) public var localeIdentifier: String { base.localeIdentifier }
+        @_spi(Internal) public var darkMode: Bool { base.darkMode }
+        @_spi(Internal) public var isSandbox: Bool { base.isSandbox }
+        @_spi(Internal) public var displayMode: CustomerCenterPresentationMode { base.displayMode }
+        @_spi(Internal) public let path: CustomerCenterConfigData.HelpPath.PathType
+        @_spi(Internal) public let url: URL?
+        @_spi(Internal) public let surveyOptionID: String
+        @_spi(Internal) public let additionalContext: String?
+        @_spi(Internal) public let revisionID: Int
 
         private let base: CustomerCenterBaseData
 
-        public init(
+        @_spi(Internal) public init(
             locale: Locale,
             darkMode: Bool,
             isSandbox: Bool,
@@ -125,7 +124,6 @@ extension CustomerCenterAnswerSubmittedEvent {
             path: CustomerCenterConfigData.HelpPath.PathType,
             url: URL?,
             surveyOptionID: String,
-            surveyOptionTitleKey: String,
             additionalContext: String? = nil,
             revisionID: Int
         ) {
@@ -138,7 +136,6 @@ extension CustomerCenterAnswerSubmittedEvent {
             self.path = path
             self.url = url
             self.surveyOptionID = surveyOptionID
-            self.surveyOptionTitleKey = surveyOptionTitleKey
             self.additionalContext = additionalContext
             self.revisionID = revisionID
         }
@@ -217,13 +214,13 @@ extension CustomerCenterBaseData: Equatable, Codable, Sendable {}
 
 extension CustomerCenterAnswerSubmittedEvent.Data: Equatable, Codable, Sendable {
 
+    // These keys are used for `StoredFeatureEvent` only
     private enum CodingKeys: String, CodingKey {
 
         case base
         case path
         case url
         case surveyOptionID = "surveyOptionId"
-        case surveyOptionTitleKey = "surveyOptionTitleKey"
         case additionalContext = "additionalContext"
         case revisionID = "revisionId"
 

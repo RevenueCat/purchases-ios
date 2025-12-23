@@ -43,6 +43,7 @@ enum NetworkStrings {
     case starting_next_request(request: String)
     case starting_request(httpMethod: String, path: String)
     case retrying_request(httpMethod: String, path: String)
+    case retrying_request_with_fallback_path(httpMethod: String, path: String)
     case failing_url_resolved_to_host(url: URL, resolvedHost: String)
     case blocked_network(url: URL, newHost: String?)
     case api_request_redirect(from: URL, to: URL)
@@ -51,8 +52,10 @@ enum NetworkStrings {
 
     #if DEBUG
     case api_request_forcing_server_error(HTTPRequest)
+    case api_request_faking_error_response(HTTPRequest)
     case api_request_forcing_signature_failure(HTTPRequest)
     case api_request_disabling_header_parameter_signature_verification(HTTPRequest)
+    case api_request_response_both_fallback_and_load_shedder(HTTPRequest)
     #endif
 
 }
@@ -119,6 +122,9 @@ extension NetworkStrings: LogMessage {
         case let .retrying_request(httpMethod, path):
             return "Retrying request \(httpMethod) \(path)"
 
+        case let .retrying_request_with_fallback_path(httpMethod, path):
+            return "Retrying request using fallback host: \(httpMethod) \(path)"
+
         case let .failing_url_resolved_to_host(url, resolvedHost):
             return "Failing url '\(url)' resolved to host '\(resolvedHost)'"
 
@@ -144,13 +150,20 @@ extension NetworkStrings: LogMessage {
 
         #if DEBUG
         case let .api_request_forcing_server_error(request):
-            return "Returning fake HTTP 500 error for \(request.description)"
+            return "Forcing server error for request \(request.description)"
+
+        case let .api_request_faking_error_response(request):
+            return "Faking error response for request \(request.description)"
 
         case let .api_request_forcing_signature_failure(request):
             return "Returning fake signature verification failure for '\(request.description)'"
 
         case let .api_request_disabling_header_parameter_signature_verification(request):
             return "Disabling header parameter signature verification for '\(request.description)'"
+
+        case let .api_request_response_both_fallback_and_load_shedder(request):
+            return "Request to fallback URL was handled by load shedder, " +
+            "which should never happen. Request: '\(request.description)'"
         #endif
         }
     }

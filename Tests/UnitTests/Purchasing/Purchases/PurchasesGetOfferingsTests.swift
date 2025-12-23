@@ -54,7 +54,9 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.setupPurchases()
 
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
-            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:],
+                                                                contents: .mockContents,
+                                                                loadedFromDiskCache: false))
         )
 
         let result: SK1Product? = waitUntilValue { completed in
@@ -99,7 +101,9 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
     func testCachedOfferings() throws {
         self.setupPurchases()
 
-        let offerings = try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
+        let offerings = try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:],
+                                                                            contents: .mockContents,
+                                                                            loadedFromDiskCache: false))
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(offerings)
 
         expect(self.purchases.cachedOfferings) === offerings
@@ -127,7 +131,8 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
             identifier: "offering",
             serverDescription: "",
             paywall: nil,
-            availablePackages: []
+            availablePackages: [],
+            webCheckoutUrl: nil
         )
         let offerings = Offerings(
             offerings: [
@@ -136,11 +141,17 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
             currentOfferingID: offering.identifier,
             placements: nil,
             targeting: nil,
-            response: offeringsResponse
+            contents: .init(response: offeringsResponse,
+                            httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
         )
 
         self.systemInfo.stubbedIsApplicationBackgrounded = false
-        self.mockOfferingsManager.stubbedUpdateOfferingsCompletionResult = .success(offerings)
+        self.mockOfferingsManager.stubbedUpdateOfferingsCompletionResult = .success(
+            OfferingsResultData(offerings: offerings,
+                                requestedProductIds: [offering.identifier],
+                                notFoundProductIds: [])
+        )
 
         self.setupPurchases()
 
@@ -155,7 +166,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
 
     // MARK: - UI preview mode
 
-    func testFirstInitializationInUIPreviewModeDoesNotGetOfferingsIfAppActive() {
+    func testFirstInitializationInUIPreviewModeDoesGetOfferingsIfAppActive() {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          uiPreviewMode: true,
                                          storeKitVersion: self.storeKitVersion,
@@ -163,7 +174,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
         self.setupPurchases()
 
-        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toAlways(equal(0))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
     }
 
     func testFirstInitializationInUIPreviewModeDoesNotGetOfferingsIfAppBackgrounded() {

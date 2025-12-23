@@ -19,7 +19,9 @@ class OfferingsTests: TestCase {
 
     func testPackageIsNotCreatedIfNoValidProducts() {
         let package = self.offeringsFactory.createPackage(
-            with: .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
+            with: .init(identifier: "$rc_monthly",
+                        platformProductIdentifier: "com.myproduct.monthly",
+                        webCheckoutUrl: nil),
             productsByID: [
                 "com.myproduct.annual": StoreProduct(sk1Product: SK1Product())
             ],
@@ -35,7 +37,9 @@ class OfferingsTests: TestCase {
         let packageIdentifier = "$rc_monthly"
         let package = try XCTUnwrap(
             self.offeringsFactory.createPackage(
-                with: .init(identifier: packageIdentifier, platformProductIdentifier: productIdentifier),
+                with: .init(identifier: packageIdentifier,
+                            platformProductIdentifier: productIdentifier,
+                            webCheckoutUrl: nil),
                 productsByID: [
                     productIdentifier: StoreProduct(sk1Product: product)
                 ],
@@ -58,9 +62,14 @@ class OfferingsTests: TestCase {
                 identifier: "offering_a",
                 description: "This is the base offering",
                 packages: [
-                    .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                    .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual")
-                ]),
+                    .init(identifier: "$rc_monthly",
+                          platformProductIdentifier: "com.myproduct.monthly",
+                          webCheckoutUrl: nil),
+                    .init(identifier: "$rc_annual",
+                          platformProductIdentifier: "com.myproduct.annual",
+                          webCheckoutUrl: nil)
+                ],
+                webCheckoutUrl: nil),
             uiConfig: nil
         )
 
@@ -83,10 +92,17 @@ class OfferingsTests: TestCase {
                     identifier: offeringIdentifier,
                     description: serverDescription,
                     packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                        .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual"),
-                        .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth")
-                    ]),
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "com.myproduct.monthly",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "$rc_annual",
+                              platformProductIdentifier: "com.myproduct.annual",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "$rc_six_month",
+                              platformProductIdentifier: "com.myproduct.sixMonth",
+                              webCheckoutUrl: nil)
+                    ],
+                    webCheckoutUrl: nil),
                 uiConfig: nil
             )
         )
@@ -100,26 +116,35 @@ class OfferingsTests: TestCase {
     }
 
     func testListOfOfferingsIsNilIfNoValidOffering() {
+        let response = OfferingsResponse(
+            currentOfferingId: "offering_a",
+            offerings: [
+                .init(identifier: "offering_a",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: "$rc_six_month",
+                              platformProductIdentifier: "com.myproduct.sixMonth",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil),
+                .init(identifier: "offering_b",
+                      description: "This is the base offering b",
+                      packages: [
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "com.myproduct.monthly",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
+            ],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
         let offerings = self.offeringsFactory.createOfferings(
             from: [:],
-            data: .init(
-                currentOfferingId: "offering_a",
-                offerings: [
-                    .init(identifier: "offering_a",
-                          description: "This is the base offering",
-                          packages: [
-                            .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth")
-                          ]),
-                    .init(identifier: "offering_b",
-                          description: "This is the base offering b",
-                          packages: [
-                            .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
-                          ])
-                ],
-                placements: nil,
-                targeting: nil,
-                uiConfig: nil
-            )
+            contents: Offerings.Contents(response: response,
+                                         httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
         )
 
         expect(offerings).to(beNil())
@@ -134,28 +159,39 @@ class OfferingsTests: TestCase {
             "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct),
             "com.myproduct.custom": StoreProduct(sk1Product: customProduct)
         ]
+        let response = OfferingsResponse(
+            currentOfferingId: "offering_a",
+            offerings: [
+                .init(identifier: "offering_a",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: "$rc_six_month",
+                              platformProductIdentifier: "com.myproduct.annual",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil),
+                .init(identifier: "offering_b",
+                      description: "This is the base offering b",
+                      packages: [
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "com.myproduct.monthly",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "custom_package",
+                              platformProductIdentifier: "com.myproduct.custom",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
+            ],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
-                data: .init(
-                    currentOfferingId: "offering_a",
-                    offerings: [
-                        .init(identifier: "offering_a",
-                              description: "This is the base offering",
-                              packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
-                              ]),
-                        .init(identifier: "offering_b",
-                              description: "This is the base offering b",
-                              packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
-                              ])
-                    ],
-                    placements: nil,
-                    targeting: nil,
-                    uiConfig: nil
-                )
+                contents: Offerings.Contents(response: response,
+                                             httpResponseOriginalSource: .mainServer),
+                loadedFromDiskCache: false
             )
         )
 
@@ -182,38 +218,51 @@ class OfferingsTests: TestCase {
             "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct),
             "com.myproduct.custom": StoreProduct(sk1Product: customProduct)
         ]
+        let response = OfferingsResponse(
+            currentOfferingId: "offering_a",
+            offerings: [
+                .init(identifier: "offering_a",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: "$rc_six_month",
+                              platformProductIdentifier: "com.myproduct.annual",
+                              webCheckoutUrl: nil)
+                      ], webCheckoutUrl: nil),
+                .init(identifier: "offering_b",
+                      description: "This is the base offering b",
+                      packages: [
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "com.myproduct.monthly",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "custom_package",
+                              platformProductIdentifier: "com.myproduct.custom",
+                              webCheckoutUrl: nil)
+                      ], webCheckoutUrl: nil),
+                .init(identifier: "offering_c",
+                      description: "This is the base offering b",
+                      packages: [
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "com.myproduct.monthly",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "custom_package",
+                              platformProductIdentifier: "com.myproduct.custom",
+                              webCheckoutUrl: nil)
+                      ], webCheckoutUrl: nil)
+            ],
+            placements: .init(fallbackOfferingId: "offering_c",
+                              offeringIdsByPlacement: .init(wrappedValue: [
+                                "placement_name": "offering_b",
+                                "placement_name_with_nil": nil
+                              ])),
+            targeting: .init(revision: 1, ruleId: "abc123"),
+            uiConfig: nil
+        )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
-                data: .init(
-                    currentOfferingId: "offering_a",
-                    offerings: [
-                        .init(identifier: "offering_a",
-                              description: "This is the base offering",
-                              packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
-                              ]),
-                        .init(identifier: "offering_b",
-                              description: "This is the base offering b",
-                              packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
-                              ]),
-                        .init(identifier: "offering_c",
-                              description: "This is the base offering b",
-                              packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
-                              ])
-                    ],
-                    placements: .init(fallbackOfferingId: "offering_c",
-                                      offeringIdsByPlacement: .init(wrappedValue: [
-                                        "placement_name": "offering_b",
-                                        "placement_name_with_nil": nil
-                                      ])),
-                    targeting: .init(revision: 1, ruleId: "abc123"),
-                    uiConfig: nil
-                )
+                contents: Offerings.Contents(response: response,
+                                             httpResponseOriginalSource: .mainServer),
+                loadedFromDiskCache: false
             )
         )
 
@@ -261,32 +310,43 @@ class OfferingsTests: TestCase {
             "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct),
             "com.myproduct.custom": StoreProduct(sk1Product: customProduct)
         ]
+        let response = OfferingsResponse(
+            currentOfferingId: "offering_a",
+            offerings: [
+                .init(identifier: "offering_a",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: "$rc_six_month",
+                              platformProductIdentifier: "com.myproduct.annual",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil),
+                .init(identifier: "offering_b",
+                      description: "This is the base offering b",
+                      packages: [
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "com.myproduct.monthly",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "custom_package",
+                              platformProductIdentifier: "com.myproduct.custom",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
+            ],
+            placements: .init(fallbackOfferingId: nil,
+                              offeringIdsByPlacement: .init(wrappedValue: [
+                                "placement_name": "offering_b",
+                                "placement_name_with_nil": nil
+                              ])),
+            targeting: nil,
+            uiConfig: nil
+        )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
-                data: .init(
-                    currentOfferingId: "offering_a",
-                    offerings: [
-                        .init(identifier: "offering_a",
-                              description: "This is the base offering",
-                              packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
-                              ]),
-                        .init(identifier: "offering_b",
-                              description: "This is the base offering b",
-                              packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
-                              ])
-                    ],
-                    placements: .init(fallbackOfferingId: nil,
-                                      offeringIdsByPlacement: .init(wrappedValue: [
-                                        "placement_name": "offering_b",
-                                        "placement_name_with_nil": nil
-                                      ])),
-                    targeting: nil,
-                    uiConfig: nil
-                )
+                contents: Offerings.Contents(response: response,
+                                             httpResponseOriginalSource: .mainServer),
+                loadedFromDiskCache: false
             )
         )
 
@@ -307,22 +367,27 @@ class OfferingsTests: TestCase {
             "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct),
             "com.myproduct.custom": StoreProduct(sk1Product: customProduct)
         ]
+        let response = OfferingsResponse(
+            currentOfferingId: "offering_a",
+            offerings: [
+                .init(identifier: "offering_a",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: "$rc_six_month",
+                              platformProductIdentifier: "com.myproduct.annual",
+                              webCheckoutUrl: nil)
+                      ], webCheckoutUrl: nil)
+            ],
+            placements: nil,
+            targeting: .init(revision: 1, ruleId: "abc123"),
+            uiConfig: nil
+        )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
-                data: .init(
-                    currentOfferingId: "offering_a",
-                    offerings: [
-                        .init(identifier: "offering_a",
-                              description: "This is the base offering",
-                              packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
-                              ])
-                    ],
-                    placements: nil,
-                    targeting: .init(revision: 1, ruleId: "abc123"),
-                    uiConfig: nil
-                )
+                contents: Offerings.Contents(response: response,
+                                             httpResponseOriginalSource: .mainServer),
+                loadedFromDiskCache: false
             )
         )
 
@@ -372,30 +437,41 @@ class OfferingsTests: TestCase {
             "com.myproduct.annual": StoreProduct(sk1Product: annualProduct),
             "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct)
         ]
+
+        let response = OfferingsResponse(
+            currentOfferingId: "offering_a",
+            offerings: [
+                .init(identifier: "offering_a",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: "$rc_six_month",
+                              platformProductIdentifier: "com.myproduct.annual",
+                              webCheckoutUrl: nil)
+                      ],
+                      metadata: .init(
+                        wrappedValue: metadata
+                      ),
+                      webCheckoutUrl: nil),
+                .init(identifier: "offering_b",
+                      description: "This is the base offering b",
+                      packages: [
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "com.myproduct.monthly",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
+            ],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
+
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
-                data: .init(
-                    currentOfferingId: "offering_a",
-                    offerings: [
-                        .init(identifier: "offering_a",
-                              description: "This is the base offering",
-                              packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
-                              ],
-                              metadata: .init(
-                                wrappedValue: metadata
-                              )),
-                        .init(identifier: "offering_b",
-                              description: "This is the base offering b",
-                              packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
-                              ])
-                    ],
-                    placements: nil,
-                    targeting: nil,
-                    uiConfig: nil
-                )
+                contents: Offerings.Contents(response: response,
+                                             httpResponseOriginalSource: .mainServer),
+                loadedFromDiskCache: false
             )
         )
 
@@ -444,7 +520,7 @@ class OfferingsTests: TestCase {
         expect(missing).to(beNil())
 
         do {
-            let logger = TestLogHandler()
+            let logger = TestLogHandler(testIdentifier: self.name)
 
             expect(offeringA.getMetadataValue(for: "dictionary") as Data?)
                 .to(beNil())
@@ -510,7 +586,12 @@ class OfferingsTests: TestCase {
         """.asData
 
         let offeringsResponse: OfferingsResponse = try JSONDecoder.default.decode(jsonData: json)
-        let offerings = self.offeringsFactory.createOfferings(from: [:], data: offeringsResponse)
+        let offerings = self.offeringsFactory.createOfferings(
+            from: [:],
+            contents: Offerings.Contents(response: offeringsResponse,
+                                         httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
+        )
 
         expect(offerings).to(beNil())
     }
@@ -528,15 +609,21 @@ class OfferingsTests: TestCase {
                 .init(identifier: "offering_a",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
-                      ])
+                        .init(identifier: "$rc_six_month",
+                              platformProductIdentifier: "com.myproduct.annual",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
             ],
             placements: nil,
             targeting: nil,
             uiConfig: nil
         )
         let offerings = try XCTUnwrap(
-            self.offeringsFactory.createOfferings(from: storeProductsByID, data: response)
+            self.offeringsFactory.createOfferings(from: storeProductsByID,
+                                                  contents: Offerings.Contents(response: response,
+                                                                               httpResponseOriginalSource: .mainServer),
+                                                  loadedFromDiskCache: false)
         )
 
         expect(offerings.current).to(beNil())
@@ -678,6 +765,29 @@ class OfferingsTests: TestCase {
         expect(offering.hasPaywall) == false
     }
 
+    // MARK: - Offerings.Contents
+
+    func testOfferingsContentsInitFromMainServer() throws {
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let contents = Offerings.Contents(response: offeringResp,
+                                          httpResponseOriginalSource: .mainServer)
+        expect(contents.originalSource) == .main
+    }
+
+    func testOfferingsContentsInitFromFallbackUrl() throws {
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let contents = Offerings.Contents(response: offeringResp,
+                                          httpResponseOriginalSource: .fallbackUrl)
+        expect(contents.originalSource) == .fallbackUrl
+    }
+
+    func testOfferingsContentsInitFromLoadShedder() throws {
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let contents = Offerings.Contents(response: offeringResp,
+                                          httpResponseOriginalSource: .loadShedder)
+        expect(contents.originalSource) == .loadShedder
+    }
+
 }
 
 private extension OfferingsTests {
@@ -697,22 +807,28 @@ private extension OfferingsTests {
             productIdentifier: product
             ?? StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
         ]
+        let response = OfferingsResponse(
+            currentOfferingId: "offering_a",
+            offerings: [
+                .init(identifier: "offering_a",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: identifier,
+                              platformProductIdentifier: productIdentifier,
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
+            ],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
         let offerings = try XCTUnwrap(
             offeringsFactory.createOfferings(
                 from: products,
-                data: .init(
-                    currentOfferingId: "offering_a",
-                    offerings: [
-                        .init(identifier: "offering_a",
-                              description: "This is the base offering",
-                              packages: [
-                                .init(identifier: identifier, platformProductIdentifier: productIdentifier)
-                              ])
-                    ],
-                    placements: nil,
-                    targeting: nil,
-                    uiConfig: nil
-                )
+                contents: Offerings.Contents(response: response,
+                                             httpResponseOriginalSource: .mainServer),
+                loadedFromDiskCache: false
             )
         )
 

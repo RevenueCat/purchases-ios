@@ -274,3 +274,73 @@ class PurchasesRestoreNoSetupTests: BasePurchasesTests {
     }
 
 }
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+class PurchasesRestoreTrackingTests: BasePurchasesTests {
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.setupPurchases()
+    }
+
+    func testRestoringPurchasesTracksRestoreStarted() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let customerInfo = try CustomerInfo(data: Self.emptyCustomerInfoData)
+        self.backend.postReceiptResult = .success(customerInfo)
+
+        _ = waitUntilValue { completed in
+            self.purchases.restorePurchases { (_, error) in
+                completed(error as NSError?)
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
+        let callCount = mockDiagnosticsTracker.trackedRestorePurchasesStartedCalls.value
+        expect(callCount) == 1
+    }
+
+    func testRestoringPurchasesTracksRestoreResultSuccess() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let customerInfo = try CustomerInfo(data: Self.emptyCustomerInfoData)
+        self.backend.postReceiptResult = .success(customerInfo)
+
+        _ = waitUntilValue { completed in
+            self.purchases.restorePurchases { (_, error) in
+                completed(error as NSError?)
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
+        let calls = mockDiagnosticsTracker.trackedRestorePurchasesResultParams.value
+        expect(calls.count) == 1
+        let callParams = calls[0]
+        expect(callParams.errorCode).to(beNil())
+        expect(callParams.errorMessage).to(beNil())
+        expect(callParams.responseTime).to(beGreaterThanOrEqualTo(0))
+    }
+
+    func testRestoringPurchasesTracksRestoreResultError() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let error: BackendError = .missingAppUserID()
+
+        self.backend.postReceiptResult = .failure(error)
+
+        _ = waitUntilValue { completed in
+            self.purchases.restorePurchases { (_, error) in
+                completed(error as NSError?)
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
+        let calls = mockDiagnosticsTracker.trackedRestorePurchasesResultParams.value
+        expect(calls.count) == 1
+        let callParams = calls[0]
+        expect(callParams.errorCode) == ErrorCode.invalidAppUserIdError.rawValue
+        expect(callParams.errorMessage) == "The app user id is not valid."
+        expect(callParams.responseTime).to(beGreaterThanOrEqualTo(0))
+    }
+}

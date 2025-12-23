@@ -44,21 +44,19 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
         expect(self.httpClient.calls).to(beEmpty())
     }
 
-    func testPostDiagnosticsEventsWithOneEvent() {
+    func testPostDiagnosticsEventsWithOneEvent() async {
         let event = DiagnosticsEvent(id: Self.eventId1,
                                      name: .customerInfoVerificationResult,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: Self.eventTimestamp1,
                                      appSessionId: Self.appSessionId)
 
-        let error = waitUntilValue { completion in
-            self.internalAPI.postDiagnosticsEvents(events: [event], completion: completion)
-        }
-
-        expect(error).to(beNil())
+        await expect {
+            try await self.internalAPI.postDiagnosticsEvents(events: [event])
+        }.toNot(throwError())
     }
 
-    func testPostDiagnosticsEventsWithMultipleEvents() {
+    func testPostDiagnosticsEventsWithMultipleEvents() async {
         let event1 = DiagnosticsEvent(id: Self.eventId1,
                                       name: .customerInfoVerificationResult,
                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
@@ -71,11 +69,9 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
                                       timestamp: Self.eventTimestamp2,
                                       appSessionId: Self.appSessionId)
 
-        let error = waitUntilValue { completion in
-            self.internalAPI.postDiagnosticsEvents(events: [event1, event2], completion: completion)
-        }
-
-        expect(error).to(beNil())
+        await expect {
+            try await self.internalAPI.postDiagnosticsEvents(events: [event1, event2])
+        }.toNot(throwError())
     }
 
 }

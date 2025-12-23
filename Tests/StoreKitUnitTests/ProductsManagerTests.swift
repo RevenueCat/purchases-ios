@@ -114,15 +114,18 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     fileprivate func createManager(storeKitVersion: StoreKitVersion,
+                                   storefront: StorefrontType? = nil,
                                    diagnosticsTracker: DiagnosticsTrackerType? = nil) -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
+        let systemInfo = MockSystemInfo(
+            platformInfo: platformInfo,
+            finishTransactions: true,
+            storeKitVersion: storeKitVersion
+        )
+        systemInfo.stubbedStorefront = storefront
         return ProductsManager(
             diagnosticsTracker: diagnosticsTracker,
-            systemInfo: MockSystemInfo(
-                platformInfo: platformInfo,
-                finishTransactions: true,
-                storeKitVersion: storeKitVersion
-            ),
+            systemInfo: systemInfo,
             requestTimeout: Self.requestTimeout
         )
     }
@@ -147,6 +150,7 @@ class SK1ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
 
     func testFetchProductsWithIdentifiersSK1TracksCorrectly() throws {
         let manager = self.createManager(storeKitVersion: .storeKit1,
+                                         storefront: MockStorefront(countryCode: "USA"),
                                          diagnosticsTracker: self.mockDiagnosticsTracker)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
@@ -163,6 +167,7 @@ class SK1ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         expect(Set(params.notFoundProductIds)) == [notFoundIdentifier]
         expect(params.errorMessage).to(beNil())
         expect(params.errorCode).to(beNil())
+        expect(params.storefront) == "USA"
     }
 
 }

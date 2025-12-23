@@ -27,6 +27,20 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     var mockProductsManager: MockProductsManager!
     var mockSystemInfo: MockSystemInfo!
 
+    private var diagnosticsTracker: DiagnosticsTrackerType?
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var mockDiagnosticsTracker: MockDiagnosticsTracker {
+        get throws {
+            return try XCTUnwrap(self.diagnosticsTracker as? MockDiagnosticsTracker)
+        }
+    }
+
+    static let eventTimestamp1: Date = .init(timeIntervalSince1970: 1694029328)
+    static let eventTimestamp2: Date = .init(timeIntervalSince1970: 1694022321)
+    let mockDateProvider = MockDateProvider(stubbedNow: eventTimestamp1,
+                                            subsequentNows: eventTimestamp2)
+
     override func setUpWithError() throws {
         try super.setUpWithError()
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
@@ -46,6 +60,12 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         let mockOperationDispatcher = MockOperationDispatcher()
         let currentUserProvider = MockCurrentUserProvider(mockAppUserID: "app_user")
 
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.diagnosticsTracker = MockDiagnosticsTracker()
+        } else {
+            self.diagnosticsTracker = nil
+        }
+
         trialOrIntroPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: mockSystemInfo,
             receiptFetcher: receiptFetcher,
@@ -53,7 +73,9 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
             backend: mockBackend,
             currentUserProvider: currentUserProvider,
             operationDispatcher: mockOperationDispatcher,
-            productsManager: mockProductsManager
+            productsManager: mockProductsManager,
+            diagnosticsTracker: self.diagnosticsTracker,
+            dateProvider: self.mockDateProvider
         )
     }
 
@@ -188,6 +210,10 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         _ = try await sk2Product.purchase()
 
+        // Delay added to reduce flakiness on iOS 26, where eligibility may be checked too soon after purchase.
+        // Allows StoreKit time to register the purchase before checking eligibility.
+        try await Task.sleep(nanoseconds: 100_000_000)
+
         let postPurchaseStatus: IntroEligibilityStatus = await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
                 continuation.resume(returning: status)
@@ -213,5 +239,125 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         }
 
         expect(fakeStatus) == .unknown
+    }
+}
+
+// MARK: - Diagnostics
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
+
+    func testSK2DoesNotTrackDiagnosticsWhenReceiptNotFetchedAndEmptyProductIds() throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        waitUntil { completion in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: []) { _ in
+                completion()
+            }
+        }
+
+        expect(try self.mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(beEmpty())
+    }
+
+    func testSK2TracksDiagnosticsWhenSK2ProductsSuccess() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let productIds = Set(["com.revenuecat.monthly_4.99.1_week_intro",
+                              "com.revenuecat.annual_39.99.2_week_intro",
+                              "lifetime"])
+
+        let product1 = try await self.fetchSk2StoreProduct("com.revenuecat.monthly_4.99.1_week_intro")
+        let product2 = try await self.fetchSk2StoreProduct("com.revenuecat.annual_39.99.2_week_intro")
+        let product3 = try await self.fetchSk2StoreProduct("lifetime")
+        self.mockProductsManager.stubbedSk2StoreProductsResult = .success([product1, product2, product3])
+        self.mockSystemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
+
+        await withCheckedContinuation { continuation in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
+                continuation.resume()
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
+
+        expect(mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(haveCount(1))
+        let params = mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value[0]
+
+        expect(params.storeKitVersion) == .storeKit2
+        expect(params.requestedProductIds) == productIds
+        expect(params.eligibilityUnknownCount) == 0
+        expect(params.eligibilityIneligibleCount) == 0
+        expect(params.eligibilityEligibleCount) == 2
+        expect(params.eligibilityNoIntroOfferCount) == 1
+        expect(params.errorMessage).to(beNil())
+        expect(params.errorCode).to(beNil())
+        expect(params.storefront) == "USA"
+        expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
+    }
+
+    func testSK2TracksDiagnosticsWhenSK2PartialProductsSuccess() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let productIds = Set(["com.revenuecat.monthly_4.99.1_week_intro",
+                              "com.revenuecat.annual_39.99.2_week_intro",
+                              "lifetime"])
+
+        let product = try await self.fetchSk2StoreProduct("com.revenuecat.monthly_4.99.1_week_intro")
+        self.mockProductsManager.stubbedSk2StoreProductsResult = .success([product])
+
+        await withCheckedContinuation { continuation in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
+                continuation.resume()
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
+
+        expect(mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(haveCount(1))
+        let params = mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value[0]
+
+        expect(params.storeKitVersion) == .storeKit2
+        expect(params.requestedProductIds) == productIds
+        expect(params.eligibilityUnknownCount) == 2
+        expect(params.eligibilityIneligibleCount) == 0
+        expect(params.eligibilityEligibleCount) == 1
+        expect(params.eligibilityNoIntroOfferCount) == 0
+        expect(params.errorMessage).to(beNil())
+        expect(params.errorCode).to(beNil())
+        expect(params.storefront).to(beNil())
+        expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
+    }
+
+    func testSK2TracksDiagnosticsWhenSK2ProductsFailure() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let productIds = Set(["com.revenuecat.monthly_4.99.1_week_intro",
+                              "com.revenuecat.annual_39.99.2_week_intro",
+                              "lifetime"])
+
+        let purchasesError = ErrorUtils.productRequestTimedOutError()
+        self.mockProductsManager.stubbedSk2StoreProductsResult = .failure(purchasesError)
+
+        await withCheckedContinuation { continuation in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
+                continuation.resume()
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
+
+        expect(mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(haveCount(1))
+        let params = mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value[0]
+
+        expect(params.storeKitVersion) == .storeKit2
+        expect(params.requestedProductIds) == productIds
+        expect(params.eligibilityUnknownCount) == 3
+        expect(params.eligibilityIneligibleCount) == 0
+        expect(params.eligibilityEligibleCount) == 0
+        expect(params.eligibilityNoIntroOfferCount) == 0
+        expect(params.errorMessage) == purchasesError.localizedDescription
+        expect(params.errorCode) == purchasesError.errorCode
+        expect(params.storefront).to(beNil())
+        expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 }

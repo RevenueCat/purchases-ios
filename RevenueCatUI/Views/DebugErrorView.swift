@@ -26,6 +26,7 @@ struct DebugErrorView<Content: View>: View {
         case emptyView
         case fatalError
         case replacement(Content)
+        case errorView
 
     }
 
@@ -67,6 +68,14 @@ struct DebugErrorView<Content: View>: View {
                 #else
                 fatalError(self.description)
                 #endif
+
+            case .errorView:
+                #if DEBUG
+                ErrorView().overlay(alignment: .top) { self.errorView }
+                #else
+                ErrorView()
+                #endif
+
             }
         }
         .onAppear {

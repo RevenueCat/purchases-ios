@@ -14,7 +14,7 @@
 // swiftlint:disable type_body_length file_length
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -32,14 +32,15 @@ class FeedbackSurveyViewModelTests: TestCase {
 
     func testInitialState() {
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {}
         )
 
-        let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: data) { _ in
-
-        }
+        let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: data,
+                                                purchasesProvider: MockCustomerCenterPurchases(),
+                                                actionWrapper: CustomerCenterActionWrapper())
 
         expect(viewModel.feedbackSurveyData).to(equal(data))
     }
@@ -48,6 +49,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
 
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {}
@@ -57,7 +59,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: nil
+            actionWrapper: CustomerCenterActionWrapper()
         )
 
         let dismissViewExpectation = expectation(description: "Dismiss view should be called")
@@ -75,6 +77,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
 
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {}
@@ -84,7 +87,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: nil
+            actionWrapper: CustomerCenterActionWrapper()
         )
 
         await viewModel.handleAction(for: option,
@@ -101,6 +104,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let onOptionSelectedExpectation = expectation(description: "OnOptionSelected should be called")
 
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {
@@ -112,7 +116,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: nil
+            actionWrapper: CustomerCenterActionWrapper()
         )
 
         await viewModel.handleAction(for: option,
@@ -127,6 +131,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -136,7 +141,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: nil
+            actionWrapper: CustomerCenterActionWrapper()
         )
 
         await viewModel.handleAction(for: option,
@@ -153,7 +158,6 @@ class FeedbackSurveyViewModelTests: TestCase {
         expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
         expect(event.data.revisionID) == 0
         expect(event.data.additionalContext).to(beNil())
-        expect(event.data.surveyOptionTitleKey) == option.title
         expect(event.data.path) == .cancel
         expect(event.data.surveyOptionID) == option.id
         expect(event.data.url).to(beNil())
@@ -163,6 +167,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -172,7 +177,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: { _ in}
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { _ in })
         )
 
         await viewModel.handleAction(for: option,
@@ -189,7 +194,6 @@ class FeedbackSurveyViewModelTests: TestCase {
         expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
         expect(event.data.revisionID) == 0
         expect(event.data.additionalContext).to(beNil())
-        expect(event.data.surveyOptionTitleKey) == option.title
         expect(event.data.path) == .cancel
         expect(event.data.surveyOptionID) == option.id
         expect(event.data.url).to(beNil())
@@ -199,6 +203,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -209,7 +214,8 @@ class FeedbackSurveyViewModelTests: TestCase {
         let viewModel = FeedbackSurveyViewModel(
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
-            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase) { action in
+            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { action in
                 switch action {
                 case .feedbackSurveyCompleted(let option):
                     handlerCalledExpectation.fulfill()
@@ -217,7 +223,8 @@ class FeedbackSurveyViewModelTests: TestCase {
                 default:
                     return
                 }
-            }
+            })
+        )
 
         await viewModel.handleAction(for: option,
                                      darkMode: false,
@@ -233,6 +240,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.optionWithPromo
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -242,7 +250,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: { _ in }
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { _ in })
         )
 
         await viewModel.handleAction(for: option,
@@ -259,7 +267,6 @@ class FeedbackSurveyViewModelTests: TestCase {
         expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
         expect(event.data.revisionID) == 0
         expect(event.data.additionalContext).to(beNil())
-        expect(event.data.surveyOptionTitleKey) == option.title
         expect(event.data.path) == .cancel
         expect(event.data.surveyOptionID) == option.id
         expect(event.data.url).to(beNil())
@@ -269,6 +276,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.optionWithPromo
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -278,7 +286,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: nil
+            actionWrapper: CustomerCenterActionWrapper()
         )
 
         await viewModel.handleAction(for: option,
@@ -295,7 +303,6 @@ class FeedbackSurveyViewModelTests: TestCase {
         expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
         expect(event.data.revisionID) == 0
         expect(event.data.additionalContext).to(beNil())
-        expect(event.data.surveyOptionTitleKey) == option.title
         expect(event.data.path) == .cancel
         expect(event.data.surveyOptionID) == option.id
         expect(event.data.url).to(beNil())
@@ -305,6 +312,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.optionWithPromo
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -315,7 +323,8 @@ class FeedbackSurveyViewModelTests: TestCase {
         let viewModel = FeedbackSurveyViewModel(
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
-            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase) { action in
+            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { action in
                 switch action {
                 case .feedbackSurveyCompleted(let option):
                     handlerCalledExpectation.fulfill()
@@ -323,7 +332,8 @@ class FeedbackSurveyViewModelTests: TestCase {
                 default:
                     return
                 }
-            }
+            })
+        )
 
         await viewModel.handleAction(for: option,
                                      darkMode: false,
@@ -340,6 +350,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let path = Self.path
         var optionCalled: Bool = false
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {
@@ -374,7 +385,9 @@ class FeedbackSurveyViewModelTests: TestCase {
         let viewModel = FeedbackSurveyViewModel(
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
-            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase) { _ in }
+            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { _ in })
+        )
 
         await viewModel.handleAction(for: option,
                                      darkMode: false,
@@ -390,6 +403,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let path = Self.path
         var optionCalled: Bool = false
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {
@@ -404,7 +418,9 @@ class FeedbackSurveyViewModelTests: TestCase {
         let viewModel = FeedbackSurveyViewModel(
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
-            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase) { _ in }
+            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { _ in })
+        )
 
         await viewModel.handleAction(for: option,
                                      darkMode: false,
@@ -480,19 +496,6 @@ private extension FeedbackSurveyViewModelTests {
         type: .cancel,
         detail: .feedbackSurvey(feedbackSurvey),
         refundWindowDuration: .forever)
-
-}
-
-private struct MockStoreProductDiscount: StoreProductDiscountType {
-
-    let offerIdentifier: String?
-    let currencyCode: String?
-    let price: Decimal
-    let localizedPriceString: String
-    let paymentMode: StoreProductDiscount.PaymentMode
-    let subscriptionPeriod: SubscriptionPeriod
-    let numberOfPeriods: Int
-    let type: StoreProductDiscount.DiscountType
 
 }
 

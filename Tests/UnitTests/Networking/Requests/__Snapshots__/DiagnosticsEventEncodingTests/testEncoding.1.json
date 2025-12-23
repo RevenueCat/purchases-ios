@@ -4,17 +4,20 @@
   "name" : "http_request_performed",
   "properties" : {
     "backend_error_code" : 500,
+    "connection_error_reason" : "NO_NETWORK",
     "endpoint_name" : "log_in",
     "error_code" : 1,
     "error_message" : "OK",
     "etag_hit" : false,
+    "fetch_policy" : "CACHED_OR_FETCHED",
+    "host" : "api.revenuecat.com",
     "is_retry" : true,
     "not_found_product_ids" : [
       "test_product_id2"
     ],
     "product_id" : "test_productId",
     "promotional_offer_id" : "promotionalOfferId",
-    "purchase_result" : "user_cancelled",
+    "purchase_result" : "USER_CANCELLED",
     "requested_product_ids" : [
       "test_product_id1"
     ],

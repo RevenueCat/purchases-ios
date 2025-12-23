@@ -11,14 +11,14 @@
 //
 //  Created by Nacho Soto on 7/21/23.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
 /// A `PaywallView` suitable to be displayed as a loading placeholder.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
 @available(tvOS, unavailable)
 @MainActor
 struct LoadingPaywallView: View {
@@ -35,7 +35,8 @@ struct LoadingPaywallView: View {
                 serverDescription: "",
                 metadata: [:],
                 paywall: Self.paywall,
-                availablePackages: Self.packages
+                availablePackages: Self.packages,
+                webCheckoutUrl: nil
             ),
             activelySubscribedProductIdentifiers: [],
             paywall: Self.defaultPaywall,
@@ -81,7 +82,7 @@ struct LoadingPaywallView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
 @available(tvOS, unavailable)
 private extension LoadingPaywallView {
 
@@ -97,58 +98,75 @@ private extension LoadingPaywallView {
         identifier: "weekly",
         packageType: .weekly,
         storeProduct: Self.weeklyProduct.toStoreProduct(),
-        offeringIdentifier: Self.offeringIdentifier
+        offeringIdentifier: Self.offeringIdentifier,
+        webCheckoutUrl: nil
     )
     static let monthlyPackage = Package(
         identifier: "monthly",
         packageType: .monthly,
         storeProduct: Self.monthlyProduct.toStoreProduct(),
-        offeringIdentifier: Self.offeringIdentifier
+        offeringIdentifier: Self.offeringIdentifier,
+        webCheckoutUrl: nil
     )
     static let annualPackage = Package(
         identifier: "annual",
         packageType: .annual,
         storeProduct: Self.annualProduct.toStoreProduct(),
-        offeringIdentifier: Self.offeringIdentifier
+        offeringIdentifier: Self.offeringIdentifier,
+        webCheckoutUrl: nil
     )
     static let weeklyProduct = TestStoreProduct(
         localizedTitle: "Weekly",
         price: 1.99,
+        currencyCode: "USD",
         localizedPriceString: "$1.99",
         productIdentifier: "com.revenuecat.product_1",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO weekly",
         subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .week)
+        subscriptionPeriod: .init(value: 1, unit: .week),
+        locale: Locale(identifier: "en_US")
     )
     static let monthlyProduct = TestStoreProduct(
         localizedTitle: "Monthly",
         price: 12.99,
+        currencyCode: "USD",
         localizedPriceString: "$12.99",
         productIdentifier: "com.revenuecat.product_2",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO monthly",
         subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .month)
+        subscriptionPeriod: .init(value: 1, unit: .month),
+        locale: Locale(identifier: "en_US")
     )
     static let annualProduct = TestStoreProduct(
         localizedTitle: "Annual",
         price: 69.49,
+        currencyCode: "USD",
         localizedPriceString: "$69.49",
         productIdentifier: "com.revenuecat.product_3",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO annual",
         subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .year)
+        subscriptionPeriod: .init(value: 1, unit: .year),
+        locale: Locale(identifier: "en_US")
     )
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
+    var preferredLocales: [String] { Locale.preferredLanguages }
+
+    var preferredLocaleOverride: String? { nil }
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return .myApp }
         set { _ = newValue }
+    }
+
+    var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
+        SubscriptionHistoryTracker()
     }
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
@@ -159,12 +177,24 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         fatalError("Should not be able to purchase")
     }
 
+    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+        fatalError("Should not be able to purchase")
+    }
+
     func restorePurchases() async throws -> CustomerInfo {
         fatalError("Should not be able to purchase")
     }
 
     func track(paywallEvent: PaywallEvent) async {
         // Ignoring events from loading paywall view
+    }
+
+    func invalidateCustomerInfoCache() {
+        // No-op, this is a mock implementation.
+    }
+
+    func failedToLoadFontWithConfig(_ fontConfig: RevenueCat.UIConfig.FontsConfig) {
+        // Ignoring font loading errors from paywall view
     }
 
 }
@@ -235,7 +265,7 @@ private extension View {
 
 // MARK: -
 
-#if DEBUG
+#if DEBUG && !os(macOS) && !os(tvOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)

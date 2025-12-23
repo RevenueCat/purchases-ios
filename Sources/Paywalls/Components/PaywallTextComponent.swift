@@ -24,8 +24,13 @@ public extension PaywallComponent {
         public let size: Size
         public let padding: Padding
         public let margin: Padding
+        public let fontWeightInt: Int?
 
         public let overrides: ComponentOverrides<PartialTextComponent>?
+
+        public var fontWeightResolved: FontWeight {
+            fontWeightInt.map { PaywallComponent.fontWeightFrom(integer: $0) } ?? fontWeight
+        }
 
         public init(
             visible: Bool? = nil,
@@ -39,7 +44,8 @@ public extension PaywallComponent {
             margin: Padding = .zero,
             fontSize: CGFloat = 16,
             horizontalAlignment: HorizontalAlignment = .center,
-            overrides: ComponentOverrides<PartialTextComponent>? = nil
+            overrides: ComponentOverrides<PartialTextComponent>? = nil,
+            fontWeightInt: Int? = nil
         ) {
             self.type = .text
             self.visible = visible
@@ -54,6 +60,7 @@ public extension PaywallComponent {
             self.fontSize = fontSize
             self.horizontalAlignment = horizontalAlignment
             self.overrides = overrides
+            self.fontWeightInt = fontWeightInt
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -70,6 +77,7 @@ public extension PaywallComponent {
             case padding
             case margin
             case overrides
+            case fontWeightInt
         }
 
         required public init(from decoder: Decoder) throws {
@@ -90,6 +98,7 @@ public extension PaywallComponent {
                 ComponentOverrides<PartialTextComponent>.self,
                 forKey: .overrides
             )
+            self.fontWeightInt = try container.decodeIfPresent(Int.self, forKey: .fontWeightInt)
 
             if let rawFontSize = try? container.decode(CGFloat.self, forKey: .fontSize) {
                 self.fontSize = rawFontSize
@@ -117,7 +126,7 @@ public extension PaywallComponent {
             try container.encode(padding, forKey: .padding)
             try container.encode(margin, forKey: .margin)
             try container.encodeIfPresent(overrides, forKey: .overrides)
-
+            try container.encodeIfPresent(fontWeightInt, forKey: .fontWeightInt)
             try container.encode(fontSize, forKey: .fontSize)
         }
 
@@ -135,6 +144,7 @@ public extension PaywallComponent {
             hasher.combine(padding)
             hasher.combine(margin)
             hasher.combine(overrides)
+            hasher.combine(fontWeightInt)
         }
 
         public static func == (lhs: TextComponent, rhs: TextComponent) -> Bool {
@@ -150,7 +160,8 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
-                   lhs.overrides == rhs.overrides
+                   lhs.overrides == rhs.overrides &&
+                    lhs.fontWeightInt == rhs.fontWeightInt
         }
     }
 
@@ -167,7 +178,11 @@ public extension PaywallComponent {
         public let size: Size?
         public let padding: Padding?
         public let margin: Padding?
+        public let fontWeightInt: Int?
 
+        public var fontWeightResolved: FontWeight? {
+            fontWeightInt.map { PaywallComponent.fontWeightFrom(integer: $0) } ?? fontWeight
+        }
         public init(
             visible: Bool? = true,
             text: LocalizationKey? = nil,
@@ -179,7 +194,8 @@ public extension PaywallComponent {
             padding: Padding? = nil,
             margin: Padding? = nil,
             fontSize: CGFloat? = nil,
-            horizontalAlignment: HorizontalAlignment? = nil
+            horizontalAlignment: HorizontalAlignment? = nil,
+            fontWeightInt: Int? = nil
         ) {
             self.visible = visible
             self.text = text
@@ -192,6 +208,7 @@ public extension PaywallComponent {
             self.margin = margin
             self.fontSize = fontSize
             self.horizontalAlignment = horizontalAlignment
+            self.fontWeightInt = fontWeightInt
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -206,6 +223,7 @@ public extension PaywallComponent {
             case size
             case padding
             case margin
+            case fontWeightInt
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -220,6 +238,7 @@ public extension PaywallComponent {
             hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
+            hasher.combine(fontWeightInt)
         }
 
         public static func == (lhs: PartialTextComponent, rhs: PartialTextComponent) -> Bool {
@@ -233,7 +252,8 @@ public extension PaywallComponent {
                    lhs.backgroundColor == rhs.backgroundColor &&
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
-                   lhs.margin == rhs.margin
+                   lhs.margin == rhs.margin &&
+                   lhs.fontWeightInt == rhs.fontWeightInt
         }
     }
 
@@ -256,4 +276,31 @@ private extension PaywallComponent.FontSize {
         }
     }
 
+}
+
+private extension PaywallComponent {
+
+    static func fontWeightFrom(integer weight: Int) -> PaywallComponent.FontWeight {
+        let clampedWeight = max(100, min(weight, 900))
+
+        switch clampedWeight {
+        case 100: return .thin
+        case 200: return .extraLight
+        case 300: return .light
+        case 400: return .regular
+        case 500: return .medium
+        case 600: return .semibold
+        case 700: return .bold
+        case 800: return .extraBold
+        case 900: return .black
+
+        default:
+            let availableWeights = [100, 200, 300, 400, 500, 600, 700, 800, 900]
+            // swiftlint:disable:next force_unwrapping
+            let closest = availableWeights.reduce(availableWeights.first!) { currentClosest, candidate in
+                abs(candidate - weight) < abs(currentClosest - weight) ? candidate : currentClosest
+            }
+            return Self.fontWeightFrom(integer: closest)
+        }
+    }
 }

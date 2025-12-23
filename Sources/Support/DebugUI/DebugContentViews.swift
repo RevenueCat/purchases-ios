@@ -47,6 +47,9 @@ struct DebugSwiftUIRootView: View {
 
                     case let .paywall(paywall):
                         DebugPaywallJSONView(paywall: paywall)
+
+                    case .statusDetails:
+                        DebugStatusDetailsView(errors: model.errorsToExpandOn)
                     }
                 }
                 .background(
@@ -81,6 +84,7 @@ private enum DebugViewPath: Hashable {
     case offeringMetadata(Offering)
     case package(Package)
     case paywall(PaywallData)
+    case statusDetails
 
 }
 
@@ -93,6 +97,8 @@ internal struct DebugSummaryView: View {
     var body: some View {
         List {
             self.diagnosticsSection
+
+            self.openAppButton
 
             self.configurationSection
 
@@ -109,15 +115,44 @@ internal struct DebugSummaryView: View {
         .navigationTitle("RevenueCat Debug")
     }
 
+    private var statusLabel: some View {
+        LabeledContent("Status") {
+            HStack {
+                Text(self.model.diagnosticsStatus)
+                self.model.diagnosticsIcon
+            }
+        }
+    }
+
     private var diagnosticsSection: some View {
-        Section("Diagnostics") {
-            LabeledContent("Status") {
-                HStack {
-                    Text(self.model.diagnosticsStatus)
-                    self.model.diagnosticsIcon
+        Section {
+            if !self.model.errorsToExpandOn.isEmpty {
+                NavigationLink(value: DebugViewPath.statusDetails) {
+                    statusLabel
+                }
+            } else {
+                statusLabel
+            }
+
+        } header: {
+            Text("Diagnostics")
+        } footer: {
+            if let diagnosticsFooter = self.model.diagnosticsExplainer {
+                Text(diagnosticsFooter)
+            }
+        }
+    }
+
+    private var openAppButton: some View {
+        Group {
+            if let url = model.diagnosticsActionURL,
+                let title = model.diagnosticsActionTitle {
+                Link(destination: url) {
+                    Label(title, systemImage: "arrow.up.forward")
                 }
             }
         }
+
     }
 
     private var configurationSection: some View {
@@ -412,6 +447,78 @@ private struct DebugPackageView: View {
         _ = try await Purchases.shared.purchase(package: self.package)
     }
 
+}
+
+@available(iOS 16.0, macOS 13.0, *)
+private struct DebugStatusDetailsView: View {
+    let errors: [PurchasesDiagnostics.SDKHealthError]
+
+    var body: some View {
+        List {
+            ForEach(errors, id: \.errorCode) { error in
+                switch error {
+                case let .invalidProducts(products):
+                    Section("Product Validation Issues") {
+                        ForEach(products, id: \.identifier) { product in
+                            if product.status != .valid {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack(alignment: .center, spacing: 8) {
+                                        product.status.icon.imageScale(.small)
+                                        Text(product.identifier)
+                                    }
+                                    Text(product.description)
+                                        .foregroundStyle(.secondary)
+                                        .font(.caption)
+                                }
+                            }
+                        }
+                    }
+                case .noOfferings:
+                    Section("Offering Validation Issues") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(alignment: .center, spacing: 8) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.yellow)
+                                Text("No offerings configured")
+                            }
+                            Text(
+                                """
+                                While offerings are not mandatory, they are the way to 'offer' products \
+                                to your customers on your paywalls.
+                                """
+                            )
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        }
+                    }
+                case let .offeringConfiguration(offerings):
+                    Section("Offering Validation Issues") {
+                        ForEach(offerings, id: \.identifier) { offering in
+                            if offering.status != .passed {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack(alignment: .center, spacing: 8) {
+                                        offering.status.icon.imageScale(.small)
+                                        Text(offering.identifier)
+                                    }
+                                    Text(
+                                        offering.packages.isEmpty ?
+                                        "Offerings must have at least one package" :
+                                        """
+                                        Products \(offering.packages.map { "'\($0.productIdentifier)'" }.formatted()) \
+                                        in the offering have issues, check the products list above for more details.
+                                        """
+                                    )
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    }
+                default: EmptyView()
+                }
+            }
+        }
+    }
 }
 
 @available(iOS 16.0, macOS 13.0, *)

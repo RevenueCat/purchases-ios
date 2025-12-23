@@ -12,9 +12,30 @@
 //  Created by Cesar de la Vega on 25/9/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
-extension StoreProductDiscount {
+@_spi(Internal) extension StoreProductDiscountType {
+
+    var discountedPeriodsWithUnit: String {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        var components = DateComponents()
+
+        switch self.subscriptionPeriod.unit {
+        case .day:
+            components.day = self.numberOfPeriods
+        case .week:
+            components.weekOfMonth = self.numberOfPeriods
+        case .month:
+            components.month = self.numberOfPeriods
+        case .year:
+            components.year = self.numberOfPeriods
+        default:
+            return "\(self.numberOfPeriods)"
+        }
+
+        return formatter.string(from: components) ?? "\(self.numberOfPeriods)"
+    }
 
     func localizedPricePerPeriodByPaymentMode(_ locale: Locale) -> String {
         let discountDuration = self.subscriptionPeriod.durationTitle
@@ -39,30 +60,8 @@ extension StoreProductDiscount {
         }
     }
 
-    var discountedPeriodsWithUnit: String {
-        let formatter = DateComponentsFormatter()
-        formatter.unitsStyle = .full
-        var components = DateComponents()
-
-        switch self.subscriptionPeriod.unit {
-        case .day:
-            components.day = self.numberOfPeriods
-        case .week:
-            components.weekOfMonth = self.numberOfPeriods
-        case .month:
-            components.month = self.numberOfPeriods
-        case .year:
-            components.year = self.numberOfPeriods
-        default:
-            return "\(self.numberOfPeriods)"
-        }
-
-        return formatter.string(from: components) ?? "\(self.numberOfPeriods)"
-    }
-
     func localizedPricePerPeriod(_ locale: Locale) -> String {
         let unit = Localization.abbreviatedUnitLocalizedString(for: self.subscriptionPeriod, locale: locale)
         return "\(self.localizedPriceString)/\(unit)"
     }
-
 }

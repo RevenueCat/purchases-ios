@@ -33,6 +33,8 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     private let currentUserProvider: CurrentUserProvider
     private let operationDispatcher: OperationDispatcher
     private let productsManager: ProductsManagerType
+    private let diagnosticsTracker: DiagnosticsTrackerType?
+    private let dateProvider: DateProvider
 
     init(
         systemInfo: SystemInfo,
@@ -41,7 +43,9 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         backend: Backend,
         currentUserProvider: CurrentUserProvider,
         operationDispatcher: OperationDispatcher,
-        productsManager: ProductsManagerType
+        productsManager: ProductsManagerType,
+        diagnosticsTracker: DiagnosticsTrackerType?,
+        dateProvider: DateProvider = DateProvider()
     ) {
         self.systemInfo = systemInfo
         self.receiptFetcher = receiptFetcher
@@ -50,8 +54,11 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         self.currentUserProvider = currentUserProvider
         self.operationDispatcher = operationDispatcher
         self.productsManager = productsManager
+        self.diagnosticsTracker = diagnosticsTracker
+        self.dateProvider = dateProvider
     }
 
+    // swiftlint:disable:next function_body_length
     func checkEligibility(productIdentifiers: Set<String>,
                           completion: @escaping ReceiveIntroEligibilityBlock) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
@@ -70,11 +77,28 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
             return
         }
 
+        guard !self.systemInfo.isSimulatedStoreAPIKey else {
+            // For now, all products in the Simulated Store are ineligible for trial or intro discount
+            let result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
+                resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.ineligible)
+            }
+            completion(result)
+            return
+        }
+
+        let startTime = self.dateProvider.now()
+
         // Extracting and wrapping the completion block from the async call
         // to avoid having to mark ReceiveIntroEligibilityBlock as @Sendable
         // up to the public API thus making a breaking change.
-        let completionBlock: ReceiveIntroEligibilityBlock = { result in
-            self.operationDispatcher.dispatchOnMainActor {
+        let completionBlock: ([String: IntroEligibility], Error?, StoreKitVersion) -> Void =
+        { [weak self] (result, error, storeKitVersion) in
+            self?.trackTrialOrIntroEligibilityRequestIfNeeded(startTime: startTime,
+                                                              requestedProductIds: productIdentifiers,
+                                                              result: result,
+                                                              error: error,
+                                                              storeKitVersion: storeKitVersion)
+            self?.operationDispatcher.dispatchOnMainActor {
                 completion(result)
             }
         }
@@ -82,42 +106,45 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             Async.call(with: completionBlock) {
+                let result: [String: IntroEligibility]
+                let checkError: Error?
                 do {
-                    return try await self.sk2CheckEligibility(productIdentifiers)
+                    result = try await self.sk2CheckEligibility(productIdentifiers)
+                    checkError = nil
                 } catch {
                     Logger.appleError(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error))
 
-                    return productIdentifiers.reduce(into: [:]) { resultDict, productId in
+                    result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
                         resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
                     }
+                    checkError = error
                 }
+                return (result, checkError, .storeKit2)
             }
         } else {
-            self.sk1CheckEligibility(productIdentifiers) { result in
-                self.operationDispatcher.dispatchOnMainActor {
-                    completion(result)
-                }
+            self.sk1CheckEligibility(productIdentifiers) { eligibility, error in
+                completionBlock(eligibility, error, .storeKit1)
             }
         }
     }
 
     func sk1CheckEligibility(_ productIdentifiers: Set<String>,
-                             completion: @escaping ReceiveIntroEligibilityBlock) {
+                             completion: @escaping ([String: IntroEligibility], Error?) -> Void) {
         // We don't want to refresh receipts because it will likely prompt the user for their credentials,
         // and intro eligibility is triggered programmatically.
         self.receiptFetcher.receiptData(refreshPolicy: .never) { data, _ in
             if let data = data {
                 self.sk1CheckEligibility(with: data,
-                                         productIdentifiers: productIdentifiers) { eligibility in
+                                         productIdentifiers: productIdentifiers) { eligibility, error in
                     self.operationDispatcher.dispatchOnMainActor {
-                        completion(eligibility)
+                        completion(eligibility, error)
                     }
                 }
             } else {
                 self.getIntroEligibility(with: data ?? Data(),
-                                         productIdentifiers: productIdentifiers) { eligibility in
+                                         productIdentifiers: productIdentifiers) { eligibility, error in
                     self.operationDispatcher.dispatchOnMainActor {
-                        completion(eligibility)
+                        completion(eligibility, error)
                     }
                 }
             }
@@ -172,29 +199,30 @@ private extension TrialOrIntroPriceEligibilityChecker {
 
     func sk1CheckEligibility(with receiptData: Data,
                              productIdentifiers: Set<String>,
-                             completion: @escaping ReceiveIntroEligibilityBlock) {
+                             completion: @escaping ([String: IntroEligibility], Error?) -> Void) {
         introEligibilityCalculator
             .checkEligibility(with: receiptData,
-                              productIdentifiers: productIdentifiers) { receivedEligibility, error in
-                if let error = error {
-                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
+                              productIdentifiers: productIdentifiers) { result in
+                switch result {
+                case .failure(let localCheckError):
+                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: localCheckError))
                     self.getIntroEligibility(with: receiptData,
-                                             productIdentifiers: productIdentifiers,
-                                             completion: completion)
-                    return
-                }
+                                             productIdentifiers: productIdentifiers) { eligibility, backendError in
+                        completion(eligibility, backendError ?? localCheckError)
+                    }
+                case .success(let receivedEligibility):
+                    let convertedEligibility = receivedEligibility.mapValues(IntroEligibility.init)
 
-                let convertedEligibility = receivedEligibility.mapValues(IntroEligibility.init)
-
-                self.operationDispatcher.dispatchOnMainThread {
-                    completion(convertedEligibility)
+                    self.operationDispatcher.dispatchOnMainThread {
+                        completion(convertedEligibility, nil)
+                    }
                 }
             }
     }
 
     func getIntroEligibility(with receiptData: Data,
                              productIdentifiers: Set<String>,
-                             completion: @escaping ReceiveIntroEligibilityBlock) {
+                             completion: @escaping ([String: IntroEligibility], BackendError?) -> Void) {
         if #available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *) {
             // Products that don't have an introductory discount don't need to be sent to the backend
             // Step 1: Filter out products without introductory discount and give .noIntroOfferExists status
@@ -205,10 +233,12 @@ private extension TrialOrIntroPriceEligibilityChecker {
                     return onDeviceResults[productIdentifier] == nil
                 }
 
-                self.getIntroEligibilityFromBackend(with: receiptData,
-                                                    productIdentifiers: nilProductIdentifiers) { backendResults in
+                self.getIntroEligibilityFromBackend(
+                    with: receiptData,
+                    productIdentifiers: nilProductIdentifiers
+                ) { backendResults, error in
                     let results = onDeviceResults + backendResults
-                    completion(results)
+                    completion(results, error)
                 }
             }
         } else {
@@ -237,9 +267,9 @@ extension TrialOrIntroPriceEligibilityChecker {
 
     func getIntroEligibilityFromBackend(with receiptData: Data,
                                         productIdentifiers: Set<String>,
-                                        completion: @escaping ReceiveIntroEligibilityBlock) {
+                                        completion: @escaping ([String: IntroEligibility], BackendError?) -> Void) {
         if productIdentifiers.isEmpty {
-            completion([:])
+            completion([:], nil)
             return
         }
 
@@ -257,7 +287,7 @@ extension TrialOrIntroPriceEligibilityChecker {
             }()
 
             self.operationDispatcher.dispatchOnMainThread {
-                completion(result)
+                completion(result, error)
             }
         }
     }
@@ -267,3 +297,67 @@ extension TrialOrIntroPriceEligibilityChecker {
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension TrialOrIntroPriceEligibilityChecker: @unchecked Sendable {}
+
+// MARK: - Diagnostics
+
+private extension TrialOrIntroPriceEligibilityChecker {
+
+    func trackTrialOrIntroEligibilityRequestIfNeeded(startTime: Date,
+                                                     requestedProductIds: Set<String>,
+                                                     result: [String: IntroEligibility],
+                                                     error: Error?,
+                                                     storeKitVersion: StoreKitVersion) {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
+              let diagnosticsTracker = self.diagnosticsTracker else {
+            return
+        }
+
+        var unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount: Int?
+        if !result.isEmpty {
+            (unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount) = result.reduce(into: (0, 0, 0, 0)) {
+                switch $1.value.status {
+                case .unknown:
+                    $0.0 += 1
+                case .ineligible:
+                    $0.1 += 1
+                case .eligible:
+                    $0.2 += 1
+                case .noIntroOfferExists:
+                    $0.3 += 1
+                }
+            }
+        }
+
+        let errorCode: Int?
+        let errorMessage: String?
+        switch error {
+        case let purchasesError as PurchasesError:
+            errorCode = purchasesError.errorCode
+            errorMessage = purchasesError.localizedDescription
+        case let purchasesErrorConvertible as PurchasesErrorConvertible:
+            let purchasesError = purchasesErrorConvertible.asPurchasesError
+            errorCode = purchasesError.errorCode
+            errorMessage = purchasesError.localizedDescription
+        case let receiptParserError as PurchasesReceiptParser.Error:
+            errorCode = ErrorCode.invalidReceiptError.rawValue
+            errorMessage = receiptParserError.errorDescription ?? receiptParserError.localizedDescription
+        case let otherError:
+            errorCode = otherError != nil ? ErrorCode.unknownError.rawValue : nil
+            errorMessage = otherError?.localizedDescription
+        }
+
+        let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
+
+        diagnosticsTracker.trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: storeKitVersion,
+                                                                    requestedProductIds: requestedProductIds,
+                                                                    eligibilityUnknownCount: unknownCount,
+                                                                    eligibilityIneligibleCount: ineligibleCount,
+                                                                    eligibilityEligibleCount: eligibleCount,
+                                                                    eligibilityNoIntroOfferCount: noIntroOfferCount,
+                                                                    errorMessage: errorMessage,
+                                                                    errorCode: errorCode,
+                                                                    storefront: self.systemInfo.storefront?.countryCode,
+                                                                    responseTime: responseTime)
+    }
+
+}

@@ -17,26 +17,58 @@ class MockSystemInfo: SystemInfo {
     var stubbedIsSandbox: Bool?
     var stubbedIsDebugBuild: Bool?
     var stubbedStorefront: StorefrontType?
+    var stubbedApiKeyValidationResult: Configuration.APIKeyValidationResult?
+
+    convenience init(platformInfo: Purchases.PlatformInfo? = nil,
+                     finishTransactions: Bool,
+                     customEntitlementsComputation: Bool = false,
+                     storeKitVersion: StoreKitVersion = .default,
+                     apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
+                     responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
+                     dangerousSettings: DangerousSettings,
+                     clock: ClockType = TestClock(),
+                     preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
+        self.init(platformInfo: platformInfo,
+                  finishTransactions: finishTransactions,
+                  storeKitVersion: storeKitVersion,
+                  apiKeyValidationResult: apiKeyValidationResult,
+                  responseVerificationMode: responseVerificationMode,
+                  dangerousSettings: dangerousSettings,
+                  isAppBackgrounded: false,
+                  clock: clock,
+                  preferredLocalesProvider: preferredLocalesProvider)
+    }
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
                      customEntitlementsComputation: Bool = false,
                      uiPreviewMode: Bool = false,
                      storeKitVersion: StoreKitVersion = .default,
+                     apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
-                     clock: ClockType = TestClock()) {
+                     clock: ClockType = TestClock(),
+                     preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         let dangerousSettings = DangerousSettings(
             autoSyncPurchases: true,
             customEntitlementComputation: customEntitlementsComputation,
             internalSettings: DangerousSettings.Internal.default,
             uiPreviewMode: uiPreviewMode
         )
+
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
+                  customEntitlementsComputation: customEntitlementsComputation,
                   storeKitVersion: storeKitVersion,
+                  apiKeyValidationResult: apiKeyValidationResult,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
-                  clock: clock)
+                  clock: clock,
+                  preferredLocalesProvider: preferredLocalesProvider)
+    }
+
+    override var isAppBackgroundedState: Bool {
+        get { stubbedIsApplicationBackgrounded ?? super.isAppBackgroundedState }
+        set { super.isAppBackgroundedState = newValue }
     }
 
     override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
@@ -68,11 +100,16 @@ class MockSystemInfo: SystemInfo {
     override var storefront: StorefrontType? {
         return self.stubbedStorefront
     }
+
+    override var apiKeyValidationResult: Configuration.APIKeyValidationResult {
+        get { return self.stubbedApiKeyValidationResult ?? super.apiKeyValidationResult }
+        set { super.apiKeyValidationResult = newValue }
+    }
 }
 
 extension MockSystemInfo: @unchecked Sendable {}
 
-extension RevenueCat.OperatingSystemVersion: Swift.Comparable {
+extension OperatingSystemVersion: Swift.Comparable {
 
     public static func < (lhs: OperatingSystemVersion, rhs: OperatingSystemVersion) -> Bool {
         if lhs.majorVersion == rhs.majorVersion {

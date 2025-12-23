@@ -1,0 +1,250 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "6FF06023",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "3.99",
+      "familyShareable" : false,
+      "internalID" : "8D0DA65C",
+      "localizations" : [
+        {
+          "description" : "Non consumable 01",
+          "displayName" : "Non consumable 01",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "maestro.nonconsumable.tests.01",
+      "referenceName" : "Non consumable 01",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "A714FBF4",
+      "localizations" : [
+        {
+          "description" : "Consumable 01",
+          "displayName" : "Consumable 01",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "maestro.consumable.tests.01",
+      "referenceName" : "Consumable 01",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "ESP",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "F7DE1690",
+      "localizations" : [
+        {
+          "description" : "Group 1",
+          "displayName" : "Editable Group",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "subscription.group.1",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+            {
+              "internalID" : "7AF59252",
+              "offerID" : "maestro.weekly.tests.promo.free.01",
+              "paymentMode" : "free",
+              "referenceName" : "Product 1 Promo [Weekly]",
+              "subscriptionPeriod" : "P3D"
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "45C8F602",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Product 1 on weekly basis",
+              "displayName" : "Product 1 [Weekly]",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "maestro.weekly.tests.01",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Product 1 [Weekly]",
+          "subscriptionGroupID" : "F7DE1690",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "1.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "AB1B73AE",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Product 1 on monthly basis",
+              "displayName" : "Product 1 [Monthly]",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "maestro.monthly.tests.02",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Product 1 [Monthly]",
+          "subscriptionGroupID" : "F7DE1690",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 3,
+          "internalID" : "C3CC4618",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Product 1 on yearly basis",
+              "displayName" : "Product 1 [Yearly]",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "maestro.yearly.tests.01",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Product 1 [Yearly]",
+          "subscriptionGroupID" : "F7DE1690",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    },
+    {
+      "id" : "31558EC7",
+      "localizations" : [
+
+      ],
+      "name" : "subscription.group.2",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "B2B6951D",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Product 2 on weekly basis",
+              "displayName" : "Product 2 [Weekly]",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "maestro.weekly2.tests.01",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Product 2 [Weekly]",
+          "subscriptionGroupID" : "31558EC7",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "subscriptionOffersKeyPair" : {
+    "id" : "851B7BE3",
+    "privateKey" : "MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg66ysmTWr15OY0KySAawM00Infa40RCu9oxFQYbAsJnigCgYIKoZIzj0DAQehRANCAATMMiGAa8LWx98uY+/NFCnxLdb9ZlKR9YgZAhYbYgaqywt7sUCEamtPoixYv0t6kmHbeoOHGbgeK3KFh+9WX3ju"
+  },
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

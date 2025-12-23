@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-import RevenueCat
+@_spi(Experimental) import RevenueCat
 import StoreKit
 
 func checkPurchasesAPI() {
@@ -24,6 +24,9 @@ func checkPurchasesAPI() {
     let appUserID: String = purch.appUserID
     let isAnonymous: Bool = purch.isAnonymous
     let storeFrontCountryCode = purch.storeFrontCountryCode
+    if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+        let storeFrontLocale: Locale? = purch.storeFrontLocale
+    }
 
     print(purchasesAreCompletedBy, delegate!, appUserID, isAnonymous)
 
@@ -171,6 +174,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     var packageParamsBuilder = PurchaseParams.Builder(package: pack)
         .with(promotionalOffer: offer)
+        .with(quantity: 3)
 
     #if ENABLE_TRANSACTION_METADATA
     packageParamsBuilder = packageParamsBuilder.with(metadata: ["foo":"bar"])
@@ -183,6 +187,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
     var productParamsBuilder = PurchaseParams.Builder(product: storeProduct)
         .with(promotionalOffer: offer)
+        .with(quantity: 5)
 
     #if ENABLE_TRANSACTION_METADATA
     productParamsBuilder = productParamsBuilder.with(metadata: ["foo":"bar"])
@@ -237,6 +242,10 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
         }
     }
     #endif
+    Task {
+        let _: RevenueCat.Storefront? = await purchases.getStorefront()
+        purchases.getStorefront { (_: RevenueCat.Storefront?) in }
+    }
 }
 
 @available(*, deprecated) // Ignore deprecation warnings
@@ -298,7 +307,9 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                       promotionalOffer: offer)
 
-        var params = PurchaseParams.Builder(package: pack).with(promotionalOffer: offer)
+        var params = PurchaseParams.Builder(package: pack)
+            .with(promotionalOffer: offer)
+            .with(quantity: 2)
 
         #if ENABLE_TRANSACTION_METADATA
         params = params.with(metadata: ["foo":"bar"])
@@ -427,6 +438,25 @@ private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) asy
     if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
         await purchases.track(paywallEvent: event)
     }
+}
+
+private func checkPreferredUILocaleAPIs(purchases: Purchases) {
+    purchases.overridePreferredUILocale("de_DE")
+    purchases.overridePreferredUILocale(nil)
+}
+
+private func checkVirtualCurrenciesAPI(_ purchases: Purchases) async throws {
+
+    // Fetching Virtual Currencies
+    purchases.getVirtualCurrencies(completion: { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in })
+    purchases.getVirtualCurrencies() { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in }
+    let _: VirtualCurrencies = try await purchases.virtualCurrencies()
+
+    // Invalidating Virtual Currencies Cache
+    purchases.invalidateVirtualCurrenciesCache()
+
+    // Cached virtual currencies
+    let _: VirtualCurrencies? = purchases.cachedVirtualCurrencies
 }
 
 @available(*, deprecated) // Ignore deprecation warnings

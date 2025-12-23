@@ -11,11 +11,13 @@
 //
 //  Created by Josh Holtz on 9/30/24.
 
+// swiftlint:disable nesting
+
 import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 // swiftlint:disable file_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -23,10 +25,10 @@ struct ShapeModifier: ViewModifier {
 
     struct BorderInfo: Hashable {
 
-        let color: Color
+        let color: DisplayableColorScheme
         let width: CGFloat
 
-        init(color: Color, width: Double) {
+        init(color: DisplayableColorScheme, width: Double) {
             self.color = color
             self.width = width
         }
@@ -41,9 +43,63 @@ struct ShapeModifier: ViewModifier {
         case concave
         case convex
 
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case radius
+        }
+
+        private enum ShapeType: String, Codable {
+            case rectangle
+            case pill
+            case circle
+            case concave
+            case convex
+        }
+
+        init(from decoder: Decoder) throws {
+            do {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let type = try container.decode(ShapeType.self, forKey: .type)
+
+                switch type {
+                case .rectangle:
+                    let radius = try container.decodeIfPresent(RadiusInfo.self, forKey: .radius)
+                    self = .rectangle(radius)
+                case .pill:
+                    self = .pill
+                case .circle:
+                    self = .circle
+                case .concave:
+                    self = .concave
+                case .convex:
+                    self = .convex
+                }
+            } catch {
+                self = .rectangle(nil)
+            }
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .rectangle(let radius):
+                try container.encode(ShapeType.rectangle, forKey: .type)
+                try container.encodeIfPresent(radius, forKey: .radius)
+            case .pill:
+                try container.encode(ShapeType.pill, forKey: .type)
+            case .circle:
+                try container.encode(ShapeType.circle, forKey: .type)
+            case .concave:
+                try container.encode(ShapeType.concave, forKey: .type)
+            case .convex:
+                try container.encode(ShapeType.convex, forKey: .type)
+            }
+        }
+
     }
 
-    struct RadiusInfo: Hashable {
+    struct RadiusInfo: Hashable, Codable {
 
         let topLeft: Double?
         let topRight: Double?
@@ -57,6 +113,8 @@ struct ShapeModifier: ViewModifier {
     var background: BackgroundStyle?
     var uiConfigProvider: UIConfigProvider?
 
+    @Environment(\.colorScheme) var colorScheme
+
     init(border: BorderInfo?,
          shape: Shape?,
          background: BackgroundStyle?,
@@ -68,6 +126,7 @@ struct ShapeModifier: ViewModifier {
         self.uiConfigProvider = uiConfigProvider
     }
 
+    @ViewBuilder
     func body(content: Content) -> some View {
         switch self.shape {
         case .circle, .pill, .rectangle:
@@ -75,54 +134,74 @@ struct ShapeModifier: ViewModifier {
                 content
                     .backgroundStyle(background)
                 // We want to clip only in case there is a non-Rectangle shape
-                // or if there's a border, otherwise we let the background color
-                // extend behind the safe areas
-                    .applyIf(!shape.isRectangle()) { view in
-                        view.clipShape(shape)
+                // or if there's a border
+                    .applyIf(!shape.isRectangle() || border != nil) { view in
+                        view
+                            .clipShape(
+                                // Adding inset to clip contents within the border
+                                // Mainly to handle transparent borders not showing content
+                                shape.inset(by: border?.width ?? 0 / 2)
+                            )
                     }
+                // Place border on top of content
                     .applyIfLet(border) { view, border in
                         view.clipShape(shape).overlay {
-                            shape.strokeBorder(border.color, lineWidth: border.width)
+                            border.color.toView(colorScheme: colorScheme)
+                                .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
+                                .allowsHitTesting(false)
                         }
                     }
             }
         case .concave:
-            // WIP: Need to implement
             content
-                .modifier(ConcaveMaskModifier(curveHeightPercentage: 0.2))
+                .modifier(ConcaveMaskModifier(curveHeightPercentage: 0.2, border: border))
         case .convex:
             content
-                .modifier(ConvexMaskModifier(curveHeightPercentage: 0.2))
+                .modifier(ConvexMaskModifier(curveHeightPercentage: 0.2, border: border))
         }
     }
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct ConcaveMaskModifier: ViewModifier {
 
     let curveHeightPercentage: CGFloat
+    let border: ShapeModifier.BorderInfo?
+
+    @Environment(\.colorScheme) var colorScheme
 
     @State
     private var size: CGSize = .zero
 
+    var shape: ConcaveShape {
+        ConcaveShape(curveHeightPercentage: curveHeightPercentage, size: size)
+    }
+
     func body(content: Content) -> some View {
         content
             .onSizeChange { self.size = $0 }
-            .clipShape(
-                ConcaveShape(curveHeightPercentage: curveHeightPercentage, size: size)
-            )
+            .clipShape(shape)
+            .applyIfLet(border) { view, border in
+                view.overlay {
+                    border.color.toView(colorScheme: colorScheme)
+                        .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
+                        .allowsHitTesting(false)
+                }
+            }
     }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private struct ConcaveShape: Shape {
+private struct ConcaveShape: InsettableShape {
+    var insetAmount: Double = 0.0
 
     let curveHeightPercentage: CGFloat
     let size: CGSize
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
+        let rect = rect.insetBy(dx: insetAmount, dy: insetAmount)
 
         // Start at the top-left corner
         path.move(to: CGPoint(x: rect.minX, y: rect.minY))
@@ -152,34 +231,55 @@ private struct ConcaveShape: Shape {
         max(0, size.height * curveHeightPercentage)
     }
 
+    func inset(by amount: CGFloat) -> some InsettableShape {
+        var newShape = self
+        newShape.insetAmount += amount
+        return newShape
+    }
+
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct ConvexMaskModifier: ViewModifier {
 
     let curveHeightPercentage: CGFloat
+    let border: ShapeModifier.BorderInfo?
+
+    @Environment(\.colorScheme) var colorScheme
 
     @State
     private var size: CGSize = .zero
 
+    var shape: ConvexShape {
+        ConvexShape(curveHeightPercentage: curveHeightPercentage, size: size)
+    }
+
     func body(content: Content) -> some View {
+
         content
             .onSizeChange { self.size = $0 }
-            .clipShape(
-                ConvexShape(curveHeightPercentage: curveHeightPercentage, size: size)
-            )
+            .clipShape(shape)
+            .applyIfLet(border) { view, border in
+                view.overlay {
+                    border.color.toView(colorScheme: colorScheme)
+                        .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
+                        .allowsHitTesting(false)
+                }
+            }
     }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private struct ConvexShape: Shape {
+private struct ConvexShape: InsettableShape {
+    var insetAmount: Double = 0.0
 
     let curveHeightPercentage: CGFloat
     let size: CGSize
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
+        let rect = rect.insetBy(dx: insetAmount, dy: insetAmount)
 
         // Start at the top-left corner
         path.move(to: CGPoint(x: rect.minX, y: rect.minY))
@@ -207,6 +307,12 @@ private struct ConvexShape: Shape {
     private var curveHeight: CGFloat {
         // Calculate the curve height as a percentage of the view's height
         max(0, size.height * curveHeightPercentage) / 2
+    }
+
+    func inset(by amount: CGFloat) -> some InsettableShape {
+        var newShape = self
+        newShape.insetAmount += amount
+        return newShape
     }
 
 }
@@ -326,7 +432,7 @@ extension View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension ShapeModifier.Shape {
-    func toInsettableShape() -> (AnyInsettableShape)? {
+    func toInsettableShape(size: CGSize? = nil) -> (AnyInsettableShape)? {
         switch self {
         case .rectangle(let radiusInfo):
             return self.effectiveRectangleShape(radiusInfo: radiusInfo)
@@ -338,9 +444,16 @@ extension ShapeModifier.Shape {
             #else
             return Capsule().eraseToAnyInsettableShape()
             #endif
-        case .concave, .convex:
-            return nil
+        case .concave:
+            if let size = size {
+                return ConcaveShape(curveHeightPercentage: 0.2, size: size).eraseToAnyInsettableShape()
+            }
+        case .convex:
+            if let size = size {
+                return ConvexShape(curveHeightPercentage: 0.2, size: size).eraseToAnyInsettableShape()
+            }
         }
+        return nil
     }
 
     private func effectiveRectangleShape(radiusInfo: ShapeModifier.RadiusInfo?) -> AnyInsettableShape {
@@ -380,6 +493,32 @@ extension ShapeModifier.Shape {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallComponent.MaskShape {
+
+    var shape: ShapeModifier.Shape? {
+        switch self {
+        case .rectangle(let cornerRadiuses):
+            let corners = cornerRadiuses.flatMap { cornerRadiuses in
+                ShapeModifier.RadiusInfo(
+                    topLeft: cornerRadiuses.topLeading ?? 0,
+                    topRight: cornerRadiuses.topTrailing ?? 0,
+                    bottomLeft: cornerRadiuses.bottomLeading ?? 0,
+                    bottomRight: cornerRadiuses.bottomTrailing ?? 0
+                )
+            }
+            return .rectangle(corners)
+        case .circle:
+            return .circle
+        case .concave:
+            return .concave
+        case .convex:
+            return .convex
+        }
+    }
+
+}
+
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -403,6 +542,7 @@ struct CornerBorder_Previews: PreviewProvider {
         switch background {
         case .color: name.append("Color")
         case .image: name.append("Image")
+        case .video: name.append("Video")
         case .none: break
         }
 
@@ -441,7 +581,7 @@ struct CornerBorder_Previews: PreviewProvider {
                     heic: lightUrl,
                     heicLowRes: lightUrl
                 )
-            )),
+            ), .fill, nil),
             nil
         ]
 
@@ -560,7 +700,38 @@ struct CornerBorder_Previews: PreviewProvider {
         }
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Top Left and Bottom Right - Blue Border")
+
+        VStack {
+            Text("Hello")
+                .padding(.vertical, 10)
+                .padding(.horizontal, 20)
+                .background(.white)
+                .foregroundColor(.black)
+                .shape(
+                    border: .init(
+                        color: .init(
+                            light: .linear(125, [
+                                .init(color: "#FF0000", percent: 0),
+                                .init(color: "#0000FF", percent: 40),
+                                .init(color: "#FFFFFF", percent: 90)
+                            ])
+                        ),
+                        width: 6
+                    ),
+                    shape: .rectangle(.init(topLeft: 8,
+                                            topRight: 0,
+                                            bottomLeft: 0,
+                                            bottomRight: 8)))
+                .padding()
+        }
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Gradient Border")
     }
+}
+
+extension DisplayableColorScheme {
+    static let black: DisplayableColorScheme = DisplayableColorScheme(light: .hex("#000000"))
+    static let blue: DisplayableColorScheme = DisplayableColorScheme(light: .hex("#0000FF"))
 }
 
 #endif

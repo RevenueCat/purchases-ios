@@ -41,7 +41,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: .from(product: storeProduct),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
 
         let payment = storeKit1Wrapper.payment(with: product)
 
@@ -179,7 +180,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let product = try await self.fetchSk1Product()
         let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
             orchestrator.purchase(product: StoreProduct(sk1Product: product),
-                                  package: nil) { transaction, customerInfo, error, userCancelled in
+                                  package: nil,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -201,7 +203,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: .from(product: storeProduct),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
 
         let payment = storeKit1Wrapper.payment(with: product)
 
@@ -214,11 +217,12 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
-        let manager = try self.mockPaywallEventsManager
+        let manager = try self.mockEventsManager
 
-        try await asyncWait { await manager.invokedFlushEvents == true }
+        self.operationDispatcher.invokedDispatchAsyncOnWorkerThread = false
+        try await asyncWait { manager.invokedFlushFeatureEventsWithBackgroundTask.value == true }
 
-        expect(self.operationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
+        expect(self.operationDispatcher.invokedDispatchAsyncOnWorkerThread) == false
     }
 
     // MARK: - Purchasing, StoreKit 1 only
@@ -341,7 +345,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: .from(product: storeProduct),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
 
         var params = PurchaseParams.Builder(package: package)
 
@@ -350,7 +355,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         #endif
 
         _ = await withCheckedContinuation { continuation in
-            orchestrator.purchase(params: params.build()) { transaction, customerInfo, error, userCancelled in
+            orchestrator.purchase(params: params.build(),
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -395,7 +401,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 .build()
 
         let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
-            orchestrator.purchase(params: params) { transaction, customerInfo, error, userCancelled in
+            orchestrator.purchase(params: params,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -407,6 +414,82 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let expectedCustomerInfo: CustomerInfo = .emptyInfo
         expect(customerInfo) == expectedCustomerInfo
+    }
+
+    func testPurchaseWithQuantitySucceeds() async throws {
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product(StoreKitConfigTestCase.consumableProductId)
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        let quantity = 5
+        let params = PurchaseParams.Builder(product: storeProduct)
+            .with(quantity: quantity)
+            .build()
+
+        let (transaction, _, _, _) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(params: params,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction?.quantity) == 5
+    }
+
+    func testPurchaseWithoutQuantityDefaultsToQuantityOne() async throws {
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product(StoreKitConfigTestCase.consumableProductId)
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        let params = PurchaseParams.Builder(product: storeProduct).build()
+
+        let (transaction, _, _, _) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(params: params,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction?.quantity) == 1
+    }
+
+    func testPurchaseWithInvalidQuantityReturnsError() async throws {
+        let product = try await self.fetchSk1Product(StoreKitConfigTestCase.consumableProductId)
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        // Test quantity too low (0)
+        let paramsTooLow = PurchaseParams.Builder(product: storeProduct)
+            .with(quantity: 0)
+            .build()
+
+        let (transaction1, _, error1, userCancelled1) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(params: paramsTooLow,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction1).to(beNil())
+        expect(userCancelled1) == false
+        expect(error1).to(matchError(ErrorCode.purchaseInvalidError))
+
+        // Test quantity too high (11)
+        let paramsTooHigh = PurchaseParams.Builder(product: storeProduct)
+            .with(quantity: 11)
+            .build()
+
+        let (transaction2, _, error2, userCancelled2) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(params: paramsTooHigh,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction2).to(beNil())
+        expect(userCancelled2) == false
+        expect(error2).to(matchError(ErrorCode.purchaseInvalidError))
     }
 
     // MARK: - Paywalls
@@ -803,6 +886,7 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
                                diagnosticsTracker: diagnosticsTracker)
 
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+        systemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
 
         let product = try await self.fetchSk1Product()
         let payment = storeKit1Wrapper.payment(with: product)
@@ -835,6 +919,7 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         expect(params.promotionalOfferId).to(beNil())
         expect(params.winBackOfferApplied) == false
         expect(params.purchaseResult).to(beNil())
+        expect(params.storefront) == "USA"
 
         expect(self.mockDateProvider.invokedNowCount) == 2
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)

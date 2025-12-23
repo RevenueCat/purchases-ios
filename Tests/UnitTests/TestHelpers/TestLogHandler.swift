@@ -37,7 +37,7 @@ import Nimble
 /// private var testLogHandler: TestLogHandler!
 /// override func setUp() {
 ///     super.setUp()
-///     self.testLogHandler = TestLogHandler()
+///     self.testLogHandler = TestLogHandler(testIdentifier: self.name)
 /// }
 ///
 /// override func tearDown() {
@@ -51,18 +51,23 @@ final class TestLogHandler {
 
     var messages: [MessageData] { return self.loggedMessages.value }
     private let capacity: Int
+    private let testIdentifier: String
 
     init(
         capacity: Int = TestLogHandler.defaultMessageLimit,
+        testIdentifier: String,
         file: String = #fileID,
         line: UInt = #line
     ) {
         self.capacity = capacity
+        self.testIdentifier = testIdentifier
         self.creationContext = .init(file: file, line: line)
         Self.sharedHandler.add(observer: self)
     }
 
-    deinit { Self.sharedHandler.remove(observer: self) }
+    deinit {
+        Self.sharedHandler.remove(observer: self)
+    }
 
     /// If a test overrides `Purchases.verboseLogHandler` or `Logger.internalLogHandler`
     /// this needs to be called to re-install the test handler.
@@ -127,12 +132,46 @@ extension TestLogHandler {
         }
     }
 
-    func verifyMessageIsEventuallyLogged(
-        _ message: String,
+    func verifyMessageWasLogged(
+        regexPattern: String,
         level: LogLevel? = nil,
         expectedCount: Int? = nil,
-        timeout: DispatchTimeInterval = AsyncDefaults.timeout,
-        pollInterval: DispatchTimeInterval = AsyncDefaults.pollInterval,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        precondition(expectedCount == nil || expectedCount! > 0)
+
+        let condition = Self.regexEntryCondition(pattern: regexPattern, level: level)
+
+        expect(
+            file: file,
+            line: line,
+            self.messages
+        )
+        .to(
+            containElementSatisfying(condition),
+            description: "Message with pattern '\(regexPattern)' not found. Logged messages: \(self.messages)"
+        )
+
+        if let expectedCount = expectedCount {
+            expect(
+                file: file,
+                line: line,
+                self.messagesMatching(condition)
+            )
+            .to(
+                equal(expectedCount),
+                description: "Message with pattern '\(regexPattern)' expected \(expectedCount) times"
+            )
+        }
+    }
+
+    func verifyMessageIsEventuallyLogged(
+        _ message: CustomStringConvertible,
+        level: LogLevel? = nil,
+        expectedCount: Int? = nil,
+        timeout: NimbleTimeInterval = PollingDefaults.timeout,
+        pollInterval: NimbleTimeInterval = PollingDefaults.pollInterval,
         file: FileString = #file,
         line: UInt = #line
     ) async throws {
@@ -218,6 +257,28 @@ extension TestLogHandler {
         }
     }
 
+    private static func regexEntryCondition(pattern: String, level: LogLevel?) -> EntryCondition {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+            fail("Invalid regular expression: \(pattern)")
+            return { _ in false }
+        }
+
+        return { entry in
+            let range = NSRange(location: 0, length: entry.message.utf16.count)
+            let match = regex.firstMatch(in: entry.message, options: [], range: range)
+
+            guard match != nil else {
+                return false
+            }
+
+            if let level = level, entry.level != level {
+                return false
+            }
+
+            return true
+        }
+    }
+
 }
 
 // MARK: - Private
@@ -243,7 +304,8 @@ extension TestLogHandler: LogMessageObserver {
                 beLessThan(self.capacity),
                 description: "\(count) messages have been stored. " +
                 "This is likely a programming error and \(self) " +
-                "(created in \(self.creationContext.file):\(self.creationContext.line) has leaked."
+                "(created by \(self.testIdentifier) in \(self.creationContext.file):\(self.creationContext.line) " +
+                "has leaked."
             )
         }
     }

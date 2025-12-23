@@ -3,6 +3,7 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
+import Foundation
 @testable import RevenueCat
 
 // swiftlint:disable large_tuple line_length
@@ -23,27 +24,34 @@ class MockBackend: Backend {
     var onPostReceipt: (() -> Void)?
 
     public convenience init() {
-        let systemInfo = MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
+        let systemInfo = MockSystemInfo(platformInfo: nil,
+                                        finishTransactions: false,
+                                        dangerousSettings: nil,
+                                        preferredLocalesProvider: .mock())
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
 
         let backendConfig = MockBackendConfiguration()
         let identity = MockIdentityAPI(backendConfig: backendConfig)
         let offerings = MockOfferingsAPI(backendConfig: backendConfig)
+        let webBilling = MockWebBillingAPI(backendConfig: backendConfig)
         let offlineEntitlements = MockOfflineEntitlementsAPI()
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = MockRedeemWebPurchaseAPI()
+        let virtualCurrenciesAPI = MockVirtualCurrenciesAPI()
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
                   offeringsAPI: offerings,
+                  webBillingAPI: webBilling,
                   offlineEntitlements: offlineEntitlements,
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
-                  redeemWebPurchaseAPI: redeemWebPurchaseAPI)
+                  redeemWebPurchaseAPI: redeemWebPurchaseAPI,
+                  virtualCurrenciesAPI: virtualCurrenciesAPI)
     }
 
     override func post(receipt: EncodedAppleReceipt,
@@ -178,6 +186,16 @@ class MockBackend: Backend {
 
     static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
 
+    var healthReportRequestResponse: Result<HealthReport, BackendError> = .success(
+        HealthReport(status: .passed, projectId: nil, appId: nil, checks: [])
+    )
+    override func healthReportRequest(appUserID: String) async throws -> HealthReport {
+        return try healthReportRequestResponse.get()
+    }
+
+    override func healthReportAvailabilityRequest(appUserID: String) async throws -> HealthReportAvailability {
+        return .init(reportLogs: true)
+    }
 }
 
 extension MockBackend: @unchecked Sendable {}

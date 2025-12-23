@@ -37,12 +37,17 @@ struct APIKeyDashboardList: View {
 
     @State
     private var presentedPaywallCover: PresentedPaywall?
+    
+    @State
+    private var offeringToPresent: Offering?
 
     var body: some View {
         NavigationView {
             self.content
                 .navigationTitle("Live Paywalls")
+                #if !os(macOS)
                 .navigationBarTitleDisplayMode(.inline)
+                #endif
                 .toolbar {
                     ToolbarItem(placement: .automatic) {
                         Button {
@@ -52,7 +57,9 @@ struct APIKeyDashboardList: View {
                         } label: {
                             Image(systemName: "arrow.clockwise")
                         }
+                        #if !os(watchOS)
                         .keyboardShortcut("r", modifiers: .shift)
+                        #endif
                     }
                 }
         }
@@ -187,6 +194,7 @@ struct APIKeyDashboardList: View {
                     }
                 }
         }
+        #if !os(macOS)
         .fullScreenCover(item: self.$presentedPaywallCover) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
                 .onRestoreCompleted { _ in
@@ -198,6 +206,8 @@ struct APIKeyDashboardList: View {
                     }
                 }
         }
+        #endif
+                .presentPaywallIfNeededModifier(offering: $offeringToPresent)       
     }
 
     #if !os(watchOS)
@@ -217,6 +227,8 @@ struct APIKeyDashboardList: View {
                 self.presentedPaywallCover = .init(offering: offering, mode: selectedMode)
             case .sheet, .footer, .condensedFooter:
                 self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            case .presentIfNeeded:
+                self.offeringToPresent = offering
             }
         } label: {
             Text(selectedMode.name)
@@ -258,10 +270,16 @@ extension APIKeyDashboardList.Template: CustomStringConvertible {
         if let name = self.name {
             if name == "components" {
                 return "V2"
-            } else if let template = PaywallTemplate(rawValue: name) {
-                return template.name
             } else {
-                return "Unrecognized template"
+                #if DEBUG
+                if let template = PaywallTemplate(rawValue: name) {
+                    return template.name
+                } else {
+                    return "Unrecognized template"
+                }
+                #else
+                return "Template \(name)"
+                #endif
             }
         } else {
             return "No paywall"
@@ -276,4 +294,24 @@ extension APIKeyDashboardList.PresentedPaywall: Identifiable {
         return "\(self.offering.id)-\(self.mode.name)"
     }
 
+}
+// Custom view modifier for conditional paywall presentation
+private struct PresentPaywallIfNeededModifier: ViewModifier {
+    @Binding var offering: Offering?
+    
+    func body(content: Content) -> some View {
+        if let offering = offering {
+            content.presentPaywallIfNeeded(offering: offering,
+                                         shouldDisplay: { _ in true },
+                                         onDismiss: { self.offering = nil })
+        } else {
+            content
+        }
+    }
+}
+
+private extension View {
+    func presentPaywallIfNeededModifier(offering: Binding<Offering?>) -> some View {
+        self.modifier(PresentPaywallIfNeededModifier(offering: offering))
+    }
 }

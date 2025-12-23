@@ -11,9 +11,10 @@
 //
 //  Created by Nacho Soto on 1/17/22.
 
-@testable import RevenueCat
+import Foundation
+@_spi(Internal) @testable import RevenueCat
 
-struct MockStoreProductDiscount: StoreProductDiscountType {
+struct MockStoreProductDiscount {
 
     let offerIdentifier: String?
     let currencyCode: String?
@@ -25,3 +26,5 @@ struct MockStoreProductDiscount: StoreProductDiscountType {
     let type: StoreProductDiscount.DiscountType
 
 }
+
+@_spi(Internal) extension MockStoreProductDiscount: StoreProductDiscountType { }

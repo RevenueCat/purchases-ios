@@ -7,29 +7,32 @@
 
 import SwiftUI
 import RevenueCat
-import RevenueCatUI
+#if DEBUG
+@_spi(Internal) @testable import RevenueCatUI
+#else
+@_spi(Internal) import RevenueCatUI
+#endif
+
 
 struct PaywallPresenter: View {
 
     var offering: Offering
     var mode: PaywallTesterViewMode
+
+    /// Ignored in release builds.
     var introEligility: IntroEligibilityStatus
     var displayCloseButton: Bool = Configuration.defaultDisplayCloseButton
+
+    #if DEBUG
+    var introEligibilityChecker: TrialOrIntroEligibilityChecker {
+        .producing(eligibility: introEligility)
+    }
+    #endif
+
 
     var body: some View {
         switch self.mode {
         case .fullScreen, .sheet:
-
-            let handler = PurchaseHandler.default()
-
-            let configuration = PaywallViewConfiguration(
-                offering: offering,
-                fonts: DefaultPaywallFontProvider(),
-                displayCloseButton: displayCloseButton,
-                introEligibility: .producing(eligibility: introEligility),
-                purchaseHandler: handler
-            )
-
             PaywallView(offering: offering)
                 .onPurchaseStarted({ package in
                     print("Paywall Handler - onPurchaseStarted")
@@ -54,20 +57,36 @@ struct PaywallPresenter: View {
                 })
 
 #if !os(watchOS)
+#if !os(macOS)
+#if DEBUG
         case .footer:
             CustomPaywallContent()
                 .originalTemplatePaywallFooter(offering: self.offering,
-                               customerInfo: nil,
-                               introEligibility: .producing(eligibility: introEligility),
-                               purchaseHandler: .default())
+                                               customerInfo: nil,
+                                               introEligibility: introEligibilityChecker,
+                                               purchaseHandler: .default())
 
         case .condensedFooter:
             CustomPaywallContent()
                 .originalTemplatePaywallFooter(offering: self.offering,
-                               customerInfo: nil,
-                               condensed: true,
-                               introEligibility: .producing(eligibility: introEligility),
-                                                            purchaseHandler: .default())
+                                               customerInfo: nil,
+                                               condensed: true,
+                                               introEligibility: introEligibilityChecker,
+                                               purchaseHandler: .default())
+#else
+        case .footer:
+            CustomPaywallContent()
+                .originalTemplatePaywallFooter(offering: self.offering)
+
+        case .condensedFooter:
+            CustomPaywallContent()
+                .originalTemplatePaywallFooter(offering: self.offering,
+                                               condensed: true)
+#endif
+#endif
+        case .presentIfNeeded:
+            fatalError()
+
 #endif
         }
     }

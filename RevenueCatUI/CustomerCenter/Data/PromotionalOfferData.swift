@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 17/7/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 struct PromotionalOfferData: Identifiable, Equatable {
 

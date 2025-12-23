@@ -38,6 +38,12 @@ IntegrationTests/CarthageInstallation/Cartfile.resolved
 scan_derived_data/
 generated_docs/
 
+# Local clone of `paywall-preview-resources` repo to be available for tests.
+Tests/paywall-preview-resources
+
+# Local clone of `paywall-rendering-validation` repo to be available for tests.
+Tests/paywall-rendering-validation
+
 # Local clone of `purchases-ios-snapshots` repo to be available for tests.
 Tests/purchases-ios-snapshots
 
@@ -60,6 +66,9 @@ fastlane/.env
 # Local build settings
 Local.xcconfig
 
+# CI Build settings
+CI.xcconfig
+
 # Gets created when Cursor is used with the sswg Swift extension
 /.index-build/
 
@@ -67,3 +76,23 @@ Local.xcconfig
 /buildServer.json
 
 *.orig
+
+# tuist
+**/Derived/
+
+# Tuist workspaces
+RevenueCat-Tuist.xcworkspace/
+Projects/**/*.xcodeproj
+Examples/**/*.xcodeproj
+
+Projects/**/xcshareddata/
+Projects/**/*.xcworkspacedata
+
+Examples/**/.xcworkspacedata
+Examples/**/*.xcscheme
+Examples/**/xcshareddata/**
+
+# Avoid xcscheme pollution when integrating SDK with SPM
+# We can't avoid the whole folder yet because RC and RCUI need to be tested through the package, rather than the workspace
+.swiftpm/xcode/xcshareddata/xcschemes/ReceiptParser.xcscheme
+.swiftpm/xcode/xcshareddata/xcschemes/RevenueCat_CustomEntitlementComputation.xcscheme

@@ -39,6 +39,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
     override func offerings(appUserID: String,
                             fetchPolicy: FetchPolicy,
                             fetchCurrent: Bool = false,
+                            trackDiagnostics: Bool = true,
                             completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?) {
         self.invokedOfferings = true
         self.invokedOfferingsCount += 1
@@ -64,7 +65,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
     var invokedUpdateOfferingsCacheCount = 0
     var invokedUpdateOfferingsCacheParameters: InvokedUpdateOfferingsCacheParameters?
     var invokedUpdateOfferingsCachesParametersList = [InvokedUpdateOfferingsCacheParameters]()
-    var stubbedUpdateOfferingsCompletionResult: Result<Offerings, Error> = .failure(
+    var stubbedUpdateOfferingsCompletionResult: Result<OfferingsResultData, Error> = .failure(
         .configurationError("Stub not setup", underlyingError: nil)
     )
 
@@ -72,7 +73,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         appUserID: String,
         isAppBackgrounded: Bool,
         fetchPolicy: OfferingsManager.FetchPolicy,
-        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+        completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
         self.invokedUpdateOfferingsCache = true
         self.invokedUpdateOfferingsCacheCount += 1

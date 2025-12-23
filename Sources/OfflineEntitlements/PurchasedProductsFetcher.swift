@@ -34,7 +34,7 @@ final class PurchasedProductsFetcher: PurchasedProductsFetcherType {
     private let cache: InMemoryCachedObject<Transactions>
 
     init(
-        storeKit2TransactionFetcher: StoreKit2TransactionFetcherType = StoreKit2TransactionFetcher(),
+        storeKit2TransactionFetcher: StoreKit2TransactionFetcherType,
         sandboxDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
     ) {
         self.sandboxDetector = sandboxDetector

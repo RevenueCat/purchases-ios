@@ -14,7 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
 /// Presentation options to use with the [presentPaywallIfNeeded](x-source-tag://presentPaywallIfNeeded) View modifiers.
 ///
@@ -25,7 +25,8 @@ public enum PaywallPresentationMode {
     /// Paywall presented using SwiftUI's `.sheet`.
     case sheet
 
-    /// Paywall presented using SwiftUI's `.fullScreenCover`.
+    /// Paywall presented using SwiftUI's `.fullScreenCover`. `.fullScreenCover` is unavailable on macOS.
+    @available(macOS, unavailable)
     case fullScreen
 
 }
@@ -60,7 +61,6 @@ public struct MyAppPurchaseLogic {
 
 // swiftlint:disable file_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 extension View {
 
@@ -386,9 +386,10 @@ extension View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 private struct PresentingPaywallModifier: ViewModifier {
+
+    @Environment(\.scenePhase) var scenePhase
 
     private struct Data: Identifiable {
         var customerInfo: CustomerInfo
@@ -462,26 +463,60 @@ private struct PresentingPaywallModifier: ViewModifier {
                 content
                     .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
                         self.paywallView(data)
+                        // The default height given to sheets on Mac Catalyst is too small, and looks terrible.
+                        // So we need to give it a more reasonable default size. This is the height of an
+                        // iPhone 6/7/8 screen. This aligns with our documentation that we will show a paywall
+                        // in a modal that is "roughly iPhone sized", and if you want to customize further you
+                        // can use PaywallView.
+                        // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls
+                        #if targetEnvironment(macCatalyst) || os(macOS)
+                            .frame(height: 667)
+                        #endif
                     }
+            #if !os(macOS)
             case .fullScreen:
                 content
                     .fullScreenCover(item: self.$data, onDismiss: self.onDismiss) { data in
                         self.paywallView(data)
                     }
+            #endif
             }
         }
         .task {
-            guard let info = try? await self.customerInfoFetcher() else { return }
-
-            Logger.debug(Strings.determining_whether_to_display_paywall)
-
-            if self.shouldDisplay(info) {
-                Logger.debug(Strings.displaying_paywall)
-
-                self.data = .init(customerInfo: info)
-            } else {
-                Logger.debug(Strings.not_displaying_paywall)
+            await self.updateCustomerInfo()
+        }
+        .onChangeOfWithChange(self.scenePhase) { value in
+            // Used when Offer Code Redemption sheet dismisses
+            switch value {
+            case .new(let newPhase):
+                if newPhase == .active {
+                    Task {
+                        await self.updateCustomerInfo()
+                    }
+                }
+            case .changed(old: let oldPhase, new: let newPhase):
+                // Used when Offer Code Redemption sheet dismisses
+                if newPhase == .active && oldPhase == .inactive {
+                    Task {
+                        await self.updateCustomerInfo()
+                    }
+                }
             }
+        }
+    }
+
+    private func updateCustomerInfo() async {
+        guard let info = try? await self.customerInfoFetcher() else { return }
+
+        Logger.debug(Strings.determining_whether_to_display_paywall)
+
+        if self.shouldDisplay(info) {
+            Logger.debug(Strings.displaying_paywall)
+
+            self.data = .init(customerInfo: info)
+        } else {
+            Logger.debug(Strings.not_displaying_paywall)
+            self.data = nil
         }
     }
 
@@ -510,8 +545,11 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
         .onRestoreCompleted { customerInfo in
             self.restoreCompleted?(customerInfo)
+        }
+        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
+            guard let result else { return }
 
-            if !self.shouldDisplay(customerInfo) {
+            if result.success && !self.shouldDisplay(result.customerInfo) {
                 self.close()
             }
         }

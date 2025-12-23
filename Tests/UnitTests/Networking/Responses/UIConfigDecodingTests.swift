@@ -12,10 +12,10 @@
 //  Created by Josh Holtz on 12/31/24.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 class UIConfigDecodingTests: BaseHTTPResponseTest {
 
@@ -36,7 +36,7 @@ class UIConfigDecodingTests: BaseHTTPResponseTest {
             ]))
         ]))
         expect(uiConfig.app.fonts).to(equal([
-            "primary": .init(ios: .name("SF Pro"))
+            "primary": .init(ios: UIConfig.FontInfo(name: "SF Pro"))
         ]))
 
         expect(uiConfig.localizations).to(equal([

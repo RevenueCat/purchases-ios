@@ -29,6 +29,7 @@ struct CustomerCenterConfigResponse {
         let screens: [String: Screen]
         let localization: Localization
         let support: Support
+        let changePlans: [ChangePlan]
 
     }
 
@@ -49,6 +50,7 @@ struct CustomerCenterConfigResponse {
         let promotionalOffer: PromotionalOffer?
         let feedbackSurvey: FeedbackSurvey?
         let refundWindow: String?
+        let actionIdentifier: String?
 
         enum PathType: String {
 
@@ -57,6 +59,7 @@ struct CustomerCenterConfigResponse {
             case changePlans = "CHANGE_PLANS"
             case cancel = "CANCEL"
             case customUrl = "CUSTOM_URL"
+            case customAction = "CUSTOM_ACTION"
             case unknown
 
         }
@@ -76,6 +79,12 @@ struct CustomerCenterConfigResponse {
             let title: String
             let subtitle: String
             let productMapping: [String: String]
+            let crossProductPromotions: [String: CrossProductPromotion]?
+
+            struct CrossProductPromotion {
+                let storeOfferIdentifier: String
+                let targetProductId: String
+            }
 
         }
 
@@ -119,6 +128,7 @@ struct CustomerCenterConfigResponse {
         let type: ScreenType
         let subtitle: String?
         let paths: [HelpPath]
+        let offering: ScreenOffering?
 
         enum ScreenType: String {
 
@@ -130,11 +140,72 @@ struct CustomerCenterConfigResponse {
 
     }
 
+    struct ScreenOffering {
+        let type: String
+        let offeringId: String?
+        let buttonText: String?
+    }
+
     struct Support {
 
         let email: String
         let shouldWarnCustomerToUpdate: Bool?
         let displayPurchaseHistoryLink: Bool?
+        let displayUserDetailsSection: Bool?
+        let displayVirtualCurrencies: Bool?
+        let shouldWarnCustomersAboutMultipleSubscriptions: Bool?
+        let supportTickets: SupportTickets?
+
+        struct SupportTickets {
+            let allowCreation: Bool
+            let customerType: String
+            let customerDetails: CustomerDetails?
+
+            struct CustomerDetails {
+                let activeEntitlements: Bool?
+                let appUserId: Bool?
+                let attConsent: Bool?
+                let country: Bool?
+                let deviceVersion: Bool?
+                let email: Bool?
+                let facebookAnonId: Bool?
+                let idfa: Bool?
+                let idfv: Bool?
+                let ipAddress: Bool?
+                let lastOpened: Bool?
+                let lastSeenAppVersion: Bool?
+                let totalSpent: Bool?
+                let userSince: Bool?
+
+                enum CodingKeys: String, CodingKey {
+                    case activeEntitlements = "active_entitlements"
+                    case appUserId = "app_user_id"
+                    case attConsent = "att_consent"
+                    case country
+                    case deviceVersion = "device_version"
+                    case email
+                    case facebookAnonId = "facebook_anon_id"
+                    case idfa
+                    case idfv
+                    case ipAddress = "ip"
+                    case lastOpened = "last_opened"
+                    case lastSeenAppVersion = "last_seen_app_version"
+                    case totalSpent = "total_spent"
+                    case userSince = "user_since"
+                }
+            }
+        }
+    }
+
+    struct ChangePlan {
+        let groupId: String
+        let groupName: String
+        let products: [ChangePlanProduct]
+    }
+
+    struct ChangePlanProduct {
+        let productId: String
+        let selected: Bool
     }
 
 }
@@ -146,13 +217,19 @@ extension CustomerCenterConfigResponse.HelpPath: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.PathType: Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.OpenMethod: Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.PromotionalOffer: Codable, Equatable {}
+extension CustomerCenterConfigResponse.HelpPath.PromotionalOffer.CrossProductPromotion: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Appearance: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Appearance.AppearanceCustomColors: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen: Codable, Equatable {}
+extension CustomerCenterConfigResponse.ScreenOffering: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen.ScreenType: Equatable {}
 extension CustomerCenterConfigResponse.Support: Codable, Equatable {}
+extension CustomerCenterConfigResponse.Support.SupportTickets: Codable, Equatable {}
+extension CustomerCenterConfigResponse.Support.SupportTickets.CustomerDetails: Codable, Equatable {}
+extension CustomerCenterConfigResponse.ChangePlan: Codable, Equatable {}
+extension CustomerCenterConfigResponse.ChangePlanProduct: Codable, Equatable {}
 
 protocol CodableEnumWithUnknownCase: Codable {
 

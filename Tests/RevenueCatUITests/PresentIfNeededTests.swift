@@ -13,7 +13,7 @@
 
 import Nimble
 import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
 
@@ -151,10 +151,37 @@ class PresentIfNeededTests: TestCase {
         Task {
             _ = try await Self.purchaseHandler.restorePurchases()
             // Simulates what `RestorePurchasesButton` does after dismissing the alert.
-            Self.purchaseHandler.setRestored(TestData.customerInfo)
+            Self.purchaseHandler.setRestored(TestData.customerInfo, success: false)
         }
 
         expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
+    func testRestoreWithoutUnlockedEntitlementsDoesNotDismissPaywall() throws {
+        let handler: PurchaseHandler = .mock()
+        var dismissed = false
+
+        let dispose = try Text("")
+            .presentPaywallIfNeeded(offering: Self.offering,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: handler) { info in
+                return info.entitlements.activeInCurrentEnvironment.isEmpty
+            } onDismiss: {
+                dismissed = true
+            } customerInfoFetcher: {
+                return TestData.customerInfo
+            }
+            .addToHierarchy()
+
+        let task = Task {
+            _ = try await handler.restorePurchases()
+            handler.setRestored(TestData.customerInfo, success: false)
+        }
+
+        expect(dismissed).toEventually(beFalse())
+
+        task.cancel()
+        dispose()
     }
 
     func testPresentWithRestoreFailureHandler() throws {

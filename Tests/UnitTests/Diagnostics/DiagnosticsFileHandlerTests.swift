@@ -16,6 +16,14 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
+private actor MockDiagnosticsFileHandlerDelegate: DiagnosticsFileHandlerDelegate {
+    private(set) var onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount = 0
+
+    func onFileSizeIncreasedBeyondAutomaticSyncLimit() async {
+        onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount += 1
+    }
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class DiagnosticsFileHandlerTests: TestCase {
 
@@ -79,8 +87,8 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - getEntries
 
     func testGetEntries() async throws {
-        await self.fileHandler.append(line: Self.line1)
-        await self.fileHandler.append(line: Self.line2)
+        try await self.fileHandler.append(line: Self.line1)
+        try await self.fileHandler.append(line: Self.line2)
 
         let content1 = DiagnosticsEvent(id: UUID(uuidString: "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC")!,
                                         name: .customerInfoVerificationResult,
@@ -102,8 +110,8 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - emptyFile
 
     func testEmptyFile() async throws {
-        await self.fileHandler.append(line: Self.line1)
-        await self.fileHandler.append(line: Self.line2)
+        try await self.fileHandler.append(line: Self.line1)
+        try await self.fileHandler.append(line: Self.line2)
 
         var data = try await self.fileHandler.readFile()
         expect(data).toNot(beEmpty())
@@ -145,7 +153,7 @@ class DiagnosticsFileHandlerTests: TestCase {
               "version": \(iterator)
             }
             """.trimmingWhitespacesAndNewLines
-            await self.fileHandler.append(line: line)
+            try await self.fileHandler.append(line: line)
         }
 
         let data = try await self.fileHandler.readFile()
@@ -155,12 +163,65 @@ class DiagnosticsFileHandlerTests: TestCase {
         expect(result).to(beTrue())
     }
 
+    func testFileHandlerDelegateSizeToAutomaticSyncIsCalledIfFileBigEnough() async throws {
+        let delegate = MockDiagnosticsFileHandlerDelegate()
+
+        await self.handler.updateDelegate(delegate)
+
+        for iterator in 0...8000 {
+            let line = """
+            {
+              "properties": {"verification_result": "FAILED"},
+              "timestamp": "2024-04-04T12:55:59Z",
+              "name": "http_request_performed",
+              "version": \(iterator)
+            }
+            """.trimmingWhitespacesAndNewLines
+            try await self.fileHandler.append(line: line)
+        }
+
+        let data = try await self.fileHandler.readFile()
+        expect(data.compactMap { $0 }).toNot(beEmpty())
+
+        var count = await delegate.onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount
+        expect(count) == 0
+
+        let event = Self.sampleEvent()
+
+        await self.handler.appendEvent(diagnosticsEvent: event)
+
+        count = await delegate.onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount
+        expect(count) == 1
+
+        await self.handler.appendEvent(diagnosticsEvent: event)
+        await self.handler.appendEvent(diagnosticsEvent: event)
+
+        count = await delegate.onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount
+        expect(count) == 3
+    }
+
+    func testFileHandlerDelegateSizeToAutomaticSyncIsNotCalledIfFileNotBigEnough() async throws {
+        let delegate = MockDiagnosticsFileHandlerDelegate()
+
+        await self.handler.updateDelegate(delegate)
+
+        let event = Self.sampleEvent()
+
+        await self.handler.appendEvent(diagnosticsEvent: event)
+        await self.handler.appendEvent(diagnosticsEvent: event)
+        await self.handler.appendEvent(diagnosticsEvent: event)
+        await self.handler.appendEvent(diagnosticsEvent: event)
+
+        let count = await delegate.onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount
+        expect(count) == 0
+    }
+
     // MARK: - Invalid entries
 
     func testGetEntriesWithInvalidLine() async throws {
-        await self.fileHandler.append(line: Self.invalidEntryLine)
-        await self.fileHandler.append(line: Self.line1)
-        await self.fileHandler.append(line: Self.line2)
+        try await self.fileHandler.append(line: Self.invalidEntryLine)
+        try await self.fileHandler.append(line: Self.line1)
+        try await self.fileHandler.append(line: Self.line2)
 
         let content1 = DiagnosticsEvent(id: UUID(uuidString: "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC")!,
                                         name: .customerInfoVerificationResult,
@@ -178,6 +239,23 @@ class DiagnosticsFileHandlerTests: TestCase {
         expect(entries[0]).to(beNil())
         expect(entries[1]).to(equal(content1))
         expect(entries[2]).to(equal(content2))
+    }
+
+    // MARK: - FileHandler throwing errors
+
+    func testAppendEventWhenFileManagerAppendLineThrowsError() async throws {
+        struct FakeError: Error {}
+
+        let fileHandler = MockFileHandler()
+        await fileHandler.setAppendLineError(FakeError())
+
+        self.handler = DiagnosticsFileHandler(fileHandler)
+
+        await self.handler.appendEvent(diagnosticsEvent: Self.sampleEvent())
+
+        expect(self.logger.messages).to(containElementSatisfying {
+            $0.message.contains("Failed to store diagnostics event: ")
+        })
     }
 
 }

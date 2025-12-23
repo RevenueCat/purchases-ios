@@ -14,25 +14,31 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView: View {
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState
 
     @Environment(\.screenCondition)
     private var screenCondition
+
+    @Environment(\.countdownTime)
+    private var countdownTime: CountdownTime?
 
     private let viewModel: TextComponentViewModel
 
@@ -47,12 +53,16 @@ struct TextComponentView: View {
             packageContext: self.packageContext,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
-            )
+            ),
+            promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package),
+            countdownTime: countdownTime
         ) { style in
             if style.visible {
-                Text(.init(style.text))
-                    .font(style.font)
-                    .fontWeight(style.fontWeight)
+                NonLocalizedMarkdownText(
+                    text: style.text,
+                    font: style.font,
+                    fontWeight: style.fontWeight
+                )
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
@@ -67,13 +77,123 @@ struct TextComponentView: View {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+/// Parses markdown using AttributedString and does not use bundle assets for localization
+private struct NonLocalizedMarkdownText: View {
+
+    let text: String
+    let font: Font
+    let fontWeight: Font.Weight
+
+    var markdownText: AttributedString? {
+        #if swift(>=5.7)
+
+        /*
+         The intended behavior is:
+         * If the font weight of the text is <= Bold, Markdown bold should be Bold
+         * If the font weight of the text is > Bold, Markdown bold should be the same as the whole text (no difference)
+
+         We need to implement this behavior manually because AttributedString encodes Markdown bold as an
+         `inlinePresentationIntent` (.stronglyEmphasized) rather than an absolute `.bold` font. When a
+         view-level font weight is applied (e.g., `.fontWeight(.ultraLight)`), SwiftUI treats that as a
+         hard override for the entire run and no longer “promotes” the strong intent to a heavier face.
+         As a result, bold inside the attributed string is lost for non-regular base weights.
+         */
+        guard var attrString = try? AttributedString(
+            markdown: self.text,
+            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
+        ) else {
+            return nil
+        }
+
+        var fontAttribute = AttributeContainer()
+        fontAttribute.font = self.font.weight(self.fontWeight)
+        attrString.mergeAttributes(fontAttribute, mergePolicy: .keepNew)
+
+        if self.fontWeight.canBeBolded {
+            attrString.runs.filter {
+                $0.inlinePresentationIntent?.contains(.stronglyEmphasized) == true
+            }.forEach { run in
+                var substring = attrString[run.range]
+                substring.font = self.font.weight(.bold)
+                attrString[run.range] = substring
+            }
+        }
+
+        return attrString
+
+        #else
+        return nil
+        #endif
+    }
+
+    var body: some View {
+        #if swift(>=5.7)
+        Group {
+            if let markdownText = self.markdownText {
+                // Use markdown if we can successfully parse it
+                Text(markdownText)
+            } else {
+                // Display text as is because markdown is priority
+                Text(self.text)
+                    .font(self.font)
+                    .fontWeight(self.fontWeight)
+            }
+        }
+        #else
+        // Display text as is because markdown is priority
+        Text(self.text)
+            .font(self.font)
+            .fontWeight(self.fontWeight)
+        #endif
+    }
+}
+
+private extension Font.Weight {
+
+    var canBeBolded: Bool {
+        switch self {
+        case .ultraLight, .thin, .light, .regular, .medium, .semibold:
+            return true
+        case .bold, .heavy, .black:
+            return false
+        default:
+            return false
+        }
+    }
+}
+
 #if DEBUG
+
+// Needed for Xcode 14 since there are more than 10 previews
+#if swift(>=5.9)
 
 // swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView_Previews: PreviewProvider {
+    private static var platformPreview: some View {
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string(ProcessInfo.processInfo.platformString)
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.sizeThatFits)
 
-    static var previews: some View {
+    }
+
+    private static var defaultPreview: some View {
         // Default
         TextComponentView(
             // swiftlint:disable:next force_try
@@ -91,9 +211,127 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
+
+    }
+
+    static var previews: some View {
+        defaultPreview
         .previewDisplayName("Default")
+
+        platformPreview
+        .previewDisplayName("Detected Platform")
+
+        // Markdown
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        // swiftlint:disable:next line_length
+                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n[RevenueCat](https://revenuecat.com)")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Markdown")
+
+        // Markdown - Extra light
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        // swiftlint:disable:next line_length
+                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n[RevenueCat](https://revenuecat.com)")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    fontWeight: .extraLight,
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Markdown - Extra light")
+
+        // Markdown - Black
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        // swiftlint:disable:next line_length
+                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n[RevenueCat](https://revenuecat.com)")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    fontWeight: .black,
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Markdown - Black")
+
+        // Markdown - Invalid
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world\n**bold\n_italic\n`code \n[RevenueCat](https://revenuecat.com")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Markdown - Invalid")
+
+        // Blank line
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Before blank line.\n\nAfter blank line.")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Blank line")
 
         // Custom Font
         VStack {
@@ -126,7 +364,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
+                            "primary": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "Chalkduster"))
                         ]
                     )),
                     component: .init(
@@ -149,7 +387,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
+                            "primary": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "Chalkduster"))
                         ]
                     )),
                     component: .init(
@@ -172,7 +410,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("This Font Does Not Exist"))
+                            "primary": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "This Font Does Not Exist"))
                         ]
                     )),
                     component: .init(
@@ -184,7 +422,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Font")
 
@@ -201,7 +439,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "generic": .init(ios: .name("serif"))
+                            "generic": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "serif"))
                         ]
                     )),
                     component: .init(
@@ -224,7 +462,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "generic": .init(ios: .name("sans-serif"))
+                            "generic": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "sans-serif"))
                         ]
                     )),
                     component: .init(
@@ -247,7 +485,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "generic": .init(ios: .name("monospace"))
+                            "generic": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "monospace"))
                         ]
                     )),
                     component: .init(
@@ -259,7 +497,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Font - Generic")
 
@@ -313,7 +551,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Color")
 
@@ -346,7 +584,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Gradient")
 
@@ -380,7 +618,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
 
@@ -419,7 +657,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties(
+        .previewRequiredPaywallsV2Properties(
             componentViewState: .selected
         )
         .previewLayout(.sizeThatFits)
@@ -450,7 +688,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties(
+        .previewRequiredPaywallsV2Properties(
             screenCondition: .medium
         )
         .previewLayout(.sizeThatFits)
@@ -481,7 +719,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Condition - Has medium but not medium")
 
@@ -530,7 +768,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties(
+        .previewRequiredPaywallsV2Properties(
             packageContext: .init(
                 package: PreviewMock.annualStandardPackage,
                 variableContext: .init(packages: [
@@ -544,6 +782,8 @@ struct TextComponentView_Previews: PreviewProvider {
 
     }
 }
+
+#endif
 
 #endif
 

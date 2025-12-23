@@ -48,6 +48,10 @@ final class MockPurchases {
 
     var mockedResponseVerificationMode: Signing.ResponseVerificationMode = .disabled
 
+    var mockedHealthReportRequestResponse: Result<HealthReport, PublicError> = .success(
+        HealthReport(status: .passed, projectId: nil, appId: nil, checks: [])
+    )
+
 }
 
 extension MockPurchases: InternalPurchasesType {
@@ -57,6 +61,14 @@ extension MockPurchases: InternalPurchasesType {
             return try self.mockedHealthRequestWithSignatureVerificationResponse.get()
         } else {
             return try self.mockedHealthRequestResponse.get()
+        }
+    }
+
+    func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
+        do {
+            return try self.mockedHealthReportRequestResponse.get().validate()
+        } catch {
+            return .init(status: .unhealthy(.unknown(error)))
         }
     }
 
@@ -119,6 +131,10 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    var storeFrontCountryCode: String? {
+        self.unimplemented()
+    }
+
     var isAnonymous: Bool {
         self.unimplemented()
     }
@@ -139,6 +155,14 @@ extension MockPurchases: PurchasesType {
         get { self.unimplemented() }
         // swiftlint:disable:next unused_setter_value
         set { self.unimplemented() }
+    }
+
+    func getStorefront() async -> RevenueCat.Storefront? {
+        self.unimplemented()
+    }
+
+    func getStorefront(completion: @escaping GetStorefrontBlock) {
+        self.unimplemented()
     }
 
     func logIn(
@@ -435,6 +459,14 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func setAmplitudeUserID(_ amplitudeUserID: String?) {
+        self.unimplemented()
+    }
+
+    func setAmplitudeDeviceID(_ amplitudeDeviceID: String?) {
+        self.unimplemented()
+    }
+
     func collectDeviceIdentifiers() {
         self.unimplemented()
     }
@@ -451,6 +483,14 @@ extension MockPurchases: PurchasesType {
         _ params: PurchaseParams,
         completion: @escaping PurchaseCompletedBlock
     ) {
+        self.unimplemented()
+    }
+
+    func getVirtualCurrencies(completion: @escaping (RevenueCat.VirtualCurrencies?, RevenueCat.PublicError?) -> Void) {
+        self.unimplemented()
+    }
+
+    func invalidateVirtualCurrenciesCache() {
         self.unimplemented()
     }
 }
@@ -530,6 +570,14 @@ extension MockPurchases: PurchasesSwiftType {
       func redeemWebPurchase(
         _ webPurchaseRedemption: WebPurchaseRedemption
     ) async -> WebPurchaseRedemptionResult {
+        self.unimplemented()
+    }
+
+    func virtualCurrencies() async throws -> RevenueCat.VirtualCurrencies {
+        self.unimplemented()
+    }
+
+    var cachedVirtualCurrencies: VirtualCurrencies? {
         self.unimplemented()
     }
 }

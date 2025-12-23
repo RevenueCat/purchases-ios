@@ -16,7 +16,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
@@ -24,6 +24,7 @@ import SwiftUI
 // swiftlint:disable:next type_body_length
 private enum MultiTierPreview {
 
+    @MainActor
     static let paywallState = PackageContext(
         package: nil,
         variableContext: .init()
@@ -124,6 +125,7 @@ private enum MultiTierPreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }
@@ -171,7 +173,7 @@ private enum MultiTierPreview {
                         // Tab 1
                         .tabControlButton(
                             .init(
-                                tabIndex: 0,
+                                tabId: "1",
                                 stack: .init(
                                     components: [
                                         .text(.init(
@@ -203,7 +205,7 @@ private enum MultiTierPreview {
                         // Tab 2
                         .tabControlButton(
                             .init(
-                                tabIndex: 1,
+                                tabId: "2",
                                 stack: .init(
                                     components: [
                                         .text(.init(
@@ -242,7 +244,7 @@ private enum MultiTierPreview {
             ),
             tabs: [
                 // Tab 1
-                .init(stack: .init(
+                .init(id: "1", stack: .init(
                     components: [
                         .tabControl(.init()),
                         .stack(makePackagesStack(
@@ -255,7 +257,7 @@ private enum MultiTierPreview {
                     ]
                 )),
                 // Tab 2
-                .init(stack: .init(
+                .init(id: "2", stack: .init(
                     components: [
                         .tabControl(.init()),
                         .stack(makePackagesStack(
@@ -290,7 +292,9 @@ private enum MultiTierPreview {
                                     topTrailing: 16,
                                     bottomLeading: 16,
                                     bottomTrailing: 16))
-        )
+        ),
+        action: .inAppCheckout,
+        method: .inAppCheckout
     )
 
     static let purchaseButtonStack = PaywallComponent.StackComponent(
@@ -394,14 +398,17 @@ struct MultiTierPreview_Previews: PreviewProvider {
                                 PreviewMock.monthlyStandardPackage,
                                 PreviewMock.weeklyPremiumPackage,
                                 PreviewMock.monthlyPremiumPackage
-                               ]),
+                               ],
+                               webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
+            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
+            failedToLoadFont: { _ in },
+            colorScheme: .light
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 5")
     }

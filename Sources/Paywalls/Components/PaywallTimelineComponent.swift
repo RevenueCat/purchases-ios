@@ -89,15 +89,18 @@ public extension PaywallComponent {
             public let description: TextComponent?
             public let icon: IconComponent
             public let connector: Connector?
+            public let overrides: ComponentOverrides<PartialTimelineItem>?
 
             public init(title: TextComponent,
                         description: TextComponent?,
                         icon: IconComponent,
-                        connector: Connector) {
+                        connector: Connector,
+                        overrides: ComponentOverrides<PartialTimelineItem>?) {
                 self.title = title
                 self.description = description
                 self.icon = icon
                 self.connector = connector
+                self.overrides = overrides
             }
 
             public static func == (lhs: PaywallComponent.TimelineComponent.Item,
@@ -105,7 +108,8 @@ public extension PaywallComponent {
                 return lhs.title == rhs.title &&
                 lhs.description == rhs.description &&
                 lhs.icon == rhs.icon &&
-                lhs.connector == rhs.connector
+                lhs.connector == rhs.connector &&
+                lhs.overrides == rhs.overrides
             }
 
             public func hash(into hasher: inout Hasher) {
@@ -113,6 +117,7 @@ public extension PaywallComponent {
                 hasher.combine(description)
                 hasher.combine(icon)
                 hasher.combine(connector)
+                hasher.combine(overrides)
             }
 
         }
@@ -146,6 +151,12 @@ public extension PaywallComponent {
         public enum IconAlignment: String, Sendable, Codable, Equatable, Hashable {
             case title = "title"
             case titleAndDescription = "title_and_description"
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let rawValue = try? container.decode(String.self)
+                self = IconAlignment(rawValue: rawValue ?? "") ?? .title
+            }
         }
     }
 
@@ -203,6 +214,30 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin
+        }
+
+    }
+
+    final class PartialTimelineItem: PaywallPartialComponent {
+
+        public let visible: Bool?
+        public let connector: TimelineComponent.Connector?
+
+        public init(visible: Bool?,
+                    connector: TimelineComponent.Connector?) {
+            self.visible = visible
+            self.connector = connector
+        }
+
+        public static func == (lhs: PartialTimelineItem,
+                               rhs: PartialTimelineItem) -> Bool {
+            lhs.visible == rhs.visible &&
+            lhs.connector == rhs.connector
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(visible)
+            hasher.combine(connector)
         }
 
     }

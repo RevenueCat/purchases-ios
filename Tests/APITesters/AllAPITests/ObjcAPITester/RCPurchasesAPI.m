@@ -29,6 +29,7 @@ id<RCPurchasesDelegate> delegate;
 NSString *appUserID;
 BOOL isAnonymous;
 NSString *storeFrontCountryCode;
+NSLocale *storeFrontLocale;
 RCWebPurchaseRedemption *webPurchaseRedemptionLink;
 NSURL *url;
 
@@ -73,6 +74,9 @@ NSURL *url;
     appUserID = [p appUserID];
     isAnonymous = [p isAnonymous];
     storeFrontCountryCode = [p storeFrontCountryCode];
+    if (@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)) {
+        storeFrontLocale = [p storeFrontLocale];
+    }
 
     RCCustomerInfo *pi = nil;
     RCStoreProduct *storeProduct = nil;
@@ -203,6 +207,14 @@ NSURL *url;
 
     }];
 
+    [p getVirtualCurrenciesWithCompletion: ^(RCVirtualCurrencies * _Nullable virtualCurrencies, NSError * _Nullable error) {
+
+    }];
+
+    [p invalidateVirtualCurrenciesCache];
+
+    RCVirtualCurrencies * _Nullable __unused virtualCurrencies = p.cachedVirtualCurrencies;
+
 #if (TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !TARGET_OS_TV && !TARGET_OS_WATCH
     if (@available(iOS 15.0, *)) {
         [p beginRefundRequestForProduct:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
@@ -221,6 +233,8 @@ NSURL *url;
         [p presentCodeRedemptionSheet];
     }
 #endif
+
+    [p getStorefrontWithCompletion:^(RCStorefront * _Nullable s) { }];
 }
 
 + (void)checkEnums {

@@ -7,13 +7,13 @@
 
 import Nimble
 import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SnapshotTesting
 import SwiftUI
 
 #if !os(watchOS) && !os(macOS)
 
-private let spanishLocale = Locale(identifier: "es_ES")
+private let spanishLocale = "es_ES"
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PaywallViewLocalizationTests: BaseSnapshotTest {
@@ -27,12 +27,12 @@ class PaywallViewLocalizationTests: BaseSnapshotTest {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallViewLocalizationTests {
 
-    static func test(_ locale: Locale) {
+    static func test(_ locale: String) {
         Self.createView(locale: locale)
             .snapshot(size: Self.fullScreenSize)
     }
 
-    private static func createView(locale: Locale) -> some View {
+    private static func createView(locale: String) -> some View {
         return Self.createPaywall(
             offering: Self.offering.withLocalImages,
             introEligibility: .init(checker: { packages in
@@ -47,7 +47,7 @@ private extension PaywallViewLocalizationTests {
                         }
                 )
             }),
-            locale: locale
+            localeOverride: locale
         )
     }
 
@@ -71,11 +71,12 @@ private extension PaywallViewLocalizationTests {
             ),
             localization: localization,
             assetBaseURL: TestData.paywallAssetBaseURL,
-            locale: spanishLocale
+            locale: Locale(identifier: spanishLocale)
         ),
         availablePackages: [TestData.weeklyPackage,
                             TestData.monthlyPackage,
-                            TestData.annualPackage]
+                            TestData.annualPackage],
+        webCheckoutUrl: nil
     )
 
     private static let localization: PaywallData.LocalizedConfiguration = .init(

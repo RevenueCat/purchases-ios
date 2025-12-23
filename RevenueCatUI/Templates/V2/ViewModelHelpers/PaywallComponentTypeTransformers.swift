@@ -15,15 +15,16 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.FontSize {
 
     func makeFont(familyName: String?) -> Font {
-        return Font(self.makeUIFont(familyName: familyName))
+        return Font(self.makePlatformFont(familyName: familyName))
     }
 
-    private var textStyle: UIFont.TextStyle {
+    private var textStyle: PlatformFont.TextStyle {
         switch self {
         case .headingXXL: return .largeTitle
         case .headingXL: return .title1
@@ -38,7 +39,7 @@ extension PaywallComponent.FontSize {
     }
 
     // swiftlint:disable cyclomatic_complexity
-    private func makeUIFont(familyName: String?) -> UIFont {
+    private func makePlatformFont(familyName: String?) -> PlatformFont {
         let fontSize: CGFloat
         switch self {
         case .headingXXL: fontSize = 40
@@ -54,20 +55,26 @@ extension PaywallComponent.FontSize {
         }
 
         // Create the base font, with fallback to the system font
-        let baseFont: UIFont
+        let baseFont: PlatformFont
         if let familyName = familyName {
-            if let customFont = UIFont(name: familyName, size: fontSize) {
+            if let customFont = PlatformFont(name: familyName, size: fontSize) {
                 baseFont = customFont
             } else {
                 Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
-                baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+                baseFont = PlatformFont.systemFont(ofSize: fontSize, weight: .regular)
             }
         } else {
-            baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+            baseFont = PlatformFont.systemFont(ofSize: fontSize, weight: .regular)
         }
 
         // Apply dynamic type scaling
+        #if canImport(UIKit)
         return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
+        #else
+        // macOS does not support dynamic type (see
+        // https://developer.apple.com/design/human-interface-guidelines/typography)
+        return baseFont
+        #endif
     }
 
 }
@@ -229,6 +236,20 @@ extension PaywallComponent.Padding {
 
 }
 
+extension EdgeInsets {
+    func extend(by amount: CGFloat) -> EdgeInsets {
+        if amount == 0 {
+            return self
+        }
+        return .init(
+            top: self.top + amount,
+            leading: self.leading + amount,
+            bottom: self.bottom + amount,
+            trailing: self.trailing + amount
+        )
+    }
+}
+
 extension PaywallComponent.FitMode {
     var contentMode: ContentMode {
         switch self {
@@ -313,29 +334,16 @@ extension PaywallComponent.ColorHex {
 extension DisplayableColorScheme {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func toDynamicColor() -> Color {
-        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    func toDynamicColor(with colorScheme: SwiftUI.ColorScheme) -> Color {
         guard let darkModeColor = self.dark else {
             return light.toColor(fallback: Color.clear)
         }
 
-        let lightModeColor = light
-
-        return Color(UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .light, .unspecified:
-                return UIColor(lightModeColor.toColor(fallback: Color.clear))
-            case .dark:
-                return UIColor(darkModeColor.toColor(fallback: Color.clear))
-            @unknown default:
-                return UIColor(lightModeColor.toColor(fallback: Color.clear))
-            }
-        })
-        #elseif os(watchOS) || os(macOS)
-        // For platforms where `UIColor` is unavailable, fallback to using the light or dark color directly
-        let currentColorScheme = (Environment(\.colorScheme).wrappedValue)
-        return effectiveColor(for: currentColorScheme).toColor(fallback: Color.clear)
-        #endif
+        if colorScheme == .dark {
+            return darkModeColor.toColor(fallback: .clear)
+        } else {
+            return light.toColor(fallback: .clear)
+        }
     }
 
     func effectiveColor(for colorScheme: ColorScheme) -> DisplayableColorInfo {
@@ -378,7 +386,7 @@ extension PaywallComponent.Border {
 
     func border(uiConfigProvider: UIConfigProvider) -> ShapeModifier.BorderInfo? {
         return ShapeModifier.BorderInfo(
-            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider),
             width: self.width
         )
     }
@@ -388,9 +396,9 @@ extension PaywallComponent.Border {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.Shadow {
 
-    func shadow(uiConfigProvider: UIConfigProvider) -> ShadowModifier.ShadowInfo? {
+    func shadow(uiConfigProvider: UIConfigProvider, colorScheme: ColorScheme) -> ShadowModifier.ShadowInfo? {
         return ShadowModifier.ShadowInfo(
-            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(with: colorScheme),
             radius: self.radius,
             x: self.x,
             y: self.y

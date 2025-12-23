@@ -10,26 +10,53 @@
 //  PaywallViewEventsTests.swift
 //
 //  Created by Nacho Soto on 9/7/23.
+// swiftlint:disable type_name
 
 import Nimble
 import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
 
 #if !os(watchOS) && !os(macOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class PaywallViewEventsFullscreenLightModeTests: BasePaywallViewEventsTests {
+    override var mode: PaywallViewMode { .fullScreen }
+    override var scheme: ColorScheme { .light }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class PaywallViewEventsFooterDarkModeTests: BasePaywallViewEventsTests {
+    override var mode: PaywallViewMode { .footer }
+    override var scheme: ColorScheme { .dark }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-class PaywallViewEventsTests: TestCase {
+class BasePaywallViewEventsTests: TestCase {
+
+    // To be overridden by subclasses
+    var mode: PaywallViewMode { fatalError("Must override") }
+    var scheme: ColorScheme { fatalError("Must override") }
 
     private var events: [PaywallEvent] = []
     private var handler: PurchaseHandler!
 
-    private let mode: PaywallViewMode = .random
-    private let scheme: ColorScheme = Bool.random() ? .dark : .light
+    /// Prevents XCTest from running this base class directly.
+    /// This class is intended to be subclassed for concrete test cases,
+    /// each providing their own `mode` and `scheme` configurations.
+    /// By returning an empty test suite for the base class,
+    /// we ensure that shared test logic is only executed through subclasses.
+    override class var defaultTestSuite: XCTestSuite {
+        return self == BasePaywallViewEventsTests.self
+            ? XCTestSuite(name: "BasePaywallViewEventsTests")
+            : super.defaultTestSuite
+    }
 
+    private var impressionEventExpectation: XCTestExpectation!
     private var closeEventExpectation: XCTestExpectation!
+
     override func setUp() {
         super.setUp()
 
@@ -42,20 +69,29 @@ class PaywallViewEventsTests: TestCase {
                     await self?.track(event)
                 }
             }
+        self.impressionEventExpectation = XCTestExpectation(description: "Impression event")
         self.closeEventExpectation = .init(description: "Close event")
     }
 
     func testPaywallImpressionEvent() async throws {
-        try await self.runDuringViewLifetime {}
 
-        expect(self.events).to(containElementSatisfying { $0.eventType == .impression })
+        try await self.runDuringViewLifetime {
+            await Task.yield()
+        }
+
+        await self.fulfillment(of: [impressionEventExpectation], timeout: 3)
+
+        expect(self.events)
+            .to(containElementSatisfying { $0.eventType == .impression })
 
         let event = try XCTUnwrap(self.events.first { $0.eventType == .impression })
         self.verifyEventData(event.data)
     }
 
     func testPaywallCloseEvent() async throws {
-        try await self.runDuringViewLifetime {}
+        try await self.runDuringViewLifetime {
+            await Task.yield()
+        }
         await self.waitForCloseEvent()
 
         expect(self.events).to(haveCount(2))
@@ -66,7 +102,9 @@ class PaywallViewEventsTests: TestCase {
     }
 
     func testCloseEventHasSameSessionID() async throws {
-        try await self.runDuringViewLifetime {}
+        try await self.runDuringViewLifetime {
+            await Task.yield()
+        }
         await self.waitForCloseEvent()
 
         expect(self.events).to(haveCount(2))
@@ -92,12 +130,16 @@ class PaywallViewEventsTests: TestCase {
     func testDifferentPaywallsCreateSeparateSessionIdentifiers() async throws {
         self.closeEventExpectation.expectedFulfillmentCount = 2
 
-        try await self.runDuringViewLifetime {}
-        try await self.runDuringViewLifetime {}
+        try await self.runDuringViewLifetime {
+            await Task.yield()
+        }
+        try await self.runDuringViewLifetime {
+            await Task.yield()
+        }
 
         await self.waitForCloseEvent()
 
-        expect(self.events).to(haveCount(4))
+        await expect(self.events).toEventually(haveCount(4))
         expect(self.events.map(\.eventType)) == [.impression, .close, .impression, .close]
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(2))
     }
@@ -109,7 +151,7 @@ class PaywallViewEventsTests: TestCase {
 // MARK: -
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallViewEventsTests {
+private extension BasePaywallViewEventsTests {
 
     /// Invokes `createView` and runs the given `closure` during the lifetime of the view.
     /// Returns after the view has been completly removed from the hierarchy.
@@ -120,6 +162,9 @@ private extension PaywallViewEventsTests {
         try await Task {
             let dispose = try self.createView()
                 .addToHierarchy()
+
+            try await Task.sleep(nanoseconds: 3 * 1_000_000)
+
             try await closure()
             dispose()
         }.value
@@ -129,7 +174,7 @@ private extension PaywallViewEventsTests {
         self.events.append(event)
 
         switch event {
-        case .impression: break
+        case .impression: self.impressionEventExpectation.fulfill()
         case .cancel: break
         case .close: self.closeEventExpectation.fulfill()
         }
@@ -157,7 +202,7 @@ private extension PaywallViewEventsTests {
     }
 
     func waitForCloseEvent() async {
-        await self.fulfillment(of: [self.closeEventExpectation], timeout: 1)
+        await self.fulfillment(of: [self.closeEventExpectation], timeout: 3)
     }
 
 }

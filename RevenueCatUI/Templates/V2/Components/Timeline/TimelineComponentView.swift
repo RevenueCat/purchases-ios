@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TimelineComponentView: View {
@@ -23,10 +23,13 @@ struct TimelineComponentView: View {
     private let viewModel: TimelineComponentViewModel
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState
@@ -41,12 +44,17 @@ struct TimelineComponentView: View {
         self.viewModel = viewModel
     }
 
+    @State private var maxIconWidth: CGFloat = 0
+
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
             )
         ) { style in
             if style.visible {
@@ -61,8 +69,24 @@ struct TimelineComponentView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: style.itemSpacing ?? 0) {
             ForEach(viewModel.items, id: \.component) { item in
-                timelineRow(item: item, style: style)
+                item.styles(
+                    state: self.componentViewState,
+                    condition: self.screenCondition,
+                    isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                        package: self.packageContext.package
+                    ),
+                    isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                        for: self.packageContext.package
+                    )
+                ) { itemStyle in
+                    if itemStyle.visible {
+                        timelineRow(itemStyle: itemStyle, style: style)
+                    }
+                }
             }
+        }
+        .onPreferenceChange(MaxIconWidthPreferenceKey.self) { width in
+            self.maxIconWidth = width
         }
         // Add `itemSpacing` padding to the bottom of the timeline so the last connector can extend
         // a little beyond the description text of the last item.
@@ -70,42 +94,59 @@ struct TimelineComponentView: View {
         .backgroundPreferenceValue(ItemBoundsKey.self) { bounds in
             GeometryReader { proxy in
                 ForEach(Array(viewModel.items.enumerated()), id: \.offset) { index, item in
-                    let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil
-                    // swiftlint:disable identifier_name
-                    if let from = bounds[item.id], let next, let to = bounds[next.id] {
-                        // Connect two items from center to center respecting margins
-                        if let connector = item.component.connector {
-                            let color = connector.color.asDisplayable(uiConfigProvider: viewModel.uiConfigProvider)
-                            Rectangle()
-                                .fillColorScheme(color, colorScheme: colorScheme)
-                                .frame(
-                                    width: connector.width,
-                                    height: proxy[to][.center].y - proxy[from][.center].y -
-                                    (item.component.connector?.margin.bottom ?? 0) -
-                                    (item.component.connector?.margin.top ?? 0)
-                                )
-                                .offset(
-                                    x: proxy[from][.bottom].x - connector.width / 2,
-                                    y: proxy[from][.center].y + (item.component.connector?.margin.top ?? 0)
-                                )
-                        }
-                    } else if let from = bounds[item.id] {
-                        // The last connector goes from the center of the last icon to the bottom of component
-                        // (including `itemSpacing` padding and respecting margins)
-                        if let connector = item.component.connector {
-                            let color = connector.color.asDisplayable(uiConfigProvider: viewModel.uiConfigProvider)
-                            Rectangle()
-                                .fillColorScheme(color, colorScheme: colorScheme)
-                                .frame(
-                                    width: connector.width,
-                                    height: proxy.size.height - proxy[from][.center].y -
-                                    (item.component.connector?.margin.bottom ?? 0) -
-                                    (item.component.connector?.margin.top ?? 0)
-                                )
-                                .offset(
-                                    x: proxy[from][.bottom].x - connector.width / 2,
-                                    y: proxy[from][.center].y + (item.component.connector?.margin.top ?? 0)
-                                )
+                    item.styles(
+                        state: self.componentViewState,
+                        condition: self.screenCondition,
+                        isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                            package: self.packageContext.package
+                        ),
+                        isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                            for: self.packageContext.package
+                        )
+                    ) { itemStyle in
+                        if itemStyle.visible {
+                            let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil
+                            // swiftlint:disable identifier_name
+                            if let from = bounds[itemStyle.id], let next, let to = bounds[next.id] {
+                                // Connect two items from center to center respecting margins
+                                if let connector = itemStyle.connector {
+                                    let color = connector.color.asDisplayable(
+                                        uiConfigProvider: viewModel.uiConfigProvider
+                                    )
+                                    Rectangle()
+                                        .fillColorScheme(color, colorScheme: colorScheme)
+                                        .frame(
+                                            width: connector.width,
+                                            height: proxy[to][.center].y - proxy[from][.center].y -
+                                            (connector.margin.bottom ?? 0) -
+                                            (connector.margin.top ?? 0)
+                                        )
+                                        .offset(
+                                            x: proxy[from][.bottom].x - connector.width / 2,
+                                            y: proxy[from][.center].y + (connector.margin.top ?? 0)
+                                        )
+                                }
+                            } else if let from = bounds[itemStyle.id] {
+                                // The last connector goes from the center of the last icon to the bottom of component
+                                // (including `itemSpacing` padding and respecting margins)
+                                if let connector = itemStyle.connector {
+                                    let color = connector.color.asDisplayable(
+                                        uiConfigProvider: viewModel.uiConfigProvider
+                                    )
+                                    Rectangle()
+                                        .fillColorScheme(color, colorScheme: colorScheme)
+                                        .frame(
+                                            width: connector.width,
+                                            height: proxy.size.height - proxy[from][.center].y -
+                                            (connector.margin.bottom ?? 0) -
+                                            (connector.margin.top ?? 0)
+                                        )
+                                        .offset(
+                                            x: proxy[from][.bottom].x - connector.width / 2,
+                                            y: proxy[from][.center].y + (connector.margin.top ?? 0)
+                                        )
+                                }
+                            }
                         }
                     }
                 }
@@ -118,23 +159,29 @@ struct TimelineComponentView: View {
 
     @ViewBuilder
     private func timelineRow(
-        item: TimelineItemViewModel,
+        itemStyle: TimelineItemStyle,
         style: TimelineComponentStyle
     ) -> some View {
         HStack(alignment: .centerIcon, spacing: style.columnGutter ?? 0) {
             VStack(spacing: 0) {
-                IconComponentView(viewModel: item.icon)
+                IconComponentView(viewModel: itemStyle.icon)
                     // Store the bounds of the icon so we can later use them to position the connectors
-                    .anchorPreference(key: ItemBoundsKey.self, value: .bounds, transform: { [item.id: $0 ]})
+                    .anchorPreference(key: ItemBoundsKey.self, value: .bounds, transform: { [itemStyle.id: $0 ]})
                     .alignmentGuide(.centerIcon) { dim in dim[VerticalAlignment.center] }
+                    .background(GeometryReader { geometry in
+                        Color.clear.preference(
+                            key: MaxIconWidthPreferenceKey.self,
+                            value: geometry.size.width
+                        )
+                    })
             }
-
+            .frame(width: maxIconWidth > 0 ? maxIconWidth : nil)
             VStack(alignment: .leading, spacing: style.textSpacing ?? 0) {
-                TextComponentView(viewModel: item.title)
+                TextComponentView(viewModel: itemStyle.title)
                     .applyIf(style.iconAlignment == .title) { view in
                         view.alignmentGuide(.centerIcon) { dim in dim[VerticalAlignment.center] }
                     }
-                if let description = item.description {
+                if let description = itemStyle.description {
                     TextComponentView(viewModel: description)
                 }
             }
@@ -163,6 +210,14 @@ private struct ItemBoundsKey: PreferenceKey {
     }
 }
 
+private struct MaxIconWidthPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 private extension CGRect {
     subscript(unitPoint: UnitPoint) -> CGPoint {
         CGPoint(x: minX + width * unitPoint.x, y: minY + height * unitPoint.y)
@@ -183,7 +238,11 @@ struct ContentView_Previews: PreviewProvider {
         )
     }
 
-    static func iconComponent(name: String, color: String) -> PaywallComponent.IconComponent {
+    static func iconComponent(
+        name: String,
+        color: String,
+        size: PaywallComponent.Size = .init(width: .fixed(32), height: .fixed(32))
+    ) -> PaywallComponent.IconComponent {
         return .init(
             baseUrl: "https://icons.pawwalls.com/icons",
             iconName: name,
@@ -193,7 +252,7 @@ struct ContentView_Previews: PreviewProvider {
                 heic: "\(name).heic",
                 webp: "\(name).webp"
             ),
-            size: .init(width: .fixed(32), height: .fixed(32)),
+            size: size,
             padding: .init(top: 5, bottom: 5, leading: 5, trailing: 5),
             margin: .zero,
             color: PaywallComponent.ColorScheme(
@@ -229,7 +288,8 @@ struct ContentView_Previews: PreviewProvider {
                 width: 8,
                 color: .init(light: .hex("#576CDB66")),
                 margin: .init(top: 14, bottom: 14, leading: 0, trailing: 0)
-            )
+            ),
+            overrides: nil
         ),
         PaywallComponent.TimelineComponent.Item(
             title: .init(
@@ -251,7 +311,8 @@ struct ContentView_Previews: PreviewProvider {
                 width: 8,
                 color: .init(light: .hex("#576CDB66")),
                 margin: .init(top: 14, bottom: 14, leading: 0, trailing: 0)
-            )
+            ),
+            overrides: nil
         ),
         PaywallComponent.TimelineComponent.Item(
             title: .init(
@@ -268,7 +329,7 @@ struct ContentView_Previews: PreviewProvider {
                 size: .init(width: .fit, height: .fit),
                 horizontalAlignment: .leading
             ),
-            icon: iconComponent(name: "star", color: "#11D483"),
+            icon: iconComponent(name: "star", color: "#11D483", size: .init(width: .fixed(50), height: .fixed(50))),
             connector: .init(
                 width: 8,
                 color: .init(
@@ -277,8 +338,9 @@ struct ContentView_Previews: PreviewProvider {
                         .init(color: "#FFFFFF", percent: 70)
                     ])
                 ),
-                margin: .init(top: 14, bottom: 0, leading: 0, trailing: 0)
-            )
+                margin: .init(top: 23, bottom: 0, leading: 0, trailing: 0)
+            ),
+            overrides: nil
         )
     ]
 
@@ -309,7 +371,7 @@ struct ContentView_Previews: PreviewProvider {
                     ]
                 ), uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
             ))
-            .previewRequiredEnvironmentProperties()
+            .previewRequiredPaywallsV2Properties()
             .previewDisplayName("Timeline - \(alignment)")
         }
 
@@ -341,7 +403,7 @@ fileprivate extension TimelineComponentViewModel {
                     component: item.title
                 ),
                 description: description,
-                icon: try IconComponentViewModel(
+                icon: IconComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: item.icon
@@ -349,7 +411,7 @@ fileprivate extension TimelineComponentViewModel {
             )
         }
 
-        try self.init(
+        self.init(
             component: component,
             items: models,
             uiConfigProvider: uiConfigProvider

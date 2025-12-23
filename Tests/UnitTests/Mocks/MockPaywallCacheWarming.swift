@@ -52,4 +52,62 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
         self.invokedWarmUpPaywallImagesCacheOfferings = offerings
     }
 
+    // MARK: -
+
+    private let _invokedWarmUpPaywallVideosCache: Atomic<Bool> = false
+    private let _invokedWarmUpPaywallVideosCacheOfferings: Atomic<Offerings?> = nil
+
+    var invokedWarmUpPaywallVideosCache: Bool {
+        get { return self._invokedWarmUpPaywallVideosCache.value }
+        set { self._invokedWarmUpPaywallVideosCache.value = newValue }
+    }
+    var invokedWarmUpPaywallVideosCacheOfferings: Offerings? {
+        get { return self._invokedWarmUpPaywallVideosCacheOfferings.value }
+        set { self._invokedWarmUpPaywallVideosCacheOfferings.value = newValue }
+    }
+
+    func warmUpPaywallVideosCache(offerings: Offerings) async {
+        self.invokedWarmUpPaywallVideosCache = true
+        self.invokedWarmUpPaywallVideosCacheOfferings = offerings
+    }
+
+    // MARK: -
+
+    private let _invokedWarmUpPaywallFontsCache: Atomic<Bool> = false
+    private let _invokedWarmUpPaywallFontsCacheOfferings: Atomic<Offerings?> = nil
+
+    var invokedWarmUpPaywallFontsCache: Bool {
+        get { return self._invokedWarmUpPaywallFontsCache.value }
+        set { self._invokedWarmUpPaywallFontsCache.value = newValue }
+    }
+    var invokedWarmUpPaywallFontsCacheOfferings: Offerings? {
+        get { return self._invokedWarmUpPaywallFontsCacheOfferings.value }
+        set { self._invokedWarmUpPaywallFontsCacheOfferings.value = newValue }
+    }
+
+    func warmUpPaywallFontsCache(offerings: Offerings) {
+        self.invokedWarmUpPaywallFontsCache = true
+        self.invokedWarmUpPaywallFontsCacheOfferings = offerings
+    }
+
+#if !os(tvOS)
+
+    private let _invokedTriggerFontDownloadIfNeeded: Atomic<Bool> = false
+    private let _invokedTriggerFontDownloadIfNeededFontsConfig: Atomic<UIConfig.FontsConfig?> = nil
+
+    var invokedTriggerFontDownloadIfNeeded: Bool {
+        get { return self._invokedTriggerFontDownloadIfNeeded.value }
+        set { self._invokedTriggerFontDownloadIfNeeded.value = newValue }
+    }
+    var invokedTriggerFontDownloadIfNeededFontsConfig: UIConfig.FontsConfig? {
+        get { return self._invokedTriggerFontDownloadIfNeededFontsConfig.value }
+        set { self._invokedTriggerFontDownloadIfNeededFontsConfig.value = newValue }
+    }
+
+    func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async {
+        self.invokedWarmUpEligibilityCache = true
+        self.invokedTriggerFontDownloadIfNeededFontsConfig = fontsConfig
+    }
+
+#endif
 }

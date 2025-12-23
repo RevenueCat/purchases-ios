@@ -15,13 +15,18 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.openSheet) private var openSheet
+    @Environment(\.offerCodeRedemptionInitiatedAction)
+    private var offerCodeRedemptionInitiatedAction: OfferCodeRedemptionInitiatedAction?
     @State private var inAppBrowserURL: URL?
     @State private var showCustomerCenter = false
+    @State private var offerCodeRedemptionSheet = false
+    @State private var showingWebPaywallLinkAlert = false
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -29,7 +34,8 @@ struct ButtonComponentView: View {
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
 
-    internal init(viewModel: ButtonComponentViewModel, onDismiss: @escaping () -> Void) {
+    internal init(viewModel: ButtonComponentViewModel,
+                  onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
     }
@@ -44,7 +50,7 @@ struct ButtonComponentView: View {
         switch actionType {
         case .purchase:
             return false
-        case .restore:
+        case .restore, .pendingPurchaseContinuation:
             return true
         }
     }
@@ -55,30 +61,33 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        AsyncButton {
-            try await performAction()
-        } label: {
-            StackComponentView(
-                viewModel: self.viewModel.stackViewModel,
-                onDismiss: self.onDismiss,
-                showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
-            )
+        if !self.viewModel.hasUnknownAction {
+            AsyncButton {
+                try await performAction()
+            } label: {
+                StackComponentView(
+                    viewModel: self.viewModel.stackViewModel,
+                    onDismiss: self.onDismiss,
+                    showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
+                )
+            }
+            .withTransition(viewModel.component.transition)
+            .applyIf(self.shouldBeDisabled, apply: { view in
+                view
+                    .disabled(true)
+                    .opacity(0.35)
+            })
+            #if canImport(SafariServices) && canImport(UIKit)
+            .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
+                SafariView(url: self.inAppBrowserURL!)
+            }
+            #if os(iOS)
+            .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
+                self.showCustomerCenter = false
+            })
+            #endif
+            #endif
         }
-        .applyIf(self.shouldBeDisabled, apply: { view in
-            view
-                .disabled(true)
-                .opacity(0.35)
-        })
-        #if canImport(SafariServices) && canImport(UIKit)
-        .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-            SafariView(url: self.inAppBrowserURL!)
-        }
-        #if os(iOS)
-        .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
-            self.showCustomerCenter = false
-        })
-        #endif
-        #endif
     }
 
     private func performAction() async throws {
@@ -89,6 +98,16 @@ struct ButtonComponentView: View {
             navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
+        case .unknown:
+            break
+        case .sheet(let sheet):
+            if let sheetStackViewModel = self.viewModel.sheetStackViewModel {
+                let sheetViewModel = SheetViewModel(
+                    sheet: sheet,
+                    sheetStackViewModel: sheetStackViewModel
+                )
+                openSheet(sheetViewModel)
+            }
         }
     }
 
@@ -100,39 +119,74 @@ struct ButtonComponentView: View {
         let (customerInfo, success) = try await self.purchaseHandler.restorePurchases()
         if success {
             Logger.debug(Strings.restored_purchases)
-            self.purchaseHandler.setRestored(customerInfo)
         } else {
             Logger.debug(Strings.restore_purchases_with_empty_result)
         }
+
+        self.purchaseHandler.setRestored(customerInfo, success: success)
     }
 
     private func navigateTo(destination: ButtonComponentViewModel.Destination) {
         switch destination {
         case .customerCenter:
-            showCustomerCenter = true
+            self.showCustomerCenter = true
+        case .offerCodeRedemptionSheet:
+            Task {
+                await self.openCodeRedemptionSheet()
+            }
         case .url(let url, let method),
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
-            navigateToUrl(url: url, method: method)
+            Browser.navigateTo(url: url,
+                               method: method,
+                               openURL: self.openURL,
+                               inAppBrowserURL: self.$inAppBrowserURL)
+        case .unknown:
+            break
+        case .webPaywallLink(url: let url, method: let method):
+            self.openWebPaywallLink(url: url, method: method)
         }
     }
 
-    private func navigateToUrl(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
-        switch method {
-        case .inAppBrowser:
-#if os(tvOS)
-            // There's no SafariServices on tvOS, so we're falling back to opening in an external browser.
-            Logger.warning(Strings.no_in_app_browser_tvos)
-            openURL(url)
+    private func openCodeRedemptionSheet() async {
+        // Check if there's an offer code redemption interceptor
+        if let interceptor = self.offerCodeRedemptionInitiatedAction {
+            // Wait for the interceptor to call resume before proceeding
+            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
+                await withCheckedContinuation { continuation in
+                    interceptor(resume: ResumeAction { shouldProceed in
+                        continuation.resume(returning: shouldProceed)
+                    })
+                }
+            }
+            guard result else { return }
+        }
+
+#if os(iOS) && !targetEnvironment(macCatalyst)
+        // Call the method only if available
+        Purchases.shared.presentCodeRedemptionSheet()
 #else
-            inAppBrowserURL = url
+        // Handle the case for unsupported platforms (e.g., watchOS, macOS)
+        print("presentCodeRedemptionSheet is unavailable on this platform")
 #endif
-        case .externalBrowser,
-                .deepLink:
-            openURL(url)
-        }
     }
 
+    private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
+        self.purchaseHandler.invalidateCustomerInfoCache()
+#if os(watchOS)
+        // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
+        openURL(url)
+#else
+        openURL(url) { success in
+            if success {
+                Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
+            } else {
+                Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
+            }
+        }
+#endif
+        onDismiss()
+    }
 }
 
 #if DEBUG
@@ -165,12 +219,18 @@ struct ButtonComponentView_Previews: PreviewProvider {
                             "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
                         ]
                     ),
-                    offering: Offering(identifier: "", serverDescription: "", availablePackages: [])
+                    offering: Offering(
+                        identifier: "",
+                        serverDescription: "",
+                        availablePackages: [],
+                        webCheckoutUrl: nil
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: { }
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Default")
     }
@@ -182,16 +242,19 @@ fileprivate extension ButtonComponentViewModel {
     convenience init(
         component: PaywallComponent.ButtonComponent,
         localizationProvider: LocalizationProvider,
-        offering: Offering
+        offering: Offering,
+        colorScheme: ColorScheme
     ) throws {
         let factory = ViewModelFactory()
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
-            firstImageInfo: nil,
+            firstItemIgnoresSafeAreaInfo: nil,
+            purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            offering: offering
+            offering: offering,
+            colorScheme: colorScheme
         )
 
         try self.init(

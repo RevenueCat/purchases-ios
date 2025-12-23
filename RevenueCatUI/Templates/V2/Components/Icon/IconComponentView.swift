@@ -15,16 +15,19 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct IconComponentView: View {
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState
@@ -38,20 +41,27 @@ struct IconComponentView: View {
     let viewModel: IconComponentViewModel
 
     var body: some View {
-        viewModel.styles(
+        self.viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
-            )
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            ),
+            colorScheme: colorScheme
         ) { style in
             if style.visible {
                 RemoteImage(
-                    url: style.url
+                    url: style.url,
+                    // The expectedSize is important
+                    // It renders a clear image if actual image is being fetched
+                    expectedSize: self.viewModel.expectedSize
                 ) { (image, size) in
                     self.renderImage(image, size, with: style)
                 }
-                .padding(style.padding)
+                .padding(style.padding.extend(by: style.iconBackgroundBorder?.width ?? 0))
                 .shape(border: style.iconBackgroundBorder,
                        shape: style.iconBackgroundShape,
                        background: style.iconBackgroundStyle,
@@ -105,8 +115,7 @@ struct IconComponentView_Previews: PreviewProvider {
         // Default
         VStack {
             IconComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
+                viewModel: .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
@@ -130,15 +139,14 @@ struct IconComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 100, height: 100))
         .previewDisplayName("Default")
 
         // Default - Background
         VStack {
             IconComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
+                viewModel: .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
@@ -169,7 +177,7 @@ struct IconComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 200, height: 200))
         .previewDisplayName("Default - Background")
 

@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if os(iOS)
 
@@ -23,9 +23,9 @@ import RevenueCat
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class FeedbackSurveyViewModel: ObservableObject {
+final class FeedbackSurveyViewModel: ObservableObject {
 
-    var feedbackSurveyData: FeedbackSurveyData
+    let feedbackSurveyData: FeedbackSurveyData
 
     @Published
     var loadingOption: String?
@@ -33,26 +33,27 @@ class FeedbackSurveyViewModel: ObservableObject {
     @Published
     var promotionalOfferData: PromotionalOfferData?
 
-    private var purchasesProvider: CustomerCenterPurchasesType
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
-    private let customerCenterActionHandler: CustomerCenterActionHandler?
+    let actionWrapper: CustomerCenterActionWrapper
 
     convenience init(feedbackSurveyData: FeedbackSurveyData,
-                     customerCenterActionHandler: CustomerCenterActionHandler?) {
+                     purchasesProvider: CustomerCenterPurchasesType,
+                     actionWrapper: CustomerCenterActionWrapper) {
         self.init(feedbackSurveyData: feedbackSurveyData,
-                  purchasesProvider: CustomerCenterPurchases(),
-                  loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase(),
-                  customerCenterActionHandler: customerCenterActionHandler)
+                  purchasesProvider: purchasesProvider,
+                  loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider),
+                  actionWrapper: actionWrapper)
     }
 
     init(feedbackSurveyData: FeedbackSurveyData,
          purchasesProvider: CustomerCenterPurchasesType,
          loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType,
-         customerCenterActionHandler: CustomerCenterActionHandler?) {
+         actionWrapper: CustomerCenterActionWrapper) {
         self.feedbackSurveyData = feedbackSurveyData
         self.purchasesProvider = purchasesProvider
         self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
-        self.customerCenterActionHandler = customerCenterActionHandler
+        self.actionWrapper = actionWrapper
     }
 
     func handleAction(
@@ -64,18 +65,22 @@ class FeedbackSurveyViewModel: ObservableObject {
     ) async {
         trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode, locale: locale)
 
-        self.customerCenterActionHandler?(.feedbackSurveyCompleted(option.id))
+        self.actionWrapper.handleAction(.feedbackSurveyCompleted(option.id))
 
         if let promotionalOffer = option.promotionalOffer,
            promotionalOffer.eligible {
             self.loadingOption = option.id
-            let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
+            let result = await loadPromotionalOfferUseCase.execute(
+                promoOfferDetails: promotionalOffer,
+                forProductId: feedbackSurveyData.productIdentifier
+            )
+            self.loadingOption = nil
             switch result {
             case .success(let promotionalOfferData):
                 self.promotionalOfferData = promotionalOfferData
             case .failure:
                 self.feedbackSurveyData.onOptionSelected()
-                self.loadingOption = nil
+                dismissView()
             }
         } else {
             self.feedbackSurveyData.onOptionSelected()
@@ -96,10 +101,6 @@ extension FeedbackSurveyViewModel {
         _ userAction: PromotionalOfferViewAction,
         dismissView: () -> Void
     ) async {
-        // Clear the promotional offer data to dismiss the sheet
-        self.promotionalOfferData = nil
-        self.loadingOption = nil
-
         if !userAction.shouldTerminateCurrentPathFlow {
             self.feedbackSurveyData.onOptionSelected()
         }
@@ -127,7 +128,6 @@ private extension FeedbackSurveyViewModel {
                                                                        path: feedbackSurveyData.path.type,
                                                                        url: feedbackSurveyData.path.url,
                                                                        surveyOptionID: option.id,
-                                                                       surveyOptionTitleKey: option.title,
                                                                        additionalContext: nil,
                                                                        revisionID: 0)
         let event = CustomerCenterAnswerSubmittedEvent.answerSubmitted(CustomerCenterEventCreationData(),

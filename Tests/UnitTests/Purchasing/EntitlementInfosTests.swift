@@ -83,7 +83,7 @@ class EntitlementInfosTests: TestCase {
         try verifyEntitlementActive(true, entitlement: "lifetime_cat")
         try verifyRenewal(false, entitlement: "lifetime_cat")
         try verifyPeriodType(PeriodType.normal, expectedEntitlement: "lifetime_cat")
-        try verifyStore(Store.appStore, expectedEntitlement: "lifetime_cat")
+        try verifyStore(.appStore, expectedEntitlement: "lifetime_cat")
         try verifySandbox(false, expectedEntitlement: "lifetime_cat")
         try verifyProduct(expectedIdentifier: "lifetime",
                           expectedLatestPurchaseDate: Self.formatter.date(from: "2019-07-26T23:45:40Z"),
@@ -878,6 +878,28 @@ class EntitlementInfosTests: TestCase {
                 ] as [String: Any?]
             ])
         try verifyStore(.external)
+
+        stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "paddle",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ])
+        try verifyStore(.paddle)
     }
 
     func testParseStoreFromNonSubscription() throws {
@@ -1120,6 +1142,36 @@ class EntitlementInfosTests: TestCase {
                 subscriptions: [:]
         )
         try verifyStore(.rcBilling)
+
+        stubResponse(
+                entitlements: [
+                    "pro_cat": [
+                        "expires_date": nil,
+                        "product_identifier": "lifetime",
+                        "purchase_date": "2019-07-26T23:45:40Z"
+                    ]
+                ],
+                nonSubscriptions: [
+                    "lifetime": [
+                        [
+                            "id": "5b9ba226bc",
+                            "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T22:10:27Z",
+                            "purchase_date": "2019-07-26T22:10:27Z",
+                            "store": "app_store"
+                        ] as [String: Any],
+                        [
+                            "id": "ea820afcc4",
+                            "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T23:45:40Z",
+                            "purchase_date": "2019-07-26T23:45:40Z",
+                            "store": "paddle"
+                        ] as [String: Any]
+                    ]
+                ],
+                subscriptions: [:]
+        )
+        try verifyStore(.paddle)
     }
 
     func testParsePeriod() throws {

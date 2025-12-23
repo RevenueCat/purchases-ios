@@ -16,16 +16,19 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState
@@ -64,7 +67,11 @@ struct StackComponentView: View {
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
-            )
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            ),
+            colorScheme: colorScheme
         ) { style in
             if style.visible {
                 self.make(style: style)
@@ -117,13 +124,14 @@ struct StackComponentView: View {
             }
         }
         .hidden(if: self.showActivityIndicatorOverContent)
-        .padding(style.padding)
+        .padding(style.padding.extend(by: style.border?.width ?? 0))
         .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
         .scrollableIfEnabled(
             style.dimension,
+            size: style.size,
             enabled: style.scrollable ?? self.isScrollableByDefault
         )
         .shape(border: nil,
@@ -151,21 +159,32 @@ private extension Axis {
 fileprivate extension View {
 
     @ViewBuilder
-    // @PublicForExternalTesting
+
     func scrollableIfEnabled(
         _ dimension: PaywallComponent.Dimension,
+        size: PaywallComponent.Size,
         enabled: Bool = true
     ) -> some View {
         if enabled {
             switch dimension {
-            case .horizontal:
-                ScrollView(.horizontal) {
-                    self
-                }
-            case .vertical:
-                ScrollView(.vertical) {
-                    self
-                }
+            case .horizontal(let verticalAlignment, let distribution):
+                self.scrollableIfNecessaryWhenAvailable(
+                    .horizontal,
+                    fillContent: size.width == .fill,
+                    alignment: Alignment(
+                        horizontal: distribution.horizontalFrameAlignment.horizontal,
+                        vertical: verticalAlignment.frameAlignment.vertical
+                    )
+                )
+            case .vertical(let horizontalAlignment, let distribution):
+                self.scrollableIfNecessaryWhenAvailable(
+                    .vertical,
+                    fillContent: size.height == .fill,
+                    alignment: Alignment(
+                        horizontal: horizontalAlignment.frameAlignment.horizontal,
+                        vertical: distribution.verticalFrameAlignment.vertical
+                    )
+                )
             case .zlayer:
                 self
             }
@@ -311,11 +330,12 @@ struct StackComponentView_Previews: PreviewProvider {
                     localizedStrings: [
                         "text_1": .string("Hey")
                     ]
-                )
+                ),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill")
 
@@ -340,11 +360,12 @@ struct StackComponentView_Previews: PreviewProvider {
                     localizedStrings: [
                         "text_1": .string("Hey")
                     ]
-                )
+                ),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fit")
 
@@ -370,7 +391,8 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -395,7 +417,8 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -420,7 +443,8 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -445,12 +469,13 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill Fit Fixed Fill")
 
@@ -503,12 +528,13 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Scrollable - HStack")
 
@@ -546,12 +572,13 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {},
                 showActivityIndicatorOverContent: true
             )
-            .previewRequiredEnvironmentProperties()
+            .previewRequiredPaywallsV2Properties()
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Progress - \(colorPair.0)")
         }
@@ -620,34 +647,53 @@ struct StackComponentView_Previews: PreviewProvider {
                     localizedStrings: [
                         "text_1": .string("Hey")
                     ]
-                )
+                ),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Fits don't expand")
-
-        stackAlignmentAndDistributionPreviews()
     }
+}
 
-    @ViewBuilder
-    static func stackAlignmentAndDistributionPreviews() -> some View {
-        let dimensions: [PaywallComponent.Dimension] = [
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// swiftlint:disable:next type_body_length
+struct StackComponentViewHorizontal_Previews: PreviewProvider {
+    static var previews: some View {
+        stackAlignmentAndDistributionPreviews(dimensions: [
             .horizontal(.top, .start),
             .horizontal(.center, .center),
             .horizontal(.bottom, .end),
             .horizontal(.top, .spaceAround),
             .horizontal(.center, .spaceBetween),
-            .horizontal(.bottom, .spaceEvenly),
+            .horizontal(.bottom, .spaceEvenly)
+        ])
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// swiftlint:disable:next type_body_length
+struct StackComponentViewVertical_Previews: PreviewProvider {
+    static var previews: some View {
+        stackAlignmentAndDistributionPreviews(dimensions: [
             .vertical(.leading, .start),
             .vertical(.center, .center),
             .vertical(.trailing, .end),
             .vertical(.leading, .spaceAround),
             .vertical(.center, .spaceBetween),
             .vertical(.trailing, .spaceEvenly)
-        ]
-        ForEach(dimensions, id: \.self) { dimension in
+        ])
+    }
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@ViewBuilder
+func stackAlignmentAndDistributionPreviews(dimensions: [PaywallComponent.Dimension]) -> some View {
+    ForEach(dimensions, id: \.self) { dimension in
+        let overflows: [PaywallComponent.StackComponent.Overflow] = [.default, .scroll]
+
+        ForEach(overflows, id: \.self) { overflow in
             StackComponentView(
                 // swiftlint:disable:next force_try
                 viewModel: try! StackComponentViewModel(
@@ -657,59 +703,65 @@ struct StackComponentView_Previews: PreviewProvider {
                         size: .init(width: .fill, height: .fixed(150)),
                         spacing: 10,
                         backgroundColor: .init(light: .hex("#ff0000")),
-                        padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                        padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
+                        overflow: overflow
                     ),
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
-            .previewRequiredEnvironmentProperties()
+            .previewRequiredPaywallsV2Properties()
             .previewLayout(.sizeThatFits)
-            .previewDisplayName(displayName(dimension: dimension))
+            .previewDisplayName(displayName(dimension: dimension,
+                                            overflow: overflow))
         }
     }
+}
 
-    static func displayName(dimension: PaywallComponent.Dimension) -> String {
-        switch dimension {
-        case .vertical(let horizontalAlignment, let flexDistribution):
-            return "Vertical (\(horizontalAlignment.rawValue), \(flexDistribution.rawValue))"
-        case .horizontal(let verticalAlignment, let flexDistribution):
-            return "Horizontal (\(verticalAlignment.rawValue), \(flexDistribution.rawValue))"
-        case .zlayer:
-            return ""
-        @unknown default:
-            return ""
-        }
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+func displayName(dimension: PaywallComponent.Dimension, overflow: PaywallComponent.StackComponent.Overflow) -> String {
+    switch dimension {
+    case .vertical(let horizontalAlignment, let flexDistribution):
+        // swiftlint:disable:next line_length
+        return "Vertical (\(horizontalAlignment.rawValue), \(flexDistribution.rawValue)) - Overflow (\(overflow.rawValue))"
+    case .horizontal(let verticalAlignment, let flexDistribution):
+        // swiftlint:disable:next line_length
+        return "Horizontal (\(verticalAlignment.rawValue), \(flexDistribution.rawValue)) - Overflow (\(overflow.rawValue))"
+    case .zlayer:
+        return ""
+    @unknown default:
+        return ""
     }
+}
 
-    static func innerStacks(dimension: PaywallComponent.Dimension) -> [PaywallComponent] {
-        var sizes: [PaywallComponent.Size]
-        switch dimension {
-        case .vertical:
-            sizes = [
-                .init(width: .fixed(100), height: .fixed(20)),
-                .init(width: .fixed(50), height: .fixed(20)),
-                .init(width: .fixed(70), height: .fixed(20))
-            ]
-        case .horizontal:
-            sizes = [
-                .init(width: .fixed(20), height: .fixed(100)),
-                .init(width: .fixed(20), height: .fixed(50)),
-                .init(width: .fixed(20), height: .fixed(70))
-            ]
-        case .zlayer:
-            sizes = []
-        @unknown default:
-            sizes = []
-        }
-        return sizes.map { size in
-            .stack(.init(components: [], size: size, backgroundColor: .init(light: .hex("#ffcc00"))))
-        }
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+func innerStacks(dimension: PaywallComponent.Dimension) -> [PaywallComponent] {
+    var sizes: [PaywallComponent.Size]
+    switch dimension {
+    case .vertical:
+        sizes = [
+            .init(width: .fixed(100), height: .fixed(20)),
+            .init(width: .fixed(50), height: .fixed(20)),
+            .init(width: .fixed(70), height: .fixed(20))
+        ]
+    case .horizontal:
+        sizes = [
+            .init(width: .fixed(20), height: .fixed(100)),
+            .init(width: .fixed(20), height: .fixed(50)),
+            .init(width: .fixed(20), height: .fixed(70))
+        ]
+    case .zlayer:
+        sizes = []
+    @unknown default:
+        sizes = []
     }
-
+    return sizes.map { size in
+        .stack(.init(components: [], size: size, backgroundColor: .init(light: .hex("#ffcc00"))))
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -717,21 +769,26 @@ extension StackComponentViewModel {
 
     convenience init(
         component: PaywallComponent.StackComponent,
-        localizationProvider: LocalizationProvider
+        localizationProvider: LocalizationProvider,
+        colorScheme: ColorScheme
     ) throws {
         let validator = PackageValidator()
         let factory = ViewModelFactory()
-        let offering = Offering(identifier: "", serverDescription: "", availablePackages: [])
+        let offering = Offering(identifier: "",
+                                serverDescription: "",
+                                availablePackages: [],
+                                webCheckoutUrl: nil)
         let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
 
         let viewModels = try component.components.map { component in
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstImageInfo: nil,
+                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                colorScheme: colorScheme
             )
         }
 
@@ -739,19 +796,19 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstImageInfo: nil,
+                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                colorScheme: colorScheme
             )
         }
 
-        try self.init(
+        self.init(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels ?? [],
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            localizationProvider: localizationProvider
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }
 

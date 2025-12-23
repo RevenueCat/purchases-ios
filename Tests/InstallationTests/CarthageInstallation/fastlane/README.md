@@ -1,0 +1,448 @@
+fastlane documentation
+----
+
+# Installation
+
+Make sure you have the latest version of the Xcode command line tools installed:
+
+```sh
+xcode-select --install
+```
+
+For _fastlane_ installation instructions, see [Installing _fastlane_](https://docs.fastlane.tools/#installing-fastlane)
+
+# Available Actions
+
+### check_pods
+
+```sh
+[bundle exec] fastlane check_pods
+```
+
+
+
+### prepare_for_carthage
+
+```sh
+[bundle exec] fastlane prepare_for_carthage
+```
+
+Removes the Examples directory before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj)
+
+### load_spm_dependencies
+
+```sh
+[bundle exec] fastlane load_spm_dependencies
+```
+
+
+
+### send_slack_load_shedder_integration_test_v3
+
+```sh
+[bundle exec] fastlane send_slack_load_shedder_integration_test_v3
+```
+
+
+
+### update_carthage_commit
+
+```sh
+[bundle exec] fastlane update_carthage_commit
+```
+
+Update carthage commit
+
+### installation_tests
+
+```sh
+[bundle exec] fastlane installation_tests
+```
+
+
+
+----
+
+
+## iOS
+
+### ios bump
+
+```sh
+[bundle exec] fastlane ios bump
+```
+
+Bump version, update swift header, edit changelog, and create pull request
+
+### ios automatic_bump
+
+```sh
+[bundle exec] fastlane ios automatic_bump
+```
+
+Automatically bumps version, update swift header, edit changelog, and create pull request
+
+### ios github_release
+
+```sh
+[bundle exec] fastlane ios github_release
+```
+
+Make github release
+
+### ios prepare_next_version
+
+```sh
+[bundle exec] fastlane ios prepare_next_version
+```
+
+Creates PR changing version to next minor adding a -SNAPSHOT suffix
+
+### ios setup_dev
+
+```sh
+[bundle exec] fastlane ios setup_dev
+```
+
+Setup development environment
+
+### ios update_paywall_preview_resources_commit
+
+```sh
+[bundle exec] fastlane ios update_paywall_preview_resources_commit
+```
+
+Updates paywall-preview-resources-commit to point to latest commit on main and creates/updates PR
+
+### ios record_and_push_paywall_template_screenshots
+
+```sh
+[bundle exec] fastlane ios record_and_push_paywall_template_screenshots
+```
+
+Records Paywall template screenshots and pushes them to the repository at target_repository_path
+
+### ios record_paywall_screenshots
+
+```sh
+[bundle exec] fastlane ios record_paywall_screenshots
+```
+
+Records screenshots for paywalls
+
+### ios build_paywalls_tester_for_emerge
+
+```sh
+[bundle exec] fastlane ios build_paywalls_tester_for_emerge
+```
+
+Build the Paywalls Test app for Emerge Snapshots
+
+### ios test_ios
+
+```sh
+[bundle exec] fastlane ios test_ios
+```
+
+Runs all the iOS tests
+
+### ios test_tvos
+
+```sh
+[bundle exec] fastlane ios test_tvos
+```
+
+Runs all the tvOS tests
+
+### ios test_watchos
+
+```sh
+[bundle exec] fastlane ios test_watchos
+```
+
+Runs all the watchOS tests
+
+### ios test_revenuecatui
+
+```sh
+[bundle exec] fastlane ios test_revenuecatui
+```
+
+Runs all RevenueCatUI tests
+
+### ios release_checks
+
+```sh
+[bundle exec] fastlane ios release_checks
+```
+
+Release checks
+
+### ios build_tv_watch_mac
+
+```sh
+[bundle exec] fastlane ios build_tv_watch_mac
+```
+
+build tvOS, watchOS, macOS
+
+### ios build_mac
+
+```sh
+[bundle exec] fastlane ios build_mac
+```
+
+macOS build
+
+### ios build_visionos
+
+```sh
+[bundle exec] fastlane ios build_visionos
+```
+
+visionOS build
+
+### ios archive
+
+```sh
+[bundle exec] fastlane ios archive
+```
+
+archive
+
+### ios archive_all_platforms
+
+```sh
+[bundle exec] fastlane ios archive_all_platforms
+```
+
+archive all platforms
+
+### ios run_api_tests
+
+```sh
+[bundle exec] fastlane ios run_api_tests
+```
+
+run API Tests
+
+### ios replace_api_key_integration_tests
+
+```sh
+[bundle exec] fastlane ios replace_api_key_integration_tests
+```
+
+replace API KEY for installation and integration tests
+
+### ios release
+
+```sh
+[bundle exec] fastlane ios release
+```
+
+Create XCFramework, and create GitHub release
+
+### ios push_revenuecat_pod
+
+```sh
+[bundle exec] fastlane ios push_revenuecat_pod
+```
+
+Release to CocoaPods
+
+### ios push_revenuecatui_pod
+
+```sh
+[bundle exec] fastlane ios push_revenuecatui_pod
+```
+
+Release to CocoaPods
+
+### ios tag_current_branch
+
+```sh
+[bundle exec] fastlane ios tag_current_branch
+```
+
+Tag current branch with current version number
+
+### ios trigger_bump
+
+```sh
+[bundle exec] fastlane ios trigger_bump
+```
+
+Trigger bump
+
+### ios generate_snapshots_RC
+
+```sh
+[bundle exec] fastlane ios generate_snapshots_RC
+```
+
+Trigger CircleCI job to generate snapshots for RevenueCat
+
+### ios generate_snapshots_RCUI
+
+```sh
+[bundle exec] fastlane ios generate_snapshots_RCUI
+```
+
+Trigger CircleCI job to generate snapshots for RevenueCatUI
+
+### ios create_snapshot_pr
+
+```sh
+[bundle exec] fastlane ios create_snapshot_pr
+```
+
+Creates a new PR after new snapshot files were generated
+
+### ios create_snapshots_repo_pr
+
+```sh
+[bundle exec] fastlane ios create_snapshots_repo_pr
+```
+
+Creates a new PR on purchases-ios-snapshots after new snapshot files were generated
+
+### ios compile_autogenerated_header
+
+```sh
+[bundle exec] fastlane ios compile_autogenerated_header
+```
+
+Creates RevenueCat-Swift.h for a new release
+
+### ios export_xcframeworks
+
+```sh
+[bundle exec] fastlane ios export_xcframeworks
+```
+
+
+
+### ios backend_integration_tests
+
+```sh
+[bundle exec] fastlane ios backend_integration_tests
+```
+
+Run BackendIntegrationTests
+
+### ios v3_loadshedder_integration_tests
+
+```sh
+[bundle exec] fastlane ios v3_loadshedder_integration_tests
+```
+
+Run LoadShedder tests
+
+### ios update_swift_package_commit
+
+```sh
+[bundle exec] fastlane ios update_swift_package_commit
+```
+
+Update swift package commit
+
+### ios preview_docs
+
+```sh
+[bundle exec] fastlane ios preview_docs
+```
+
+Preview docs
+
+### ios build_docs
+
+```sh
+[bundle exec] fastlane ios build_docs
+```
+
+Generate docs without publishing
+
+### ios build_and_publish_docs
+
+```sh
+[bundle exec] fastlane ios build_and_publish_docs
+```
+
+Generate & publish docs
+
+### ios deploy_purchase_tester
+
+```sh
+[bundle exec] fastlane ios deploy_purchase_tester
+```
+
+Build and deploy PurchaseTesterSwiftUI
+
+### ios fetch_snapshots
+
+```sh
+[bundle exec] fastlane ios fetch_snapshots
+```
+
+Clones or updates snapshots repo
+
+### ios fetch_paywall_preview_resources
+
+```sh
+[bundle exec] fastlane ios fetch_paywall_preview_resources
+```
+
+Clones or updates paywall-preview-resources repo
+
+### ios update_snapshots_repo
+
+```sh
+[bundle exec] fastlane ios update_snapshots_repo
+```
+
+Updates purchases-ios-snapshots-commit to point to latest commit on main
+
+### ios deploy_to_spm
+
+```sh
+[bundle exec] fastlane ios deploy_to_spm
+```
+
+
+
+### ios sandbox_testers
+
+```sh
+[bundle exec] fastlane ios sandbox_testers
+```
+
+Create or delete sandbox testers
+
+### ios enable_customer_center
+
+```sh
+[bundle exec] fastlane ios enable_customer_center
+```
+
+Enable customer center development by cherry-picking a specific commit
+
+----
+
+
+## Mac
+
+### mac test_macos
+
+```sh
+[bundle exec] fastlane mac test_macos
+```
+
+Runs tests on macOS
+
+----
+
+This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
+
+More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).
+
+The documentation of _fastlane_ can be found on [docs.fastlane.tools](https://docs.fastlane.tools).

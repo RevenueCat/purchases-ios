@@ -20,7 +20,7 @@
 		4FC80B202A5DE8E300E95DB0 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4FC80B1F2A5DE8E300E95DB0 /* RevenueCatUI */; };
 		4FCA01FB2A3A1CBD00B262C0 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FCA01FA2A3A1CBD00B262C0 /* StoreKit.framework */; };
 		4FDF11202A7270F3004F3680 /* SamplePaywallsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */; };
-		880B2AF22BEC2D62006B9393 /* Preprocessor.sh in Resources */ = {isa = PBXBuildFile; fileRef = 880B2AF12BEC2D62006B9393 /* Preprocessor.sh */; };
+		83156FF72E1756B400E37C70 /* PaywallsTesterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2E84DB2D00EDA100C639D9 /* PaywallsTesterTests.swift */; };
 		884A4DDE2C701F4100BD6B90 /* CompatibilityContentUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 884A4DDD2C701F4100BD6B90 /* CompatibilityContentUnavailableView.swift */; };
 		88A52D132C8A09B900075D09 /* PaywallComponentCollectionExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A52D122C8A09B900075D09 /* PaywallComponentCollectionExtensions.swift */; };
 		88A543E92C387DB00039C6A5 /* APIKeyDashboardList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A543E82C387DB00039C6A5 /* APIKeyDashboardList.swift */; };
@@ -111,8 +111,6 @@
 		4FFD2A602AA154B4001F4B0C /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
 		773C13462CB5865400219E42 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Local.xcconfig; path = ../../../Local.xcconfig; sourceTree = "<group>"; };
 		776D4CFF2CB5848F00A521B2 /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Global.xcconfig; path = ../../../Global.xcconfig; sourceTree = "<group>"; };
-		880B2AF12BEC2D62006B9393 /* Preprocessor.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = Preprocessor.sh; sourceTree = SOURCE_ROOT; };
-		880B2AF32BEC35AA006B9393 /* Postprocessor.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Postprocessor.sh; sourceTree = SOURCE_ROOT; };
 		884A4DDD2C701F4100BD6B90 /* CompatibilityContentUnavailableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibilityContentUnavailableView.swift; sourceTree = "<group>"; };
 		88A52D122C8A09B900075D09 /* PaywallComponentCollectionExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentCollectionExtensions.swift; sourceTree = "<group>"; };
 		88A543E82C387DB00039C6A5 /* APIKeyDashboardList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIKeyDashboardList.swift; sourceTree = "<group>"; };
@@ -255,8 +253,6 @@
 				88BEB9222BF537F200A3D05F /* Constants.swift */,
 				88BEB9232BF537F200A3D05F /* Configuration.swift */,
 				88BEB9242BF537F200A3D05F /* SamplePaywalls.swift */,
-				880B2AF12BEC2D62006B9393 /* Preprocessor.sh */,
-				880B2AF32BEC35AA006B9393 /* Postprocessor.sh */,
 				4FC882E02A5870C6005BE85E /* Info.plist */,
 				4FC046BF2A572E3700A28BCF /* Assets.xcassets */,
 				4FC046BD2A572E3700A28BCF /* PaywallsTester.entitlements */,
@@ -477,7 +473,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4F217A102A6DB6FB000B092D /* Assets.xcassets in Resources */,
-				880B2AF22BEC2D62006B9393 /* Preprocessor.sh in Resources */,
 				4F4557E22A6FFE6A00160521 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -548,6 +543,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				83156FF72E1756B400E37C70 /* PaywallsTesterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -556,6 +552,11 @@
 /* Begin PBXTargetDependency section */
 		FA29FBAD2CCAA79800DA1976 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (
+				ios,
+				maccatalyst,
+				macos,
+			);
 			target = 4F6BED992A26A64200CD9322 /* PaywallsTester */;
 			targetProxy = FA29FBAC2CCAA79800DA1976 /* PBXContainerItemProxy */;
 		};
@@ -727,10 +728,11 @@
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PaywallsTester;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator xros xrsimulator watchsimulator watchos";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = minimal;
@@ -777,10 +779,11 @@
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PaywallsTester;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator xros xrsimulator watchsimulator watchos";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = minimal;
@@ -797,6 +800,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -805,7 +809,10 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PaywallsTesterTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -821,6 +828,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -829,7 +837,10 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PaywallsTesterTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

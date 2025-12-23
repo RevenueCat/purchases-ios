@@ -25,27 +25,31 @@ import RevenueCat
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class PromotionalOfferViewModel: ObservableObject {
+final class PromotionalOfferViewModel: ObservableObject {
 
     @Published
     private(set) var promotionalOfferData: PromotionalOfferData?
+
     @Published
     private(set) var error: Error?
 
     private var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase
+    private let actionWrapper: CustomerCenterActionWrapper
 
     /// Callback to be called when the promotional offer is  purchased
     internal var onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferViewAction) -> Void)?
 
     init(
         promotionalOfferData: PromotionalOfferData?,
-        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
+        purchasesProvider: CustomerCenterPurchasesType,
+        actionWrapper: CustomerCenterActionWrapper,
         onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferViewAction) -> Void)? = nil
     ) {
         self.promotionalOfferData = promotionalOfferData
         self.purchasesProvider = purchasesProvider
-        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
+        self.actionWrapper = actionWrapper
+        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
         self.onPromotionalOfferPurchaseFlowComplete = onPromotionalOfferPurchaseFlowComplete
     }
 
@@ -56,32 +60,32 @@ class PromotionalOfferViewModel: ObservableObject {
             return
         }
 
+        let productId = product.productIdentifier
+        let offerId = promotionalOffer.signedData.identifier
+
         do {
+            Logger.debug(Strings.purchasing_promotional_offer(productId, offerId))
+
             let result = try await self.purchasesProvider.purchase(
                 product: product,
                 promotionalOffer: promotionalOffer
             )
 
-            Logger.debug("Purchased promotional offer: \(result)")
-            self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
+            if result.userCancelled {
+                Logger.debug(Strings.promo_offer_purchase_cancelled(productId, offerId))
+                self.onPromotionalOfferPurchaseFlowComplete?(.declinePromotionalOffer)
+            } else {
+                let transactionId = result.transaction?.transactionIdentifier ?? "-"
+                Logger.debug(Strings.promo_offer_purchase_succeeded(productId, offerId, transactionId))
+                self.actionWrapper.handleAction(.promotionalOfferSuccess)
+                self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
+            }
         } catch {
-            // swiftlint:disable:next todo
-            // TODO: Log error message
+            Logger.error(Strings.promo_offer_purchase_failed(productId, offerId, error))
             self.error = error
             self.onPromotionalOfferPurchaseFlowComplete?(.promotionalCodeRedemptionFailed(error))
         }
     }
-
-    func loadPromo(promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer) async {
-        let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promoOfferDetails)
-        switch result {
-        case .success(let promotionalOfferData):
-            self.promotionalOfferData = promotionalOfferData
-        case .failure(let error):
-            self.error = error
-        }
-    }
-
 }
 
 #endif

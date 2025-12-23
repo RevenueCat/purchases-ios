@@ -13,7 +13,7 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -41,6 +41,10 @@ public struct CustomerCenterView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    // Propagate dismiss from the container to child views (iOS 15 fix)
+    @Environment(\.dismiss)
+    private var dismiss
+
     private let mode: CustomerCenterPresentationMode
 
     private let navigationOptions: CustomerCenterNavigationOptions
@@ -50,11 +54,27 @@ public struct CustomerCenterView: View {
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
     ///   - navigationOptions: Options to control the navigation behavior
+    @available(*, deprecated, message: """
+    Use the view modifiers instead.
+    For example, use .onCustomerCenterRestoreStarted(),
+    .onCustomerCenterRestoreCompleted(), etc.
+    """)
     public init(
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        customerCenterActionHandler: CustomerCenterActionHandler?,
         navigationOptions: CustomerCenterNavigationOptions = .default) {
         self.init(
-            customerCenterActionHandler: customerCenterActionHandler,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: customerCenterActionHandler),
+            mode: .default,
+            navigationOptions: navigationOptions
+        )
+    }
+
+    /// Create a view to handle common customer support tasks
+    /// - Parameters:
+    ///   - navigationOptions: Options to control the navigation behavior
+    public init(navigationOptions: CustomerCenterNavigationOptions = .default) {
+        self.init(
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
             mode: .default,
             navigationOptions: navigationOptions
         )
@@ -67,14 +87,25 @@ public struct CustomerCenterView: View {
     ///   - mode: The presentation mode for the Customer Center
     ///   - navigationOptions: Options to control the navigation behavior
     init(
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        actionWrapper: CustomerCenterActionWrapper,
         mode: CustomerCenterPresentationMode,
         navigationOptions: CustomerCenterNavigationOptions) {
-        self._viewModel = .init(wrappedValue:
-                                    CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
-        self.mode = mode
-        self.navigationOptions = navigationOptions
+            self._viewModel = .init(wrappedValue: CustomerCenterViewModel(actionWrapper: actionWrapper))
+            self.mode = mode
+            self.navigationOptions = navigationOptions
     }
+
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
+        uiPreviewPurchaseProvider: CustomerCenterPurchasesType,
+        navigationOptions: CustomerCenterNavigationOptions) {
+            self.init(
+                viewModel: CustomerCenterViewModel(
+                    uiPreviewPurchaseProvider: uiPreviewPurchaseProvider
+                ),
+                navigationOptions: navigationOptions
+            )
+        }
 
     fileprivate init(
         viewModel: CustomerCenterViewModel,
@@ -91,10 +122,9 @@ public struct CustomerCenterView: View {
             .task {
                 await loadInformationIfNeeded()
             }
-            .environmentObject(self.viewModel)
             .onAppear {
 #if DEBUG
-                guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+                guard !ProcessInfo.isRunningForPreviews else { return }
 #endif
                 self.trackImpression()
             }
@@ -110,28 +140,32 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     var content: some View {
-        switch self.viewModel.state {
-        case .error:
-            ErrorView()
-                .environment(\.customerCenterPresentationMode, self.mode)
-                .environment(\.navigationOptions, self.navigationOptions)
-                .dismissCircleButtonToolbarIfNeeded()
-
-        case .notLoaded:
-            TintedProgressView()
-
-        case .success:
-            if let configuration = self.viewModel.configuration {
-                destinationView(configuration: configuration)
-                    .environment(\.appearance, configuration.appearance)
-                    .environment(\.localization, configuration.localization)
+        Group {
+            switch self.viewModel.state {
+            case .error:
+                ErrorView()
                     .environment(\.customerCenterPresentationMode, self.mode)
-                    .environment(\.navigationOptions, self.navigationOptions)
-                    .environment(\.supportInformation, configuration.support)
-            } else {
+                    .environment(\.navigationOptions, self.navigationOptionsWithDismiss)
+                    // Use explicit options to avoid any environment propagation issues
+                    .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
+
+            case .notLoaded:
                 TintedProgressView()
+
+            case .success:
+                if let configuration = self.viewModel.configuration {
+                    destinationView(configuration: configuration)
+                        .environment(\.appearance, configuration.appearance)
+                        .environment(\.localization, configuration.localization)
+                        .environment(\.customerCenterPresentationMode, self.mode)
+                        .environment(\.navigationOptions, self.navigationOptionsWithDismiss)
+                        .environment(\.supportInformation, configuration.support)
+                } else {
+                    TintedProgressView()
+                }
             }
         }
+        .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
     }
 
     @ViewBuilder
@@ -153,38 +187,35 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if let purchaseInformation = viewModel.purchaseInformation {
-            if purchaseInformation.store == .appStore,
-               let screen = configuration.screens[.management] {
-                if let onUpdateAppClick = viewModel.onUpdateAppClick,
-                    !ignoreAppUpdateWarning && viewModel.shouldShowAppUpdateWarnings {
-                    AppUpdateWarningView(
-                        onUpdateAppClick: onUpdateAppClick,
-                        onContinueAnywayClick: {
-                            withAnimation {
-                                ignoreAppUpdateWarning = true
-                            }
+        if viewModel.hasAnyPurchases,
+           let screen = configuration.screens[.management] {
+            if let onUpdateAppClick = viewModel.onUpdateAppClick,
+               !ignoreAppUpdateWarning
+                && viewModel.shouldShowAppUpdateWarnings {
+                AppUpdateWarningView(
+                    onUpdateAppClick: onUpdateAppClick,
+                    onContinueAnywayClick: {
+                        withAnimation {
+                            ignoreAppUpdateWarning = true
                         }
-                    )
-                } else {
-                    ManageSubscriptionsView(screen: screen,
-                                            purchaseInformation: purchaseInformation,
-                                            customerCenterActionHandler: viewModel.customerCenterActionHandler)
-                }
-            } else if let screen = configuration.screens[.management] {
-                WrongPlatformView(screen: screen,
-                                  purchaseInformation: purchaseInformation)
+                    }
+                )
+                .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
+            } else if viewModel.shouldShowList {
+                listView(screen)
             } else {
-                WrongPlatformView(purchaseInformation: purchaseInformation)
+                singlePurchaseView(screen)
             }
         } else {
             if let screen = configuration.screens[.noActive] {
-                ManageSubscriptionsView(screen: screen,
-                                        purchaseInformation: nil,
-                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
+                singlePurchaseView(screen)
             } else {
-                // Fallback with a restore button
-                NoSubscriptionsView(configuration: configuration)
+                FallbackNoSubscriptionsView(
+                    customerCenterViewModel: viewModel,
+                    actionWrapper: self.viewModel.actionWrapper,
+                    virtualCurrencies: self.viewModel.virtualCurrencies,
+                    purchasesProvider: self.viewModel.purchasesProvider
+                )
             }
         }
     }
@@ -198,11 +229,55 @@ private extension CustomerCenterView {
             .applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
     }
 
+    func listView(_ screen: CustomerCenterConfigData.Screen) -> some View {
+        RelevantPurchasesListView(
+            customerInfoViewModel: viewModel,
+            screen: screen,
+            shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,
+            purchasesProvider: self.viewModel.purchasesProvider,
+            actionWrapper: self.viewModel.actionWrapper
+        )
+        .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
+    }
+
+    func singlePurchaseView(_ screen: CustomerCenterConfigData.Screen) -> some View {
+        SubscriptionDetailView(
+            customerInfoViewModel: viewModel,
+            screen: screen,
+            purchaseInformation: viewModel.subscriptionsSection.first
+                ?? viewModel.nonSubscriptionsSection.first,
+            showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
+            showVirtualCurrencies: viewModel.shouldShowVirtualCurrencies,
+            allowsMissingPurchaseAction: true,
+            purchasesProvider: self.viewModel.purchasesProvider,
+            actionWrapper: self.viewModel.actionWrapper
+        )
+        .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
+    }
+
     func trackImpression() {
         viewModel.trackImpression(darkMode: self.colorScheme == .dark,
                                   displayMode: self.mode)
     }
 
+}
+
+@available(iOS 15.0, *)
+private extension CustomerCenterView {
+    /// Provide a navigation options instance that always includes a close handler.
+    ///
+    /// - Note: Using `@Environment(.dismiss)` directly inside child views (e.g., toolbar buttons) can fail to dismiss
+    /// the view when presented. To ensure reliable behavior on iOS 15, we capture `dismiss` at the
+    /// container level and propagate it via `navigationOptions.onCloseHandler`.
+    var navigationOptionsWithDismiss: CustomerCenterNavigationOptions {
+        // Only inject a dismissal handler if missing, to ensure reliability on iOS 15.
+        return CustomerCenterNavigationOptions(
+            usesNavigationStack: self.navigationOptions.usesNavigationStack,
+            usesExistingNavigation: self.navigationOptions.usesExistingNavigation,
+            shouldShowCloseButton: self.navigationOptions.shouldShowCloseButton,
+            onCloseHandler: self.navigationOptions.onCloseHandler ?? { self.dismiss() }
+        )
+    }
 }
 
 #if DEBUG
@@ -214,12 +289,14 @@ private extension CustomerCenterView {
 struct CustomerCenterView_Previews: PreviewProvider {
 
     static var previews: some View {
-        let purchaseInformationApple =
-        CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing
-        let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
-                                                     configuration: CustomerCenterConfigTestData.customerCenterData)
-        CustomerCenterView(viewModel: viewModelApple)
-            .previewDisplayName("Monthly Apple")
+        CustomerCenterView(
+            viewModel: CustomerCenterViewModel(
+                activeSubscriptionPurchases: [.subscription],
+                activeNonSubscriptionPurchases: [],
+                configuration: CustomerCenterConfigData.default
+            )
+        )
+        .previewDisplayName("Monthly Apple")
     }
 
 }

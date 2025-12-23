@@ -98,7 +98,7 @@ final class PaywallColorTests: TestCase {
 private extension PaywallColor {
 
     func verifyCodable(
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) throws {
         expect(
@@ -113,7 +113,7 @@ private extension PaywallColor {
         _ green: Int,
         _ blue: Int,
         _ alpha: Int,
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) {
         let components = self.underlyingColor.rgba

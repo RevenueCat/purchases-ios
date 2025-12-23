@@ -5,18 +5,17 @@
 //  Created by Nacho Soto on 8/9/23.
 //
 
-#if !os(watchOS)
+
+#if DEBUG && !os(watchOS)
 
 import RevenueCat
 
-#if DEBUG
+
 // this @testable access should used for the SwiftUI previews only
-@testable import RevenueCatUI
-#else
-import RevenueCatUI
-#endif
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
 struct CustomPaywall: View {
 
     var offering: Offering?
@@ -49,8 +48,7 @@ struct CustomPaywall: View {
 
 }
 
-#if DEBUG
-
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
 struct CustomPaywall_Previews: PreviewProvider {
     
     static var previews: some View {
@@ -94,7 +92,5 @@ struct CustomPaywall_Previews: PreviewProvider {
     ]
 
 }
-
-#endif
 
 #endif

@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
@@ -92,6 +92,7 @@ private enum Template1Preview {
     static let package = PaywallComponent.PackageComponent(
         packageID: "weekly",
         isSelectedByDefault: false,
+        applePromoOfferProductCode: nil,
         stack: packageStack
     )
 
@@ -122,7 +123,9 @@ private enum Template1Preview {
                 ))
             ],
             shape: .pill
-        )
+        ),
+        action: .inAppCheckout,
+        method: .inAppCheckout
     )
 
     static let contentStack = PaywallComponent.StackComponent(
@@ -203,7 +206,8 @@ struct Template1Preview_Previews: PreviewProvider {
         return .init(identifier: "weekly",
                      packageType: .weekly,
                      storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
+                     offeringIdentifier: "default",
+                     webCheckoutUrl: nil)
     }
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
@@ -214,14 +218,17 @@ struct Template1Preview_Previews: PreviewProvider {
             paywallComponents: Template1Preview.paywallComponents,
             offering: .init(identifier: "default",
                             serverDescription: "",
-                            availablePackages: [package]),
+                            availablePackages: [package],
+                            webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
+            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
+            failedToLoadFont: { _ in },
+            colorScheme: .light
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
     }

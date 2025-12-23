@@ -12,18 +12,22 @@ class MockOfferingsFactory: OfferingsFactory {
 
     override func createOfferings(
         from storeProductsByID: [String: StoreProduct],
-        data: OfferingsResponse
+        contents: Offerings.Contents,
+        loadedFromDiskCache: Bool
     ) -> Offerings? {
         if emptyOfferings {
+            let response = OfferingsResponse(currentOfferingId: "base",
+                                             offerings: [],
+                                             placements: nil,
+                                             targeting: nil,
+                                             uiConfig: nil)
             return Offerings(offerings: [:],
                              currentOfferingID: "base",
                              placements: nil,
                              targeting: nil,
-                             response: .init(currentOfferingId: "base",
-                                             offerings: [],
-                                             placements: nil,
-                                             targeting: nil,
-                                             uiConfig: nil))
+                             contents: Offerings.Contents(response: response,
+                                                          httpResponseOriginalSource: .mainServer),
+                             loadedFromDiskCache: loadedFromDiskCache)
         }
         if nilOfferings {
             return nil
@@ -34,7 +38,7 @@ class MockOfferingsFactory: OfferingsFactory {
 
         return Offerings(
             offerings: [
-                "base": Offering(
+                "base": Offering( // Corresponds to the OfferingsManagerTests.anyBackendOfferingsContents
                     identifier: "base",
                     serverDescription: "This is the base offering",
                     metadata: [:],
@@ -42,20 +46,16 @@ class MockOfferingsFactory: OfferingsFactory {
                         Package(identifier: "$rc_monthly",
                                 packageType: .monthly,
                                 storeProduct: .from(product: storeProduct),
-                                offeringIdentifier: "base")
-                    ]
+                                offeringIdentifier: "base",
+                                webCheckoutUrl: nil)
+                    ],
+                    webCheckoutUrl: nil
                 )],
             currentOfferingID: "base",
             placements: nil,
             targeting: nil,
-            response: .init(currentOfferingId: "base", offerings: [
-                .init(identifier: "base", description: "This is the base offering",
-                      packages: [
-                        .init(identifier: "", platformProductIdentifier: "$rc_monthly")
-                      ])
-            ], placements: nil, targeting: nil, uiConfig: nil)
-
-        )
+            contents: contents,
+            loadedFromDiskCache: loadedFromDiskCache)
     }
 }
 
@@ -69,12 +69,20 @@ extension OfferingsResponse {
             .init(identifier: "base",
                   description: "This is the base offering",
                   packages: [
-                    .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
-                  ])
+                    .init(identifier: "$rc_monthly",
+                          platformProductIdentifier: "monthly_freetrial",
+                          webCheckoutUrl: nil)
+                  ], webCheckoutUrl: nil)
         ],
         placements: nil,
         targeting: nil,
         uiConfig: nil
     )
+
+}
+
+extension Offerings.Contents {
+
+    static let mockContents: Self = .init(response: .mockResponse, httpResponseOriginalSource: .mainServer)
 
 }

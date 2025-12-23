@@ -26,6 +26,7 @@ class DiagnosticsEventEncodingTests: TestCase {
         properties: DiagnosticsEvent.Properties(
             verificationResult: "FAILED",
             endpointName: HTTPRequest.Path.logIn.name,
+            host: "api.revenuecat.com",
             responseTime: 3,
             storeKitVersion: .storeKit1,
             successful: true,
@@ -45,7 +46,9 @@ class DiagnosticsEventEncodingTests: TestCase {
             promotionalOfferId: "promotionalOfferId",
             winBackOfferApplied: false,
             purchaseResult: .userCancelled,
-            isRetry: true
+            cacheFetchPolicy: .cachedOrFetched,
+            isRetry: true,
+            connectionErrorReason: .noNetwork
         ),
         timestamp: dateFormatter.date(from: "2022-03-08T17:42:58Z")!,
         appSessionId: UUID(uuidString: "16D1E479-56B7-4AD9-974C-D6CC7C3DB338")!

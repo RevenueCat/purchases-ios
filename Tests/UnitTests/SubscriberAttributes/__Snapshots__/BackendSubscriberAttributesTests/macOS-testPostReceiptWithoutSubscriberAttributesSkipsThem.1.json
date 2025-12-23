@@ -1,10 +1,10 @@
 {
   "headers" : {
     "Authorization" : "Bearer the api key",
-    "content-type" : "application/json",
     "X-Client-Build-Version" : "12345",
     "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
     "X-Client-Version" : "17.0.0",
+    "X-Is-Backgrounded" : "false",
     "X-Is-Debug-Build" : "true",
     "X-Is-Sandbox" : "false",
     "X-Observer-Mode-Enabled" : "false",
@@ -15,10 +15,11 @@
     "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
     "X-Preferred-Locales" : "en_US",
     "X-Retry-Count" : "0",
-    "X-Storefront" : "USA",
     "X-StoreKit-Version" : "2",
     "X-StoreKit2-Enabled" : "true",
-    "X-Version" : "4.0.0"
+    "X-Storefront" : "USA",
+    "X-Version" : "4.0.0",
+    "content-type" : "application/json"
   },
   "request" : {
     "body" : {

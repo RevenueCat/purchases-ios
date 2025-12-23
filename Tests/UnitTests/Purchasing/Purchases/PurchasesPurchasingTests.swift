@@ -254,7 +254,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         self.backend.postReceiptResult = .success(
             try CustomerInfo(data: Self.emptyCustomerInfoData)
-                .copy(with: .verifiedOnDevice)
+                .copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
@@ -438,7 +438,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         expect(receivedUserCancelled).toEventually(beFalse())
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.domain).toEventually(equal(ErrorCode.errorDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.productAlreadyPurchasedError.rawValue))
         expect(receivedUnderlyingError?.domain).toEventually(equal(unknownError.domain))
         expect(receivedUnderlyingError?.code).toEventually(equal(unknownError.code))
@@ -531,7 +531,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).toEventuallyNot(beNil())
         expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
 
-        expect(receivedError?.domain) == RCPurchasesErrorCodeDomain
+        expect(receivedError?.domain) == ErrorCode.errorDomain
         expect(receivedError?.code) == ErrorCode.missingReceiptFileError.rawValue
     }
 
@@ -611,7 +611,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postReceiptDataCalled) == false
         expect(self.storeKit1Wrapper.finishCalled) == false
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.domain).toEventually(equal(ErrorCode.errorDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.paymentPendingError.rawValue))
     }
 
@@ -629,7 +629,9 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
     func testPostsOfferingIfPurchasingPackage() throws {
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
-            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:],
+                                                                contents: .mockContents,
+                                                                loadedFromDiskCache: false))
         )
 
         let result: Package? = waitUntilValue { completion in
@@ -669,7 +671,9 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         var receivedError: NSError?
         var secondCompletionCalled = false
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
-            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:],
+                                                                contents: .mockContents,
+                                                                loadedFromDiskCache: false))
         )
 
         self.purchases.getOfferings { (newOfferings, _) in
@@ -780,7 +784,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedInfo).to(beNil())
-        expect(receivedError?.domain) == RCPurchasesErrorCodeDomain
+        expect(receivedError?.domain) == ErrorCode.errorDomain
         expect(receivedError?.code) == ErrorCode.operationAlreadyInProgressForProductError.rawValue
         expect(self.storeKit1Wrapper.addPaymentCallCount) == 1
         expect(receivedUserCancelled) == false
@@ -988,7 +992,8 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: false,
                                          storeKitVersion: .storeKit1,
-                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false),
+                                         preferredLocalesProvider: .mock())
         self.initializePurchasesInstance(appUserId: nil)
 
         self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
@@ -1013,7 +1018,8 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: true,
                                          storeKitVersion: .storeKit1,
-                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false),
+                                         preferredLocalesProvider: .mock())
         self.initializePurchasesInstance(appUserId: nil)
 
         self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }

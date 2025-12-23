@@ -16,7 +16,7 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PresentedPartialsTest: TestCase {
@@ -25,6 +25,7 @@ class PresentedPartialsTest: TestCase {
         let state = ComponentViewState.default
         let condition = ScreenCondition.compact
         let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = []
 
@@ -32,6 +33,7 @@ class PresentedPartialsTest: TestCase {
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: presentedOverrides
         )
 
@@ -42,6 +44,7 @@ class PresentedPartialsTest: TestCase {
         let state = ComponentViewState.default
         let condition = ScreenCondition.compact
         let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
@@ -55,6 +58,7 @@ class PresentedPartialsTest: TestCase {
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: presentedOverrides
         )
 
@@ -69,6 +73,7 @@ class PresentedPartialsTest: TestCase {
         let state = ComponentViewState.default
         let condition = ScreenCondition.compact
         let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
@@ -82,6 +87,7 @@ class PresentedPartialsTest: TestCase {
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: presentedOverrides
         )
 
@@ -92,6 +98,7 @@ class PresentedPartialsTest: TestCase {
         let state = ComponentViewState.default
         let condition = ScreenCondition.medium
         let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
@@ -112,6 +119,7 @@ class PresentedPartialsTest: TestCase {
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: presentedOverrides
         )
 
@@ -128,6 +136,7 @@ class PresentedPartialsTest: TestCase {
         let state = ComponentViewState.selected
         let condition = ScreenCondition.medium
         let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
@@ -141,6 +150,7 @@ class PresentedPartialsTest: TestCase {
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: presentedOverrides
         )
 
@@ -155,6 +165,7 @@ class PresentedPartialsTest: TestCase {
         let state = ComponentViewState.default
         let condition = ScreenCondition.medium
         let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
@@ -168,6 +179,7 @@ class PresentedPartialsTest: TestCase {
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: presentedOverrides
         )
 
@@ -178,6 +190,7 @@ class PresentedPartialsTest: TestCase {
         let state = ComponentViewState.default
         let condition = ScreenCondition.medium
         let isEligibleForIntroOffer = true
+        let isEligibleForPromoOffer = false
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
@@ -191,6 +204,7 @@ class PresentedPartialsTest: TestCase {
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: presentedOverrides
         )
 
@@ -205,6 +219,7 @@ class PresentedPartialsTest: TestCase {
         let state = ComponentViewState.default
         let condition = ScreenCondition.medium
         let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
@@ -218,6 +233,7 @@ class PresentedPartialsTest: TestCase {
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: presentedOverrides
         )
 
