@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        test_bump-sdk-in-rc-app
       ]
     default: default
   generate_snapshots:
@@ -1635,6 +1636,13 @@ jobs:
               "https://circleci.com/api/v2/project/${RC_APP_CIRCLE_CI_PROJECT_SLUG}/pipeline"
 
 workflows:
+
+  test-bump-sdk-in-rc-app:
+    when:
+      equal: [test_bump-sdk-in-rc-app, << pipeline.parameters.action >>]
+    jobs:
+      - bump-sdk-in-rc-app
+
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
