@@ -556,6 +556,10 @@ private struct PresentingPaywallModifier: ViewModifier {
     @State
     private var data: Data?
 
+    /// The prefetched exit offer (set during .task, but not shown until main paywall dismisses)
+    @State
+    private var exitOfferOffering: Offering?
+
     /// The exit offer to actually present (set when main paywall dismisses without purchase)
     @State
     private var presentedExitOffer: Offering?
@@ -692,10 +696,6 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
     }
 
-    /// The offering loaded for exit offer presentation
-    @State
-    private var exitOfferOffering: Offering?
-
     private func close() {
         Logger.debug(Strings.dismissing_paywall)
 
@@ -723,6 +723,7 @@ private struct PresentingPaywallModifier: ViewModifier {
 
         // Check shouldDisplay with the purchase result if available
         if let purchaseResult = self.purchaseHandler.sessionPurchaseResult,
+           !purchaseResult.userCancelled,
            !self.shouldDisplay(purchaseResult.customerInfo) {
             self.onDismiss?()
             return
