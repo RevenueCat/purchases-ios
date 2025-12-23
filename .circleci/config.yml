@@ -1622,6 +1622,8 @@ jobs:
       - run:
           name: Trigger RC App Pipeline
           command: |
+            set -euo pipefail
+
             # Read version from .version file
             VERSION=$(cat .version)
 
@@ -1629,13 +1631,20 @@ jobs:
             curl -X POST \
               --header "Circle-Token: ${RC_APP_CIRCLE_CI_TOKEN}" \
               --header "Content-Type: application/json" \
-              --data "{
-                \"parameters\": {
-                  \"bump_sdk\": true,
-                  \"sdk_version\": \"${SDK_VERSION}\"
-                }
+              --data "{\
+                \"definition_id\": \"${RC_APP_CIRCLE_CI_PIPELINE_DEFINITION_ID}\",\
+                \"config\": { \
+                  \"branch\": \"main\" \
+                },\
+                \"checkout\": {
+                  \"branch\": \"main\"
+                },\
+                \"parameters\": {\
+                  \"bump_sdk\": true,\
+                  \"sdk_version\": \"${VERSION}\"\
+                }\
               }" \
-              "https://circleci.com/api/v2/project/${RC_APP_CIRCLE_CI_PROJECT_SLUG}/pipeline"
+              "https://circleci.com/api/v2/project/${RC_APP_CIRCLE_CI_PROJECT_SLUG}/pipeline/run"
 
 workflows:
 
