@@ -559,6 +559,7 @@ final class PurchasesOrchestrator {
                       completion: completion)
     }
 
+    // swiftlint:disable function_body_length
     func purchase(sk1Product: SK1Product,
                   payment: SKMutablePayment,
                   package: Package?,
