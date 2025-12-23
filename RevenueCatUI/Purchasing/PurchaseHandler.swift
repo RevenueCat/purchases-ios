@@ -78,7 +78,8 @@ final class PurchaseHandler: ObservableObject {
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
     var hasPurchasedInSession: Bool {
-        sessionPurchaseResult != nil
+        guard let result = sessionPurchaseResult else { return false }
+        return !result.userCancelled
     }
 
     /// When a purchase completes, this will include the `CustomerInfo`
@@ -196,11 +197,14 @@ final class PurchaseHandler: ObservableObject {
         cancellables.removeAll()
     }
 
-    /// Resets the session purchase result for a new paywall session.
+    /// Resets purchase state for a new paywall session.
     ///
     /// This is called when a paywall appears to ensure we track purchases for the current session only.
-    func resetSessionPurchaseResult() {
+    /// We reset both `sessionPurchaseResult` (used for exit offer logic) and `purchaseResult`
+    /// (used for `onPurchaseCompleted` preference) to avoid stale values triggering handlers.
+    func resetForNewSession() {
         self.sessionPurchaseResult = nil
+        self.purchaseResult = nil
     }
 
 }

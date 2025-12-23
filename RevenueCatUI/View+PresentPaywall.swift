@@ -685,12 +685,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
-        .task(id: data.id) {
-            // Reset session purchase result to track purchases in THIS session only.
-            // Using .task(id:) ensures this only runs once per unique session (identified by data.id),
-            // avoiding accidental resets if onAppear is called multiple times.
-            self.purchaseHandler.resetSessionPurchaseResult()
-
+        .task {
             guard let offering = await self.content.resolveOffering() else { return }
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
         }
@@ -725,6 +720,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         if let purchaseResult = self.purchaseHandler.sessionPurchaseResult,
            !purchaseResult.userCancelled,
            !self.shouldDisplay(purchaseResult.customerInfo) {
+            self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
             return
         }
@@ -733,6 +729,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
             self.presentedExitOffer = exitOffering
         } else {
+            self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
         }
     }
@@ -740,6 +737,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     private func handleExitOfferDismiss() {
         self.presentedExitOffer = nil
         self.exitOfferOffering = nil
+        self.purchaseHandler.resetForNewSession()
         self.onDismiss?()
     }
 
@@ -903,22 +901,36 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 purchaseHandler: self.purchaseHandler
             )
         )
-        .withEventHandlers(
-            purchaseHandler: self.purchaseHandler,
-            purchaseStarted: self.purchaseStarted,
-            purchaseCompleted: self.purchaseCompleted,
-            purchaseCancelled: self.purchaseCancelled,
-            restoreStarted: self.restoreStarted,
-            restoreCompleted: self.restoreCompleted,
-            purchaseFailure: self.purchaseFailure,
-            restoreFailure: self.restoreFailure
-        )
-        .task(id: offering.identifier) {
-            // Reset session purchase result to track purchases in THIS session only.
-            // Using .task(id:) ensures this only runs once per unique offering,
-            // avoiding accidental resets if onAppear is called multiple times.
-            self.purchaseHandler.resetSessionPurchaseResult()
-
+        .onPurchaseStarted {
+            self.purchaseStarted?($0)
+        }
+        .onPurchaseCompleted { customerInfo in
+            self.purchaseCompleted?(customerInfo)
+            // Always close on successful purchase
+            self.offering = nil
+        }
+        .onPurchaseCancelled {
+            self.purchaseCancelled?()
+        }
+        .onRestoreStarted {
+            self.restoreStarted?()
+        }
+        .onRestoreCompleted { customerInfo in
+            self.restoreCompleted?(customerInfo)
+        }
+        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
+            guard let result, result.success else { return }
+            // Close on successful restore
+            self.offering = nil
+        }
+        .onPurchaseFailure {
+            self.purchaseFailure?($0)
+        }
+        .onRestoreFailure {
+            self.restoreFailure?($0)
+        }
+        .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .task {
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
         }
     }
@@ -932,16 +944,35 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 purchaseHandler: self.purchaseHandler
             )
         )
-        .withEventHandlers(
-            purchaseHandler: self.purchaseHandler,
-            purchaseStarted: self.purchaseStarted,
-            purchaseCompleted: self.purchaseCompleted,
-            purchaseCancelled: self.purchaseCancelled,
-            restoreStarted: self.restoreStarted,
-            restoreCompleted: self.restoreCompleted,
-            purchaseFailure: self.purchaseFailure,
-            restoreFailure: self.restoreFailure
-        )
+        .onPurchaseStarted {
+            self.purchaseStarted?($0)
+        }
+        .onPurchaseCompleted { customerInfo in
+            self.purchaseCompleted?(customerInfo)
+            // Always close on successful purchase
+            self.presentedExitOffer = nil
+        }
+        .onPurchaseCancelled {
+            self.purchaseCancelled?()
+        }
+        .onRestoreStarted {
+            self.restoreStarted?()
+        }
+        .onRestoreCompleted { customerInfo in
+            self.restoreCompleted?(customerInfo)
+        }
+        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
+            guard let result, result.success else { return }
+            // Close on successful restore
+            self.presentedExitOffer = nil
+        }
+        .onPurchaseFailure {
+            self.purchaseFailure?($0)
+        }
+        .onRestoreFailure {
+            self.restoreFailure?($0)
+        }
+        .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
 
     /// Handles dismissal of the main paywall, checking for exit offers.
@@ -951,6 +982,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     /// - Fetching `CustomerInfo` may return cached data that hasn't been updated yet
     private func handleMainPaywallDismiss() {
         guard !self.purchaseHandler.hasPurchasedInSession else {
+            self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
             return
         }
@@ -965,6 +997,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
             self.presentedExitOffer = exitOffering
         } else {
+            self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
         }
     }
@@ -972,6 +1005,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     private func handleExitOfferDismiss() {
         self.presentedExitOffer = nil
         self.exitOfferOffering = nil
+        self.purchaseHandler.resetForNewSession()
         self.onDismiss?()
     }
 
