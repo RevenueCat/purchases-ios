@@ -427,6 +427,7 @@ extension View {
         offering: Binding<Offering?>,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         presentationMode: PaywallPresentationMode = .default,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -438,6 +439,7 @@ extension View {
     ) -> some View {
         return self.modifier(PresentingPaywallBindingModifier(
             offering: offering,
+            myAppPurchaseLogic: myAppPurchaseLogic,
             presentationMode: presentationMode,
             fontProvider: fonts,
             purchaseStarted: purchaseStarted,
@@ -680,12 +682,12 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
-        .onAppear {
-            // Reset purchased flag so we can track if a purchase happens in THIS session.
-            // This is needed because PurchaseHandler is a @StateObject that persists.
+        .task(id: data.id) {
+            // Reset session purchase result to track purchases in THIS session only.
+            // Using .task(id:) ensures this only runs once per unique session (identified by data.id),
+            // avoiding accidental resets if onAppear is called multiple times.
             self.purchaseHandler.resetSessionPurchaseResult()
-        }
-        .task {
+
             guard let offering = await self.content.resolveOffering() else { return }
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
         }
@@ -827,7 +829,37 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     private var presentedExitOffer: Offering?
 
     @StateObject
-    private var purchaseHandler: PurchaseHandler = .default()
+    private var purchaseHandler: PurchaseHandler
+
+    init(
+        offering: Binding<Offering?>,
+        myAppPurchaseLogic: MyAppPurchaseLogic?,
+        presentationMode: PaywallPresentationMode,
+        fontProvider: PaywallFontProvider,
+        purchaseStarted: PurchaseOfPackageStartedHandler?,
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
+        purchaseCancelled: PurchaseCancelledHandler?,
+        restoreStarted: RestoreStartedHandler?,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler?,
+        purchaseFailure: PurchaseFailureHandler?,
+        restoreFailure: PurchaseFailureHandler?,
+        onDismiss: (() -> Void)?
+    ) {
+        self._offering = offering
+        self.presentationMode = presentationMode
+        self.fontProvider = fontProvider
+        self.purchaseStarted = purchaseStarted
+        self.purchaseCompleted = purchaseCompleted
+        self.purchaseCancelled = purchaseCancelled
+        self.restoreStarted = restoreStarted
+        self.restoreCompleted = restoreCompleted
+        self.purchaseFailure = purchaseFailure
+        self.restoreFailure = restoreFailure
+        self.onDismiss = onDismiss
+        self._purchaseHandler = .init(wrappedValue:
+            PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                    performRestore: myAppPurchaseLogic?.performRestore))
+    }
 
     func body(content: Content) -> some View {
         Group {
@@ -882,12 +914,12 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             purchaseFailure: self.purchaseFailure,
             restoreFailure: self.restoreFailure
         )
-        .onAppear {
-            // Reset session purchase result so we can track if a purchase happens in THIS session.
-            // This is needed because PurchaseHandler is a @StateObject that persists.
+        .task(id: offering.identifier) {
+            // Reset session purchase result to track purchases in THIS session only.
+            // Using .task(id:) ensures this only runs once per unique offering,
+            // avoiding accidental resets if onAppear is called multiple times.
             self.purchaseHandler.resetSessionPurchaseResult()
-        }
-        .task {
+
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
         }
     }
