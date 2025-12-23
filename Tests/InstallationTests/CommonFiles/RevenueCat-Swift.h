@@ -623,6 +623,44 @@ SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWI
 /// \param creative Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setCreative:(NSString * _Nullable)creative;
+/// Sets conversion data from AppsFlyer’s <code>onConversionDataSuccess</code> callback.
+/// This method extracts relevant attribution fields from the AppsFlyer conversion data
+/// and sets the corresponding RevenueCat subscriber attributes. Note that this method will
+/// never unset any attributes, even when passed <code>nil</code>. To unset attributes, call the setter
+/// method for the individual attribute that should be unset with a <code>nil</code> value.
+/// The following attributes are set based on the conversion data:
+/// <ul>
+///   <li>
+///     <code>$mediaSource</code>: From <code>media_source</code>, or “Organic” if <code>af_status</code> is “Organic”
+///   </li>
+///   <li>
+///     <code>$campaign</code>: From <code>campaign</code>
+///   </li>
+///   <li>
+///     <code>$adGroup</code>: From <code>adgroup</code>, with fallback to <code>adset</code>
+///   </li>
+///   <li>
+///     <code>$ad</code>: From <code>af_ad</code>, with fallback to <code>ad_id</code>
+///   </li>
+///   <li>
+///     <code>$keyword</code>: From <code>af_keywords</code>, with fallback to <code>keyword</code>
+///   </li>
+///   <li>
+///     <code>$creative</code>: From <code>creative</code>, with fallback to <code>af_creative</code>
+///   </li>
+/// </ul>
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/appsflyer">AppsFlyer RevenueCat Integration</a>
+///   </li>
+///   <li>
+///     <a href="https://dev.appsflyer.com/hc/docs/conversion-data-ios">AppsFlyer Conversion Data</a>
+///   </li>
+/// </ul>
+/// \param data The conversion data dictionary from AppsFlyer’s <code>onConversionDataSuccess</code>.
+///
+- (void)setAppsFlyerConversionData:(NSDictionary * _Nullable)data;
 @end
 
 /// Enum of supported attribution networks

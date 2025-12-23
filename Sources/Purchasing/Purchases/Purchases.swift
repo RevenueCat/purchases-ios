@@ -2190,6 +2190,9 @@ private extension Purchases {
 
     @objc func applicationDidEnterBackground() {
         self.systemInfo.isAppBackgroundedState = true
+    }
+
+    @objc func applicationWillResignActive() {
         self.dispatchSyncSubscriberAttributes()
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.purchasesOrchestrator.postEventsIfNeeded()
@@ -2200,6 +2203,11 @@ private extension Purchases {
         self.notificationCenter.addObserver(self,
                                             selector: #selector(self.applicationWillEnterForeground),
                                             name: SystemInfo.applicationWillEnterForegroundNotification,
+                                            object: nil)
+
+        self.notificationCenter.addObserver(self,
+                                            selector: #selector(self.applicationWillResignActive),
+                                            name: SystemInfo.applicationWillResignActiveNotification,
                                             object: nil)
 
         self.notificationCenter.addObserver(self,
