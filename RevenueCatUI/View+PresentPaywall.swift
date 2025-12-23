@@ -455,36 +455,6 @@ extension View {
 
 }
 
-// MARK: - Shared PaywallView Configuration
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallView {
-
-    /// Applies all the standard event handlers to a PaywallView
-    // swiftlint:disable:next function_parameter_count
-    func withEventHandlers(
-        purchaseHandler: PurchaseHandler,
-        purchaseStarted: PurchaseOfPackageStartedHandler?,
-        purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
-        purchaseCancelled: PurchaseCancelledHandler?,
-        restoreStarted: RestoreStartedHandler?,
-        restoreCompleted: PurchaseOrRestoreCompletedHandler?,
-        purchaseFailure: PurchaseFailureHandler?,
-        restoreFailure: PurchaseFailureHandler?
-    ) -> some View {
-        self
-            .onPurchaseStarted { purchaseStarted?($0) }
-            .onPurchaseCompleted { purchaseCompleted?($0) }
-            .onPurchaseCancelled { purchaseCancelled?() }
-            .onRestoreStarted { restoreStarted?() }
-            .onRestoreCompleted { restoreCompleted?($0) }
-            .onPurchaseFailure { purchaseFailure?($0) }
-            .onRestoreFailure { restoreFailure?($0) }
-            .interactiveDismissDisabled(purchaseHandler.actionInProgress)
-    }
-
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 private struct PresentingPaywallModifier: ViewModifier {
