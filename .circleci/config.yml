@@ -253,7 +253,7 @@ commands:
             - install-mint-0_17_5
       - when:
           condition: << parameters.install_swiftlint >>
-          steps:  
+          steps:
             - install-brew-dependency:
                 dependency_name: "swiftlint"
       - when:
@@ -1611,7 +1611,7 @@ jobs:
             git push origin
             git push --tags
 
-  deploy-rc-app:
+  bump-sdk-in-rc-app:
     docker:
       - image: cimg/base:stable
     resource_class: small
@@ -1628,7 +1628,7 @@ jobs:
               --header "Content-Type: application/json" \
               --data "{
                 \"parameters\": {
-                  \"trigger_release\": true,
+                  \"bump_sdk\": true,
                   \"sdk_version\": \"${SDK_VERSION}\"
                 }
               }" \
@@ -1727,7 +1727,7 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
-      - deploy-rc-app:
+      - bump-sdk-in-rc-app:
           requires:
             - deploy-to-spm
           <<: *release-tags
