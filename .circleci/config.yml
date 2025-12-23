@@ -1617,6 +1617,8 @@ jobs:
       - image: cimg/base:stable
     resource_class: small
     steps:
+      - checkout
+      - setup-git-credentials
       - run:
           name: Trigger RC App Pipeline
           command: |
