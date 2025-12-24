@@ -1661,19 +1661,19 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
-      # - run-test-ios-26
-      # - run-test-ios-18
-      # - run-test-ios-17
-      # - run-test-ios-16
-      # - run-test-ios-15
-      # - run-test-ios-14
-      # - run-test-ios-13
-      # - run-test-macos
-      # - run-test-watchos
-      # - backend-integration-tests-other
+      - run-test-ios-26
+      - run-test-ios-18
+      - run-test-ios-17
+      - run-test-ios-16
+      - run-test-ios-15
+      - run-test-ios-14
+      - run-test-ios-13
+      - run-test-macos
+      - run-test-watchos
+      - backend-integration-tests-other
       - backend-integration-tests-offline
-      # - backend-integration-tests-SK2
-      # - backend-integration-tests-SK1
+      - backend-integration-tests-SK2
+      - backend-integration-tests-SK1
 
 
   generate_revenuecatui_snapshots:
