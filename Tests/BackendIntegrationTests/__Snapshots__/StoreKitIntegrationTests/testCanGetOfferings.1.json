@@ -1462,6 +1462,9 @@
           }
         },
         "default_locale" : "en_US",
+        "exit_offers" : {
+
+        },
         "revision" : 2,
         "template_name" : "components"
       }
