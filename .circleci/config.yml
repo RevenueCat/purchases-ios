@@ -253,7 +253,7 @@ commands:
             - install-mint-0_17_5
       - when:
           condition: << parameters.install_swiftlint >>
-          steps:  
+          steps:
             - install-brew-dependency:
                 dependency_name: "swiftlint"
       - when:
@@ -1555,7 +1555,7 @@ jobs:
       - setup-git-credentials
       - trust-github-key
       - install-dependencies
-      
+
       # LOCAL_SOURCE
       - run:
           name: Set BinarySizeTest integration method (LOCAL_SOURCE)
@@ -1653,7 +1653,22 @@ jobs:
             git push origin
             git push --tags
 
+  bump-sdk-in-rc-mobile-app:
+    docker:
+      - image: cimg/ruby:3.2.0
+    resource_class: small
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - setup-git-credentials
+      - install-rubydocker-dependencies
+      - run:
+          name: Trigger RC App Pipeline
+          command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
+
 workflows:
+
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
@@ -1744,6 +1759,10 @@ workflows:
           <<: *release-tags
       - deploy-purchase-tester:
           dry_run: false
+          requires:
+            - make-release
+          <<: *release-tags
+      - bump-sdk-in-rc-mobile-app:
           requires:
             - make-release
           <<: *release-tags
