@@ -16,8 +16,6 @@ import XCTest
 
 @testable import RevenueCat
 
-// swiftlint:disable force_try
-
 class SynchronizedUserDefaultsTests: TestCase {
 
     private var userDefaults: UserDefaults!
@@ -87,9 +85,11 @@ class SynchronizedUserDefaultsTests: TestCase {
         }
 
         // Write from background thread. Will post a notification to main queue
-        DispatchQueue.global(qos: .userInteractive).async { [synchronizedUserDefaults, testKey] in
-            synchronizedUserDefaults?.write {
-                $0.set("value", forKey: testKey!)
+        let syncDefaults = self.synchronizedUserDefaults!
+        let key = self.testKey
+        DispatchQueue.global(qos: .userInteractive).async {
+            syncDefaults.write {
+                $0.set("value", forKey: key)
             }
         }
 
@@ -114,62 +114,69 @@ class SynchronizedUserDefaultsTests: TestCase {
         self.userDefaults.set("concurrentValue", forKey: testKey)
 
         let iterations = 100
-        let expectation = expectation(description: "All reads complete")
-        expectation.expectedFulfillmentCount = iterations
+        let readExpectation = expectation(description: "All reads complete")
+        readExpectation.expectedFulfillmentCount = iterations
+
+        let syncDefaults = self.synchronizedUserDefaults!
+        let key = self.testKey
 
         for _ in 0..<iterations {
-            DispatchQueue.global(qos: .userInteractive).async { [synchronizedUserDefaults, testKey] in
-                _ = synchronizedUserDefaults?.read {
-                    $0.string(forKey: testKey!)
+            DispatchQueue.global(qos: .userInteractive).async {
+                _ = syncDefaults.read {
+                    $0.string(forKey: key)
                 }
-                expectation.fulfill()
+                readExpectation.fulfill()
             }
         }
 
-        wait(for: [expectation], timeout: 5.0)
+        wait(for: [readExpectation], timeout: 5.0)
     }
 
     func testConcurrentWritesDoNotDeadlock() {
         let iterations = 100
-        let expectation = expectation(description: "All writes complete")
-        expectation.expectedFulfillmentCount = iterations
+        let writeExpectation = expectation(description: "All writes complete")
+        writeExpectation.expectedFulfillmentCount = iterations
+
+        let syncDefaults = self.synchronizedUserDefaults!
+        let key = self.testKey
 
         for iteration in 0..<iterations {
-            DispatchQueue.global(qos: .userInteractive).async { [synchronizedUserDefaults, testKey] in
-                synchronizedUserDefaults?.write {
-                    $0.set("value\(iteration)", forKey: testKey!)
+            DispatchQueue.global(qos: .userInteractive).async {
+                syncDefaults.write {
+                    $0.set("value\(iteration)", forKey: key)
                 }
-                expectation.fulfill()
+                writeExpectation.fulfill()
             }
         }
 
-        wait(for: [expectation], timeout: 5.0)
+        wait(for: [writeExpectation], timeout: 5.0)
     }
 
     func testMixedConcurrentReadsAndWritesDoNotDeadlock() {
         let iterations = 100
-        let expectation = expectation(description: "All operations complete")
-        expectation.expectedFulfillmentCount = iterations * 2
+        let mixedExpectation = expectation(description: "All operations complete")
+        mixedExpectation.expectedFulfillmentCount = iterations * 2
+
+        let syncDefaults = self.synchronizedUserDefaults!
+        let key = self.testKey
 
         for iteration in 0..<iterations {
-            DispatchQueue.global(qos: .userInteractive).async { [synchronizedUserDefaults, testKey] in
-                synchronizedUserDefaults?.write {
-                    $0.set("value\(iteration)", forKey: testKey!)
+            DispatchQueue.global(qos: .userInteractive).async {
+                syncDefaults.write {
+                    $0.set("value\(iteration)", forKey: key)
                 }
-                expectation.fulfill()
+                mixedExpectation.fulfill()
             }
 
-            DispatchQueue.global(qos: .background).async { [synchronizedUserDefaults, testKey] in
-                _ = synchronizedUserDefaults?.read {
-                    $0.string(forKey: testKey!)
+            DispatchQueue.global(qos: .background).async {
+                _ = syncDefaults.read {
+                    $0.string(forKey: key)
                 }
-                expectation.fulfill()
+                mixedExpectation.fulfill()
             }
         }
 
-        wait(for: [expectation], timeout: 10.0)
+        wait(for: [mixedExpectation], timeout: 10.0)
     }
 
 }
-
-// swiftlint:enable force_try
