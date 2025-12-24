@@ -1346,7 +1346,7 @@ platform :ios do
 
   desc "Run BackendIntegrationTests"
   lane :backend_integration_tests do |options|
-    fail_build = options[:fail_build]
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
 
     fetch_snapshots
     replace_api_key_integration_tests
@@ -1363,7 +1363,8 @@ platform :ios do
         testplan: options[:test_plan],
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios",
-        number_of_retries: 5 # Number of retries in an xcodebuild run
+        number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
+        fail_build: !generate_snapshots
       )
       success = true
     rescue => exception
