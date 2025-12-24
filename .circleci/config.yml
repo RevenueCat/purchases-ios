@@ -498,13 +498,13 @@ commands:
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 16 (18.5)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: BackendIntegrationTests
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshots_repo_pr"
           version: ""
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: BackendIntegrationTests
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
