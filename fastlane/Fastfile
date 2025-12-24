@@ -737,7 +737,7 @@ platform :ios do
     archive_path = build_binary_size_test_app(
       integration_method: integration_method
     )
-    
+
     send_to_emerge(
       archive_path: archive_path
     )
@@ -775,7 +775,7 @@ platform :ios do
 
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
     workspace_path = File.join(project_root, settings[:workspace_relative_path])
-    
+
     if integration_method == "COCOAPODS"
       podfile_dir = File.join(project_root, "Projects/BinarySizeTest")
       UI.message("Integration method is COCOAPODS; running pod install in #{podfile_dir}")
@@ -804,7 +804,7 @@ platform :ios do
 
     archive_path = File.join(project_root, "build/BinarySizeTest-#{integration_method}.xcarchive")
     output_directory = File.join(project_root, "build")
-    
+
     # Build, archive, and export IPA in one step
     gym(
       workspace: workspace_path,
@@ -826,12 +826,12 @@ platform :ios do
       include_symbols: true,
       clean: false
     )
-    
+
     ipa_path = lane_context[SharedValues::IPA_OUTPUT_PATH]
     unless ipa_path && File.exist?(ipa_path)
       UI.user_error!("IPA export completed but no IPA file found in lane context")
     end
-    
+
     archive_path
   end
 
@@ -1221,7 +1221,12 @@ platform :ios do
     base_branch = options[:base_branch]
     build_number = ENV["CIRCLE_BUILD_NUM"]
 
-    branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
+    ## Version can be empty
+    if version.empty?
+      branch_name = "generated_snapshots/#{base_branch}-#{build_number}"
+    else
+      branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
+    end
 
     sh("git", "checkout", "-b", branch_name)
     sh("git", "add", options[:files_to_add])
@@ -1240,7 +1245,7 @@ platform :ios do
 
       create_pull_request(
         repo: options[:repo],
-        title: "Generating new test snapshots for `#{base_branch}` - #{version}",
+        title: "Generating new test snapshots for `#{base_branch}` #{version.empty? ? "" : "- #{version}"}",
         body: body,
         base: base_branch,
         api_token: ENV["GITHUB_TOKEN"],
