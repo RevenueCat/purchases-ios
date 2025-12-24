@@ -500,7 +500,6 @@ commands:
       - run:
           name: Debug - Check generate_snapshots parameter
           command: |
-            echo "parameters.generate_snapshots value: << parameters.generate_snapshots >>"
             echo "pipeline.parameters.generate_snapshots value: << pipeline.parameters.generate_snapshots >>"
       - run:
           name: Run backend_integration Tests
