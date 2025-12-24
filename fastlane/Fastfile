@@ -1362,7 +1362,7 @@ platform :ios do
         output_style: 'raw',
         result_bundle: true,
         testplan: options[:test_plan],
-        only_test_configurations: [test_configuration]
+        only_test_configurations: [test_configuration],
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios",
         number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
