@@ -703,6 +703,10 @@ private struct PresentingPaywallModifier: ViewModifier {
 
         if let exitOffering = self.exitOfferOffering {
             Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
+            self.purchaseHandler.trackExitOffer(
+                exitOfferType: .dismiss,
+                exitOfferingIdentifier: exitOffering.identifier
+            )
             self.presentedExitOffer = exitOffering
         } else {
             self.purchaseHandler.resetForNewSession()
@@ -979,6 +983,10 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
 
         if let exitOffering = self.exitOfferOffering {
             Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
+            self.purchaseHandler.trackExitOffer(
+                exitOfferType: .dismiss,
+                exitOfferingIdentifier: exitOffering.identifier
+            )
             self.presentedExitOffer = exitOffering
         } else {
             self.purchaseHandler.resetForNewSession()
