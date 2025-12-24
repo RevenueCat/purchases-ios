@@ -1699,7 +1699,7 @@ workflows:
         - not:
             equal: ["release-train", << pipeline.schedule.name >>]
         - not:
-            equal: ["bump", << pipeline.schedule.name >>]
+            equal: [bump, << pipeline.parameters.action >>]
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
@@ -1779,7 +1779,7 @@ workflows:
         - not:
             equal: ["release-train", << pipeline.schedule.name >>]
         - not:
-            equal: ["bump", << pipeline.schedule.name >>]
+            equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - prepare-next-version:
           <<: *only-main-branch
@@ -1877,7 +1877,7 @@ workflows:
         - not:
             equal: ["release-train", << pipeline.schedule.name >>]
         - not:
-            equal: ["bump", << pipeline.schedule.name >>]
+            equal: [bump, << pipeline.parameters.action >>]
         - or:
           - matches:
               pattern: "^(release/.*|main)$"
