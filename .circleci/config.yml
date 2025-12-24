@@ -493,9 +493,6 @@ commands:
     parameters:
       test_plan:
         type: string
-      generate_snapshots:
-        type: boolean
-        default: false
     steps:
       - checkout
       - install-dependencies
@@ -515,7 +512,7 @@ commands:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
       - create-snapshot-pr-if-needed:
-          condition: << parameters.generate_snapshots >>
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshots_repo_pr"
           version: ""
       - store_test_results:
@@ -1164,7 +1161,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK1"
-          generate_snapshots: << pipeline.parameters.generate_snapshots >>
       - slack-notify-on-fail
 
   backend-integration-tests-SK2:
@@ -1173,7 +1169,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
-          generate_snapshots: << pipeline.parameters.generate_snapshots >>
       - slack-notify-on-fail
 
   backend-integration-tests-other:
@@ -1182,7 +1177,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Other"
-          generate_snapshots: << pipeline.parameters.generate_snapshots >>
       - slack-notify-on-fail
 
   backend-integration-tests-offline:
@@ -1191,7 +1185,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
-          generate_snapshots: << pipeline.parameters.generate_snapshots >>
       - slack-notify-on-fail
 
   backend-integration-tests-custom-entitlements:
@@ -1200,7 +1193,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
-          generate_snapshots: << pipeline.parameters.generate_snapshots >>
       - slack-notify-on-fail
 
   run-maestro-e2e-tests:
