@@ -476,6 +476,11 @@ commands:
       condition:
         type: boolean
     steps:
+      - run:
+          name: Debug - Check generate_snapshots parameter
+          command: |
+            echo "create-snapshot-pr-if-needed: parameters.condition value: << parameters.condition >>"
+            echo "create-snapshot-pr-if-needed: pipeline.parameters.generate_snapshots value: << pipeline.parameters.generate_snapshots >>"
       - when:
           condition: << parameters.condition >>
           steps:
@@ -495,6 +500,11 @@ commands:
       - checkout
       - install-dependencies
       - update-spm-installation-commit
+      - run:
+          name: Debug - Check generate_snapshots parameter
+          command: |
+            echo "parameters.generate_snapshots value: << parameters.generate_snapshots >>"
+            echo "pipeline.parameters.generate_snapshots value: << pipeline.parameters.generate_snapshots >>"
       - run:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
