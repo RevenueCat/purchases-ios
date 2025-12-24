@@ -172,12 +172,6 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             EventsManagerStrings.ad_event_flush_starting(eventsCount),
             level: .verbose
         )
-//
-//        self.logger.verifyMessageWasLogged(
-//            Strings.analytics.flush_events_success,
-//            level: .debug,
-//            expectedCount: 1
-//        )
     }
 
     private func simulateAppWillResignActive() {
