@@ -1696,6 +1696,10 @@ workflows:
       and:
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - not:
+            equal: ["release-train", << pipeline.schedule.name >>]
+        - not:
+            equal: ["bump", << pipeline.schedule.name >>]
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
@@ -1769,8 +1773,13 @@ workflows:
 
   snapshot-bump:
     when:
-      not:
-        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+      and:
+        - not:
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - not:
+            equal: ["release-train", << pipeline.schedule.name >>]
+        - not:
+            equal: ["bump", << pipeline.schedule.name >>]
     jobs:
       - prepare-next-version:
           <<: *only-main-branch
@@ -1864,13 +1873,18 @@ workflows:
   #   - Value: run-manual-tests
   all-tests:
     when:
-      or:
-        - matches:
-            pattern: "^(release/.*|main)$"
-            value: << pipeline.git.branch >>
-        - equal: ["run-manual-tests", << pipeline.parameters.action >>]
-        - equal:
-            ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
+      and:
+        - not:
+            equal: ["release-train", << pipeline.schedule.name >>]
+        - not:
+            equal: ["bump", << pipeline.schedule.name >>]
+        - or:
+          - matches:
+              pattern: "^(release/.*|main)$"
+              value: << pipeline.git.branch >>
+          - equal: ["run-manual-tests", << pipeline.parameters.action >>]
+          - equal:
+              ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
     jobs:
       - <<: *maestro-e2e-test-job
       - run-maestro-e2e-tests:
