@@ -5,6 +5,7 @@
 import Foundation
 
 @testable import RevenueCat
+import XCTest
 
 class MockNotificationCenter: NotificationCenter {
 
@@ -71,6 +72,14 @@ class MockNotificationCenter: NotificationCenter {
 
     func fireApplicationWillEnterForegroundNotification() {
         fireNotification(SystemInfo.applicationWillEnterForegroundNotification)
+    }
+
+    func fireApplicationDidBecomeActiveNotification() throws {
+        guard let applicationDidBecomeActiveNotification = SystemInfo.applicationDidBecomeActiveNotification else {
+            throw XCTSkip("applicationDidBecomeActiveNotification is not available on this platform")
+        }
+
+        fireNotification(applicationDidBecomeActiveNotification)
     }
 
     private func fireNotification(_ notificationName: NSNotification.Name) {
