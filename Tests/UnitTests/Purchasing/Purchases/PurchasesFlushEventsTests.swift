@@ -26,6 +26,8 @@ class PurchasesFlushEventsTests: BasePurchasesTests {
     }
 
     func testAppWillEnterForegroundTriggersFlushEventsWithDelay() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         /// Reset any previous invocations from previous tests
         self.mockOperationDispatcher.invokedDispatchOnWorkerThread = false
         self.mockOperationDispatcher.invokedDispatchOnWorkerThreadDelayParam = nil
@@ -40,6 +42,8 @@ class PurchasesFlushEventsTests: BasePurchasesTests {
     }
 
     func testAppWillResignActiveTriggersFlushEventsWithoutDelay() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         self.notificationCenter.fireApplicationWillResignActiveNotification()
 
         let mockEventsManager = try self.mockEventsManager
@@ -48,6 +52,8 @@ class PurchasesFlushEventsTests: BasePurchasesTests {
     }
 
     func testAppDidBecomeActiveDoesNotTriggerFlushEvents() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         try self.notificationCenter.fireApplicationDidBecomeActiveNotification()
 
         self.mockOperationDispatcher.invokedDispatchOnWorkerThread = false
@@ -61,6 +67,8 @@ class PurchasesFlushEventsTests: BasePurchasesTests {
     }
 
     func testAppDidEnterBackgroundDoesNotTriggerFlushEvents() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         self.notificationCenter.fireApplicationDidEnterBackgroundNotification()
 
         self.mockOperationDispatcher.invokedDispatchOnWorkerThread = false
