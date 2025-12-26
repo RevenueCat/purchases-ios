@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 /// The content of a request to the ad events endpoint.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct AdEventsRequest {
@@ -162,5 +160,3 @@ extension AdEventsRequest.AdEventRequest: Encodable {
     }
 
 }
-
-#endif

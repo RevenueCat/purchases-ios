@@ -88,6 +88,9 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public var componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
     public var defaultLocale: String
 
+    /// Exit offers configuration for this paywall.
+    public var exitOffers: ExitOffers?
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
@@ -100,6 +103,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         case defaultLocale
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
+        case exitOffers
     }
 
     public init(templateName: String,
@@ -107,13 +111,15 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
                 componentsConfig: ComponentsConfig,
                 componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
                 revision: Int,
-                defaultLocaleIdentifier: String) {
+                defaultLocaleIdentifier: String,
+                exitOffers: ExitOffers? = nil) {
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig
         self.componentsLocalizations = componentsLocalizations
         self._revision = revision
         self.defaultLocale = defaultLocaleIdentifier
+        self.exitOffers = exitOffers
     }
 
 }
@@ -174,6 +180,8 @@ extension PaywallComponentsData {
             _revision = 0
         }
 
+        exitOffers = try container.decodeIfPresent(ExitOffers.self, forKey: .exitOffers)
+
         if !errors.isEmpty {
             errorInfo = errors
         }
@@ -188,6 +196,7 @@ extension PaywallComponentsData {
         try container.encode(componentsLocalizations, forKey: .componentsLocalizations)
         try container.encode(defaultLocale, forKey: .defaultLocale)
         try container.encode(_revision, forKey: ._revision)
+        try container.encodeIfPresent(exitOffers, forKey: .exitOffers)
     }
 
 }

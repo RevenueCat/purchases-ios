@@ -11,8 +11,6 @@
 //
 //  Created by RevenueCat on 1/8/25.
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 import Nimble
 import StoreKit
 import XCTest
@@ -41,11 +39,11 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         await self.purchases.adTracker.trackAdFailedToLoad(failedData)
 
-        let trackedEvents = try await self.mockEventsManager.trackedEvents
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
 
-        guard case let .failedToLoad(_, eventData) = trackedEvents.first as? AdEvent else {
+        guard case let .failedToLoad(_, eventData) = trackedEvents.first else {
             fail("Expected AdEvent.failedToLoad but got \(String(describing: trackedEvents.first))")
             return
         }
@@ -54,7 +52,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.mediatorName) == .appLovin
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
-        expect((eventData as? AdFailedToLoad)?.mediatorErrorCode?.intValue) == 3
+        expect(eventData.mediatorErrorCode?.intValue) == 3
     }
 
     func testTrackAdLoadedStoresEvent() async throws {
@@ -68,11 +66,11 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         await self.purchases.adTracker.trackAdLoaded(loadedData)
 
-        let trackedEvents = try await self.mockEventsManager.trackedEvents
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
 
-        guard case let .loaded(_, eventData) = trackedEvents.first as? AdEvent else {
+        guard case let .loaded(_, eventData) = trackedEvents.first else {
             fail("Expected AdEvent.loaded but got \(String(describing: trackedEvents.first))")
             return
         }
@@ -81,7 +79,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.mediatorName) == .appLovin
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
-        expect((eventData as? AdLoaded)?.impressionId) == "impression-123"
+        expect(eventData.impressionId) == "impression-123"
     }
 
     func testTrackAdDisplayedStoresEvent() async throws {
@@ -95,11 +93,11 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         await self.purchases.adTracker.trackAdDisplayed(displayedData)
 
-        let trackedEvents = try await self.mockEventsManager.trackedEvents
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
 
-        guard case let .displayed(_, eventData) = trackedEvents.first as? AdEvent else {
+        guard case let .displayed(_, eventData) = trackedEvents.first else {
             fail("Expected AdEvent.displayed but got \(String(describing: trackedEvents.first))")
             return
         }
@@ -122,11 +120,11 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         await self.purchases.adTracker.trackAdOpened(openedData)
 
-        let trackedEvents = try await self.mockEventsManager.trackedEvents
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
 
-        guard case let .opened(_, eventData) = trackedEvents.first as? AdEvent else {
+        guard case let .opened(_, eventData) = trackedEvents.first else {
             fail("Expected AdEvent.opened but got \(String(describing: trackedEvents.first))")
             return
         }
@@ -152,11 +150,11 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         await self.purchases.adTracker.trackAdRevenue(revenueData)
 
-        let trackedEvents = try await self.mockEventsManager.trackedEvents
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
 
-        guard case let .revenue(_, eventData) = trackedEvents.first as? AdEvent else {
+        guard case let .revenue(_, eventData) = trackedEvents.first else {
             fail("Expected AdEvent.revenue but got \(String(describing: trackedEvents.first))")
             return
         }
@@ -172,5 +170,3 @@ class PurchasesAdEventsTests: BasePurchasesTests {
     }
 
 }
-
-#endif

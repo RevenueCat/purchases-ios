@@ -1,0 +1,14 @@
+# CocoaPods integration for BinarySizeTest
+#
+# Used when BINARY_SIZE_TEST_INTEGRATION_METHOD=COCOAPODS.
+# This references the SDK via local :path pods so CocoaPods uses the source files
+# from this repository (RevenueCat.podspec + RevenueCatUI.podspec).
+
+platform :ios, '13.0'
+
+target 'BinarySizeTest' do
+  use_frameworks!
+
+  pod 'RevenueCat', path: '../../'
+  pod 'RevenueCatUI', path: '../../'
+end

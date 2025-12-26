@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 /**
  Tracks ad-related events to RevenueCat.
 
@@ -279,5 +277,3 @@ public final class AdTracker: NSObject {
     }
 
 }
-
-#endif

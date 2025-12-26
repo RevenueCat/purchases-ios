@@ -11,8 +11,6 @@
 //
 //  Created by RevenueCat on 1/21/25.
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 import Foundation
 import Nimble
 @_spi(Experimental) @testable import RevenueCat
@@ -290,5 +288,3 @@ private extension StoredAdEvent {
     }
 
 }
-
-#endif
