@@ -11,42 +11,65 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
 
-enum ScreenCondition {
+class ScreenCondition: ObservableObject {
 
-    case compact, medium, expanded
+    static let `default` = ScreenCondition(screenSizes: UIConfig.ScreenSize.Defaults.all)
+    static let medium = ScreenCondition(screenSizes: UIConfig.ScreenSize.Defaults.all)
 
-    static func from(_ sizeClass: UserInterfaceSizeClass?) -> Self {
-        guard let sizeClass else {
-            return .compact
-        }
-
-        switch sizeClass {
-        case .compact:
-            return .compact
-        case .regular:
-            return .medium
-        @unknown default:
-            return .compact
-        }
+    enum Orientation: String {
+        case portrait
+        case landscape
+        case unknown
     }
 
-}
+    let screenSizes: [UIConfig.ScreenSize]
 
-struct ScreenConditionKey: EnvironmentKey {
-    static let defaultValue = ScreenCondition.compact
-}
-
-extension EnvironmentValues {
-
-    var screenCondition: ScreenCondition {
-        get { self[ScreenConditionKey.self] }
-        set { self[ScreenConditionKey.self] = newValue }
+    @Published var paywallSize: CGSize? {
+        didSet { recalc() }
     }
 
+    @Published var verticalSizeClass: UserInterfaceSizeClass? {
+        didSet { recalc() }
+    }
+
+    @Published private(set) var orientation: Orientation = .unknown
+    @Published private(set) var screenSize: UIConfig.ScreenSize?
+
+    // MARK: - helpers
+
+    init(screenSizes: [UIConfig.ScreenSize] = []) {
+        self.screenSizes = screenSizes
+    }
+
+    private func recalc() {
+        guard let size = paywallSize, size.width > 0, size.height > 0 else {
+            self.orientation = .unknown
+            self.screenSize  = nil
+            return
+        }
+
+        // Derive current orientation from the actual rendered size
+        if size.width > size.height {
+            self.orientation = .landscape
+        } else {
+            self.orientation = .portrait
+        }
+
+        // Compute effective width according to policy
+        let effectiveWidth: CGFloat = min(size.width, size.height)
+
+        let screenSizeWithDefault = self.screenSizes.isEmpty ? UIConfig.ScreenSize.Defaults.all : self.screenSizes
+
+        // Treat class.width as a MIN breakpoint
+        self.screenSize = screenSizeWithDefault.last(where: {
+            CGFloat($0.width) <= effectiveWidth
+        }) ?? self.screenSizes.first
+    }
 }
 
 #endif

@@ -75,8 +75,8 @@ struct LoadedTabsComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
-    @Environment(\.screenCondition)
-    private var screenCondition
+    @EnvironmentObject
+    private var screenCondition: ScreenCondition
 
     private let viewModel: TabsComponentViewModel
     private let onDismiss: () -> Void
