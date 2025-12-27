@@ -20,7 +20,8 @@ class MockOfferingsFactory: OfferingsFactory {
                                              offerings: [],
                                              placements: nil,
                                              targeting: nil,
-                                             uiConfig: nil)
+                                             uiConfig: nil,
+                                             config: nil)
             return Offerings(offerings: [:],
                              currentOfferingID: "base",
                              placements: nil,
@@ -76,7 +77,8 @@ extension OfferingsResponse {
         ],
         placements: nil,
         targeting: nil,
-        uiConfig: nil
+        uiConfig: nil,
+        config: nil
     )
 
 }
