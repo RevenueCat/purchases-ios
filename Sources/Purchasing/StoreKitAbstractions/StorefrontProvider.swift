@@ -16,7 +16,18 @@ import Foundation
 /// A type that can determine the current `Storefront`.
 protocol StorefrontProviderType {
 
-    var currentStorefront: StorefrontType? { get }
+    /// The current `StorefrontType`, if available.
+    ///
+    /// In iOS 15+, it uses StoreKit 2's async API to retrieve the current storefront.
+    ///
+    /// This is the preferred way to access the current storefront, as it prevents blocking the current thread.
+    var currentStorefront: StorefrontType? { get async }
+
+    /// The current `StorefrontType`, if available.
+    ///
+    /// - Important: This is a synchronous API that uses StoreKit 1, and may block the current thread.
+    /// The preferred way to access the current storefront is via `currentStorefront`.
+    var syncStorefront: StorefrontType? { get }
 
 }
 
@@ -25,11 +36,12 @@ protocol StorefrontProviderType {
 final class DefaultStorefrontProvider: StorefrontProviderType {
 
     var currentStorefront: StorefrontType? {
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
-            return Storefront.sk1CurrentStorefrontType
-        } else {
-            return nil
+        get async {
+            return await Storefront.currentStorefrontType
         }
     }
 
+    var syncStorefront: StorefrontType? {
+        return Storefront.sk1CurrentStorefrontType
+    }
 }
