@@ -495,7 +495,7 @@ extension AdRevenue {
 // MARK: - Internal Event Enum
 
 /// Internal event enum for type-safe routing through the events system.
-internal enum AdEvent: Codable {
+internal enum AdEvent: Equatable, Codable, Sendable {
 
     // swiftlint:disable type_name
 
