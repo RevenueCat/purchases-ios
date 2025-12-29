@@ -33,13 +33,29 @@ public extension PaywallComponent {
 
     }
 
-    enum Condition: String, Codable, Sendable, Hashable, Equatable {
+    enum Condition: Codable, Sendable, Hashable, Equatable {
 
-        case compact
-        case medium
-        case expanded
-        case introOffer = "intro_offer"
-        case promoOffer = "promo_offer"
+        case orientation(ArrayOperatorType, [OrientationType])
+        case screenSize(ArrayOperatorType, [String])
+
+        /// Compares that the selected package against [value]
+        case selectedPackage(ArrayOperatorType, [String])
+
+        /// Compares the selected package's intro-offer eligibility (not the whole paywall) against [value].
+        /// This matches the package the customer currently has highlighted in the UI.
+        case introOffer(EqualityOperatorType, Bool)
+
+        /// Compares against whether any package on the paywall has an intro offer.
+        case anyPackageContainsIntroOffer(EqualityOperatorType, Bool)
+
+        /// Compares the selected package's promo-offer eligibility (not the whole paywall) against [value].
+        /// This matches the package the customer currently has highlighted in the UI.
+        case promoOffer(EqualityOperatorType, Bool)
+
+        /// Compares against whether any package on the paywall has a promo offer.
+        case anyPackageContainsPromoOffer(EqualityOperatorType, Bool)
+
+        /// Is the current component selected?
         case selected
 
         // For unknown cases
@@ -49,21 +65,39 @@ public extension PaywallComponent {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
             switch self {
-            case .compact:
-                try container.encodeIfPresent(ConditionType.compact.rawValue, forKey: .type)
-            case .medium:
-                try container.encode(ConditionType.medium.rawValue, forKey: .type)
-            case .expanded:
-                try container.encode(ConditionType.expanded.rawValue, forKey: .type)
-            case .introOffer:
+            case .orientation(let operand, let orientations):
+                try container.encode(ConditionType.orientation.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(orientations, forKey: .orientations)
+            case .screenSize(let operand, let screenSizes):
+                try container.encode(ConditionType.screenSize.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(screenSizes, forKey: .sizes)
+            case let .selectedPackage(operand, packages):
+                try container.encode(ConditionType.selectedPackage.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(packages, forKey: .packages)
+            case let .introOffer(operand, value):
                 try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
-            case .promoOffer:
+                try container.encode(operand, forKey: .operator)
+                try container.encode(value, forKey: .value)
+            case let .anyPackageContainsIntroOffer(operand, value):
+                try container.encode(ConditionType.anyPackageContainsIntroOffer.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(value, forKey: .value)
+            case let .promoOffer(operand, value):
                 try container.encode(ConditionType.promoOffer.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(value, forKey: .value)
+            case let .anyPackageContainsPromoOffer(operand, value):
+                try container.encode(ConditionType.anyPackageContainsPromoOffer.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(value, forKey: .value)
             case .selected:
                 try container.encode(ConditionType.selected.rawValue, forKey: .type)
             case .unsupported:
                 // Encode a default value for unsupported
-                try container.encode(Self.unsupported.rawValue, forKey: .type)
+                try container.encode("unsupported", forKey: .type)
             }
         }
 
@@ -73,16 +107,34 @@ public extension PaywallComponent {
 
             if let conditionType = ConditionType(rawValue: rawValue) {
                 switch conditionType {
-                case .compact:
-                    self = .compact
-                case .medium:
-                    self = .medium
-                case .expanded:
-                    self = .expanded
+                case .orientation:
+                    let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                    let orientations = try container.decode([OrientationType].self, forKey: .orientations)
+                    self = .orientation(operand, orientations)
+                case .screenSize:
+                    let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                    let sizes = try container.decode([String].self, forKey: .sizes)
+                    self = .screenSize(operand, sizes)
+                case .selectedPackage:
+                    let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                    let packages = try container.decode([String].self, forKey: .packages)
+                    self = .selectedPackage(operand, packages)
                 case .introOffer:
-                    self = .introOffer
+                    let operand = try container.decodeIfPresent(EqualityOperatorType.self, forKey: .operator) ?? .equals
+                    let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
+                    self = .introOffer(operand, value)
+                case .anyPackageContainsIntroOffer:
+                    let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
+                    let value = try container.decode(Bool.self, forKey: .value)
+                    self = .anyPackageContainsIntroOffer(operand, value)
                 case .promoOffer:
-                    self = .promoOffer
+                    let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
+                    let value = try container.decode(Bool.self, forKey: .value)
+                    self = .promoOffer(operand, value)
+                case .anyPackageContainsPromoOffer:
+                    let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
+                    let value = try container.decode(Bool.self, forKey: .value)
+                    self = .anyPackageContainsPromoOffer(operand, value)
                 case .selected:
                     self = .selected
                 }
@@ -95,18 +147,50 @@ public extension PaywallComponent {
         private enum CodingKeys: String, CodingKey {
 
             case type
+            case sizes
+            case `operator`
+            case orientations
+            case packages
+            case value
 
         }
 
         // swiftlint:disable:next nesting
         private enum ConditionType: String, Decodable {
 
-            case compact
-            case medium
-            case expanded
+            case orientation = "orientation"
+            case screenSize = "screen_size"
+            case selectedPackage = "selected_package"
             case introOffer = "intro_offer"
+            case anyPackageContainsIntroOffer = "introductory_offer_available"
             case promoOffer = "promo_offer"
+            case anyPackageContainsPromoOffer = "promo_offer_available"
             case selected
+
+        }
+
+        // swiftlint:disable:next nesting
+        public enum ArrayOperatorType: String, Codable, Sendable, Hashable, Equatable {
+
+            // swiftlint:disable:next identifier_name
+            case `in` = "in"
+            case notIn = "not_in"
+
+        }
+
+        // swiftlint:disable:next nesting
+        public enum EqualityOperatorType: String, Codable, Sendable, Hashable, Equatable {
+
+            case `equals` = "="
+            case notEquals = "!="
+
+        }
+
+        // swiftlint:disable:next nesting
+        public enum OrientationType: String, Codable, Sendable, Hashable, Equatable {
+
+            case portrait
+            case landscape
 
         }
 

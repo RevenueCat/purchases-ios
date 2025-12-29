@@ -34,8 +34,8 @@ struct TextComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
-    @Environment(\.screenCondition)
-    private var screenCondition
+    @EnvironmentObject
+    private var screenCondition: ScreenCondition
 
     @Environment(\.countdownTime)
     private var countdownTime: CountdownTime?
@@ -55,6 +55,7 @@ struct TextComponentView: View {
                 package: self.packageContext.package
             ),
             promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package),
+            anyPackageHasPromoOffer: self.packageContext.hasEligiblePromoOffer(using: self.paywallPromoOfferCache),
             countdownTime: countdownTime
         ) { style in
             if style.visible {
@@ -679,9 +680,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
                     overrides: [
-                        .init(conditions: [
-                            .medium
-                        ], properties: .init(
+                        .init(conditions: [ ], properties: .init(
                             text: "id_2"
                         ))
                     ]
@@ -710,9 +709,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
                     overrides: [
-                        .init(conditions: [
-                            .medium
-                        ], properties: .init(
+                        .init(conditions: [ .screenSize(.in, ["medium"]) ], properties: .init(
                             text: "id_2"
                         ))
                     ]

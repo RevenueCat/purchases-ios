@@ -59,8 +59,10 @@ class StackComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        anyPackageHasPromoOffer: Bool,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
     ) -> some View {
@@ -69,6 +71,9 @@ class StackComponentViewModel {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
+            selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )
 

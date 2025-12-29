@@ -59,6 +59,15 @@ internal final class PaywallPromoOfferCache: ObservableObject {
         }
     }
 
+    func hasEligibleOffer(in packages: [Package]) -> Bool {
+        return packages.contains { package in
+            if case .signedEligible = cache[package.storeProduct.productIdentifier] {
+                return true
+            }
+            return false
+        }
+    }
+
     func get(for package: Package?) -> PromotionalOffer? {
         guard let package else { return nil }
 

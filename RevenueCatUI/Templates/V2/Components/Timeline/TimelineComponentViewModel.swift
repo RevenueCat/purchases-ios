@@ -44,11 +44,14 @@ class TimelineComponentViewModel {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        anyPackageHasPromoOffer: Bool,
         @ViewBuilder apply: @escaping (TimelineComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedTimelinePartial.buildPartial(
@@ -56,6 +59,9 @@ class TimelineComponentViewModel {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
+            selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )
 
@@ -99,11 +105,14 @@ class TimelineItemViewModel {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        anyPackageHasPromoOffer: Bool,
         @ViewBuilder apply: @escaping (TimelineItemStyle) -> some View
     ) -> some View {
         let partial = PresentedTimelineItemPartial.buildPartial(
@@ -111,6 +120,9 @@ class TimelineItemViewModel {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
+            selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )
 

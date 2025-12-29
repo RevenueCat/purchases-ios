@@ -33,8 +33,8 @@ struct CarouselComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
-    @Environment(\.screenCondition)
-    private var screenCondition
+    @EnvironmentObject
+    private var screenCondition: ScreenCondition
 
     @Environment(\.colorScheme)
     private var colorScheme
@@ -48,12 +48,14 @@ struct CarouselComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
+            packageContext: self.packageContext,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
             ),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
             ),
+            anyPackageHasPromoOffer: self.packageContext.hasEligiblePromoOffer(using: self.paywallPromoOfferCache),
             colorScheme: colorScheme
         ) { style in
             if style.visible {
