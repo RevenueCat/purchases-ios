@@ -78,6 +78,34 @@ public extension Purchases {
         }
     }
 
+    @available(iOS 16.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @objc(showStoreMessagesWithCompletion:)
+    func showStoreMessages(completion: @escaping () -> Void) {
+        _ = Task<Void, Never> {
+            await self.showStoreMessages(for: Set(StoreMessageType.allCases))
+            completion()
+        }
+    }
+
+    @available(iOS 16.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @objc(showStoreMessagesForTypes:completion:)
+    func showStoreMessages(forTypes types: NSSet, completion: @escaping () -> Void) {
+        let storeMessageTypes = Set(
+            types.compactMap { ($0 as? NSNumber)?.intValue }
+                .compactMap { StoreMessageType(rawValue: $0) }
+        )
+        _ = Task<Void, Never> {
+            await self.showStoreMessages(for: storeMessageTypes)
+            completion()
+        }
+    }
+
     #endif
 
 }
