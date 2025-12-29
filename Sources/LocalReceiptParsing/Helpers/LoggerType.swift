@@ -19,23 +19,23 @@ import os
 /// A type that can receive logs of different levels.
 protocol LoggerType {
 
-    func verbose(_ message: @autoclosure () -> LogMessage,
+    func verbose(_ message: LogMessage,
                  fileName: String?,
                  functionName: String?,
                  line: UInt)
-    func debug(_ message: @autoclosure () -> LogMessage,
+    func debug(_ message: LogMessage,
                fileName: String?,
                functionName: String?,
                line: UInt)
-    func info(_ message: @autoclosure () -> LogMessage,
+    func info(_ message: LogMessage,
               fileName: String?,
               functionName: String?,
               line: UInt)
-    func warn(_ message: @autoclosure () -> LogMessage,
+    func warn(_ message: LogMessage,
               fileName: String?,
               functionName: String?,
               line: UInt)
-    func error(_ message: @autoclosure () -> LogMessage,
+    func error(_ message: LogMessage,
                fileName: String,
                functionName: String,
                line: UInt)

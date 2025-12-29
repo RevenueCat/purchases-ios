@@ -65,6 +65,10 @@ class MockNotificationCenter: NotificationCenter {
         fireNotification(SystemInfo.applicationDidEnterBackgroundNotification)
     }
 
+    func fireApplicationWillResignActiveNotification() {
+        fireNotification(SystemInfo.applicationWillResignActiveNotification)
+    }
+
     func fireApplicationWillEnterForegroundNotification() {
         fireNotification(SystemInfo.applicationWillEnterForegroundNotification)
     }

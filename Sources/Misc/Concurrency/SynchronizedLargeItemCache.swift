@@ -95,6 +95,13 @@ internal final class SynchronizedLargeItemCache {
         }
     }
 
+    func clear() {
+        guard let documentURL = self.documentURL else {
+            return
+        }
+
+        try? self.cache.remove(documentURL)
+    }
 }
 
 // @unchecked because:

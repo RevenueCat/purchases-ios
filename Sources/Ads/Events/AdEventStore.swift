@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 protocol AdEventStoreType: Sendable {
 
     /// Stores `event` into the store.
@@ -209,5 +207,3 @@ extension AdEventStoreStrings: LogMessage {
     var category: String { return "ad_event_store" }
 
 }
-
-#endif

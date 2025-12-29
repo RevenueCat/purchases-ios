@@ -32,7 +32,7 @@ class PurchaseHandlerTests: TestCase {
 
         expect(handler.purchaseResult).to(beNil())
         expect(handler.restoredCustomerInfo).to(beNil())
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
@@ -48,7 +48,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
         expect(handler.purchaseResult?.userCancelled) == false
         expect(handler.restoredCustomerInfo).to(beNil())
-        expect(handler.purchased) == true
+        expect(handler.hasPurchasedInSession) == true
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
@@ -60,7 +60,7 @@ class PurchaseHandlerTests: TestCase {
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
         expect(handler.purchaseResult?.userCancelled) == true
         expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
@@ -79,7 +79,7 @@ class PurchaseHandlerTests: TestCase {
         }
 
         expect(handler.purchaseResult).to(beNil())
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
@@ -191,7 +191,7 @@ class PurchaseHandlerTests: TestCase {
             expect(thrownError).to(matchError(error))
         }
         expect(handler.purchaseResult).to(beNil())
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.actionInProgress) == false
         expect(handler.restoreInProgress) == false

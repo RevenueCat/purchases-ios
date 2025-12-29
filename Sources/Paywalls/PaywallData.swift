@@ -47,6 +47,9 @@ public struct PaywallData {
     /// The default locale identifier for this paywall.
     public var defaultLocale: String?
 
+    /// Exit offers configuration for this paywall.
+    public var exitOffers: ExitOffers?
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
@@ -628,7 +631,8 @@ extension PaywallData {
         localizationByTier: [String: [String: LocalizedConfiguration]],
         assetBaseURL: URL,
         revision: Int = 0,
-        zeroDecimalPlaceCountries: [String] = []
+        zeroDecimalPlaceCountries: [String] = [],
+        exitOffers: ExitOffers? = nil
     ) {
         self.templateName = templateName
         self.config = config
@@ -637,6 +641,7 @@ extension PaywallData {
         self.assetBaseURL = assetBaseURL
         self.revision = revision
         self._zeroDecimalPlaceCountries = .init(apple: zeroDecimalPlaceCountries)
+        self.exitOffers = exitOffers
     }
 
     /// Creates a test ``PaywallData`` with one localization.
@@ -780,6 +785,7 @@ extension PaywallData: Codable {
         case _revision = "revision"
         case _zeroDecimalPlaceCountries = "zeroDecimalPlaceCountries"
         case defaultLocale = "defaultLocale"
+        case exitOffers
     }
 
 }

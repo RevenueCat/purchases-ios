@@ -1,15 +1,13 @@
-## RevenueCat SDK
-### ✨ New Features
-* Adds `setAppsFlyerConversionData` to conveniently track AppsFlyer conversion data (#5936) via JayShortway (@JayShortway)
-### 🐞 Bugfixes
-* Jzdesign/video component load bug (#5926) via Jacob Rakidzich (@JZDesign)
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* Add exit offers support for paywalls (#5944) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix flaky tests (#5938) via Antonio Pallares (@ajpallares)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5937) via RevenueCat Git Bot (@RCGitBot)
-* Format test store price strings with same currency code and locale as localizedPriceString (#5784) via Rick (@rickvdl)
-* Improve flakiness of some tests + add extra logs for easier debugging (#5919) via Antonio Pallares (@ajpallares)
-* Replace `RCPurchasesErrorCodeDomain` with `ErrorCode.errorDomain` in tests (#5924) via Antonio Pallares (@ajpallares)
-* Update broken docs links (#5933) via Jens-Fabian Goetzmann (@jefago)
-* Remove Brewfile + lock file and fix Homebrew formula caching in CircleCI (#5927) via Rick (@rickvdl)
-* Fix Carthage installation tests (#5922) via Antonio Pallares (@ajpallares)
+* Execute `release-train` only when making a release (#5965) via Antonio Pallares (@ajpallares)
+* Fix failing ad tracking tests (#5963) via Antonio Pallares (@ajpallares)
+* Re-recorded FallbackURLBackendIntegrationTests and LoadShedderIntegrationTests (#5962) via Facundo Menzella (@facumenzella)
+* Bump fastlane-plugin-revenuecat_internal from `76a3a08` to `e6454e3` (#5961) via dependabot[bot] (@dependabot[bot])
+* Trigger the RC app upload when releasing a SDK version (#4853) via Antonio Pallares (@ajpallares)
+* Remove compiler flag (#5943) via Pol Miro (@polmiro)
+* Added Emerge binary size analysis lane in Fastlane using new barebones test app (#5941) via Rick (@rickvdl)
