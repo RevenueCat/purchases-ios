@@ -182,6 +182,10 @@ import Foundation
             case supportTicketFailed = "support_ticket_failed"
             case submitTicket = "submit_ticket"
             case characterCount = "character_count"
+            case thenPricePerPeriod = "then_price_per_period"
+            case freeTrialPeriod = "free_trial_period"
+            case payAsYouGoPeriod = "pay_as_you_go_period"
+            case payUpFrontPeriod = "pay_up_front_period"
 
             @_spi(Internal) public var defaultValue: String {
                 switch self {
@@ -438,6 +442,14 @@ import Foundation
                     return "Submit ticket"
                 case .characterCount:
                     return "{{ count }} characters"
+                case .thenPricePerPeriod:
+                    return "then {{ price }}"
+                case .freeTrialPeriod:
+                    return "{{ duration }} for free"
+                case .payAsYouGoPeriod:
+                    return "{{ price }} during {{ duration }}"
+                case .payUpFrontPeriod:
+                    return "{{ duration }} for {{ price }}"
                 }
             }
         }
