@@ -66,7 +66,7 @@ final class PurchasesOrchestrator {
     private let currentUserProvider: CurrentUserProvider
     private let transactionsManager: TransactionsManager
     private let deviceCache: DeviceCache
-    private let localTransactionDetailsStorage: LocalTransactionDetailsStorage
+    private let localTransactionMetadataCache: LocalTransactionMetadataCache
     private let offeringsManager: OfferingsManager
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
@@ -230,7 +230,7 @@ final class PurchasesOrchestrator {
          currentUserProvider: CurrentUserProvider,
          transactionsManager: TransactionsManager,
          deviceCache: DeviceCache,
-         localTransactionDetailsStorage: LocalTransactionDetailsStorage = .init(),
+         localTransactionDetailsStorage: LocalTransactionMetadataCache = .init(),
          offeringsManager: OfferingsManager,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper,
@@ -257,7 +257,7 @@ final class PurchasesOrchestrator {
         self.currentUserProvider = currentUserProvider
         self.transactionsManager = transactionsManager
         self.deviceCache = deviceCache
-        self.localTransactionDetailsStorage = localTransactionDetailsStorage
+        self.localTransactionMetadataCache = localTransactionDetailsStorage
         self.offeringsManager = offeringsManager
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
@@ -625,7 +625,7 @@ final class PurchasesOrchestrator {
         )
 
         if addPayment {
-            self.storeLocalTransactionDetailsIfNeeded(package: package, productIdentifier: productIdentifier)
+            self.storeLocalTransactionMetadataIfNeeded(package: package, productIdentifier: productIdentifier)
             wrapper.add(payment)
         }
     }
@@ -763,7 +763,7 @@ final class PurchasesOrchestrator {
                 #endif
             }
 
-            self.storeLocalTransactionDetailsIfNeeded(package: package, productIdentifier: sk2Product.id)
+            self.storeLocalTransactionMetadataIfNeeded(package: package, productIdentifier: sk2Product.id)
 
             result = try await self.purchase(sk2Product, options)
 
@@ -780,7 +780,7 @@ final class PurchasesOrchestrator {
 
             if let transaction = transaction {
                 // Migrate local transaction details from product ID to transaction ID
-                self.localTransactionDetailsStorage.migrate(
+                self.localTransactionMetadataCache.migrateMetadata(
                     fromProductID: sk2Product.id,
                     toTransactionID: transaction.transactionIdentifier
                 )
@@ -1037,8 +1037,8 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
                                             storefront: storeKit1Wrapper.currentStorefront,
                                             restored: true)
         case .purchased:
-            // Migrate local transaction details from product ID to transaction ID
-            self.localTransactionDetailsStorage.migrate(
+            // Migrate local transaction metadata from product ID to transaction ID
+            self.localTransactionMetadataCache.migrateMetadata(
                 fromProductID: storeTransaction.productIdentifier,
                 toTransactionID: storeTransaction.transactionIdentifier
             )
@@ -1416,7 +1416,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let storeTransaction = StoreTransaction.from(transaction: transaction)
 
         // Retrieve local transaction details from cache
-        let cachedDetails = self.localTransactionDetailsStorage.retrieve(for: storeTransaction)
+        let cachedDetails = self.localTransactionMetadataCache.retrieve(for: storeTransaction)
 
         // If metadata not found, set initiation source to .queue
         let initiationSource: ProductRequestData.InitiationSource = cachedDetails != nil
@@ -1867,7 +1867,7 @@ private extension PurchasesOrchestrator {
 
             // Clear local transaction details after successful post
             if let transaction = transaction {
-                self.localTransactionDetailsStorage.remove(for: transaction)
+                self.localTransactionMetadataCache.remove(for: transaction)
             }
 
         case .failure:
@@ -1887,7 +1887,7 @@ private extension PurchasesOrchestrator {
                                     restored: Bool) {
         // Retrieve local transaction details from cache
         Task {
-            let cachedDetails = self.localTransactionDetailsStorage.retrieve(for: purchasedTransaction)
+            let cachedDetails = self.localTransactionMetadataCache.retrieve(for: purchasedTransaction)
 
             let offeringContext = cachedDetails?.presentedOfferingContext
                 ?? self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
@@ -2184,7 +2184,7 @@ extension PurchasesOrchestrator {
         _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
         // Retrieve local transaction details from cache
-        let transactionDetails = self.localTransactionDetailsStorage.retrieve(for: transaction)
+        let transactionDetails = self.localTransactionMetadataCache.retrieve(for: transaction)
 
         let offeringContext = transactionDetails?.presentedOfferingContext
         let paywall = transactionDetails?.paywallPostReceiptData
@@ -2342,13 +2342,13 @@ fileprivate extension DiagnosticsEvent.PurchaseResult {
 
 private extension PurchasesOrchestrator {
 
-    func storeLocalTransactionDetailsIfNeeded(package: Package?, productIdentifier: String) {
-        let transactionDetails = LocalTransactionDetails(
+    func storeLocalTransactionMetadataIfNeeded(package: Package?, productIdentifier: String) {
+        let metadata = LocalTransactionMetadata(
             presentedOfferingContext: package?.presentedOfferingContext,
             paywallPostReceiptData: self.presentedPaywall.value,
             observerMode: !self.finishTransactions,
             productIdentifier: productIdentifier
         )
-        self.localTransactionDetailsStorage.store(details: transactionDetails, forProductID: productIdentifier)
+        self.localTransactionMetadataCache.store(metadata: metadata, forProductID: productIdentifier)
     }
 }
