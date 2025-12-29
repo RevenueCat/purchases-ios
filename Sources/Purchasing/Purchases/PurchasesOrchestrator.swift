@@ -1038,12 +1038,10 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
                                             restored: true)
         case .purchased:
             // Migrate local transaction details from product ID to transaction ID
-            Task {
-                await self.localTransactionDetailsStorage.migrate(
-                    fromProductID: storeTransaction.productIdentifier,
-                    toTransactionID: storeTransaction.transactionIdentifier
-                )
-            }
+            self.localTransactionDetailsStorage.migrate(
+                fromProductID: storeTransaction.productIdentifier,
+                toTransactionID: storeTransaction.transactionIdentifier
+            )
             self.handlePurchasedTransaction(storeTransaction,
                                             storefront: storeKit1Wrapper.currentStorefront,
                                             restored: false)
@@ -1418,11 +1416,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let storeTransaction = StoreTransaction.from(transaction: transaction)
 
         // Retrieve local transaction details from cache
-        let cachedDetails = await self.localTransactionDetailsStorage.retrieve(
-            forTransactionID: storeTransaction.transactionIdentifier
-        ) ?? await self.localTransactionDetailsStorage.retrieve(
-            forProductID: storeTransaction.productIdentifier
-        )
+        let cachedDetails = self.localTransactionDetailsStorage.retrieve(for: storeTransaction)
 
         // If metadata not found, set initiation source to .queue
         let initiationSource: ProductRequestData.InitiationSource = cachedDetails != nil
@@ -1873,10 +1867,7 @@ private extension PurchasesOrchestrator {
 
             // Clear local transaction details after successful post
             if let transaction = transaction {
-                Task {
-                    await self.localTransactionDetailsStorage.remove(forTransactionID: transaction.transactionIdentifier)
-                    await self.localTransactionDetailsStorage.remove(forProductID: transaction.productIdentifier)
-                }
+                self.localTransactionDetailsStorage.remove(for: transaction)
             }
 
         case .failure:
@@ -1896,11 +1887,7 @@ private extension PurchasesOrchestrator {
                                     restored: Bool) {
         // Retrieve local transaction details from cache
         Task {
-            let cachedDetails = await self.localTransactionDetailsStorage.retrieve(
-                forTransactionID: purchasedTransaction.transactionIdentifier
-            ) ?? await self.localTransactionDetailsStorage.retrieve(
-                forProductID: purchasedTransaction.productIdentifier
-            )
+            let cachedDetails = self.localTransactionDetailsStorage.retrieve(for: purchasedTransaction)
 
             let offeringContext = cachedDetails?.presentedOfferingContext
                 ?? self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
@@ -1910,11 +1897,11 @@ private extension PurchasesOrchestrator {
 
             self.attribution.unsyncedAdServicesToken { adServicesToken in
                 // Use cached observer mode value if available, otherwise use current
-                let observerMode = cachedDetails?.purchasesAreCompletedBy == .myApp
+                let observerMode = cachedDetails?.observerMode == true // TODO: unused
                 let initiationSource: ProductRequestData.InitiationSource = cachedDetails != nil
                     ? .purchase
                     : self.purchaseSource(for: purchasedTransaction.productIdentifier,
-                                         restored: restored).initiationSource
+                                          restored: restored).initiationSource
 
                 let transactionData: PurchasedTransactionData = .init(
                     appUserID: self.appUserID,
@@ -2197,11 +2184,7 @@ extension PurchasesOrchestrator {
         _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
         // Retrieve local transaction details from cache
-        let transactionDetails = self.localTransactionDetailsStorage.retrieve(
-            forTransactionID: transaction.transactionIdentifier
-        ) ?? self.localTransactionDetailsStorage.retrieve(
-            forProductID: transaction.productIdentifier
-        )
+        let transactionDetails = self.localTransactionDetailsStorage.retrieve(for: transaction)
 
         let offeringContext = transactionDetails?.presentedOfferingContext
         let paywall = transactionDetails?.paywallPostReceiptData
@@ -2214,6 +2197,7 @@ extension PurchasesOrchestrator {
         let finalInitiationSource: ProductRequestData.InitiationSource = transactionDetails != nil
             ? initiationSource
             : (initiationSource == .queue ? .queue : initiationSource)
+        // TODO: unused
 
         let transactionData: PurchasedTransactionData = .init(
             appUserID: self.appUserID,
