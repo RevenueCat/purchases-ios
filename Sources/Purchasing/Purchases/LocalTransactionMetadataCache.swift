@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  LocalTransactionDetailsStorage.swift
+//  LocalTransactionMetadataCache.swift
 //
 //  Created by Antonio Pallares on 15/12/25.
 //
@@ -15,7 +15,7 @@
 import Foundation
 
 /// Metadata stored locally for a transaction to preserve context across sessions.
-internal struct LocalTransactionDetails: Codable, Sendable {
+internal struct LocalTransactionMetadata: Codable, Sendable {
 
     /// The offering context when the transaction was initiated.
     let presentedOfferingContext: PresentedOfferingContext?
@@ -42,16 +42,16 @@ internal struct LocalTransactionDetails: Codable, Sendable {
     }
 }
 
-/// Cache for storing local transaction details persistently on disk.
-final class LocalTransactionDetailsStorage: Sendable {
+/// Cache for storing local transaction metadata persistently on disk.
+final class LocalTransactionMetadataCache: Sendable {
 
     private let cache: SynchronizedLargeItemCache
 
     init(fileManager: LargeItemCacheType = FileManager.default) {
-        self.cache = SynchronizedLargeItemCache(cache: fileManager, basePath: "revenuecat.localTransactionDetails")
+        self.cache = SynchronizedLargeItemCache(cache: fileManager, basePath: "revenuecat.localTransactionMetadata")
     }
 
-    /// Cache key for local transaction details.
+    /// Cache key for local transaction metadata.
     struct Key: DeviceCacheKeyType {
         private let identifier: String
 
@@ -64,51 +64,51 @@ final class LocalTransactionDetailsStorage: Sendable {
         }
 
         var rawValue: String {
-            return "transactionDetails.\(identifier)"
+            return "transactionMetadata.\(identifier)"
         }
     }
 
-    /// Store transaction details for a given transaction ID.
-    func store(details: LocalTransactionDetails, forTransactionID transactionID: String) {
-        // TODO: What if there's already details stored for the transactionID? Should we remove them?
+    /// Store transaction metadata for a given transaction ID.
+    func store(metadata: LocalTransactionMetadata, forTransactionID transactionID: String) {
+        // TODO: What if there's already metadata stored for the transactionID? Should we remove them?
         let key = Key(transactionIdentifier: transactionID)
-        self.cache.set(codable: details, forKey: key)
+        self.cache.set(codable: metadata, forKey: key)
     }
 
-    /// Store transaction details for a given product ID (used for SK1 pending transactions).
-    func store(details: LocalTransactionDetails, forProductID productID: String) {
-        // TODO: What if there's already details stored for the productID? Should we remove them?
+    /// Store transaction metadata for a given product ID (used for SK1 pending transactions).
+    func store(metadata: LocalTransactionMetadata, forProductID productID: String) {
+        // TODO: What if there's already metadata stored for the productID? Should we remove them?
         let key = Key(productIdentifier: productID)
-        self.cache.set(codable: details, forKey: key)
+        self.cache.set(codable: metadata, forKey: key)
     }
 
-    /// Retrieve transaction details for a given transaction ID.
-    func retrieve(forTransactionID transactionID: String) -> LocalTransactionDetails? {
+    /// Retrieve transaction metadata for a given transaction ID.
+    func retrieve(forTransactionID transactionID: String) -> LocalTransactionMetadata? {
         let key = Key(transactionIdentifier: transactionID)
         return self.cache.value(forKey: key)
     }
 
-    /// Retrieve transaction details for a given product ID (used for SK1 pending transactions).
-    func retrieve(forProductID productID: String) -> LocalTransactionDetails? {
+    /// Retrieve transaction metadata for a given product ID (used for SK1 pending transactions).
+    func retrieve(forProductID productID: String) -> LocalTransactionMetadata? {
         let key = Key(productIdentifier: productID)
         return self.cache.value(forKey: key)
     }
 
-    /// Remove transaction details for a given transaction ID.
+    /// Remove transaction metadata for a given transaction ID.
     func remove(forTransactionID transactionID: String) {
         let key = Key(transactionIdentifier: transactionID)
         self.cache.removeObject(forKey: key)
     }
 
-    /// Remove transaction details for a given product ID.
+    /// Remove transaction metadata for a given product ID.
     func remove(forProductID productID: String) {
         let key = Key(productIdentifier: productID)
         self.cache.removeObject(forKey: key)
     }
 
-    /// Migrate details from product ID to transaction ID (for SK1 pending → purchased transition).
+    /// Migrate metadata from product ID to transaction ID (for SK1 pending → purchased transition).
     // TODO: What about SK2 pending transactions?
-    func migrate(fromProductID productID: String, toTransactionID transactionID: String) {
+    func migrateMetadata(fromProductID productID: String, toTransactionID transactionID: String) {
         let oldKey = Key(productIdentifier: productID)
         let newKey = Key(transactionIdentifier: transactionID)
         self.cache.moveObject(fromKey: oldKey, toKey: newKey)
@@ -116,16 +116,16 @@ final class LocalTransactionDetailsStorage: Sendable {
 }
 
 /// Helpers for easy access based on a StoreTransaction
-extension LocalTransactionDetailsStorage {
+extension LocalTransactionMetadataCache {
 
-    /// Retrieve transaction details for the given transaction, based on transactionIdentifier or productIdentifier
-    func retrieve(for transaction: StoreTransaction) -> LocalTransactionDetails? {
+    /// Retrieve transaction metadata for the given transaction, based on transactionIdentifier or productIdentifier
+    func retrieve(for transaction: StoreTransaction) -> LocalTransactionMetadata? {
         retrieve(forTransactionID: transaction.transactionIdentifier)
             ??
         retrieve(forProductID: transaction.productIdentifier)
     }
 
-    /// Remove transaction details for the given transaction, based on transactionIdentifier or productIdentifier
+    /// Remove transaction metadata for the given transaction, based on transactionIdentifier or productIdentifier
     func remove(for transaction: StoreTransaction) {
         remove(forTransactionID: transaction.transactionIdentifier)
         remove(forProductID: transaction.productIdentifier)
