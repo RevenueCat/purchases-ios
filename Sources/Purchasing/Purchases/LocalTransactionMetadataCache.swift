@@ -17,6 +17,9 @@ import Foundation
 /// Metadata stored locally for a transaction to preserve context across sessions.
 internal struct LocalTransactionMetadata: Codable, Sendable {
 
+    // The version of the schema used for encoding/decoding
+    let schemaVersion: Int
+
     /// The offering context when the transaction was initiated.
     let presentedOfferingContext: PresentedOfferingContext?
 
@@ -35,6 +38,7 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
         observerMode: Bool,
         productIdentifier: String
     ) {
+        self.schemaVersion = 1
         self.presentedOfferingContext = presentedOfferingContext
         self.paywallPostReceiptData = paywallPostReceiptData
         self.observerMode = observerMode
