@@ -561,25 +561,17 @@ final class TabsPackageInheritanceTests: TestCase {
             packages: [self.parentPackageA, self.parentPackageB]
         )
 
-        // Given: Parent context (currently has C from Tab 1 propagation)
-        let parentContext = PackageContext(
-            package: self.tabPackageC,
-            variableContext: .init(packages: [self.tabPackageC])
+        let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: parentOwnedPackage,
+            parentOwnedVariableContext: parentOwnedVariableContext,
+            parentCurrentVariableContext: parentOwnedVariableContext,
+            tabPackages: [],
+            tabDefaultPackage: nil
         )
 
-        // When: Switching to a tab without packages
-        let newTabHasPackages = false
-
-        if !newTabHasPackages {
-            // Restore parentOwnedPackage
-            parentContext.update(
-                package: parentOwnedPackage,
-                variableContext: parentOwnedVariableContext
-            )
-        }
-
         // Then: Parent is restored to A
-        expect(parentContext.package?.identifier) == self.parentPackageA.identifier
+        expect(updatePlan.parentUpdate?.package?.identifier) == self.parentPackageA.identifier
+        expect(updatePlan.tabUpdate).to(beNil())
     }
 
     @MainActor
@@ -599,28 +591,46 @@ final class TabsPackageInheritanceTests: TestCase {
         let tab2Packages = [self.parentPackageA, self.parentPackageB, self.tabPackageC]
         let tab2PackageIdentifiers = Set(tab2Packages.map(\.identifier))
 
-        // Given: Tab 2's context (starts with its default)
-        let tab2Context = PackageContext(
-            package: self.parentPackageA, // Tab's default
-            variableContext: .init(packages: tab2Packages)
+        let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: parentOwnedPackage,
+            parentOwnedVariableContext: parentOwnedVariableContext,
+            parentCurrentVariableContext: parentOwnedVariableContext,
+            tabPackages: tab2Packages,
+            tabDefaultPackage: self.parentPackageA
         )
 
-        // When: Checking if parentOwnedPackage is in tab's packages
-        let parentPackageIsInTab = parentOwnedPackage.map { tab2PackageIdentifiers.contains($0.identifier) } ?? false
-
-        // Then: Parent's package (B) IS in Tab 2
-        expect(parentPackageIsInTab) == true
-
-        // When: Switching to Tab 2, keep parent's selection
-        if parentPackageIsInTab {
-            tab2Context.update(
-                package: parentOwnedPackage,
-                variableContext: parentOwnedVariableContext
-            )
-        }
-
         // Then: Tab 2 shows B (parent's selection)
-        expect(tab2Context.package?.identifier) == self.parentPackageB.identifier
+        expect(updatePlan.tabUpdate?.package?.identifier) == self.parentPackageB.identifier
+        expect(updatePlan.parentUpdate?.package?.identifier) == self.parentPackageB.identifier
+    }
+
+    @MainActor
+    func testSwitchingToTabWithPackagesUsesTabVariableContextWhenParentPackageIsInTab() {
+        // Scenario:
+        // 1. parentOwnedPackage = B with parent variable context [A, B]
+        // 2. Tab has packages [B, C] (different package set)
+        // 3. Switch to Tab → should keep B, but variableContext should reflect TAB packages [B, C]
+
+        // Given: parent-owned selection and variable context
+        let parentOwnedPackage: Package? = self.parentPackageB
+        let parentOwnedVariableContext = PackageContext.VariableContext(
+            packages: [self.parentPackageA, self.parentPackageB]
+        )
+
+        // Given: Tab packages differ from parent packages
+        let tabPackages = [self.parentPackageB, self.tabPackageC]
+        let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: parentOwnedPackage,
+            parentOwnedVariableContext: parentOwnedVariableContext,
+            parentCurrentVariableContext: parentOwnedVariableContext,
+            tabPackages: tabPackages,
+            tabDefaultPackage: self.parentPackageB
+        )
+
+        // Then: Tab should use its own variable context (from tab packages), not the parent's
+        let expectedVariableContext = PackageContext.VariableContext(packages: tabPackages)
+        expect(updatePlan.tabUpdate?.variableContext.mostExpensivePricePerMonth)
+            == expectedVariableContext.mostExpensivePricePerMonth
     }
 
     @MainActor
@@ -635,44 +645,19 @@ final class TabsPackageInheritanceTests: TestCase {
 
         // Given: Tab 1 has only Package C
         let tab1Packages = [self.tabPackageC]
-        let tab1PackageIdentifiers = Set(tab1Packages.map(\.identifier))
-        let tab1DefaultPackage = self.tabPackageC
-
-        // Given: Tab 1's context
-        let tab1Context = PackageContext(
-            package: tab1DefaultPackage,
-            variableContext: .init(packages: tab1Packages)
+        let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: parentOwnedPackage,
+            parentOwnedVariableContext: .init(packages: [self.parentPackageA, self.parentPackageB]),
+            parentCurrentVariableContext: .init(packages: [self.parentPackageA, self.parentPackageB]),
+            tabPackages: tab1Packages,
+            tabDefaultPackage: self.tabPackageC
         )
-
-        // Given: Parent context
-        let parentContext = PackageContext(
-            package: self.parentPackageA,
-            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
-        )
-
-        // When: Checking if parentOwnedPackage is in tab's packages
-        let parentPackageIsInTab = parentOwnedPackage.map { tab1PackageIdentifiers.contains($0.identifier) } ?? false
-
-        // Then: Parent's package (A) is NOT in Tab 1
-        expect(parentPackageIsInTab) == false
-
-        // When: Switching to Tab 1, use tab's default and propagate to parent
-        if !parentPackageIsInTab {
-            tab1Context.update(
-                package: tab1DefaultPackage,
-                variableContext: .init(packages: tab1Packages)
-            )
-            parentContext.update(
-                package: tab1DefaultPackage,
-                variableContext: tab1Context.variableContext
-            )
-        }
 
         // Then: Tab 1 shows C (its default)
-        expect(tab1Context.package?.identifier) == self.tabPackageC.identifier
+        expect(updatePlan.tabUpdate?.package?.identifier) == self.tabPackageC.identifier
 
         // Then: Parent is updated to C
-        expect(parentContext.package?.identifier) == self.tabPackageC.identifier
+        expect(updatePlan.parentUpdate?.package?.identifier) == self.tabPackageC.identifier
     }
 
     @MainActor
@@ -741,6 +726,45 @@ final class TabsPackageInheritanceTests: TestCase {
 
         // Then: Parent shows B
         expect(parentContext.package?.identifier) == self.parentPackageB.identifier
+    }
+
+    @MainActor
+    func testClearingParentPackageShouldUpdateParentOwnedPackage() {
+        // Scenario:
+        // 1. parentOwnedPackage = A
+        // 2. Parent selection cleared (nil)
+        // Expected: parentOwnedPackage becomes nil (so package-less tabs restore nil)
+
+        // Given: Initial parent-owned selection
+        var parentOwnedPackage: Package? = self.parentPackageA
+        var parentOwnedVariableContext = PackageContext.VariableContext(
+            packages: [self.parentPackageA, self.parentPackageB]
+        )
+
+        let parentContext = PackageContext(
+            package: self.parentPackageA,
+            variableContext: parentOwnedVariableContext
+        )
+
+        // When: Parent selection is cleared
+        parentContext.update(
+            package: nil,
+            variableContext: parentContext.variableContext
+        )
+
+        // Simulate updated onChangeOf handler behavior (explicit nil handling)
+        if parentContext.package == nil {
+            parentOwnedPackage = nil
+            parentOwnedVariableContext = parentContext.variableContext
+        } else if let newPackage = parentContext.package {
+            parentOwnedPackage = newPackage
+            parentOwnedVariableContext = parentContext.variableContext
+        }
+
+        // Then: parentOwnedPackage should be nil (broken today)
+        expect(parentOwnedPackage).to(beNil())
+        expect(parentOwnedVariableContext.showZeroDecimalPlacePrices)
+            == parentContext.variableContext.showZeroDecimalPlacePrices
     }
 }
 

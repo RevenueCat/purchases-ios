@@ -209,47 +209,24 @@ struct LoadedTabsComponentView: View {
                     return
                 }
 
-                if newTabViewModel.packages.isEmpty {
-                    // Tab has NO packages - restore parent's own selection
-                    self.packageContext.update(
-                        package: self.parentOwnedPackage,
-                        variableContext: self.parentOwnedVariableContext
-                    )
-                    return
-                }
-
-                // Tab HAS packages - check if parent's current package is in the new tab's packages
-                let tabPackageIdentifiers = Set(newTabViewModel.packages.map(\.identifier))
-
-                // Use parentOwnedPackage for the check, not the potentially-propagated packageContext.package
-                if let parentPackage = self.parentOwnedPackage,
-                   tabPackageIdentifiers.contains(parentPackage.identifier) {
-                    // Parent's own package IS in this tab - keep parent's selection
+                let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+                    parentOwnedPackage: self.parentOwnedPackage,
+                    parentOwnedVariableContext: self.parentOwnedVariableContext,
+                    parentCurrentVariableContext: self.packageContext.variableContext,
+                    tabPackages: newTabViewModel.packages,
+                    tabDefaultPackage: newTabViewModel.defaultSelectedPackage
+                )
+                if let tabUpdate = updatePlan.tabUpdate {
                     newTierPackageContext.update(
-                        package: parentPackage,
-                        variableContext: self.parentOwnedVariableContext
+                        package: tabUpdate.package,
+                        variableContext: tabUpdate.variableContext
                     )
+                }
+                if let parentUpdate = updatePlan.parentUpdate {
                     self.packageContext.update(
-                        package: parentPackage,
-                        variableContext: self.parentOwnedVariableContext
+                        package: parentUpdate.package,
+                        variableContext: parentUpdate.variableContext
                     )
-                } else {
-                    // Parent's package is NOT in this tab - use tab's default
-                    // and propagate to parent
-                    let showZeroDecimalPlacePrices = self.packageContext.variableContext.showZeroDecimalPlacePrices
-                    if let defaultPackage = newTabViewModel.defaultSelectedPackage {
-                        newTierPackageContext.update(
-                            package: defaultPackage,
-                            variableContext: .init(
-                                packages: newTabViewModel.packages,
-                                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-                            )
-                        )
-                        self.packageContext.update(
-                            package: defaultPackage,
-                            variableContext: newTierPackageContext.variableContext
-                        )
-                    }
                 }
             }
             // MARK: - Parent Selection Propagation to Tabs
@@ -263,7 +240,12 @@ struct LoadedTabsComponentView: View {
             // - User selection: newPackage != tab's current package → track it
             //
             .onChangeOf(self.packageContext.package) { newPackage in
-                guard let newPackage = newPackage else { return }
+                guard let newPackage = newPackage else {
+                    // Parent selection cleared; track it so package-less tabs restore nil.
+                    self.parentOwnedPackage = nil
+                    self.parentOwnedVariableContext = self.packageContext.variableContext
+                    return
+                }
 
                 // Check if the new package is in the current tab's packages
                 let tabPackageIdentifiers = Set(activeTabViewModel.packages.map(\.identifier))
