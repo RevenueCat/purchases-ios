@@ -115,3 +115,19 @@ final class LocalTransactionDetailsStorage: Sendable {
     }
 }
 
+/// Helpers for easy access based on a StoreTransaction
+extension LocalTransactionDetailsStorage {
+
+    /// Retrieve transaction details for the given transaction, based on transactionIdentifier or productIdentifier
+    func retrieve(for transaction: StoreTransaction) -> LocalTransactionDetails? {
+        retrieve(forTransactionID: transaction.transactionIdentifier)
+            ??
+        retrieve(forProductID: transaction.productIdentifier)
+    }
+
+    /// Remove transaction details for the given transaction, based on transactionIdentifier or productIdentifier
+    func remove(for transaction: StoreTransaction) {
+        remove(forTransactionID: transaction.transactionIdentifier)
+        remove(forProductID: transaction.productIdentifier)
+    }
+}
