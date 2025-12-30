@@ -186,7 +186,6 @@ commands:
           steps:
             - install-brew-dependency:
                 dependency_name: "swiftlint"
-      - run: brew tap robotsandpencils/made
       - save_cache:
           key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
           paths:
