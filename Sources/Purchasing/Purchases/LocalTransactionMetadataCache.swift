@@ -15,7 +15,7 @@
 import Foundation
 
 /// Metadata stored locally for a transaction to preserve context across sessions.
-internal struct LocalTransactionMetadata: Codable, Sendable {
+internal struct LocalTransactionMetadata: Equatable, Codable, Sendable {
 
     // The version of the schema used for encoding/decoding
     let schemaVersion: Int
@@ -56,15 +56,17 @@ final class LocalTransactionMetadataCache: Sendable {
     }
 
     /// Cache key for local transaction metadata.
-    struct Key: DeviceCacheKeyType {
-        private let identifier: String
+    enum Key: DeviceCacheKeyType {
+        case transaction(id: String)
+        case product(id: String)
 
-        init(transactionIdentifier: String) {
-            self.identifier = "transaction.\(transactionIdentifier)"
-        }
-
-        init(productIdentifier: String) {
-            self.identifier = "product.\(productIdentifier)"
+        var identifier: String {
+            switch self {
+            case .transaction(let id):
+                return "transaction.\(id)"
+            case .product(let id):
+                return "product.\(id)"
+            }
         }
 
         var rawValue: String {
@@ -74,48 +76,43 @@ final class LocalTransactionMetadataCache: Sendable {
 
     /// Store transaction metadata for a given transaction ID.
     func store(metadata: LocalTransactionMetadata, forTransactionID transactionID: String) {
-        // TODO: What if there's already metadata stored for the transactionID? Should we remove them?
-        let key = Key(transactionIdentifier: transactionID)
-        self.cache.set(codable: metadata, forKey: key)
+        guard retrieve(forTransactionID: transactionID) == nil else { return }
+        self.cache.set(codable: metadata, forKey: Key.transaction(id: transactionID))
     }
 
     /// Store transaction metadata for a given product ID (used for SK1 pending transactions).
     func store(metadata: LocalTransactionMetadata, forProductID productID: String) {
-        // TODO: What if there's already metadata stored for the productID? Should we remove them?
-        let key = Key(productIdentifier: productID)
-        self.cache.set(codable: metadata, forKey: key)
+        guard retrieve(forProductID: productID) == nil else { return }
+        self.cache.set(codable: metadata, forKey: Key.product(id: productID))
     }
 
     /// Retrieve transaction metadata for a given transaction ID.
     func retrieve(forTransactionID transactionID: String) -> LocalTransactionMetadata? {
-        let key = Key(transactionIdentifier: transactionID)
-        return self.cache.value(forKey: key)
+        self.cache.value(forKey: Key.transaction(id: transactionID))
     }
 
     /// Retrieve transaction metadata for a given product ID (used for SK1 pending transactions).
     func retrieve(forProductID productID: String) -> LocalTransactionMetadata? {
-        let key = Key(productIdentifier: productID)
-        return self.cache.value(forKey: key)
+        self.cache.value(forKey: Key.product(id: productID))
     }
 
     /// Remove transaction metadata for a given transaction ID.
     func remove(forTransactionID transactionID: String) {
-        let key = Key(transactionIdentifier: transactionID)
-        self.cache.removeObject(forKey: key)
+        self.cache.removeObject(forKey: Key.transaction(id: transactionID))
     }
 
     /// Remove transaction metadata for a given product ID.
     func remove(forProductID productID: String) {
-        let key = Key(productIdentifier: productID)
-        self.cache.removeObject(forKey: key)
+        self.cache.removeObject(forKey: Key.product(id: productID))
     }
 
     /// Migrate metadata from product ID to transaction ID (for SK1 pending → purchased transition).
     // TODO: What about SK2 pending transactions?
     func migrateMetadata(fromProductID productID: String, toTransactionID transactionID: String) {
-        let oldKey = Key(productIdentifier: productID)
-        let newKey = Key(transactionIdentifier: transactionID)
-        self.cache.moveObject(fromKey: oldKey, toKey: newKey)
+        self.cache.moveObject(
+            fromKey: Key.product(id: productID),
+            toKey: Key.transaction(id: transactionID)
+        )
     }
 }
 
