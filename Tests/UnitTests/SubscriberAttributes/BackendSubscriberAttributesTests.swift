@@ -478,6 +478,155 @@ class BackendSubscriberAttributesTests: TestCase {
         expect(self.mockHTTPClient.calls).to(haveCount(1))
     }
 
+    @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
+    func testPostReceiptCachesRequestsWhenOnlyConsentStatusExistsWithDifferentTimestamps() async {
+        self.mockHTTPClient.disableSnapshotTesting()
+
+        let subsequentNows: [Date] = (1...100).map { offset in
+            self.referenceDate.addingTimeInterval(TimeInterval(offset))
+        }
+        let dateProvider = MockDateProvider(stubbedNow: self.referenceDate, subsequentNows: subsequentNows)
+
+        let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                    systemInfo: self.systemInfo)
+
+        let config = BackendConfiguration(httpClient: self.mockHTTPClient,
+                                          operationDispatcher: MockOperationDispatcher(),
+                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                                          systemInfo: self.systemInfo,
+                                          offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
+                                          dateProvider: dateProvider)
+
+        let backend = Backend(backendConfig: config, attributionFetcher: attributionFetcher)
+
+        let emptySubscriberAttributes: [String: SubscriberAttribute] = [:]
+
+        self.mockHTTPClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: self.validSubscriberResponse, delay: .milliseconds(200))
+        )
+
+        let postReceiptCall = {
+            await withUnsafeContinuation { continuation in
+                backend.post(receipt: self.receipt,
+                             productData: nil,
+                             transactionData: .init(
+                                appUserID: self.appUserID,
+                                presentedOfferingContext: nil,
+                                unsyncedAttributes: emptySubscriberAttributes,
+                                storefront: nil,
+                                source: .init(isRestore: false, initiationSource: .restore)
+                             ),
+                             observerMode: false) { _ in
+                    continuation.resume()
+                }
+            }
+        }
+
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await postReceiptCall()
+            }
+
+            group.addTask {
+                await postReceiptCall()
+            }
+        }
+
+        expect(dateProvider.invokedNowCount) > 1
+        expect(self.mockHTTPClient.calls).to(haveCount(1))
+    }
+
+    @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
+    func testPostReceiptCachesRequestsWithMultipleAttributesAndDifferentConsentStatusTimestamps() async {
+        self.mockHTTPClient.disableSnapshotTesting()
+
+        let subsequentNows: [Date] = (1...100).map { offset in
+            self.referenceDate.addingTimeInterval(TimeInterval(offset))
+        }
+        let dateProvider = MockDateProvider(stubbedNow: self.referenceDate, subsequentNows: subsequentNows)
+
+        let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                    systemInfo: self.systemInfo)
+
+        let config = BackendConfiguration(httpClient: self.mockHTTPClient,
+                                          operationDispatcher: MockOperationDispatcher(),
+                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                                          systemInfo: self.systemInfo,
+                                          offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
+                                          dateProvider: dateProvider)
+
+        let backend = Backend(backendConfig: config, attributionFetcher: attributionFetcher)
+
+        let attributeZ = SubscriberAttribute(withKey: "zzz_last_attribute",
+                                             value: "last_value",
+                                             dateProvider: dateProvider)
+        let attributeA = SubscriberAttribute(withKey: "aaa_first_attribute",
+                                             value: "first_value",
+                                             dateProvider: dateProvider)
+        let attributeM = SubscriberAttribute(withKey: "mmm_middle_attribute",
+                                             value: "middle_value",
+                                             dateProvider: dateProvider)
+
+        let subscriberAttributesOrderedAMZ: [String: SubscriberAttribute] = [
+            attributeA.key: attributeA,
+            attributeM.key: attributeM,
+            attributeZ.key: attributeZ
+        ]
+
+        let subscriberAttributesOrderedZMA: [String: SubscriberAttribute] = [
+            attributeZ.key: attributeZ,
+            attributeM.key: attributeM,
+            attributeA.key: attributeA
+        ]
+
+        self.mockHTTPClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: self.validSubscriberResponse, delay: .milliseconds(200))
+        )
+
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await withUnsafeContinuation { continuation in
+                    backend.post(receipt: self.receipt,
+                                 productData: nil,
+                                 transactionData: .init(
+                                    appUserID: self.appUserID,
+                                    presentedOfferingContext: nil,
+                                    unsyncedAttributes: subscriberAttributesOrderedAMZ,
+                                    storefront: nil,
+                                    source: .init(isRestore: false, initiationSource: .restore)
+                                 ),
+                                 observerMode: false) { _ in
+                        continuation.resume()
+                    }
+                }
+            }
+
+            group.addTask {
+                await withUnsafeContinuation { continuation in
+                    backend.post(receipt: self.receipt,
+                                 productData: nil,
+                                 transactionData: .init(
+                                    appUserID: self.appUserID,
+                                    presentedOfferingContext: nil,
+                                    unsyncedAttributes: subscriberAttributesOrderedZMA,
+                                    storefront: nil,
+                                    source: .init(isRestore: false, initiationSource: .restore)
+                                 ),
+                                 observerMode: false) { _ in
+                        continuation.resume()
+                    }
+                }
+            }
+        }
+
+        expect(dateProvider.invokedNowCount) > 1
+        expect(self.mockHTTPClient.calls).to(haveCount(1))
+    }
+
     func createClient() -> MockHTTPClient {
         return self.createClient(#file)
     }
