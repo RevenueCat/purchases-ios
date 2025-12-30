@@ -364,32 +364,32 @@ class DeviceCache {
     }
 
     // MARK: - StoreKit 2
-    private let cachedSyncedSK2ObserverModeTransactionIDsLock = Lock(.nonRecursive)
+    // Note: We intentionally avoid using a lock around these UserDefaults operations
+    // because it can cause deadlocks when the main thread is waiting for the lock
+    // and a background thread holding the lock writes to UserDefaults (which posts
+    // a notification to main thread). UserDefaults is already thread-safe.
+    // See: https://github.com/RevenueCat/purchases-ios/issues/4137
 
     func registerNewSyncedSK2ObserverModeTransactionIDs(_ ids: [UInt64]) {
-        cachedSyncedSK2ObserverModeTransactionIDsLock.perform {
-            var transactionIDs = self.userDefaults.read { userDefaults in
-                userDefaults.array(
-                    forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64]
-            } ?? []
+        var transactionIDs = self.userDefaults.read { userDefaults in
+            userDefaults.array(
+                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64]
+        } ?? []
 
-            transactionIDs.append(contentsOf: ids)
+        transactionIDs.append(contentsOf: ids)
 
-            self.userDefaults.write {
-                $0.set(
-                    transactionIDs,
-                    forKey: CacheKey.syncedSK2ObserverModeTransactionIDs
-                )
-            }
+        self.userDefaults.write {
+            $0.set(
+                transactionIDs,
+                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs
+            )
         }
     }
 
     func cachedSyncedSK2ObserverModeTransactionIDs() -> [UInt64] {
-        cachedSyncedSK2ObserverModeTransactionIDsLock.perform {
-            return self.userDefaults.read { userDefaults in
-                userDefaults.array(
-                    forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64] ?? []
-            }
+        return self.userDefaults.read { userDefaults in
+            userDefaults.array(
+                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64] ?? []
         }
     }
 
