@@ -625,6 +625,7 @@ jobs:
     steps:
       - checkout
       # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
           install_swiftlint: false
@@ -657,6 +658,7 @@ jobs:
     steps:
       - checkout
       # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
           install_swiftlint: false
@@ -693,6 +695,7 @@ jobs:
     steps:
       - checkout
       # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
           install_swiftlint: false
@@ -728,6 +731,7 @@ jobs:
     steps:
       - checkout
       # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
           install_swiftlint: false
@@ -763,6 +767,7 @@ jobs:
     steps:
       - checkout
       # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
           install_swiftlint: false
@@ -796,6 +801,7 @@ jobs:
     steps:
       - checkout
       # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
           install_swiftlint: false
