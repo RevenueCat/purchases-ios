@@ -478,11 +478,12 @@ class BackendSubscriberAttributesTests: TestCase {
         expect(self.mockHTTPClient.calls).to(haveCount(1))
     }
 
+    @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
     func testPostReceiptCachesRequestsWhenOnlyConsentStatusExistsWithDifferentTimestamps() async {
         self.mockHTTPClient.disableSnapshotTesting()
 
         let subsequentNows: [Date] = (1...100).map { offset in
-            self.referenceDate.advanced(by: .seconds(offset))
+            self.referenceDate.addingTimeInterval(TimeInterval(offset))
         }
         let dateProvider = MockDateProvider(stubbedNow: self.referenceDate, subsequentNows: subsequentNows)
 
@@ -537,11 +538,12 @@ class BackendSubscriberAttributesTests: TestCase {
         expect(self.mockHTTPClient.calls).to(haveCount(1))
     }
 
+    @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
     func testPostReceiptCachesRequestsWithMultipleAttributesAndDifferentConsentStatusTimestamps() async {
         self.mockHTTPClient.disableSnapshotTesting()
 
         let subsequentNows: [Date] = (1...100).map { offset in
-            self.referenceDate.advanced(by: .seconds(offset))
+            self.referenceDate.addingTimeInterval(TimeInterval(offset))
         }
         let dateProvider = MockDateProvider(stubbedNow: self.referenceDate, subsequentNows: subsequentNows)
 
