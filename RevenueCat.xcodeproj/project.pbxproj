@@ -17,6 +17,7 @@
 		0354AA462D4029C300F9E330 /* TabControlButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA3E2D4029C300F9E330 /* TabControlButtonComponentViewModel.swift */; };
 		0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA402D4029C300F9E330 /* TabControlComponentViewModel.swift */; };
 		0354AA482D4029C300F9E330 /* TabsComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA432D4029C300F9E330 /* TabsComponentView.swift */; };
+		0354AA4E2EEB200000F9E330 /* TabsPackageSelectionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA4F2EEB200000F9E330 /* TabsPackageSelectionResolver.swift */; };
 		0354AA492D4029C300F9E330 /* TabControlButtonComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA3D2D4029C300F9E330 /* TabControlButtonComponentView.swift */; };
 		0354AA4A2D4029C300F9E330 /* TabsComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA442D4029C300F9E330 /* TabsComponentViewModel.swift */; };
 		0354AA4B2D4029C300F9E330 /* TabControlToggleComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA422D4029C300F9E330 /* TabControlToggleComponentViewModel.swift */; };
@@ -831,6 +832,8 @@
 		57BB08682DD3D9EC007493E1 /* SubscriptionDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BB08672DD3D9EA007493E1 /* SubscriptionDetailViewModelTests.swift */; };
 		57BD50AA27692B7500211D6D /* StoreKitError+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */; };
 		57BF87592967880C00424254 /* MockCachingTrialOrIntroPriceEligibilityChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BF87582967880C00424254 /* MockCachingTrialOrIntroPriceEligibilityChecker.swift */; };
+		57BFCD0B2EEB0E56009E5844 /* TabsPackageInheritanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BFCD0A2EEB0E56009E5844 /* TabsPackageInheritanceTests.swift */; };
+		57BFCD0E2EEB1234009E5844 /* TabsPackageSelectionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BFCD0F2EEB1234009E5844 /* TabsPackageSelectionResolverTests.swift */; };
 		57C0BB6929F840BD00827807 /* FrameworkDisambiguation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C0BB6829F840BD00827807 /* FrameworkDisambiguation.swift */; };
 		57C2931528BFEF4F0054EDFC /* PurchasesError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C2931428BFEF4F0054EDFC /* PurchasesError.swift */; };
 		57C381B72791E593009E3940 /* StoreKit2TransactionListenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C381B62791E593009E3940 /* StoreKit2TransactionListenerTests.swift */; };
@@ -1512,6 +1515,7 @@
 		0354AA412D4029C300F9E330 /* TabControlToggleComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlToggleComponentView.swift; sourceTree = "<group>"; };
 		0354AA422D4029C300F9E330 /* TabControlToggleComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlToggleComponentViewModel.swift; sourceTree = "<group>"; };
 		0354AA432D4029C300F9E330 /* TabsComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentView.swift; sourceTree = "<group>"; };
+		0354AA4F2EEB200000F9E330 /* TabsPackageSelectionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsPackageSelectionResolver.swift; sourceTree = "<group>"; };
 		0354AA442D4029C300F9E330 /* TabsComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentViewModel.swift; sourceTree = "<group>"; };
 		036872792D9DCF6D00506BBB /* DefaultEnumTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultEnumTests.swift; sourceTree = "<group>"; };
 		038211952DCA730C003C02C3 /* ButtonWithFooterPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonWithFooterPreview.swift; sourceTree = "<group>"; };
@@ -2361,6 +2365,8 @@
 		57BB08672DD3D9EA007493E1 /* SubscriptionDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionDetailViewModelTests.swift; sourceTree = "<group>"; };
 		57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreKitError+Extensions.swift"; sourceTree = "<group>"; };
 		57BF87582967880C00424254 /* MockCachingTrialOrIntroPriceEligibilityChecker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockCachingTrialOrIntroPriceEligibilityChecker.swift; sourceTree = "<group>"; };
+		57BFCD0A2EEB0E56009E5844 /* TabsPackageInheritanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsPackageInheritanceTests.swift; sourceTree = "<group>"; };
+		57BFCD0F2EEB1234009E5844 /* TabsPackageSelectionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsPackageSelectionResolverTests.swift; sourceTree = "<group>"; };
 		57C0BB6829F840BD00827807 /* FrameworkDisambiguation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameworkDisambiguation.swift; sourceTree = "<group>"; };
 		57C2931428BFEF4F0054EDFC /* PurchasesError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesError.swift; sourceTree = "<group>"; };
 		57C381B62791E593009E3940 /* StoreKit2TransactionListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionListenerTests.swift; sourceTree = "<group>"; };
@@ -2963,6 +2969,8 @@
 		030890822D2B77DD0069677B /* PaywallsV2 */ = {
 			isa = PBXGroup;
 			children = (
+				57BFCD0F2EEB1234009E5844 /* TabsPackageSelectionResolverTests.swift */,
+				57BFCD0A2EEB0E56009E5844 /* TabsPackageInheritanceTests.swift */,
 				03CCFCE12DE9638F0052B764 /* __PreviewResources__ */,
 				83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */,
 				038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */,
@@ -2993,6 +3001,7 @@
 				0354AA412D4029C300F9E330 /* TabControlToggleComponentView.swift */,
 				0354AA422D4029C300F9E330 /* TabControlToggleComponentViewModel.swift */,
 				0354AA432D4029C300F9E330 /* TabsComponentView.swift */,
+				0354AA4F2EEB200000F9E330 /* TabsPackageSelectionResolver.swift */,
 				0354AA442D4029C300F9E330 /* TabsComponentViewModel.swift */,
 			);
 			path = Tabs;
@@ -7709,6 +7718,7 @@
 				0387D3C82EC51F09008E4A6B /* FileImageLoader.swift in Sources */,
 				0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */,
 				0354AA482D4029C300F9E330 /* TabsComponentView.swift in Sources */,
+				0354AA4E2EEB200000F9E330 /* TabsPackageSelectionResolver.swift in Sources */,
 				0354AA492D4029C300F9E330 /* TabControlButtonComponentView.swift in Sources */,
 				0354AA4A2D4029C300F9E330 /* TabsComponentViewModel.swift in Sources */,
 				0354AA4B2D4029C300F9E330 /* TabControlToggleComponentViewModel.swift in Sources */,
@@ -7902,6 +7912,8 @@
 				887A632B2C1D177800E1A461 /* LocalizedAlertErrorTests.swift in Sources */,
 				887A632C2C1D177800E1A461 /* PackageVariablesTests.swift in Sources */,
 				887A632D2C1D177800E1A461 /* PaywallDataValidationTests.swift in Sources */,
+				57BFCD0B2EEB0E56009E5844 /* TabsPackageInheritanceTests.swift in Sources */,
+				57BFCD0E2EEB1234009E5844 /* TabsPackageSelectionResolverTests.swift in Sources */,
 				887A632E2C1D177800E1A461 /* TemplateViewConfigurationTests.swift in Sources */,
 				887A632F2C1D177800E1A461 /* VariablesTests.swift in Sources */,
 				887A63302C1D177800E1A461 /* AsyncTestHelpers.swift in Sources */,
