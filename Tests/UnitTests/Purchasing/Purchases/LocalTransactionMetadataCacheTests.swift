@@ -34,7 +34,7 @@ class LocalTransactionMetadataCacheTests: TestCase {
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
             observerMode: false,
-            productIdentifier: "awesome_product.1"
+            productIdentifier: productID
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata, forProductID: productID)
 
@@ -62,7 +62,7 @@ class LocalTransactionMetadataCacheTests: TestCase {
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
             observerMode: false,
-            productIdentifier: "awesome_product.1"
+            productIdentifier: productID1
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata1, forProductID: productID1)
 
@@ -71,7 +71,7 @@ class LocalTransactionMetadataCacheTests: TestCase {
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
             observerMode: false,
-            productIdentifier: "awesome_product.2"
+            productIdentifier: productID2
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata2, forProductID: productID2)
 
@@ -108,7 +108,7 @@ class LocalTransactionMetadataCacheTests: TestCase {
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
             observerMode: false,
-            productIdentifier: "awesome_product.1"
+            productIdentifier: productID1
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata1, forProductID: productID1)
 
@@ -117,7 +117,7 @@ class LocalTransactionMetadataCacheTests: TestCase {
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
             observerMode: false,
-            productIdentifier: "awesome_product.2"
+            productIdentifier: productID2
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata2, forProductID: productID2)
 
@@ -172,7 +172,7 @@ class LocalTransactionMetadataCacheTests: TestCase {
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
             observerMode: false,
-            productIdentifier: "awesome_product.1"
+            productIdentifier: productID
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata1, forProductID: productID)
 
@@ -204,7 +204,7 @@ class LocalTransactionMetadataCacheTests: TestCase {
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
             observerMode: false,
-            productIdentifier: "awesome_product.1"
+            productIdentifier: productID1
         )
         self.localTransactionMetadataCache.store(metadata: transactionMetadata1, forProductID: productID1)
 
@@ -213,7 +213,7 @@ class LocalTransactionMetadataCacheTests: TestCase {
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
             observerMode: false,
-            productIdentifier: "awesome_product.2"
+            productIdentifier: productID2
         )
         self.localTransactionMetadataCache.store(metadata: transactionMetadata2, forProductID: productID2)
 
@@ -252,5 +252,180 @@ class LocalTransactionMetadataCacheTests: TestCase {
 
         expect(self.localTransactionMetadataCache.retrieve(forTransactionID: transactionID1)) == nil
         expect(self.localTransactionMetadataCache.retrieve(forTransactionID: transactionID2)) != nil
+    }
+
+    // MARK: Migrating from ProductID to TransactionID
+    func testMigrateFromProductIDToTransactionID() {
+        let productID = UUID().uuidString
+        let transactionID = UUID().uuidString
+        let transactionMetadata = LocalTransactionMetadata(
+            presentedOfferingContext: nil,
+            paywallPostReceiptData: nil,
+            observerMode: false,
+            productIdentifier: productID
+        )
+
+        self.localTransactionMetadataCache.store(metadata: transactionMetadata, forProductID: productID)
+        expect(self.localTransactionMetadataCache.retrieve(forProductID: productID)) == transactionMetadata
+        expect(self.localTransactionMetadataCache.retrieve(forTransactionID: transactionID)) == nil
+
+        self.localTransactionMetadataCache.migrateMetadata(fromProductID: productID, toTransactionID: transactionID)
+        expect(self.localTransactionMetadataCache.retrieve(forProductID: productID)) == nil
+        expect(self.localTransactionMetadataCache.retrieve(forTransactionID: transactionID)) == transactionMetadata
+    }
+
+    func testMigrateFromProductIDToTransactionIDWhenTransactionForTransactionIDAlreadyExists() {
+        let productID = UUID().uuidString
+        let transactionID = UUID().uuidString
+        let transactionMetadata = LocalTransactionMetadata(
+            presentedOfferingContext: nil,
+            paywallPostReceiptData: nil,
+            observerMode: false,
+            productIdentifier: productID
+        )
+
+        self.localTransactionMetadataCache.store(metadata: transactionMetadata, forProductID: productID)
+        self.localTransactionMetadataCache.store(metadata: transactionMetadata, forTransactionID: transactionID)
+
+        expect(self.localTransactionMetadataCache.retrieve(forProductID: productID)) == transactionMetadata
+        expect(self.localTransactionMetadataCache.retrieve(forTransactionID: transactionID)) == transactionMetadata
+
+        self.localTransactionMetadataCache.migrateMetadata(fromProductID: productID, toTransactionID: transactionID)
+        expect(self.localTransactionMetadataCache.retrieve(forProductID: productID)) == nil
+        expect(self.localTransactionMetadataCache.retrieve(forTransactionID: transactionID)) == transactionMetadata
+    }
+
+    func testMigrateFromProductIDToTransactionIDWhenTransactionForProductIDDoesNotExist() {
+        let productID = UUID().uuidString
+        let transactionID = UUID().uuidString
+
+        expect(self.localTransactionMetadataCache.retrieve(forProductID: productID)) == nil
+        expect(self.localTransactionMetadataCache.retrieve(forTransactionID: transactionID)) == nil
+
+        self.localTransactionMetadataCache.migrateMetadata(fromProductID: productID, toTransactionID: transactionID)
+        expect(self.localTransactionMetadataCache.retrieve(forProductID: productID)) == nil
+        expect(self.localTransactionMetadataCache.retrieve(forTransactionID: transactionID)) == nil
+    }
+
+    // MARK: StoreTransactionType helpers
+    func testRetrieveTransactionMetadataBasedOnStoreTransactionStoredByProductID() {
+        let productID = UUID().uuidString
+        let transactionID = UUID().uuidString
+        let storeTransaction = MockStoreTransaction(
+            productIdentifier: productID,
+            transactionIdentifier: transactionID
+        )
+
+        let transactionMetadata = LocalTransactionMetadata(
+            presentedOfferingContext: nil,
+            paywallPostReceiptData: nil,
+            observerMode: false,
+            productIdentifier: productID
+        )
+
+        self.localTransactionMetadataCache.store(metadata: transactionMetadata, forProductID: productID)
+        expect(self.localTransactionMetadataCache.retrieve(for: storeTransaction)) == transactionMetadata
+    }
+
+    func testRetrieveTransactionMetadataBasedOnStoreTransactionStoredByTransactionID() {
+        let productID = UUID().uuidString
+        let transactionID = UUID().uuidString
+        let storeTransaction = MockStoreTransaction(
+            productIdentifier: productID,
+            transactionIdentifier: transactionID
+        )
+
+        let transactionMetadata = LocalTransactionMetadata(
+            presentedOfferingContext: nil,
+            paywallPostReceiptData: nil,
+            observerMode: false,
+            productIdentifier: productID
+        )
+
+        self.localTransactionMetadataCache.store(metadata: transactionMetadata, forTransactionID: transactionID)
+        expect(self.localTransactionMetadataCache.retrieve(for: storeTransaction)) == transactionMetadata
+    }
+
+    func testRetrieveTransactionMetadataBasedOnStoreTransactionStoredByProductAndTransactionID() {
+        let productID = UUID().uuidString
+        let transactionID = UUID().uuidString
+        let storeTransaction = MockStoreTransaction(
+            productIdentifier: productID,
+            transactionIdentifier: transactionID
+        )
+
+        let transactionMetadataForProductID = LocalTransactionMetadata(
+            presentedOfferingContext: nil,
+            paywallPostReceiptData: nil,
+            observerMode: false,
+            productIdentifier: "byProductID"
+        )
+
+        let transactionMetadataForTransactionID = LocalTransactionMetadata(
+            presentedOfferingContext: nil,
+            paywallPostReceiptData: nil,
+            observerMode: false,
+            productIdentifier: "byTransactionID"
+        )
+
+        self.localTransactionMetadataCache.store(metadata: transactionMetadataForProductID, forProductID: productID)
+        self.localTransactionMetadataCache.store(
+            metadata: transactionMetadataForTransactionID,
+            forTransactionID: transactionID
+        )
+        // swiftlint:disable:next line_length
+        expect(self.localTransactionMetadataCache.retrieve(for: storeTransaction)) == transactionMetadataForTransactionID
+    }
+
+    func testRetrieveTransactionMetadataBasedOnStoreTransactionMigrated() {
+        let productID = UUID().uuidString
+        let transactionID = UUID().uuidString
+        let storeTransaction = MockStoreTransaction(
+            productIdentifier: productID,
+            transactionIdentifier: transactionID
+        )
+
+        let transactionMetadata = LocalTransactionMetadata(
+            presentedOfferingContext: nil,
+            paywallPostReceiptData: nil,
+            observerMode: false,
+            productIdentifier: productID
+        )
+
+        self.localTransactionMetadataCache.store(metadata: transactionMetadata, forProductID: productID)
+        expect(self.localTransactionMetadataCache.retrieve(forProductID: productID)) == transactionMetadata
+        expect(self.localTransactionMetadataCache.retrieve(forTransactionID: transactionID)) == nil
+        expect(self.localTransactionMetadataCache.retrieve(for: storeTransaction)) == transactionMetadata
+
+        self.localTransactionMetadataCache.migrateMetadata(fromProductID: productID, toTransactionID: transactionID)
+
+        expect(self.localTransactionMetadataCache.retrieve(forProductID: productID)) == nil
+        expect(self.localTransactionMetadataCache.retrieve(forTransactionID: transactionID)) == transactionMetadata
+        expect(self.localTransactionMetadataCache.retrieve(for: storeTransaction)) == transactionMetadata
+    }
+}
+
+extension LocalTransactionMetadataCacheTests {
+    struct MockStoreTransaction: StoreTransactionType {
+
+        let productIdentifier: String
+
+        let transactionIdentifier: String
+
+        var purchaseDate: Date { Date(timeIntervalSince1970: 0) }
+
+        var hasKnownPurchaseDate: Bool { false }
+
+        var hasKnownTransactionIdentifier: Bool { true }
+
+        var quantity: Int { 1 }
+
+        var storefront: RevenueCat.Storefront? { nil }
+
+        var jwsRepresentation: String? { nil }
+
+        var environment: RevenueCat.StoreEnvironment? { nil}
+
+        func finish(_ wrapper: any RevenueCat.PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {}
     }
 }
