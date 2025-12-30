@@ -25,14 +25,14 @@ extension StoreProductDiscountType {
 
         switch self.paymentMode {
         case .freeTrial:
-            return localization[.freeTrialPeriod]
+            return localization[.promoOfferButtonFreeTrial]
                 .replacingOccurrences(of: "{{ duration }}", with: discountDuration)
         case .payAsYouGo:
-            return localization[.payAsYouGoPeriod]
+            return localization[.promoOfferButtonRecurringDiscount]
                 .replacingOccurrences(of: "{{ price }}", with: localizedPricePerPeriod(locale))
                 .replacingOccurrences(of: "{{ duration }}", with: discountedPeriodsWithUnit)
         case .payUpFront:
-            return localization[.payUpFrontPeriod]
+            return localization[.promoOfferButtonUpfrontPayment]
                 .replacingOccurrences(of: "{{ duration }}", with: discountDuration)
                 .replacingOccurrences(of: "{{ price }}", with: self.localizedPriceString)
         }

@@ -225,7 +225,7 @@ struct PromoOfferButtonView: View {
                         Text(mainTitle)
                             .font(.headline)
 
-                        let subtitle = self.localization[.thenPricePerPeriod]
+                        let subtitle = self.localization[.promoOfferButtonRegularPrice]
                             .replacingOccurrences(of: "{{ price }}", with: localizedProductPricePerPeriod)
 
                         Text(subtitle)
