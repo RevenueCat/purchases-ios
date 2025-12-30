@@ -43,4 +43,3 @@ extension StoreProductDiscountType {
         return "\(self.localizedPriceString)/\(unit)"
     }
 }
-
