@@ -141,9 +141,8 @@ extension SubscriberAttribute.Dictionary {
 
     var individualizedCacheKeyPart: String {
         // Sort keys to ensure deterministic ordering for cache key computation.
-        return self.keys.sorted().map { key in
-            // swiftlint:disable:next force_unwrapping
-            let attribute = self[key]!
+        self.keys.sorted().compactMap { key in
+            guard let attribute = self[key] else { return nil }
             return "\(key):\(attribute.individualizedCacheKeyPart)"
         }.joined(separator: ",")
     }
