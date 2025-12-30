@@ -116,18 +116,18 @@ final class LocalTransactionMetadataCache: Sendable {
     }
 }
 
-/// Helpers for easy access based on a StoreTransaction
+/// Helpers for easy access based on a StoreTransactionType
 extension LocalTransactionMetadataCache {
 
     /// Retrieve transaction metadata for the given transaction, based on transactionIdentifier or productIdentifier
-    func retrieve(for transaction: StoreTransaction) -> LocalTransactionMetadata? {
+    func retrieve(for transaction: StoreTransactionType) -> LocalTransactionMetadata? {
         retrieve(forTransactionID: transaction.transactionIdentifier)
             ??
         retrieve(forProductID: transaction.productIdentifier)
     }
 
     /// Remove transaction metadata for the given transaction, based on transactionIdentifier or productIdentifier
-    func remove(for transaction: StoreTransaction) {
+    func remove(for transaction: StoreTransactionType) {
         remove(forTransactionID: transaction.transactionIdentifier)
         remove(forProductID: transaction.productIdentifier)
     }
