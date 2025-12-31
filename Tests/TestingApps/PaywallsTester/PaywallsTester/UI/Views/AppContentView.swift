@@ -13,8 +13,11 @@ struct AppContentView: View {
 
     @ObservedObject
     private var configuration = Configuration.shared
-
-
+    
+    @AppStorage("deadlock_trigger_counter") private var counter = 0
+    @AppStorage("deadlock_trigger_flag") private var flag = false
+    
+    @State private var defaultsObserver: NSObjectProtocol?
 
     var body: some View {
         TabView {
@@ -44,16 +47,99 @@ struct AppContentView: View {
                 Text("Purchases is not configured")
             }
             #endif
+            
+            deadlockTestView
+                .tabItem {
+                    Label("Deadlock Test", systemImage: "bolt.trianglebadge.exclamationmark.fill")
+                }
         }
     }
-
-    private var background: some View {
-        Rectangle()
-            .foregroundStyle(.orange)
-            .opacity(0.05)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .edgesIgnoringSafeArea(.all)
+    
+    private var deadlockTestView: some View {
+        VStack(spacing: 16) {
+            Text("Deadlock Reproducer")
+                .font(.title.bold())
+            
+            Text("Counter: \(counter)")
+                .font(.system(.body, design: .monospaced))
+            
+            Button(role: .destructive, action: runDeterministicDeadlock) {
+                VStack(spacing: 6) {
+                    Text("RUN DETERMINISTIC DEADLOCK")
+                        .font(.headline)
+                    Text("Single-shot repro via SDK restore + cached read")
+                        .font(.caption)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 18)
+                .background(Color.black.opacity(0.8))
+                .foregroundColor(.white)
+                .cornerRadius(14)
+            }
+            .padding(.horizontal)
+            
+            Spacer()
+            
+            Text("If the app freezes, the deadlock occurred!")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            if !Purchases.isConfigured {
+                Text("⚠️ Add API key to Local.xcconfig first")
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+        }
+        .padding()
+        .onAppear {
+            addObserverIfNeeded()
+        }
+        .onDisappear {
+            removeObserver()
+        }
     }
+    
+    private func runDeterministicDeadlock() {
+        guard Purchases.isConfigured else {
+            print("❌ Purchases not configured - add API key to Local.xcconfig")
+            return
+        }
+
+        Task.detached {
+            _ = try? await Purchases.shared.restorePurchases()
+            _ = try? await Purchases.shared.restorePurchases()
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            counter &+= 1
+            flag.toggle()
+            _ = Purchases.shared.cachedCustomerInfo
+            _ = Purchases.shared.cachedCustomerInfo
+        }
+    }
+    
+    private func addObserverIfNeeded() {
+        if defaultsObserver == nil {
+            defaultsObserver = NotificationCenter.default.addObserver(
+                forName: UserDefaults.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                counter &+= 1
+                flag.toggle()
+                _ = Purchases.shared.cachedCustomerInfo
+            }
+        }
+    }
+    
+    private func removeObserver() {
+        if let observer = defaultsObserver {
+            NotificationCenter.default.removeObserver(observer)
+            defaultsObserver = nil
+        }
+    }
+    
+
 
 
 
@@ -98,3 +184,4 @@ struct AppContentView_Previews: PreviewProvider {
 }
 
 #endif
+
