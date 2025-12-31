@@ -293,7 +293,7 @@ private extension EventsManager {
 
 // swiftlint:disable identifier_name
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum EventsManagerStrings {
+enum EventsManagerStrings {
 
     case background_task_unavailable
     case background_task_expired(String)

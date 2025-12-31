@@ -67,7 +67,7 @@ extension FileManager: LargeItemCacheType {
         let tempFileURL = temporaryDirectory.appendingPathComponent((checksum?.value ?? "") + url.lastPathComponent)
 
         guard createFile(atPath: tempFileURL.path, contents: nil, attributes: nil) else {
-            let message = Strings.fileRepository.failedToCreateTemporaryFile(tempFileURL).description
+            let message = Strings.fileRepository.failedToCreateTemporaryFile(tempFileURL)
             Logger.error(message)
             throw CocoaError(.fileWriteUnknown)
         }
@@ -140,7 +140,7 @@ extension FileManager: LargeItemCacheType {
                 attributes: nil
             )
         } catch {
-            let message = Strings.fileRepository.failedToCreateCacheDirectory(path).description
+            let message = Strings.fileRepository.failedToCreateCacheDirectory(path)
             Logger.error(message)
         }
 
@@ -161,7 +161,7 @@ extension FileManager: LargeItemCacheType {
                 attributes: nil
             )
         } catch {
-            let message = Strings.fileRepository.failedToCreateDocumentDirectory(path).description
+            let message = Strings.fileRepository.failedToCreateDocumentDirectory(path)
             Logger.error(message)
         }
 

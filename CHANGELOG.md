@@ -1,3 +1,18 @@
+## 5.52.0
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* Add exit offers support for paywalls (#5944) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Execute `release-train` only when making a release (#5965) via Antonio Pallares (@ajpallares)
+* Fix failing ad tracking tests (#5963) via Antonio Pallares (@ajpallares)
+* Re-recorded FallbackURLBackendIntegrationTests and LoadShedderIntegrationTests (#5962) via Facundo Menzella (@facumenzella)
+* Bump fastlane-plugin-revenuecat_internal from `76a3a08` to `e6454e3` (#5961) via dependabot[bot] (@dependabot[bot])
+* Trigger the RC app upload when releasing a SDK version (#4853) via Antonio Pallares (@ajpallares)
+* Remove compiler flag (#5943) via Pol Miro (@polmiro)
+* Added Emerge binary size analysis lane in Fastlane using new barebones test app (#5941) via Rick (@rickvdl)
+
 ## 5.51.1
 ## RevenueCat SDK
 ### 🐞 Bugfixes
@@ -2058,6 +2073,14 @@ or if using the modifier:
 The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
 See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
+
+## 4.44.2
+## RevenueCat SDK
+### 🐞 Bugfixes
+* [v4] Fix HTTP request deduplication being non-deterministic on cache keys (#5976) via Rick (@rickvdl)
+
+### 🔄 Other Changes
+* [v4] Remove brew tap of unused repository in CircleCI config (#5977) via Rick (@rickvdl)
 
 ## 4.44.1
 ## RevenueCat SDK
