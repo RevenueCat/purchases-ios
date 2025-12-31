@@ -21,16 +21,22 @@ extension StoreProductDiscountType {
         _ locale: Locale,
         localization: CustomerCenterConfigData.Localization
     ) -> String {
-        let discountDuration = self.subscriptionPeriod.durationTitle
+        let discountDuration = Localization.localizedDuration(for: self.subscriptionPeriod, locale: locale)
 
         switch self.paymentMode {
         case .freeTrial:
             return localization[.promoOfferButtonFreeTrial]
                 .replacingOccurrences(of: "{{ duration }}", with: discountDuration)
         case .payAsYouGo:
+            let discountedPeriods = SubscriptionPeriod(
+                value: self.numberOfPeriods,
+                unit: self.subscriptionPeriod.unit
+            )
+            let discountedDuration = Localization.localizedDuration(for: discountedPeriods, locale: locale)
+            
             return localization[.promoOfferButtonRecurringDiscount]
                 .replacingOccurrences(of: "{{ price }}", with: localizedPricePerPeriod(locale))
-                .replacingOccurrences(of: "{{ duration }}", with: discountedPeriodsWithUnit)
+                .replacingOccurrences(of: "{{ duration }}", with: discountedDuration)
         case .payUpFront:
             return localization[.promoOfferButtonUpfrontPayment]
                 .replacingOccurrences(of: "{{ duration }}", with: discountDuration)
