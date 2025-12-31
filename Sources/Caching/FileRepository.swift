@@ -75,7 +75,7 @@ import Foundation
                         withChecksum: checksum
                       )
                 else {
-                    Logger.error(Strings.fileRepository.failedToCreateCacheDirectory(url).description)
+                    Logger.error(Strings.fileRepository.failedToCreateCacheDirectory(url))
                     throw Error.failedToCreateCacheDirectory(url.absoluteString)
                 }
 
@@ -109,9 +109,9 @@ import Foundation
         do {
             return try await networkService.bytes(from: url)
         } catch {
-            let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error).description
+            let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error)
             Logger.error(message)
-            throw Error.failedToFetchFileFromRemoteSource(message)
+            throw Error.failedToFetchFileFromRemoteSource(message.description)
         }
     }
 
@@ -123,9 +123,9 @@ import Foundation
         do {
             try await fileManager.saveData(bytes, to: url, checksum: checksum)
         } catch {
-            let message = Strings.fileRepository.failedToSaveCachedFile(url, error).description
+            let message = Strings.fileRepository.failedToSaveCachedFile(url, error)
             Logger.error(message)
-            throw Error.failedToSaveCachedFile(message)
+            throw Error.failedToSaveCachedFile(message.description)
         }
     }
 
