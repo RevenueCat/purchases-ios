@@ -1,13 +1,16 @@
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix translations of purchase button in Customer Center's promotional offers (#5974) via Cesar de la Vega (@vegaro)
+* Fix HTTP request deduplication being non-deterministic on cache keys (#5975) via Andy Boedo (@aboedo)
+* Fixed compilation of generated XCFramework because of synthesized Codable conformance in extension (#5971) via Rick (@rickvdl)
+* Fix footer background image influencing footer height when using Fill / Fit mode (#5960) via Facundo Menzella (@facumenzella)
+
 ## RevenueCatUI SDK
 ### Paywallv2
-#### ✨ New Features
-* Add exit offers support for paywalls (#5944) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Fix Tabs component package inheritance for tabs without packages (#5929) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Execute `release-train` only when making a release (#5965) via Antonio Pallares (@ajpallares)
-* Fix failing ad tracking tests (#5963) via Antonio Pallares (@ajpallares)
-* Re-recorded FallbackURLBackendIntegrationTests and LoadShedderIntegrationTests (#5962) via Facundo Menzella (@facumenzella)
-* Bump fastlane-plugin-revenuecat_internal from `76a3a08` to `e6454e3` (#5961) via dependabot[bot] (@dependabot[bot])
-* Trigger the RC app upload when releasing a SDK version (#4853) via Antonio Pallares (@ajpallares)
-* Remove compiler flag (#5943) via Pol Miro (@polmiro)
-* Added Emerge binary size analysis lane in Fastlane using new barebones test app (#5941) via Rick (@rickvdl)
+* Remove `output_style` from `xcodebuild` calls in `test_revenuecatui` (#5978) via Cesar de la Vega (@vegaro)
+* Updated reference snapshot for load shedder offerings response (#5973) via Rick (@rickvdl)
+* Removed the use of @autoclosure from Logging methods in order to reduce binary size footprint (#5956) via Rick (@rickvdl)
