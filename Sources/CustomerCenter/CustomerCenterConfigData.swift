@@ -182,10 +182,10 @@ import Foundation
             case supportTicketFailed = "support_ticket_failed"
             case submitTicket = "submit_ticket"
             case characterCount = "character_count"
-            case promoOfferButtonRegularPrice = "common_ios_promo_offer_button_regular_price"
-            case promoOfferButtonFreeTrial = "common_ios_promo_offer_button_free_trial"
-            case promoOfferButtonRecurringDiscount = "common_ios_promo_offer_button_recurring_discount"
-            case promoOfferButtonUpfrontPayment = "common_ios_promo_offer_button_upfront_payment"
+            case promoOfferButtonRegularPrice = "ios_promo_offer_button_regular_price"
+            case promoOfferButtonFreeTrial = "ios_promo_offer_button_free_trial"
+            case promoOfferButtonRecurringDiscount = "ios_promo_offer_button_recurring_discount"
+            case promoOfferButtonUpfrontPayment = "ios_promo_offer_button_upfront_payment"
 
             @_spi(Internal) public var defaultValue: String {
                 switch self {
