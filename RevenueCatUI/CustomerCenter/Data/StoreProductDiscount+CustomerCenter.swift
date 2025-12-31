@@ -33,7 +33,7 @@ extension StoreProductDiscountType {
                 unit: self.subscriptionPeriod.unit
             )
             let discountedDuration = Localization.localizedDuration(for: discountedPeriods, locale: locale)
-            
+
             return localization[.promoOfferButtonRecurringDiscount]
                 .replacingOccurrences(of: "{{ price }}", with: localizedPricePerPeriod(locale))
                 .replacingOccurrences(of: "{{ duration }}", with: discountedDuration)
