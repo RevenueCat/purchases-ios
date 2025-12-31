@@ -68,6 +68,15 @@ struct TabControlToggleComponentView: View {
 
                 tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
             }
+            .onChangeOf(tabControlContext.selectedTabId) { newSelectedTabId in
+                let tabIds = tabControlContext.tabIds
+                guard tabIds.indices.contains(1) else { return }
+
+                let newIsOn = newSelectedTabId == tabIds[1]
+                if self.isOn != newIsOn {
+                    self.isOn = newIsOn
+                }
+            }
     }
 
 }
