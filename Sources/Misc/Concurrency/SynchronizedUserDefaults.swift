@@ -13,35 +13,47 @@
 
 import Foundation
 
-/// A `UserDefaults` wrapper to synchronize access and writes.
+/// A `UserDefaults` wrapper that provides a consistent API for reading and writing.
 ///
-/// - SeeAlso: `Atomic`.
+/// `UserDefaults` is already thread-safe according to Apple's documentation:
+/// "The UserDefaults type is thread-safe, and you can use the same object in multiple threads or tasks
+/// simultaneously."
+/// https://developer.apple.com/documentation/foundation/userdefaults#overview
+///
+/// This wrapper previously used a lock (`Atomic`) for synchronization, but this caused deadlocks
+/// in scenarios where:
+/// 1. Main thread tries to acquire the lock for a read operation
+/// 2. A background thread holding the lock writes to UserDefaults, which posts
+///    a `didChangeNotification` to the main queue
+/// 3. The background thread waits for the notification to complete
+/// 4. Deadlock: main thread waiting for lock, background thread waiting for main thread
+///
+/// Since `UserDefaults` handles thread-safety internally, we no longer wrap it with additional locking.
+///
+/// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/4137
+/// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/5729
 internal final class SynchronizedUserDefaults {
 
-    private let atomic: Atomic<UserDefaults>
+    private nonisolated(unsafe) let userDefaults: UserDefaults
 
     init(userDefaults: UserDefaults) {
-        self.atomic = .init(userDefaults)
+        self.userDefaults = userDefaults
     }
 
     func read<T>(_ action: (UserDefaults) throws -> T) rethrows -> T {
-        return try self.atomic.withValue {
-            return try action($0)
-        }
+        return try action(self.userDefaults)
     }
 
     func write(_ action: (UserDefaults) throws -> Void) rethrows {
-        return try self.atomic.withValue {
-            try action($0)
+        try action(self.userDefaults)
 
-            // While Apple states `this method is unnecessary and shouldn't be used`
-            // https://developer.apple.com/documentation/foundation/userdefaults/1414005-synchronize
-            // It didn't become unnecessary until iOS 12 and macOS 10.14 (Mojave):
-            // https://developer.apple.com/documentation/macos-release-notes/foundation-release-notes
-            // there are reports it is still needed if you save to defaults then immediately kill the app.
-            // Also, it has not been marked deprecated... yet.
-            $0.synchronize()
-        }
+        // While Apple states `this method is unnecessary and shouldn't be used`
+        // https://developer.apple.com/documentation/foundation/userdefaults/1414005-synchronize
+        // It didn't become unnecessary until iOS 12 and macOS 10.14 (Mojave):
+        // https://developer.apple.com/documentation/macos-release-notes/foundation-release-notes
+        // there are reports it is still needed if you save to defaults then immediately kill the app.
+        // Also, it has not been marked deprecated... yet.
+        self.userDefaults.synchronize()
     }
 
 }
