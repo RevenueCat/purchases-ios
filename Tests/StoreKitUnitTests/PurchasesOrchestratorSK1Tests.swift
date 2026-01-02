@@ -512,12 +512,9 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
-
+        
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
-        ) == Self.paywallEventCreationData
-        expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
         ) == Self.paywallEvent
     }
 
@@ -547,10 +544,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         try await purchase()
 
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
-        ) == Self.paywallEventCreationData
-        expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
         ) == Self.paywallEvent
     }
 

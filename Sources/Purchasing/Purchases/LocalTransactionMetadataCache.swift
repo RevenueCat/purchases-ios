@@ -22,35 +22,40 @@ internal struct LocalTransactionMetadata: Equatable, Codable, Sendable {
 
     /// The version of the schema used for encoding/decoding
     let schemaVersion: Int
-    
-    /// The userID of the user who created the transaction
-    let userID: String
+
+    /// The app user ID of the user who created the transaction
+    let appUserID: String
 
     /// The product identifier (used for SK1 pending transaction fallback).
     let productIdentifier: String
-    
+
     /// The offering context when the transaction was initiated.
     let presentedOfferingContext: PresentedOfferingContext?
 
     /// The paywall event data when the transaction was initiated.
-    let paywallPostReceiptData: PaywallEvent.Data?
+    let paywallPostReceiptData: PaywallPostReceiptData?
 
     /// Whether purchases are completed by RevenueCat or the app (observer mode equivalent).
     let observerMode: Bool
 
     init(
-        userID: String,
+        appUserID: String,
         productIdentifier: String,
         presentedOfferingContext: PresentedOfferingContext?,
-        paywallPostReceiptData: PaywallEvent.Data?,
+        paywallPostReceiptData: PaywallPostReceiptData?,
         observerMode: Bool
     ) {
         self.schemaVersion = 1
-        self.userID = userID
+        self.appUserID = appUserID
         self.productIdentifier = productIdentifier
         self.presentedOfferingContext = presentedOfferingContext
         self.paywallPostReceiptData = paywallPostReceiptData
         self.observerMode = observerMode
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case schemaVersion, productIdentifier, presentedOfferingContext, paywallPostReceiptData, observerMode
+        case appUserID = "appUserId"
     }
 }
 

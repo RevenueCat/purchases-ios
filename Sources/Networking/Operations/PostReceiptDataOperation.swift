@@ -130,7 +130,7 @@ extension PostReceiptDataOperation {
         let presentedOfferingIdentifier: String?
         let presentedPlacementIdentifier: String?
         let appliedTargetingRule: AppliedTargetingRule?
-        let paywall: Paywall?
+        let paywall: PaywallPostReceiptData?
         let observerMode: Bool
         let initiationSource: ProductRequestData.InitiationSource
         let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
@@ -144,16 +144,6 @@ extension PostReceiptDataOperation {
         let metadata: [String: String]?
     }
 
-    struct Paywall {
-
-        var sessionID: String
-        var revision: Int
-        var displayMode: PaywallViewMode
-        var darkMode: Bool
-        var localeIdentifier: String
-
-    }
-
     struct AppliedTargetingRule {
 
         var revision: Int
@@ -161,6 +151,15 @@ extension PostReceiptDataOperation {
 
     }
 
+}
+
+struct PaywallPostReceiptData: Equatable {
+    var sessionID: UUID
+    var revision: Int
+    var displayMode: PaywallViewMode
+    var darkMode: Bool
+    var localeIdentifier: String
+    var offeringIdentifier: String
 }
 
 extension PostReceiptDataOperation.PostData {
@@ -183,7 +182,7 @@ extension PostReceiptDataOperation.PostData {
             appliedTargetingRule: data.presentedOfferingContext?.targetingContext.flatMap {
                 .init(revision: $0.revision, ruleId: $0.ruleId)
             },
-            paywall: data.paywall,
+            paywall: data.presentedPaywall?.toPostReceiptData,
             observerMode: observerMode,
             initiationSource: data.source.initiationSource,
             subscriberAttributesByKey: data.unsyncedAttributes,
@@ -196,18 +195,30 @@ extension PostReceiptDataOperation.PostData {
 
 }
 
-private extension PurchasedTransactionData {
-
-    var paywall: PostReceiptDataOperation.Paywall? {
-        guard let paywall = self.presentedPaywall else { return nil }
-
-        return .init(sessionID: paywall.sessionIdentifier.uuidString,
-                     revision: paywall.paywallRevision,
-                     displayMode: paywall.displayMode,
-                     darkMode: paywall.darkMode,
-                     localeIdentifier: paywall.localeIdentifier)
+extension PaywallEvent.Data {
+    var toPostReceiptData: PaywallPostReceiptData? {
+        return .init(
+            sessionID: sessionIdentifier,
+            revision: paywallRevision,
+            displayMode: displayMode,
+            darkMode: darkMode,
+            localeIdentifier: localeIdentifier,
+            offeringIdentifier: offeringIdentifier
+        )
     }
+}
 
+extension PaywallPostReceiptData {
+    var toPaywallEventData: PaywallEvent.Data? {
+        return .init(
+            offeringIdentifier: offeringIdentifier,
+            paywallRevision: revision,
+            sessionID: sessionID,
+            displayMode: displayMode,
+            localeIdentifier: localeIdentifier,
+            darkMode: darkMode
+        )
+    }
 }
 
 // MARK: - Private
@@ -312,7 +323,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
 
 }
 
-extension PostReceiptDataOperation.Paywall: Codable {
+extension PaywallPostReceiptData: Codable {
 
     private enum CodingKeys: String, CodingKey {
 
@@ -321,6 +332,7 @@ extension PostReceiptDataOperation.Paywall: Codable {
         case displayMode
         case darkMode
         case localeIdentifier = "locale"
+        case offeringIdentifier = "offeringId"
 
     }
 
