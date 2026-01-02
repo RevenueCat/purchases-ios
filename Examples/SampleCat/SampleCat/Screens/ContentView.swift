@@ -17,14 +17,14 @@ struct ContentView: View {
                     Label("Products", systemImage: "shippingbox.fill")
                 }
 
-            CustomerCenterTabView()
-                .tabItem {
-                    Label("Customer Center", systemImage: "person.crop.circle")
-                }
-
             PaywallsTabView()
                 .tabItem {
                     Label("Paywalls", systemImage: "list.bullet.rectangle.portrait")
+                }
+
+            CustomerCenterTabView()
+                .tabItem {
+                    Label("Customer Center", systemImage: "person.crop.circle")
                 }
         }
         .fullScreenCover(item: $healthViewModel.blockingError) { error in
