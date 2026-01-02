@@ -512,7 +512,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
-        
+
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
         ) == Self.paywallEvent

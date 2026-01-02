@@ -103,6 +103,9 @@
 		16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */; };
 		1D20E1D62EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */; };
 		1D20E1D82EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1D72EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift */; };
+		1D4AD2752F08032A00426BB6 /* PurchasesOrchestratorLocalTransactionMetadataCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4AD2742F08032A00426BB6 /* PurchasesOrchestratorLocalTransactionMetadataCacheTests.swift */; };
+		1D4AD2812F0820B800426BB6 /* MockLocalTransactionMetadataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4AD2802F0820B800426BB6 /* MockLocalTransactionMetadataCache.swift */; };
+		1D4AD2822F0820B800426BB6 /* MockLocalTransactionMetadataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4AD2802F0820B800426BB6 /* MockLocalTransactionMetadataCache.swift */; };
 		1D58A16C2ED59AD90086809D /* ConnectionErrorReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D58A16B2ED59AD90086809D /* ConnectionErrorReason.swift */; };
 		1D73D6612EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */; };
 		1D73D6622EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */; };
@@ -1596,6 +1599,8 @@
 		16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeItemCacheTypeTests.swift; sourceTree = "<group>"; };
 		1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
 		1D20E1D72EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
+		1D4AD2742F08032A00426BB6 /* PurchasesOrchestratorLocalTransactionMetadataCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorLocalTransactionMetadataCacheTests.swift; sourceTree = "<group>"; };
+		1D4AD2802F0820B800426BB6 /* MockLocalTransactionMetadataCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLocalTransactionMetadataCache.swift; sourceTree = "<group>"; };
 		1D58A16B2ED59AD90086809D /* ConnectionErrorReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionErrorReason.swift; sourceTree = "<group>"; };
 		1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockHTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
 		1DB9B2A62E57373600252D58 /* OfferingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingTests.swift; sourceTree = "<group>"; };
@@ -3420,6 +3425,7 @@
 				4FCEEA5F2A379CD6002C2112 /* Support */,
 				A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */,
 				2D8FC8AB26E01AE70049A85C /* BasePurchasesOrchestratorTests.swift */,
+				1D4AD2742F08032A00426BB6 /* PurchasesOrchestratorLocalTransactionMetadataCacheTests.swift */,
 				4D7A3E272B85729E00ABDE67 /* PurchasesOrchestratorTests.swift */,
 				4D322E392B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift */,
 				4D322E372B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift */,
@@ -4009,6 +4015,7 @@
 				351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */,
 				B3CAFF0F285CE8E30048A994 /* MockOfferingsAPI.swift */,
 				751192DC2E39147600E583CC /* MockWebBillingAPI.swift */,
+				1D4AD2802F0820B800426BB6 /* MockLocalTransactionMetadataCache.swift */,
 				57488BFF29CB85BE0000EE7E /* MockOfflineEntitlementsAPI.swift */,
 				1EFA95112CDBA58F00CA5951 /* MockRedeemWebPurchaseAPI.swift */,
 				351B515726D44B3E00BD2BD7 /* MockOfferingsFactory.swift */,
@@ -6686,6 +6693,7 @@
 				3543913826F90FE100E669DF /* MockIntroEligibilityCalculator.swift in Sources */,
 				FD2046842CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift in Sources */,
 				3543914126F911CC00E669DF /* MockDeviceCache.swift in Sources */,
+				1D4AD2822F0820B800426BB6 /* MockLocalTransactionMetadataCache.swift in Sources */,
 				3543913C26F9101600E669DF /* MockOperationDispatcher.swift in Sources */,
 				4FA4C9752A16D49E007D2803 /* MockOfflineEntitlementsManager.swift in Sources */,
 				F5E5E2EE28479BD000216ECD /* ProductsFetcherSK2Tests.swift in Sources */,
@@ -6723,6 +6731,7 @@
 				2D90F8C126FD20F2009B9142 /* MockHTTPClient.swift in Sources */,
 				4F9BB6402A7AFB72001C120D /* MockPayment.swift in Sources */,
 				57DDA7B429CBEFB30098B89D /* MockPurchasedProductsFetcher.swift in Sources */,
+				1D4AD2752F08032A00426BB6 /* PurchasesOrchestratorLocalTransactionMetadataCacheTests.swift in Sources */,
 				1E568B512ACC6A8300D3C12F /* StoreMessageTypeTests.swift in Sources */,
 				57E6195028D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift in Sources */,
 				F5847431278D00C1001B1CE6 /* MockDNSChecker.swift in Sources */,
@@ -7266,6 +7275,7 @@
 				578FB10E27ADDA8000F70709 /* AvailabilityChecks.swift in Sources */,
 				4FFFE6CA2AA946A700B2955C /* MockInternalAPI.swift in Sources */,
 				57E415EF284697A300EA5460 /* PurchasesDeferredPurchasesTests.swift in Sources */,
+				1D4AD2812F0820B800426BB6 /* MockLocalTransactionMetadataCache.swift in Sources */,
 				FDAC7B582CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift in Sources */,
 				35F82BB226A98EC50051DF03 /* AttributionDataMigratorTests.swift in Sources */,
 				5759B41E296DFD4C002472D5 /* MockFileReader.swift in Sources */,

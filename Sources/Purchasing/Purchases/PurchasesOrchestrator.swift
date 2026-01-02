@@ -66,7 +66,7 @@ final class PurchasesOrchestrator {
     private let currentUserProvider: CurrentUserProvider
     private let transactionsManager: TransactionsManager
     private let deviceCache: DeviceCache
-    private let localTransactionMetadataCache: LocalTransactionMetadataCache
+    private let localTransactionMetadataCache: LocalTransactionMetadataCacheType
     private let offeringsManager: OfferingsManager
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
@@ -136,10 +136,11 @@ final class PurchasesOrchestrator {
                      transactionFetcher: StoreKit2TransactionFetcherType,
                      customerInfoManager: CustomerInfoManager,
                      backend: Backend,
-                     transactionPoster: TransactionPoster,
+                     transactionPoster: TransactionPosterType,
                      currentUserProvider: CurrentUserProvider,
                      transactionsManager: TransactionsManager,
                      deviceCache: DeviceCache,
+                     localTransactionMetadataCache: LocalTransactionMetadataCacheType = LocalTransactionMetadataCache(),
                      offeringsManager: OfferingsManager,
                      manageSubscriptionsHelper: ManageSubscriptionsHelper,
                      beginRefundRequestHelper: BeginRefundRequestHelper,
@@ -171,6 +172,7 @@ final class PurchasesOrchestrator {
             currentUserProvider: currentUserProvider,
             transactionsManager: transactionsManager,
             deviceCache: deviceCache,
+            localTransactionMetadataCache: localTransactionMetadataCache,
             offeringsManager: offeringsManager,
             manageSubscriptionsHelper: manageSubscriptionsHelper,
             beginRefundRequestHelper: beginRefundRequestHelper,
@@ -226,11 +228,11 @@ final class PurchasesOrchestrator {
          transactionFetcher: StoreKit2TransactionFetcherType,
          customerInfoManager: CustomerInfoManager,
          backend: Backend,
-         transactionPoster: TransactionPoster,
+         transactionPoster: TransactionPosterType,
          currentUserProvider: CurrentUserProvider,
          transactionsManager: TransactionsManager,
          deviceCache: DeviceCache,
-         localTransactionDetailsStorage: LocalTransactionMetadataCache = .init(),
+         localTransactionMetadataCache: LocalTransactionMetadataCacheType = LocalTransactionMetadataCache(),
          offeringsManager: OfferingsManager,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper,
@@ -257,7 +259,7 @@ final class PurchasesOrchestrator {
         self.currentUserProvider = currentUserProvider
         self.transactionsManager = transactionsManager
         self.deviceCache = deviceCache
-        self.localTransactionMetadataCache = localTransactionDetailsStorage
+        self.localTransactionMetadataCache = localTransactionMetadataCache
         self.offeringsManager = offeringsManager
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
@@ -1413,36 +1415,27 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
-        let storeTransaction = StoreTransaction.from(transaction: transaction)
-
-        // Retrieve local transaction details from cache
-        let cachedDetails = self.localTransactionMetadataCache.retrieve(for: storeTransaction)
-
-        // If metadata not found, set initiation source to .queue
-        let initiationSource: ProductRequestData.InitiationSource = cachedDetails != nil
-            ? .purchase  // If metadata exists, it came from a purchase
-            : .queue     // If no metadata, it came from the queue
 
         let storefront = await self.storefront(from: transaction)
         let subscriberAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
             appUserID: self.appUserID,
-            presentedOfferingContext: cachedDetails?.presentedOfferingContext,
-            presentedPaywall: cachedDetails?.paywallPostReceiptData?.toPaywallEventData,
+            presentedOfferingContext: nil,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
             storefront: storefront,
             source: .init(
                 isRestore: self.allowSharingAppStoreAccount,
-                initiationSource: initiationSource
+                initiationSource: .queue
             )
         )
 
+        let transaction = StoreTransaction.from(transaction: transaction)
         let result: Result<CustomerInfo, BackendError> = await Async.call { completed in
-            self.transactionPoster.handlePurchasedTransaction(storeTransaction, data: transactionData ) { result in
+            self.transactionPoster.handlePurchasedTransaction(transaction, data: transactionData ) { result in
                 if case let .success(customerInfo) = result {
-                    let purchaseData = PurchaseResultData(storeTransaction, customerInfo, false)
+                    let purchaseData = PurchaseResultData(transaction, customerInfo, false)
                     self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
                 }
                 completed(result)
@@ -1453,7 +1446,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
                                      transactionData: transactionData,
                                      subscriberAttributes: subscriberAttributes,
                                      adServicesToken: adServicesToken,
-                                     transaction: storeTransaction)
+                                     transaction: transaction)
 
         if let error = result.error {
             throw error
@@ -1865,11 +1858,6 @@ private extension PurchasesOrchestrator {
         case let .success(customerInfo):
             self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
 
-            // Clear local transaction details after successful post
-            if let transaction = transaction {
-                self.localTransactionMetadataCache.remove(for: transaction)
-            }
-
         case .failure:
             // Cache paywall again in case purchase is retried.
             if let paywall = transactionData?.presentedPaywall {
@@ -1885,33 +1873,20 @@ private extension PurchasesOrchestrator {
     func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
                                     storefront: StorefrontType?,
                                     restored: Bool) {
-        // Retrieve local transaction details from cache
-        Task {
-            let cachedDetails = self.localTransactionMetadataCache.retrieve(for: purchasedTransaction)
-
-            let offeringContext = cachedDetails?.presentedOfferingContext
-                ?? self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
-            let paywall = cachedDetails?.paywallPostReceiptData
-            ?? self.getAndRemovePresentedPaywall()?.toPostReceiptData
-            let unsyncedAttributes = self.unsyncedAttributes
-
-            self.attribution.unsyncedAdServicesToken { adServicesToken in
-                // Use cached observer mode value if available, otherwise use current
-                let observerMode = cachedDetails?.observerMode == true // TODO: unused
-                let initiationSource: ProductRequestData.InitiationSource = cachedDetails != nil
-                    ? .purchase
-                    : self.purchaseSource(for: purchasedTransaction.productIdentifier,
-                                          restored: restored).initiationSource
-
-                let transactionData: PurchasedTransactionData = .init(
-                    appUserID: self.appUserID,
-                    presentedOfferingContext: offeringContext,
-                    presentedPaywall: paywall?.toPaywallEventData,
-                    unsyncedAttributes: unsyncedAttributes,
-                    aadAttributionToken: adServicesToken,
-                    storefront: storefront,
-                    source: .init(isRestore: restored, initiationSource: initiationSource)
-                )
+        let offeringContext = self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
+        let paywall = self.getAndRemovePresentedPaywall()
+        let unsyncedAttributes = self.unsyncedAttributes
+        self.attribution.unsyncedAdServicesToken { adServicesToken in
+            let transactionData: PurchasedTransactionData = .init(
+                appUserID: self.appUserID,
+                presentedOfferingContext: offeringContext,
+                presentedPaywall: paywall,
+                unsyncedAttributes: unsyncedAttributes,
+                aadAttributionToken: adServicesToken,
+                storefront: storefront,
+                source: self.purchaseSource(for: purchasedTransaction.productIdentifier,
+                                            restored: restored)
+            )
 
             self.transactionPoster.handlePurchasedTransaction(
                 purchasedTransaction,
@@ -1933,7 +1908,6 @@ private extension PurchasesOrchestrator {
                         )
                     }
                 }
-            }
             }
         }
     }
@@ -2183,22 +2157,10 @@ extension PurchasesOrchestrator {
         _ initiationSource: ProductRequestData.InitiationSource,
         _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
-        // Retrieve local transaction details from cache
-        let transactionDetails = self.localTransactionMetadataCache.retrieve(for: transaction)
-
-        let offeringContext = transactionDetails?.presentedOfferingContext
-        let paywall = transactionDetails?.paywallPostReceiptData?.toPaywallEventData
-            ?? self.getAndRemovePresentedPaywall()
+        let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
+        let paywall = self.getAndRemovePresentedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
-
-        // Use cached initiation source if metadata found, otherwise use provided initiation source
-        // If no metadata found and initiation source is .queue, keep it as .queue
-        let finalInitiationSource: ProductRequestData.InitiationSource = transactionDetails != nil
-            ? initiationSource
-            : (initiationSource == .queue ? .queue : initiationSource)
-        // TODO: unused
-
         let transactionData: PurchasedTransactionData = .init(
             appUserID: self.appUserID,
             presentedOfferingContext: offeringContext,

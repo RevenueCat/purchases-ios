@@ -59,8 +59,33 @@ internal struct LocalTransactionMetadata: Equatable, Codable, Sendable {
     }
 }
 
+/// Protocol for storing and retrieving local transaction metadata.
+protocol LocalTransactionMetadataCacheType: Sendable {
+
+    /// Store transaction metadata for a given transaction ID.
+    func store(metadata: LocalTransactionMetadata, forTransactionID transactionID: String)
+
+    /// Store transaction metadata for a given product ID (used for SK1 pending transactions).
+    func store(metadata: LocalTransactionMetadata, forProductID productID: String)
+
+    /// Retrieve transaction metadata for a given transaction ID.
+    func retrieve(forTransactionID transactionID: String) -> LocalTransactionMetadata?
+
+    /// Retrieve transaction metadata for a given product ID (used for SK1 pending transactions).
+    func retrieve(forProductID productID: String) -> LocalTransactionMetadata?
+
+    /// Remove transaction metadata for a given transaction ID.
+    func remove(forTransactionID transactionID: String)
+
+    /// Remove transaction metadata for a given product ID.
+    func remove(forProductID productID: String)
+
+    /// Migrate metadata from product ID to transaction ID (for SK1 pending → purchased transition).
+    func migrateMetadata(fromProductID productID: String, toTransactionID transactionID: String)
+}
+
 /// Cache for storing local transaction metadata persistently on disk.
-final class LocalTransactionMetadataCache: Sendable {
+final class LocalTransactionMetadataCache: LocalTransactionMetadataCacheType {
 
     private let cache: SynchronizedLargeItemCache
 
@@ -121,6 +146,7 @@ final class LocalTransactionMetadataCache: Sendable {
 
     /// Migrate metadata from product ID to transaction ID (for SK1 pending → purchased transition).
     // TODO: What about SK2 pending transactions?
+    // TODO: What to do if metadata already stored for transaction ID? Overwrite? 
     func migrateMetadata(fromProductID productID: String, toTransactionID transactionID: String) {
         self.cache.moveObject(
             fromKey: Key.product(id: productID),
@@ -130,7 +156,7 @@ final class LocalTransactionMetadataCache: Sendable {
 }
 
 /// Helpers for easy access based on a StoreTransactionType
-extension LocalTransactionMetadataCache {
+extension LocalTransactionMetadataCacheType {
 
     /// Retrieve transaction metadata for the given transaction, based on transactionIdentifier or productIdentifier
     func retrieve(for transaction: StoreTransactionType) -> LocalTransactionMetadata? {
