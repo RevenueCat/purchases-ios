@@ -270,6 +270,25 @@ final class LargeItemCacheTypeTests: TestCase {
 
     }
 
+    func testCreateCacheDirectoryIfNeededDoesNotFailWhenDirectoryExists() throws {
+        let basePath = "TestCache/\(UUID().uuidString)"
+
+        let firstURL = self.fileManager.createCacheDirectoryIfNeeded(basePath: basePath)
+        let secondURL = self.fileManager.createCacheDirectoryIfNeeded(basePath: basePath)
+
+        expect(firstURL).toNot(beNil())
+        expect(secondURL).toNot(beNil())
+        expect(secondURL?.standardizedFileURL.path) == firstURL?.standardizedFileURL.path
+
+        if let url = firstURL {
+            var isDirectory: ObjCBool = false
+            let exists = self.fileManager.fileExists(atPath: url.path, isDirectory: &isDirectory)
+            expect(exists) == true
+            expect(isDirectory.boolValue) == true
+            try self.fileManager.removeItem(at: url)
+        }
+    }
+
     // MARK: - Integration Tests
 
     func testSaveAndLoadRoundTrip() async throws {
