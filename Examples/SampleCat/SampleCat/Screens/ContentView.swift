@@ -16,6 +16,16 @@ struct ContentView: View {
                 .tabItem {
                     Label("Products", systemImage: "shippingbox.fill")
                 }
+
+            CustomerCenterTabView()
+                .tabItem {
+                    Label("Customer Center", systemImage: "person.crop.circle")
+                }
+
+            PaywallsTabView()
+                .tabItem {
+                    Label("Paywalls", systemImage: "rectangle.portrait")
+                }
         }
         .fullScreenCover(item: $healthViewModel.blockingError) { error in
             FullScreenErrorView(error: error)
