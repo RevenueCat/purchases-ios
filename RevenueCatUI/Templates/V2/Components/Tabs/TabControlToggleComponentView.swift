@@ -58,9 +58,10 @@ struct TabControlToggleComponentView: View {
             )
             .labelsHidden()
             .onAppear {
-                let tabIds = tabControlContext.tabIds
-                let selectedId = tabControlContext.selectedTabId
-                self.isOn = tabIds.indices.contains(1) && selectedId == tabIds[1]
+                self.isOn = computeIsOn(
+                    selectedTabId: tabControlContext.selectedTabId,
+                    tabIds: tabControlContext.tabIds
+                )
             }
             .onChangeOf(self.isOn) { newValue in
                 let tabIds = tabControlContext.tabIds
@@ -69,14 +70,21 @@ struct TabControlToggleComponentView: View {
                 tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
             }
             .onChangeOf(tabControlContext.selectedTabId) { newSelectedTabId in
-                let tabIds = tabControlContext.tabIds
-                guard tabIds.indices.contains(1) else { return }
-
-                let newIsOn = newSelectedTabId == tabIds[1]
+                let newIsOn = computeIsOn(
+                    selectedTabId: newSelectedTabId,
+                    tabIds: tabControlContext.tabIds
+                )
                 if self.isOn != newIsOn {
                     self.isOn = newIsOn
                 }
             }
+    }
+
+    /// Computes the toggle's ON state based on the selected tab.
+    /// The toggle is ON when the second tab (index 1) is selected.
+    private func computeIsOn(selectedTabId: String, tabIds: [String]) -> Bool {
+        guard tabIds.count >= 2 else { return false }
+        return selectedTabId == tabIds[1]
     }
 
 }
