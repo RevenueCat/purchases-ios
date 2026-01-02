@@ -2308,7 +2308,7 @@ private extension PurchasesOrchestrator {
         let metadata = LocalTransactionMetadata(
             appUserID: self.appUserID,
             productIdentifier: productIdentifier,
-            presentedOfferingContext: package?.presentedOfferingContext,
+            presentedOfferingContext: package?.presentedOfferingContext, // TODO: check if presentedOfferingContextsByProductID should be used, if not, can it be removed?
             paywallPostReceiptData: self.presentedPaywall.value?.toPostReceiptData,
             observerMode: !self.finishTransactions
         )
