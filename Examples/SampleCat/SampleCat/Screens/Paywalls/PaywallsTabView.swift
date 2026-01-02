@@ -10,7 +10,7 @@ struct PaywallsTabView: View {
 
     var body: some View {
         ScrollView {
-            ConceptIntroductionView(imageName: "visual-revenuecat-ui",
+            ConceptIntroductionView(imageName: "visual-paywalls",
                                     title: "Paywalls",
                                     description: "Display beautiful, customizable paywalls to showcase your offerings and drive conversions.")
 

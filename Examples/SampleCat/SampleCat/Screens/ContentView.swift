@@ -24,7 +24,7 @@ struct ContentView: View {
 
             PaywallsTabView()
                 .tabItem {
-                    Label("Paywalls", systemImage: "rectangle.portrait")
+                    Label("Paywalls", systemImage: "list.bullet.rectangle.portrait")
                 }
         }
         .fullScreenCover(item: $healthViewModel.blockingError) { error in

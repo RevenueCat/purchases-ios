@@ -9,7 +9,7 @@ struct CustomerCenterTabView: View {
 
     var body: some View {
         ScrollView {
-            ConceptIntroductionView(imageName: "visual-revenuecat-ui",
+            ConceptIntroductionView(imageName: "visual-customer-center",
                                     title: "Customer Center",
                                     description: "Help your customers manage their subscriptions with a self-service Customer Center.")
 

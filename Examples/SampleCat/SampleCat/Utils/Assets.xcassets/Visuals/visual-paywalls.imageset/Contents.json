@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "visual-revenuecat-ui.heic",
+      "filename" : "visual-paywalls.heic",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "visual-revenuecat-ui@2x.heic",
+      "filename" : "visual-paywalls@2x.heic",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "visual-revenuecat-ui@3x.heic",
+      "filename" : "visual-paywalls@3x.heic",
       "idiom" : "universal",
       "scale" : "3x"
     }
