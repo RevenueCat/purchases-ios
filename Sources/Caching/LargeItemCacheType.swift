@@ -51,6 +51,8 @@ extension FileManager: LargeItemCacheType {
 
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws {
+        let directoryURL = url.deletingLastPathComponent()
+        try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         try data.write(to: url)
     }
 
@@ -111,6 +113,8 @@ extension FileManager: LargeItemCacheType {
 
         // If all succeeds, move the temporary file to the more permanant storage location
         // effectively a "save" operation
+        let directoryURL = url.deletingLastPathComponent()
+        try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         try moveItem(at: tempFileURL, to: url)
     }
 
