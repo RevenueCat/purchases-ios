@@ -1429,7 +1429,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let transactionData: PurchasedTransactionData = .init(
             appUserID: self.appUserID,
             presentedOfferingContext: cachedDetails?.presentedOfferingContext,
-            presentedPaywall: cachedDetails?.paywallPostReceiptData,
+            presentedPaywall: cachedDetails?.paywallPostReceiptData?.toPaywallEventData,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
             storefront: storefront,
@@ -1892,7 +1892,7 @@ private extension PurchasesOrchestrator {
             let offeringContext = cachedDetails?.presentedOfferingContext
                 ?? self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
             let paywall = cachedDetails?.paywallPostReceiptData
-                ?? self.getAndRemovePresentedPaywall()
+            ?? self.getAndRemovePresentedPaywall()?.toPostReceiptData
             let unsyncedAttributes = self.unsyncedAttributes
 
             self.attribution.unsyncedAdServicesToken { adServicesToken in
@@ -1906,7 +1906,7 @@ private extension PurchasesOrchestrator {
                 let transactionData: PurchasedTransactionData = .init(
                     appUserID: self.appUserID,
                     presentedOfferingContext: offeringContext,
-                    presentedPaywall: paywall,
+                    presentedPaywall: paywall?.toPaywallEventData,
                     unsyncedAttributes: unsyncedAttributes,
                     aadAttributionToken: adServicesToken,
                     storefront: storefront,
@@ -2187,7 +2187,7 @@ extension PurchasesOrchestrator {
         let transactionDetails = self.localTransactionMetadataCache.retrieve(for: transaction)
 
         let offeringContext = transactionDetails?.presentedOfferingContext
-        let paywall = transactionDetails?.paywallPostReceiptData
+        let paywall = transactionDetails?.paywallPostReceiptData?.toPaywallEventData
             ?? self.getAndRemovePresentedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
@@ -2344,10 +2344,11 @@ private extension PurchasesOrchestrator {
 
     func storeLocalTransactionMetadataIfNeeded(package: Package?, productIdentifier: String) {
         let metadata = LocalTransactionMetadata(
+            appUserID: self.appUserID,
+            productIdentifier: productIdentifier,
             presentedOfferingContext: package?.presentedOfferingContext,
-            paywallPostReceiptData: self.presentedPaywall.value,
-            observerMode: !self.finishTransactions,
-            productIdentifier: productIdentifier
+            paywallPostReceiptData: self.presentedPaywall.value?.toPostReceiptData,
+            observerMode: !self.finishTransactions
         )
         self.localTransactionMetadataCache.store(metadata: metadata, forProductID: productIdentifier)
     }

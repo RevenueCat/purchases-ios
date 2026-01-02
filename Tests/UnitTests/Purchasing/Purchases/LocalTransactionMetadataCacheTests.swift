@@ -31,10 +31,11 @@ class LocalTransactionMetadataCacheTests: TestCase {
     func testStoreAndRetrieveMinimalTransactionMetadataForProductID() {
         let productID = UUID().uuidString
         let transactionMetadata = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata, forProductID: productID)
 
@@ -45,10 +46,11 @@ class LocalTransactionMetadataCacheTests: TestCase {
     func testStoreAndRetrieveMinimalTransactionMetadataForTransactionID() {
         let transactionID = UUID().uuidString
         let transactionMetadata = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: "awesome_product.1",
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: "awesome_product.1"
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata, forTransactionID: transactionID)
 
@@ -59,19 +61,21 @@ class LocalTransactionMetadataCacheTests: TestCase {
     func testStoringMetadataForSameProductIDDoesNotOverrideExistingStoredMetadata() {
         let productID1 = UUID().uuidString
         let transactionMetadata1 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID1,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID1
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata1, forProductID: productID1)
 
         let productID2 = UUID().uuidString
         let transactionMetadata2 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID2,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID2
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata2, forProductID: productID2)
 
@@ -82,19 +86,21 @@ class LocalTransactionMetadataCacheTests: TestCase {
     func testStoringMetadataForSameTransactionIDDoesNotOverrideExistingStoredMetadata() {
         let transactionID1 = UUID().uuidString
         let transactionMetadata1 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: "awesome_product.1",
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: "awesome_product.1"
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata1, forTransactionID: transactionID1)
 
         let transactionID2 = UUID().uuidString
         let transactionMetadata2 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: "awesome_product.2",
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: "awesome_product.2"
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata2, forTransactionID: transactionID2)
 
@@ -105,19 +111,21 @@ class LocalTransactionMetadataCacheTests: TestCase {
     func testStoreMultipleTransactionsForProductID() {
         let productID1 = UUID().uuidString
         let transactionMetadata1 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID1,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID1
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata1, forProductID: productID1)
 
         let productID2 = UUID().uuidString
         let transactionMetadata2 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID2,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID2
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata2, forProductID: productID2)
 
@@ -131,19 +139,21 @@ class LocalTransactionMetadataCacheTests: TestCase {
     func testStoreMultipleTransactionsForTransactionID() {
         let transactionID1 = UUID().uuidString
         let transactionMetadata1 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: "awesome_product.1",
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: "awesome_product.1"
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata1, forTransactionID: transactionID1)
 
         let transactionID2 = UUID().uuidString
         let transactionMetadata2 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: "awesome_product.2",
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: "awesome_product.2"
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata2, forTransactionID: transactionID2)
 
@@ -169,10 +179,11 @@ class LocalTransactionMetadataCacheTests: TestCase {
     func testRetrieveSameTransactionMetadataForProductIDSubsequently() {
         let productID = UUID().uuidString
         let transactionMetadata1 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata1, forProductID: productID)
 
@@ -184,10 +195,11 @@ class LocalTransactionMetadataCacheTests: TestCase {
     func testRetrieveSameTransactionMetadataForTransactionIDSubsequently() {
         let transactionID = UUID().uuidString
         let transactionMetadata1 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: "awesome_product.1",
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: "awesome_product.1"
+            observerMode: false
         )
         localTransactionMetadataCache.store(metadata: transactionMetadata1, forTransactionID: transactionID)
 
@@ -201,19 +213,21 @@ class LocalTransactionMetadataCacheTests: TestCase {
     func testRemoveLocalTransactionMetadataForProductID() {
         let productID1 = UUID().uuidString
         let transactionMetadata1 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID1,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID1
+            observerMode: false
         )
         self.localTransactionMetadataCache.store(metadata: transactionMetadata1, forProductID: productID1)
 
         let productID2 = UUID().uuidString
         let transactionMetadata2 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID2,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID2
+            observerMode: false
         )
         self.localTransactionMetadataCache.store(metadata: transactionMetadata2, forProductID: productID2)
 
@@ -229,19 +243,21 @@ class LocalTransactionMetadataCacheTests: TestCase {
     func testRemoveLocalTransactionMetadataForTransactionID() {
         let transactionID1 = UUID().uuidString
         let transactionMetadata1 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: "awesome_product.1",
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: "awesome_product.1"
+            observerMode: false
         )
         self.localTransactionMetadataCache.store(metadata: transactionMetadata1, forTransactionID: transactionID1)
 
         let transactionID2 = UUID().uuidString
         let transactionMetadata2 = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: "awesome_product.2",
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: "awesome_product.2"
+            observerMode: false
         )
         self.localTransactionMetadataCache.store(metadata: transactionMetadata2, forTransactionID: transactionID2)
 
@@ -259,10 +275,11 @@ class LocalTransactionMetadataCacheTests: TestCase {
         let productID = UUID().uuidString
         let transactionID = UUID().uuidString
         let transactionMetadata = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID
+            observerMode: false
         )
 
         self.localTransactionMetadataCache.store(metadata: transactionMetadata, forProductID: productID)
@@ -278,10 +295,11 @@ class LocalTransactionMetadataCacheTests: TestCase {
         let productID = UUID().uuidString
         let transactionID = UUID().uuidString
         let transactionMetadata = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID
+            observerMode: false
         )
 
         self.localTransactionMetadataCache.store(metadata: transactionMetadata, forProductID: productID)
@@ -317,10 +335,11 @@ class LocalTransactionMetadataCacheTests: TestCase {
         )
 
         let transactionMetadata = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID
+            observerMode: false
         )
 
         self.localTransactionMetadataCache.store(metadata: transactionMetadata, forProductID: productID)
@@ -336,10 +355,11 @@ class LocalTransactionMetadataCacheTests: TestCase {
         )
 
         let transactionMetadata = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID
+            observerMode: false
         )
 
         self.localTransactionMetadataCache.store(metadata: transactionMetadata, forTransactionID: transactionID)
@@ -355,17 +375,19 @@ class LocalTransactionMetadataCacheTests: TestCase {
         )
 
         let transactionMetadataForProductID = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: "byProductID",
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: "byProductID"
+            observerMode: false
         )
 
         let transactionMetadataForTransactionID = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: "byTransactionID",
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: "byTransactionID"
+            observerMode: false
         )
 
         self.localTransactionMetadataCache.store(metadata: transactionMetadataForProductID, forProductID: productID)
@@ -386,10 +408,11 @@ class LocalTransactionMetadataCacheTests: TestCase {
         )
 
         let transactionMetadata = LocalTransactionMetadata(
+            appUserID: UUID().uuidString,
+            productIdentifier: productID,
             presentedOfferingContext: nil,
             paywallPostReceiptData: nil,
-            observerMode: false,
-            productIdentifier: productID
+            observerMode: false
         )
 
         self.localTransactionMetadataCache.store(metadata: transactionMetadata, forProductID: productID)
