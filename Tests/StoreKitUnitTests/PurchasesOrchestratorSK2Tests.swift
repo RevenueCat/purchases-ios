@@ -477,10 +477,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                  promotionalOfferOptions: nil)
 
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
-        ) == Self.paywallEventCreationData
-        expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
         ) == Self.paywallEvent
     }
 
@@ -517,10 +514,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         )
 
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
-        ) == Self.paywallEventCreationData
-        expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
         ) == Self.paywallEvent
     }
 

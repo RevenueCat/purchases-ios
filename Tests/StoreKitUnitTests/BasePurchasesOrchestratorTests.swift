@@ -30,6 +30,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var operationDispatcher: MockOperationDispatcher!
     var receiptFetcher: MockReceiptFetcher!
     var receiptParser: MockReceiptParser!
+    var transactionPoster: TransactionPosterType!
     var customerInfoManager: MockCustomerInfoManager!
     var paymentQueueWrapper: EitherPaymentQueueWrapper!
     var mockSimulatedStorePurchaseHandler: MockSimulatedStorePurchaseHandler!
@@ -39,6 +40,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var transactionsManager: MockTransactionsManager!
     var notificationCenter: MockNotificationCenter!
     var deviceCache: MockDeviceCache!
+    var localTransactionMetadataCache: MockLocalTransactionMetadataCache!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockOfferingsManager: MockOfferingsManager!
@@ -81,6 +83,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
         self.receiptParser = MockReceiptParser()
         self.deviceCache = MockDeviceCache(systemInfo: self.systemInfo)
+        self.localTransactionMetadataCache = MockLocalTransactionMetadataCache()
         self.backend = MockBackend()
         self.offerings = try XCTUnwrap(self.backend.offerings as? MockOfferingsAPI)
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -100,6 +103,16 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                          diagnosticsTracker: self.mockDiagnosticsTracker)
         self.setUpStoreKit1Wrapper()
         self.mockSimulatedStorePurchaseHandler = MockSimulatedStorePurchaseHandler()
+
+        self.transactionPoster = TransactionPoster(
+            productsManager: self.productsManager,
+            receiptFetcher: self.receiptFetcher,
+            transactionFetcher: self.mockTransactionFetcher,
+            backend: self.backend,
+            paymentQueueWrapper: self.paymentQueueWrapper,
+            systemInfo: self.systemInfo,
+            operationDispatcher: self.operationDispatcher
+        )
 
         self.customerInfoManager = MockCustomerInfoManager(
             offlineEntitlementsManager: MockOfflineEntitlementsManager(),
@@ -130,8 +143,6 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
         self.notificationCenter = MockNotificationCenter()
-        let identityManager = MockIdentityManager(mockAppUserID: "test-user-id",
-                                                  mockDeviceCache: self.deviceCache)
         self.webPurchaseRedemptionHelper = MockWebPurchaseRedemptionHelper()
         self.setUpStoreKit1Wrapper()
         self.setUpAttribution()
@@ -201,6 +212,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             currentUserProvider: self.currentUserProvider,
             transactionsManager: self.transactionsManager,
             deviceCache: self.deviceCache,
+            localTransactionMetadataCache: self.localTransactionMetadataCache,
             offeringsManager: self.mockOfferingsManager,
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
@@ -251,18 +263,6 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             dateProvider: self.mockDateProvider
         )
         self.storeKit1Wrapper.delegate = self.orchestrator
-    }
-
-    var transactionPoster: TransactionPoster {
-        return .init(
-            productsManager: self.productsManager,
-            receiptFetcher: self.receiptFetcher,
-            transactionFetcher: self.mockTransactionFetcher,
-            backend: self.backend,
-            paymentQueueWrapper: self.paymentQueueWrapper,
-            systemInfo: self.systemInfo,
-            operationDispatcher: self.operationDispatcher
-        )
     }
 }
 
