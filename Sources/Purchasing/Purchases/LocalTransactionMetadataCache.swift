@@ -14,35 +14,43 @@
 
 import Foundation
 
-/// Metadata stored locally for a transaction to preserve context across sessions.
+/*
+ Metadata stored locally for a transaction to preserve context across sessions.
+ This data will be cached before posting receipts and cleared upon a successful post attempt.
+ */
 internal struct LocalTransactionMetadata: Equatable, Codable, Sendable {
 
-    // The version of the schema used for encoding/decoding
+    /// The version of the schema used for encoding/decoding
     let schemaVersion: Int
+    
+    /// The userID of the user who created the transaction
+    let userID: String
 
+    /// The product identifier (used for SK1 pending transaction fallback).
+    let productIdentifier: String
+    
     /// The offering context when the transaction was initiated.
     let presentedOfferingContext: PresentedOfferingContext?
 
     /// The paywall event data when the transaction was initiated.
-    let paywallPostReceiptData: PaywallEvent?
+    let paywallPostReceiptData: PaywallEvent.Data?
 
     /// Whether purchases are completed by RevenueCat or the app (observer mode equivalent).
     let observerMode: Bool
 
-    /// The product identifier (used for SK1 pending transaction fallback).
-    let productIdentifier: String
-
     init(
+        userID: String,
+        productIdentifier: String,
         presentedOfferingContext: PresentedOfferingContext?,
-        paywallPostReceiptData: PaywallEvent?,
-        observerMode: Bool,
-        productIdentifier: String
+        paywallPostReceiptData: PaywallEvent.Data?,
+        observerMode: Bool
     ) {
         self.schemaVersion = 1
+        self.userID = userID
+        self.productIdentifier = productIdentifier
         self.presentedOfferingContext = presentedOfferingContext
         self.paywallPostReceiptData = paywallPostReceiptData
         self.observerMode = observerMode
-        self.productIdentifier = productIdentifier
     }
 }
 
