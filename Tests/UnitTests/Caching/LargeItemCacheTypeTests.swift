@@ -17,7 +17,7 @@ import XCTest
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
-class LargeItemCacheTypeTests: TestCase {
+final class LargeItemCacheTypeTests: TestCase {
 
     private var fileManager = FileManager.default
     private lazy var testDirectory = fileManager
@@ -26,7 +26,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     // MARK: - saveData Tests
 
-    func test_saveData_writesDataToFile() async throws {
+    func testSaveDataWritesDataToFile() async throws {
         let testData = "Hello, World!"
         let url = self.testDirectory.appendingPathComponent("test.txt")
         let stream = createAsyncStream(from: testData)
@@ -40,7 +40,47 @@ class LargeItemCacheTypeTests: TestCase {
         try fileManager.removeItem(at: url)
     }
 
-    func test_saveData_withValidChecksum_succeeds() async throws {
+    func testSaveDataCreatesParentDirectoryIfNeeded() throws {
+        let nonExistentSubdir = UUID().uuidString
+        let url = self.testDirectory
+            .appendingPathComponent(nonExistentSubdir)
+            .appendingPathComponent("nested_file.txt")
+        let testData = Data("test content".utf8)
+
+        // Ensure the directory doesn't exist
+        expect(self.fileManager.fileExists(atPath: url.deletingLastPathComponent().path)) == false
+
+        try self.fileManager.saveData(testData, to: url)
+
+        let savedData = try Data(contentsOf: url)
+        expect(savedData) == testData
+
+        // Cleanup
+        try fileManager.removeItem(at: self.testDirectory.appendingPathComponent(nonExistentSubdir))
+    }
+
+    func testSaveDataAsyncCreatesParentDirectoryIfNeeded() async throws {
+        let nonExistentSubdir = UUID().uuidString
+        let url = self.testDirectory
+            .appendingPathComponent(nonExistentSubdir)
+            .appendingPathComponent("nested_async_file.txt")
+        let testData = "async test content"
+        let stream = createAsyncStream(from: testData)
+
+        // Ensure the directory doesn't exist
+        expect(self.fileManager.fileExists(atPath: url.deletingLastPathComponent().path)) == false
+
+        try await self.fileManager.saveData(stream, to: url, checksum: nil)
+
+        let savedData = try Data(contentsOf: url)
+        let savedString = String(data: savedData, encoding: .utf8)
+        expect(savedString) == testData
+
+        // Cleanup
+        try fileManager.removeItem(at: self.testDirectory.appendingPathComponent(nonExistentSubdir))
+    }
+
+    func testSaveDataWithValidChecksumSucceeds() async throws {
         let testData = "Test data for checksum"
         let data = Data(testData.utf8)
         let checksum = Checksum.generate(from: data, with: .sha256)
@@ -54,7 +94,7 @@ class LargeItemCacheTypeTests: TestCase {
         try fileManager.removeItem(at: url)
     }
 
-    func test_saveData_withInvalidChecksum_throws() async throws {
+    func testSaveDataWithInvalidChecksumThrows() async throws {
         let testData = "Test data"
         let wrongChecksum = Checksum.generate(from: Data("Different data".utf8), with: .sha256)
         let url = self.testDirectory.appendingPathComponent("invalid_checksum.txt")
@@ -71,7 +111,7 @@ class LargeItemCacheTypeTests: TestCase {
         expect(self.fileManager.fileExists(atPath: url.path)) == false
     }
 
-    func test_saveData_withLargeData_succeeds() async throws {
+    func testSaveDataWithLargeDataSucceeds() async throws {
         // Create data larger than the buffer size (256KB)
         let largeData = String(repeating: "A", count: 500_000)
         let url = self.testDirectory.appendingPathComponent("large_file.txt")
@@ -88,7 +128,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     }
 
-    func test_saveData_withMultipleChunks_writesCorrectly() async throws {
+    func testSaveDataWithMultipleChunksWritesCorrectly() async throws {
         let testData = String(repeating: "X", count: 1_000_000) // 1MB
         let url = self.testDirectory.appendingPathComponent("chunked_file.txt")
         let stream = createAsyncStream(from: testData)
@@ -101,7 +141,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     }
 
-    func test_saveData_withChecksumAlgorithms_succeeds() async throws {
+    func testSaveDataWithChecksumAlgorithmsSucceeds() async throws {
         let testData = "Algorithm test"
         let data = Data(testData.utf8)
         let algorithms: [Checksum.Algorithm] = [.sha256, .sha384, .sha512, .md5]
@@ -122,7 +162,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     // MARK: - cachedContentExists Tests
 
-    func test_cachedContentExists_returnsTrueForExistingFile() throws {
+    func testCachedContentExistsReturnsTrueForExistingFile() throws {
         let url = self.testDirectory.appendingPathComponent("existing.txt")
         let testData = "Existing content"
         try testData.write(to: url, atomically: true, encoding: .utf8)
@@ -134,7 +174,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     }
 
-    func test_cachedContentExists_returnsFalseForNonExistentFile() {
+    func testCachedContentExistsReturnsFalseForNonExistentFile() {
         let url = self.testDirectory.appendingPathComponent("nonexistent.txt")
 
         let exists = self.fileManager.cachedContentExists(at: url)
@@ -142,7 +182,7 @@ class LargeItemCacheTypeTests: TestCase {
         expect(exists) == false
     }
 
-    func test_cachedContentExists_returnsFalseForEmptyFile() throws {
+    func testCachedContentExistsReturnsFalseForEmptyFile() throws {
         let url = self.testDirectory.appendingPathComponent("empty.txt")
         try Data().write(to: url)
 
@@ -153,7 +193,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     }
 
-    func test_cachedContentExists_returnsTrueForNonEmptyFile() throws {
+    func testCachedContentExistsReturnsTrueForNonEmptyFile() throws {
         let url = self.testDirectory.appendingPathComponent("nonempty.txt")
         try "A".write(to: url, atomically: true, encoding: .utf8)
 
@@ -166,7 +206,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     // MARK: - loadFile Tests
 
-    func test_loadFile_returnsCorrectData() throws {
+    func testLoadFileReturnsCorrectData() throws {
         let url = self.testDirectory.appendingPathComponent("load_test.txt")
         let testData = "Data to load"
         try testData.write(to: url, atomically: true, encoding: .utf8)
@@ -179,7 +219,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     }
 
-    func test_loadFile_throwsForNonExistentFile() {
+    func testLoadFileThrowsForNonExistentFile() {
         let url = self.testDirectory.appendingPathComponent("missing.txt")
 
         expect {
@@ -187,7 +227,7 @@ class LargeItemCacheTypeTests: TestCase {
         }.to(throwError())
     }
 
-    func test_loadFile_returnsEmptyDataForEmptyFile() throws {
+    func testLoadFileReturnsEmptyDataForEmptyFile() throws {
         let url = self.testDirectory.appendingPathComponent("empty_load.txt")
         try Data().write(to: url)
 
@@ -200,7 +240,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     // MARK: - createCacheDirectoryIfNeeded Tests
 
-    func test_createCacheDirectoryIfNeeded_createsDirectory() {
+    func testCreateCacheDirectoryIfNeededCreatesDirectory() {
         let basePath = "TestCache/Subdirectory"
 
         let createdURL = self.fileManager.createCacheDirectoryIfNeeded(basePath: basePath)
@@ -215,7 +255,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     }
 
-    func test_createCacheDirectoryIfNeeded_createsIntermediateDirectories() {
+    func testCreateCacheDirectoryIfNeededCreatesIntermediateDirectories() {
         let basePath = "TestCache/Level1/Level2/Level3"
 
         let createdURL = self.fileManager.createCacheDirectoryIfNeeded(basePath: basePath)
@@ -232,7 +272,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     // MARK: - Integration Tests
 
-    func test_saveAndLoad_roundTrip() async throws {
+    func testSaveAndLoadRoundTrip() async throws {
         let testData = "Round trip test"
         let url = self.testDirectory.appendingPathComponent("roundtrip.txt")
         let stream = createAsyncStream(from: testData)
@@ -246,7 +286,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     }
 
-    func test_saveData_thenCheckExists() async throws {
+    func testSaveDataThenCheckExists() async throws {
         let testData = "Existence test"
         let url = self.testDirectory.appendingPathComponent("exists_test.txt")
         let stream = createAsyncStream(from: testData)
@@ -261,7 +301,7 @@ class LargeItemCacheTypeTests: TestCase {
 
     }
 
-    func test_saveData_withChecksum_thenLoad() async throws {
+    func testSaveDataWithChecksumThenLoad() async throws {
         let testData = "Checksum round trip"
         let data = Data(testData.utf8)
         let checksum = Checksum.generate(from: data, with: .sha256)
