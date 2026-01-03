@@ -13,6 +13,14 @@
 
 import Foundation
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
+#if canImport(AppKit)
+import AppKit
+#endif
+
 /**
  * ``PurchaseParams`` can be used to add configuration options when making a purchase.
  * This class follows the builder pattern.
@@ -48,6 +56,9 @@ import Foundation
 
     #endif
 
+    /// Options for the confirmIn: parameter of the `purchase(confirmIn:options:)` SK2 APIs.
+    let storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
+
     private init(with builder: Builder) {
         self.promotionalOffer = builder.promotionalOffer
         self.product = builder.product
@@ -65,6 +76,8 @@ import Foundation
         self.introductoryOfferEligibilityJWS = builder.introductoryOfferEligibilityJWS
         self.promotionalOfferOptions = builder.promotionalOfferOptions
         #endif
+
+        self.storeKit2ConfirmInOptions = builder.storeKit2ConfirmInOptions
     }
 
     /// The Builder for ```PurchaseParams```.
@@ -87,6 +100,8 @@ import Foundation
         private(set) var promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
 
         #endif
+
+        private(set) var storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
 
         /**
          * Create a new builder with a ``Package``.
@@ -138,6 +153,38 @@ import Foundation
          */
         @objc public func with(metadata: [String: String]) -> Self {
             self.metadata = metadata
+            return self
+        }
+        #endif
+
+        #if canImport(UIKit) && !os(watchOS)
+        /**
+         * Set `confirmInScene`.
+         *
+         * - Parameter confirmInScene: The scene to show the purchase confirmation UI in proximity to.
+         * - Note: This value is only used when StoreKit 2 is in use.
+         *
+         * Availability: iOS 17.0+, macCatalyst 15.0+, tvOS 17.0+, visionOS 1.0+
+         */
+        @available(iOS 17.0, macCatalyst 15.0, tvOS 17.0, visionOS 1.0, *)
+        @objc public func with(confirmInScene: UIScene) -> Self {
+            self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInScene: confirmInScene)
+            return self
+        }
+        #endif
+
+        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+        /**
+         * Set `confirmInWindow`.
+         *
+         * - Parameter confirmInWindow: The window to show the purchase confirmation UI in proximity to.
+         * - Note: This value is only used when StoreKit 2 is in use.
+         *
+         * Availability: macOS 15.2+
+         */
+        @available(macOS 15.2, *)
+        @objc public func with(confirmInWindow: NSWindow) -> Self {
+            self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInWindow: confirmInWindow)
             return self
         }
         #endif
