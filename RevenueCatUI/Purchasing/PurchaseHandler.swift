@@ -449,6 +449,26 @@ extension PurchaseHandler {
         return true
     }
 
+    /// Tracks an exit offer event.
+    /// - Parameters:
+    ///   - exitOfferType: The type of exit offer (dismiss or abandonment)
+    ///   - exitOfferingIdentifier: The offering identifier of the exit offer
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    func trackExitOffer(exitOfferType: ExitOfferType, exitOfferingIdentifier: String) -> Bool {
+        guard let data = self.eventData else {
+            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+            return false
+        }
+
+        let exitOfferData = PaywallEvent.ExitOfferData(
+            exitOfferType: exitOfferType,
+            exitOfferingIdentifier: exitOfferingIdentifier
+        )
+        self.track(.exitOffer(.init(), data, exitOfferData))
+        return true
+    }
+
     private func startAction(_ type: PurchaseHandler.ActionType) {
         withAnimation(Constants.fastAnimation) {
             self.actionTypeInProgress = type

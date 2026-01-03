@@ -13,6 +13,17 @@
 
 import Foundation
 
+/// The type of exit offer shown.
+public enum ExitOfferType: String, Codable, Sendable {
+
+    /// An exit offer shown when the user attempts to dismiss the paywall without interacting.
+    case dismiss
+
+    /// An exit offer shown when the user dismisses the paywall after some interaction (e.g., cancelling a purchase).
+    case abandonment
+
+}
+
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum PaywallEvent: FeatureEvent {
 
@@ -42,6 +53,9 @@ public enum PaywallEvent: FeatureEvent {
 
     /// A `PaywallView` was closed.
     case close(CreationData, Data)
+
+    /// An exit offer is shown to the user.
+    case exitOffer(CreationData, Data, ExitOfferData)
 
 }
 
@@ -143,12 +157,35 @@ extension PaywallEvent {
 
 extension PaywallEvent {
 
+    /// The data specific to an exit offer event.
+    public struct ExitOfferData {
+
+        // swiftlint:disable missing_docs
+        public var exitOfferType: ExitOfferType
+        public var exitOfferingIdentifier: String
+
+        public init(
+            exitOfferType: ExitOfferType,
+            exitOfferingIdentifier: String
+        ) {
+            self.exitOfferType = exitOfferType
+            self.exitOfferingIdentifier = exitOfferingIdentifier
+        }
+        // swiftlint:enable missing_docs
+
+    }
+
+}
+
+extension PaywallEvent {
+
     /// - Returns: the underlying ``PaywallEvent/CreationData-swift.struct`` for this event.
     public var creationData: CreationData {
         switch self {
         case let .impression(creationData, _): return creationData
         case let .cancel(creationData, _): return creationData
         case let .close(creationData, _): return creationData
+        case let .exitOffer(creationData, _, _): return creationData
         }
     }
 
@@ -158,13 +195,23 @@ extension PaywallEvent {
         case let .impression(_, data): return data
         case let .cancel(_, data): return data
         case let .close(_, data): return data
+        case let .exitOffer(_, data, _): return data
+        }
+    }
+
+    /// - Returns: the underlying ``PaywallEvent/ExitOfferData-swift.struct`` for exit offer events, nil otherwise.
+    public var exitOfferData: ExitOfferData? {
+        switch self {
+        case .impression, .cancel, .close: return nil
+        case let .exitOffer(_, _, exitOfferData): return exitOfferData
         }
     }
 
 }
 
-// MARK: - 
+// MARK: -
 
 extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
 extension PaywallEvent.Data: Equatable, Codable, Sendable {}
+extension PaywallEvent.ExitOfferData: Equatable, Codable, Sendable {}
 extension PaywallEvent: Equatable, Codable, Sendable {}
