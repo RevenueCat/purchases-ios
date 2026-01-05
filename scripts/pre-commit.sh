@@ -95,18 +95,18 @@ fi
 # Step 1: Collect all staged Swift files (batch processing)
 # =============================================================================
 SWIFT_FILES=()
-while IFS= read -r -d '' file; do
+    while IFS= read -r -d '' file; do
   # Skip generated files
   if [[ "${file#*.}" == "generated.swift" ]]; then
     continue
   fi
-  # Get file status from git status --porcelain
-  status=$(git status --porcelain -- "$file" | cut -c1-2)
+      # Get file status from git status --porcelain
+      status=$(git status --porcelain -- "$file" | cut -c1-2)
   # Skip deleted files
-  if [[ "$status" != "D " ]]; then
+      if [[ "$status" != "D " ]]; then
     SWIFT_FILES+=("$file")
-  fi
-done < <(git diff --cached --name-only -z -- '*.swift')
+      fi
+    done < <(git diff --cached --name-only -z -- '*.swift')
 
 # If no Swift files staged, we're done
 if [[ ${#SWIFT_FILES[@]} -eq 0 ]]; then
