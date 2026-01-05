@@ -1449,14 +1449,27 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_mint: true
+          install_swiftlint: false
+      - run:
+          name: Install SwiftLint from Mintfile
+          command: |
+            if [ -f "Mintfile" ]; then
+              mint bootstrap
+            fi
       - run:
           command: mkdir -p fastlane/test_output/swiftlint
       - run:
           name: Run fastlane swiftlint lane
           command: |
-            bundle exec fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
-            reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
+            # Use Mint to run SwiftLint
+            bundle exec fastlane run swiftlint \
+            executable:"$(mint which swiftlint)" \
+            raise_if_swiftlint_error:true \
+            strict:true \
+            reporter:junit \
+            output_file:fastlane/test_output/swiftlint/junit.xml
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
