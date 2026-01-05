@@ -325,6 +325,59 @@ class PurchasesOrchestratorLocalTransactionMetadataCacheSK1Tests: PurchasesOrche
         // Ensure transaction metadata has been removed
         expect(self.localTransactionMetadataCache.retrieve(for: transaction)).to(beNil())
     }
+
+    func testMetadataRemainsCachedWhenPostReceiptFails() async throws {
+        // Stub backend to return failure
+        self.backend.stubbedPostReceiptResult = .failure(.unexpectedBackendResponse(.customerInfoNil))
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        // Track paywall impression
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
+
+        // Create package with presentedOfferingContext
+        let presentedOfferingContext = self.createPresentedOfferingContext()
+        let package = self.createPackage(
+            with: StoreProduct(sk1Product: product),
+            presentedOfferingContext: presentedOfferingContext
+        )
+
+        let storeTransaction = await withCheckedContinuation { continuation in
+            orchestrator.purchase(sk1Product: product,
+                                  payment: payment,
+                                  package: package,
+                                  wrapper: self.storeKit1Wrapper) { transaction, _, _, _ in
+                continuation.resume(returning: transaction)
+            }
+        }
+
+        let transaction = try XCTUnwrap(storeTransaction)
+
+        // Verify POST receipt was called
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+
+        // Verify operation log (store and migrate, but no remove since POST failed)
+        let expectedMetadata = LocalTransactionMetadata(
+            appUserID: Self.mockUserID,
+            productIdentifier: product.productIdentifier,
+            presentedOfferingContext: presentedOfferingContext,
+            paywallPostReceiptData: Self.paywallEvent.toPostReceiptData,
+            observerMode: !self.orchestrator.finishTransactions
+        )
+        expect(self.localTransactionMetadataCache.log) == [
+            .store(productID: product.productIdentifier, transactionID: nil, metadata: expectedMetadata),
+            .migrate(fromProductID: product.productIdentifier, toTransactionID: transaction.id)
+        ]
+
+        // Verify metadata is still cached after failed POST receipt (not removed)
+        let cachedMetadata = try XCTUnwrap(self.localTransactionMetadataCache.retrieve(for: transaction))
+        expect(cachedMetadata.presentedOfferingContext?.offeringIdentifier) == presentedOfferingContext.offeringIdentifier
+        expect(cachedMetadata.presentedOfferingContext?.placementIdentifier) == presentedOfferingContext.placementIdentifier
+        expect(cachedMetadata.presentedOfferingContext?.targetingContext?.revision) == presentedOfferingContext.targetingContext?.revision
+        expect(cachedMetadata.presentedOfferingContext?.targetingContext?.ruleId) == presentedOfferingContext.targetingContext?.ruleId
+        expect(cachedMetadata.paywallPostReceiptData) == Self.paywallEvent.toPostReceiptData
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -584,12 +637,111 @@ class PurchasesOrchestratorLocalTransactionMetadataCacheSK2Tests: PurchasesOrche
         // Ensure transaction metadata has been removed
         expect(self.localTransactionMetadataCache.retrieve(for: transaction)).to(beNil())
     }
+
+    func testSK2TransactionQueueListenerIncludesStoredMetadata() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Create a transaction that will complete later via the queue
+        let transaction = MockStoreTransaction()
+
+        // Track paywall impression
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
+
+        // Simulate metadata being stored during purchase initiation (before transaction completes)
+        // This happens when purchase is initiated but transaction is pending/deferred
+        let presentedOfferingContext = self.createPresentedOfferingContext()
+        let metadata = LocalTransactionMetadata(
+            appUserID: Self.mockUserID,
+            productIdentifier: transaction.productIdentifier,
+            presentedOfferingContext: presentedOfferingContext,
+            paywallPostReceiptData: Self.paywallEvent.toPostReceiptData,
+            observerMode: !self.orchestrator.finishTransactions
+        )
+        self.localTransactionMetadataCache.store(metadata: metadata, forProductID: transaction.productIdentifier)
+
+        // Simulate transaction completing later via the queue
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        // Verify POST receipt was called
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptData).to(beTrue())
+
+        // Verify presentedOfferingContext is included in POST receipt (retrieved from cache)
+        let transactionData = try XCTUnwrap(self.backend.invokedPostReceiptDataParameters?.transactionData)
+        expect(transactionData.presentedOfferingContext?.offeringIdentifier) == presentedOfferingContext.offeringIdentifier
+        expect(transactionData.presentedOfferingContext?.placementIdentifier) == presentedOfferingContext.placementIdentifier
+        expect(transactionData.presentedOfferingContext?.targetingContext?.revision) == presentedOfferingContext.targetingContext?.revision
+        expect(transactionData.presentedOfferingContext?.targetingContext?.ruleId) == presentedOfferingContext.targetingContext?.ruleId
+
+        // Verify presentedPaywall is included
+        expect(transactionData.presentedPaywall) == Self.paywallEvent
+
+        // Verify operation log
+        let expectedMetadata = LocalTransactionMetadata(
+            appUserID: Self.mockUserID,
+            productIdentifier: transaction.productIdentifier,
+            presentedOfferingContext: presentedOfferingContext,
+            paywallPostReceiptData: Self.paywallEvent.toPostReceiptData,
+            observerMode: !self.orchestrator.finishTransactions
+        )
+        expect(self.localTransactionMetadataCache.log) == [
+            .store(productID: transaction.productIdentifier, transactionID: nil, metadata: expectedMetadata),
+            .remove(productID: nil, transactionID: transaction.transactionIdentifier),
+            .remove(productID: transaction.productIdentifier, transactionID: nil)
+        ]
+
+        // Verify metadata has been removed after successful POST receipt
+        expect(self.localTransactionMetadataCache.retrieve(for: transaction)).to(beNil())
+    }
+
+    func testMetadataRemainsCachedWhenPostReceiptFailsSK2() async throws {
+        // Stub backend to return failure
+        self.backend.stubbedPostReceiptResult = .failure(.unexpectedBackendResponse(.customerInfoNil))
+
+        let product = try await self.fetchSk2Product()
+
+        // Track paywall impression
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
+
+        // Create package with presentedOfferingContext
+        let presentedOfferingContext = self.createPresentedOfferingContext()
+        let package = self.createPackage(
+            with: StoreProduct(sk2Product: product),
+            presentedOfferingContext: presentedOfferingContext
+        )
+
+        _ = try? await self.orchestrator.purchase(
+            sk2Product: product,
+            package: package,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+
+        // Verify POST receipt was called
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+
+        // Find the first transaction stored in the cache
+        let cachedMetadata = try XCTUnwrap(self.localTransactionMetadataCache.allMetadata.first?.value)
+
+        // Verify metadata is still cached after failed POST receipt (not removed)
+        // Metadata was migrated to transaction ID, so it's no longer stored by product ID
+        expect(self.localTransactionMetadataCache.retrieve(forProductID: product.id)).to(beNil())
+
+        // Verify metadata exists by transaction ID (migrated)
+        expect(cachedMetadata.presentedOfferingContext?.offeringIdentifier) == presentedOfferingContext.offeringIdentifier
+        expect(cachedMetadata.presentedOfferingContext?.placementIdentifier) == presentedOfferingContext.placementIdentifier
+        expect(cachedMetadata.presentedOfferingContext?.targetingContext?.revision) == presentedOfferingContext.targetingContext?.revision
+        expect(cachedMetadata.presentedOfferingContext?.targetingContext?.ruleId) == presentedOfferingContext.targetingContext?.ruleId
+        expect(cachedMetadata.paywallPostReceiptData) == Self.paywallEvent.toPostReceiptData
+    }
 }
 
-// TODO: add sk2 transaction queue listener
-
 extension NetworkError {
-
     static func serverDown(
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
