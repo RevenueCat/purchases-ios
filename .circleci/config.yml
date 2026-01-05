@@ -1449,7 +1449,15 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_mint: true
+          install_swiftlint: false
+      - run:
+          name: Install SwiftLint from Mintfile
+          command: |
+            if [ -f "Mintfile" ]; then
+              mint bootstrap
+            fi
       - run:
           command: mkdir -p fastlane/test_output/swiftlint
       - run:
