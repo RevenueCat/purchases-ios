@@ -291,11 +291,13 @@ public struct PaywallView: View {
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
-        let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
-            countries: offering.paywall?.zeroDecimalPlaceCountries
-        )
-
         if let paywallComponents = useDraftPaywall ? offering.draftPaywallComponents : offering.paywallComponents {
+            // For V2 paywalls, prefer zeroDecimalPlaceCountries from paywallComponents
+            let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
+                countries: paywallComponents.data.zeroDecimalPlaceCountries.isEmpty
+                    ? offering.paywall?.zeroDecimalPlaceCountries
+                    : paywallComponents.data.zeroDecimalPlaceCountries
+            )
 
             // For fallback view or footer
             let paywall: PaywallData = .createDefault(with: offering.availablePackages,
@@ -361,6 +363,11 @@ public struct PaywallView: View {
             #if os(macOS)
             DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
             #else
+            // For V1 paywalls, use zeroDecimalPlaceCountries from PaywallData
+            let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
+                countries: offering.paywall?.zeroDecimalPlaceCountries
+            )
+
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
                 locale: purchaseHandler.preferredLocaleOverride ?? .current
             )

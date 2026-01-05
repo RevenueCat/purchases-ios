@@ -84,6 +84,11 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         set { self._revision = newValue }
     }
 
+    /// The storefront country codes that should not display cents in prices.
+    public var zeroDecimalPlaceCountries: [String] {
+        _zeroDecimalPlaceCountries?.apple ?? []
+    }
+
     public var componentsConfig: ComponentsConfig
     public var componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
     public var defaultLocale: String
@@ -94,6 +99,8 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
+    internal private(set) var _zeroDecimalPlaceCountries: PaywallData.ZeroDecimalPlaceCountries?
+
     public var errorInfo: [String: EquatableError]?
 
     private enum CodingKeys: String, CodingKey {
@@ -103,6 +110,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         case defaultLocale
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
+        case _zeroDecimalPlaceCountries = "zeroDecimalPlaceCountries"
         case exitOffers
     }
 
@@ -112,6 +120,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
                 componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
                 revision: Int,
                 defaultLocaleIdentifier: String,
+                zeroDecimalPlaceCountries: [String] = [],
                 exitOffers: ExitOffers? = nil) {
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
@@ -119,6 +128,9 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         self.componentsLocalizations = componentsLocalizations
         self._revision = revision
         self.defaultLocale = defaultLocaleIdentifier
+        self._zeroDecimalPlaceCountries = zeroDecimalPlaceCountries.isEmpty
+            ? nil
+            : .init(apple: zeroDecimalPlaceCountries)
         self.exitOffers = exitOffers
     }
 
@@ -126,6 +138,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
 extension PaywallComponentsData {
 
+    // swiftlint:disable:next function_body_length
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         var errors: [String: EquatableError] = [:]
@@ -182,6 +195,11 @@ extension PaywallComponentsData {
 
         exitOffers = try container.decodeIfPresent(ExitOffers.self, forKey: .exitOffers)
 
+        _zeroDecimalPlaceCountries = try container.decodeIfPresent(
+            PaywallData.ZeroDecimalPlaceCountries.self,
+            forKey: ._zeroDecimalPlaceCountries
+        )
+
         if !errors.isEmpty {
             errorInfo = errors
         }
@@ -196,6 +214,7 @@ extension PaywallComponentsData {
         try container.encode(componentsLocalizations, forKey: .componentsLocalizations)
         try container.encode(defaultLocale, forKey: .defaultLocale)
         try container.encode(_revision, forKey: ._revision)
+        try container.encodeIfPresent(_zeroDecimalPlaceCountries, forKey: ._zeroDecimalPlaceCountries)
         try container.encodeIfPresent(exitOffers, forKey: .exitOffers)
     }
 
