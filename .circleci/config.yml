@@ -1463,8 +1463,13 @@ jobs:
       - run:
           name: Run fastlane swiftlint lane
           command: |
-            bundle exec fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
-            reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
+            # Use Mint to run SwiftLint
+            bundle exec fastlane run swiftlint \
+            executable:"$(mint which swiftlint)" \
+            raise_if_swiftlint_error:true \
+            strict:true \
+            reporter:junit \
+            output_file:fastlane/test_output/swiftlint/junit.xml
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
