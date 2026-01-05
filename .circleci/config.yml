@@ -624,11 +624,11 @@ jobs:
 
     steps:
       - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
-          install_mint: true
           install_swiftlint: false
-      - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -657,11 +657,11 @@ jobs:
 
     steps:
       - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
-          install_mint: true
           install_swiftlint: false
-      - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -694,11 +694,11 @@ jobs:
 
     steps:
       - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
-          install_mint: true
           install_swiftlint: false
-      - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -730,7 +730,10 @@ jobs:
 
     steps:
       - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
+          install_xcbeautify: false
           install_swiftlint: false
       - update-spm-installation-commit
       - run:
@@ -763,7 +766,10 @@ jobs:
 
     steps:
       - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
+          install_xcbeautify: false
           install_swiftlint: false
       - update-spm-installation-commit
       - run:
@@ -794,7 +800,11 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - install-dependencies
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
+      - install-dependencies:
+          install_xcbeautify: false
+          install_swiftlint: false
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests

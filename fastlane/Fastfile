@@ -674,12 +674,13 @@ platform :ios do
 
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
+      # Note: We use xcodebuild instead of scan because this is an SPM package (workspace: '.')
+      # and scan doesn't properly detect schemes defined in Package.swift
       xcodebuild(
         workspace: '.',
         scheme: 'RevenueCatUI',
         destination: "platform=" + platform + ",name=" + destination,
         sdk: sdk,
-        output_style: :basic,
         result_bundle_path: 'fastlane/test_output/revenuecatui.xcresult',
         report_formats: [:junit],
         report_path: 'fastlane/test_output/revenuecatui/tests.xml',
