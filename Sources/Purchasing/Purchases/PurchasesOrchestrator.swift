@@ -2182,6 +2182,7 @@ extension PurchasesOrchestrator {
 
         // Retrieve transaction metadata from cache
         let transactionMetadata = self.localTransactionMetadataCache.retrieve(for: transaction)
+        // TODO: Should we also retreive the in-memory cached values for presentedOfferingContext and presentedPaywallHere?
         let presentedOfferingContext = transactionMetadata?.presentedOfferingContext// ?? getAndRemovePresentedOfferingContext(for: transaction)
         let paywall = transactionMetadata?.paywallPostReceiptData?.toPaywallEventData// ?? getAndRemovePresentedPaywall()
 
