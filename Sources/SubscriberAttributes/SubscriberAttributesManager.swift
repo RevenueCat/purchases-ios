@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 class SubscriberAttributesManager {
 
     private let backend: Backend
