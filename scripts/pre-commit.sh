@@ -122,7 +122,7 @@ echo ""
 # Step 2: Store checksums before autocorrect (using temp file for compatibility)
 # =============================================================================
 CHECKSUM_FILE=$(mktemp)
-trap "rm -f $CHECKSUM_FILE" EXIT
+trap 'rm -f $CHECKSUM_FILE' EXIT
 
 for file in "${SWIFT_FILES[@]}"; do
   if [[ -f "$file" ]]; then
@@ -205,7 +205,7 @@ else
     clean_message=$(echo "$message" | sed -E 's/ \([a-z_]+\)$//')
     
     # Get relative path
-    rel_path=$(echo "$file_path" | sed "s|$(pwd)/||")
+    rel_path="${file_path#"$(pwd)/"}"
     
     if [[ "$severity" == "error" ]]; then
       echo -e "  ${RED}error${NC} ${rel_path}:${line_col}"
