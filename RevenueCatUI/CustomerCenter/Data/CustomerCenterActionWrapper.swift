@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 2024-06-17.
 
 import Combine
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 /// Internal enum that represents all possible actions in the Customer Center
@@ -25,6 +25,7 @@ internal enum CustomerCenterInternalAction {
     case restoreFailed(Error)
     case restoreCompleted(CustomerInfo)
     case showingManageSubscriptions
+    case showingChangePlans(String?)
     case refundRequestStarted(String)
     case refundRequestCompleted(String, RefundRequestStatus)
     case feedbackSurveyCompleted(String)
@@ -33,6 +34,7 @@ internal enum CustomerCenterInternalAction {
     case buttonTapped(action: CustomerCenterActionable)
     // Internal action for when a promotional offer succeeds
     case promotionalOfferSuccess
+    case customActionSelected(CustomActionData)
 
     /// Converts this internal action to the corresponding legacy action if one exists
     /// Returns nil for actions that don't have a legacy CustomerCenterAction equivalent
@@ -52,7 +54,10 @@ internal enum CustomerCenterInternalAction {
             return .refundRequestCompleted(status)
         case .feedbackSurveyCompleted(let optionId):
             return .feedbackSurveyCompleted(optionId)
-        case .buttonTapped, .promotionalOfferSuccess:
+        case .buttonTapped,
+                .promotionalOfferSuccess,
+                .showingChangePlans,
+                .customActionSelected:
             return nil // No public equivalent
         }
     }
@@ -70,16 +75,19 @@ final class CustomerCenterActionWrapper {
     let restoreFailed = PassthroughSubject<NSError, Never>()
     let restoreCompleted = PassthroughSubject<CustomerInfo, Never>()
     let showingManageSubscriptions = PassthroughSubject<Void, Never>()
+    let showingChangePlans = PassthroughSubject<String?, Never>()
     let refundRequestStarted = PassthroughSubject<String, Never>()
     let refundRequestCompleted = PassthroughSubject<(String, RefundRequestStatus), Never>()
     let feedbackSurveyCompleted = PassthroughSubject<String, Never>()
     let managementOptionSelected = PassthroughSubject<CustomerCenterActionable, Never>()
+    let customActionSelected = PassthroughSubject<(String, String?), Never>()
     let promotionalOfferSuccess = PassthroughSubject<Void, Never>()
 
     init(legacyActionHandler: DeprecatedCustomerCenterActionHandler? = nil) {
         self.legacyActionHandler = legacyActionHandler
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func handleAction(_ action: CustomerCenterInternalAction) {
         if let legacyAction = action.asLegacyAction {
             legacyActionHandler?(legacyAction)
@@ -110,11 +118,50 @@ final class CustomerCenterActionWrapper {
         case .buttonTapped(let action):
             managementOptionSelected.send(action)
 
+        case .customActionSelected(let customActionData):
+            customActionSelected.send((customActionData.actionIdentifier, customActionData.purchaseIdentifier))
+
         case .promotionalOfferSuccess:
             promotionalOfferSuccess.send(())
+
+        case .showingChangePlans(let subscriptionGroupID):
+            showingChangePlans.send(subscriptionGroupID)
         }
     }
 }
+
+#if os(iOS)
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension CustomerCenterActionWrapper {
+
+    var restoreStartedPublisher: AnyPublisher<Void, Never> { restoreStarted.eraseToAnyPublisher() }
+    var restoreFailedPublisher: AnyPublisher<NSError, Never> { restoreFailed.eraseToAnyPublisher() }
+    var restoreCompletedPublisher: AnyPublisher<CustomerInfo, Never> { restoreCompleted.eraseToAnyPublisher() }
+    var showingManageSubscriptionsPublisher: AnyPublisher<Void, Never> {
+        showingManageSubscriptions.eraseToAnyPublisher()
+    }
+    var showingChangePlansPublisher: AnyPublisher<String?, Never> { showingChangePlans.eraseToAnyPublisher() }
+    var refundRequestStartedPublisher: AnyPublisher<String, Never> { refundRequestStarted.eraseToAnyPublisher() }
+    var refundRequestCompletedPublisher: AnyPublisher<(String, RefundRequestStatus), Never> {
+        refundRequestCompleted.eraseToAnyPublisher()
+    }
+    var feedbackSurveyCompletedPublisher: AnyPublisher<String, Never> { feedbackSurveyCompleted.eraseToAnyPublisher() }
+    var managementOptionSelectedPublisher: AnyPublisher<CustomerCenterActionable, Never> {
+        managementOptionSelected.eraseToAnyPublisher()
+    }
+    var customActionSelectedPublisher: AnyPublisher<(String, String?), Never> {
+        customActionSelected.eraseToAnyPublisher()
+    }
+    var promotionalOfferSuccessPublisher: AnyPublisher<Void, Never> {
+        promotionalOfferSuccess.eraseToAnyPublisher()
+    }
+}
+
+#endif
 
 // MARK: - Help Path to Management Option Conversion
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -124,6 +171,7 @@ final class CustomerCenterActionWrapper {
 extension CustomerCenterConfigData.HelpPath {
 
     /// Converts this HelpPath to an appropriate CustomerCenterActionable
+    /// - Parameter purchaseIdentifier: The optional active purchase ID for the context
     /// - Returns: A CustomerCenterActionable representing this path
     func asAction() -> CustomerCenterActionable? {
         switch self.type {

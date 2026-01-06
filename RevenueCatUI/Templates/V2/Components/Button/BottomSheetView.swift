@@ -15,7 +15,7 @@ import SwiftUI
 
 import RevenueCat
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 /// A view that presents content in a sheet-like interface with customizable height and background.
 ///
@@ -65,18 +65,6 @@ struct BottomSheetOverlayModifier: ViewModifier {
         }
     }
 
-    var backgroundStyle: BackgroundStyle? {
-        if let sheetViewModel {
-            let stackBackground = sheetViewModel.sheet.background
-
-            return stackBackground?.asDisplayable(
-                uiConfigProvider: sheetViewModel.sheetStackViewModel.uiConfigProvider
-            )
-        } else {
-            return nil
-        }
-    }
-
     func body(content: Content) -> some View {
         ZStack {
             content
@@ -112,7 +100,6 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         view.frame(height: height)
                     })
                     .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .backgroundStyle(self.backgroundStyle)
                 }
             }
             .background(
@@ -123,7 +110,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         }
                 }
             )
-            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: sheetViewModel)
+            .animation(.spring(response: 0.35, dampingFraction: 1), value: sheetViewModel)
         }
     }
 }
@@ -145,7 +132,7 @@ extension View {
         sheet: Binding<SheetViewModel?>,
         safeAreaInsets: EdgeInsets
     ) -> some View {
-        modifier(
+        self.modifier(
             BottomSheetOverlayModifier(sheetViewModel: sheet, safeAreaInsets: safeAreaInsets)
         )
     }
@@ -169,7 +156,6 @@ struct BottomSheetViewTestView: View {
                 ],
                 backgroundColor: nil
             ),
-            background: .color(.init(light: .hex("#FFFFFF"))),
             backgroundBlur: false,
             size: .init(width: .fill, height: .fit)
         ),
@@ -189,7 +175,9 @@ struct BottomSheetViewTestView: View {
             localizedStrings: [
                 "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
             ]
-        )))
+        ), colorScheme: .light
+        )
+    )
     var body: some View {
         GeometryReader { proxy in
             ZStack {
@@ -203,7 +191,7 @@ struct BottomSheetViewTestView: View {
             }
             .edgesIgnoringSafeArea(.all)
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
     }
 }
 

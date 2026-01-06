@@ -12,8 +12,8 @@
 //  Created by Facundo Menzella on 13/5/25.
 
 import Nimble
-@_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCatUI
 import StoreKit
 import XCTest
 
@@ -33,8 +33,9 @@ final class SubscriptionDetailViewModelTests: TestCase {
             ),
             screen: CustomerCenterConfigData.default.screens[.management]!,
             showPurchaseHistory: false,
+            showVirtualCurrencies: false,
             allowsMissingPurchaseAction: false,
-            purchaseInformation: .yearlyExpiring(store: .appStore)
+            purchaseInformation: .mock(store: .appStore, isExpired: false)
         )
 
         expect(viewModelAppStore.shouldShowContactSupport).to(beFalse())
@@ -58,13 +59,247 @@ final class SubscriptionDetailViewModelTests: TestCase {
                 ),
                 screen: CustomerCenterConfigData.default.screens[.management]!,
                 showPurchaseHistory: false,
+                showVirtualCurrencies: false,
                 allowsMissingPurchaseAction: true,
-                purchaseInformation: .yearlyExpiring(store: $0)
+                purchaseInformation: .mock(store: $0, isExpired: false)
             )
 
             expect(viewModelOther.shouldShowContactSupport).to(beTrue())
             expect(viewModelOther.allowMissingPurchase).to(beTrue())
         }
+    }
+
+    func testHasActiveSubscription_withActiveSubscriptions() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+
+        // Simulate active subscriptions
+        customerInfoViewModel.subscriptionsSection = [
+            .mock(store: .playStore, isExpired: false)
+        ]
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
+        )
+
+        expect(viewModel.hasActiveSubscription).to(beTrue())
+    }
+
+    func testHasActiveSubscription_withoutActiveSubscriptions() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+
+        // No active subscriptions
+        customerInfoViewModel.subscriptionsSection = []
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
+        )
+
+        expect(viewModel.hasActiveSubscription).to(beFalse())
+    }
+
+    func testShouldShowCreateTicketButton_customerTypeAll_withActiveSubscription() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+        customerInfoViewModel.subscriptionsSection = [.mock(store: .playStore, isExpired: false)]
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
+        )
+
+        let supportTickets = CustomerCenterConfigData.Support.SupportTickets(
+            allowCreation: true,
+            customerType: .all
+        )
+
+        expect(viewModel.shouldShowCreateTicketButton(supportTickets: supportTickets)).to(beTrue())
+    }
+
+    func testShouldShowCreateTicketButton_customerTypeAll_withoutActiveSubscription() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+        customerInfoViewModel.subscriptionsSection = []
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
+        )
+
+        let supportTickets = CustomerCenterConfigData.Support.SupportTickets(
+            allowCreation: true,
+            customerType: .all
+        )
+
+        expect(viewModel.shouldShowCreateTicketButton(supportTickets: supportTickets)).to(beTrue())
+    }
+
+    func testShouldShowCreateTicketButton_customerTypeActive_withActiveSubscription() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+        customerInfoViewModel.subscriptionsSection = [.mock(store: .playStore, isExpired: false)]
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
+        )
+
+        let supportTickets = CustomerCenterConfigData.Support.SupportTickets(
+            allowCreation: true,
+            customerType: .active
+        )
+
+        expect(viewModel.shouldShowCreateTicketButton(supportTickets: supportTickets)).to(beTrue())
+    }
+
+    func testShouldShowCreateTicketButton_customerTypeActive_withoutActiveSubscription() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+        customerInfoViewModel.subscriptionsSection = []
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
+        )
+
+        let supportTickets = CustomerCenterConfigData.Support.SupportTickets(
+            allowCreation: true,
+            customerType: .active
+        )
+
+        expect(viewModel.shouldShowCreateTicketButton(supportTickets: supportTickets)).to(beFalse())
+    }
+
+    func testShouldShowCreateTicketButton_customerTypeNotActive_withActiveSubscription() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+        customerInfoViewModel.subscriptionsSection = [.mock(store: .playStore, isExpired: false)]
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
+        )
+
+        let supportTickets = CustomerCenterConfigData.Support.SupportTickets(
+            allowCreation: true,
+            customerType: .notActive
+        )
+
+        expect(viewModel.shouldShowCreateTicketButton(supportTickets: supportTickets)).to(beFalse())
+    }
+
+    func testShouldShowCreateTicketButton_customerTypeNotActive_withoutActiveSubscription() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+        customerInfoViewModel.subscriptionsSection = []
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
+        )
+
+        let supportTickets = CustomerCenterConfigData.Support.SupportTickets(
+            allowCreation: true,
+            customerType: .notActive
+        )
+
+        expect(viewModel.shouldShowCreateTicketButton(supportTickets: supportTickets)).to(beTrue())
+    }
+
+    func testShouldShowCreateTicketButton_customerTypeNone() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+        customerInfoViewModel.subscriptionsSection = [.mock(store: .playStore, isExpired: false)]
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
+        )
+
+        let supportTickets = CustomerCenterConfigData.Support.SupportTickets(
+            allowCreation: true,
+            customerType: .none
+        )
+
+        expect(viewModel.shouldShowCreateTicketButton(supportTickets: supportTickets)).to(beFalse())
+    }
+
+    func testShouldShowCreateTicketButton_allowCreationFalse() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+        customerInfoViewModel.subscriptionsSection = [.mock(store: .playStore, isExpired: false)]
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
+        )
+
+        let supportTickets = CustomerCenterConfigData.Support.SupportTickets(
+            allowCreation: false,
+            customerType: .all
+        )
+
+        expect(viewModel.shouldShowCreateTicketButton(supportTickets: supportTickets)).to(beFalse())
+    }
+
+    func testShouldShowCreateTicketButton_nilSupportTickets() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+        customerInfoViewModel.subscriptionsSection = [.mock(store: .playStore, isExpired: false)]
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
+        )
+
+        expect(viewModel.shouldShowCreateTicketButton(supportTickets: nil)).to(beFalse())
     }
 }
 

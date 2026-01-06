@@ -1,17 +1,14 @@
 import ProjectDescription
+import ProjectDescriptionHelpers
+import Foundation
 
 let project = Project(
     name: "Maestro",
-    organizationName: "RevenueCat",
-    settings: .settings(
-        configurations: [
-            .debug(name: "Debug", xcconfig: .relativeToManifest("rc-maestro/Resources/Local.xcconfig"))
-        ],
-        defaultSettings: .essential
-    ),
+    organizationName: .revenueCatOrgName,
+    settings: .appProject,
     targets: [
         .target(
-            name: "Maestro-Debug",
+            name: "Maestro",
             destinations: .iOS,
             product: .app,
             bundleId: "com.revenuecat.maestro.ios",
@@ -22,7 +19,11 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
-                    "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)"
+                    "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)",
+                    "REVENUECAT_PROXY_URL_SCHEME": "$(REVENUECAT_PROXY_URL_SCHEME)",
+                    "REVENUECAT_PROXY_URL_HOST": "$(REVENUECAT_PROXY_URL_HOST)",
+                    "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY": "$(REVENUECAT_FORCE_SERVER_ERROR_STRATEGY)",
+                    "REVENUECAT_API_HOST": "$(REVENUECAT_API_HOST)"
                 ]
             ),
             sources: ["rc-maestro/Sources/**/*.swift"],
@@ -30,29 +31,26 @@ let project = Project(
                 "rc-maestro/Resources/**/*.xcassets",
             ],
             dependencies: [
-                .external(name: "RevenueCat"),
-                .external(name: "RevenueCatUI"),
-                .sdk(name: "StoreKit", type: .framework, status: .required)
-            ]
+                .revenueCat,
+                .revenueCatUI,
+                .storeKit
+            ],
+            settings: .appTarget
         )
     ],
     schemes: [
         .scheme(
-            name: "Maestro-Debug",
+            name: "Maestro",
             shared: true,
             hidden: false,
-            buildAction: .buildAction(targets: ["Maestro-Debug"], findImplicitDependencies: true),
+            buildAction: .buildAction(targets: ["Maestro"], findImplicitDependencies: true),
             runAction: .runAction(
                 configuration: "Debug",
-                executable: "Maestro-Debug",
+                executable: "Maestro",
                 options: .options(
                     storeKitConfigurationPath: "rc-maestro/Resources/StoreKit/StoreKitConfiguration.storekit"
                 )
             )
         )
-    ],
-    additionalFiles: [
-        "rc-maestro/Resources/**/Local.xcconfig.sample",
-        "rc-maestro/Resources/**/Local.xcconfig"
     ]
 )

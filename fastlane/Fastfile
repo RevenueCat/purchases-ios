@@ -16,6 +16,16 @@ def current_version_number
   File.read("#{File.dirname(__FILE__)}/../.version").strip
 end
 
+# Hack to work around a Fastlane quirk where plugin actions are run from the parent of the current working directory.
+# We switch to the first subdirectory, then run the action. The action will run from the parent of the subdirectory, which is
+# our actual current working directory. The obvious limitation is that this doesn't work if the current working directory
+# does not have any subdirectories.
+# This is only needed when our current working directory is not the ./fastlane directory.
+# https://docs.fastlane.tools/advanced/fastlane/#directory-behavior
+def run_plugin_action_in_current_directory(&block)
+  Dir.chdir(Dir["*/"].first.chomp("/"), &block)
+end
+
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
@@ -32,14 +42,18 @@ files_with_version_number_without_prerelease_modifiers = {
   './Tests/UnitTests/Info.plist' => PLIST_VERSION_PATTERNS,
   './Tests/UnitTestsHostApp/Info.plist' => PLIST_VERSION_PATTERNS
 }
+
+PACKAGE_VERSION_PATTERNS = ["repositoryURL = \"https://github.com/RevenueCat/purchases-ios\";\n\t\t\trequirement = {\n\t\t\t\tkind = upToNextMajorVersion;\n\t\t\t\tminimumVersion = {x};\n"]
 files_to_update_on_latest_stable_releases = {
   './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
+  './Examples/SampleCat/SampleCat.xcodeproj/project.pbxproj' => PACKAGE_VERSION_PATTERNS
 }
 
-repo_name = 'purchases-ios'
-snapshots_repo_name = 'purchases-ios-snapshots'
-changelog_latest_path = './CHANGELOG.latest.md'
-changelog_path = './CHANGELOG.md'
+REPO_NAME = 'purchases-ios'
+SNAPSHOTS_REPO_NAME = 'purchases-ios-snapshots'
+PAYWALL_PREVIEW_RESOURCES_REPO_NAME = 'paywall-preview-resources'
+CHANGELOG_LATEST_PATH = './CHANGELOG.latest.md'
+CHANGELOG_PATH = './CHANGELOG.md'
 
 platform :ios do
   before_all do
@@ -54,12 +68,12 @@ platform :ios do
   lane :bump do |options|
     bump_version_update_changelog_create_pr(
       current_version: current_version_number,
-      changelog_latest_path: changelog_latest_path,
-      changelog_path: changelog_path,
+      changelog_latest_path: CHANGELOG_LATEST_PATH,
+      changelog_path: CHANGELOG_PATH,
       files_to_update: files_with_version_number,
       files_to_update_without_prerelease_modifiers: files_with_version_number_without_prerelease_modifiers,
       files_to_update_on_latest_stable_releases: files_to_update_on_latest_stable_releases,
-      repo_name: repo_name,
+      repo_name: REPO_NAME,
       github_rate_limit: options[:github_rate_limit],
       editor: options[:editor],
       next_version: options[:next_version],
@@ -71,7 +85,7 @@ platform :ios do
   desc "Automatically bumps version, update swift header, edit changelog, and create pull request"
   lane :automatic_bump do |options|
     next_version, type_of_bump = determine_next_version_using_labels(
-      repo_name: repo_name,
+      repo_name: REPO_NAME,
       github_rate_limit: options[:github_rate_limit]
     )
     options[:next_version] = next_version
@@ -91,9 +105,9 @@ platform :ios do
   lane :github_release do |options|
     create_github_release(
       version: options[:version],
-      repo_name: repo_name,
+      repo_name: REPO_NAME,
       github_api_token: ENV["GITHUB_TOKEN"],
-      changelog_latest_path: changelog_latest_path,
+      changelog_latest_path: CHANGELOG_LATEST_PATH,
       upload_assets: ['RevenueCat.xcframework.zip', 'RevenueCatUI.xcframework.zip']
     )
   end
@@ -102,7 +116,7 @@ platform :ios do
   lane :prepare_next_version do |options|
     create_next_snapshot_version(
       current_version: current_version_number,
-      repo_name: repo_name,
+      repo_name: REPO_NAME,
       github_pr_token: ENV["GITHUB_PULL_REQUEST_API_TOKEN"],
       files_to_update: files_with_version_number,
       files_to_update_without_prerelease_modifiers: files_with_version_number_without_prerelease_modifiers
@@ -130,28 +144,25 @@ platform :ios do
     end
   end
 
-  desc "Updates paywall-preview-resources submodule and creates/updates PR"
-  lane :update_paywall_preview_resources_submodule do |options|
-    branch_name = "pw2-update-paywall-preview-resources-submodule"
-    submodule_dir = "../upstream/paywall-preview-resources"
+  desc "Updates paywall-preview-resources-commit to point to latest commit on main and creates/updates PR"
+  lane :update_paywall_preview_resources_commit do |options|
+    branch_name = "pw2-update-paywall-preview-resources-commit"
 
     # Ensure we're starting from an up-to-date main.
     sh("git", "fetch", "origin")
 
     create_or_checkout_branch(branch_name: branch_name)
 
-    Dir.chdir(submodule_dir) do
-      sh("git", "fetch")
-      sh("git", "checkout", "main")
-      sh("git", "pull")
-    end
+    new_hash = sh("git", "ls-remote", "git@github.com:RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git", "refs/heads/main").split("\t").first
+    UI.important("Updating paywall preview resources commit to #{new_hash}")
+    update_paywall_preview_resources_commit(new_hash)
 
     commit_push_and_create_pr_if_necessary(
-      repo: repo_name,
+      repo: REPO_NAME,
       branch_name: branch_name,
-      commit_message: "[Automated] Updates paywall-preview-resources submodule.",
-      title: "[AUTOMATIC][Paywalls V2] Updates paywall-preview-resources submodule",
-      body: "This is an automatic update of the paywall-preview-resources submodule.",
+      commit_message: "[Automated] Updates commit hash of paywall-preview-resources.",
+      title: "[AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources",
+      body: "This is an automatic update of the commit hash of paywall-preview-resources.",
       labels: ["pr:other"],
       team_reviewers: ["coresdk", "monetization"]
     )
@@ -160,6 +171,8 @@ platform :ios do
   desc "Records Paywall template screenshots and pushes them to the repository at target_repository_path"
   lane :record_and_push_paywall_template_screenshots do |options|
     UI.user_error!("Please provide the target_repository_path, and make sure it is cloned.") unless options[:target_repository_path]
+
+    this_commit_hash = sh("git", "rev-parse", "HEAD").strip
 
     target_repository_path = Dir.chdir("..") do
       File.expand_path(options[:target_repository_path])
@@ -173,27 +186,35 @@ platform :ios do
       sh("git", "fetch")
       sh("git", "checkout", "main")
       sh("git", "pull")
-      create_or_checkout_branch(branch_name: target_repository_branch)
+
+      run_plugin_action_in_current_directory do
+        create_or_checkout_branch(branch_name: target_repository_branch)
+      end
       target_repository_name = sh("basename -s .git \"$(git config --get remote.origin.url)\"").strip
     end
     UI.user_error!("Failed to determine target repository name") if target_repository_name.nil? || target_repository_name.empty?
 
-    # Loop over all PNG files in the tmp_dir, parse the offering ID from the file names, and move them into the target repository
-    output_dir = record_paywall_screenshots
+    # Loop over all platforms and generate screenshots for each
+    platforms = ["ios",
+                # These platforms work locally but we have been unable to figure out how to get them to work on CI due to codesigning issues.
+                #  "iphone-app-on-mac",
+                #  "ipad-app-on-mac",
+                 "mac-catalyst-optimized-for-mac",
+                 "mac-catalyst-scaled-to-match-ipad",
+                 "mac-native"]
 
-    UI.message("Output directory: #{output_dir}")
-    
-    # Process the screenshots from the output directory
-    Dir.glob("#{output_dir}/images/*.png").each do |file_path|
-      offering_id = File.basename(file_path, File.extname(file_path))
-      target_dir = "#{target_repository_path}/screenshots/templates/#{offering_id}"
+    platforms.each do |platform|
+      UI.message("Generating screenshots for platform: #{platform}")
 
-      target_path = "#{target_dir}/ios.png"
+      output_dir = record_paywall_screenshots(platform: platform)
+      UI.message("Output directory for #{platform}: #{output_dir}")
 
-      UI.message("Moving #{file_path} to #{target_path}")
-
-      FileUtils.mkdir_p(target_dir)
-      FileUtils.cp(file_path, target_path)
+      # Process the screenshots from the output directory
+      process_paywall_screenshots(
+        output_dir: output_dir,
+        target_repository_path: target_repository_path,
+        platform: platform
+      )
     end
 
     # Commit, push, and create a PR in the target repository
@@ -201,31 +222,39 @@ platform :ios do
       commit_push_and_create_pr_if_necessary(
         repo: target_repository_name,
         branch_name: target_repository_branch,
-        commit_message: "[Automated] Updates iOS template screenshots.",
-        title: "[AUTOMATIC] Updates iOS template screenshots",
-        body: "This is an automatic update of the iOS template screenshots.",
-        team_reviewers: ["coresdk", "monetization", "bab-s"]
+        commit_message: "[Automated] Updates template screenshots for all Apple platforms (commit: #{this_commit_hash})",
+        title: "[AUTOMATIC] Updates template screenshots for all Apple platforms",
+        body: "This is an automatic update of the template screenshots for iOS, iPhone app on Mac, iPad app on Mac, Mac Catalyst optimized for Mac, and Mac Catalyst scaled to match iPad platforms.",
+        team_reviewers: ["coresdk", "monetization"]
       )
     end
   end
 
-  private_lane :create_or_checkout_branch do |options|
-    branch_name = options[:branch_name] || UI.user_error!("No branch name provided")
 
-    # Check if branch exists locally or remotely
-    branch_exists_locally = sh("git", "branch", "--list", branch_name).length > 0
-    branch_exists_remotely = sh("git", "ls-remote", "--heads", "origin", branch_name).length > 0
+  private_lane :process_paywall_screenshots do |options|
+    output_dir = options[:output_dir] || UI.user_error!("No output_dir provided")
+    target_repository_path = options[:target_repository_path] || UI.user_error!("No target_repository_path provided")
+    platform = options[:platform] || UI.user_error!("No platform provided")
 
-    if branch_exists_locally || branch_exists_remotely
-      UI.message("Branch #{branch_name} already exists, checking it out")
-      sh("git", "checkout", branch_name)
-      if branch_exists_remotely
-        sh("git", "pull", "origin", branch_name)
-      end
-    else
-      UI.message("Creating new branch #{branch_name}")
-      sh("git", "checkout", "-b", branch_name)
+    Dir.glob("#{output_dir}/images/*.png").each do |file_path|
+      offering_id = File.basename(file_path, File.extname(file_path))
+      target_dir = "#{target_repository_path}/screenshots/templates/#{offering_id}"
+
+      target_path = "#{target_dir}/#{platform}.png"
+
+      UI.message("Moving #{file_path} to #{target_path}")
+
+      FileUtils.mkdir_p(target_dir)
+      FileUtils.cp(file_path, target_path)
     end
+
+    # Upload snapshots to Emerge
+    UI.message("Uploading snapshots to Emerge for platform: #{platform}")
+    sh("bundle", "exec", "emerge", "upload", "snapshots",
+       "--name", "RevenueCat",
+       "--id", "com.revenuecat.paywall-rendering-validation.#{platform}",
+       "--repo-name", "RevenueCat/purchases-ios",
+       "#{output_dir}/images")
   end
 
   private_lane :commit_push_and_create_pr_if_necessary do |options|
@@ -233,10 +262,10 @@ platform :ios do
     commit_message = options[:commit_message] || UI.user_error!("No commit_message provided")
     title = options[:title] || commit_message
     body = options[:body] || commit_message
-    repo = options[:repo] || repo_name
+    repo = options[:repo] || REPO_NAME
     labels = options[:labels] || []
     team_reviewers = options[:team_reviewers] || []
-    
+
     has_changes = !sh("git", "status", "--porcelain").empty?
     if has_changes
       commit_and_push(
@@ -244,14 +273,18 @@ platform :ios do
         commit_message: commit_message
       )
 
-      create_pr_if_necessary(
-        repo: repo,
-        branch_name: branch_name,
-        title: title,
-        body: body,
-        labels: labels,
-        team_reviewers: team_reviewers
-      )
+      run_plugin_action_in_current_directory do
+        create_pr_if_necessary(
+          github_pr_token: ENV["GITHUB_TOKEN"],
+          repo_name: repo,
+          base_branch: "main",
+          head_branch: branch_name,
+          title: title,
+          body: body,
+          labels: labels,
+          team_reviewers: team_reviewers
+        )
+      end
     else
       UI.message("No changes detected. Skipping commit, push, and PR creation.")
     end
@@ -280,65 +313,63 @@ platform :ios do
     end
   end
 
-  private_lane :create_pr_if_necessary do |options|
-    branch_name = options[:branch_name] || UI.user_error!("No branch_name provided")
-    title = options[:title] || UI.user_error!("No title provided")
-    body = options[:body] || UI.user_error!("No body provided")
-    repo = options[:repo] || repo_name
-    repo_with_owner = "RevenueCat/#{repo}"
-    base = options[:base] || "main"
-    labels = options[:labels] || []
-    team_reviewers = options[:team_reviewers] || []
-
-    existing_pr = github_api(
-      api_token: ENV["GITHUB_TOKEN"],
-      path: "/repos/#{repo_with_owner}/pulls?head=RevenueCat:#{branch_name}&state=open"
-    )
-
-    if existing_pr[:json].length == 0
-      pr_url = create_pull_request(
-        repo: repo_with_owner,
-        title: title,
-        body: body,
-        base: base,
-        head: branch_name,
-        api_token: ENV["GITHUB_TOKEN"],
-        labels: labels,
-        team_reviewers: team_reviewers
-      )
-      
-      if pr_url.nil?
-        UI.user_error!("Failed to create pull request.")
-      end
-    else
-      UI.message("PR already exists.")
-    end
-  end
-
   desc "Records screenshots for paywalls"
   lane :record_paywall_screenshots do |options|
+    platform = options[:platform] || UI.user_error!("No platform provided. Use one of: ios, iphone-app-on-mac, ipad-app-on-mac, mac-catalyst-optimized-for-mac, mac-catalyst-scaled-to-match-ipad")
+
+    # Map platform to destination
+    destinations = {
+      "ios" => "platform=iOS Simulator,name=iPhone 16",
+      "iphone-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPhone",
+      "ipad-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPad",
+      "mac-catalyst-optimized-for-mac" => "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      "mac-catalyst-scaled-to-match-ipad" => "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      "mac-native" => "platform=macOS,arch=arm64"
+    }
+
+    # Map platform to TARGETED_DEVICE_FAMILY build setting. This overrides the setting in the Xcode Project,
+    # if we ever change the list of supported platforms we'll need to make sure to update this as well.
+    targeted_device_families = {
+      "mac-catalyst-optimized-for-mac" => "1,2,3,4,6",
+      "mac-catalyst-scaled-to-match-ipad" => "1,2,3,4"
+    }
+
+    destination = destinations[platform]
+    UI.user_error!("Invalid platform '#{platform}'. Use one of: #{destinations.keys.join(', ')}") unless destination
+
     output_dir = File.absolute_path("../fastlane/test_output/xctest/paywall-screenshots")
     FileUtils.rm_rf(output_dir)
     FileUtils.mkdir_p(output_dir)
 
-    device = ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)"
     result_bundle_path = "#{output_dir}/RevenueCatUITests.xcresult"
 
-    # Using xcodebuild because scan couldn't find RevenueCatUI scheme locally (even though shared)
-    # This is due to RevenueCatUI scheme belonging to purchases-ios and not an actual project
-    xcodebuild(
-      workspace: '.',
-      scheme: 'RevenueCatUI',
-      destination: "platform=iOS Simulator,name=#{device}",
-      sdk: 'iphonesimulator',
-      test: true,
-      xcargs: "-testPlan Paywall-Screenshots -resultBundlePath #{result_bundle_path}"
-    )
+    xcargs = []
+    if targeted_device_families[platform]
+      xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
+    end
+
+    Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
+      match(type: "development", readonly: true)
+    end
+
+    scan_options = {
+      workspace: 'RevenueCat.xcworkspace',
+      scheme: 'RevenueCatUITestsDev',
+      testplan: 'Paywall-Screenshots',
+      destination: destination,
+      result_bundle: true,
+      result_bundle_path: result_bundle_path,
+    }
+
+    # Add xcargs only if we have build settings to apply
+    scan_options[:xcargs] = xcargs.join(' ') unless xcargs.empty?
+
+    scan(scan_options)
 
     image_output_dir = "#{output_dir}/images"
     FileUtils.mkdir_p(image_output_dir)
     extract_xcresult_images(
-      xcresult_path: result_bundle_path, 
+      xcresult_path: result_bundle_path,
       output_dir: image_output_dir
     )
 
@@ -347,12 +378,176 @@ platform :ios do
 
   desc "Build the Paywalls Test app for Emerge Snapshots"
   lane :build_paywalls_tester_for_emerge do |options|
+    build_paywalls_tester_for_emerge_ios(options)
+    # November 2025: Emerge snapshots for these platforms are flaky, disabling for now.
+    # build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
+    # build_paywalls_tester_for_emerge_mac(platform: "mac-native")
+    # build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-optimized-for-mac")
+
+
+    # As of July 2025, Emerge Tools does not support iOS apps on Mac yet.
+    # build_paywalls_tester_for_emerge_mac(platform: "ipad-app-on-mac")
+    # build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
+  end
+
+  lane :build_paywalls_tester_for_emerge_ios do |options|
     scan(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
       build_for_testing: true,
     )
 
+    send_to_emerge(
+        app_id_suffix: ""
+    )
+  end
+
+  private_lane :build_paywalls_tester_for_emerge_mac do |options|
+    platform = options[:platform]
+
+    # As of July 2025, Emerge Tools has explicitly enabled Catalyst support for apps with the bundle identifiers com.revenuecat.PaywallsTester-<platform> for these 4 platform values.
+    # If you change one of these values, you will need to verify that Catalyst support has been enabled for all bundle identifiers, or tell them the new bundle identiifer.
+    case platform
+    when "mac-catalyst-scaled-to-match-ipad"
+      build_mac_catalyst_version(platform: platform, device_families: "1,2,3,4,5,7")
+    when "mac-catalyst-optimized-for-mac"
+      build_mac_catalyst_version(platform: platform, device_families: "1,2,3,4,5,6,7")
+    when "ipad-app-on-mac"
+      build_ios_app_on_mac_version(platform: platform, include_ipad: true)
+    when "iphone-app-on-mac"
+      build_ios_app_on_mac_version(platform: platform, include_ipad: false)
+    when "mac-native"
+      build_mac_native_version(platform: platform)
+    else
+      UI.user_error!("Invalid platform: #{platform}. Must be one of: mac-catalyst-scaled-to-match-ipad, mac-catalyst-optimized-for-mac, ipad-app-on-mac, iphone-app-on-mac")
+    end
+  end
+
+  private_lane :build_mac_catalyst_version do |options|
+    platform = options[:platform]
+    device_families = options[:device_families]
+    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
+
+    # Remove macosx from SUPPORTED_PLATFORMS in project.pbxproj. xcodebuild will fail if macosx is in the list, even
+    # if we override it in xcargs.
+    project_file_path = File.absolute_path("../Tests/TestingApps/PaywallsTester/PaywallsTester.xcodeproj/project.pbxproj")
+    file_content = File.read(project_file_path)
+    modified_content = file_content.gsub(/SUPPORTED_PLATFORMS = "[^"]*";/, 'SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";')
+    File.write(project_file_path, modified_content)
+
+    archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
+
+    gym(
+      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+      scheme: "PaywallsTester - Live Config",
+      configuration: "Debug",
+      destination: "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      xcargs: xcargs,
+      skip_codesigning: true,
+      archive_path: archive_path,
+      skip_package_pkg: true,
+      skip_package_ipa: false
+    )
+
+    send_to_emerge(
+        app_id_suffix: platform,
+        archive_path: archive_path
+    )
+  ensure
+    # Reset project file changes
+    sh("git checkout -- ../Tests/TestingApps/PaywallsTester/PaywallsTester.xcodeproj/project.pbxproj")
+  end
+
+  private_lane :build_mac_native_version do |options|
+    platform = options[:platform]
+    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+
+    archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
+
+    gym(
+      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+      scheme: "PaywallsTester - Live Config",
+      configuration: "Debug",
+      destination: "platform=macOS,arch=arm64",
+      xcargs: xcargs,
+      skip_codesigning: true,
+      archive_path: archive_path,
+      skip_package_pkg: true,
+      skip_package_ipa: false
+    )
+
+    send_to_emerge(
+        app_id_suffix: platform,
+        archive_path: archive_path
+    )
+  end
+
+  private_lane :build_ios_app_on_mac_version do |options|
+    platform = options[:platform]
+    include_ipad = options[:include_ipad]
+
+    # Build iOS version first with appropriate device family targeting
+    device_families = include_ipad ? "1,2" : "1"
+    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
+
+    ios_archive_path = File.absolute_path("build/PaywallsTester-#{platform}-ios.xcarchive")
+
+    # Build the iOS version
+    gym(
+      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+      scheme: "PaywallsTester - Live Config",
+      configuration: "Debug",
+      destination: "generic/platform=iOS",
+      xcargs: xcargs,
+      archive_path: ios_archive_path,
+      skip_codesigning: true,
+      skip_package_pkg: true,
+      skip_package_ipa: true
+    )
+
+    # Extract the .app file from the archive
+    ios_app_path = "#{ios_archive_path}/Products/Applications/PaywallsTester.app"
+
+    unless File.exist?(ios_app_path)
+      UI.user_error!("Could not find iOS .app at expected path: #{ios_app_path}")
+    end
+
+    # Create the Mac app wrapper structure
+    mac_app_path = File.absolute_path("build/PaywallsTester-#{platform}.app")
+    wrapper_dir = "#{mac_app_path}/Wrapper"
+    wrapped_app_path = "#{wrapper_dir}/PaywallsTester.app"
+    symlink_path = "#{mac_app_path}/WrappedBundle"
+
+    # Clean up any existing structure
+    FileUtils.rm_rf(mac_app_path) if File.exist?(mac_app_path)
+
+    # Create the directory structure
+    FileUtils.mkdir_p(wrapper_dir)
+
+    # Copy the iOS .app to the Wrapper directory
+    UI.message("Copying iOS .app from #{ios_app_path} to #{wrapped_app_path}")
+    FileUtils.cp_r(ios_app_path, wrapped_app_path)
+
+    # Create the symlink
+    UI.message("Creating symlink from #{symlink_path} to Wrapper/PaywallsTester.app")
+    File.symlink("Wrapper/PaywallsTester.app", symlink_path)
+
+    # Verify the structure was created correctly
+    unless File.exist?(wrapped_app_path) && File.symlink?(symlink_path)
+      UI.user_error!("Failed to create proper Mac app structure")
+    end
+
+    UI.success("Successfully created Mac app structure at #{mac_app_path}")
+
+    send_to_emerge(
+        app_id_suffix: platform,
+        file_path: mac_app_path
+    )
+  end
+
+  private_lane :send_to_emerge do |options|
     pr_url = ENV["CIRCLE_PULL_REQUEST"]
     branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
     pr_number = nil
@@ -367,6 +562,25 @@ platform :ios do
 
     emerge_args = {repo_name: "RevenueCat/purchases-ios"}
     emerge_args[:pr_number] = pr_number if pr_number
+    emerge_args[:app_id_suffix] = options[:app_id_suffix]
+
+    # Add emerge_config.yaml to .xcarchive files
+    if options[:archive_path] && options[:archive_path].end_with?('.xcarchive')
+      emerge_config_source = File.absolute_path("../emerge/emerge_config.yaml")
+      emerge_config_dest = "#{options[:archive_path]}/emerge_config.yaml"
+
+      if File.exist?(emerge_config_source)
+        FileUtils.cp(emerge_config_source, emerge_config_dest)
+        UI.message("Added emerge_config.yaml to #{File.basename(options[:archive_path])}")
+      else
+        UI.important("emerge_config.yaml not found at #{emerge_config_source}")
+      end
+
+      emerge_args[:file_path] = options[:archive_path]
+    elsif options[:archive_path] || options[:file_path]
+      emerge_args[:file_path] = options[:archive_path] || options[:file_path]
+    end
+
     emerge(emerge_args)
   end
 
@@ -390,7 +604,7 @@ platform :ios do
       test_plan = "CI-AllTests"
     end
 
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       ensure_devices_found: true,
@@ -402,14 +616,13 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
-      fail_build: !generate_snapshots,
-      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots
     )
   end
 
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV",
       ensure_devices_found: true,
@@ -420,9 +633,7 @@ platform :ios do
       result_bundle: true,
       testplan: "CI-AllTests",
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/tvos",
-
-      number_of_flaky_retries: 5 # Number of xcodebuild runs to retry
+      output_directory: "fastlane/test_output/xctest/tvos"
     )
   end
 
@@ -435,7 +646,7 @@ platform :ios do
       test_plan = "CI-RevenueCat"
     end
 
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - watchOS",
       device: ENV['SCAN_DEVICE'] || "Apple Watch Series 10 (46mm)",
       ensure_devices_found: true,
@@ -448,9 +659,7 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/watchos",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
-      fail_build: !generate_snapshots,
-
-      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots
     )
   end
 
@@ -465,12 +674,13 @@ platform :ios do
 
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
+      # Note: We use xcodebuild instead of scan because this is an SPM package (workspace: '.')
+      # and scan doesn't properly detect schemes defined in Package.swift
       xcodebuild(
         workspace: '.',
         scheme: 'RevenueCatUI',
         destination: "platform=" + platform + ",name=" + destination,
         sdk: sdk,
-        output_style: :basic,
         result_bundle_path: 'fastlane/test_output/revenuecatui.xcresult',
         report_formats: [:junit],
         report_path: 'fastlane/test_output/revenuecatui/tests.xml',
@@ -518,6 +728,114 @@ platform :ios do
     )
   end
 
+  desc "Build BinarySizeTest app and upload to Emerge"
+  lane :build_and_upload_emerge_binary_size_analysis do |options|
+    integration_method = options[:integration_method]
+    unless integration_method
+      UI.user_error!("Missing required option: integration_method. Expected one of: LOCAL_SOURCE, COCOAPODS, SPM")
+    end
+
+    archive_path = build_binary_size_test_app(
+      integration_method: integration_method
+    )
+
+    send_to_emerge(
+      archive_path: archive_path
+    )
+  end
+
+  private_lane :build_binary_size_test_app do |options|
+    integration_method = options[:integration_method]
+    unless integration_method
+      UI.user_error!("Missing required option: integration_method. Expected one of: LOCAL_SOURCE, COCOAPODS, SPM")
+    end
+
+    settings_by_method = {
+      "LOCAL_SOURCE" => {
+        bundle_id: "com.revenuecat.binary-size-test.local-source",
+        workspace_relative_path: "RevenueCat-Tuist.xcworkspace"
+      },
+      "COCOAPODS" => {
+        bundle_id: "com.revenuecat.binary-size-test.cocoapods",
+        # Created by running `pod install` inside `Projects/BinarySizeTest/`
+        workspace_relative_path: "Projects/BinarySizeTest/BinarySizeTest.xcworkspace"
+      },
+      "SPM" => {
+        bundle_id: "com.revenuecat.binary-size-test.spm",
+        workspace_relative_path: "RevenueCat-Tuist.xcworkspace"
+      }
+    }
+
+    settings = settings_by_method[integration_method]
+    unless settings
+      UI.user_error!(
+        "Invalid integration_method '#{integration_method}'. " \
+        "Expected one of: #{settings_by_method.keys.join(', ')}"
+      )
+    end
+
+    project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+    workspace_path = File.join(project_root, settings[:workspace_relative_path])
+
+    if integration_method == "COCOAPODS"
+      podfile_dir = File.join(project_root, "Projects/BinarySizeTest")
+      UI.message("Integration method is COCOAPODS; running pod install in #{podfile_dir}")
+      Dir.chdir(podfile_dir) do
+        sh("bundle", "exec", "pod", "install")
+      end
+    end
+
+    unless File.directory?(workspace_path)
+      UI.user_error!(
+        "Workspace not found at #{workspace_path}. " \
+        "Expected to be generated by CI#{integration_method == "COCOAPODS" ? " (and pods installed)" : ""}."
+      )
+    end
+
+    bundle_id = settings[:bundle_id]
+    provisioning_profile_name = "match AppStore #{bundle_id}"
+
+    match(
+      type: "appstore",
+      readonly: true,
+      platform: "ios",
+      app_identifier: bundle_id,
+      git_url: ENV['CERTS_REPO_URL']
+    )
+
+    archive_path = File.join(project_root, "build/BinarySizeTest-#{integration_method}.xcarchive")
+    output_directory = File.join(project_root, "build")
+
+    # Build, archive, and export IPA in one step
+    gym(
+      workspace: workspace_path,
+      scheme: "BinarySizeTest",
+      configuration: "Release",
+      destination: "generic/platform=iOS",
+      archive_path: archive_path,
+      export_method: "app-store",
+      export_options: {
+        signingStyle: "manual",
+        stripSwiftSymbols: false,
+        thinning: "<none>",
+        provisioningProfiles: {
+          bundle_id => provisioning_profile_name
+        }
+      },
+      output_directory: output_directory,
+      include_bitcode: false,
+      include_symbols: true,
+      clean: false
+    )
+
+    ipa_path = lane_context[SharedValues::IPA_OUTPUT_PATH]
+    unless ipa_path && File.exist?(ipa_path)
+      UI.user_error!("IPA export completed but no IPA file found in lane context")
+    end
+
+    archive_path
+  end
+
   desc "archive"
   lane :archive do
     match(type: "appstore", readonly: true)
@@ -541,12 +859,180 @@ platform :ios do
   desc "run API Tests"
   lane :run_api_tests do
     # note: it's called "run" tests but these tests only need to build to run
+    workspace_path = 'RevenueCat-Tuist.xcworkspace'
+    unless File.directory?(workspace_path)
+      UI.important("#{workspace_path} not found. Run `tuist generate --no-open` before invoking this lane.")
+    end
     xcodebuild(
-      workspace: 'RevenueCat.xcworkspace',
+      workspace: workspace_path,
       scheme: 'All API Tests',
       destination: 'generic/platform=iOS Simulator',
       configuration: 'release',
     )
+  end
+
+  desc "Setup XCConfig file for E2E tests"
+  private_lane :setup_xcconfig do |options|
+    api_key = options[:api_key] || UI.user_error!("api_key is required")
+    force_server_error_strategy = options[:force_server_error_strategy] || "never"
+    api_host = options[:api_host] || ""
+    proxy_url_scheme = options[:proxy_url_scheme] || ""
+    proxy_url_host = options[:proxy_url_host] || ""
+
+    base_path = "#{Dir.pwd}/.."
+    xcconfig_path = "#{base_path}/CI.xcconfig"
+
+    UI.message("Creating XCConfig file at #{xcconfig_path}")
+
+    content = [
+      "// Auto-generated. Do not commit to VCS",
+      "// Generated on #{Time.now}",
+      "",
+      "REVENUECAT_API_KEY = #{api_key}",
+      "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = #{force_server_error_strategy}"
+    ]
+
+    content << "REVENUECAT_API_HOST = #{api_host}" unless api_host.empty?
+    content << "REVENUECAT_PROXY_URL_SCHEME = #{proxy_url_scheme}" unless proxy_url_scheme.empty?
+    content << "REVENUECAT_PROXY_URL_HOST = #{proxy_url_host}" unless proxy_url_host.empty?
+
+    File.write(xcconfig_path, content.join("\n"))
+    UI.success("✅ Created CI.xcconfig")
+  end
+
+  # Runs Maestro E2E tests.
+  # Parameters:
+  #   - backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
+  #   - store: ["app_store", "test_store"]
+  #
+  # Note that currently the "test_store" store is only available in the production environment.
+  desc "run_maestro_e2e_tests"
+  lane :run_maestro_e2e_tests do |options|
+    backend_environment = options[:backend_environment] || "production"
+    store = options[:store] || "app_store"
+    base_path = "#{Dir.pwd}/.."
+
+    UI.message("Running Maestro E2E tests for backend environment: #{backend_environment}")
+
+    # Get API key from environment variable
+    api_key = ENV["REVENUECAT_API_KEY"]
+    UI.user_error!("REVENUECAT_API_KEY environment variable must be set") unless api_key
+
+    # Determine configuration based on backend environment
+    api_host = ""
+    force_server_error_strategy = "never"
+    entitlement_verification_result = ""
+    customer_info_source = ""
+    heartbeat_monitor_ping_url = ""
+
+    case backend_environment
+    when "load_shedder_us_east_1"
+      api_host = "fortress-us-east-1.revenuecat.com"
+      entitlement_verification_result = "verified"
+      customer_info_source = "load_shedder"
+      heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_LOAD_SHEDDER_US_EAST_1"]
+    when "load_shedder_us_east_2"
+      api_host = "fortress-us-east-2.revenuecat.com"
+      entitlement_verification_result = "verified"
+      customer_info_source = "load_shedder"
+      heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_LOAD_SHEDDER_US_EAST_2"]
+    when "fallback"
+      force_server_error_strategy = "primary_backend_down"
+      entitlement_verification_result = "verified_on_device"
+      customer_info_source = "offline_entitlements"
+      heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_FALLBACK"]
+    when "production"
+      entitlement_verification_result = "verified"
+      customer_info_source = "main"
+      heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_PRODUCTION"]
+    else
+      UI.user_error!("Invalid backend_environment: #{backend_environment}. Must be one of: production, load_shedder_us_east_1, load_shedder_us_east_2, fallback")
+    end
+
+    # Set environment variables for Maestro
+    ENV["MAESTRO_EXPECTED_VERIFICATION_RESULT"] = entitlement_verification_result
+    ENV["MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE"] = customer_info_source
+    ENV["MAESTRO_STORE"] = store
+
+    UI.message("Setting Maestro environment variables:")
+    UI.message("  MAESTRO_EXPECTED_VERIFICATION_RESULT: #{entitlement_verification_result}")
+    UI.message("  MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE: #{customer_info_source}")
+
+    # Setup XCConfig with the appropriate configuration
+    setup_xcconfig(
+      api_key: api_key,
+      api_host: api_host,
+      force_server_error_strategy: force_server_error_strategy
+    )
+
+    # note: it's called "run" tests but these tests only need to build to run
+    xcworkspace = 'RevenueCat-Tuist.xcworkspace'
+    unless File.directory?(xcworkspace)
+      UI.important("#{xcworkspace} not found. Run `tuist generate --no-open` before invoking this lane.")
+    end
+
+    xcodebuild(
+      workspace: xcworkspace,
+      scheme: "Maestro",
+      sdk: "iphonesimulator",
+      configuration: "Debug",
+      derivedDataPath: "./build"
+    )
+
+    # Install app to simulator
+    UI.message("Installing app to simulator...")
+    sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/Maestro.app")
+
+    if store == "app_store"
+      bundle_id = "com.revenuecat.maestro.ios"
+      storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
+
+      # Start file watcher in background
+      UI.message("Starting StoreKit config file watcher...")
+      watcher_script = "#{base_path}/fastlane/storekit_config_file_watcher.rb"
+      watcher_pid = Process.spawn(
+        "ruby", watcher_script,
+        bundle_id, storekit_config_path
+      )
+
+      # Give watcher time to start
+      sleep 1
+      UI.success("✓ StoreKit config watcher started (PID: #{watcher_pid})")
+    end
+
+    success = false
+    begin
+      # Construct the flow directory path
+      flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests"
+
+      # Verify the flow directory exists
+      unless File.directory?(flow_dir)
+        UI.user_error!("Flow directory not found: #{flow_dir}")
+      end
+
+      UI.message("Using flow directory: #{flow_dir}")
+
+      sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
+
+      success = true
+    rescue => e
+      raise e
+    ensure
+      slack_backend_integration_test_results(
+        environment: backend_environment,
+        success: success,
+        message_binary_solo_on_failure: false
+      )
+      ping_heartbeat_monitor(url: heartbeat_monitor_ping_url)
+
+      if store == "app_store"
+        # Always stop the watcher, even if Maestro fails
+        UI.message("Stopping StoreKit config watcher...")
+        Process.kill('TERM', watcher_pid) rescue nil
+        Process.wait(watcher_pid) rescue nil
+        UI.success("✓ StoreKit config watcher stopped")
+      end
+    end
   end
 
   desc "replace API KEY for installation and integration tests"
@@ -559,13 +1045,19 @@ platform :ios do
         './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m'
       ]
     )
+
+    # V3LoadShedderIntegrationTests.swift and V4LoadShedderIntegrationTests.swift are missing when
+    # running Carthage installation tests because they are removed in the prepare_for_carthage lane.
+    # Passing skip_missing_files: true prevents the replace_text_in_files action from failing in this case.
     replace_text_in_files(
       previous_text: "REVENUECAT_LOAD_SHEDDER_API_KEY",
       new_text: ENV["REVENUECAT_LOAD_SHEDDER_API_KEY"],
       paths_of_files_to_update: [
         './Tests/BackendIntegrationTests/Constants.swift',
-        './Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTests.swift'
-      ]
+        './Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTests.swift',
+        './Tests/v4LoadShedderIntegration/v4LoadShedderIntegrationTests/V4LoadShedderIntegrationTests.swift'
+      ],
+      skip_missing_files: true
     )
     replace_text_in_files(
       previous_text: "REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY",
@@ -583,6 +1075,15 @@ platform :ios do
         './Tests/BackendIntegrationTests/Constants.swift',
         './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m',
         './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/InstallationTests.swift'
+      ],
+      allow_empty: true
+    )
+
+    replace_text_in_files(
+      previous_text: "REVENUECAT_API_BASE_URL",
+      new_text: ENV["REVENUECAT_API_BASE_URL"].to_s,
+      paths_of_files_to_update: [
+        './Tests/BackendIntegrationTests/Constants.swift'
       ],
       allow_empty: true
     )
@@ -616,7 +1117,47 @@ platform :ios do
 
   desc "Trigger bump"
   lane :trigger_bump do
-    trigger_action_in_circle_ci(action: 'bump', repo_name: repo_name)
+    trigger_action_in_circle_ci(action: 'bump', repo_name: REPO_NAME)
+  end
+
+  desc "Trigger bump SDK in RC mobile app"
+  lane :trigger_bump_sdk_in_rc_mobile_app do
+    require 'rest-client'
+
+    version = current_version_number
+
+    circle_token = ENV["RC_APP_CIRCLE_CI_TOKEN"]
+    UI.user_error!("Please set the RC_APP_CIRCLE_CI_TOKEN environment variable") unless circle_token
+
+    definition_id = ENV["RC_APP_CIRCLE_CI_PIPELINE_DEFINITION_ID"]
+    UI.user_error!("Please set the RC_APP_CIRCLE_CI_PIPELINE_DEFINITION_ID environment variable") unless definition_id
+
+    project_slug = ENV["RC_APP_CIRCLE_CI_PROJECT_SLUG"]
+    UI.user_error!("Please set the RC_APP_CIRCLE_CI_PROJECT_SLUG environment variable") unless project_slug
+
+    # Make request
+    headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
+    data = {
+      definition_id: definition_id,
+      config: { branch: "main" },
+      checkout: { branch: "main" },
+      parameters: {
+        bump_sdk: true,
+        sdk_version: version
+      }
+    }
+    url = "https://circleci.com/api/v2/project/#{project_slug}/pipeline/run"
+
+    begin
+      RestClient.post url, data.to_json, headers
+      UI.success "RC App Pipeline triggered successfully"
+    rescue => e
+      UI.error "Failed to trigger RC App Pipeline: #{e.message}"
+      if e.respond_to?(:response) && e.response
+        UI.error "Response body: #{e.response.body}"
+      end
+      raise e
+    end
   end
 
   desc "Checks whether the RevenueCat-Swift.h is up to date"
@@ -683,13 +1224,13 @@ platform :ios do
     # Make request
     headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
     data = {parameters: {options[:pipeline] => true}, branch: branch}
-    url = "https://circleci.com/api/v2/project/github/RevenueCat/#{repo_name}/pipeline"
+    url = "https://circleci.com/api/v2/project/github/RevenueCat/#{REPO_NAME}/pipeline"
 
     resp = RestClient.post url, data.to_json, headers
 
     # Print workflow url
     number = JSON.parse(resp.body)["number"]
-    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{repo_name}/#{number}"
+    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{REPO_NAME}/#{number}"
 
     UI.important "Workflow: #{workflow_url}"
   end
@@ -698,7 +1239,7 @@ platform :ios do
   lane :create_snapshot_pr do |options|
     push_snapshot_pr(
       version: options[:version],
-      repo: "revenuecat/#{repo_name}",
+      repo: "revenuecat/#{REPO_NAME}",
       base_branch: ENV["CIRCLE_BRANCH"],
       files_to_add: "../*/__Snapshots__/*"
      )
@@ -706,10 +1247,10 @@ platform :ios do
 
   desc "Creates a new PR on purchases-ios-snapshots after new snapshot files were generated"
   lane :create_snapshots_repo_pr do |options|
-    Dir.chdir("../Tests/#{snapshots_repo_name}") { |dir|
+    Dir.chdir("../Tests/#{SNAPSHOTS_REPO_NAME}") { |dir|
      push_snapshot_pr(
       version: options[:version],
-      repo: "revenuecat/#{snapshots_repo_name}",
+      repo: "revenuecat/#{SNAPSHOTS_REPO_NAME}",
       base_branch: "main",
       files_to_add: "."
      )
@@ -760,8 +1301,8 @@ platform :ios do
 
     Dir.mktmpdir {|dir|
       xcodebuild(
-        project: 'RevenueCat.xcodeproj',
         scheme: 'RevenueCat',
+        workspace: 'RevenueCat.xcworkspace',
         derivedDataPath: dir,
         configuration: 'release',
         arch: arch,
@@ -822,6 +1363,11 @@ platform :ios do
     # sh runs from the Fastfile's location, but other commands run from the project root.
     output_directory_for_sh = "../#{output_directory}"
 
+    # Post-process headers to suppress StoreKit 1 deprecation warnings
+    suppress_deprecation_warnings_in_headers(
+      xcframework_path: "#{output_directory_for_sh}/#{product_name}.xcframework"
+    )
+
     # Sign XCFramework for Xcode 15
     sign_xcframework(
       file: "#{output_directory_for_sh}/#{product_name}.xcframework"
@@ -841,29 +1387,48 @@ platform :ios do
     fetch_snapshots
     replace_api_key_integration_tests
 
-    scan_with_flaky_test_retries(
-      scheme: "BackendIntegrationTests",
-      ensure_devices_found: true,
-      derived_data_path: "scan_derived_data",
-      output_types: 'junit',
-      output_style: 'raw',
-      result_bundle: true,
-      testplan: options[:test_plan],
-      configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/ios",
-
-      number_of_flaky_retries: 5 # Number of retries in an xcodebuild run
-    )
-  end
-
-  desc "Run LoadShedder tests"
-  lane :v3_loadshedder_integration_tests do |options|
-    replace_api_key_integration_tests
     success = false
     begin
       scan(
-        project: "./Tests/v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj",
-        scheme: "v3LoadShedderIntegration",
+        scheme: "BackendIntegrationTests",
+        ensure_devices_found: true,
+        derived_data_path: "scan_derived_data",
+        output_types: 'junit',
+        output_style: 'raw',
+        result_bundle: true,
+        testplan: options[:test_plan],
+        configuration: 'Debug',
+        output_directory: "fastlane/test_output/xctest/ios",
+        number_of_retries: 5 # Number of retries in an xcodebuild run
+      )
+      success = true
+    rescue => exception
+      raise exception
+    ensure
+      if options[:test_plan] == "BackendIntegrationTests-All-CI"
+        # In the All CI backend integration test plan the load shedder tests are ran against us-east-1 and us-east-2 and all the other tests are ran against production
+        slack_backend_integration_test_results(
+          environment: "production, load_shedder_us_east_1, load_shedder_us_east_2, fallback",
+          success: success,
+          message_binary_solo_on_failure: false
+        )
+        ping_heartbeat_monitor(url: ENV['HEARTBEAT_MONITOR_URL_BACKEND_INTEGRATION_TESTS'])
+      end
+    end
+  end
+
+  desc "Run LoadShedder tests in old major"
+  lane :loadshedder_integration_tests_in_old_major do |options|
+    replace_api_key_integration_tests
+    major = options[:major] || UI.user_error!("Please provide :major (Integer, e.g., 3 or 4)")
+    major = major.to_i
+    UI.user_error!("Unsupported major version: #{major}. Supported: 3 or 4") unless [3, 4].include?(major)
+    success = false
+    begin
+      scan(
+        project: "./Tests/v#{major}LoadShedderIntegration/v#{major}LoadShedderIntegration.xcodeproj",
+        device: ENV['SCAN_DEVICE'] || "iPhone 16 (18.5)",
+        scheme: "v#{major}LoadShedderIntegration",
         ensure_devices_found: true,
         derived_data_path: "scan_derived_data",
         output_types: 'junit',
@@ -876,7 +1441,13 @@ platform :ios do
     rescue => exception
       raise exception
     ensure
-      send_slack_load_shedder_integration_test_v3(success: success)
+      slack_backend_integration_test_results(
+        environment: "load_shedder_us_east_1",
+        success: success,
+        version: major.to_s,
+        message_binary_solo_on_failure: false
+      )
+      ping_heartbeat_monitor(url: ENV["HEARTBEAT_MONITOR_URL_LOAD_SHEDDER_V#{major}_INTEGRATION_TESTS"])
     end
   end
 
@@ -888,8 +1459,7 @@ platform :ios do
       './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
       './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
-      './Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj',
-      './Examples/SampleCat/SampleCat.xcodeproj/project.pbxproj'
+      './Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj'
     ]
 
     old_kind_line = "kind = branch;"
@@ -910,6 +1480,40 @@ platform :ios do
       new_text: new_revision_line,
       paths_of_files_to_update: project_file_locations
     )
+  end
+
+  private_lane :suppress_deprecation_warnings_in_headers do |options|
+    xcframework_path = options[:xcframework_path]
+
+    # Find all RevenueCat-Swift.h files in the XCFramework
+    swift_headers = Dir.glob("#{xcframework_path}/**/RevenueCat-Swift.h")
+
+    swift_headers.each do |header_path|
+      UI.message("Processing header: #{header_path}")
+
+      content = File.read(header_path)
+
+      # Check if pragma directives are already present
+      unless content.include?('#pragma clang diagnostic ignored "-Wdeprecated-declarations"')
+        # Add pragma directives to suppress StoreKit 1 deprecation warnings
+        pragma_insertion_point = content.index('#pragma clang diagnostic ignored "-Wgcc-compat"')
+
+        if pragma_insertion_point
+          insertion_index = content.index("\n", pragma_insertion_point) + 1
+          pragma_directives = <<~PRAGMA
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+          PRAGMA
+
+          content.insert(insertion_index, pragma_directives)
+          File.write(header_path, content)
+          UI.success("Added deprecation warning suppression to #{File.basename(header_path)}")
+        else
+          UI.error("Could not find insertion point in #{File.basename(header_path)}")
+        end
+      else
+        UI.message("Deprecation warnings already suppressed in #{File.basename(header_path)}")
+      end
+    end
   end
 
   private_lane :sign_xcframework do |options|
@@ -985,7 +1589,7 @@ platform :ios do
 
     docs_repo_url = File.join(docs_repo_base_url, docs_repo_name)
 
-    docs_files = Dir.glob("scripts/docs/*.html").map { |file| File.realpath(file) }
+    docs_files = Dir.glob("../scripts/docs/*.html").map { |file| File.realpath(file) }
     # clone docs repo
     Dir.mktmpdir do |docs_repo_clone_dir|
       Dir.chdir(docs_repo_clone_dir) do
@@ -1058,7 +1662,7 @@ platform :ios do
 
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
 
-    latest_changelog = File.read("#{project_root}/#{changelog_latest_path}")
+    latest_changelog = File.read("#{project_root}/#{CHANGELOG_LATEST_PATH}")
     changelog = "Release #{current_version_number}:\n\n#{latest_changelog}"
 
     purchase_tester_root = "#{project_root}/Tests/TestingApps/PurchaseTesterSwiftUI"
@@ -1089,10 +1693,14 @@ platform :ios do
       }
     )
 
+    # Wait 20 minutes for the build to be processed by Apple otherwise fail
+    wait_processing_timeout_duration_in_seconds = 60 * 20
+
     if not dry_run
       upload_to_testflight(
       changelog: changelog,
       app_identifier: "com.revenuecat.sampleapp",
+      wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
     )
     else
       UI.message("Dry run mode enabled. Skipping upload to TestFlight")
@@ -1127,6 +1735,7 @@ platform :ios do
         changelog: changelog,
         app_platform: 'osx',
         app_identifier: "com.revenuecat.sampleapp",
+        wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
       )
     else
         UI.message("Dry run mode enabled. Skipping upload to TestFlight")
@@ -1137,15 +1746,32 @@ platform :ios do
   desc "Clones or updates snapshots repo"
   lane :fetch_snapshots do
     Dir.chdir("../Tests") do
-      if !File.directory?(snapshots_repo_name)
+      if !File.directory?(SNAPSHOTS_REPO_NAME)
         UI.important("Cloning snapshots repo")
 
-        sh "git", "clone", "git@github.com:RevenueCat/#{snapshots_repo_name}.git"
+        sh "git", "clone", "git@github.com:RevenueCat/#{SNAPSHOTS_REPO_NAME}.git"
       end
 
       commit = current_snapshots_commit
       UI.message("Updating snapshots repo to #{commit}")
-      Dir.chdir(snapshots_repo_name) do
+      Dir.chdir(SNAPSHOTS_REPO_NAME) do
+        sh "git", "fetch", "origin"
+        sh "git", "checkout", commit
+      end
+    end
+  end
+
+  desc "Clones or updates paywall-preview-resources repo"
+  lane :fetch_paywall_preview_resources do
+    Dir.chdir("../Tests") do
+      if !File.directory?(PAYWALL_PREVIEW_RESOURCES_REPO_NAME)
+        UI.important("Cloning paywall-preview-resources repo")
+        sh "git", "clone", "git@github.com:RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git"
+      end
+
+      commit = current_paywall_preview_resources_commit
+      UI.message("Updating paywall-preview-resources repo to #{commit}")
+      Dir.chdir(PAYWALL_PREVIEW_RESOURCES_REPO_NAME) do
         sh "git", "fetch", "origin"
         sh "git", "checkout", commit
       end
@@ -1156,7 +1782,7 @@ platform :ios do
   lane :update_snapshots_repo do
     new_hash = ""
 
-    Dir.chdir("../Tests/#{snapshots_repo_name}") do
+    Dir.chdir("../Tests/#{SNAPSHOTS_REPO_NAME}") do
       sh "git", "checkout", "main"
       sh "git", "pull", "--rebase", "origin"
       new_hash = sh("git", "rev-parse", "HEAD")
@@ -1167,7 +1793,7 @@ platform :ios do
   end
 
   lane :deploy_to_spm do
-    source_repo = ENV["CIRCLE_REPOSITORY_URL"] || "https://github.com/revenuecat/#{repo_name}"
+    source_repo = ENV["CIRCLE_REPOSITORY_URL"] || "https://github.com/revenuecat/#{REPO_NAME}"
     destination_repo = source_repo.sub(/\.git\z/, "-spm.git")
 
     git_clone_and_push(
@@ -1303,6 +1929,7 @@ platform :mac do
       raise e if !generate_snapshots
     end
   end
+
 end
 
 def check_no_git_tag_exists(version_number)
@@ -1334,6 +1961,15 @@ lane :check_pods do
   )
 end
 
+desc "Removes some directories before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj or v3LoadShedderIntegration.xcodeproj). Also removes v3LoadShedderIntegration and v4LoadShedderIntegration directories to prevent xcodebuild from timing out when scanning for projects."
+lane :prepare_for_carthage do
+  Dir.chdir("#{File.dirname(__FILE__)}/../") do
+    sh("rm", "-rf", "Examples")
+    sh("rm", "-rf", "Tests/v3LoadShedderIntegration")
+    sh("rm", "-rf", "Tests/v4LoadShedderIntegration")
+  end
+end
+
 lane :load_spm_dependencies do
   Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("xcodebuild", "-list")
@@ -1343,7 +1979,7 @@ end
 # Snapshots
 
 def snapshots_commit_file
-  "#{File.dirname(__FILE__)}/../Tests/purchases-ios-snapshots-commit"
+  "#{File.dirname(__FILE__)}/../Tests/#{SNAPSHOTS_REPO_NAME}-commit"
 end
 
 def current_snapshots_commit
@@ -1353,20 +1989,12 @@ def update_snapshots_commit(hash)
   File.write(snapshots_commit_file, hash)
 end
 
-# Slack
-
-lane :send_slack_load_shedder_integration_test_v3 do |options|
-  success = options[:success] || false
-  message =
-      if success
-          "iOS load shedder integration tests V3 finished successfully"
-      else
-          "iOS load shedder integration tests V3 failed"
-      end
-  slack(
-    message: message,
-    slack_url: ENV["SLACK_URL_LOAD_SHEDDER_INTEGRATION_TESTS"],
-    success: success,
-    default_payloads: [:git_branch]
-  )
+def paywall_preview_resources_commit_file
+  "#{File.dirname(__FILE__)}/../Tests/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}-commit"
+end
+def current_paywall_preview_resources_commit
+  File.read(paywall_preview_resources_commit_file).strip
+end
+def update_paywall_preview_resources_commit(hash)
+  File.write(paywall_preview_resources_commit_file, hash)
 end

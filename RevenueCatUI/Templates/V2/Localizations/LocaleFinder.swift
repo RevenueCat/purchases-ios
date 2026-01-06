@@ -12,47 +12,48 @@
 //  Created by Josh Holtz on 2/6/25.
 
 import Foundation
+@_spi(Internal) import RevenueCat
 
 extension Dictionary where Key == String {
 
+    /// Finds the best matching value for the provided locale with the restriction that the key
+    /// must match the language of the provided locale.
     func findLocale(_ locale: Locale) -> Value? {
-        let localeIdentifier = locale.identifier
+        let preferredIdentifiers = Self.preferredMatchedLocalesIdentifiers(from: Array(self.keys),
+                                                                           preferredLanguage: locale.identifier)
 
-        if let exactMatch = self.valueForLocaleString(localeIdentifier) {
-            return exactMatch
-        }
-
-        // For matching unknown locales with full identifier
-        // Ex: `zh_CN` will become `zh_Hans_CN`
-        if let maxIdentifier = locale.rc_lanuageMaxIdentifier {
-            if let exactMatch = self.valueForLocaleString(maxIdentifier) {
-                return exactMatch
+        for localeIdentifier in preferredIdentifiers {
+            if let value = self[localeIdentifier] {
+                return value
             }
-        }
-
-        // For matching language and script without region
-        if let onlyLanguageAndScriptIdentifier = locale.rc_languageAndScript,
-           let exactMatch = self.valueForLocaleString(onlyLanguageAndScriptIdentifier) {
-            return exactMatch
-        }
-
-        // For matching language without script or region
-        if let onlyLanguageIdentifier = locale.rc_languageCode,
-           let exactMatch = self.valueForLocaleString(onlyLanguageIdentifier) {
-            return exactMatch
         }
 
         return nil
     }
 
-    private func valueForLocaleString(_ localeIdentifier: String) -> Value? {
-        if let exactMatch = self[localeIdentifier] {
-            return exactMatch
+    /// Returns the languages in `identifiers` that share the same language code as `preferredLanguage`
+    /// and that best match `preferredLanguage`, sorted by match quality.
+    ///
+    /// Note: This method does not guarantee that all `identifiers` will be returned, only the best matches.
+    static func preferredMatchedLocalesIdentifiers(from identifiers: [String],
+                                                   preferredLanguage: String) -> [String] {
+
+        let preferredLocale = Locale(identifier: preferredLanguage)
+        let identifiersCandidates = identifiers.filter {
+            Locale(identifier: $0).matchesLanguage(preferredLocale)
         }
 
-        // For cases like zh-Hans and zh-Hant
-        let underscoreLocaleIdentifier = localeIdentifier.replacingOccurrences(of: "-", with: "_")
-        return self[underscoreLocaleIdentifier]
+        guard !identifiersCandidates.isEmpty else {
+            return []
+        }
+
+        // As specified in the documentation of `Bundle.preferredLocalizations(from:forPreferences:)`
+        // "_This method doesn’t return all localizations in order of user preference. To get this information,
+        // you can call this method repeatedly, each time removing the identifiers returned by the previous call._"
+        // This means that not all matches will be returned, but only the best ones based on `preferredLanguage`.
+        let identifiers = Bundle.preferredLocalizations(from: identifiersCandidates,
+                                                        forPreferences: [preferredLanguage])
+        return identifiers
     }
 
 }

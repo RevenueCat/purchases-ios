@@ -13,7 +13,7 @@
 
 + (void)checkAPI {
     RCConfigurationBuilder *builder = [RCConfiguration builderWithAPIKey:@""];
-    RCConfiguration *config __unused = [[[[[[[[[[[[[builder withApiKey:@""]
+    RCConfiguration *config __unused = [[[[[[[[[[[[[[builder withApiKey:@""]
                                                    withPurchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat storeKitVersion:RCStoreKitVersion2]
                                                   withUserDefaults:NSUserDefaults.standardUserDefaults]
                                                  withAppUserID:@""]
@@ -25,6 +25,7 @@
                                            withUsesStoreKit2IfAvailable:false]
                                           withStoreKitVersion:RCStoreKitVersion2]
                                          withEntitlementVerificationMode:RCEntitlementVerificationModeInformational]
+                                         withAutomaticDeviceIdentifierCollectionEnabled:true]
                                         build];
 
     if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)) {

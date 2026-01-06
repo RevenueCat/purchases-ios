@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
@@ -92,6 +92,7 @@ private enum Template1Preview {
     static let package = PaywallComponent.PackageComponent(
         packageID: "weekly",
         isSelectedByDefault: false,
+        applePromoOfferProductCode: nil,
         stack: packageStack
     )
 
@@ -224,9 +225,10 @@ struct Template1Preview_Previews: PreviewProvider {
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
-            failedToLoadFont: { _ in }
+            failedToLoadFont: { _ in },
+            colorScheme: .light
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
     }

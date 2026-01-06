@@ -21,7 +21,6 @@ struct PaywallViewConfiguration {
     let useDraftPaywall: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler
-    var locale: Locale
 
     init(
         content: Content,
@@ -31,8 +30,7 @@ struct PaywallViewConfiguration {
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler,
-        locale: Locale = .current
+        purchaseHandler: PurchaseHandler
     ) {
         self.content = content
         self.customerInfo = customerInfo
@@ -42,7 +40,6 @@ struct PaywallViewConfiguration {
         self.useDraftPaywall = useDraftPaywall
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
-        self.locale = locale
     }
 
 }
@@ -55,7 +52,7 @@ extension PaywallViewConfiguration {
 
         case defaultOffering
         case offering(Offering)
-        case offeringIdentifier(String)
+        case offeringIdentifier(String, presentedOfferingContext: PresentedOfferingContext?)
 
     }
 
@@ -74,8 +71,7 @@ extension PaywallViewConfiguration {
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler = PurchaseHandler.default(),
-        locale: Locale = .current
+        purchaseHandler: PurchaseHandler = PurchaseHandler.default()
     ) {
         let handler = purchaseHandler
 
@@ -87,8 +83,7 @@ extension PaywallViewConfiguration {
             displayCloseButton: displayCloseButton,
             useDraftPaywall: useDraftPaywall,
             introEligibility: introEligibility,
-            purchaseHandler: handler,
-            locale: locale
+            purchaseHandler: handler
         )
     }
 
@@ -100,6 +95,31 @@ extension PaywallViewConfiguration.Content {
     /// - Returns: `Content.offering` or `Content.defaultOffering` if `nil`.
     static func optionalOffering(_ offering: Offering?) -> Self {
         return offering.map(Self.offering) ?? .defaultOffering
+    }
+
+    /// Resolves the content to an `Offering` by fetching from the backend if needed.
+    /// - Returns: The resolved `Offering`, or `nil` if it couldn't be fetched.
+    func resolveOffering() async -> Offering? {
+        switch self {
+        case let .offering(offering):
+            return offering
+        case .defaultOffering, .offeringIdentifier:
+            guard Purchases.isConfigured else { return nil }
+
+            do {
+                switch self {
+                case .defaultOffering:
+                    return try await Purchases.shared.offerings().current
+                case let .offeringIdentifier(identifier, _):
+                    return try await Purchases.shared.offerings().offering(identifier: identifier)
+                case .offering:
+                    fatalError("Already handled above")
+                }
+            } catch {
+                Logger.error(Strings.errorFetchingOfferings(error))
+                return nil
+            }
+        }
     }
 
 }

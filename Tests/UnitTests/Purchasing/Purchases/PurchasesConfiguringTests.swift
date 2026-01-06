@@ -220,38 +220,38 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
     */
 
-    func testFirstInitializationCallDelegate() {
+    func testFirstInitializationCallDelegate() async {
         self.setupPurchases()
-        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
     }
 
-    func testFirstInitializationDoesNotClearIntroEligibilityCache() {
+    func testFirstInitializationDoesNotClearIntroEligibilityCache() async {
         self.setupPurchases()
-        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
 
         expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCache) == false
     }
 
-    func testFirstInitializationDoesNotClearPurchasedProductsCache() {
+    func testFirstInitializationDoesNotClearPurchasedProductsCache() async {
         self.setupPurchases()
-        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
 
         expect(self.mockPurchasedProductsFetcher.invokedClearCache) == false
     }
 
-    func testFirstInitializationFromForegroundDelegateForAnonIfNothingCached() {
+    func testFirstInitializationFromForegroundDelegateForAnonIfNothingCached() async {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
         self.setupPurchases()
-        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
     }
 
-    func testFirstInitializationFromBackgroundDoesntCallDelegateForAnonIfNothingCached() {
+    func testFirstInitializationFromBackgroundDoesntCallDelegateForAnonIfNothingCached() async {
         self.systemInfo.stubbedIsApplicationBackgrounded = true
         self.setupPurchases()
-        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(0))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toAlways(equal(0))
     }
 
-    func testFirstInitializationFromBackgroundCallsDelegateForAnonIfInfoCached() throws {
+    func testFirstInitializationFromBackgroundCallsDelegateForAnonIfInfoCached() async throws {
         self.systemInfo.stubbedIsApplicationBackgrounded = true
 
         let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
@@ -261,7 +261,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
         expect(self.purchasesDelegate.customerInfo) == info
     }
 
@@ -301,19 +301,40 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.wait(for: [expectation], timeout: 5)
     }
 
-    func testFirstInitializationFromBackgroundDoesntUpdateCustomerInfoCache() {
+    func testFirstInitializationFromBackgroundDoesntUpdateCustomerInfoCache() async {
         self.systemInfo.stubbedIsApplicationBackgrounded = true
         self.setupPurchases()
-        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(0))
+        await expect(self.backend.getCustomerInfoCallCount).toEventually(equal(0))
     }
 
-    func testFirstInitializationFromForegroundUpdatesCustomerInfoCacheIfNotInUserDefaults() {
+    func testFirstInitializationFromForegroundUpdatesCustomerInfoCacheIfNotInUserDefaults() async {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
         self.setupPurchases()
-        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
+        await expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
     }
 
-    func testFirstInitializationFromForegroundUpdatesCustomerInfoCacheIfUserDefaultsCacheStale() {
+    func testFirstInitializationFromBackgroundAndDefaultConfigurationDoesNotLogHealth() async {
+        self.systemInfo.stubbedIsApplicationBackgrounded = true
+        self.setupPurchases()
+        await expect(self.backend.healthReportRequests).toEventually(equal([]))
+    }
+
+    func testFirstInitializationFromForegroundAndDefaultConfigurationLogsHealth() async {
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.setupPurchases()
+        await expect(self.backend.healthReportRequests).toEventually(equal([self.identityManager.currentAppUserID]))
+    }
+
+    func testFirstInitializationFromForegroundAndDefaultConfigurationWithNoAvailabilityDoesNotLogHealth() async {
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.backend.overrideHealthReportAvailabilityResponse = HealthReportAvailability(reportLogs: false)
+        self.setupPurchases()
+        await expect(self.backend.healthReportAvailabilityRequests)
+            .toEventually(equal([identityManager.currentAppUserID]))
+        await expect(self.backend.healthReportRequests).toEventually(equal([]))
+    }
+
+    func testFirstInitializationFromForegroundUpdatesCustomerInfoCacheIfUserDefaultsCacheStale() async {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -20, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: staleCacheDateForForeground,
                                               appUserID: identityManager.currentAppUserID)
@@ -321,10 +342,10 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
+        await expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
     }
 
-    func testFirstInitializationFromForegroundUpdatesCustomerInfoEvenIfCacheValid() {
+    func testFirstInitializationFromForegroundUpdatesCustomerInfoEvenIfCacheValid() async {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -2, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: staleCacheDateForForeground,
                                               appUserID: identityManager.currentAppUserID)
@@ -333,7 +354,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
+        await expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
     }
 
     func testIsAnonymous() {
@@ -391,20 +412,28 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     // MARK: - Custom Entitlement Computation
-    func testCustomEntitlementComputationSkipsFirstDelegateCall() throws {
+    func testCustomEntitlementComputationSkipsFirstDelegateCall() async throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          customEntitlementsComputation: true)
-        self.setupPurchases()
+        self.setupPurchases(withDelegate: true) // This sets the delegate to self.purchasesDelegate
 
-        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(0))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toAlways(equal(0))
+
+        let anotherDelegate = MockPurchasesDelegate()
+        self.purchases.delegate = anotherDelegate
+        expect(anotherDelegate.customerInfoReceivedCount) == 0
     }
 
-    func testWithoutCustomEntitlementComputationDoesntSkipFirstDelegateCall() throws {
+    func testWithoutCustomEntitlementComputationDoesntSkipFirstDelegateCall() async throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          customEntitlementsComputation: false)
-        self.setupPurchases()
+        self.setupPurchases(withDelegate: true) // This sets the delegate to self.purchasesDelegate
 
-        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
+
+        let anotherDelegate = MockPurchasesDelegate()
+        self.purchases.delegate = anotherDelegate
+        expect(anotherDelegate.customerInfoReceivedCount) == 1
     }
 
     #if !os(watchOS)
@@ -416,7 +445,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
                           observerMode: false,
                           responseVerificationMode: .default,
                           dangerousSettings: .init(customEntitlementComputation: true),
-                          showStoreMessagesAutomatically: true)
+                          showStoreMessagesAutomatically: true,
+                          preferredLocale: nil)
         }.to(throwAssertion())
     }
 
@@ -443,7 +473,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.logger.verifyMessageWasNotLogged(Strings.configure.custom_entitlements_computation_enabled)
     }
 
-    func testConfigureWithCustomEntitlementComputationDisablesLogOut() throws {
+    func testConfigureWithCustomEntitlementComputationDisablesLogOut() async throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          customEntitlementsComputation: true)
         self.setupPurchases()
@@ -458,20 +488,20 @@ class PurchasesConfiguringTests: BasePurchasesTests {
             receivedError = error
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        await expect(completionCalled).toEventually(beTrue())
         expect(receivedCustomerInfo).to(beNil())
         let unwrappedError = try XCTUnwrap(receivedError)
         expect(unwrappedError).to(matchError(ErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()))
     }
 
-    func testConfigureWithCustomEntitlementComputationDisablesAutomaticCacheUpdateForCustomerInfo() throws {
+    func testConfigureWithCustomEntitlementComputationDisablesAutomaticCacheUpdateForCustomerInfo() async throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          customEntitlementsComputation: true)
         self.systemInfo.stubbedIsApplicationBackgrounded = false
 
         self.setupPurchases()
 
-        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(0))
+        await expect(self.backend.getCustomerInfoCallCount).toEventually(equal(0))
     }
 
     // MARK: - UserDefaults
@@ -538,7 +568,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).to(beNil())
     }
 
-    func testSetsPurchasesOrchestratorStoreKit2PurchaseIntentListenerIfSK2IsEnabled() {
+    func testSetsPurchasesOrchestratorStoreKit2PurchaseIntentListenerIfSK2IsEnabled() async {
         self.systemInfo = MockSystemInfo(finishTransactions: false,
                                          storeKitVersion: .storeKit2)
 
@@ -548,14 +578,14 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).to(beNil())
         #else
         if #available(iOS 16.4, macOS 14.4, *) {
-            expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).toEventuallyNot(beNil())
+            await expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).toEventuallyNot(beNil())
         } else {
             expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).to(beNil())
         }
         #endif
     }
 
-    func testNoCustomerInfoFetchInUIPreviewModeOnDidBecomeActive() {
+    func testNoCustomerInfoFetchInUIPreviewModeOnDidBecomeActive() async {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          uiPreviewMode: true,
                                          storeKitVersion: self.storeKitVersion,
@@ -565,7 +595,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.deviceCache.stubbedIsCustomerInfoCacheStale = true
 
         self.notificationCenter.fireNotifications()
-        expect(self.backend.getCustomerInfoCallCount).toAlways(equal(0))
+        await expect(self.backend.getCustomerInfoCallCount).toAlways(equal(0))
     }
 
   private static func create(

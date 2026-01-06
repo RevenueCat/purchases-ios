@@ -14,8 +14,15 @@
 
 import Foundation
 import RevenueCat
+import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
+
+class PurchaseButtonCollector {
+
+    var hasPurchaseButton = false
+
+}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // swiftlint:disable:next type_body_length
@@ -27,27 +34,32 @@ struct ViewModelFactory {
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering,
         localizationProvider: LocalizationProvider,
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        colorScheme: ColorScheme
     ) throws -> RootViewModel {
-        let firstImageInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
+        let firstItemIgnoresSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
 
         let rootStackViewModel = try toStackViewModel(
             component: componentsConfig.stack,
             packageValidator: self.packageValidator,
-            firstImageInfo: firstImageInfo,
+            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+            purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
-            offering: offering
+            offering: offering,
+            colorScheme: colorScheme
         )
 
         let stickyFooterViewModel = try componentsConfig.stickyFooter.flatMap {
             let stackViewModel = try toStackViewModel(
                 component: $0.stack,
                 packageValidator: self.packageValidator,
-                firstImageInfo: nil,
+                firstItemIgnoresSafeAreaInfo: nil,
+                purchaseButtonCollector: nil,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             return StickyFooterComponentViewModel(
@@ -59,7 +71,8 @@ struct ViewModelFactory {
         return RootViewModel(
             stackViewModel: rootStackViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
-            firstImageInfo: firstImageInfo
+            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+            localizationProvider: localizationProvider
         )
     }
 
@@ -67,10 +80,12 @@ struct ViewModelFactory {
     func toViewModel(
         component: PaywallComponent,
         packageValidator: PackageValidator,
-        firstImageInfo: RootViewModel.FirstImageInfo?,
+        firstItemIgnoresSafeAreaInfo: RootViewModel.FirstItemShouldIgnoreSafeAreaInfo?,
+        purchaseButtonCollector: PurchaseButtonCollector? = nil,
         offering: Offering,
         localizationProvider: LocalizationProvider,
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        colorScheme: ColorScheme
     ) throws -> PaywallComponentViewModel {
         switch component {
         case .text(let component):
@@ -91,7 +106,7 @@ struct ViewModelFactory {
             )
         case .icon(let component):
             return .icon(
-                try IconComponentViewModel(
+                IconComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component
@@ -102,20 +117,24 @@ struct ViewModelFactory {
                 try toStackViewModel(
                     component: component,
                     packageValidator: packageValidator,
-                    firstImageInfo: firstImageInfo,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    offering: offering
+                    offering: offering,
+                    colorScheme: colorScheme
                 )
             )
         case .button(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             var sheetStackViewModel: StackComponentViewModel?
@@ -124,10 +143,12 @@ struct ViewModelFactory {
                 sheetStackViewModel = try toStackViewModel(
                     component: sheet.stack,
                     packageValidator: packageValidator,
-                    firstImageInfo: nil,
+                    firstItemIgnoresSafeAreaInfo: nil,
+                    purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    offering: offering
+                    offering: offering,
+                    colorScheme: colorScheme
                 )
             }
 
@@ -141,34 +162,53 @@ struct ViewModelFactory {
                 )
             )
         case .package(let component):
+            // Specifically override the parent PurchaseButtonCollector so that
+            // we can see if the package has a purchase button inside of it
+            let packagePurchaseButtonCollector = PurchaseButtonCollector()
+
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: packagePurchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
+
+            let hasPurchaseButton = packagePurchaseButtonCollector.hasPurchaseButton
 
             let viewModel = PackageComponentViewModel(
                 component: component,
                 offering: offering,
-                stackViewModel: stackViewModel
+                stackViewModel: stackViewModel,
+                hasPurchaseButton: hasPurchaseButton
             )
 
             if let package = viewModel.package {
-                packageValidator.add(package, isSelectedByDefault: viewModel.isSelectedByDefault)
+                let packageInfo = PackageValidator.PackageInfo(
+                    package: package,
+                    isSelectedByDefault: viewModel.isSelectedByDefault,
+                    promotionalOfferProductCode: viewModel.promotionalOfferProductCode
+                )
+                packageValidator.add(packageInfo)
             }
 
             return .package(viewModel)
         case .purchaseButton(let component):
+            // Set hasPurchaseButton if the parent cares about it
+            purchaseButtonCollector?.hasPurchaseButton = true
+
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             return .purchaseButton(
@@ -183,10 +223,12 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             return .stickyFooter(
@@ -205,7 +247,7 @@ struct ViewModelFactory {
                         component: descriptionComponent
                     )
                 }
-                return try TimelineItemViewModel(
+                return TimelineItemViewModel(
                     component: item,
                     title: try TextComponentViewModel(
                         localizationProvider: localizationProvider,
@@ -213,7 +255,7 @@ struct ViewModelFactory {
                         component: item.title
                     ),
                     description: description,
-                    icon: try IconComponentViewModel(
+                    icon: IconComponentViewModel(
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
                         component: item.icon
@@ -222,7 +264,7 @@ struct ViewModelFactory {
             }
 
             return .timeline(
-                try TimelineComponentViewModel(
+                TimelineComponentViewModel(
                     component: component,
                     items: models,
                     uiConfigProvider: uiConfigProvider
@@ -232,10 +274,12 @@ struct ViewModelFactory {
             let controlStackViewModel = try toStackViewModel(
                 component: component.control.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             // Fixme: use a an actual stack component returned by the backend
@@ -278,10 +322,12 @@ struct ViewModelFactory {
             let tabsStackViewModel = try toStackViewModel(
                 component: tabsStackComponent,
                 packageValidator: PackageValidator(),
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
@@ -290,15 +336,17 @@ struct ViewModelFactory {
                 let stackViewModel = try toStackViewModel(
                     component: tab.stack,
                     packageValidator: tabPackageValidator,
-                    firstImageInfo: firstImageInfo,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    offering: offering
+                    offering: offering,
+                    colorScheme: colorScheme
                 )
 
                 // Merging into entire paywall package validator
-                for (pkg, isSelectedByDefault) in tabPackageValidator.packageInfos {
-                    packageValidator.add(pkg, isSelectedByDefault: isSelectedByDefault)
+                for packageInfo in tabPackageValidator.packageInfos {
+                    packageValidator.add(packageInfo)
                 }
 
                 return try .init(
@@ -311,7 +359,7 @@ struct ViewModelFactory {
             }
 
             return .tabs(
-                try TabsComponentViewModel(
+                TabsComponentViewModel(
                     component: component,
                     controlStackViewModel: controlStackViewModel,
                     tabViewModels: tabViewModels,
@@ -329,10 +377,12 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             return .tabControlButton(
@@ -346,7 +396,8 @@ struct ViewModelFactory {
             return .tabControlToggle(
                 try TabControlToggleComponentViewModel(
                     component: component,
-                    uiConfigProvider: uiConfigProvider
+                    uiConfigProvider: uiConfigProvider,
+                    colorScheme: colorScheme
                 )
             )
         case .carousel(let component):
@@ -354,19 +405,75 @@ struct ViewModelFactory {
                 try toStackViewModel(
                     component: stackComponent,
                     packageValidator: packageValidator,
-                    firstImageInfo: firstImageInfo,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    offering: offering
+                    offering: offering,
+                    colorScheme: colorScheme
                 )
             }
 
             return .carousel(
-                try CarouselComponentViewModel(
+                CarouselComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component,
                     pageStackViewModels: pageStackViewModels
+                )
+            )
+        case .video(let component):
+            return .video(
+                VideoComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    component: component
+                )
+            )
+        case .countdown(let component):
+            let countdownStackViewModel = try toStackViewModel(
+                component: component.countdownStack,
+                packageValidator: packageValidator,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering,
+                colorScheme: colorScheme
+            )
+
+            let endStackViewModel = try component.endStack.map { endStack in
+                try toStackViewModel(
+                    component: endStack,
+                    packageValidator: packageValidator,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering,
+                    colorScheme: colorScheme
+                )
+            }
+
+            let fallbackStackViewModel = try component.fallback.map { fallback in
+                try toStackViewModel(
+                    component: fallback,
+                    packageValidator: packageValidator,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering,
+                    colorScheme: colorScheme
+                )
+            }
+
+            return .countdown(
+                CountdownComponentViewModel(
+                    component: component,
+                    countdownStackViewModel: countdownStackViewModel,
+                    endStackViewModel: endStackViewModel,
+                    fallbackStackViewModel: fallbackStackViewModel
                 )
             )
         }
@@ -376,19 +483,23 @@ struct ViewModelFactory {
     func toStackViewModel(
         component: PaywallComponent.StackComponent,
         packageValidator: PackageValidator,
-        firstImageInfo: RootViewModel.FirstImageInfo?,
+        firstItemIgnoresSafeAreaInfo: RootViewModel.FirstItemShouldIgnoreSafeAreaInfo?,
+        purchaseButtonCollector: PurchaseButtonCollector?,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        offering: Offering
+        offering: Offering,
+        colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
         let viewModels = try component.components.map { component in
             try self.toViewModel(
                 component: component,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                colorScheme: colorScheme
             )
         }
 
@@ -396,18 +507,21 @@ struct ViewModelFactory {
             try self.toViewModel(
                 component: component,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                // Explicitly not looking for purchase button in badge
+                purchaseButtonCollector: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                colorScheme: colorScheme
             )
         } ?? []
 
         // Stores in view model that we need to apply the safe area inset
         // This is only used with ZStack children that aren't the background
-        let shouldApplySafeAreaInset = component == firstImageInfo?.parentZStack
+        let shouldApplySafeAreaInset = component == firstItemIgnoresSafeAreaInfo?.parentZStack
 
-        return try StackComponentViewModel(
+        return StackComponentViewModel(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,
@@ -419,14 +533,14 @@ struct ViewModelFactory {
     // swiftlint:disable cyclomatic_complexity function_body_length
     private func findFullWidthImageViewIfItsTheFirst(
         _ component: PaywallComponent
-    ) -> RootViewModel.FirstImageInfo? {
+    ) -> RootViewModel.FirstItemShouldIgnoreSafeAreaInfo? {
         switch component {
         case .text:
             return nil
         case .image(let image):
             switch image.size.width {
             case .fill:
-                return .init(imageComponent: image, parentZStack: nil)
+                return .init(imageComponent: image, videoComponent: nil, parentZStack: nil)
             case .fit, .fixed, .relative:
                 return nil
             }
@@ -446,8 +560,11 @@ struct ViewModelFactory {
                 // Return the ZStack info paired with the image
                 // This is needed to we know what element to apply safe area too
                 return imageInfo.flatMap { info in
-                    return .init(imageComponent: info.imageComponent,
-                                 parentZStack: stack)
+                    return .init(
+                        imageComponent: info.imageComponent,
+                        videoComponent: info.videoComponent,
+                        parentZStack: stack
+                    )
                 }
             }
         case .button:
@@ -476,6 +593,18 @@ struct ViewModelFactory {
             return nil
         case .carousel(let carousel):
             guard let first = carousel.pages.first?.components.first else {
+                return nil
+            }
+            return self.findFullWidthImageViewIfItsTheFirst(first)
+        case .video(let video):
+            switch video.size.width {
+            case .fill:
+                return .init(imageComponent: nil, videoComponent: video, parentZStack: nil)
+            case .fit, .fixed, .relative:
+                return nil
+            }
+        case .countdown(let countdown):
+            guard let first = countdown.countdownStack.components.first else {
                 return nil
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)

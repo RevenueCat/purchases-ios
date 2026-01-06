@@ -14,7 +14,7 @@
 
 import Foundation
 @_spi(Internal) import RevenueCat
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ButtonComponentViewModel {
@@ -34,6 +34,7 @@ class ButtonComponentViewModel {
     /// This way the view layer doesn't need to handle this error scenario.
     enum Destination {
         case customerCenter
+        case offerCodeRedemptionSheet
         case url(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case privacyPolicy(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case terms(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
@@ -71,6 +72,8 @@ class ButtonComponentViewModel {
             switch destination {
             case .customerCenter:
                 self.action = .navigateTo(destination: .customerCenter)
+            case .offerCode:
+                self.action = .navigateTo(destination: .offerCodeRedemptionSheet)
             case .url(let urlLid, let method):
                 self.action = .navigateTo(
                     destination: .url(url: try localizedStrings.urlFromLid(urlLid), method: method)
@@ -101,6 +104,16 @@ class ButtonComponentViewModel {
 
     var hasUnknownAction: Bool {
         switch self.action {
+        case .navigateTo(destination: let destination):
+            if case .offerCodeRedemptionSheet = destination {
+#if os(iOS) && !targetEnvironment(macCatalyst)
+                    return false
+#else
+                    return true
+#endif
+            } else {
+                return false
+            }
         case .unknown: return true
         default: return false
         }

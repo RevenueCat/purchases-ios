@@ -15,9 +15,10 @@
 
 // swiftlint:disable file_length type_body_length function_body_length
 
+import Combine
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import StoreKit
 import XCTest
 
@@ -52,6 +53,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.refundRequestStatus).to(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.showRestoreAlert) == false
+        expect(viewModel.showAllInAppCurrenciesScreen).to(equal(false))
     }
 
     func testNoPurchaseOnlyMissingPurchasePath() {
@@ -67,7 +69,10 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testNonAppStoreFiltersAppStoreOnlyPaths() {
-        let purchase = PurchaseInformation.mockNonLifetime(store: .playStore)
+        let purchase = PurchaseInformation.mock(
+            store: .playStore,
+            isSubscription: true
+        )
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
@@ -81,7 +86,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testNonAppStoreFiltersAppStoreOnlyPathsAndCancelIfNoURL() {
-        let purchase = PurchaseInformation.mockNonLifetime(store: .playStore, managementURL: nil)
+        let purchase = PurchaseInformation.mock(store: .playStore, managementURL: nil)
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
@@ -93,7 +98,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.count) == 0
     }
 
-    func testLifetimeCantBeRefunded() {
+    func testLifetimeSubscriptionPaths() {
         let purchase = PurchaseInformation.lifetime
 
         let viewModel = BaseManageSubscriptionViewModel(
@@ -107,21 +112,10 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.first(where: { $0.type == .refundRequest })).toNot(beNil())
     }
 
-    func testLifetimeSubscriptionDoesNotShowCancel() {
-        let purchase = PurchaseInformation.mockLifetime()
-
-        let viewModel = BaseManageSubscriptionViewModel(
-            screen: BaseManageSubscriptionViewModelTests.default,
-            actionWrapper: CustomerCenterActionWrapper(),
-            purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
-
-        expect(viewModel.relevantPathsForPurchase.count) == 1
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).toNot(beNil())
-    }
-
-    func testCancelledDoesNotShowCancelAndRefund() {
-        let purchase = PurchaseInformation.mockNonLifetime(
+    func testCancelledDoesNotShowCancel() {
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
             isCancelled: true
         )
 
@@ -131,12 +125,16 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.relevantPathsForPurchase.count) == 1
+        expect(viewModel.relevantPathsForPurchase.count) == 2
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).toNot(beNil())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).toNot(beNil())
     }
 
     func testShowsRefundIfRefundWindowIsForever() {
-        let purchase = PurchaseInformation.mockNonLifetime()
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription
+        )
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
@@ -163,9 +161,12 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         )
 
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
-        let purchase = PurchaseInformation.mockNonLifetime(
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
             latestPurchaseDate: latestPurchaseDate,
-            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays)
+        )
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
@@ -179,11 +180,13 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).toNot(beNil())
     }
 
-    func testDoesNotShowRefundIfPurchaseIsFree() {
+    func testDoesNotShowRefundIfPricePaidIsFree() {
         let latestPurchaseDate = Date()
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
-        let purchase = PurchaseInformation.mockNonLifetime(
+        let purchase = PurchaseInformation.mock(
             pricePaid: .free,
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
@@ -201,8 +204,10 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     func testDoesNotShowRefundIfPurchaseIsWithinTrial() {
         let latestPurchaseDate = Date()
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
-        let purchase = PurchaseInformation.mockNonLifetime(
+        let purchase = PurchaseInformation.mock(
             pricePaid: .nonFree(""), // just to prove price is ignored if is in trial
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
             isTrial: true,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
@@ -231,9 +236,12 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         )
 
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
-        let purchase = PurchaseInformation.mockNonLifetime(
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
             latestPurchaseDate: latestPurchaseDate,
-            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays)
+        )
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
@@ -390,6 +398,21 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         }
     }
 
+    func testDisplayAllInAppCurrenciesScreen() async throws {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: nil,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        expect(viewModel.showAllInAppCurrenciesScreen).to(equal(false))
+
+        viewModel.displayAllInAppCurrenciesScreen()
+
+        expect(viewModel.showAllInAppCurrenciesScreen).to(equal(true))
+    }
+
     // Helper methods
     private func setupPromotionalOfferTest(offerIdentifierInJSON: String,
                                            offerIdentifierInProduct: String
@@ -468,7 +491,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
         let viewModel = BaseManageSubscriptionViewModel(screen: screen,
                                                         actionWrapper: CustomerCenterActionWrapper(),
-                                                        purchaseInformation: .yearlyExpiring(store: .appStore),
+                                                        purchaseInformation: .mock(store: .appStore, isExpired: false),
                                                         purchasesProvider: MockCustomerCenterPurchases(
                                                             customerInfo: customerInfo,
                                                             products: products
@@ -520,6 +543,263 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         }
     }
 
+    func testCustomActionPathHandling() async throws {
+        let purchaseInformation = PurchaseInformation.subscription
+        let actionWrapper = CustomerCenterActionWrapper()
+        var capturedCustomActionData: CustomActionData?
+
+        // Set up expectation to capture custom action
+        let expectation = XCTestExpectation(description: "Custom action triggered")
+
+        // Monitor the customActionSelected publisher
+        let cancellable = actionWrapper.customActionSelected
+            .sink { actionIdentifier, purchaseIdentifier in
+                capturedCustomActionData = CustomActionData(
+                    actionIdentifier: actionIdentifier,
+                    purchaseIdentifier: purchaseIdentifier
+                )
+                expectation.fulfill()
+            }
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: Self.managementScreen(refundWindowDuration: .forever),
+            actionWrapper: actionWrapper,
+            purchaseInformation: purchaseInformation,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Create a custom action path
+        let customActionPath = CustomerCenterConfigData.HelpPath(
+            id: "custom_delete_user",
+            title: "Delete Account",
+            type: .customAction,
+            detail: nil,
+            customActionIdentifier: "delete_user"
+        )
+
+        // Call handleHelpPath with the custom action
+        await viewModel.handleHelpPath(customActionPath, withActiveProductId: purchaseInformation.productIdentifier)
+
+        // Wait for the action to be triggered
+        await fulfillment(of: [expectation], timeout: 1.0)
+
+        // Verify that the correct custom action was triggered
+        let customActionData = try XCTUnwrap(capturedCustomActionData)
+        expect(customActionData.actionIdentifier) == "delete_user"
+        expect(customActionData.purchaseIdentifier) == purchaseInformation.productIdentifier
+
+        cancellable.cancel()
+    }
+
+    func testCustomActionPathWithoutActionIdentifier() async throws {
+        let purchaseInformation = PurchaseInformation.subscription
+        let actionWrapper = CustomerCenterActionWrapper()
+        var wasActionTriggered = false
+
+        // Set up expectation that should NOT be fulfilled
+        let expectation = XCTestExpectation(description: "Custom action should not be triggered")
+        expectation.isInverted = true
+
+        // Monitor the customActionSelected publisher
+        let cancellable = actionWrapper.customActionSelected
+            .sink { _, _ in
+                wasActionTriggered = true
+                expectation.fulfill() // This should not happen
+            }
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: Self.managementScreen(refundWindowDuration: .forever),
+            actionWrapper: actionWrapper,
+            purchaseInformation: purchaseInformation,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Create a custom action path without action identifier
+        let customActionPath = CustomerCenterConfigData.HelpPath(
+            id: "custom_no_identifier",
+            title: "Custom Action",
+            type: .customAction,
+            detail: nil,
+            customActionIdentifier: nil
+        )
+
+        // Call handleHelpPath with the custom action - should not trigger action due to missing identifier
+        await viewModel.handleHelpPath(customActionPath, withActiveProductId: purchaseInformation.productIdentifier)
+
+        // Wait to ensure no action is triggered
+        await fulfillment(of: [expectation], timeout: 0.5)
+
+        // Verify that no custom action was triggered due to missing identifier
+        expect(wasActionTriggered) == false
+
+        cancellable.cancel()
+    }
+
+    func testCustomActionPathWithNilActivePurchaseId() async throws {
+        let actionWrapper = CustomerCenterActionWrapper()
+        var capturedCustomActionData: CustomActionData?
+
+        // Set up expectation to capture custom action
+        let expectation = XCTestExpectation(description: "Custom action triggered without purchase ID")
+
+        // Monitor the customActionSelected publisher
+        let cancellable = actionWrapper.customActionSelected
+            .sink { actionIdentifier, purchaseIdentifier in
+                capturedCustomActionData = CustomActionData(
+                    actionIdentifier: actionIdentifier,
+                    purchaseIdentifier: purchaseIdentifier
+                )
+                expectation.fulfill()
+            }
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: Self.managementScreen(refundWindowDuration: .forever),
+            actionWrapper: actionWrapper,
+            purchaseInformation: nil, // No purchase information
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Create a custom action path
+        let customActionPath = CustomerCenterConfigData.HelpPath(
+            id: "custom_rate_app",
+            title: "Rate App",
+            type: .customAction,
+            detail: nil,
+            customActionIdentifier: "rate_app"
+        )
+
+        // Call handleHelpPath without active purchase ID
+        await viewModel.handleHelpPath(customActionPath, withActiveProductId: nil)
+
+        // Wait for the action to be triggered
+        await fulfillment(of: [expectation], timeout: 1.0)
+
+        // Verify that the custom action was triggered with nil purchase ID
+        let customActionData = try XCTUnwrap(capturedCustomActionData)
+        expect(customActionData.actionIdentifier) == "rate_app"
+        expect(customActionData.purchaseIdentifier).to(beNil())
+
+        cancellable.cancel()
+    }
+
+    // MARK: - Product Type Path Filtering Tests
+
+    func testNonRenewableSubscriptionDoesNotShowCancelPath() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: true,
+            productType: .nonRenewableSubscription,
+            renewalDate: Date().addingTimeInterval(86400) // has renewal date but non-renewable
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        expect(viewModel.relevantPathsForPurchase.count) == 1
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+    }
+
+    func testAutoRenewableSubscriptionShowsCancelPath() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: false,
+            renewalDate: Date().addingTimeInterval(86400)
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Auto-renewable App Store subscriptions should show cancel path
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
+    }
+
+    func testNonAppStoreAutoRenewableSubscriptionShowsCancelPath() {
+        let purchase = PurchaseInformation.mock(
+            store: .playStore,
+            isSubscription: true,
+            productType: nil, // Non-App Store, so no productType available
+            isCancelled: false,
+            renewalDate: Date().addingTimeInterval(86400)
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Non-App Store subscriptions should show cancel path (they don't have productType info)
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
+    }
+
+    func testConsumableProductDoesNotShowCancelPath() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: false,
+            productType: .consumable,
+            isCancelled: false
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Consumable products should not show cancel path
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testNonConsumableProductDoesNotShowCancelPath() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: false,
+            productType: .nonConsumable,
+            isCancelled: false
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Non-consumable (lifetime) products should not show cancel path
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testAutoRenewableSubscriptionDoesNotShowChangePlansIfLifetime() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isLifetime: true
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Lifetime subscriptions should not show change plans
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -536,54 +816,6 @@ private extension BaseManageSubscriptionViewModelTests {
             refundWindowDuration: refundWindowDuration).screens[.management]!
     }
 
-}
-
-private extension PurchaseInformation {
-    static func mockLifetime(
-        customerInfoRequestedDate: Date = Date(),
-        store: Store = .appStore
-    ) -> PurchaseInformation {
-        PurchaseInformation(
-            title: "",
-            pricePaid: .nonFree(""),
-            renewalPrice: nil,
-            productIdentifier: "",
-            store: store,
-            isLifetime: true,
-            isTrial: false,
-            isCancelled: false,
-            isActive: true,
-            latestPurchaseDate: Date(),
-            customerInfoRequestedDate: customerInfoRequestedDate,
-            managementURL: URL(string: "https://www.revenuecat.com")!
-        )
-    }
-
-    static func mockNonLifetime(
-        store: Store = .appStore,
-        pricePaid: PurchaseInformation.PricePaid = .nonFree("5"),
-        renewalPrice: PurchaseInformation.RenewalPrice = .nonFree("5"),
-        isTrial: Bool = false,
-        isCancelled: Bool = false,
-        latestPurchaseDate: Date = Date(),
-        customerInfoRequestedDate: Date = Date(),
-        managementURL: URL? = URL(string: "https://www.revenuecat.com")!
-    ) -> PurchaseInformation {
-        PurchaseInformation(
-            title: "",
-            pricePaid: pricePaid,
-            renewalPrice: renewalPrice,
-            productIdentifier: "",
-            store: store,
-            isLifetime: false,
-            isTrial: isTrial,
-            isCancelled: isCancelled,
-            isActive: true,
-            latestPurchaseDate: latestPurchaseDate,
-            customerInfoRequestedDate: customerInfoRequestedDate,
-            managementURL: managementURL
-        )
-    }
 }
 
 #endif

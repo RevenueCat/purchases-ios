@@ -275,9 +275,22 @@ public extension Attribution {
      * - [CleverTap RevenueCat Integration](https://docs.revenuecat.com/docs/clevertap)
      *
      *- Parameter cleverTapID: Empty String or `nil` will delete the subscriber attribute.
-     */
+    */
     @objc func setCleverTapID(_ cleverTapID: String?) {
         self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the Airbridge Device ID for the user.
+     * Recommended for the RevenueCat Airbridge integration.
+     *
+     * #### Related Articles
+     * - [Airbridge RevenueCat Integration](https://docs.revenuecat.com/docs/airbridge)
+     *
+     * - Parameter airbridgeDeviceID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setAirbridgeDeviceID(_ airbridgeDeviceID: String?) {
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceID, appUserID: appUserID)
     }
 
     /**
@@ -338,6 +351,32 @@ public extension Attribution {
      */
     @objc func setPostHogUserID(_ postHogUserID: String?) {
         self.subscriberAttributesManager.setPostHogUserID(postHogUserID, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the Amplitude User ID for the user.
+     * Optional for the RevenueCat Amplitude integration.
+     *
+     * #### Related Articles
+     * - [Amplitude RevenueCat Integration](https://www.revenuecat.com/docs/amplitude)
+     *
+     *- Parameter amplitudeUserID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setAmplitudeUserID(_ amplitudeUserID: String?) {
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the Amplitude Device ID for the user.
+     * Optional for the RevenueCat Amplitude integration.
+     *
+     * #### Related Articles
+     * - [Amplitude RevenueCat Integration](https://www.revenuecat.com/docs/amplitude)
+     *
+     *- Parameter amplitudeDeviceID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setAmplitudeDeviceID(_ amplitudeDeviceID: String?) {
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: appUserID)
     }
 
     /**
@@ -410,6 +449,32 @@ public extension Attribution {
      */
     @objc func setCreative(_ creative: String?) {
         self.subscriberAttributesManager.setCreative(creative, appUserID: appUserID)
+    }
+
+    /**
+     * Sets conversion data from AppsFlyer's `onConversionDataSuccess` callback.
+     *
+     * This method extracts relevant attribution fields from the AppsFlyer conversion data
+     * and sets the corresponding RevenueCat subscriber attributes. Note that this method will
+     * never unset any attributes, even when passed `nil`. To unset attributes, call the setter
+     * method for the individual attribute that should be unset with a `nil` value.
+     *
+     * The following attributes are set based on the conversion data:
+     * - `$mediaSource`: From `media_source`, or "Organic" if `af_status` is "Organic"
+     * - `$campaign`: From `campaign`
+     * - `$adGroup`: From `adgroup`, with fallback to `adset`
+     * - `$ad`: From `af_ad`, with fallback to `ad_id`
+     * - `$keyword`: From `af_keywords`, with fallback to `keyword`
+     * - `$creative`: From `creative`, with fallback to `af_creative`
+     *
+     * #### Related Articles
+     * - [AppsFlyer RevenueCat Integration](https://docs.revenuecat.com/docs/appsflyer)
+     * - [AppsFlyer Conversion Data](https://dev.appsflyer.com/hc/docs/conversion-data-ios)
+     *
+     * - Parameter data: The conversion data dictionary from AppsFlyer's `onConversionDataSuccess`.
+     */
+    @objc func setAppsFlyerConversionData(_ data: [AnyHashable: Any]?) {
+        self.subscriberAttributesManager.setAppsFlyerConversionData(data, appUserID: appUserID)
     }
 
 }

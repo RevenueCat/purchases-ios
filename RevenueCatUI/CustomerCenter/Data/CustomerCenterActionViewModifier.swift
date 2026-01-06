@@ -17,19 +17,8 @@ import SwiftUI
 
 #if os(iOS)
 
-/// A wrapper that makes any value unique by including a UUID
-struct UniqueWrapper<T> {
-    let id = UUID()
-    let value: T
-}
-
-extension UniqueWrapper: Equatable {
-    static func == (lhs: UniqueWrapper<T>, rhs: UniqueWrapper<T>) -> Bool {
-        lhs.id == rhs.id
-    }
-}
-
-/// A view modifier that connects CustomerCenterViewModel actions to the SwiftUI preference system using Combine
+/// A view modifier that subscribes to internal Customer Center actions and forwards them to environment-provided
+/// callbacks.
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -38,16 +27,7 @@ struct CustomerCenterActionViewModifier: ViewModifier {
 
     let actionWrapper: CustomerCenterActionWrapper
 
-    @State private var restoreStarted: UniqueWrapper<Void>?
-    @State private var restoreFailed: UniqueWrapper<NSError>?
-    @State private var restoreCompleted: UniqueWrapper<CustomerInfo>?
-    @State private var showingManageSubscriptions: UniqueWrapper<Void>?
-    @State private var refundRequestStarted: UniqueWrapper<String>?
-    @State private var refundRequestCompleted: UniqueWrapper<(String, RefundRequestStatus)>?
-    @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
-    @State private var managementOptionSelected: UniqueWrapper<CustomerCenterActionable>?
-    @State private var promotionalOfferSuccess: UniqueWrapper<Void>?
-
+    @Environment(\.customerCenterExternalActions) private var actions: CustomerCenterExternalActions
     @State private var cancellables = Set<AnyCancellable>()
 
     func body(content: Content) -> some View {
@@ -55,81 +35,65 @@ struct CustomerCenterActionViewModifier: ViewModifier {
             .onAppear {
                 subscribeToActionWrapper()
             }
-            // Apply preferences based on state
-            .preference(key: CustomerCenterView.RestoreStartedPreferenceKey.self,
-                        value: restoreStarted)
-            .preference(key: CustomerCenterView.RestoreFailedPreferenceKey.self,
-                        value: restoreFailed)
-            .preference(key: CustomerCenterView.RestoreCompletedPreferenceKey.self,
-                        value: restoreCompleted)
-            .preference(key: CustomerCenterView.ShowingManageSubscriptionsPreferenceKey.self,
-                        value: showingManageSubscriptions)
-            .preference(key: CustomerCenterView.RefundRequestStartedPreferenceKey.self,
-                        value: refundRequestStarted)
-            .preference(key: CustomerCenterView.RefundRequestCompletedPreferenceKey.self,
-                        value: refundRequestCompleted)
-            .preference(key: CustomerCenterView.FeedbackSurveyCompletedPreferenceKey.self,
-                        value: feedbackSurveyCompleted)
-            .preference(key: CustomerCenterView.ManagementOptionSelectedPreferenceKey.self,
-                        value: managementOptionSelected)
-            .preference(key: CustomerCenterView.PromotionalOfferSuccessPreferenceKey.self,
-                        value: promotionalOfferSuccess)
     }
 
     @MainActor
     private func subscribeToActionWrapper() {
-        actionWrapper.restoreStarted
-            .sink { _ in
-                restoreStarted = UniqueWrapper(value: ())
-            }
+        subscribeToRestoreActions()
+        subscribeToRefundActions()
+        subscribeToOtherActions()
+    }
+
+    @MainActor
+    private func subscribeToRestoreActions() {
+        actionWrapper.restoreStartedPublisher
+            .sink { actions.restoreStarted() }
             .store(in: &cancellables)
 
-        actionWrapper.restoreFailed
-            .sink { error in
-                restoreFailed = UniqueWrapper(value: error)
-            }
+        actionWrapper.restoreFailedPublisher
+            .sink { actions.restoreFailed($0) }
             .store(in: &cancellables)
 
-        actionWrapper.restoreCompleted
-            .sink { info in
-                restoreCompleted = UniqueWrapper(value: info)
-            }
+        actionWrapper.restoreCompletedPublisher
+            .sink { actions.restoreCompleted($0) }
+            .store(in: &cancellables)
+    }
+
+    @MainActor
+    private func subscribeToRefundActions() {
+        actionWrapper.showingManageSubscriptionsPublisher
+            .sink { actions.showingManageSubscriptions() }
             .store(in: &cancellables)
 
-        actionWrapper.showingManageSubscriptions
-            .sink { _ in
-                showingManageSubscriptions = UniqueWrapper(value: ())
-            }
+        actionWrapper.refundRequestStartedPublisher
+            .sink { actions.refundRequestStarted($0) }
             .store(in: &cancellables)
 
-        actionWrapper.refundRequestStarted
-            .sink { productId in
-                refundRequestStarted = UniqueWrapper(value: productId)
-            }
+        actionWrapper.refundRequestCompletedPublisher
+            .sink { actions.refundRequestCompleted($0.0, $0.1) }
+            .store(in: &cancellables)
+    }
+
+    @MainActor
+    private func subscribeToOtherActions() {
+        actionWrapper.feedbackSurveyCompletedPublisher
+            .sink { actions.feedbackSurveyCompleted($0) }
             .store(in: &cancellables)
 
-        actionWrapper.refundRequestCompleted
-            .sink { productId, status in
-                refundRequestCompleted = UniqueWrapper(value: (productId, status))
-            }
+        actionWrapper.managementOptionSelectedPublisher
+            .sink { actions.managementOptionSelected($0) }
             .store(in: &cancellables)
 
-        actionWrapper.feedbackSurveyCompleted
-            .sink { reason in
-                feedbackSurveyCompleted = UniqueWrapper(value: reason)
-            }
+        actionWrapper.promotionalOfferSuccessPublisher
+            .sink { actions.promotionalOfferSuccess() }
             .store(in: &cancellables)
 
-        actionWrapper.managementOptionSelected
-            .sink { action in
-                managementOptionSelected = UniqueWrapper(value: action)
-            }
+        actionWrapper.showingChangePlansPublisher
+            .sink { if let id = $0 { actions.changePlansSelected(id) } }
             .store(in: &cancellables)
 
-        actionWrapper.promotionalOfferSuccess
-            .sink { _ in
-                promotionalOfferSuccess = UniqueWrapper(value: ())
-            }
+        actionWrapper.customActionSelectedPublisher
+            .sink { actions.customActionSelected($0.0, $0.1) }
             .store(in: &cancellables)
     }
 }

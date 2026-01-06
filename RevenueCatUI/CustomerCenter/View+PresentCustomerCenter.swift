@@ -17,12 +17,9 @@ import SwiftUI
 #if os(iOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
+@available(macOS, unavailable, message: "CustomerCenterView does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 @available(watchOS, unavailable, message: "CustomerCenterView does not support watchOS yet")
-#if swift(>=5.9)
-@available(visionOS, unavailable, message: "CustomerCenterView does not support visionOS yet")
-#endif
 extension View {
 
     /// Presents the ``CustomerCenter`` as a modal or sheet.
@@ -148,6 +145,8 @@ extension View {
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
         managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
+        onCustomAction: CustomerCenterView.CustomActionHandler? = nil,
+        changePlansSelected: CustomerCenterView.ChangePlansHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         self.modifier(
@@ -163,7 +162,9 @@ extension View {
                 refundRequestStarted: refundRequestStarted,
                 refundRequestCompleted: refundRequestCompleted,
                 feedbackSurveyCompleted: feedbackSurveyCompleted,
-                managementOptionSelected: managementOptionSelected
+                managementOptionSelected: managementOptionSelected,
+                onCustomAction: onCustomAction,
+                changePlansSelected: changePlansSelected
             )
         )
     }
@@ -184,6 +185,8 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     let refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler?
     let feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler?
     let managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler?
+    let onCustomAction: CustomerCenterView.CustomActionHandler?
+    let changePlansSelected: CustomerCenterView.ChangePlansHandler?
 
     /// The closure to execute when dismissing the sheet / fullScreen present
     let onDismiss: (() -> Void)?
@@ -201,6 +204,8 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
         managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
+        onCustomAction: CustomerCenterView.CustomActionHandler? = nil,
+        changePlansSelected: CustomerCenterView.ChangePlansHandler? = nil,
         purchaseHandler: PurchaseHandler? = nil
     ) {
         self._isPresented = isPresented
@@ -214,6 +219,8 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         self.refundRequestCompleted = refundRequestCompleted
         self.feedbackSurveyCompleted = feedbackSurveyCompleted
         self.managementOptionSelected = managementOptionSelected
+        self.onCustomAction = onCustomAction
+        self.changePlansSelected = changePlansSelected
         self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
                                       PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                                               performRestore: myAppPurchaseLogic?.performRestore))
@@ -247,7 +254,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     }
 
     private func customerCenterView() -> some View {
-        // Otherwise use the individual action handlers
+        // Build the view and attach environment-based handlers
         return CustomerCenterView()
             .onCustomerCenterRestoreStarted { [restoreStarted] in
                 restoreStarted?()
@@ -272,6 +279,12 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
             }
             .onCustomerCenterManagementOptionSelected { action in
                 managementOptionSelected?(action)
+            }
+            .onCustomerCenterCustomActionSelected { actionIdentifier, purchaseIdentifier in
+                onCustomAction?(actionIdentifier, purchaseIdentifier)
+            }
+            .onCustomerCenterChangePlansSelected { optionId in
+                changePlansSelected?(optionId)
             }
             .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }

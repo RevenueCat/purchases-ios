@@ -27,7 +27,7 @@ public struct ContentView: View {
                     pushCustomerCenter = true
                 }
                 .buttonStyle(.borderedProminent)
-
+                
                 Spacer()
             }
             .navigationDestination(isPresented: $pushCustomerCenter, destination: {
@@ -38,9 +38,16 @@ public struct ContentView: View {
                         shouldShowCloseButton: false
                     )
                 )
+                .onCustomerCenterChangePlansSelected { optionId in
+                    print("Change plans \(optionId)")
+                }
             })
             .ignoresSafeArea(.all)
-            .presentCustomerCenter(isPresented: $presentCustomerCenter)
+            .presentCustomerCenter(isPresented: $presentCustomerCenter, onCustomAction: { actionIdentifier, purchase in
+                print("""
+                    Action \(actionIdentifier) triggered for \(purchase)
+                    """)
+            })
             .manageSubscriptionsSheet(isPresented: $manageSubscriptions)
             .confirmationDialog(
                 "Buy something",
@@ -100,6 +107,7 @@ public struct ContentView: View {
          [
              "maestro.weekly.tests.01",
              "maestro.monthly.tests.02",
+             "maestro.yearly.tests.01",
              "maestro.weekly2.tests.01",
              "maestro.nonconsumable.tests.01",
              "maestro.consumable.tests.01"

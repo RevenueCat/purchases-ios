@@ -72,9 +72,9 @@ class PaywallDataDecodingTests: BaseHTTPResponseTest {
         expect(esConfig.offerName).to(beNil())
         expect(esConfig.features).to(beEmpty())
 
-        // This test relies on this
-        expect(Locale.current.identifier) == "en_US"
-        expect(paywall.localizedConfiguration) == paywall.config(for: Locale.current)
+        // This test relies on locale being en_US (though region override is ok)
+        expect(Locale.current.identifier).to(beginWith("en_US"))
+        expect(paywall.localizedConfiguration) == enConfig
 
         expect(paywall.config(for: Locale(identifier: "gl_ES"))).to(beNil())
     }
@@ -85,6 +85,44 @@ class PaywallDataDecodingTests: BaseHTTPResponseTest {
         expect(offering.identifier) == "invalid_paywall"
         expect(offering.packages).to(haveCount(1))
         expect(offering.paywall).to(beNil())
+    }
+
+    func testDecodesPaywallDataWithExitOffers() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 6])
+
+        expect(offering.identifier) == "paywall_with_exit_offers"
+        expect(offering.description) == "Offering with paywall and exit offers"
+
+        let paywall = try XCTUnwrap(offering.paywall)
+        expect(paywall.templateName) == "1"
+
+        let exitOffers = try XCTUnwrap(paywall.exitOffers)
+        let dismissExitOffer = try XCTUnwrap(exitOffers.dismiss)
+        expect(dismissExitOffer.offeringId) == "exit_offer_offering"
+    }
+
+    func testDecodesPaywallDataWithEmptyExitOffers() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 7])
+
+        expect(offering.identifier) == "paywall_with_empty_exit_offers"
+        expect(offering.description) == "Offering with paywall and empty exit offers"
+
+        let paywall = try XCTUnwrap(offering.paywall)
+        expect(paywall.templateName) == "1"
+
+        // Empty exit_offers object should decode to ExitOffers with nil dismiss
+        let exitOffers = try XCTUnwrap(paywall.exitOffers)
+        expect(exitOffers.dismiss).to(beNil())
+    }
+
+    func testDecodesPaywallDataWithoutExitOffers() throws {
+        // The "paywall" offering at index 2 has no exit_offers field
+        let offering = try XCTUnwrap(self.response.offerings[safe: 2])
+
+        expect(offering.identifier) == "paywall"
+
+        let paywall = try XCTUnwrap(offering.paywall)
+        expect(paywall.exitOffers).to(beNil())
     }
 
 }

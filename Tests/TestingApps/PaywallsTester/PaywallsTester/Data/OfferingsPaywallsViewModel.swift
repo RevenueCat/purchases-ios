@@ -60,6 +60,9 @@ final class OfferingsPaywallsViewModel: ObservableObject {
     var presentedPaywallCover: PresentedPaywall?
 
     @Published
+    var presentPaywallOffering: Offering?
+
+    @Published
     var listData: PaywallsData? {
         didSet {
             Task { @MainActor in
@@ -167,8 +170,10 @@ private extension OfferingsPaywallsViewModel {
                     switch mode {
                     case .fullScreen:
                         self.presentedPaywallCover = .init(offering: newRCOffering, mode: mode, responseOfferingID: id)
-                    case .sheet, .footer, .condensedFooter:
+                    case .sheet, .footer, .condensedFooter, .presentIfNeeded:
                         self.presentedPaywall = .init(offering: newRCOffering, mode: mode, responseOfferingID: id)
+                    case .presentPaywall:
+                        self.presentPaywallOffering = newRCOffering
                     }
 
                 }

@@ -12,10 +12,10 @@
 //  Created by Josh Holtz on 9/27/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchaseButtonComponentView: View {
@@ -23,11 +23,14 @@ struct PurchaseButtonComponentView: View {
     @Environment(\.openURL)
     private var openURL
 
-    @EnvironmentObject
-    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+    @Environment(\.purchaseInitiatedAction)
+    private var purchaseInitiatedAction: PurchaseInitiatedAction?
 
     @EnvironmentObject
     private var packageContext: PackageContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -49,7 +52,7 @@ struct PurchaseButtonComponentView: View {
         }
 
         switch actionType {
-        case .purchase:
+        case .purchase, .pendingPurchaseContinuation:
             return true
         case .restore:
             return false
@@ -100,14 +103,30 @@ struct PurchaseButtonComponentView: View {
     private func purchaseInApp() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
-        guard !self.purchaseHandler.actionInProgress else { return }
+        guard !self.purchaseHandler.actionInProgress else {
+            return
+        }
 
         guard let selectedPackage = self.packageContext.package else {
             Logger.error(Strings.no_selected_package_found)
             return
         }
 
-        _ = try await self.purchaseHandler.purchase(package: selectedPackage)
+        // Check if there's a purchase interceptor
+        if let interceptor = self.purchaseInitiatedAction {
+            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
+                await withCheckedContinuation { continuation in
+                    interceptor(selectedPackage, resume: ResumeAction { shouldProceed in
+                        continuation.resume(returning: shouldProceed)
+                    })
+                }
+            }
+            guard result else { return }
+        }
+
+        let promoOffer = self.paywallPromoOfferCache.get(for: selectedPackage)
+
+        _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }
 
     private func purchaseInWeb() async throws {
@@ -145,7 +164,7 @@ struct PurchaseButtonComponentView: View {
 
     private var isInPreview: Bool {
         #if DEBUG
-        let isInPreview: Bool = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        let isInPreview: Bool = ProcessInfo.isRunningForPreviews
 
         return isInPreview
         #else
@@ -208,14 +227,18 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         "id_2": .string("Hello, world intro offer")
                     ]
                 ),
-                offering: Offering(identifier: "",
-                                   serverDescription: "",
-                                   availablePackages: [],
-                                   webCheckoutUrl: nil)
+                offering: Offering(
+                    identifier: "",
+                    serverDescription: "",
+                    availablePackages: [],
+                    webCheckoutUrl: nil
+                ),
+                colorScheme: .light
             ),
-            onDismiss: {}
+            onDismiss: {
+            }
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Pill")
 
@@ -253,14 +276,18 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         "id_2": .string("Hello, world intro offer")
                     ]
                 ),
-                offering: Offering(identifier: "",
-                                   serverDescription: "",
-                                   availablePackages: [],
-                                   webCheckoutUrl: nil)
+                offering: Offering(
+                    identifier: "",
+                    serverDescription: "",
+                    availablePackages: [],
+                    webCheckoutUrl: nil
+                ),
+                colorScheme: .light
             ),
-            onDismiss: {}
+            onDismiss: {
+            }
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Rounded Rectangle")
     }
@@ -272,16 +299,19 @@ fileprivate extension PurchaseButtonComponentViewModel {
     convenience init(
         component: PaywallComponent.PurchaseButtonComponent,
         localizationProvider: LocalizationProvider,
-        offering: Offering
+        offering: Offering,
+        colorScheme: ColorScheme
     ) throws {
         let factory = ViewModelFactory()
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
-            firstImageInfo: nil,
+            firstItemIgnoresSafeAreaInfo: nil,
+            purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            offering: offering
+            offering: offering,
+            colorScheme: colorScheme
         )
 
         try self.init(

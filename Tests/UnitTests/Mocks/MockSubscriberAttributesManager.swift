@@ -178,6 +178,18 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetCleverTapIDParametersList.append((cleverTapID, appUserID))
     }
 
+    var invokedSetAirbridgeDeviceID = false
+    var invokedSetAirbridgeDeviceIDCount = 0
+    var invokedSetAirbridgeDeviceIDParameters: (AirbridgeDeviceID: String?, appUserID: String?)?
+    var invokedSetAirbridgeDeviceIDParametersList = [(AirbridgeDeviceID: String?, appUserID: String?)]()
+
+    override func setAirbridgeDeviceID(_ airbridgeDeviceID: String?, appUserID: String) {
+        invokedSetAirbridgeDeviceID = true
+        invokedSetAirbridgeDeviceIDCount += 1
+        invokedSetAirbridgeDeviceIDParameters = (airbridgeDeviceID, appUserID)
+        invokedSetAirbridgeDeviceIDParametersList.append((airbridgeDeviceID, appUserID))
+    }
+
     var invokedSetKochavaDeviceID = false
     var invokedSetKochavaDeviceIDCount = 0
     var invokedSetKochavaDeviceIDParameters: (KochavaDeviceID: String?, appUserID: String?)?
@@ -236,6 +248,30 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetPostHogUserIDCount += 1
         invokedSetPostHogUserIDParameters = (postHogUserID, appUserID)
         invokedSetPostHogUserIDParametersList.append((postHogUserID, appUserID))
+    }
+
+    var invokedSetAmplitudeUserID = false
+    var invokedSetAmplitudeUserIDCount = 0
+    var invokedSetAmplitudeUserIDParameters: (amplitudeUserID: String?, appUserID: String?)?
+    var invokedSetAmplitudeUserIDParametersList = [(amplitudeUserID: String?, appUserID: String?)]()
+
+    override func setAmplitudeUserID(_ amplitudeUserID: String?, appUserID: String) {
+        invokedSetAmplitudeUserID = true
+        invokedSetAmplitudeUserIDCount += 1
+        invokedSetAmplitudeUserIDParameters = (amplitudeUserID, appUserID)
+        invokedSetAmplitudeUserIDParametersList.append((amplitudeUserID, appUserID))
+    }
+
+    var invokedSetAmplitudeDeviceID = false
+    var invokedSetAmplitudeDeviceIDCount = 0
+    var invokedSetAmplitudeDeviceIDParameters: (amplitudeDeviceID: String?, appUserID: String?)?
+    var invokedSetAmplitudeDeviceIDParametersList = [(amplitudeDeviceID: String?, appUserID: String?)]()
+
+    override func setAmplitudeDeviceID(_ amplitudeDeviceID: String?, appUserID: String) {
+        invokedSetAmplitudeDeviceID = true
+        invokedSetAmplitudeDeviceIDCount += 1
+        invokedSetAmplitudeDeviceIDParameters = (amplitudeDeviceID, appUserID)
+        invokedSetAmplitudeDeviceIDParametersList.append((amplitudeDeviceID, appUserID))
     }
 
     var invokedSetMediaSource = false

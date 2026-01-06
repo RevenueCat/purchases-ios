@@ -14,6 +14,7 @@
 
 import Foundation
 
+// swiftlint:disable file_length
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -23,9 +24,12 @@ protocol PaywallCacheWarmingType: Sendable {
     func warmUpPaywallImagesCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func warmUpPaywallVideosCache(offerings: Offerings) async
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
 
-#if !os(macOS) && !os(tvOS) // For Paywalls
+#if !os(tvOS) // For Paywalls
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async
@@ -55,19 +59,23 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let imageFetcher: PaywallImageFetcherType
     private let fontsManager: PaywallFontManagerType
+    private let fileRepository: FileRepositoryType
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
+    private var hasLoadedVideos = false
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher(),
-        fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession)
+        fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
+        fileRepository: FileRepositoryType = FileRepository.shared
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.imageFetcher = imageFetcher
         self.fontsManager = fontsManager
+        self.fileRepository = fileRepository
     }
 
     func warmUpEligibilityCache(offerings: Offerings) {
@@ -90,11 +98,40 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: imageURLs))
 
-        for url in imageURLs {
-            do {
-                try await self.imageFetcher.downloadImage(url)
-            } catch {
-                Logger.error(Strings.paywalls.error_prefetching_image(url, error))
+        await withTaskGroup(of: Void.self) { group in
+            for url in imageURLs {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    // Preferred method - load with FileRepository
+                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
+
+                    // Legacy method - load with URLSession
+                    do {
+                        try await self.imageFetcher.downloadImage(url)
+                    } catch {
+                        Logger.error(Strings.paywalls.error_prefetching_image(url, error))
+                    }
+                }
+            }
+        }
+    }
+
+    func warmUpPaywallVideosCache(offerings: Offerings) async {
+        guard !self.hasLoadedVideos else { return }
+        self.hasLoadedVideos = true
+
+        let videoURLs = offerings.allLowResVideosInPaywalls
+        guard !videoURLs.isEmpty else { return }
+
+        Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: videoURLs))
+        await withTaskGroup(of: Void.self) { group in
+            for source in videoURLs {
+                group.addTask { [weak self] in
+                    _ = try? await self?.fileRepository.generateOrGetCachedFileURL(
+                        for: source.url,
+                        withChecksum: source.checksum
+                    )
+                }
             }
         }
     }
@@ -106,14 +143,14 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         await withTaskGroup(of: Void.self) { group in
             for font in allFontsInPaywallsNamed {
-                group.addTask {
-                    await self.installFont(from: font)
+                group.addTask { [weak self] in
+                    await self?.installFont(from: font)
                 }
             }
         }
     }
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
     /// Downloads and installs the font if it is not already installed.
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async {
@@ -226,7 +263,18 @@ private extension Offerings {
         )
     }
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+    var allLowResVideosInPaywalls: Set<URLWithValidation> {
+        return .init(
+            self
+                .all
+                .values
+                .lazy
+                .compactMap(\.paywallComponents)
+                .flatMap(\.data.allLowResVideoUrls)
+        )
+    }
+
+#if !os(tvOS) // For Paywalls V2
 
     var allFontsInPaywallsNamed: [DownloadableFont] {
         response.uiConfig?
@@ -242,7 +290,7 @@ private extension Offerings {
 
 #endif
 
-    #if !os(macOS) && !os(tvOS) // For Paywalls V2
+    #if !os(tvOS) // For Paywalls V2
 
     var allImagesInPaywalls: Set<URL> {
         return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
@@ -266,7 +314,7 @@ private extension Offerings {
         )
     }
 
-    #if !os(macOS) && !os(tvOS) // For Paywalls V2
+    #if !os(tvOS) // For Paywalls V2
 
     private var allImagesInPaywallsV2: Set<URL> {
         // Attempting to warm up all low res images for all offerings for Paywalls V2.
@@ -326,7 +374,7 @@ struct DownloadableFont: Sendable {
     let hash: String
 }
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 private extension UIConfig.AppConfig {
     var allDownloadableFonts: [DownloadableFont] {

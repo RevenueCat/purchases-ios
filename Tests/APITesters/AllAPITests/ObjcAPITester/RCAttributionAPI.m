@@ -38,6 +38,8 @@
     [a setOnesignalUserID: @""];
     [a setCleverTapID: nil];
     [a setCleverTapID: @""];
+    [a setAirbridgeDeviceID:nil];
+    [a setAirbridgeDeviceID:@""];
     [a setKochavaDeviceID:nil];
     [a setKochavaDeviceID:@""];
     [a setMixpanelDistinctID: nil];
@@ -48,6 +50,10 @@
     [a setTenjinAnalyticsInstallationID: @""];
     [a setPostHogUserID:nil];
     [a setPostHogUserID:@""];
+    [a setAmplitudeUserID:nil];
+    [a setAmplitudeUserID:@""];
+    [a setAmplitudeDeviceID:nil];
+    [a setAmplitudeDeviceID:@""];
     [a setMediaSource: nil];
     [a setMediaSource: @""];
     [a setCampaign: nil];
@@ -62,6 +68,10 @@
     [a setCreative: @""];
     [a collectDeviceIdentifiers];
     [a enableAdServicesAttributionTokenCollection];
+
+    [a setAppsFlyerConversionData:nil];
+    NSDictionary *dict = @{};
+    [a setAppsFlyerConversionData:dict];
 }
 
 @end

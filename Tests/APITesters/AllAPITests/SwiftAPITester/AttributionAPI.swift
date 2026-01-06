@@ -49,6 +49,9 @@ func checkAttributionAPI() {
     attribution.setCleverTapID("")
     attribution.setCleverTapID(nil)
 
+    attribution.setAirbridgeDeviceID("")
+    attribution.setAirbridgeDeviceID(nil)
+
     attribution.setKochavaDeviceID("")
     attribution.setKochavaDeviceID(nil)
 
@@ -63,6 +66,12 @@ func checkAttributionAPI() {
 
     attribution.setPostHogUserID("")
     attribution.setPostHogUserID(nil)
+
+    attribution.setAmplitudeUserID("")
+    attribution.setAmplitudeUserID(nil)
+
+    attribution.setAmplitudeDeviceID("")
+    attribution.setAmplitudeDeviceID(nil)
 
     attribution.setMediaSource("")
     attribution.setMediaSource(nil)
@@ -89,4 +98,34 @@ func checkAttributionAPI() {
         attribution.enableAdServicesAttributionTokenCollection()
     }
     #endif
+
+    checkSetAppsFlyerConversionDataAPI()
+}
+
+func checkSetAppsFlyerConversionDataAPI() {
+    attribution.setAppsFlyerConversionData(nil)
+
+    let anyHashableDict: [AnyHashable: Any] = [:]
+    attribution.setAppsFlyerConversionData(anyHashableDict)
+
+    let optionalAnyHashableDict: [AnyHashable: Any]? = [:]
+    attribution.setAppsFlyerConversionData(optionalAnyHashableDict)
+
+    let stringAnyDict: [String: Any] = [:]
+    attribution.setAppsFlyerConversionData(stringAnyDict)
+
+    let stringStringDict: [String: String] = [:]
+    attribution.setAppsFlyerConversionData(stringStringDict as [AnyHashable: Any])
+
+    let stringOptionalStringDict: [String: String?] = [:]
+    attribution.setAppsFlyerConversionData(stringOptionalStringDict.mapValues { $0 as Any } as [AnyHashable: Any])
+
+    let stringIntDict: [String: Int] = [:]
+    attribution.setAppsFlyerConversionData(stringIntDict as [AnyHashable: Any])
+
+    let stringOptionalIntDict: [String: Int?] = [:]
+    attribution.setAppsFlyerConversionData(stringOptionalIntDict.mapValues { $0 as Any } as [AnyHashable: Any])
+
+    let nsDictionary: NSDictionary = [:]
+    attribution.setAppsFlyerConversionData(nsDictionary as? [AnyHashable: Any])
 }

@@ -47,6 +47,9 @@ public struct PaywallData {
     /// The default locale identifier for this paywall.
     public var defaultLocale: String?
 
+    /// Exit offers configuration for this paywall.
+    public var exitOffers: ExitOffers?
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
@@ -207,6 +210,9 @@ extension PaywallData {
         localizationByLocale[requiredLocale.identifier] ??
         localizationByLocale.first { locale, _ in
             Locale(identifier: locale).sharesLanguageCode(with: requiredLocale)
+        }?.value ??
+        localizationByLocale.first { locale, _ in
+            Locale(identifier: locale).sharesLanguageCode(with: requiredLocale, stricterMatching: false)
         }?.value
     }
 
@@ -625,7 +631,8 @@ extension PaywallData {
         localizationByTier: [String: [String: LocalizedConfiguration]],
         assetBaseURL: URL,
         revision: Int = 0,
-        zeroDecimalPlaceCountries: [String] = []
+        zeroDecimalPlaceCountries: [String] = [],
+        exitOffers: ExitOffers? = nil
     ) {
         self.templateName = templateName
         self.config = config
@@ -634,6 +641,7 @@ extension PaywallData {
         self.assetBaseURL = assetBaseURL
         self.revision = revision
         self._zeroDecimalPlaceCountries = .init(apple: zeroDecimalPlaceCountries)
+        self.exitOffers = exitOffers
     }
 
     /// Creates a test ``PaywallData`` with one localization.
@@ -777,6 +785,7 @@ extension PaywallData: Codable {
         case _revision = "revision"
         case _zeroDecimalPlaceCountries = "zeroDecimalPlaceCountries"
         case defaultLocale = "defaultLocale"
+        case exitOffers
     }
 
 }
@@ -809,17 +818,3 @@ extension PaywallData: Sendable {}
 // MARK: - Identifiable
 
 extension PaywallData.Tier: Identifiable {}
-
-// MARK: - Extensions
-
-private extension Locale {
-
-    func sharesLanguageCode(with other: Locale) -> Bool {
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            return self.language.isEquivalent(to: other.language)
-        } else {
-            return self.languageCode == other.languageCode
-        }
-    }
-
-}

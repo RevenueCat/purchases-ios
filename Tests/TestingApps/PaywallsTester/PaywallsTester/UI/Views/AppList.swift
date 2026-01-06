@@ -32,7 +32,7 @@ struct AppList: View {
             }
             .navigationTitle("My Apps")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button {
                         application.signOut()
                     } label: {
@@ -42,11 +42,12 @@ struct AppList: View {
                 }
             }
         }
-        .navigationViewStyle(.stack)
+        .navigationViewStyle(.automatic)
     }
 }
 
 #Preview {
+    // November 2025: this view is always flaky in Emerge snapshots running on macOS, excluded via emerge_config.yaml
     AppList()
-    .environmentObject(ApplicationData())
+        .environmentObject(ApplicationData())
 }

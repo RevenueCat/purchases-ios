@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -307,7 +307,7 @@ private struct PreviewContainer: View {
 
     var body: some View {
         let viewModelApple = CustomerCenterViewModel(
-            activeSubscriptionPurchases: [.subscriptionInformationMonthlyRenewing],
+            activeSubscriptionPurchases: [.subscription],
             activeNonSubscriptionPurchases: [],
             configuration: CustomerCenterConfigData.default
         )

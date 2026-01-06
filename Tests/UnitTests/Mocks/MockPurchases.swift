@@ -64,8 +64,12 @@ extension MockPurchases: InternalPurchasesType {
         }
     }
 
-    func healthReportRequest() async throws -> HealthReport {
-        return try self.mockedHealthReportRequestResponse.get()
+    func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
+        do {
+            return try self.mockedHealthReportRequestResponse.get().validate()
+        } catch {
+            return .init(status: .unhealthy(.unknown(error)))
+        }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -455,6 +459,14 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func setAmplitudeUserID(_ amplitudeUserID: String?) {
+        self.unimplemented()
+    }
+
+    func setAmplitudeDeviceID(_ amplitudeDeviceID: String?) {
+        self.unimplemented()
+    }
+
     func collectDeviceIdentifiers() {
         self.unimplemented()
     }
@@ -471,6 +483,14 @@ extension MockPurchases: PurchasesType {
         _ params: PurchaseParams,
         completion: @escaping PurchaseCompletedBlock
     ) {
+        self.unimplemented()
+    }
+
+    func getVirtualCurrencies(completion: @escaping (RevenueCat.VirtualCurrencies?, RevenueCat.PublicError?) -> Void) {
+        self.unimplemented()
+    }
+
+    func invalidateVirtualCurrenciesCache() {
         self.unimplemented()
     }
 }
@@ -550,6 +570,14 @@ extension MockPurchases: PurchasesSwiftType {
       func redeemWebPurchase(
         _ webPurchaseRedemption: WebPurchaseRedemption
     ) async -> WebPurchaseRedemptionResult {
+        self.unimplemented()
+    }
+
+    func virtualCurrencies() async throws -> RevenueCat.VirtualCurrencies {
+        self.unimplemented()
+    }
+
+    var cachedVirtualCurrencies: VirtualCurrencies? {
         self.unimplemented()
     }
 }

@@ -53,7 +53,7 @@ class Template2ViewTests: BaseSnapshotTest {
     }
 
     func testPurchasingState() {
-        let handler = Self.purchaseHandler.with(delay: 120)
+        let handler = PurchaseHandler.mock().with(delay: 120)
 
         let view = Self.createPaywall(offering: Self.offering.withLocalImages,
                                       purchaseHandler: handler)

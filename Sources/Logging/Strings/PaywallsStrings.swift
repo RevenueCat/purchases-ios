@@ -20,6 +20,7 @@ enum PaywallsStrings {
     case warming_up_eligibility_cache(products: Set<String>)
     case warming_up_images(imageURLs: Set<URL>)
     case warming_up_fonts(fontsURLS: Set<URL>)
+    case warming_up_videos(videoURLs: Set<URLWithValidation>)
     case error_prefetching_image(URL, Error)
     case font_download_already_in_progress(name: String, fontURL: URL)
     case font_downloaded_sucessfully(name: String, fontURL: URL)
@@ -49,10 +50,16 @@ enum PaywallsStrings {
     case event_flush_with_empty_store
     case event_flush_starting(count: Int)
     case event_sync_failed(Error)
+    case event_flush_failed(Error)
     case event_cannot_serialize
     case event_cannot_get_encoded_event
     case event_cannot_deserialize(Error)
     case event_missing_app_session_id
+
+    case background_task_started(String)
+    case background_task_expired(String)
+    case background_task_failed(String)
+    case background_task_unavailable
 
 }
 
@@ -115,13 +122,13 @@ extension PaywallsStrings: LogMessage {
         // MARK: - Events
 
         case .event_manager_initialized:
-            return "PaywallEventsManager initialized"
+            return "EventsManager initialized"
 
         case .event_manager_not_initialized_not_available:
-            return "Won't initialize PaywallEventsManager: not available on current device."
+            return "Won't initialize EventsManager: not available on current device."
 
         case let .event_manager_failed_to_initialize(error):
-            return "PaywallEventsManager won't be initialized, event store failed to create " +
+            return "EventsManager won't be initialized, event store failed to create " +
             "with error: \((error as NSError).localizedDescription)"
 
         case .event_flush_already_in_progress:
@@ -136,6 +143,9 @@ extension PaywallsStrings: LogMessage {
         case let .event_sync_failed(error):
             return "Paywall event flushing failed, will retry. Error: \((error as NSError).localizedDescription)"
 
+        case let .event_flush_failed(error):
+            return "Paywall event flush failed: \((error as NSError).localizedDescription)"
+
         case .event_cannot_serialize:
             return "Couldn't serialize PaywallEvent to storage."
 
@@ -147,6 +157,17 @@ extension PaywallsStrings: LogMessage {
 
         case .event_missing_app_session_id:
             return "Event is missing the app session ID."
+        case .warming_up_videos(videoURLs: let videoURLs):
+            return "Warming up paywall video cache: \(videoURLs)"
+
+        case let .background_task_started(taskName):
+            return "Background task started: \(taskName)"
+        case let .background_task_expired(taskName):
+            return "Background task expired: \(taskName)"
+        case let .background_task_failed(taskName):
+            return "Background task failed to start: \(taskName)"
+        case .background_task_unavailable:
+            return "Background tasks unavailable (app extension or no UIApplication access)"
         }
     }
 

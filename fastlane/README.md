@@ -21,18 +21,18 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 
 
+### prepare_for_carthage
+
+```sh
+[bundle exec] fastlane prepare_for_carthage
+```
+
+Removes some directories before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj or v3LoadShedderIntegration.xcodeproj). Also removes v3LoadShedderIntegration and v4LoadShedderIntegration directories to prevent xcodebuild from timing out when scanning for projects.
+
 ### load_spm_dependencies
 
 ```sh
 [bundle exec] fastlane load_spm_dependencies
-```
-
-
-
-### send_slack_load_shedder_integration_test_v3
-
-```sh
-[bundle exec] fastlane send_slack_load_shedder_integration_test_v3
 ```
 
 
@@ -82,13 +82,13 @@ Creates PR changing version to next minor adding a -SNAPSHOT suffix
 
 Setup development environment
 
-### ios update_paywall_preview_resources_submodule
+### ios update_paywall_preview_resources_commit
 
 ```sh
-[bundle exec] fastlane ios update_paywall_preview_resources_submodule
+[bundle exec] fastlane ios update_paywall_preview_resources_commit
 ```
 
-Updates paywall-preview-resources submodule and creates/updates PR
+Updates paywall-preview-resources-commit to point to latest commit on main and creates/updates PR
 
 ### ios record_and_push_paywall_template_screenshots
 
@@ -113,6 +113,14 @@ Records screenshots for paywalls
 ```
 
 Build the Paywalls Test app for Emerge Snapshots
+
+### ios build_paywalls_tester_for_emerge_ios
+
+```sh
+[bundle exec] fastlane ios build_paywalls_tester_for_emerge_ios
+```
+
+
 
 ### ios test_ios
 
@@ -178,6 +186,14 @@ macOS build
 
 visionOS build
 
+### ios build_and_upload_emerge_binary_size_analysis
+
+```sh
+[bundle exec] fastlane ios build_and_upload_emerge_binary_size_analysis
+```
+
+Build BinarySizeTest app and upload to Emerge
+
 ### ios archive
 
 ```sh
@@ -201,6 +217,14 @@ archive all platforms
 ```
 
 run API Tests
+
+### ios run_maestro_e2e_tests
+
+```sh
+[bundle exec] fastlane ios run_maestro_e2e_tests
+```
+
+run_maestro_e2e_tests
 
 ### ios replace_api_key_integration_tests
 
@@ -306,13 +330,13 @@ Creates RevenueCat-Swift.h for a new release
 
 Run BackendIntegrationTests
 
-### ios v3_loadshedder_integration_tests
+### ios loadshedder_integration_tests_in_old_major
 
 ```sh
-[bundle exec] fastlane ios v3_loadshedder_integration_tests
+[bundle exec] fastlane ios loadshedder_integration_tests_in_old_major
 ```
 
-Run LoadShedder tests
+Run LoadShedder tests in old major
 
 ### ios update_swift_package_commit
 
@@ -361,6 +385,14 @@ Build and deploy PurchaseTesterSwiftUI
 ```
 
 Clones or updates snapshots repo
+
+### ios fetch_paywall_preview_resources
+
+```sh
+[bundle exec] fastlane ios fetch_paywall_preview_resources
+```
+
+Clones or updates paywall-preview-resources repo
 
 ### ios update_snapshots_repo
 

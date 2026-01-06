@@ -12,29 +12,35 @@
 //  Created by Josh Holtz on 9/27/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageComponentViewModel {
 
     let isSelectedByDefault: Bool
+    let promotionalOfferProductCode: String?
     let package: Package?
     let stackViewModel: StackComponentViewModel
+    let hasPurchaseButton: Bool
 
     init(
         component: PaywallComponent.PackageComponent,
         offering: Offering,
-        stackViewModel: StackComponentViewModel
+        stackViewModel: StackComponentViewModel,
+        hasPurchaseButton: Bool
     ) {
         self.isSelectedByDefault = component.isSelectedByDefault
+        self.promotionalOfferProductCode = component.applePromoOfferProductCode
+
         self.package = offering.package(identifier: component.packageID)
         if package == nil {
             Logger.warning(Strings.paywall_could_not_find_package(component.packageID))
         }
 
         self.stackViewModel = stackViewModel
+        self.hasPurchaseButton = hasPurchaseButton
     }
 
 }

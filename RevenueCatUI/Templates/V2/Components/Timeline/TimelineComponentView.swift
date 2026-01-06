@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TimelineComponentView: View {
@@ -23,10 +23,13 @@ struct TimelineComponentView: View {
     private let viewModel: TimelineComponentViewModel
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState
@@ -49,6 +52,9 @@ struct TimelineComponentView: View {
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
             )
         ) { style in
             if style.visible {
@@ -68,6 +74,9 @@ struct TimelineComponentView: View {
                     condition: self.screenCondition,
                     isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                         package: self.packageContext.package
+                    ),
+                    isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                        for: self.packageContext.package
                     )
                 ) { itemStyle in
                     if itemStyle.visible {
@@ -90,6 +99,9 @@ struct TimelineComponentView: View {
                         condition: self.screenCondition,
                         isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                             package: self.packageContext.package
+                        ),
+                        isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                            for: self.packageContext.package
                         )
                     ) { itemStyle in
                         if itemStyle.visible {
@@ -359,7 +371,7 @@ struct ContentView_Previews: PreviewProvider {
                     ]
                 ), uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
             ))
-            .previewRequiredEnvironmentProperties()
+            .previewRequiredPaywallsV2Properties()
             .previewDisplayName("Timeline - \(alignment)")
         }
 
@@ -383,7 +395,7 @@ fileprivate extension TimelineComponentViewModel {
                     component: descriptionComponent
                 )
             }
-            return try TimelineItemViewModel(
+            return TimelineItemViewModel(
                 component: item,
                 title: try TextComponentViewModel(
                     localizationProvider: localizationProvider,
@@ -391,7 +403,7 @@ fileprivate extension TimelineComponentViewModel {
                     component: item.title
                 ),
                 description: description,
-                icon: try IconComponentViewModel(
+                icon: IconComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: item.icon
@@ -399,7 +411,7 @@ fileprivate extension TimelineComponentViewModel {
             )
         }
 
-        try self.init(
+        self.init(
             component: component,
             items: models,
             uiConfigProvider: uiConfigProvider

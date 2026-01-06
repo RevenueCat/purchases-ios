@@ -9,15 +9,19 @@ desc "Update carthage commit"
 end
 
 lane :installation_tests do
+  prepare_for_carthage
   load_spm_dependencies
-  
+
   Dir.chdir("..") do
     # install without building, then remove the tests and build, so that carthage
     # doesn't try to build the other installation tests and testing apps
     sh "carthage", "update", "--no-build"
+    sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Examples"
     sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/InstallationTests/"
     sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/APITesters/"
     sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/TestingApps/"
+    sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/v3LoadShedderIntegration/"
+    sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/v4LoadShedderIntegration/"
 
     # Carthage builds all schemes including ones we don't need, so let's nuke them before proceeding
     schemes_directory = "Carthage/Checkouts/purchases-root/RevenueCat.xcodeproj/xcshareddata/xcschemes"

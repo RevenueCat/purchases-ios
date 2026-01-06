@@ -11,6 +11,7 @@
 //
 //  Created by Pol Piella on 4/8/25.
 
+#if DEBUG
 import Foundation
 
 final class HealthReportOperation: CacheableNetworkOperation {
@@ -71,3 +72,4 @@ final class HealthReportOperation: CacheableNetworkOperation {
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
 extension HealthReportOperation: @unchecked Sendable {}
+#endif

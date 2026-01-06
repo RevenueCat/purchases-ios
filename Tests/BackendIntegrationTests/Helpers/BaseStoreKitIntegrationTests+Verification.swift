@@ -49,7 +49,7 @@ extension BaseStoreKitIntegrationTests {
 
         let entitlements = customerInfo.entitlements.all
         if entitlements.count != 1 {
-            try await failTest("Expected 1 Entitlement. Got: \(entitlements)")
+            try await failTest("\(Date()): Expected 1 Entitlement. Got: \(entitlements)")
         }
 
         let entitlement: EntitlementInfo
@@ -65,7 +65,7 @@ extension BaseStoreKitIntegrationTests {
         }
 
         if !entitlement.isActive {
-            try await failTest("Entitlement is not active: \(entitlement)")
+            try await failTest("\(Date()): Entitlement is not active: \(entitlement)")
         }
 
         return entitlement
@@ -81,7 +81,7 @@ extension BaseStoreKitIntegrationTests {
             customerInfo.entitlements.active
         ).to(
             beEmpty(),
-            description: "Expected no active entitlements"
+            description: "\(Date()): Expected no active entitlements"
         )
     }
 
@@ -96,16 +96,46 @@ extension BaseStoreKitIntegrationTests {
         )
         .to(
             beEmpty(),
-            description: "Expected no entitlements. Got: \(customerInfo.entitlements.all)"
+            description: "\(Date()): Expected no entitlements. Got: \(customerInfo.entitlements.all)"
         )
     }
 
-    func verifyTransactionWasFinished(
-        count: Int = 1,
+    func verifyAnyTransactionWasFinished(
+        count: Int? = 1,
         file: FileString = #file,
         line: UInt = #line
     ) {
-        self.logger.verifyMessageWasLogged(Self.finishingTransactionLog,
+        self.logger.verifyMessageWasLogged(Self.finishingAnyTransactionLog,
+                                           level: .info,
+                                           expectedCount: count,
+                                           file: file,
+                                           line: line)
+    }
+
+    func verifySpecificTransactionWasFinished(
+        _ storeTransaction: StoreTransaction,
+        count: Int? = 1,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        let expectedLog = Self.finishingSpecificTransactionLog(transaction: storeTransaction)
+        self.logger.verifyMessageWasLogged(expectedLog,
+                                           level: .info,
+                                           expectedCount: count,
+                                           file: file,
+                                           line: line)
+    }
+
+    /// Use this method to check a transaction was finished for a specific product identifier
+    /// when you don't have access to the specific `StoreTransaction` object.
+    func verifyTransactionWasFinishedForProductIdentifier(
+        _ productIdentifier: String,
+        count: Int? = 1,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        let expectedLogRegexPattern = Self.finishingTransactionLogRegexPattern(productIdentifier: productIdentifier)
+        self.logger.verifyMessageWasLogged(regexPattern: expectedLogRegexPattern,
                                            level: .info,
                                            expectedCount: count,
                                            file: file,
@@ -116,16 +146,25 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) {
-        self.logger.verifyMessageWasNotLogged(Self.finishingTransactionLog, file: file, line: line)
+        self.logger.verifyMessageWasNotLogged(Self.finishingAnyTransactionLog, file: file, line: line)
     }
 
-    func verifyTransactionIsEventuallyFinished(
+    func verifySpecificTransactionWasNotFinished(
+        _ storeTransaction: StoreTransaction,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        let expectedLog = Self.finishingSpecificTransactionLog(transaction: storeTransaction)
+        self.logger.verifyMessageWasNotLogged(expectedLog, file: file, line: line)
+    }
+
+    func verifyAnyTransactionIsEventuallyFinished(
         count: Int? = nil,
         file: FileString = #file,
         line: UInt = #line
     ) async throws {
         try await self.logger.verifyMessageIsEventuallyLogged(
-            Self.finishingTransactionLog,
+            Self.finishingAnyTransactionLog,
             level: .info,
             expectedCount: count,
             timeout: .seconds(5),
@@ -136,31 +175,40 @@ extension BaseStoreKitIntegrationTests {
     }
 
     func verifyCustomerInfoWasComputedOffline(
-        logger: TestLogHandler? = nil,
+        customerInfo: CustomerInfo,
         file: FileString = #file,
         line: UInt = #line
     ) {
-        let logger: TestLogHandler = logger ?? self.logger
-        logger.verifyMessageWasLogged(
-            Strings.offlineEntitlements.computing_offline_customer_info,
-            level: .info,
+        expect(
             file: file,
-            line: line
-        )
+            line: line,
+            customerInfo.isComputedOffline
+        ).to(beTrue(), description: "Expected customer info to be computed offline")
+        expect(
+            file: file,
+            line: line,
+            customerInfo.originalSource
+        ).to(equal(.offlineEntitlements), description: "Expected original source to be offline entitlements")
+        expect(customerInfo.isLoadedFromCache).to(
+            beFalse(),
+            description: "Offline-computed customer info is never loaded from cache")
     }
 
     func verifyCustomerInfoWasNotComputedOffline(
-        logger: TestLogHandler? = nil,
+        customerInfo: CustomerInfo,
         file: FileString = #file,
         line: UInt = #line
     ) {
-        let logger: TestLogHandler = logger ?? self.logger
-
-        logger.verifyMessageWasNotLogged(
-            Strings.offlineEntitlements.computing_offline_customer_info,
+        expect(
             file: file,
-            line: line
-        )
+            line: line,
+            customerInfo.isComputedOffline
+        ).to(beFalse(), description: "Expected customer info not to be computed offline")
+        expect(
+            file: file,
+            line: line,
+            customerInfo.originalSource
+        ).toNot(equal(.offlineEntitlements), description: "Expected original source not to be offline entitlements")
     }
 
     func verifyReceiptIsEventuallyPosted(

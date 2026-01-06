@@ -68,6 +68,24 @@ public final class SubscriptionPeriod: NSObject {
             .normalized()
     }
 
+    static func from(iso8601: String) -> SubscriptionPeriod? {
+        guard let isoDuration = ISODurationFormatter.parse(from: iso8601) else {
+            return nil
+        }
+        // Look for the smaller Unit > 0
+        if isoDuration.days > 0 {
+            return SubscriptionPeriod(value: isoDuration.days, unit: .day)
+        } else if isoDuration.weeks > 0 {
+            return SubscriptionPeriod(value: isoDuration.weeks, unit: .week)
+        } else if isoDuration.months > 0 {
+            return SubscriptionPeriod(value: isoDuration.months, unit: .month)
+        } else if isoDuration.years > 0 {
+            return SubscriptionPeriod(value: isoDuration.years, unit: .year)
+        } else {
+            return nil
+        }
+    }
+
     public override func isEqual(_ object: Any?) -> Bool {
         guard let other = object as? SubscriptionPeriod else { return false }
 
@@ -182,7 +200,7 @@ extension SubscriptionPeriod {
     }
 
     private static let roundingBehavior = NSDecimalNumberHandler(
-        roundingMode: .plain,
+        roundingMode: .down,
         scale: 2,
         raiseOnExactness: false,
         raiseOnOverflow: false,

@@ -14,7 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension Shape {
@@ -32,7 +32,7 @@ extension Shape {
             if color.hasError {
                 self.fill()
             } else {
-                self.fill(color.toDynamicColor())
+                self.fill(color.toDynamicColor(with: colorScheme))
             }
         case .linear(let degrees, _):
             self.fill(

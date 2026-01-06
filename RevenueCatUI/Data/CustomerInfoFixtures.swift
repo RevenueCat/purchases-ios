@@ -11,11 +11,11 @@
 //
 //  Created by Cesar de la Vega on 28/10/24.
 
-import RevenueCat
-
-// swiftlint:disable force_unwrapping type_body_length
 import Foundation
+@_spi(Internal) import RevenueCat
 
+// swiftlint:disable force_unwrapping
+// swiftlint:disable:next type_body_length
 class CustomerInfoFixtures {
 
     private init() {}
@@ -304,6 +304,10 @@ class CustomerInfoFixtures {
             purchaseDate: "2022-04-12T00:03:28Z",
             expirationDate: "2600-04-12T00:03:35Z"
         )
+    }()
+
+    static let customerInfoWithSimulatedStoreSubscriptions: CustomerInfo = {
+        makeCustomerInfo(store: "test_store")
     }()
 
 }

@@ -116,24 +116,27 @@ class OfferingsManager {
         fetchPolicy: FetchPolicy = .default,
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
+        // We keep track of preferred locales at the time of launching the request
+        let preferredLocales = systemInfo.preferredLocales
         self.backend.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
             switch result {
-            case let .success(response):
-                self.handleOfferingsBackendResult(with: response,
+            case let .success(contents):
+                self.handleOfferingsBackendResult(with: contents,
                                                   appUserID: appUserID,
                                                   fetchPolicy: fetchPolicy,
+                                                  preferredLocales: preferredLocales,
                                                   completion: completion)
 
-            case let .failure(.networkError(networkError)) where networkError.isServerDown:
-                Logger.warn(Strings.offering.fetching_offerings_failed_server_down)
+            case let .failure(backendError) where backendError.shouldFallBackToCachedOfferings:
 
-                // If unable to fetch offerings when server is down, attempt to load them from disk cache.
+                // If error fetching offerings, attempt to load them from disk cache.
                 self.fetchCachedOfferingsFromDisk(appUserID: appUserID,
                                                   fetchPolicy: fetchPolicy) { offerings in
                     if let offerings = offerings {
+                        Logger.warn(Strings.offering.error_fetching_offerings_using_disk_cache)
                         self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
                     } else {
-                        self.handleOfferingsUpdateError(.backendError(.networkError(networkError)),
+                        self.handleOfferingsUpdateError(.backendError(backendError),
                                                         completion: completion)
                     }
                 }
@@ -192,14 +195,14 @@ private extension OfferingsManager {
         fetchPolicy: FetchPolicy,
         completion: (@escaping @Sendable (OfferingsResultData?) -> Void)
     ) {
-        guard let data = self.deviceCache.cachedOfferingsResponseData(appUserID: appUserID),
-              let response: OfferingsResponse = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
+        guard let contents = self.deviceCache.cachedOfferingsContents(appUserID: appUserID) else {
             completion(nil)
             return
         }
 
         self.createOfferings(
-            from: response,
+            from: contents,
+            loadedFromDiskCache: true,
             fetchPolicy: fetchPolicy,
             completion: { [cache = self.deviceCache] result in
                 switch result {
@@ -208,7 +211,7 @@ private extension OfferingsManager {
 
                     // Cache in memory but as stale, so it can be re-updated when possible
                     cache.cacheInMemory(offerings: offeringsResultData.offerings)
-                    cache.clearOfferingsCacheTimestamp()
+                    cache.forceOfferingsCacheStale()
 
                     completion(offeringsResultData)
 
@@ -220,19 +223,22 @@ private extension OfferingsManager {
     }
 
     func createOfferings(
-        from response: OfferingsResponse,
+        from contents: Offerings.Contents,
+        loadedFromDiskCache: Bool,
         fetchPolicy: FetchPolicy,
         completion: @escaping (@Sendable (Result<OfferingsResultData, Error>) -> Void)
     ) {
-        let productIdentifiers = response.productIdentifiers
+        let productIdentifiers = contents.response.productIdentifiers
 
         guard !productIdentifiers.isEmpty else {
-            let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
+            let errorMessage = Strings.offering.configuration_error_no_products_for_offering(
+                apiKeyValidationResult: self.systemInfo.apiKeyValidationResult
+            ).description
             completion(.failure(.configurationError(errorMessage, underlyingError: nil)))
             return
         }
 
-        self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: response) { result in
+        self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: contents.response) { result in
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
@@ -261,7 +267,9 @@ private extension OfferingsManager {
                 }
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID, data: response) {
+            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
+                                                                            contents: contents,
+                                                                            loadedFromDiskCache: loadedFromDiskCache) {
                 completion(.success(OfferingsResultData(offerings: createdOfferings,
                                                         requestedProductIds: productIdentifiers,
                                                         notFoundProductIds: missingProductIDs)))
@@ -272,17 +280,20 @@ private extension OfferingsManager {
     }
 
     func handleOfferingsBackendResult(
-        with response: OfferingsResponse,
+        with contents: Offerings.Contents,
         appUserID: String,
         fetchPolicy: FetchPolicy,
+        preferredLocales: [String],
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
-        self.createOfferings(from: response, fetchPolicy: fetchPolicy) { result in
+        self.createOfferings(from: contents, loadedFromDiskCache: false, fetchPolicy: fetchPolicy) { result in
             switch result {
             case let .success(offeringsResultData):
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
 
-                self.deviceCache.cache(offerings: offeringsResultData.offerings, appUserID: appUserID)
+                self.deviceCache.cache(offerings: offeringsResultData.offerings,
+                                       preferredLocales: preferredLocales,
+                                       appUserID: appUserID)
                 self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offeringsResultData))
 
             case let .failure(error):
@@ -368,6 +379,7 @@ private extension OfferingsManager {
             let testProduct = TestStoreProduct(
                 localizedTitle: "PRO \(productType.type)",
                 price: Decimal(productType.price),
+                currencyCode: "USD",
                 localizedPriceString: String(format: "$%.2f", productType.price),
                 productIdentifier: identifier,
                 productType: productType.period == nil ? .nonConsumable : .autoRenewableSubscription,
@@ -375,7 +387,8 @@ private extension OfferingsManager {
                 subscriptionGroupIdentifier: productType.period == nil ? nil : "group",
                 subscriptionPeriod: productType.period,
                 introductoryDiscount: introductoryDiscount,
-                discounts: []
+                discounts: [],
+                locale: Locale(identifier: "en_US")
             )
 
             return testProduct.toStoreProduct()

@@ -8,8 +8,8 @@ import Foundation
 
 class MockDeviceCache: DeviceCache {
 
-    convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector = MockSandboxEnvironmentDetector()) {
-        self.init(sandboxEnvironmentDetector: sandboxEnvironmentDetector,
+    convenience init(systemInfo: SystemInfo = MockSystemInfo(finishTransactions: false)) {
+        self.init(systemInfo: systemInfo,
                   userDefaults: MockUserDefaults())
     }
 
@@ -18,31 +18,6 @@ class MockDeviceCache: DeviceCache {
     var stubbedUpdateValues: [Any] = []
     var invokedUpdateKey: Bool = false
     var invokedUpdateKeyParameters: [(key: String, newValue: Any)] = []
-
-    override func update<Key: DeviceCacheKeyType, Value: Codable>(
-        key: Key,
-        default defaultValue: Value,
-        updater: @Sendable (inout Value) -> Void
-    ) {
-        // swiftlint:disable:next force_cast
-        var value = (self.stubbedUpdateValues.popFirst() as! Value?) ?? defaultValue
-        updater(&value)
-
-        self.invokedUpdateKey = true
-        self.invokedUpdateKeyParameters.append((key: key.rawValue, newValue: value))
-    }
-
-    var stubbedValueForKey: [Any] = []
-    var invokedValueForKey: Bool = false
-    var invokedValueForKeyParameters: [String] = []
-
-    override func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
-        self.invokedValueForKey = true
-        self.invokedValueForKeyParameters.append(key.rawValue)
-
-        // swiftlint:disable:next force_cast
-        return self.stubbedValueForKey.popFirst() as! Value?
-    }
 
     // MARK: appUserID
 
@@ -106,6 +81,7 @@ class MockDeviceCache: DeviceCache {
     // MARK: offerings
 
     var cacheOfferingsCount = 0
+    var latestCachePreferredLocales: [String]?
     var cacheOfferingsInMemoryCount = 0
     var clearCachedOfferingsCount = 0
     var clearOfferingsCacheTimestampCount = 0
@@ -119,8 +95,9 @@ class MockDeviceCache: DeviceCache {
         return stubbedOfferings
     }
 
-    override func cache(offerings: Offerings, appUserID: String) {
+    override func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
         self.cacheOfferingsCount += 1
+        self.latestCachePreferredLocales = preferredLocales
     }
     override func cacheInMemory(offerings: Offerings) {
         self.cacheOfferingsInMemoryCount += 1
@@ -130,7 +107,7 @@ class MockDeviceCache: DeviceCache {
         return self.stubbedIsOfferingsCacheStale
     }
 
-    override func clearOfferingsCacheTimestamp() {
+    override func forceOfferingsCacheStale() {
         self.clearOfferingsCacheTimestampCount += 1
     }
 
@@ -138,8 +115,11 @@ class MockDeviceCache: DeviceCache {
         self.clearCachedOfferingsCount += 1
     }
 
-    override func cachedOfferingsResponseData(appUserID: String) -> Data? {
-        return self.stubbedCachedOfferingsData
+    override func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
+        if let stubbedCachedOfferingsData {
+            return try? JSONDecoder.default.decode(Offerings.Contents.self, from: stubbedCachedOfferingsData)
+        }
+        return nil
     }
 
     override func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {
@@ -323,6 +303,60 @@ class MockDeviceCache: DeviceCache {
         cachedSyncedSK2TransactionIDs.append(contentsOf: ids)
     }
 
+    // MARK: - Virtual Currencies
+    var invokedIsVirtualCurrenciesCacheStale = false
+    var invokedIsVirtualCurrenciesCacheStaleCount = 0
+    var invokedIsVirtualCurrenciesCacheStaleParametersList: [(String, Bool)] = []
+    var stubbedIsVirtualCurrenciesCacheStale: Bool?
+    override func isVirtualCurrenciesCacheStale(
+        appUserID: String,
+        isAppBackgrounded: Bool
+    ) -> Bool {
+        invokedIsVirtualCurrenciesCacheStale = true
+        invokedIsVirtualCurrenciesCacheStaleCount += 1
+        invokedIsVirtualCurrenciesCacheStaleParametersList.append((appUserID, isAppBackgrounded))
+
+        if let stubbedIsVirtualCurrenciesCacheStale {
+            return stubbedIsVirtualCurrenciesCacheStale
+        } else {
+            return super.isVirtualCurrenciesCacheStale(
+                appUserID: appUserID,
+                isAppBackgrounded: isAppBackgrounded
+            )
+        }
+    }
+
+    var invokedCachedVirtualCurrenciesDataForAppUserID: Bool = false
+    var invokedCachedVirtualCurrenciesDataForAppUserIDCount: Int = 0
+    var invokedCachedVirtualCurrenciesDataForAppUserIDParametersList: [String] = []
+    var stubbedCachedVirtualCurrenciesDataForAppUserID: Data?
+    override func cachedVirtualCurrenciesData(forAppUserID appUserID: String) -> Data? {
+        invokedCachedVirtualCurrenciesDataForAppUserID = true
+        invokedCachedVirtualCurrenciesDataForAppUserIDCount += 1
+        invokedCachedVirtualCurrenciesDataForAppUserIDParametersList.append(appUserID)
+
+        if let stubbedCachedVirtualCurrenciesDataForAppUserID {
+            return stubbedCachedVirtualCurrenciesDataForAppUserID
+        } else {
+            return super.cachedVirtualCurrenciesData(forAppUserID: appUserID)
+        }
+    }
+
+    var invokedCacheVirtualCurrencies = false
+    var invokedCacheVirtualCurrenciesCount = 0
+    var invokedCacheVirtualCurrenciesParametersList: [(Data, String)] = []
+    override func cache(virtualCurrencies: Data, appUserID: String) {
+        invokedCacheVirtualCurrencies = true
+        invokedCacheVirtualCurrenciesCount += 1
+        invokedCacheVirtualCurrenciesParametersList.append((virtualCurrencies, appUserID))
+    }
+
+    var invokedClearVirtualCurrenciesCache = false
+    var invokedClearVirtualCurrenciesCacheCount = 0
+    override func clearVirtualCurrenciesCache(appUserID: String) {
+        invokedClearVirtualCurrenciesCache = true
+        invokedClearVirtualCurrenciesCacheCount += 1
+    }
 }
 
 extension MockDeviceCache: @unchecked Sendable {}

@@ -16,22 +16,28 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct CarouselComponentView: View {
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState
 
     @Environment(\.screenCondition)
     private var screenCondition
+
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
@@ -44,7 +50,11 @@ struct CarouselComponentView: View {
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
-            )
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            ),
+            colorScheme: colorScheme
         ) { style in
             if style.visible {
                 GeometryReader { reader in
@@ -631,7 +641,8 @@ struct CarouselComponentView_Previews: PreviewProvider {
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -708,7 +719,8 @@ struct CarouselComponentView_Previews: PreviewProvider {
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -779,13 +791,14 @@ struct CarouselComponentView_Previews: PreviewProvider {
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
         }
         .padding(.vertical)
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Examples")
     }
@@ -797,16 +810,18 @@ extension CarouselComponentViewModel {
 
     convenience init(
         component: PaywallComponent.CarouselComponent,
-        localizationProvider: LocalizationProvider
+        localizationProvider: LocalizationProvider,
+        colorScheme: ColorScheme
     ) throws {
         let viewModels: [StackComponentViewModel] = try component.pages.map { component in
             return try .init(
                 component: component,
-                localizationProvider: localizationProvider
+                localizationProvider: localizationProvider,
+                colorScheme: colorScheme
             )
         }
 
-        try self.init(
+        self.init(
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             component: component,

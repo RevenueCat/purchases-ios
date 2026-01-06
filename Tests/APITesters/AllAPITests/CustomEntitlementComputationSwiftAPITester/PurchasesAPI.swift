@@ -172,10 +172,46 @@ private func checkPurchaseParams() {
     let storeProduct: StoreProduct! = nil
     let offer: PromotionalOffer! = nil
 
-    let packageParamsBuilder = PurchaseParams.Builder(package: pack).with(promotionalOffer: offer)
+    let packageParamsBuilder = PurchaseParams.Builder(package: pack)
+        .with(promotionalOffer: offer)
+        .with(quantity: 3)
+
+    if #available(iOS 15.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+        let _ = PurchaseParams.Builder(package: pack)
+            .with(
+                promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions(
+                    offerID: "abc",
+                    compactJWS: "123"
+                )
+            )
+    }
+
+    if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+        let _ = PurchaseParams.Builder(package: pack)
+            .with(introductoryOfferEligibilityJWS: "abc123")
+    }
+
     let _: PurchaseParams = packageParamsBuilder.build()
 
-    let productParamsBuilder = PurchaseParams.Builder(product: storeProduct).with(promotionalOffer: offer)
+    let productParamsBuilder = PurchaseParams.Builder(product: storeProduct)
+        .with(promotionalOffer: offer)
+        .with(quantity: 5)
+
+    if #available(iOS 15.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+        let _ = PurchaseParams.Builder(product: storeProduct)
+            .with(
+                promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions(
+                    offerID: "abc",
+                    compactJWS: "123"
+                )
+            )
+    }
+
+    if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+        let _ = PurchaseParams.Builder(product: storeProduct)
+            .with(introductoryOfferEligibilityJWS: "abc123")
+    }
+
     let _: PurchaseParams = productParamsBuilder.build()
 }
 
@@ -194,7 +230,10 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                       promotionalOffer: promoOffer)
-        let params: PurchaseParams! = nil
+        let params = PurchaseParams.Builder(package: pack)
+            .with(promotionalOffer: promoOffer)
+            .with(quantity: 4)
+            .build()
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(params)
 
         for try await _: CustomerInfo in purchases.customerInfoStream {}
@@ -209,16 +248,32 @@ private func checkAsyncMethods(purchases: Purchases) async {
             let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
 #endif
         }
+
+        let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: [""])
+        let _: [Package: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(packages: [pack])
+        let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(product: stp)
     } catch {}
 }
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
+    let storeProduct: StoreProduct! = nil
+
     if #available(iOS 15.0, *) {
 #if os(iOS)
         purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
         purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, PublicError>) in }
         purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
 #endif
+    }
+
+    purchases.checkTrialOrIntroDiscountEligibility(
+        productIdentifiers: [""],
+        completion: { eligibilityDictionary in
+            let _: [String: IntroEligibility] = eligibilityDictionary
+        }
+    )
+    purchases.checkTrialOrIntroDiscountEligibility(product: storeProduct) { introEligibilityStatus in
+        let _: IntroEligibilityStatus = introEligibilityStatus
     }
 }
 
@@ -232,7 +287,7 @@ private func checkConfigure() -> Purchases! {
         appUserID: "",
         showStoreMessagesAutomatically: false
     )
-    
+
     let configuration = Configuration.Builder(withAPIKey: "", appUserID: "").build()
     Purchases.configure(with: configuration)
 

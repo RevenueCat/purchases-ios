@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if os(iOS)
 
@@ -35,7 +35,7 @@ final class FeedbackSurveyViewModel: ObservableObject {
 
     private(set) var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
-    private let actionWrapper: CustomerCenterActionWrapper
+    let actionWrapper: CustomerCenterActionWrapper
 
     convenience init(feedbackSurveyData: FeedbackSurveyData,
                      purchasesProvider: CustomerCenterPurchasesType,

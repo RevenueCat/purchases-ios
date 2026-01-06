@@ -1,13 +1,13 @@
 {
   "images" : [
     {
-      "filename" : "Red icon.png",
+      "filename" : "rc-blueprint.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
     },
     {
-      "filename" : "Red icon 1.png",
+      "filename" : "rc-blueprint 1.png",
       "idiom" : "universal",
       "platform" : "watchos",
       "size" : "1024x1024"

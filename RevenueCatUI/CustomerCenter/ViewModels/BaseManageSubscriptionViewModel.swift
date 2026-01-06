@@ -64,6 +64,12 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     var purchaseInformation: PurchaseInformation?
 
     @Published
+    var showAllInAppCurrenciesScreen: Bool = false
+
+    @Published
+    var showCreateTicket: Bool = false
+
+    @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
     private var error: Error?
@@ -91,9 +97,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     func handleHelpPath(_ path: CustomerCenterConfigData.HelpPath, withActiveProductId: String? = nil) async {
-        // Convert the path to an appropriate action using the extension
         if let action = path.asAction() {
-            // Send the action through the action wrapper
             self.actionWrapper.handleAction(.buttonTapped(action: action))
         }
 
@@ -109,7 +113,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                 }
 
         case let .promotionalOffer(promotionalOffer) where purchaseInformation?.store == .appStore:
-            if promotionalOffer.eligible, let productIdentifier = feedbackSurveyData?.productIdentifier {
+            if promotionalOffer.eligible, let productIdentifier = purchaseInformation?.productIdentifier {
                 self.loadingPath = path
                 let result = await loadPromotionalOfferUseCase.execute(
                     promoOfferDetails: promotionalOffer,
@@ -134,42 +138,30 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         }
     }
 
+    func onDismissPromotionalOffer(action: PromotionalOfferViewAction) {
+        self.promotionalOfferData = nil
+        defer {
+            self.loadingPath = nil
+        }
+
+        if let path = self.loadingPath,
+           !action.shouldTerminateCurrentPathFlow {
+            Task.detached(priority: .userInitiated) { @MainActor in
+                await self.onPathSelected(path: path)
+            }
+        }
+    }
+
     func onDismissInAppBrowser() {
         self.inAppBrowserURL = nil
     }
 
+    func displayAllInAppCurrenciesScreen() {
+        self.showAllInAppCurrenciesScreen = true
+    }
+
 #endif
 
-}
-
-// MARK: - Promotional Offer Sheet Dismissal Handling
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension BaseManageSubscriptionViewModel {
-
-    /// Function responsible for handling the user's action on the PromotionalOfferView
-    func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferViewAction) async {
-        switch userAction {
-        case .successfullyRedeemedPromotionalOffer:
-            self.actionWrapper.handleAction(.promotionalOfferSuccess)
-        case .declinePromotionalOffer, .promotionalCodeRedemptionFailed:
-            break
-        }
-
-        // Clear the promotional offer data to dismiss the sheet
-        self.promotionalOfferData = nil
-
-        if userAction.shouldTerminateCurrentPathFlow {
-            self.loadingPath = nil
-        } else {
-            if let loadingPath = loadingPath {
-                await self.onPathSelected(path: loadingPath)
-                self.loadingPath = nil
-            }
-        }
-    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -179,57 +171,102 @@ extension BaseManageSubscriptionViewModel {
 private extension BaseManageSubscriptionViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-    // swiftlint:disable:next cyclomatic_complexity
     private func onPathSelected(path: CustomerCenterConfigData.HelpPath) async {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
 
         case .refundRequest:
-            guard let purchaseInformation = self.purchaseInformation else { return }
-            let productId = purchaseInformation.productIdentifier
-            do {
-                self.actionWrapper.handleAction(.refundRequestStarted(productId))
-
-                let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
-                self.refundRequestStatus = status
-                self.actionWrapper.handleAction(.refundRequestCompleted(productId, status))
-            } catch {
-                self.refundRequestStatus = .error
-                self.actionWrapper.handleAction(.refundRequestCompleted(productId, .error))
-            }
+            await handleRefundRequest()
 
         case .cancel where purchaseInformation?.store != .appStore:
-            if let url = purchaseInformation?.managementURL {
-                self.inAppBrowserURL = IdentifiableURL(url: url)
-            }
+            handleNonAppStoreCancel()
 
-        case .changePlans, .cancel:
+        case .changePlans:
+            self.actionWrapper.handleAction(.showingChangePlans(purchaseInformation?.subscriptionGroupID))
+
+        case .cancel:
             self.actionWrapper.handleAction(.showingManageSubscriptions)
 
         case .customUrl:
-            guard let url = path.url,
-                  let openMethod = path.openMethod else {
-                Logger.warning("Found a custom URL path without a URL or open method. Ignoring tap.")
+            handleCustomUrl(path: path)
+
+        case .customAction:
+            guard let actionIdentifier = path.customActionIdentifier else {
                 return
             }
-            switch openMethod {
-            case .external,
-                _ where !url.isWebLink:
-                URLUtilities.openURLIfNotAppExtension(url)
-            case .inApp:
-                self.inAppBrowserURL = .init(url: url)
-            @unknown default:
-                Logger.warning(Strings.could_not_determine_type_of_custom_url)
-                URLUtilities.openURLIfNotAppExtension(url)
-            }
+            self.actionWrapper.handleAction(
+                .customActionSelected(
+                    CustomActionData(
+                        actionIdentifier: actionIdentifier,
+                        purchaseIdentifier: purchaseInformation?.productIdentifier
+                    )
+                )
+            )
 
         default:
             break
         }
     }
+
+    private func handleRefundRequest() async {
+        guard let purchaseInformation = self.purchaseInformation else { return }
+        let productId = purchaseInformation.productIdentifier
+        do {
+            self.actionWrapper.handleAction(.refundRequestStarted(productId))
+
+            let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
+            self.refundRequestStatus = status
+            self.actionWrapper.handleAction(.refundRequestCompleted(productId, status))
+        } catch {
+            self.refundRequestStatus = .error
+            self.actionWrapper.handleAction(.refundRequestCompleted(productId, .error))
+        }
+    }
+
+    private func handleNonAppStoreCancel() {
+        if let url = purchaseInformation?.managementURL {
+            self.inAppBrowserURL = IdentifiableURL(url: url)
+        }
+    }
+
+    private func handleCustomUrl(path: CustomerCenterConfigData.HelpPath) {
+        guard let url = path.url,
+              let openMethod = path.openMethod else {
+            Logger.warning("Found a custom URL path without a URL or open method. Ignoring tap.")
+            return
+        }
+        switch openMethod {
+        case .external,
+            _ where !url.isWebLink:
+            URLUtilities.openURLIfNotAppExtension(url)
+        case .inApp:
+            self.inAppBrowserURL = .init(url: url)
+        @unknown default:
+            Logger.warning(Strings.could_not_determine_type_of_custom_url)
+            URLUtilities.openURLIfNotAppExtension(url)
+        }
+    }
+
 #endif
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension BaseManageSubscriptionViewModel {
+
+    var purchaseSubscriptionGroupID: String? {
+        purchaseInformation?.subscriptionGroupID
+    }
+
+    var changePlanProductIDs: [String] {
+        purchaseInformation?
+            .changePlan
+            .map { $0.products.filter { $0.selected }.map(\.productId) } ?? []
+    }
 }
 
 private extension CustomerCenterConfigData.Screen {

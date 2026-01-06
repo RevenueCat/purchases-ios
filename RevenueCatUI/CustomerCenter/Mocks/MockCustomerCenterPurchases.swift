@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 28/11/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
@@ -91,7 +91,7 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     var purchaseCallCount = 0
     var purchaseResult: Result<PurchaseResultData, Error> = .failure(NSError(domain: "", code: -1))
     func purchase(product: StoreProduct,
-                  promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+                  promotionalOffer: PromotionalOffer?) async throws -> PurchaseResultData {
         purchaseCallCount += 1
         return try purchaseResult.get()
     }
@@ -118,6 +118,18 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         return try restorePurchasesResult.get()
     }
 
+    var invalidateVirtualCurrenciesCacheCallCount = 0
+    func invalidateVirtualCurrenciesCache() {
+        invalidateVirtualCurrenciesCacheCallCount += 1
+    }
+
+    var virtualCurrenciesCallCount = 0
+    var virtualCurrenciesResult: Result<VirtualCurrencies, Error>?
+    func virtualCurrencies() async throws -> VirtualCurrencies {
+        virtualCurrenciesCallCount += 1
+        return try virtualCurrenciesResult?.get() ?? VirtualCurrenciesFixtures.noVirtualCurrencies
+    }
+
     func showManageSubscriptions() async throws {
         if let showManageSubscriptionsError {
             throw showManageSubscriptionsError
@@ -136,5 +148,15 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     func syncPurchases() async throws -> CustomerInfo {
         syncPurchasesCount += 1
         return syncPurchasesResult
+    }
+
+    var offeringsError: Error = NSError(domain: "", code: -1)
+    func offerings() async throws -> Offerings {
+        throw offeringsError
+    }
+
+    var createTicketResult: Result<Bool, Error> = .success(true)
+    func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
+        return try createTicketResult.get()
     }
 }

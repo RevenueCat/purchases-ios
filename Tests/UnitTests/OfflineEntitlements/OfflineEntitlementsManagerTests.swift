@@ -34,7 +34,7 @@ class BaseOfflineEntitlementsManagerTests: TestCase {
         self.mockOfflineEntitlements = try XCTUnwrap(
             self.mockBackend.offlineEntitlements as? MockOfflineEntitlementsAPI
         )
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
         self.manager = self.createManager()
     }
 
@@ -144,6 +144,15 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         self.mockDeviceCache.cachedCustomerInfo["test"] = Data()
 
         expect(self.manager.shouldComputeOfflineCustomerInfo(appUserID: "test")) == false
+    }
+
+    // MARK: - Test Store
+
+    func testShouldComputeOfflineCustomerInfoReturnsFalseForTestStore() {
+        self.mockSystemInfo = MockSystemInfo(finishTransactions: true, apiKeyValidationResult: .simulatedStore)
+        let testStoreManager = createManager()
+
+        expect(testStoreManager.shouldComputeOfflineCustomerInfo(appUserID: "test")) == false
     }
 
 }

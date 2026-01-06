@@ -19,177 +19,39 @@ import SnapshotTesting
 import SwiftUI
 import XCTest
 
-#if !os(watchOS) && !os(macOS)
+#if !os(watchOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TakeScreenshotTests: BaseSnapshotTest {
 
-    struct PackageData: Decodable {
-        let packages: [OfferingsResponse.Offering.Package]
-    }
-
-    func testPaywallValidationScreenshots() {
+    func testPaywallValidationScreenshots() throws {
         let bundle = Bundle(for: Self.self)
 
-        guard let resourceBundleURL = bundle.url(
-            forResource: "RevenueCat_RevenueCatUITests", withExtension: "bundle"
+        guard let resourcesFolderURL = bundle.url(
+            forResource: "paywall-preview-resources", withExtension: nil
         ) else {
-            XCTFail("Could not locate RevenueCat_RevenueCatUITests.bundle")
+            XCTFail("Could not locate paywall-preview-resources")
             return
         }
 
-        let baseResourcesURL = resourceBundleURL
-            .appendingPathComponent("__PreviewResources__")
+        let baseResourcesURL = resourcesFolderURL
             .appendingPathComponent("resources")
 
-        let resourceDirectories = (try? FileManager.default.contentsOfDirectory(
-            at: baseResourcesURL,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: .skipsHiddenFiles
-        ))?.filter { url in
-            (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
-        } ?? []
+        let paywallPreviewsResourceLoader = try PaywallPreviewResourcesLoader(baseResourcesURL: baseResourcesURL)
 
-        if resourceDirectories.isEmpty {
-            XCTFail("No valid resource directories found")
-            return
-        }
+        for offering in paywallPreviewsResourceLoader.allOfferings {
+            let offeringId = offering.id
 
-        for resourceURL in resourceDirectories {
-            let resource = resourceURL.lastPathComponent
-            let offeringsFileName = "offerings.json"
-
-            let packagesPath = resourceBundleURL
-                .appendingPathComponent("__PreviewResources__")
-                .appendingPathComponent("resources")
-                .appendingPathComponent("packages.json")
-
-            let offeringsPath = resourceBundleURL
-                .appendingPathComponent("__PreviewResources__")
-                .appendingPathComponent("resources")
-                .appendingPathComponent(resource)
-                .appendingPathComponent(offeringsFileName)
-
-            let originalImagesURL = "https://assets.pawwalls.com"
-            let replacementImagesURL = resourceBundleURL
-                .appendingPathComponent("__PreviewResources__")
-                .appendingPathComponent("resources")
-                .appendingPathComponent(resource)
-                .appendingPathComponent("pawwalls")
-                .appendingPathComponent("assets")
-                .absoluteString
-            let originalIconsURL = "https://icons.pawwalls.com"
-            let replacementIconsURL = resourceBundleURL
-                .appendingPathComponent("__PreviewResources__")
-                .appendingPathComponent("resources")
-                .appendingPathComponent(resource)
-                .appendingPathComponent("pawwalls")
-                .appendingPathComponent("icons")
-                .absoluteString
-
-            // Read original file as String
-            guard let offeringsRawString = try? String(contentsOf: offeringsPath) else {
-                XCTFail("Couldn't read offerings file as String")
-                return
-            }
-
-            // Replace URLs
-            let modifiedJSON = offeringsRawString
-                .replacingOccurrences(of: originalImagesURL, with: replacementImagesURL)
-                .replacingOccurrences(of: originalIconsURL, with: replacementIconsURL)
-
-            // Decode updated JSON
-            guard let modifiedData = modifiedJSON.data(using: .utf8) else {
-                XCTFail("Failed to convert modified JSON to Data")
-                return
-            }
-            guard let offeringsResponse = try? JSONDecoder.default.decode(
-                OfferingsResponse.self, from: modifiedData
-            ) else {
-                XCTFail("Failed to decode modified offerings data")
-                return
-            }
-
-            // Read and decode or print contents
-            guard let packagesData = try? Data(contentsOf: packagesPath) else {
-                XCTFail("Couldn't parse packages data")
-                return
-            }
-            guard let packages = try? JSONDecoder.default.decode(PackageData.self, from: packagesData) else {
-                XCTFail("Failed to decode packages data")
-                return
-            }
-
-            let offeringsWithPackages = offeringsResponse.offerings.map { offering in
-                return OfferingsResponse.Offering(
-                    identifier: offering.identifier,
-                    description: offering.description,
-                    packages: packages.packages,
-                    paywallComponents: offering.paywallComponents,
-                    draftPaywallComponents: offering.draftPaywallComponents,
-                    webCheckoutUrl: offering.webCheckoutUrl
-                )
-            }
-
-            let offeringsResponseWithPackages = OfferingsResponse(
-                currentOfferingId: offeringsResponse.currentOfferingId,
-                offerings: offeringsWithPackages,
-                placements: offeringsResponse.placements,
-                targeting: offeringsResponse.targeting,
-                uiConfig: offeringsResponse.uiConfig
-            )
-
-            let offerings = OfferingsFactory().createOfferings(from: [
-                "com.revenuecat.lifetime_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "Lifeime"
-                )),
-                "com.revenuecat.annual_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .year,
-                    localizedTitle: "Annual"
-                )),
-                "com.revenuecat.semester_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .month,
-                    localizedTitle: "6 Month"
-                )),
-                "com.revenuecat.quarterly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "3 Month"
-                )),
-                "com.revenuecat.bimonthly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "2 Month"
-                )),
-                "com.revenuecat.monthly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .month,
-                    localizedTitle: "Monthly"
-                )),
-                "com.revenuecat.weekly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "Weekly"
-                ))
-            ], data: offeringsResponseWithPackages)
-
-            for offeringId in offerings!.all.keys {
-                let offering = offerings!.all[offeringId]!
-
-                if offering.paywallComponents != nil {
-                    let view = Self.createPaywall(offering: offering)
-                        .frame(width: 450, height: 1000)
-                    self.snapshotAndSave(view: view,
-                                         size: CGSize(width: 450, height: 1000),
-                                         filename: "\(offeringId)__END.png",
-                                         template: offeringId)
-                }
+            if offering.paywallComponents != nil {
+                let view = Self.createPaywall(offering: offering)
+                    .frame(width: 450, height: 1000)
+                self.snapshotAndSave(view: view,
+                                     size: CGSize(width: 450, height: 1000),
+                                     filename: "\(offeringId)__END.png",
+                                     template: offeringId)
             }
         }
+
     }
 
     func clearContentsOfDirectory(at url: URL) throws {
@@ -219,8 +81,10 @@ class TakeScreenshotTests: BaseSnapshotTest {
 
 }
 
-extension UIImage {
-    func resized(toWidth width: CGFloat) -> UIImage {
+extension PlatformImage {
+    func resized(toWidth width: CGFloat) -> PlatformImage {
+        #if canImport(UIKit)
+
         let scale = width / self.size.width
         let height = self.size.height * scale
         let newSize = CGSize(width: width, height: height)
@@ -232,14 +96,36 @@ extension UIImage {
         return renderer.image { _ in
             self.draw(in: CGRect(origin: .zero, size: newSize))
         }
+
+        #elseif canImport(AppKit)
+
+        let scale = width / self.size.width
+        let height = self.size.height * scale
+        let newSize = NSSize(width: width, height: height)
+
+        let newImage = NSImage(size: newSize)
+        newImage.lockFocus()
+        defer { newImage.unlockFocus() }
+
+        // Draw the image into the new size
+        self.draw(in: NSRect(origin: .zero, size: newSize),
+                  from: NSRect(origin: .zero, size: self.size),
+                  operation: .copy,
+                  fraction: 1.0)
+
+        return newImage
+        #endif
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
-  func asImage(wait duration: TimeInterval = 0.1) -> UIImage {
+  func asImage(wait duration: TimeInterval = 0.1) -> PlatformImage {
 
-    let controller = UIHostingController(rootView: self)
+    #if canImport(UIKit)
+
+    let controller = UIHostingController(rootView: self.ignoresSafeArea())
     let view = controller.view
     let targetSize = controller.view.intrinsicContentSize
     let bounds = CGRect(origin: .zero, size: targetSize)
@@ -258,16 +144,61 @@ extension View {
     let image = controller.view.asImage()
 
     return image
+
+    #elseif canImport(AppKit)
+
+    let controller = NSHostingController(rootView: self)
+    let view = controller.view
+    let targetSize = controller.view.intrinsicContentSize
+    let bounds = CGRect(origin: .zero, size: targetSize)
+
+    view.frame.size = view.fittingSize
+
+    let window = NSWindow(contentViewController: controller)
+    window.setContentSize(view.fittingSize)
+    window.makeKeyAndOrderFront(nil)
+    view.bounds = bounds
+
+    // 💡 Wait for SwiftUI rendering to complete
+    RunLoop.main.run(until: Date().addingTimeInterval(duration))
+
+    let image = controller.view.asImage()
+
+    window.close()
+
+    return image
+
+    #endif
   }
 }
 
+#if canImport(UIKit)
+
 extension UIView {
   func asImage() -> UIImage {
-    let renderer = UIGraphicsImageRenderer(bounds: bounds)
-    return renderer.image { rendererContext in
-      layer.render(in: rendererContext.cgContext)
+    let format = UIGraphicsImageRendererFormat()
+    format.preferredRange = .standard // Ensures 8-bit sRGB, even on Mac Catalyst where the default is Generic RGB
+
+    let renderer = UIGraphicsImageRenderer(bounds: bounds, format: format)
+    return renderer.image { _ in
+        drawHierarchy(in: bounds, afterScreenUpdates: true)
     }
   }
 }
+
+#elseif canImport(AppKit)
+
+extension NSView {
+    func asImage() -> NSImage {
+        let rep = bitmapImageRepForCachingDisplay(in: bounds)!
+        cacheDisplay(in: bounds, to: rep)
+
+        let image = NSImage(size: bounds.size)
+        image.addRepresentation(rep)
+        return image
+    }
+}
+
+#endif
 
 #endif

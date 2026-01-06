@@ -1,19 +1,74 @@
 import SwiftUI
-import RevenueCat
+@testable import RevenueCat
 
 @main
 struct RcMaestroApp: App {
 
     init() {
-        Purchases.logLevel = .debug
-        if let apiKey = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String {
-            Purchases.configure(withAPIKey: apiKey)
+        Purchases.logLevel = .verbose
+        Purchases.proxyURL = Constants.proxyURL.flatMap { URL(string: $0) }
+
+        // Set API base URL if provided (used in E2E tests)
+        if let apiBaseURL = Constants.apiBaseURL {
+            SystemInfo.apiBaseURL = apiBaseURL
         }
+
+        // Used in E2E tests
+        Purchases.configure(
+            with: .builder(withAPIKey: Constants.apiKey)
+                .with(dangerousSettings: .init(
+                    autoSyncPurchases: true,
+                    internalSettings: DangerousSettings.Internal(
+                        forceServerErrorStrategy: .init { request in
+                            switch Constants.forceServerErrorStrategy {
+                            case .never:
+                                return false
+                            case .primaryBackendDown:
+                                return request.fallbackUrlIndex == nil
+                            }
+                        }
+                    )
+                ))
+                .build()
+        )
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            switch e2eTestFlow {
+            case .some(let flow):
+                flow.view
+            case nil:
+                ContentView()
+            }
+        }
+    }
+    
+    /*
+     Parses the launch argument with the e2e test flow to run
+     */
+    fileprivate var e2eTestFlow: E2ETestFlow? {
+        guard let string = UserDefaults.standard.dictionaryRepresentation()["e2e_test_flow"] as? String else {
+            return nil
+        }
+        
+        return E2ETestFlow(rawValue: string)
+    }
+}
+
+enum E2ETestFlow: String {
+    case subscribeFromV1Paywall = "subscribe_from_v1_paywall"
+    case subscribeFromV2Paywall = "subscribe_from_v2_paywall"
+    
+    @ViewBuilder
+    var view: some View {
+        switch self {
+        case .subscribeFromV1Paywall:
+            E2ETestFlowView.SubscribeFromV1Paywall()
+        case .subscribeFromV2Paywall:
+            E2ETestFlowView.SubscribeFromV2Paywall()
         }
     }
 }
+
+enum E2ETestFlowView {}

@@ -39,11 +39,13 @@ class PurchasesDiagnosticsTests: TestCase {
                   currentOfferingID: nil,
                   placements: nil,
                   targeting: nil,
-                  response: .init(currentOfferingId: nil,
-                                  offerings: [],
-                                  placements: nil,
-                                  targeting: nil,
-                                  uiConfig: nil))
+                  contents: Offerings.Contents(response: OfferingsResponse(currentOfferingId: nil,
+                                                                           offerings: [],
+                                                                           placements: nil,
+                                                                           targeting: nil,
+                                                                           uiConfig: nil),
+                                               httpResponseOriginalSource: .mainServer),
+                  loadedFromDiskCache: false)
         )
     }
 
@@ -239,8 +241,36 @@ class PurchasesDiagnosticsTests: TestCase {
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
         let expected = """
-        Your default offering is not configured correctly in RevenueCat. This prevents users from \
-        seeing product options. Please check your offering configuration in the RevenueCat website.
+        Some offerings have configuration issues that may prevent users from seeing product options or making purchases.
+        """
+        expect(error.localizedDescription) == expected
+    }
+
+    func testWarningOfferingConfigurationError() {
+        let error = PurchasesDiagnostics.SDKHealthError.offeringConfiguration(
+            [
+                .init(
+                    identifier: "offering_one",
+                    packages: [],
+                    status: .warning
+                ),
+                .init(
+                    identifier: "offering_two",
+                    packages: [],
+                    status: .warning
+                ),
+                .init(
+                    identifier: "offering_three",
+                    packages: [],
+                    status: .passed
+                )
+            ]
+        )
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = """
+        The offerings 'offering_one', 'offering_two' have configuration issues that may prevent users from \
+        seeing product options or making purchases.
         """
         expect(error.localizedDescription) == expected
     }
