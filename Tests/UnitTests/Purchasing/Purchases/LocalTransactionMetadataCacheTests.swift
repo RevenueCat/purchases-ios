@@ -426,6 +426,8 @@ class LocalTransactionMetadataCacheTests: TestCase {
         expect(self.localTransactionMetadataCache.retrieve(forTransactionID: transactionID)) == transactionMetadata
         expect(self.localTransactionMetadataCache.retrieve(for: storeTransaction)) == transactionMetadata
     }
+
+    // TODO: expand tests to add new codable fields + add minimal + maximum example of all fields comparing against serialized JSON string
 }
 
 extension LocalTransactionMetadataCacheTests {

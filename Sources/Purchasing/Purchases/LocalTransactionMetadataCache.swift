@@ -38,12 +38,29 @@ internal struct LocalTransactionMetadata: Equatable, Codable, Sendable {
     /// Whether purchases are completed by RevenueCat or the app (observer mode equivalent).
     let observerMode: Bool
 
+    /// Apple Ad Services attribution token.
+    let aadAttributionToken: String?
+
+    /// The encoded receipt data.
+    let receipt: EncodedAppleReceipt?
+
+    /// Product request data (product info, pricing, discounts, etc.).
+//    let productData: ProductRequestData?
+    // TODO: does not conform to Codable and Equatable (yet)
+
+    /// AppTransaction JWS string (StoreKit 2).
+    let appTransactionJWS: String?
+
     init(
         appUserID: String,
         productIdentifier: String,
         presentedOfferingContext: PresentedOfferingContext?,
         paywallPostReceiptData: PaywallPostReceiptData?,
-        observerMode: Bool
+        observerMode: Bool,
+        aadAttributionToken: String? = nil,
+        receipt: EncodedAppleReceipt? = nil,
+        productData: ProductRequestData? = nil,
+        appTransactionJWS: String? = nil
     ) {
         self.schemaVersion = 1
         self.appUserID = appUserID
@@ -51,11 +68,16 @@ internal struct LocalTransactionMetadata: Equatable, Codable, Sendable {
         self.presentedOfferingContext = presentedOfferingContext
         self.paywallPostReceiptData = paywallPostReceiptData
         self.observerMode = observerMode
+        self.aadAttributionToken = aadAttributionToken
+        self.receipt = receipt
+//        self.productData = productData
+        self.appTransactionJWS = appTransactionJWS
     }
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion, productIdentifier, presentedOfferingContext, paywallPostReceiptData, observerMode
         case appUserID = "appUserId"
+        case aadAttributionToken, receipt, /*productData,*/ appTransactionJWS
     }
 }
 
