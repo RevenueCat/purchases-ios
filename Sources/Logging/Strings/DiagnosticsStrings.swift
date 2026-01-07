@@ -35,6 +35,10 @@ enum DiagnosticsStrings {
     case failed_to_empty_diagnostics_file(error: Error)
     case failed_check_diagnostics_size(error: Error)
     case failed_to_store_diagnostics_event(error: Error)
+    case failed_to_create_diagnostics_file_url
+    case failed_to_initialize_file_handler(error: Error)
+    case failed_to_delete_old_diagnostics_file(error: Error)
+    case failed_to_serialize_diagnostic_event
 
     case failed_diagnostics_sync_more_than_max_retries
 
@@ -83,6 +87,18 @@ extension DiagnosticsStrings: LogMessage {
 
         case let.failed_to_store_diagnostics_event(error):
             return "Failed to store diagnostics event: \(error.localizedDescription)"
+
+        case let .failed_to_delete_old_diagnostics_file(error):
+            return "Failed to delete old diagnostics file: \(error.localizedDescription)"
+
+        case .failed_to_create_diagnostics_file_url:
+            return "Failed to create diagnostics file directory"
+
+        case .failed_to_initialize_file_handler(error: let error):
+            return "Initialization error: \(error.localizedDescription)"
+
+        case .failed_to_serialize_diagnostic_event:
+            return "Failed to serialize diagnostics event to JSON"
 
         case .failed_diagnostics_sync_more_than_max_retries:
             return "Failed to sync diagnostics more than max retries. Clearing entire diagnostics file."
