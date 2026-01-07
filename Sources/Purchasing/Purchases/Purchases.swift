@@ -1984,11 +1984,10 @@ extension Purchases {
             productID: productIdentifier
         ))
 
-        // TODO: this method no longer exists
-//        self.purchasesOrchestrator.cachePresentedOfferingContext(
-//            context,
-//            productIdentifier: productIdentifier
-//        )
+        self.purchasesOrchestrator.cachePresentedOfferingContext(
+            context,
+            productIdentifier: productIdentifier
+        )
     }
 
     // swiftlint:disable missing_docs

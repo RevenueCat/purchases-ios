@@ -18,10 +18,17 @@ import Foundation
 /// Mock implementation of LocalTransactionMetadataCacheType using an in-memory dictionary.
 final class MockLocalTransactionMetadataCache: LocalTransactionMetadataCacheType, @unchecked Sendable {
 
+    enum Operation: Equatable {
+        case store(productID: String?, transactionID: String?, metadata: LocalTransactionMetadata)
+        case migrate(fromProductID: String, toTransactionID: String)
+        case remove(productID: String?, transactionID: String?)
+    }
+
     private let lock = NSLock()
 
     // Dictionary keys: "transaction.{id}" or "product.{id}"
     private var storage: [String: LocalTransactionMetadata] = [:]
+    private var operationLog: [Operation] = []
 
     init() {}
 
@@ -40,6 +47,7 @@ final class MockLocalTransactionMetadataCache: LocalTransactionMetadataCacheType
             let key = self.key(forTransactionID: transactionID)
             guard self.storage[key] == nil else { return }
             self.storage[key] = metadata
+            self.operationLog.append(.store(productID: nil, transactionID: transactionID, metadata: metadata))
         }
     }
 
@@ -48,6 +56,7 @@ final class MockLocalTransactionMetadataCache: LocalTransactionMetadataCacheType
             let key = self.key(forProductID: productID)
             guard self.storage[key] == nil else { return }
             self.storage[key] = metadata
+            self.operationLog.append(.store(productID: productID, transactionID: nil, metadata: metadata))
         }
     }
 
@@ -69,6 +78,7 @@ final class MockLocalTransactionMetadataCache: LocalTransactionMetadataCacheType
         self.withLock {
             let key = self.key(forTransactionID: transactionID)
             self.storage.removeValue(forKey: key)
+            self.operationLog.append(.remove(productID: nil, transactionID: transactionID))
         }
     }
 
@@ -76,6 +86,7 @@ final class MockLocalTransactionMetadataCache: LocalTransactionMetadataCacheType
         self.withLock {
             let key = self.key(forProductID: productID)
             self.storage.removeValue(forKey: key)
+            self.operationLog.append(.remove(productID: productID, transactionID: nil))
         }
     }
 
@@ -90,11 +101,13 @@ final class MockLocalTransactionMetadataCache: LocalTransactionMetadataCacheType
                 guard self.storage[transactionKey] == nil else {
                     // If transaction key exists, just remove the product key
                     self.storage.removeValue(forKey: productKey)
+                    self.operationLog.append(.migrate(fromProductID: productID, toTransactionID: transactionID))
                     return
                 }
 
                 self.storage[transactionKey] = metadata
                 self.storage.removeValue(forKey: productKey)
+                self.operationLog.append(.migrate(fromProductID: productID, toTransactionID: transactionID))
             }
         }
     }
@@ -115,6 +128,7 @@ final class MockLocalTransactionMetadataCache: LocalTransactionMetadataCacheType
     func clear() {
         self.withLock {
             self.storage.removeAll()
+            self.operationLog.removeAll()
         }
     }
 
@@ -122,6 +136,13 @@ final class MockLocalTransactionMetadataCache: LocalTransactionMetadataCacheType
     var allMetadata: [String: LocalTransactionMetadata] {
         return self.withLock {
             return self.storage
+        }
+    }
+
+    /// Returns the operation log (useful for testing)
+    var log: [Operation] {
+        return self.withLock {
+            return self.operationLog
         }
     }
 }
