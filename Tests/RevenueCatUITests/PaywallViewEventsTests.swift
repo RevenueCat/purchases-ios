@@ -56,6 +56,7 @@ class BasePaywallViewEventsTests: TestCase {
 
     private var impressionEventExpectation: XCTestExpectation!
     private var closeEventExpectation: XCTestExpectation!
+    private var exitOfferEventExpectation: XCTestExpectation!
 
     override func setUp() {
         super.setUp()
@@ -71,6 +72,7 @@ class BasePaywallViewEventsTests: TestCase {
             }
         self.impressionEventExpectation = XCTestExpectation(description: "Impression event")
         self.closeEventExpectation = .init(description: "Close event")
+        self.exitOfferEventExpectation = .init(description: "Exit offer event")
     }
 
     func testPaywallImpressionEvent() async throws {
@@ -144,6 +146,54 @@ class BasePaywallViewEventsTests: TestCase {
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(2))
     }
 
+    func testExitOfferDismissEvent() async throws {
+        try await self.runDuringViewLifetime {
+            self.handler.trackExitOffer(exitOfferType: .dismiss, exitOfferingIdentifier: "exit_offering")
+        }
+
+        await self.fulfillment(of: [exitOfferEventExpectation], timeout: 3)
+        await self.waitForCloseEvent()
+
+        expect(self.events).to(containElementSatisfying { $0.eventType == .exitOffer })
+
+        let event = try XCTUnwrap(self.events.first { $0.eventType == .exitOffer })
+        self.verifyEventData(event.data)
+
+        let exitOfferData = try XCTUnwrap(event.exitOfferData)
+        expect(exitOfferData.exitOfferType) == .dismiss
+        expect(exitOfferData.exitOfferingIdentifier) == "exit_offering"
+    }
+
+    func testExitOfferAbandonmentEvent() async throws {
+        try await self.runDuringViewLifetime {
+            self.handler.trackExitOffer(exitOfferType: .abandonment, exitOfferingIdentifier: "abandonment_offering")
+        }
+
+        await self.fulfillment(of: [exitOfferEventExpectation], timeout: 3)
+        await self.waitForCloseEvent()
+
+        expect(self.events).to(containElementSatisfying { $0.eventType == .exitOffer })
+
+        let event = try XCTUnwrap(self.events.first { $0.eventType == .exitOffer })
+        self.verifyEventData(event.data)
+
+        let exitOfferData = try XCTUnwrap(event.exitOfferData)
+        expect(exitOfferData.exitOfferType) == .abandonment
+        expect(exitOfferData.exitOfferingIdentifier) == "abandonment_offering"
+    }
+
+    func testExitOfferEventHasSameSessionID() async throws {
+        try await self.runDuringViewLifetime {
+            self.handler.trackExitOffer(exitOfferType: .dismiss, exitOfferingIdentifier: "exit_offering")
+        }
+
+        await self.fulfillment(of: [exitOfferEventExpectation], timeout: 3)
+        await self.waitForCloseEvent()
+
+        expect(self.events.map(\.eventType)).to(contain([.impression, .exitOffer, .close]))
+        expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(1))
+    }
+
     private static let offering = TestData.offeringWithNoIntroOffer
 
 }
@@ -177,6 +227,7 @@ private extension BasePaywallViewEventsTests {
         case .impression: self.impressionEventExpectation.fulfill()
         case .cancel: break
         case .close: self.closeEventExpectation.fulfill()
+        case .exitOffer: self.exitOfferEventExpectation.fulfill()
         }
     }
 
@@ -222,6 +273,7 @@ private extension PaywallEvent {
         case impression
         case cancel
         case close
+        case exitOffer
 
     }
 
@@ -230,6 +282,7 @@ private extension PaywallEvent {
         case .impression: return .impression
         case .cancel: return .cancel
         case .close: return .close
+        case .exitOffer: return .exitOffer
         }
     }
 
