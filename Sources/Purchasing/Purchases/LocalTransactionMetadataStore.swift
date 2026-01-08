@@ -13,7 +13,6 @@
 //
 
 import Foundation
-import OSLog
 
 /// Protocol for storing and retrieving local transaction metadata.
 protocol LocalTransactionMetadataStoreType: Sendable {
