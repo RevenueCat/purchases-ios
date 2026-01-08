@@ -262,15 +262,10 @@ class DiagnosticsFileHandlerTests: TestCase {
 
     func testDeletesOldDiagnosticsFileFromDocumentsDirectory() throws {
         // Create old diagnostics file in documents directory
-        let documentsURL: URL
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            documentsURL = URL.documentsDirectory
-        } else {
-            documentsURL = FileManager.default.urls(
-                for: .documentDirectory,
-                in: .userDomainMask
-            )[0]
-        }
+        let documentsURL = FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )[0]
 
         let comRevenueCatFolder = documentsURL.appendingPathComponent("com.revenuecat")
         let oldDiagnosticsFile = comRevenueCatFolder
@@ -302,18 +297,9 @@ class DiagnosticsFileHandlerTests: TestCase {
         expect(FileManager.default.fileExists(atPath: comRevenueCatFolder.path)).to(beFalse())
 
         // Verify new file is created
-        let applicationSupportDirectoryURL: URL
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            applicationSupportDirectoryURL = URL.applicationSupportDirectory
-        } else {
-            applicationSupportDirectoryURL = FileManager.default.urls(
-                for: .applicationSupportDirectory,
-                in: .userDomainMask
-            )[0]
-        }
+        let applicationSupportDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .applicationSupport))
 
         let newDiagnosticsFileURL = applicationSupportDirectoryURL
-            .appendingPathComponent("\(Bundle.main.bundleIdentifier ?? "").revenuecat")
             .appendingPathComponent("diagnostics")
             .appendingPathComponent("diagnostics")
             .appendingPathExtension("jsonl")
