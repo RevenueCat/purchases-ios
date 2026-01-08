@@ -79,14 +79,13 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
     }
 }
 
-
 // MARK: - Codable wrappers
 
 // Some existing types are not trivial to make `Codable`, or they are public and/or their existing `Encodable`
 // implementation is not suitable for a lossless decoding/encoding.
 // These wrappers allow us to encode/decode them without modifying their existing implementations.
 
-fileprivate struct ProductRequestDataEncodedWrapper: Sendable, Codable {
+private struct ProductRequestDataEncodedWrapper: Sendable, Codable {
 
     // We persist every `ProductRequestData` stored property, so encoding/decoding is lossless.
     // Note: we intentionally do not rely on `ProductRequestData: Encodable` because that `Encodable` implementation
@@ -104,7 +103,6 @@ fileprivate struct ProductRequestDataEncodedWrapper: Sendable, Codable {
     private let introPriceString: String?
     private let subscriptionGroup: String?
     private let discounts: [StoreProductDiscountEncodedWrapper]?
-
 
     init(productRequestData: ProductRequestData) {
         self.productIdentifier = productRequestData.productIdentifier
@@ -136,7 +134,6 @@ fileprivate struct ProductRequestDataEncodedWrapper: Sendable, Codable {
         )
     }
 
-    // MARK: - Decimal encoding helpers
     // Encode decimals as strings to preserve exact precision.
     private static func encodeDecimal(_ decimal: Decimal) -> String {
         return (decimal as NSDecimalNumber).description
@@ -147,7 +144,7 @@ fileprivate struct ProductRequestDataEncodedWrapper: Sendable, Codable {
     }
 }
 
-fileprivate struct PurchasedTransactionDataEncodedWrapper: Codable {
+private struct PurchasedTransactionDataEncodedWrapper: Codable {
     private let appUserId: String
     private let presentedOfferingContext: PresentedOfferingContext?
     private let presentedPaywall: PaywallEvent?
@@ -183,7 +180,7 @@ fileprivate struct PurchasedTransactionDataEncodedWrapper: Codable {
 }
 
 /// Wrapper around `StoreProductDiscountType` to make it `Codable`.
-fileprivate struct StoreProductDiscountEncodedWrapper: StoreProductDiscountType, Codable {
+private struct StoreProductDiscountEncodedWrapper: StoreProductDiscountType, Codable {
     let offerIdentifier: String?
     let currencyCode: String?
     let price: Decimal
@@ -210,7 +207,7 @@ fileprivate struct StoreProductDiscountEncodedWrapper: StoreProductDiscountType,
 }
 
 /// Wrapper around `StorefrontType` to make it `Codable`.
-fileprivate struct StorefrontEncodedWrapper: StorefrontType, Codable {
+private struct StorefrontEncodedWrapper: StorefrontType, Codable {
     let countryCode: String
     let identifier: String
 
