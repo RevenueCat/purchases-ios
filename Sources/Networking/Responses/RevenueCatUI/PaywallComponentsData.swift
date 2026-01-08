@@ -215,12 +215,10 @@ extension PaywallComponentsData {
         try container.encode(defaultLocale, forKey: .defaultLocale)
         try container.encode(_revision, forKey: ._revision)
         // Encode zeroDecimalPlaceCountries in the nested structure { "apple": [...] }
-        if !zeroDecimalPlaceCountries.isEmpty {
-            try container.encode(
-                PaywallData.ZeroDecimalPlaceCountries(apple: zeroDecimalPlaceCountries),
-                forKey: .zeroDecimalPlaceCountries
-            )
-        }
+        try container.encode(
+            PaywallData.ZeroDecimalPlaceCountries(apple: zeroDecimalPlaceCountries),
+            forKey: .zeroDecimalPlaceCountries
+        )
         try container.encodeIfPresent(exitOffers, forKey: .exitOffers)
     }
 

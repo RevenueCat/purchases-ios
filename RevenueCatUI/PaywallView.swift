@@ -293,10 +293,11 @@ public struct PaywallView: View {
 
         if let paywallComponents = useDraftPaywall ? offering.draftPaywallComponents : offering.paywallComponents {
             // For V2 paywalls, prefer zeroDecimalPlaceCountries from paywallComponents
+            let zeroDecimalPlaceCountries = paywallComponents.data.zeroDecimalPlaceCountries
             let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
-                countries: paywallComponents.data.zeroDecimalPlaceCountries.isEmpty
+                countries: zeroDecimalPlaceCountries.isEmpty
                     ? offering.paywall?.zeroDecimalPlaceCountries
-                    : paywallComponents.data.zeroDecimalPlaceCountries
+                    : zeroDecimalPlaceCountries
             )
 
             // For fallback view or footer
