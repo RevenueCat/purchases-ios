@@ -46,7 +46,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
     private let fileHandler: FileHandlerType
 
     init?() {
-        Self.deleteOldDiagnosticsFileIfExists()
+        Self.deleteOldDiagnosticsFileIfNeeded()
 
         guard let diagnosticsFileURL = Self.diagnosticsFileURL else {
             Logger.error(Strings.diagnostics.failed_to_create_diagnostics_file_url)
@@ -146,33 +146,21 @@ private extension DiagnosticsFileHandler {
             .appendingPathExtension("jsonl")
     }
 
-    // TODO: check if we should perform this every time.
-    /*
-     It might cause the 'X would like access to the Documents folder' on new installations on macOS (unsandboxed).
-     We can't however check for permissions beforehand, since that will also trigger the popup
-     */
-
     /*
      We were previously storing the diagnostics file in the Documents directory
      which may end up in the Files app or the user's Documents directory on macOS.
      */
-    private static func deleteOldDiagnosticsFileIfExists() {
-        let oldFileURL: URL
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            oldFileURL = URL.documentsDirectory
-        } else {
-            guard let documentsURL = FileManager.default.urls(
-                for: .documentDirectory,
-                in: .userDomainMask
-            ).first else {
-                return
-            }
-            oldFileURL = documentsURL
+    private static func deleteOldDiagnosticsFileIfNeeded() {
+        guard let documentsURL = FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first else {
+            return
         }
 
         let parentDirectoryName = "com.revenuecat"
 
-        let oldDiagnosticsFile = oldFileURL
+        let oldDiagnosticsFile = documentsURL
             .appendingPathComponent(parentDirectoryName)
             .appendingPathComponent("diagnostics")
             .appendingPathExtension("jsonl")
@@ -185,7 +173,7 @@ private extension DiagnosticsFileHandler {
             try FileManager.default.removeItem(at: oldDiagnosticsFile)
 
             // Also delete the parent folder if it's empty
-            let parentFolder = oldFileURL.appendingPathComponent(parentDirectoryName)
+            let parentFolder = documentsURL.appendingPathComponent(parentDirectoryName)
             let contents = try? FileManager.default.contentsOfDirectory(atPath: parentFolder.path)
             if let contents = contents, contents.isEmpty {
                 try? FileManager.default.removeItem(at: parentFolder)
