@@ -122,6 +122,13 @@ extension FeatureEventStore {
     }
 
     private static func revenueCatFolder(in container: URL) -> URL {
+        #if os(macOS)
+        // Prefix with bundleID if the path is not scoped to an app container to avoid conflicts.
+        if !container.path.contains("/Library/Containers/"),
+           let bundleID = Bundle.main.bundleIdentifier {
+            return container.appendingPathComponent("\(bundleID).revenuecat")
+        }
+        #endif
         return container.appendingPathComponent("revenuecat")
     }
 
