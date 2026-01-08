@@ -297,10 +297,10 @@ class DiagnosticsFileHandlerTests: TestCase {
         expect(FileManager.default.fileExists(atPath: comRevenueCatFolder.path)).to(beFalse())
 
         // Verify new file is created
-        let applicationSupportDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .applicationSupport))
+        let persistenceDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .persistence))
 
-        let newDiagnosticsFileURL = applicationSupportDirectoryURL
-            .appendingPathComponent("diagnostics")
+        let newDiagnosticsFileURL = persistenceDirectoryURL
+            .appendingPathComponent("diagnostics", isDirectory: true)
             .appendingPathComponent("diagnostics")
             .appendingPathExtension("jsonl")
 
