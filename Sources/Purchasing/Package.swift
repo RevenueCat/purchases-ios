@@ -213,6 +213,5 @@ extension Package: Identifiable {
 }
 
 extension Package: Sendable {}
-// TODO: Breaking change?
 extension PresentedOfferingContext: Sendable, Codable {}
 extension PresentedOfferingContext.TargetingContext: Sendable, Codable {}

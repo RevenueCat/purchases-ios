@@ -197,6 +197,8 @@ extension TransactionPosterType {
 
 }
 
+extension PurchaseSource: Codable {}
+
 // MARK: - Implementation
 
 private extension TransactionPoster {
