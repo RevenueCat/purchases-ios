@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  LocalTransactionMetadataCache.swift
+//  LocalTransactionMetadataStore.swift
 //
 //  Created by Antonio Pallares on 15/12/25.
 //
@@ -16,10 +16,10 @@ import Foundation
 import OSLog
 
 /// Protocol for storing and retrieving local transaction metadata.
-protocol LocalTransactionMetadataCacheType: Sendable {
+protocol LocalTransactionMetadataStoreType: Sendable {
 
     /// Store transaction metadata for a given transaction ID.
-    func cache(metadata: LocalTransactionMetadata.TransactionMetadata, forTransactionID transactionId: String)
+    func store(metadata: LocalTransactionMetadata.TransactionMetadata, forTransactionID transactionId: String)
 
     /// Retrieve transaction metadata for a given transaction ID.
     func getMetadata(forTransactionId transactionId: String) -> LocalTransactionMetadata.TransactionMetadata?
@@ -29,7 +29,7 @@ protocol LocalTransactionMetadataCacheType: Sendable {
 }
 
 /// Cache for storing local transaction metadata persistently on disk.
-final class LocalTransactionMetadataCache: LocalTransactionMetadataCacheType {
+final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
 
     private static let cacheKey = "local_transaction_metadata"
 
@@ -41,7 +41,7 @@ final class LocalTransactionMetadataCache: LocalTransactionMetadataCacheType {
     }
 
     /// Store transaction metadata for a given transaction ID.
-    func cache(metadata: LocalTransactionMetadata.TransactionMetadata, forTransactionID transactionId: String) {
+    func store(metadata: LocalTransactionMetadata.TransactionMetadata, forTransactionID transactionId: String) {
         guard self.getMetadata(forTransactionId: transactionId) == nil else {
             Logger.debug(
                 TransactionMetadataStrings.metadata_already_exists_for_transaction(
