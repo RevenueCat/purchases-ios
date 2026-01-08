@@ -23,6 +23,12 @@ import UIKit
 
 /// A view controller for displaying the paywall for an `Offering`.
 ///
+/// - Note: This view controller sets itself as the `presentationController?.delegate` to support
+///   exit offers (intercepting swipe-to-dismiss gestures). If you have an existing presentation
+///   controller delegate, it will be preserved and all delegate methods will be forwarded to it
+///   after exit offer handling. When an exit offer is available, swipe-to-dismiss will be blocked
+///   and the exit offer paywall will be presented instead.
+///
 /// - Seealso: ``PaywallView`` for `SwiftUI`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @objc(RCPaywallViewController)
@@ -53,6 +59,10 @@ public class PaywallViewController: UIViewController {
 
     /// Whether we're dismissing to show an exit offer (skip dismissal notification).
     private var isDismissingForExitOffer: Bool = false
+
+    /// The original presentation controller delegate, if one was set before we took over.
+    /// We forward all delegate calls to this after handling our exit offer logic.
+    private weak var originalPresentationControllerDelegate: UIAdaptivePresentationControllerDelegate?
 
     private var purchaseHandler: PurchaseHandler {
         return configuration.purchaseHandler
@@ -218,7 +228,10 @@ public class PaywallViewController: UIViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        // Set ourselves as the presentation controller delegate to intercept swipe dismiss
+        // Store any existing delegate before we take over, so we can forward calls to it
+        self.originalPresentationControllerDelegate = self.presentationController?.delegate
+
+        // Set ourselves as the presentation controller delegate to intercept swipe dismiss for exit offers
         self.presentationController?.delegate = self
     }
 
@@ -416,30 +429,60 @@ public class PaywallViewController: UIViewController {
 }
 
 // MARK: - UIAdaptivePresentationControllerDelegate
+//
+// PaywallViewController sets itself as the presentationController's delegate to intercept
+// swipe-to-dismiss gestures for exit offer support. If a delegate was already set before
+// viewWillAppear, we store it and forward all calls to it after handling our exit offer logic.
+//
+// Note on `presentationControllerShouldDismiss`:
+// - If the original delegate returns `false`, we respect that and block dismiss.
+// - If an exit offer is available (and no purchase happened), we return `false` to block the
+//   swipe dismiss. This triggers `presentationControllerDidAttemptToDismiss`, where we present
+//   the exit offer paywall.
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
-        // Allow dismiss if no exit offer or purchase happened or action in progress
-        if self.exitOfferOffering == nil || self.purchaseHandler.hasPurchasedInSession {
-            return true
+        // Check if original delegate wants to block dismiss - if so, respect that
+        if let originalDelegate = self.originalPresentationControllerDelegate,
+           let shouldDismiss = originalDelegate.presentationControllerShouldDismiss?(presentationController),
+           !shouldDismiss {
+            return false
         }
-        // Block dismiss to show exit offer
-        return false
+
+        // Block dismiss to show exit offer if available and no purchase happened.
+        // This will trigger `presentationControllerDidAttemptToDismiss` where we present the exit offer.
+        if self.exitOfferOffering != nil && !self.purchaseHandler.hasPurchasedInSession {
+            return false
+        }
+
+        return true
     }
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
         // User tried to swipe dismiss but we blocked it - show exit offer
         self.handleDismissalRequest()
+
+        // Forward to original delegate
+        self.originalPresentationControllerDelegate?.presentationControllerDidAttemptToDismiss?(presentationController)
     }
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
         // Dismissal is happening (we allowed it) - clean up
         self.purchaseHandler.resetForNewSession()
+
+        // Forward to original delegate
+        self.originalPresentationControllerDelegate?.presentationControllerWillDismiss?(presentationController)
+    }
+
+    // swiftlint:disable:next missing_docs
+    public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        // Forward to original delegate
+        self.originalPresentationControllerDelegate?.presentationControllerDidDismiss?(presentationController)
     }
 
 }
