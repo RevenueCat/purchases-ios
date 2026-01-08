@@ -82,7 +82,7 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
 
 // MARK: - Codable wrappers
 
-// Some existing types are not trivial to make `Codable`, or they are public and their existing `Encodable`
+// Some existing types are not trivial to make `Codable`, or they are public and/or their existing `Encodable`
 // implementation is not suitable for a lossless decoding/encoding.
 // These wrappers allow us to encode/decode them without modifying their existing implementations.
 
@@ -91,7 +91,7 @@ fileprivate struct ProductRequestDataEncodedWrapper: Sendable, Codable {
     // We persist every `ProductRequestData` stored property, so encoding/decoding is lossless.
     // Note: we intentionally do not rely on `ProductRequestData: Encodable` because that `Encodable` implementation
     // is destined for sending data to the backend, and not all information is encoded. Decoding it would result in a
-    // different `ProductRequestData` than the original one.
+    // `ProductRequestData` missing some information from the original one.
 
     private let productIdentifier: String
     private let paymentModeRawValue: Int?
