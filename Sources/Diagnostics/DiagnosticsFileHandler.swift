@@ -137,11 +137,11 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
 private extension DiagnosticsFileHandler {
 
     static var diagnosticsFileURL: URL? {
-        guard let baseURL = DirectoryHelper.baseUrl(for: .applicationSupport) else {
+        guard let baseURL = DirectoryHelper.baseUrl(for: .persistence) else {
             return nil
         }
         return baseURL
-            .appendingPathComponent("diagnostics")
+            .appendingPathComponent("diagnostics", isDirectory: true)
             .appendingPathComponent("diagnostics")
             .appendingPathExtension("jsonl")
     }
@@ -161,7 +161,7 @@ private extension DiagnosticsFileHandler {
         let parentDirectoryName = "com.revenuecat"
 
         let oldDiagnosticsFile = documentsURL
-            .appendingPathComponent(parentDirectoryName)
+            .appendingPathComponent(parentDirectoryName, isDirectory: true)
             .appendingPathComponent("diagnostics")
             .appendingPathExtension("jsonl")
 

@@ -18,7 +18,7 @@ enum DirectoryHelper {
 
     enum DirectoryType {
         case cache
-        case applicationSupport
+        case persistence
     }
 
     static func baseUrl(for type: DirectoryType) -> URL? {
@@ -44,7 +44,7 @@ fileprivate extension DirectoryHelper.DirectoryType {
                     in: .userDomainMask
                 ).first
             }
-        case .applicationSupport:
+        case .persistence:
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 return URL.applicationSupportDirectory
             } else {
