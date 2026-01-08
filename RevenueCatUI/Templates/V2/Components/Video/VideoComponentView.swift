@@ -156,18 +156,12 @@ struct VideoComponentView: View {
                     .clipped()
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
-                    .onReceive(
-                        stagedURL.publisher
-                            // In the event that the download of the high res video is so fast that it tries to set the
-                            // url moments after the low_res was set, we need to delay a bit to ensure the re-render
-                            // actually occurs. This happens consistently with small file sizes and great connection
-                            // at 60fps, this is a generous delay but is not a notable delay to the human eye
-                            .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
-                            .receive(on: RunLoop.main)
-                            .eraseToAnyPublisher()
-                            .removeDuplicates()
-                    ) { output in
-                        self.cachedURL = output
+                    .onChangeCompat(of: stagedURL) { newValue in
+                        // FIX: Using .onChange instead of .onReceive(stagedURL.publisher...)
+                        // because .publisher on Optional doesn't observe @State changes
+                        guard let newURL = newValue, newURL != cachedURL else { return }
+                        self.cachedURL = newURL
+                        self.imageSource = nil
                     }
                 }
             }
@@ -210,6 +204,24 @@ struct VideoComponentView: View {
         return parentWidth - totalBorderWidth
             - style.margin.leading - style.margin.trailing
             - style.padding.leading - style.padding.trailing
+    }
+}
+
+// MARK: - onChange Compatibility
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension View {
+    @ViewBuilder
+    func onChangeCompat<V: Equatable>(of value: V, perform action: @escaping (V) -> Void) -> some View {
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+            self.onChange(of: value) { _, newValue in
+                action(newValue)
+            }
+        } else {
+            self.onChange(of: value) { newValue in
+                action(newValue)
+            }
+        }
     }
 }
 
