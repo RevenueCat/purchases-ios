@@ -253,3 +253,11 @@ func checkPaywallEventData(_ data: PaywallEvent.Data) {
         )
     }
 }
+
+func checkPaywallComponentsData(_ data: PaywallComponentsData) {
+    let _: String = data.templateName
+    let _: URL = data.assetBaseURL
+    let _: Int = data.revision
+    let _: [String] = data.zeroDecimalPlaceCountries
+    let _: String = data.defaultLocale
+}
