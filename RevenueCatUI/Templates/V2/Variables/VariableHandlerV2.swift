@@ -56,6 +56,7 @@ struct VariableHandlerV2 {
                 locale: locale,
                 localizations: localizations,
                 discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth,
+                showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
                 date: self.dateProvider(),
                 promoOffer: promoOffer,
                 countdownTime: countdownTime
@@ -246,6 +247,7 @@ extension VariablesV2 {
         locale: Locale,
         localizations: [String: String],
         discountRelativeToMostExpensivePerMonth: Double?,
+        showZeroDecimalPlacePrices: Bool,
         date: Date,
         promoOffer: PromotionalOffer?,
         countdownTime: CountdownTime?
@@ -258,19 +260,27 @@ extension VariablesV2 {
         case .productPeriodly:
             return self.productPeriodly(package: package, localizations: localizations)
         case .productPrice:
-            return self.productPrice(package: package)
+            return self.productPrice(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         case .productPricePerPeriod:
-            return self.productPricePerPeriod(package: package, localizations: localizations)
+            return self.productPricePerPeriod(
+                package: package,
+                localizations: localizations,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            )
         case .productPricePerPeriodAbbreviated:
-            return self.productPricePerPeriodAbbreviated(package: package, localizations: localizations)
+            return self.productPricePerPeriodAbbreviated(
+                package: package,
+                localizations: localizations,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            )
         case .productPricePerDay:
-            return self.productPricePerDay(package: package)
+            return self.productPricePerDay(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         case .productPricePerWeek:
-            return self.productPricePerWeek(package: package)
+            return self.productPricePerWeek(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         case .productPricePerMonth:
-            return self.productPricePerMonth(package: package)
+            return self.productPricePerMonth(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         case .productPricePerYear:
-            return self.productPricePerYear(package: package)
+            return self.productPricePerYear(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         case .productPeriod:
             return self.productPeriod(package: package, localizations: localizations)
         case .productPeriodAbbreviated:
@@ -383,19 +393,27 @@ extension VariablesV2 {
         return locale.currencySymbol ?? ""
     }
 
-    func productPrice(package: Package) -> String {
-        return package.storeProduct.localizedPriceString
+    func productPrice(package: Package, showZeroDecimalPlacePrices: Bool) -> String {
+        return package.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
-    func productPricePerPeriod(package: Package, localizations: [String: String]) -> String {
-        let price = package.storeProduct.localizedPriceString
+    func productPricePerPeriod(
+        package: Package,
+        localizations: [String: String],
+        showZeroDecimalPlacePrices: Bool
+    ) -> String {
+        let price = package.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         let period = self.productPeriod(package: package, localizations: localizations)
 
         return "\(price)/\(period)"
     }
 
-    func productPricePerPeriodAbbreviated(package: Package, localizations: [String: String]) -> String {
-        let price = package.storeProduct.localizedPriceString
+    func productPricePerPeriodAbbreviated(
+        package: Package,
+        localizations: [String: String],
+        showZeroDecimalPlacePrices: Bool
+    ) -> String {
+        let price = package.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         let periodAbbreviated = self.productPeriodAbbreviated(package: package, localizations: localizations)
 
         return "\(price)/\(periodAbbreviated)"
@@ -426,20 +444,20 @@ extension VariablesV2 {
         return localizations[value] ?? ""
     }
 
-    func productPricePerDay(package: Package) -> String {
-        return package.storeProduct.localizedPricePerDay ?? ""
+    func productPricePerDay(package: Package, showZeroDecimalPlacePrices: Bool) -> String {
+        return package.localizedPricePerDay(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
-    func productPricePerWeek(package: Package) -> String {
-        return package.storeProduct.localizedPricePerWeek ?? ""
+    func productPricePerWeek(package: Package, showZeroDecimalPlacePrices: Bool) -> String {
+        return package.localizedPricePerWeek(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
-    func productPricePerMonth(package: Package) -> String {
-        return package.storeProduct.localizedPricePerMonth ?? ""
+    func productPricePerMonth(package: Package, showZeroDecimalPlacePrices: Bool) -> String {
+        return package.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
-    func productPricePerYear(package: Package) -> String {
-        return package.storeProduct.localizedPricePerYear ?? ""
+    func productPricePerYear(package: Package, showZeroDecimalPlacePrices: Bool) -> String {
+        return package.localizedPricePerYear(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
     func productPeriod(package: Package, localizations: [String: String]) -> String {
