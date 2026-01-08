@@ -26,9 +26,9 @@ enum DirectoryHelper {
             return nil
         }
 
-        let revenueCatFolder = "\(bundleIdentifier).revenuecat"
+        let appSpecificRevenueCatDirectory = "\(bundleIdentifier).revenuecat"
 
-        return baseDirectory.appendingPathComponent(revenueCatFolder)
+        return baseDirectory.appendingPathComponent(appSpecificRevenueCatDirectory)
     }
 }
 
