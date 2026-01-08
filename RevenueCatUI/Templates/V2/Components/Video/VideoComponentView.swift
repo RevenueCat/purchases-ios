@@ -157,8 +157,6 @@ struct VideoComponentView: View {
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
                     .onChangeCompat(of: stagedURL) { newValue in
-                        // FIX: Using .onChange instead of .onReceive(stagedURL.publisher...)
-                        // because .publisher on Optional doesn't observe @State changes
                         guard let newURL = newValue, newURL != cachedURL else { return }
                         self.cachedURL = newURL
                         self.imageSource = nil

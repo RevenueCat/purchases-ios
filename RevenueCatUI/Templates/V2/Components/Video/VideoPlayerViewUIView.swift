@@ -53,15 +53,9 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         }
 
         avPlayer.isMuted = muteAudio
-
-        // Prevent video from appearing in Control Center / Lock Screen "Now Playing"
         avPlayer.preventsDisplaySleepDuringVideoPlayback = false
         avPlayer.allowsExternalPlayback = false
 
-        // Use ambient audio session to:
-        // - Avoid Control Center / Lock Screen "Now Playing" integration
-        // - Stop audio when app is backgrounded/screen locked (resumes via Coordinator)
-        // - Mix with other audio sources
         try? AVAudioSession.sharedInstance().setCategory(
             .ambient,
             mode: .default,
