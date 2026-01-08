@@ -24,7 +24,7 @@ struct PaywallsTabView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(offering.paywall?.templateName ?? offering.identifier)
                                         .font(.headline)
-                                    Text("\(offering.availablePackages.count) package\(offering.availablePackages.count > 1 ? "s" : "")")
+                                    Text("^[\(offering.availablePackages.count) package](inflect: true)")
                                         .font(.footnote)
                                         .foregroundStyle(.secondary)
                                 }
@@ -52,7 +52,7 @@ struct PaywallsTabView: View {
         }
         .scrollContentBackground(.hidden)
         .background {
-            ContentBackgroundView(color: Color("RC-royal-blue"))
+            ContentBackgroundView(color: Color("RC-blue"))
         }
         .sheet(item: $selectedOffering) { offering in
             PaywallView(offering: offering, displayCloseButton: true)
