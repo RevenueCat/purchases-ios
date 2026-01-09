@@ -14,7 +14,7 @@
 import Foundation
 
 /// The type of exit offer shown.
-@_spi(Internal) public enum ExitOfferType: String, Codable, Sendable {
+public enum ExitOfferType: String, Codable, Sendable {
 
     /// An exit offer shown when the user attempts to dismiss the paywall without interacting.
     case dismiss
@@ -155,7 +155,7 @@ extension PaywallEvent {
 extension PaywallEvent {
 
     /// The data specific to an exit offer event.
-    @_spi(Internal) public struct ExitOfferData {
+    public struct ExitOfferData {
 
         // swiftlint:disable missing_docs
         public var exitOfferType: ExitOfferType
@@ -197,7 +197,7 @@ extension PaywallEvent {
     }
 
     /// - Returns: the underlying ``PaywallEvent/ExitOfferData-swift.struct`` for exit offer events, nil otherwise.
-    @_spi(Internal) public var exitOfferData: ExitOfferData? {
+    public var exitOfferData: ExitOfferData? {
         switch self {
         case .impression, .cancel, .close: return nil
         case let .exitOffer(_, _, exitOfferData): return exitOfferData

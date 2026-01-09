@@ -462,9 +462,9 @@ extension PurchaseHandler {
         return true
     }
 
-    /// Tracks an exit offer event.
+    /// Tracks an exit offer event and clears the pending exit offer flag.
     /// - Parameters:
-    ///   - exitOfferType: The type of exit offer (dismiss or abandonment)
+    ///   - exitOfferType: The type of exit offer
     ///   - exitOfferingIdentifier: The offering identifier of the exit offer
     /// - Returns: whether the event was tracked
     @discardableResult
@@ -479,6 +479,7 @@ extension PurchaseHandler {
             exitOfferingIdentifier: exitOfferingIdentifier
         )
         self.track(.exitOffer(.init(), data, exitOfferData))
+        self.hasPendingExitOffer = false
         return true
     }
 

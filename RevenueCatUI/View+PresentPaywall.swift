@@ -708,7 +708,6 @@ private struct PresentingPaywallModifier: ViewModifier {
                 exitOfferType: .dismiss,
                 exitOfferingIdentifier: exitOffering.identifier
             )
-            self.purchaseHandler.setPendingExitOffer(false)
             self.presentedExitOffer = exitOffering
         } else {
             self.purchaseHandler.resetForNewSession()
@@ -990,7 +989,6 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 exitOfferType: .dismiss,
                 exitOfferingIdentifier: exitOffering.identifier
             )
-            self.purchaseHandler.setPendingExitOffer(false)
             self.presentedExitOffer = exitOffering
         } else {
             self.purchaseHandler.resetForNewSession()
