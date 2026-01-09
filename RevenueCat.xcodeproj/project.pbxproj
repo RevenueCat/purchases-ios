@@ -939,7 +939,9 @@
 		755C26A62E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C26A52E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift */; };
 		756AE8352D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */; };
 		7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */; };
+		757E73CE2F0FE2410066DCDC /* LocalTransactionMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757E73CC2F0FE2410066DCDC /* LocalTransactionMetadata.swift */; };
 		757E73D12F0FE26A0066DCDC /* TransactionMetadataStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757E73D02F0FE26A0066DCDC /* TransactionMetadataStrings.swift */; };
+		757E73E42F101EAF0066DCDC /* LocalTransactionMetadataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757E73E32F101EAF0066DCDC /* LocalTransactionMetadataStore.swift */; };
 		7581A92D2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7581A92C2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift */; };
 		758593482E37F77700B8E6CE /* WebBillingProductsDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 758593472E37F77700B8E6CE /* WebBillingProductsDecodingTests.swift */; };
 		75909EAB2E74286E009ABBA7 /* UIConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75909EAA2E74286E009ABBA7 /* UIConfigProviderTests.swift */; };
@@ -2442,7 +2444,9 @@
 		755C26A52E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetWebBillingProductsTests.swift; sourceTree = "<group>"; };
 		756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDiagnosticsTrackingTests.swift; sourceTree = "<group>"; };
 		7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift; sourceTree = "<group>"; };
+		757E73CC2F0FE2410066DCDC /* LocalTransactionMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTransactionMetadata.swift; sourceTree = "<group>"; };
 		757E73D02F0FE26A0066DCDC /* TransactionMetadataStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMetadataStrings.swift; sourceTree = "<group>"; };
+		757E73E32F101EAF0066DCDC /* LocalTransactionMetadataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTransactionMetadataStore.swift; sourceTree = "<group>"; };
 		7581A92C2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTestStorePurchaseHandler.swift; sourceTree = "<group>"; };
 		758593472E37F77700B8E6CE /* WebBillingProductsDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBillingProductsDecodingTests.swift; sourceTree = "<group>"; };
 		75909EAA2E74286E009ABBA7 /* UIConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigProviderTests.swift; sourceTree = "<group>"; };
@@ -5925,6 +5929,8 @@
 				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
 				4F8038322A1EA7C300D21039 /* TransactionPoster.swift */,
 				16E146AB2E99F1E20089B609 /* TransactionNotifications.swift */,
+				757E73CC2F0FE2410066DCDC /* LocalTransactionMetadata.swift */,
+				757E73E32F101EAF0066DCDC /* LocalTransactionMetadataStore.swift */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -6911,6 +6917,7 @@
 				16BCA3662E4D9AE400B39E7F /* LargeItemCacheType.swift in Sources */,
 				2DDF41A324F6F331005BC22D /* PurchasesReceiptParser.swift in Sources */,
 				2CB8CF9327BF538F00C34DE3 /* PlatformInfo.swift in Sources */,
+				757E73E42F101EAF0066DCDC /* LocalTransactionMetadataStore.swift in Sources */,
 				35D832F4262E606500E60AC5 /* HTTPResponse.swift in Sources */,
 				352B7D7927BD919B002A47DD /* DangerousSettings.swift in Sources */,
 				A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */,
@@ -7039,6 +7046,7 @@
 				B34605CC279A6E380031CA74 /* LogInOperation.swift in Sources */,
 				4FFFE6C42AA9464100B2955C /* EventsManager.swift in Sources */,
 				4F8929192A65EF3000A91EA2 /* EnsureNonEmptyCollectionDecodable.swift in Sources */,
+				757E73CE2F0FE2410066DCDC /* LocalTransactionMetadata.swift in Sources */,
 				16DA8EDF2E4F6A6600283940 /* PaywallVideoComponent.swift in Sources */,
 				35F82BB626A9B8040051DF03 /* AttributionDataMigrator.swift in Sources */,
 				4F5F47082AA91F8A005649D8 /* HealthOperation.swift in Sources */,
