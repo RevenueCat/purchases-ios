@@ -44,14 +44,16 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
     private weak var delegate: DiagnosticsFileHandlerDelegate?
 
     private let fileHandler: FileHandlerType
+    private var diagnosticsFileExistedOnInit = false
+    private let fileManager = FileManager.default
 
     init?() {
-        Self.deleteOldDiagnosticsFileIfNeeded()
-
         guard let diagnosticsFileURL = Self.diagnosticsFileURL else {
             Logger.error(Strings.diagnostics.failed_to_create_diagnostics_file_url)
             return nil
         }
+
+        diagnosticsFileExistedOnInit = fileManager.fileExists(atPath: diagnosticsFileURL.path)
 
         do {
             self.fileHandler = try FileHandler(diagnosticsFileURL)
@@ -76,6 +78,8 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
         }
 
         do {
+            deleteOldDiagnosticsFileIfNeeded()
+
             try await self.fileHandler.append(line: jsonString)
         } catch {
             Logger.error(Strings.diagnostics.failed_to_store_diagnostics_event(error: error))
@@ -146,37 +150,40 @@ private extension DiagnosticsFileHandler {
             .appendingPathExtension("jsonl")
     }
 
+    private static var oldDiagnosticsDirectoryURL: URL? {
+        FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first?.appendingPathComponent("com.revenuecat", isDirectory: true)
+    }
+
+    private static var oldDiagnosticsFileURL: URL? {
+        oldDiagnosticsDirectoryURL?
+            .appendingPathComponent("diagnostics")
+            .appendingPathExtension("jsonl")
+    }
+
     /*
      We were previously storing the diagnostics file in the Documents directory
      which may end up in the Files app or the user's Documents directory on macOS.
+     We'll try to delete it if the new file did not exist yet.
      */
-    private static func deleteOldDiagnosticsFileIfNeeded() {
-        guard let documentsURL = FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first else {
-            return
-        }
+    private func deleteOldDiagnosticsFileIfNeeded() {
+        guard !diagnosticsFileExistedOnInit else { return }
 
-        let parentDirectoryName = "com.revenuecat"
-
-        let oldDiagnosticsFile = documentsURL
-            .appendingPathComponent(parentDirectoryName, isDirectory: true)
-            .appendingPathComponent("diagnostics")
-            .appendingPathExtension("jsonl")
-
-        guard FileManager.default.fileExists(atPath: oldDiagnosticsFile.path) else {
+        guard let oldDiagnosticsDirectoryURL = Self.oldDiagnosticsDirectoryURL,
+                let oldDiagnosticsFileURL = Self.oldDiagnosticsFileURL,
+                FileManager.default.fileExists(atPath: oldDiagnosticsFileURL.path)
+        else {
             return
         }
 
         do {
-            try FileManager.default.removeItem(at: oldDiagnosticsFile)
+            try FileManager.default.removeItem(at: oldDiagnosticsFileURL)
 
-            // Also delete the parent folder if it's empty
-            let parentFolder = documentsURL.appendingPathComponent(parentDirectoryName)
-            let contents = try? FileManager.default.contentsOfDirectory(atPath: parentFolder.path)
+            let contents = try? FileManager.default.contentsOfDirectory(atPath: oldDiagnosticsDirectoryURL.path)
             if let contents = contents, contents.isEmpty {
-                try? FileManager.default.removeItem(at: parentFolder)
+                try? FileManager.default.removeItem(at: oldDiagnosticsDirectoryURL)
             }
         } catch {
             Logger.error(Strings.diagnostics.failed_to_delete_old_diagnostics_file(error: error))
@@ -200,5 +207,4 @@ private extension DiagnosticsFileHandler {
             return nil
         }
     }
-
 }
