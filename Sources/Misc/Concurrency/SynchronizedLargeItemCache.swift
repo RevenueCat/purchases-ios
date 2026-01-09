@@ -92,27 +92,6 @@ internal final class SynchronizedLargeItemCache {
         }
     }
 
-    /// Move a cached item from one key to another
-    @discardableResult
-    func moveObject(fromKey oldKey: DeviceCacheKeyType, toKey newKey: DeviceCacheKeyType) -> Bool {
-        guard let oldFileURL = self.getFileURL(for: oldKey),
-              let newFileURL = self.getFileURL(for: newKey) else {
-            return false
-        }
-
-        do {
-            return try self.withLock { cache, _ in
-                let data = try cache.loadFile(at: oldFileURL)
-                try cache.saveData(data, to: newFileURL)
-                try cache.remove(oldFileURL)
-                return true
-            }
-        } catch {
-            Logger.error("Failed to move cached item: \(error)")
-            return false
-        }
-    }
-
     func clear() {
         guard let documentURL = self.documentURL else {
             return
