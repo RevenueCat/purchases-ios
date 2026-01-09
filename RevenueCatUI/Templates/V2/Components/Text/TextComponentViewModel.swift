@@ -58,11 +58,12 @@ class TextComponentViewModel {
         countdownTime: CountdownTime? = nil,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
+        let isEligibleForPromoOffer = promoOffer != nil
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: promoOffer != nil,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
