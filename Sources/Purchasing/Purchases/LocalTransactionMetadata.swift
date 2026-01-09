@@ -24,9 +24,6 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
     /// The version of the schema used for encoding/decoding
     let schemaVersion: Int
 
-    /// The encoded receipt data.
-    let receipt: EncodedAppleReceipt
-
     private let productDataWrapper: ProductRequestDataEncodedWrapper?
 
     /// Product request data (product info, pricing, discounts, etc.).
@@ -48,14 +45,12 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
     let appTransactionJWS: String?
 
     init(
-        receipt: EncodedAppleReceipt,
         productData: ProductRequestData?,
         transactionData: PurchasedTransactionData,
         originalPurchasesAreCompletedBy: PurchasesAreCompletedBy,
         appTransactionJWS: String?
     ) {
         self.schemaVersion = Self.currentSchemaVersion
-        self.receipt = receipt
         self.productDataWrapper = productData.map(ProductRequestDataEncodedWrapper.init)
         self.purchasedTransactionDataWrapper = PurchasedTransactionDataEncodedWrapper(
             purchasedTransactionData: transactionData
