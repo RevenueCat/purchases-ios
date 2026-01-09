@@ -1422,14 +1422,14 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         )
 
         let transaction = StoreTransaction.from(transaction: transaction)
-        let result: Result<CustomerInfo, BackendError> = await Async.call { completed in
-            self.transactionPoster.handlePurchasedTransaction(transaction, data: transactionData ) { result in
-                if case let .success(customerInfo) = result {
-                    let purchaseData = PurchaseResultData(transaction, customerInfo, false)
-                    self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
-                }
-                completed(result)
-            }
+        let result: Result<CustomerInfo, BackendError> = await self.transactionPoster.handlePurchasedTransaction(
+            transaction,
+            data: transactionData
+        )
+        
+        if case let .success(customerInfo) = result {
+            let purchaseData = PurchaseResultData(transaction, customerInfo, false)
+            self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
         }
 
         self.handlePostReceiptResult(result,
