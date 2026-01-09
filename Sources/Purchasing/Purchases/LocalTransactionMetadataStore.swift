@@ -54,13 +54,13 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
 
         let key = self.getStoreKey(for: transactionId)
 
-        self.storeMetadata(metadata, forKey: key)
+        self.cache.set(codable: metadata, forKey: key)
     }
 
     /// Retrieve transaction metadata for a given transaction ID.
     func getMetadata(forTransactionId transactionId: String) -> LocalTransactionMetadata? {
         let key = self.getStoreKey(for: transactionId)
-        return self.getCachedMetadata(forKey: key)
+        return self.cache.value(forKey: key)
     }
 
     /// Remove transaction metadata for a given transaction ID.
@@ -74,9 +74,8 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
             return
         }
 
-
-        let storageKey = getStoreKey(for: transactionId)
-        self.removeMetadata(forKey: storageKey)
+        let key = self.getStoreKey(for: transactionId)
+        self.cache.removeObject(forKey: key)
     }
 
     // MARK: - Private helper methods
@@ -90,19 +89,8 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
     }
 
     private func getCachedMetadata(forKey key: String) -> LocalTransactionMetadata? {
-        let key = CacheKey(rawValue: key)
         let metadata: LocalTransactionMetadata? = self.cache.value(forKey: key)
         return metadata
-    }
-
-    private func storeMetadata(_ metadata: LocalTransactionMetadata, forKey key: String) {
-        let key = CacheKey(rawValue: key)
-        self.cache.set(codable: metadata, forKey: key)
-    }
-
-    private func removeMetadata(forKey key: String) {
-        let key = CacheKey(rawValue: key)
-        self.cache.removeObject(forKey: key)
     }
 
 }
