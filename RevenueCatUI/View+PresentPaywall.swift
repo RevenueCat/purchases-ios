@@ -661,6 +661,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         .task {
             guard let offering = await self.content.resolveOffering() else { return }
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
+            self.purchaseHandler.setPendingExitOffer(self.exitOfferOffering != nil)
         }
     }
 
@@ -707,6 +708,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                 exitOfferType: .dismiss,
                 exitOfferingIdentifier: exitOffering.identifier
             )
+            self.purchaseHandler.setPendingExitOffer(false)
             self.presentedExitOffer = exitOffering
         } else {
             self.purchaseHandler.resetForNewSession()
@@ -915,6 +917,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .task {
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
+            self.purchaseHandler.setPendingExitOffer(self.exitOfferOffering != nil)
         }
     }
 
@@ -987,6 +990,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 exitOfferType: .dismiss,
                 exitOfferingIdentifier: exitOffering.identifier
             )
+            self.purchaseHandler.setPendingExitOffer(false)
             self.presentedExitOffer = exitOffering
         } else {
             self.purchaseHandler.resetForNewSession()

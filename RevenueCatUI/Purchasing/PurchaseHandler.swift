@@ -34,7 +34,7 @@ final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
 
-    /// Where responsibiliy for completing purchases lies
+    /// Where responsibility for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         purchases.purchasesAreCompletedBy
     }
@@ -114,6 +114,10 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var restoreError: Error?
 
     private var eventData: PaywallEvent.Data?
+
+    /// Whether an exit offer is pending to be shown.
+    /// When set, `trackPaywallClose()` will preserve `eventData` so exit offer tracking can use it.
+    private(set) var hasPendingExitOffer: Bool = false
 
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
@@ -205,6 +209,12 @@ final class PurchaseHandler: ObservableObject {
     func resetForNewSession() {
         self.sessionPurchaseResult = nil
         self.purchaseResult = nil
+        self.eventData = nil
+        self.hasPendingExitOffer = false
+    }
+
+    func setPendingExitOffer(_ hasPending: Bool) {
+        self.hasPendingExitOffer = hasPending
     }
 
 }
@@ -433,7 +443,10 @@ extension PurchaseHandler {
         }
 
         self.track(.close(.init(), data))
-        self.eventData = nil
+
+        if !self.hasPendingExitOffer {
+            self.eventData = nil
+        }
         return true
     }
 
