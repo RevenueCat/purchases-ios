@@ -1161,7 +1161,7 @@ private extension URLRequest {
 
     var cacheKey: String {
         get throws {
-            return try XCTUnwrap(ETagManager.cacheKey(for: self)?.rawValue)
+            return try XCTUnwrap(ETagManager.cacheKey(for: self))
         }
     }
 
