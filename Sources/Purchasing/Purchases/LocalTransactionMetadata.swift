@@ -199,7 +199,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
                 return nil
             }
         }()
-        
+
         return PresentedOfferingContext(
             offeringIdentifier: offeringIdentifier,
             placementIdentifier: placementIdentifier,
