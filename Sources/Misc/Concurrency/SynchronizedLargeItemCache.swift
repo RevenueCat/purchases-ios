@@ -36,16 +36,16 @@ internal final class SynchronizedLargeItemCache {
     }
 
     /// Get the file URL for a specific cache key
-    private func getFileURL(for key: DeviceCacheKeyType) -> URL? {
+    private func getFileURL(for key: String) -> URL? {
         guard let documentURL = self.documentURL else {
             return nil
         }
-        return documentURL.appendingPathComponent(key.rawValue)
+        return documentURL.appendingPathComponent(key)
     }
 
     /// Save a codable value to the cache
     @discardableResult
-    func set<T: Encodable>(codable value: T, forKey key: DeviceCacheKeyType) -> Bool {
+    func set<T: Encodable>(codable value: T, forKey key: String) -> Bool {
         guard let fileURL = self.getFileURL(for: key) else {
             Logger.error("Cache URL is not available")
             return false
@@ -67,7 +67,7 @@ internal final class SynchronizedLargeItemCache {
     }
 
     /// Load a codable value from the cache
-    func value<T: Decodable>(forKey key: DeviceCacheKeyType) -> T? {
+    func value<T: Decodable>(forKey key: String) -> T? {
         guard let fileURL = self.getFileURL(for: key) else {
             return nil
         }
@@ -82,7 +82,7 @@ internal final class SynchronizedLargeItemCache {
     }
 
     /// Remove a cached item
-    func removeObject(forKey key: DeviceCacheKeyType) {
+    func removeObject(forKey key: String) {
         guard let fileURL = self.getFileURL(for: key) else {
             return
         }
