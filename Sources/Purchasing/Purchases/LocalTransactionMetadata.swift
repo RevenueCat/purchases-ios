@@ -41,14 +41,10 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
     /// The value of ``Purchases.purchasesAreCompletedBy`` at the time of the transaction.
     let originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
 
-    /// AppTransaction JWS string (StoreKit 2 only).
-    let appTransactionJWS: String?
-
     init(
         productData: ProductRequestData?,
         transactionData: PurchasedTransactionData,
-        originalPurchasesAreCompletedBy: PurchasesAreCompletedBy,
-        appTransactionJWS: String?
+        originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.productDataWrapper = productData.map(ProductRequestDataEncodedWrapper.init)
@@ -56,7 +52,6 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
             purchasedTransactionData: transactionData
         )
         self.originalPurchasesAreCompletedBy = originalPurchasesAreCompletedBy
-        self.appTransactionJWS = appTransactionJWS
     }
 
 }
