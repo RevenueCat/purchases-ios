@@ -18,10 +18,10 @@ import Foundation
 protocol LocalTransactionMetadataStoreType: Sendable {
 
     /// Store transaction metadata for a given transaction ID.
-    func store(metadata: LocalTransactionMetadata.TransactionMetadata, forTransactionID transactionId: String)
+    func storeMetadata(_ metadata: LocalTransactionMetadata, forTransactionID transactionId: String)
 
     /// Retrieve transaction metadata for a given transaction ID.
-    func getMetadata(forTransactionId transactionId: String) -> LocalTransactionMetadata.TransactionMetadata?
+    func getMetadata(forTransactionId transactionId: String) -> LocalTransactionMetadata?
 
     /// Remove transaction metadata for a given transaction ID.
     func removeMetadata(forTransactionId transactionId: String)
@@ -30,17 +30,19 @@ protocol LocalTransactionMetadataStoreType: Sendable {
 /// Cache for storing local transaction metadata persistently on disk.
 final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
 
-    private static let cacheKey = "local_transaction_metadata"
+    private static let storeKeyPrefix = "local_transaction_metadata_"
 
     private let cache: SynchronizedLargeItemCache
-    private let cachedData: Atomic<LocalTransactionMetadata?> = .init(nil)
 
-    init(fileManager: LargeItemCacheType = FileManager.default) {
-        self.cache = SynchronizedLargeItemCache(cache: fileManager, basePath: "revenuecat.localTransactionMetadata")
+    init(apiKey: String, fileManager: LargeItemCacheType = FileManager.default) {
+        self.cache = SynchronizedLargeItemCache(
+            cache: fileManager,
+            basePath: "revenuecat.localTransactionMetadata.\(apiKey)"
+        )
     }
 
     /// Store transaction metadata for a given transaction ID.
-    func store(metadata: LocalTransactionMetadata.TransactionMetadata, forTransactionID transactionId: String) {
+    func storeMetadata(_ metadata: LocalTransactionMetadata, forTransactionID transactionId: String) {
         guard self.getMetadata(forTransactionId: transactionId) == nil else {
             Logger.debug(
                 TransactionMetadataStrings.metadata_already_exists_for_transaction(
@@ -50,26 +52,20 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
             return
         }
 
-        let hash = getIdentifierHash(identifier: transactionId)
+        let key = self.getStoreKey(for: transactionId)
 
-        var currentMetadata = getCachedMetadata()
-        currentMetadata.transactionMetadataByIdHash[hash] = metadata
-        storeMetadata(currentMetadata)
+        self.storeMetadata(metadata, forKey: key)
     }
 
     /// Retrieve transaction metadata for a given transaction ID.
-    func getMetadata(forTransactionId transactionId: String) -> LocalTransactionMetadata.TransactionMetadata? {
-        let hash = getIdentifierHash(identifier: transactionId)
-        let currentMetadata = getCachedMetadata()
-        return currentMetadata.transactionMetadataByIdHash[hash]
+    func getMetadata(forTransactionId transactionId: String) -> LocalTransactionMetadata? {
+        let key = self.getStoreKey(for: transactionId)
+        return self.getCachedMetadata(forKey: key)
     }
 
     /// Remove transaction metadata for a given transaction ID.
     func removeMetadata(forTransactionId transactionId: String) {
-        let hash = getIdentifierHash(identifier: transactionId)
-
-        var currentMetadata = getCachedMetadata()
-        guard currentMetadata.transactionMetadataByIdHash[hash] != nil else {
+        guard self.getMetadata(forTransactionId: transactionId) != nil else {
             Logger.debug(
                 TransactionMetadataStrings.metadata_not_found_to_clear_for_transaction(
                     transactionId: transactionId
@@ -78,39 +74,35 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
             return
         }
 
-        currentMetadata.transactionMetadataByIdHash.removeValue(forKey: hash)
-        storeMetadata(currentMetadata)
+
+        let storageKey = getStoreKey(for: transactionId)
+        self.removeMetadata(forKey: storageKey)
     }
 
     // MARK: - Private helper methods
 
-    private func getIdentifierHash(identifier: String) -> String {
-        return identifier.asData.sha1String
+    private func getStoreKey(for identifier: String) -> String {
+        return Self.storeKeyPrefix + identifier.asData.sha1String
     }
 
     private struct CacheKey: DeviceCacheKeyType {
         let rawValue: String
     }
 
-    private func getCachedMetadata() -> LocalTransactionMetadata {
-        if let cached = self.cachedData.value {
-            return cached
-        }
-
-        let key = CacheKey(rawValue: Self.cacheKey)
-        let metadata: LocalTransactionMetadata = self.cache.value(forKey: key) ?? LocalTransactionMetadata()
-        self.cachedData.value = metadata
+    private func getCachedMetadata(forKey key: String) -> LocalTransactionMetadata? {
+        let key = CacheKey(rawValue: key)
+        let metadata: LocalTransactionMetadata? = self.cache.value(forKey: key)
         return metadata
     }
 
-    /// Save metadata to disk and update in-memory cache
-    private func storeMetadata(_ metadata: LocalTransactionMetadata) {
-        struct CacheKey: DeviceCacheKeyType {
-            let rawValue: String
-        }
-        let key = CacheKey(rawValue: Self.cacheKey)
-        self.cachedData.value = metadata
+    private func storeMetadata(_ metadata: LocalTransactionMetadata, forKey key: String) {
+        let key = CacheKey(rawValue: key)
         self.cache.set(codable: metadata, forKey: key)
+    }
+
+    private func removeMetadata(forKey key: String) {
+        let key = CacheKey(rawValue: key)
+        self.cache.removeObject(forKey: key)
     }
 
 }
