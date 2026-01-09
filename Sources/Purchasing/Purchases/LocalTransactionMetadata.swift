@@ -146,7 +146,6 @@ private struct ProductRequestDataEncodedWrapper: Sendable, Codable {
 
 private struct PurchasedTransactionDataEncodedWrapper: Codable {
     private let appUserId: String
-    private let presentedOfferingContext: PresentedOfferingContext?
     private let presentedPaywall: PaywallEvent?
     private let unsyncedAttributes: SubscriberAttribute.Dictionary?
     private let metadata: [String: String]?
@@ -154,15 +153,24 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
     private let storeCountry: String?
     private let source: PurchaseSource
 
+    // From PresentedOfferingContext
+    private let offeringIdentifier: String?
+    private let placementIdentifier: String?
+    private let targetingContextRevision: Int?
+    private let targetingContextRuleId: String?
+
     init(purchasedTransactionData: PurchasedTransactionData) {
         self.appUserId = purchasedTransactionData.appUserID
-        self.presentedOfferingContext = purchasedTransactionData.presentedOfferingContext
         self.presentedPaywall = purchasedTransactionData.presentedPaywall
         self.unsyncedAttributes = purchasedTransactionData.unsyncedAttributes
         self.metadata = purchasedTransactionData.metadata
         self.aadAttributionToken = purchasedTransactionData.aadAttributionToken
         self.storeCountry = purchasedTransactionData.storeCountry
         self.source = purchasedTransactionData.source
+        self.offeringIdentifier = purchasedTransactionData.presentedOfferingContext?.offeringIdentifier
+        self.placementIdentifier = purchasedTransactionData.presentedOfferingContext?.placementIdentifier
+        self.targetingContextRevision = purchasedTransactionData.presentedOfferingContext?.targetingContext?.revision
+        self.targetingContextRuleId = purchasedTransactionData.presentedOfferingContext?.targetingContext?.ruleId
     }
 
     var purchasedTransactionData: PurchasedTransactionData {
@@ -175,6 +183,27 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
             aadAttributionToken: self.aadAttributionToken,
             storeCountry: self.storeCountry,
             source: self.source
+        )
+    }
+
+    private var presentedOfferingContext: PresentedOfferingContext? {
+        guard let offeringIdentifier = self.offeringIdentifier,
+              let placementIdentifier = self.placementIdentifier else {
+            return nil
+        }
+        let targetingContext: PresentedOfferingContext.TargetingContext? = {
+            if let revision = self.targetingContextRevision,
+               let ruleId = self.targetingContextRuleId {
+                return .init(revision: revision, ruleId: ruleId)
+            } else {
+                return nil
+            }
+        }()
+        
+        return PresentedOfferingContext(
+            offeringIdentifier: offeringIdentifier,
+            placementIdentifier: placementIdentifier,
+            targetingContext: targetingContext
         )
     }
 }
