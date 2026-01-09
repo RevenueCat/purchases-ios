@@ -164,24 +164,6 @@ class BasePaywallViewEventsTests: TestCase {
         expect(exitOfferData.exitOfferingIdentifier) == "exit_offering"
     }
 
-    func testExitOfferAbandonmentEvent() async throws {
-        try await self.runDuringViewLifetime {
-            self.handler.trackExitOffer(exitOfferType: .abandonment, exitOfferingIdentifier: "abandonment_offering")
-        }
-
-        await self.fulfillment(of: [exitOfferEventExpectation], timeout: 3)
-        await self.waitForCloseEvent()
-
-        expect(self.events).to(containElementSatisfying { $0.eventType == .exitOffer })
-
-        let event = try XCTUnwrap(self.events.first { $0.eventType == .exitOffer })
-        self.verifyEventData(event.data)
-
-        let exitOfferData = try XCTUnwrap(event.exitOfferData)
-        expect(exitOfferData.exitOfferType) == .abandonment
-        expect(exitOfferData.exitOfferingIdentifier) == "abandonment_offering"
-    }
-
     func testExitOfferEventHasSameSessionID() async throws {
         try await self.runDuringViewLifetime {
             self.handler.trackExitOffer(exitOfferType: .dismiss, exitOfferingIdentifier: "exit_offering")

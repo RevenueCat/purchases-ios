@@ -19,9 +19,6 @@ public enum ExitOfferType: String, Codable, Sendable {
     /// An exit offer shown when the user attempts to dismiss the paywall without interacting.
     case dismiss
 
-    /// An exit offer shown when the user dismisses the paywall after some interaction (e.g., cancelling a purchase).
-    case abandonment
-
 }
 
 /// An event to be sent by the `RevenueCatUI` SDK.
