@@ -95,7 +95,7 @@ private struct ProductRequestDataEncodedWrapper: Sendable, Codable {
     private let productIdentifier: String
     private let paymentModeRawValue: Int?
     private let currencyCode: String?
-    private let storefrontWrapper: StorefrontEncodedWrapper?
+    private let storeCountry: String?
     private let priceString: String
     private let normalDuration: String?
     private let introDuration: String?
@@ -108,7 +108,7 @@ private struct ProductRequestDataEncodedWrapper: Sendable, Codable {
         self.productIdentifier = productRequestData.productIdentifier
         self.paymentModeRawValue = productRequestData.paymentMode?.rawValue
         self.currencyCode = productRequestData.currencyCode
-        self.storefrontWrapper = productRequestData.storefront.map(StorefrontEncodedWrapper.init(storefront:))
+        self.storeCountry = productRequestData.storeCountry
         self.priceString = Self.encodeDecimal(productRequestData.price)
         self.normalDuration = productRequestData.normalDuration
         self.introDuration = productRequestData.introDuration
@@ -123,7 +123,7 @@ private struct ProductRequestDataEncodedWrapper: Sendable, Codable {
             productIdentifier: self.productIdentifier,
             paymentMode: self.paymentModeRawValue.flatMap(StoreProductDiscount.PaymentMode.init(rawValue:)),
             currencyCode: self.currencyCode,
-            storefront: self.storefrontWrapper,
+            storeCountry: self.storeCountry,
             price: Self.decodeDecimal(from: self.priceString) ?? 0,
             normalDuration: self.normalDuration,
             introDuration: self.introDuration,
@@ -151,7 +151,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
     private let unsyncedAttributes: SubscriberAttribute.Dictionary?
     private let metadata: [String: String]?
     private let aadAttributionToken: String?
-    private let storefrontWrapper: StorefrontEncodedWrapper?
+    private let storeCountry: String?
     private let source: PurchaseSource
 
     init(purchasedTransactionData: PurchasedTransactionData) {
@@ -161,7 +161,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
         self.unsyncedAttributes = purchasedTransactionData.unsyncedAttributes
         self.metadata = purchasedTransactionData.metadata
         self.aadAttributionToken = purchasedTransactionData.aadAttributionToken
-        self.storefrontWrapper = purchasedTransactionData.storefront.map(StorefrontEncodedWrapper.init(storefront:))
+        self.storeCountry = purchasedTransactionData.storeCountry
         self.source = purchasedTransactionData.source
     }
 
@@ -173,7 +173,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
             unsyncedAttributes: self.unsyncedAttributes,
             metadata: self.metadata,
             aadAttributionToken: self.aadAttributionToken,
-            storefront: self.storefrontWrapper,
+            storeCountry: self.storeCountry,
             source: self.source
         )
     }
@@ -203,16 +203,5 @@ private struct StoreProductDiscountEncodedWrapper: StoreProductDiscountType, Cod
 
     var discount: StoreProductDiscount {
         return StoreProductDiscount(self)
-    }
-}
-
-/// Wrapper around `StorefrontType` to make it `Codable`.
-private struct StorefrontEncodedWrapper: StorefrontType, Codable {
-    let countryCode: String
-    let identifier: String
-
-    init(storefront: StorefrontType) {
-        self.countryCode = storefront.countryCode
-        self.identifier = storefront.identifier
     }
 }

@@ -1414,7 +1414,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             presentedOfferingContext: nil,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
-            storefront: storefront,
+            storeCountry: storefront?.countryCode,
             source: .init(
                 isRestore: self.allowSharingAppStoreAccount,
                 initiationSource: .queue
@@ -1689,7 +1689,7 @@ private extension PurchasesOrchestrator {
                         appUserID: currentAppUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: unsyncedAttributes,
-                        storefront: productRequestData?.storefront,
+                        storeCountry: productRequestData?.storeCountry,
                         source: .init(isRestore: isRestore, initiationSource: initiationSource)
                     )
 
@@ -1800,7 +1800,7 @@ private extension PurchasesOrchestrator {
                     appUserID: currentAppUserID,
                     presentedOfferingContext: nil,
                     unsyncedAttributes: unsyncedAttributes,
-                    storefront: transaction.storefront,
+                    storeCountry: transaction.storefront?.countryCode,
                     source: .init(isRestore: isRestore, initiationSource: initiationSource)
                 )
 
@@ -1871,7 +1871,7 @@ private extension PurchasesOrchestrator {
                 presentedPaywall: paywall,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
-                storefront: storefront,
+                storeCountry: storefront?.countryCode,
                 source: self.purchaseSource(for: purchasedTransaction.productIdentifier,
                                             restored: restored)
             )
@@ -1970,7 +1970,7 @@ private extension PurchasesOrchestrator {
     ) {
         self.productsManager.products(withIdentifiers: [productIdentifier]) { products in
             let result = products.value?.first.map {
-                ProductRequestData(with: $0, storefront: self.systemInfo.storefront)
+                ProductRequestData(with: $0, storeCountry: self.systemInfo.storefront?.countryCode)
             }
 
             completion(result)
@@ -2162,7 +2162,7 @@ extension PurchasesOrchestrator {
             unsyncedAttributes: unsyncedAttributes,
             metadata: metadata,
             aadAttributionToken: adServicesToken,
-            storefront: transaction.storefront,
+            storeCountry: transaction.storefront?.countryCode,
             source: .init(isRestore: self.allowSharingAppStoreAccount,
                           initiationSource: initiationSource)
         )

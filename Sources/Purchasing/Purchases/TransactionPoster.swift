@@ -30,7 +30,7 @@ struct PurchasedTransactionData {
     var unsyncedAttributes: SubscriberAttribute.Dictionary?
     var metadata: [String: String]?
     var aadAttributionToken: String?
-    var storefront: StorefrontType?
+    var storeCountry: String?
     var source: PurchaseSource
 
 }
@@ -244,7 +244,9 @@ private extension TransactionPoster {
                      product: StoreProduct?,
                      appTransaction: String?,
                      completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        let productData = product.map { ProductRequestData(with: $0, storefront: purchasedTransactionData.storefront) }
+        let productData = product.map {
+            ProductRequestData(with: $0, storeCountry: purchasedTransactionData.storeCountry)
+        }
 
         self.backend.post(receipt: receipt,
                           productData: productData,
