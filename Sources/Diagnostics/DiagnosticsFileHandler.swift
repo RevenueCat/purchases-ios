@@ -64,6 +64,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
     }
 
     init(_ fileHandler: FileHandlerType) {
+        assert(!(fileHandler is FileHandler), "This init is only meant for testing. Use the regular init instead.")
         self.fileHandler = fileHandler
     }
 
@@ -72,10 +73,14 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
     }
 
     func appendEvent(diagnosticsEvent: DiagnosticsEvent) async {
-        guard let jsonString = try? diagnosticsEvent.encodedJSON else {
-            Logger.error(Strings.diagnostics.failed_to_serialize_diagnostic_event)
-            return
+        var jsonString: String?
+        do {
+            jsonString = try diagnosticsEvent.encodedJSON
+        } catch {
+            Logger.error(Strings.diagnostics.failed_to_serialize_diagnostic_event(error: error))
         }
+
+        guard let jsonString else { return }
 
         do {
             deleteOldDiagnosticsFileIfNeeded()
@@ -151,10 +156,17 @@ private extension DiagnosticsFileHandler {
     }
 
     private static var oldDiagnosticsDirectoryURL: URL? {
-        FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first?.appendingPathComponent("com.revenuecat", isDirectory: true)
+        let documentsDirectoryURL: URL?
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            documentsDirectoryURL = URL.documentsDirectory
+        } else {
+            documentsDirectoryURL = FileManager.default.urls(
+                for: .documentDirectory,
+                in: .userDomainMask
+            ).first
+        }
+
+        return documentsDirectoryURL?.appendingPathComponent("com.revenuecat", isDirectory: true)
     }
 
     private static var oldDiagnosticsFileURL: URL? {
