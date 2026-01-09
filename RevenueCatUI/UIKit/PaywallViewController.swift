@@ -23,12 +23,19 @@ import UIKit
 
 /// A view controller for displaying the paywall for an `Offering`.
 ///
-/// - Note: When an exit offer is available for the current offering, this view controller
-///   temporarily sets itself as the `presentationController?.delegate` to intercept swipe-to-dismiss
-///   gestures. If you have an existing presentation controller delegate, it will be preserved and
-///   all delegate methods will be forwarded to it after exit offer handling. When the user attempts
-///   to dismiss, the exit offer paywall will be presented instead. The original delegate is restored
-///   when the exit offer is no longer applicable.
+/// ## Exit Offer Support
+///
+/// When an exit offer is available for the current offering, this view controller temporarily sets
+/// itself as the `presentationController?.delegate` to intercept swipe-to-dismiss gestures. If you
+/// have an existing presentation controller delegate, it will be preserved and all delegate methods
+/// will be forwarded to it after exit offer handling. When the user attempts to dismiss, the exit
+/// offer paywall will be presented instead. The original delegate is restored when the exit offer
+/// is no longer applicable.
+///
+/// - Important: If you need to set a custom `presentationController?.delegate` in a subclass,
+///   do so **before** calling `super.viewWillAppear(_:)`. This ensures your delegate is captured
+///   and forwarded. Setting it afterwards will override the exit offer handling, potentially
+///   breaking exit offer support.
 ///
 /// - Seealso: ``PaywallView`` for `SwiftUI`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
