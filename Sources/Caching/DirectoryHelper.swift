@@ -9,7 +9,7 @@
 //
 //  DirectoryHelper.swift
 //
-//  Created by Rick van der Linden on 15/1/26.
+//  Created by Rick van der Linden on 7/1/26.
 //
 
 import Foundation
