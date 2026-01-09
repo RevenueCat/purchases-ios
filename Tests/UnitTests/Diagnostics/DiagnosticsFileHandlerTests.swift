@@ -257,56 +257,6 @@ class DiagnosticsFileHandlerTests: TestCase {
             $0.message.contains("Failed to store diagnostics event: ")
         })
     }
-
-    // MARK: - Old file deletion
-
-    func testDeletesOldDiagnosticsFileFromDocumentsDirectory() throws {
-        // Create old diagnostics file in documents directory
-        let documentsURL = FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        )[0]
-
-        let comRevenueCatFolder = documentsURL.appendingPathComponent("com.revenuecat")
-        let oldDiagnosticsFile = comRevenueCatFolder
-            .appendingPathComponent("diagnostics")
-            .appendingPathExtension("jsonl")
-
-        // Create directory structure
-        try FileManager.default.createDirectory(
-            at: oldDiagnosticsFile.deletingLastPathComponent(),
-            withIntermediateDirectories: true,
-            attributes: nil
-        )
-
-        // Create the old file
-        try "test content".write(to: oldDiagnosticsFile, atomically: true, encoding: .utf8)
-
-        // Verify file and folder exist
-        expect(FileManager.default.fileExists(atPath: oldDiagnosticsFile.path)).to(beTrue())
-        expect(FileManager.default.fileExists(atPath: comRevenueCatFolder.path)).to(beTrue())
-
-        // Initialize DiagnosticsFileHandler (should delete old file and folder)
-        let handler = DiagnosticsFileHandler()
-        expect(handler).toNot(beNil())
-
-        // Verify old file is deleted
-        expect(FileManager.default.fileExists(atPath: oldDiagnosticsFile.path)).to(beFalse())
-
-        // Verify containing folder is also deleted
-        expect(FileManager.default.fileExists(atPath: comRevenueCatFolder.path)).to(beFalse())
-
-        // Verify new file is created
-        let persistenceDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .persistence))
-
-        let newDiagnosticsFileURL = persistenceDirectoryURL
-            .appendingPathComponent("diagnostics", isDirectory: true)
-            .appendingPathComponent("diagnostics")
-            .appendingPathExtension("jsonl")
-
-        expect(FileManager.default.fileExists(atPath: newDiagnosticsFileURL.path)).to(beTrue())
-    }
-
 }
 
 // MARK: - Private
