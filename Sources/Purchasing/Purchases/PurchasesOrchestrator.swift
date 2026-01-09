@@ -43,7 +43,7 @@ final class PurchasesOrchestrator {
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let presentedOfferingContextsByProductID: Atomic<[String: PresentedOfferingContext]> = .init([:])
-    private let presentedPaywall: Atomic<PaywallEvent?> = nil
+    private let presentedPaywall: Atomic<PaywallEvent.Data?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -66,6 +66,7 @@ final class PurchasesOrchestrator {
     private let currentUserProvider: CurrentUserProvider
     private let transactionsManager: TransactionsManager
     private let deviceCache: DeviceCache
+    private let localTransactionMetadataCache: LocalTransactionMetadataCacheType
     private let offeringsManager: OfferingsManager
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
@@ -135,10 +136,11 @@ final class PurchasesOrchestrator {
                      transactionFetcher: StoreKit2TransactionFetcherType,
                      customerInfoManager: CustomerInfoManager,
                      backend: Backend,
-                     transactionPoster: TransactionPoster,
+                     transactionPoster: TransactionPosterType,
                      currentUserProvider: CurrentUserProvider,
                      transactionsManager: TransactionsManager,
                      deviceCache: DeviceCache,
+                     localTransactionMetadataCache: LocalTransactionMetadataCacheType = LocalTransactionMetadataCache(),
                      offeringsManager: OfferingsManager,
                      manageSubscriptionsHelper: ManageSubscriptionsHelper,
                      beginRefundRequestHelper: BeginRefundRequestHelper,
@@ -170,6 +172,7 @@ final class PurchasesOrchestrator {
             currentUserProvider: currentUserProvider,
             transactionsManager: transactionsManager,
             deviceCache: deviceCache,
+            localTransactionMetadataCache: localTransactionMetadataCache,
             offeringsManager: offeringsManager,
             manageSubscriptionsHelper: manageSubscriptionsHelper,
             beginRefundRequestHelper: beginRefundRequestHelper,
@@ -225,10 +228,11 @@ final class PurchasesOrchestrator {
          transactionFetcher: StoreKit2TransactionFetcherType,
          customerInfoManager: CustomerInfoManager,
          backend: Backend,
-         transactionPoster: TransactionPoster,
+         transactionPoster: TransactionPosterType,
          currentUserProvider: CurrentUserProvider,
          transactionsManager: TransactionsManager,
          deviceCache: DeviceCache,
+         localTransactionMetadataCache: LocalTransactionMetadataCacheType = LocalTransactionMetadataCache(),
          offeringsManager: OfferingsManager,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper,
@@ -255,6 +259,7 @@ final class PurchasesOrchestrator {
         self.currentUserProvider = currentUserProvider
         self.transactionsManager = transactionsManager
         self.deviceCache = deviceCache
+        self.localTransactionMetadataCache = localTransactionMetadataCache
         self.offeringsManager = offeringsManager
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
@@ -584,8 +589,6 @@ final class PurchasesOrchestrator {
             payment.quantity = quantity
         }
 
-        self.cachePresentedOfferingContext(package: package, productIdentifier: productIdentifier)
-
         self.productsManager.cache(StoreProduct(sk1Product: sk1Product))
 
         let startTime = self.dateProvider.now()
@@ -624,6 +627,7 @@ final class PurchasesOrchestrator {
         )
 
         if addPayment {
+            self.storeLocalTransactionMetadataIfNeeded(package: package, productIdentifier: productIdentifier)
             wrapper.add(payment)
         }
     }
@@ -761,7 +765,7 @@ final class PurchasesOrchestrator {
                 #endif
             }
 
-            self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
+            self.storeLocalTransactionMetadataIfNeeded(package: package, productIdentifier: sk2Product.id)
 
             result = try await self.purchase(sk2Product, options)
 
@@ -777,6 +781,11 @@ final class PurchasesOrchestrator {
             let customerInfo: CustomerInfo
 
             if let transaction = transaction {
+                // Migrate local transaction details from product ID to transaction ID
+                self.localTransactionMetadataCache.migrateMetadata(
+                    fromProductID: sk2Product.id,
+                    toTransactionID: transaction.transactionIdentifier
+                )
                 customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
                 self.postFeatureEventsIfNeeded()
             } else {
@@ -886,14 +895,10 @@ final class PurchasesOrchestrator {
         }
     }
 
-    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
-        self.presentedOfferingContextsByProductID.modify { $0[productIdentifier] = context }
-    }
-
     func track(paywallEvent: PaywallEvent) {
         switch paywallEvent {
         case .impression:
-            self.cachePresentedPaywall(paywallEvent)
+            self.cachePresentedPaywall(paywallEvent.data)
 
         case .close:
             self.clearPresentedPaywall()
@@ -1034,6 +1039,11 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
                                             storefront: storeKit1Wrapper.currentStorefront,
                                             restored: true)
         case .purchased:
+            // Migrate local transaction metadata from product ID to transaction ID
+            self.localTransactionMetadataCache.migrateMetadata(
+                fromProductID: storeTransaction.productIdentifier,
+                toTransactionID: storeTransaction.transactionIdentifier
+            )
             self.handlePurchasedTransaction(storeTransaction,
                                             storefront: storeKit1Wrapper.currentStorefront,
                                             restored: false)
@@ -1435,7 +1445,8 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         self.handlePostReceiptResult(result,
                                      transactionData: transactionData,
                                      subscriberAttributes: subscriberAttributes,
-                                     adServicesToken: adServicesToken)
+                                     adServicesToken: adServicesToken,
+                                     transaction: transaction)
 
         if let error = result.error {
             throw error
@@ -1841,7 +1852,8 @@ private extension PurchasesOrchestrator {
     func handlePostReceiptResult(_ result: Result<CustomerInfo, BackendError>,
                                  transactionData: PurchasedTransactionData?,
                                  subscriberAttributes: SubscriberAttribute.Dictionary,
-                                 adServicesToken: String?) {
+                                 adServicesToken: String?,
+                                 transaction: StoreTransaction? = nil) {
         switch result {
         case let .success(customerInfo):
             self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
@@ -1884,7 +1896,8 @@ private extension PurchasesOrchestrator {
                 self.handlePostReceiptResult(result,
                                              transactionData: transactionData,
                                              subscriberAttributes: unsyncedAttributes,
-                                             adServicesToken: adServicesToken)
+                                             adServicesToken: adServicesToken,
+                                             transaction: purchasedTransaction)
 
                 if let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: purchasedTransaction) {
                     self.operationDispatcher.dispatchOnMainActor {
@@ -1918,14 +1931,7 @@ private extension PurchasesOrchestrator {
         self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
     }
 
-    func cachePresentedOfferingContext(package: Package?, productIdentifier: String) {
-        if let package = package {
-            self.cachePresentedOfferingContext(package.presentedOfferingContext,
-                                               productIdentifier: productIdentifier)
-        }
-    }
-
-    func cachePresentedPaywall(_ paywall: PaywallEvent) {
+    func cachePresentedPaywall(_ paywall: PaywallEvent.Data) {
         Logger.verbose(Strings.paywalls.caching_presented_paywall)
         self.presentedPaywall.value = paywall
     }
@@ -1945,7 +1951,7 @@ private extension PurchasesOrchestrator {
         return self.getAndRemovePresentedOfferingContext(for: transaction.productIdentifier)
     }
 
-    func getAndRemovePresentedPaywall() -> PaywallEvent? {
+    func getAndRemovePresentedPaywall() -> PaywallEvent.Data? {
         return self.presentedPaywall.getAndSet(nil)
     }
 
@@ -2175,7 +2181,8 @@ extension PurchasesOrchestrator {
         self.handlePostReceiptResult(result,
                                      transactionData: transactionData,
                                      subscriberAttributes: unsyncedAttributes,
-                                     adServicesToken: adServicesToken)
+                                     adServicesToken: adServicesToken,
+                                     transaction: transaction)
 
         return try result
             .mapError(\.asPurchasesError)
@@ -2291,4 +2298,20 @@ fileprivate extension DiagnosticsEvent.PurchaseResult {
         }
     }
 
+}
+
+// MARK: - Storing Local Transaction Details
+
+private extension PurchasesOrchestrator {
+
+    func storeLocalTransactionMetadataIfNeeded(package: Package?, productIdentifier: String) {
+        let metadata = LocalTransactionMetadata(
+            appUserID: self.appUserID,
+            productIdentifier: productIdentifier,
+            presentedOfferingContext: package?.presentedOfferingContext, // TODO: check if presentedOfferingContextsByProductID should be used, if not, can it be removed?
+            paywallPostReceiptData: self.presentedPaywall.value?.toPostReceiptData,
+            observerMode: !self.finishTransactions
+        )
+        self.localTransactionMetadataCache.store(metadata: metadata, forProductID: productIdentifier)
+    }
 }

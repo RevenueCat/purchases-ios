@@ -66,7 +66,7 @@ struct ProductRequestData {
 
 }
 
-extension ProductRequestData: Encodable {
+extension ProductRequestData: Codable {
 
     enum CodingKeys: String, CodingKey {
 
@@ -114,6 +114,26 @@ extension ProductRequestData: Encodable {
             default: break
             }
         }
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.productIdentifier = try container.decode(String.self, forKey: .productIdentifier)
+        
+        self.paymentMode = try container.decodeIfPresent(StoreProductDiscount.PaymentMode.self, forKey: .paymentMode)
+        self.currencyCode = try container.decodeIfPresent(String.self, forKey: .currencyCode)
+
+        // TODO: check the following types. They can't be as easily decoded into their original types as they are encoded
+        self.storefront = nil
+        self.price = 0
+        self.discounts = nil
+        self.introPrice = nil
+        self.introDuration = nil
+        self.introDurationType = nil
+
+        self.normalDuration = try container.decodeIfPresent(String.self, forKey: .normalDuration)
+        self.subscriptionGroup = try container.decodeIfPresent(String.self, forKey: .subscriptionGroup)
     }
 
 }
