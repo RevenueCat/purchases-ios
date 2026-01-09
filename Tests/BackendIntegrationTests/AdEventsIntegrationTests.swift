@@ -78,11 +78,11 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testFlushingEmptyAdEvents() async throws {
-        // Simulate backgrounding to trigger flush
-        self.simulateBackgroundingApp()
+        // Simulate app will resign active to trigger flush
+        self.simulateAppWillResignActive()
 
         try await self.logger.verifyMessageIsEventuallyLogged(
-            "Ad event flush with empty store",
+            EventsManagerStrings.ad_event_flush_with_empty_store,
             level: .verbose
         )
 
@@ -106,34 +106,27 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
         await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
 
-        // Simulate backgrounding to trigger flush (flushes all events)
-        self.simulateBackgroundingApp()
+        // Simulate app will resign active to trigger flush
+        self.simulateAppWillResignActive()
 
         try await self.logger.verifyMessageIsEventuallyLogged(
-            Strings.analytics.flush_events_success,
-            level: .debug
-        )
-
-        self.logger.verifyMessageWasLogged(
-            Strings.analytics.flush_events_success,
+            EventsManagerStrings.ad_events_flushed_successfully,
             level: .debug,
             expectedCount: 1
         )
 
-        // Simulate backgrounding again - should flush nothing
-        self.simulateBackgroundingApp()
+        self.logger.clearMessages()
+
+        // Simulate app will resign active to trigger flush
+        self.simulateAppWillResignActive()
 
         try await self.logger.verifyMessageIsEventuallyLogged(
-            "Ad event flush with empty store",
+            EventsManagerStrings.ad_event_flush_with_empty_store,
             level: .verbose
         )
 
         // Verify no additional flush happened
-        self.logger.verifyMessageWasLogged(
-            Strings.analytics.flush_events_success,
-            level: .debug,
-            expectedCount: 1 // Still only 1 flush total
-        )
+        self.logger.verifyMessageWasNotLogged(EventsManagerStrings.ad_events_flushed_successfully)
     }
 
     func testRemembersAdEventsWhenReopeningApp() async throws {
@@ -156,45 +149,34 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
 
         await self.resetSingleton()
 
-        // Simulate backgrounding to trigger flush
-        self.simulateBackgroundingApp()
+        // Simulate app will resign active to trigger flush
+        self.simulateAppWillResignActive()
 
         try await self.logger.verifyMessageIsEventuallyLogged(
-            Strings.analytics.flush_events_success,
-            level: .debug
-        )
-
-        self.logger.verifyMessageWasLogged(
-            Strings.analytics.flush_events_success,
+            EventsManagerStrings.ad_events_flushed_successfully,
             level: .debug,
             expectedCount: 1
         )
     }
 
     private func flushAndVerify(eventsCount: Int) async throws {
-        // Simulate backgrounding to trigger flush
-        self.simulateBackgroundingApp()
+        // Simulate app will resign active to trigger flush
+        self.simulateAppWillResignActive()
 
         try await self.logger.verifyMessageIsEventuallyLogged(
-            Strings.analytics.flush_events_success,
+            EventsManagerStrings.ad_events_flushed_successfully,
             level: .debug
         )
 
         self.logger.verifyMessageWasLogged(
-            "Ad event flush starting with \(eventsCount) event(s)",
+            EventsManagerStrings.ad_event_flush_starting(eventsCount),
             level: .verbose
-        )
-
-        self.logger.verifyMessageWasLogged(
-            Strings.analytics.flush_events_success,
-            level: .debug,
-            expectedCount: 1
         )
     }
 
-    private func simulateBackgroundingApp() {
+    private func simulateAppWillResignActive() {
         NotificationCenter.default.post(
-            name: SystemInfo.applicationDidEnterBackgroundNotification,
+            name: SystemInfo.applicationWillResignActiveNotification,
             object: nil
         )
     }

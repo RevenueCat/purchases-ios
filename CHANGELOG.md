@@ -1,3 +1,50 @@
+## 5.53.0
+## RevenueCat SDK
+### ✨ New Features
+* Add Solar Engine integration support (#5992) via Lim Hoang (@limdauto)
+### 🐞 Bugfixes
+* Ensure cache writes create parent directory (#5986) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Updated Loadshedder backend integration test reference snapshot (#6001) via Rick (@rickvdl)
+* Updated reference snapshot for testCanGetOfferingsFromFallbackURL test (#6000) via Rick (@rickvdl)
+* chore: Update swiftlint commit hook (#5993) via Facundo Menzella (@facumenzella)
+* Install Swiftlint via Mise (#5998) via Facundo Menzella (@facumenzella)
+* Fix Nimble test failure reporting in Tuist workspace (#5987) via Facundo Menzella (@facumenzella)
+
+## 5.52.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix translations of purchase button in Customer Center's promotional offers (#5974) via Cesar de la Vega (@vegaro)
+* Fix HTTP request deduplication being non-deterministic on cache keys (#5975) via Andy Boedo (@aboedo)
+* Fixed compilation of generated XCFramework because of synthesized Codable conformance in extension (#5971) via Rick (@rickvdl)
+* Fix footer background image influencing footer height when using Fill / Fit mode (#5960) via Facundo Menzella (@facumenzella)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Fix Tabs component package inheritance for tabs without packages (#5929) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Remove `output_style` from `xcodebuild` calls in `test_revenuecatui` (#5978) via Cesar de la Vega (@vegaro)
+* Updated reference snapshot for load shedder offerings response (#5973) via Rick (@rickvdl)
+* Removed the use of @autoclosure from Logging methods in order to reduce binary size footprint (#5956) via Rick (@rickvdl)
+
+## 5.52.0
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* Add exit offers support for paywalls (#5944) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Execute `release-train` only when making a release (#5965) via Antonio Pallares (@ajpallares)
+* Fix failing ad tracking tests (#5963) via Antonio Pallares (@ajpallares)
+* Re-recorded FallbackURLBackendIntegrationTests and LoadShedderIntegrationTests (#5962) via Facundo Menzella (@facumenzella)
+* Bump fastlane-plugin-revenuecat_internal from `76a3a08` to `e6454e3` (#5961) via dependabot[bot] (@dependabot[bot])
+* Trigger the RC app upload when releasing a SDK version (#4853) via Antonio Pallares (@ajpallares)
+* Remove compiler flag (#5943) via Pol Miro (@polmiro)
+* Added Emerge binary size analysis lane in Fastlane using new barebones test app (#5941) via Rick (@rickvdl)
+
 ## 5.51.1
 ## RevenueCat SDK
 ### 🐞 Bugfixes
@@ -2058,6 +2105,14 @@ or if using the modifier:
 The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
 See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
+
+## 4.44.2
+## RevenueCat SDK
+### 🐞 Bugfixes
+* [v4] Fix HTTP request deduplication being non-deterministic on cache keys (#5976) via Rick (@rickvdl)
+
+### 🔄 Other Changes
+* [v4] Remove brew tap of unused repository in CircleCI config (#5977) via Rick (@rickvdl)
 
 ## 4.44.1
 ## RevenueCat SDK

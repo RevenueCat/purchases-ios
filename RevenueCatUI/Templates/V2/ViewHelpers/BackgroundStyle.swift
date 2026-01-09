@@ -93,6 +93,12 @@ fileprivate extension View {
                     }
                     .edgesIgnoringSafeArea(.all)
                 }
+                // Enforces image clipping to the exact bounds of the view where .clipped does not.
+                // This prevents the background image from influencing the parent view's size,
+                // which was causing the footer to enlarge when using "fill" fit mode with tall images.
+                .mask(self.overlay(content: {
+                    Color.black
+                }))
                 .edgesIgnoringSafeArea(.all)
             }
         case let .video(viewModel, colorOverlay):
