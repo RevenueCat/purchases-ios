@@ -38,7 +38,7 @@ enum DiagnosticsStrings {
     case failed_to_create_diagnostics_file_url
     case failed_to_initialize_file_handler(error: Error)
     case failed_to_delete_old_diagnostics_file(error: Error)
-    case failed_to_serialize_diagnostic_event
+    case failed_to_serialize_diagnostic_event(error: Error)
 
     case failed_diagnostics_sync_more_than_max_retries
 
