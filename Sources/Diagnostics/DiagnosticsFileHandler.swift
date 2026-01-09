@@ -67,7 +67,6 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
     #if DEBUG
     /// Only used in testing. 
     init(_ fileHandler: FileHandlerType) {
-        assert(!(fileHandler is FileHandler), "This init is only meant for testing. Use the regular init instead.")
         self.fileHandler = fileHandler
     }
     #endif
