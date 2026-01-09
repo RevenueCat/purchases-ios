@@ -60,7 +60,7 @@ class DeviceCache {
         userDefaults.write { defaults in
             defaults.removeObject(forKey: key)
         }
-        return self.largeItemCache.value(forKey: key)
+        return self.largeItemCache.value(forKey: key.rawValue)
     }
 
     // MARK: - appUserID
@@ -105,7 +105,7 @@ class DeviceCache {
         }
 
         // Clear offerings cache from large item cache
-        self.largeItemCache.removeObject(forKey: CacheKey.offerings(oldAppUserID))
+        self.largeItemCache.removeObject(forKey: CacheKey.offerings(oldAppUserID).rawValue)
     }
 
     // MARK: - CustomerInfo
@@ -170,7 +170,7 @@ class DeviceCache {
         // For the cache we need the preferred locales that were used in the request.
         self.cacheInMemory(offerings: offerings)
         self.offeringsCachePreferredLocales = preferredLocales
-        self.largeItemCache.set(codable: offerings.contents, forKey: CacheKey.offerings(appUserID))
+        self.largeItemCache.set(codable: offerings.contents, forKey: CacheKey.offerings(appUserID).rawValue)
     }
 
     func cacheInMemory(offerings: Offerings) {
@@ -180,7 +180,7 @@ class DeviceCache {
     func clearOfferingsCache(appUserID: String) {
         self.offeringsCachedObject.clearCache()
         self.offeringsCachePreferredLocales = []
-        self.largeItemCache.removeObject(forKey: CacheKey.offerings(appUserID))
+        self.largeItemCache.removeObject(forKey: CacheKey.offerings(appUserID).rawValue)
     }
 
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
@@ -349,7 +349,7 @@ class DeviceCache {
     func store(productEntitlementMapping: ProductEntitlementMapping) {
         if self.largeItemCache.set(
             codable: productEntitlementMapping,
-            forKey: CacheKeys.productEntitlementMapping
+            forKey: CacheKeys.productEntitlementMapping.rawValue
         ) {
             self.userDefaults.write {
                 $0.set(Date(), forKey: CacheKeys.productEntitlementMappingLastUpdated)
