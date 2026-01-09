@@ -23,11 +23,12 @@ import UIKit
 
 /// A view controller for displaying the paywall for an `Offering`.
 ///
-/// - Note: This view controller sets itself as the `presentationController?.delegate` to support
-///   exit offers (intercepting swipe-to-dismiss gestures). If you have an existing presentation
-///   controller delegate, it will be preserved and all delegate methods will be forwarded to it
-///   after exit offer handling. When an exit offer is available, swipe-to-dismiss will be blocked
-///   and the exit offer paywall will be presented instead.
+/// - Note: When an exit offer is available for the current offering, this view controller
+///   temporarily sets itself as the `presentationController?.delegate` to intercept swipe-to-dismiss
+///   gestures. If you have an existing presentation controller delegate, it will be preserved and
+///   all delegate methods will be forwarded to it after exit offer handling. When the user attempts
+///   to dismiss, the exit offer paywall will be presented instead. The original delegate is restored
+///   when the exit offer is no longer applicable.
 ///
 /// - Seealso: ``PaywallView`` for `SwiftUI`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
@@ -52,7 +53,28 @@ public class PaywallViewController: UIViewController {
     // MARK: - Exit Offer State
 
     /// The prefetched exit offer, loaded while the main paywall is showing.
-    private var exitOfferOffering: Offering?
+    /// When set, we take over the presentation controller delegate to intercept swipe-to-dismiss.
+    /// When cleared, we restore the original delegate.
+    ///
+    /// Note: The delegate setup in `didSet` handles the case where fetch completes AFTER presentation
+    /// (presentationController is available). The `viewWillAppear` handles the case where fetch
+    /// completes BEFORE presentation (presentationController was nil when didSet fired).
+    private var exitOfferOffering: Offering? {
+        didSet {
+            if exitOfferOffering != nil && oldValue == nil {
+                // Exit offer became available - take over the presentation controller delegate.
+                // This may be nil if we're not yet presented; viewWillAppear handles that case.
+                if self.presentationController != nil {
+                    self.originalPresentationControllerDelegate = self.presentationController?.delegate
+                    self.presentationController?.delegate = self
+                }
+            } else if exitOfferOffering == nil && oldValue != nil {
+                // Exit offer was cleared - restore the original delegate
+                self.presentationController?.delegate = self.originalPresentationControllerDelegate
+                self.originalPresentationControllerDelegate = nil
+            }
+        }
+    }
 
     /// Whether we're currently showing an exit offer (to prevent multiple presentations).
     private var isShowingExitOffer: Bool = false
@@ -228,11 +250,14 @@ public class PaywallViewController: UIViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        // Store any existing delegate before we take over, so we can forward calls to it
-        self.originalPresentationControllerDelegate = self.presentationController?.delegate
-
-        // Set ourselves as the presentation controller delegate to intercept swipe dismiss for exit offers
-        self.presentationController?.delegate = self
+        // Handle the case where exit offer fetch completed before presentation.
+        // At viewDidLoad, presentationController is nil (VC not yet presented).
+        // If the fetch was fast (e.g., cached), didSet couldn't set up the delegate.
+        // Now that we're being presented, presentationController is available.
+        if self.exitOfferOffering != nil && self.presentationController?.delegate !== self {
+            self.originalPresentationControllerDelegate = self.presentationController?.delegate
+            self.presentationController?.delegate = self
+        }
     }
 
     public override func viewDidDisappear(_ animated: Bool) {
@@ -430,9 +455,9 @@ public class PaywallViewController: UIViewController {
 
 // MARK: - UIAdaptivePresentationControllerDelegate
 //
-// PaywallViewController sets itself as the presentationController's delegate to intercept
-// swipe-to-dismiss gestures for exit offer support. If a delegate was already set before
-// viewWillAppear, we store it and forward all calls to it after handling our exit offer logic.
+// PaywallViewController sets itself as the presentationController's delegate ONLY when an exit
+// offer is available (see `exitOfferOffering` didSet). This minimizes interference with any
+// existing delegate. When the exit offer is cleared, the original delegate is restored.
 //
 // Note on `presentationControllerShouldDismiss`:
 // - If the original delegate returns `false`, we respect that and block dismiss.
