@@ -115,9 +115,9 @@ final class PurchaseHandler: ObservableObject {
 
     private var eventData: PaywallEvent.Data?
 
-    /// Whether an exit offer is pending to be shown.
-    /// When set, `trackPaywallClose()` will preserve `eventData` so exit offer tracking can use it.
-    private(set) var hasPendingExitOffer: Bool = false
+    /// Whether the close event has already been tracked for the current session.
+    /// Used to prevent duplicate close tracking from both dismiss handlers and onDisappear.
+    private var hasTrackedClose: Bool = false
 
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
@@ -210,11 +210,7 @@ final class PurchaseHandler: ObservableObject {
         self.sessionPurchaseResult = nil
         self.purchaseResult = nil
         self.eventData = nil
-        self.hasPendingExitOffer = false
-    }
-
-    func setPendingExitOffer(_ hasPending: Bool) {
-        self.hasPendingExitOffer = hasPending
+        self.hasTrackedClose = false
     }
 
 }
@@ -431,22 +427,19 @@ extension PurchaseHandler {
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.eventData = eventData
+        self.hasTrackedClose = false
         self.track(.impression(.init(), eventData))
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallClose() -> Bool {
-        guard let data = self.eventData else {
-            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+        guard let data = self.eventData, !self.hasTrackedClose else {
             return false
         }
 
         self.track(.close(.init(), data))
-
-        if !self.hasPendingExitOffer {
-            self.eventData = nil
-        }
+        self.hasTrackedClose = true
         return true
     }
 
@@ -479,7 +472,6 @@ extension PurchaseHandler {
             exitOfferingIdentifier: exitOfferingIdentifier
         )
         self.track(.exitOffer(.init(), data, exitOfferData))
-        self.hasPendingExitOffer = false
         return true
     }
 

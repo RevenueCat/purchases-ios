@@ -662,7 +662,6 @@ private struct PresentingPaywallModifier: ViewModifier {
         .task {
             guard let offering = await self.content.resolveOffering() else { return }
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
-            self.purchaseHandler.setPendingExitOffer(self.exitOfferOffering != nil)
         }
     }
 
@@ -689,6 +688,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         guard self.presentedExitOffer == nil else { return }
 
         guard !purchaseHandler.hasPurchasedInSession else {
+            self.purchaseHandler.trackPaywallClose()
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
             return
@@ -698,10 +698,13 @@ private struct PresentingPaywallModifier: ViewModifier {
         if let purchaseResult = self.purchaseHandler.sessionPurchaseResult,
            !purchaseResult.userCancelled,
            !self.shouldDisplay(purchaseResult.customerInfo) {
+            self.purchaseHandler.trackPaywallClose()
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
             return
         }
+
+        self.purchaseHandler.trackPaywallClose()
 
         if let exitOffering = self.exitOfferOffering {
             Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
@@ -917,7 +920,6 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .task {
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
-            self.purchaseHandler.setPendingExitOffer(self.exitOfferOffering != nil)
         }
     }
 
@@ -973,6 +975,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         guard self.presentedExitOffer == nil else { return }
 
         guard !self.purchaseHandler.hasPurchasedInSession else {
+            self.purchaseHandler.trackPaywallClose()
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
             return
@@ -983,6 +986,8 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             self.onDismiss?()
             return
         }
+
+        self.purchaseHandler.trackPaywallClose()
 
         if let exitOffering = self.exitOfferOffering {
             Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))

@@ -379,6 +379,12 @@ public class PaywallViewController: UIViewController {
         self.dismiss(animated: true) { [weak self, weak presenter] in
             guard let self = self, let presenter = presenter else { return }
 
+            // Track exit offer after main paywall close has been tracked (in onDisappear)
+            self.purchaseHandler.trackExitOffer(
+                exitOfferType: .dismiss,
+                exitOfferingIdentifier: offering.identifier
+            )
+
             let exitOfferVC = PaywallViewController(
                 offering: offering,
                 fonts: fonts,
