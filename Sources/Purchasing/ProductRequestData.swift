@@ -37,7 +37,7 @@ struct ProductRequestData {
     let productIdentifier: String
     let paymentMode: StoreProductDiscount.PaymentMode?
     let currencyCode: String?
-    let storefront: StorefrontType?
+    let storeCountry: String?
     let price: Decimal
     let normalDuration: String?
     let introDuration: String?
@@ -49,7 +49,7 @@ struct ProductRequestData {
     var cacheKey: String {
         var key =
         """
-        \(productIdentifier)-\(price)-\(currencyCode ?? "")-\(storefront?.countryCode ?? "")-\
+        \(productIdentifier)-\(price)-\(currencyCode ?? "")-\(storeCountry ?? "")-\
         \(paymentMode?.rawValue ?? -1)-\(introPrice ?? 0)-\(subscriptionGroup ?? "")-\(normalDuration ?? "")-\
         \(introDuration ?? "")-\(introDurationType?.rawValue ?? -1)
         """
@@ -73,7 +73,7 @@ extension ProductRequestData: Encodable {
         case productIdentifier = "product_id"
         case paymentMode = "payment_mode"
         case currencyCode = "currency"
-        case storefront = "store_country"
+        case storeCountry = "store_country"
         case price
         case normalDuration = "normal_duration"
         case introDuration = "intro_duration"
@@ -93,7 +93,7 @@ extension ProductRequestData: Encodable {
 
         try container.encodeIfPresent(self.paymentMode, forKey: .paymentMode)
         try container.encode(self.currencyCode, forKey: .currencyCode)
-        try container.encode(self.storefront?.countryCode, forKey: .storefront)
+        try container.encode(self.storeCountry, forKey: .storeCountry)
         try container.encode((self.price as NSDecimalNumber).description, forKey: .price)
         try container.encodeIfPresent(self.subscriptionGroup, forKey: .subscriptionGroup)
         try container.encodeIfPresent(self.discounts, forKey: .discounts)

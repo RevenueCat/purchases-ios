@@ -71,7 +71,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
                 appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: [attribute1.key: attribute1],
-                storefront: nil,
+                storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
             productData: nil,
@@ -86,7 +86,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
                 appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: [attribute2.key: attribute2],
-                storefront: nil,
+                storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
             productData: nil,
@@ -140,7 +140,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
                 appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: [attribute1.key: attribute1],
-                storefront: nil,
+                storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
             productData: nil,
@@ -155,7 +155,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
                 appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: [attribute2.key: attribute2],
-                storefront: nil,
+                storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
             productData: nil,
