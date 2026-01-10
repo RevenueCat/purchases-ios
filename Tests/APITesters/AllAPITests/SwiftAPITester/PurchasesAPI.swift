@@ -386,6 +386,28 @@ func checkWebPurchaseRedemptionResult(result: WebPurchaseRedemptionResult) -> Bo
     }
 }
 
+#if canImport(UIKit)
+func checkPurchaseParamBuilderUIKitAPIs(
+    builder: PurchaseParams.Builder,
+    uiScene: UIScene
+) {
+    if #available(iOS 17.0, macCatalyst 15.0, tvOS 17.0, visionOS 1.0, *) {
+        let builder: PurchaseParams.Builder = builder.with(confirmInScene: uiScene)
+    }
+}
+#endif
+
+#if canImport(AppKit)
+func checkPurchaseParamBuilderAppKitAPIs(
+    builder: PurchaseParams.Builder,
+    nsWindow: NSWindow
+) {
+    if #available(macOS 15.2, *) {
+        let builder: PurchaseParams.Builder = builder.with(confirmInWindow: nsWindow)
+    }
+}
+#endif
+
 func checkNonAsyncMethods(_ purchases: Purchases) {
     let webPurchaseRedemption: WebPurchaseRedemption! = nil
     let redemptionCompletion: ((CustomerInfo?, PublicError?) -> Void)! = nil
