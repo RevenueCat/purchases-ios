@@ -169,6 +169,7 @@ struct Template5View: TemplateViewType {
             .font(self.font(for: .largeTitle).bold())
             .defaultHorizontalPadding()
             .matchedGeometryEffect(id: Geometry.title, in: self.namespace)
+            .accessibilityAddTraits(.isHeader)
     }
 
     @ViewBuilder
