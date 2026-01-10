@@ -64,4 +64,7 @@ final class SimulatedStoreProductsManager: ProductsManagerType {
     // This class does not implement caching.
     // See `CachingProductsManager`.
     func clearCache() { }
+
+    // todo rick: implement?
+    func updatePriceFormattingRuleSet(_ ruleSet: PriceFormattingRuleSet?) { }
 }

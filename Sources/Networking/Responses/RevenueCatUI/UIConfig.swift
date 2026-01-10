@@ -123,13 +123,10 @@ public struct UIConfig: Codable, Equatable, Sendable {
         self.localizations = localizations
         self.variableConfig = variableConfig
     }
-
 }
 
 #else
 
-public struct UIConfig: Codable, Equatable, Sendable {
-
-}
+public struct UIConfig: Codable, Equatable, Sendable {}
 
 #endif

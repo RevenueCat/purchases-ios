@@ -15,12 +15,16 @@ import StoreKit
 
 internal struct SK1StoreProduct: StoreProductType {
 
-    init(sk1Product: SK1Product) {
+    init(
+        sk1Product: SK1Product,
+        priceFormatterProvider: PriceFormatterProvider = .init(priceFormattingRuleSetProvider: nil)
+    ) {
         self.underlyingSK1Product = sk1Product
+        self.priceFormatterProvider = priceFormatterProvider
     }
 
     let underlyingSK1Product: SK1Product
-    private let priceFormatterProvider: PriceFormatterProvider = .init()
+    private let priceFormatterProvider: PriceFormatterProvider
 
     var productCategory: StoreProduct.ProductCategory {
         guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *) else {
@@ -71,12 +75,12 @@ internal struct SK1StoreProduct: StoreProductType {
 
     var introductoryDiscount: StoreProductDiscount? {
         return self.underlyingSK1Product.introductoryPrice
-            .flatMap(StoreProductDiscount.init)
+            .flatMap { StoreProductDiscount(sk1Discount: $0, priceFormatterProvider: self.priceFormatterProvider) }
     }
 
     var discounts: [StoreProductDiscount] {
         return self.underlyingSK1Product.discounts
-            .compactMap(StoreProductDiscount.init)
+            .compactMap { StoreProductDiscount(sk1Discount: $0, priceFormatterProvider: self.priceFormatterProvider) }
     }
 
 }

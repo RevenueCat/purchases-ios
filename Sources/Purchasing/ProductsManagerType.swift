@@ -40,4 +40,9 @@ protocol ProductsManagerType: Sendable {
 
     var requestTimeout: TimeInterval { get }
 
+    /// Updates the ProductsManager with the price formatting ruleset to use when formatting
+    /// product prices.
+    /// - Parameter ruleSet: The price formatting rule set to use, or `nil` to clear it
+    func updatePriceFormattingRuleSet(_ ruleSet: PriceFormattingRuleSet?)
+
 }

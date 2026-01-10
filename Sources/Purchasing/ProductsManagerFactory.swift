@@ -21,16 +21,33 @@ enum ProductsManagerFactory {
                               systemInfo: SystemInfo,
                               backend: Backend,
                               deviceCache: DeviceCache,
-                              requestTimeout: TimeInterval) -> ProductsManagerType {
+                              requestTimeout: TimeInterval
+    ) -> ProductsManagerType {
             if apiKeyValidationResult == .simulatedStore {
                 return SimulatedStoreProductsManager(backend: backend,
                                                      deviceCache: deviceCache,
                                                      requestTimeout: requestTimeout)
             } else {
-                return ProductsManager(productsRequestFactory: ProductsRequestFactory(),
-                                       diagnosticsTracker: diagnosticsTracker,
-                                       systemInfo: systemInfo,
-                                       requestTimeout: requestTimeout)
+                // Get the ruleset from cached offerings if available
+                var cachedRuleSet: PriceFormattingRuleSet?
+                if let storefrontCountryCode = systemInfo.storefront?.countryCode {
+                    cachedRuleSet = deviceCache.cachedOfferings?.response.config?
+                        .priceFormattingRuleSets[storefrontCountryCode]
+                }
+
+                // Create a provider initialized with the cached ruleset
+                // (can be updated later when offerings are received)
+                let priceFormattingRuleSetProvider = PriceFormattingRuleSetProvider(
+                    priceFormattingRuleSet: cachedRuleSet
+                )
+
+                return ProductsManager(
+                    productsRequestFactory: ProductsRequestFactory(),
+                    diagnosticsTracker: diagnosticsTracker,
+                    systemInfo: systemInfo,
+                    requestTimeout: requestTimeout,
+                    priceFormattingRuleSetProvider: priceFormattingRuleSetProvider
+                )
             }
     }
 

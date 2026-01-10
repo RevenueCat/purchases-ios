@@ -308,8 +308,21 @@ extension StoreProduct {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    public convenience init(sk2Product: SK2Product) {
-        self.init(SK2StoreProduct(sk2Product: sk2Product))
+    public convenience init(
+        sk2Product: SK2Product
+    ) {
+        self.init(SK2StoreProduct(
+            sk2Product: sk2Product,
+            priceFormatterProvider: .init(priceFormattingRuleSetProvider: nil))
+        )
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    convenience init(
+        sk2Product: SK2Product,
+        priceFormatterProvider: PriceFormatterProvider
+    ) {
+        self.init(SK2StoreProduct(sk2Product: sk2Product, priceFormatterProvider: priceFormatterProvider))
     }
 
     /// Returns the `SKProduct` if this `StoreProduct` represents a `StoreKit.SKProduct`.
