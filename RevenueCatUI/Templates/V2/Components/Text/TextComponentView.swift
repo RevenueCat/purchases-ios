@@ -40,6 +40,11 @@ struct TextComponentView: View {
     @Environment(\.countdownTime)
     private var countdownTime: CountdownTime?
 
+    // Observing dynamicTypeSize triggers view rebuilds when Dynamic Type settings change,
+    // which causes fonts to be recreated with the correct scaled size.
+    @Environment(\.dynamicTypeSize)
+    private var dynamicTypeSize
+
     private let viewModel: TextComponentViewModel
 
     internal init(viewModel: TextComponentViewModel) {
