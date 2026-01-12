@@ -45,6 +45,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
 
     private let fileHandler: FileHandlerType
     private var diagnosticsFileExistedOnInit = false
+    private var didDeleteOldDiagnosticsFile = false
     private let fileManager = FileManager.default
 
     init?() {
@@ -183,7 +184,7 @@ private extension DiagnosticsFileHandler {
      We'll try to delete it if the new file did not exist yet.
      */
     private func deleteOldDiagnosticsFileIfNeeded() {
-        guard !diagnosticsFileExistedOnInit else { return }
+        guard !diagnosticsFileExistedOnInit && !didDeleteOldDiagnosticsFile else { return }
 
         guard let oldDiagnosticsDirectoryURL = Self.oldDiagnosticsDirectoryURL,
                 let oldDiagnosticsFileURL = Self.oldDiagnosticsFileURL,
@@ -199,6 +200,7 @@ private extension DiagnosticsFileHandler {
             if let contents = contents, contents.isEmpty {
                 try? FileManager.default.removeItem(at: oldDiagnosticsDirectoryURL)
             }
+            didDeleteOldDiagnosticsFile = true
         } catch {
             Logger.error(Strings.diagnostics.failed_to_delete_old_diagnostics_file(error: error))
         }
