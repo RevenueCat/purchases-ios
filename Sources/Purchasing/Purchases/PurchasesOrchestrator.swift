@@ -1696,7 +1696,8 @@ private extension PurchasesOrchestrator {
                     self.backend.post(receipt: .receipt(receiptData),
                                       productData: productRequestData,
                                       transactionData: transactionData,
-                                      observerMode: self.observerMode) { result in
+                                      observerMode: self.observerMode,
+                                      originalPurchaseCompletedBy: nil) { result in
                         self.handleReceiptPost(result: result,
                                                transactionData: transactionData,
                                                subscriberAttributes: unsyncedAttributes,
@@ -1782,6 +1783,7 @@ private extension PurchasesOrchestrator {
                                   productData: nil,
                                   transactionData: transactionData,
                                   observerMode: self.observerMode,
+                                  originalPurchaseCompletedBy: nil,
                                   appTransaction: appTransactionJWS) { result in
 
                     self.handleReceiptPost(result: result,
@@ -1808,6 +1810,7 @@ private extension PurchasesOrchestrator {
                                   productData: productRequestData,
                                   transactionData: transactionData,
                                   observerMode: self.observerMode,
+                                  originalPurchaseCompletedBy: nil,
                                   appTransaction: appTransactionJWS) { result in
                     self.handleReceiptPost(result: result,
                                            transactionData: transactionData,

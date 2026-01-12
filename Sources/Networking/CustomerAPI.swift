@@ -92,6 +92,7 @@ final class CustomerAPI {
               productData: ProductRequestData?,
               transactionData: PurchasedTransactionData,
               observerMode: Bool,
+              originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
               appTransaction: String?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         var subscriberAttributesToPost: SubscriberAttribute.Dictionary?
@@ -114,6 +115,7 @@ final class CustomerAPI {
             productData: productData,
             receipt: receipt,
             observerMode: observerMode,
+            purchaseCompletedBy: originalPurchaseCompletedBy,
             testReceiptIdentifier: self.backendConfig.systemInfo.testReceiptIdentifier,
             appTransaction: appTransaction
         )

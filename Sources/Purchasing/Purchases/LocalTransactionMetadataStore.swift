@@ -18,7 +18,7 @@ import Foundation
 protocol LocalTransactionMetadataStoreType: Sendable {
 
     /// Store transaction metadata for a given transaction ID.
-    func storeMetadata(_ metadata: LocalTransactionMetadata, forTransactionID transactionId: String)
+    func storeMetadata(_ metadata: LocalTransactionMetadata, forTransactionId transactionId: String)
 
     /// Retrieve transaction metadata for a given transaction ID.
     func getMetadata(forTransactionId transactionId: String) -> LocalTransactionMetadata?
@@ -42,7 +42,7 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
     }
 
     /// Store transaction metadata for a given transaction ID.
-    func storeMetadata(_ metadata: LocalTransactionMetadata, forTransactionID transactionId: String) {
+    func storeMetadata(_ metadata: LocalTransactionMetadata, forTransactionId transactionId: String) {
         guard self.getMetadata(forTransactionId: transactionId) == nil else {
             Logger.debug(
                 TransactionMetadataStrings.metadata_already_exists_for_transaction(

@@ -64,6 +64,7 @@ final class TransactionPoster: TransactionPosterType {
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
     private let operationDispatcher: OperationDispatcher
+    private let localTransactionMetadataStore: LocalTransactionMetadataStoreType
 
     init(
         productsManager: ProductsManagerType,
@@ -72,7 +73,8 @@ final class TransactionPoster: TransactionPosterType {
         backend: Backend,
         paymentQueueWrapper: EitherPaymentQueueWrapper,
         systemInfo: SystemInfo,
-        operationDispatcher: OperationDispatcher
+        operationDispatcher: OperationDispatcher,
+        localTransactionMetadataStore: LocalTransactionMetadataStoreType
     ) {
         self.productsManager = productsManager
         self.receiptFetcher = receiptFetcher
@@ -81,6 +83,7 @@ final class TransactionPoster: TransactionPosterType {
         self.paymentQueueWrapper = paymentQueueWrapper
         self.systemInfo = systemInfo
         self.operationDispatcher = operationDispatcher
+        self.localTransactionMetadataStore = localTransactionMetadataStore
     }
 
     func handlePurchasedTransaction(_ transaction: StoreTransactionType,
@@ -238,24 +241,55 @@ private extension TransactionPoster {
     }
 
     // swiftlint:disable function_parameter_count
-    func postReceipt(transaction: StoreTransactionType,
-                     purchasedTransactionData: PurchasedTransactionData,
-                     receipt: EncodedAppleReceipt,
-                     product: StoreProduct?,
-                     appTransaction: String?,
-                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        let productData = product.map {
+    private func postReceipt(transaction: StoreTransactionType,
+                             purchasedTransactionData: PurchasedTransactionData,
+                             receipt: EncodedAppleReceipt,
+                             product: StoreProduct?,
+                             appTransaction: String?,
+                             completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        let storedTransactionMetadata = self.localTransactionMetadataStore.getMetadata(forTransactionId: transaction.transactionIdentifier)
+        let shouldStoreMetadata = storedTransactionMetadata == nil && purchasedTransactionData.source.initiationSource == .purchase
+        let shouldClearMetadataOnSuccess = storedTransactionMetadata != nil || shouldStoreMetadata
+
+        let effectiveProductData = storedTransactionMetadata?.productData ?? product.map {
             ProductRequestData(with: $0, storeCountry: purchasedTransactionData.storeCountry)
+        }
+        // TODO: Merge metadata if both exist?
+        let effectiveTransactionData = storedTransactionMetadata?.transactionData ?? purchasedTransactionData
+        let effectivePurchasesAreCompletedBy = storedTransactionMetadata?.originalPurchasesAreCompletedBy ??
+        self.purchasesAreCompletedBy
+
+        if shouldStoreMetadata {
+            let metadataToStore = LocalTransactionMetadata(
+                productData: effectiveProductData,
+                transactionData: effectiveTransactionData,
+                originalPurchasesAreCompletedBy: effectivePurchasesAreCompletedBy
+            )
+            self.localTransactionMetadataStore.storeMetadata(metadataToStore,
+                                                             forTransactionId: transaction.transactionIdentifier)
         }
 
         self.backend.post(receipt: receipt,
-                          productData: productData,
-                          transactionData: purchasedTransactionData,
+                          productData: effectiveProductData,
+                          transactionData: effectiveTransactionData,
                           observerMode: self.observerMode,
+                          originalPurchaseCompletedBy: effectivePurchasesAreCompletedBy,
                           appTransaction: appTransaction) { result in
+            if shouldClearMetadataOnSuccess {
+                switch result {
+                case .success:
+                    self.localTransactionMetadataStore
+                        .removeMetadata(forTransactionId: transaction.transactionIdentifier)
+                case let .failure(error) where error.finishable:
+                    self.localTransactionMetadataStore
+                        .removeMetadata(forTransactionId: transaction.transactionIdentifier)
+                default:
+                    break
+                }
+            }
             self.handleReceiptPost(withTransaction: transaction,
                                    result: result.map { ($0, product) },
-                                   subscriberAttributes: purchasedTransactionData.unsyncedAttributes,
+                                   subscriberAttributes: effectiveTransactionData.unsyncedAttributes,
                                    completion: completion)
         }
     }
@@ -308,6 +342,10 @@ private extension TransactionPoster {
 
     var observerMode: Bool {
         self.systemInfo.observerMode
+    }
+
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy {
+        return self.observerMode ? .myApp : .revenueCat
     }
 
     var finishTransactions: Bool {
