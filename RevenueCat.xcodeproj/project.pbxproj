@@ -944,6 +944,8 @@
 		757E73E42F101EAF0066DCDC /* LocalTransactionMetadataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757E73E32F101EAF0066DCDC /* LocalTransactionMetadataStore.swift */; };
 		7581A92D2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7581A92C2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift */; };
 		758593482E37F77700B8E6CE /* WebBillingProductsDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 758593472E37F77700B8E6CE /* WebBillingProductsDecodingTests.swift */; };
+		75902AFA2F156865005B712A /* MockLocalTransactionMetadataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75902AF92F156865005B712A /* MockLocalTransactionMetadataStore.swift */; };
+		75902AFB2F156865005B712A /* MockLocalTransactionMetadataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75902AF92F156865005B712A /* MockLocalTransactionMetadataStore.swift */; };
 		75909EAB2E74286E009ABBA7 /* UIConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75909EAA2E74286E009ABBA7 /* UIConfigProviderTests.swift */; };
 		75A0E7902E3D1FCF00A60BD5 /* SimulatedStorePurchaseHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0E78F2E3D1FCF00A60BD5 /* SimulatedStorePurchaseHandlerTests.swift */; };
 		75A0E7922E3D205C00A60BD5 /* MockTestStorePurchaseUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0E7912E3D205C00A60BD5 /* MockTestStorePurchaseUI.swift */; };
@@ -2449,6 +2451,7 @@
 		757E73E32F101EAF0066DCDC /* LocalTransactionMetadataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTransactionMetadataStore.swift; sourceTree = "<group>"; };
 		7581A92C2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTestStorePurchaseHandler.swift; sourceTree = "<group>"; };
 		758593472E37F77700B8E6CE /* WebBillingProductsDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBillingProductsDecodingTests.swift; sourceTree = "<group>"; };
+		75902AF92F156865005B712A /* MockLocalTransactionMetadataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLocalTransactionMetadataStore.swift; sourceTree = "<group>"; };
 		75909EAA2E74286E009ABBA7 /* UIConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigProviderTests.swift; sourceTree = "<group>"; };
 		75A0E78F2E3D1FCF00A60BD5 /* SimulatedStorePurchaseHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedStorePurchaseHandlerTests.swift; sourceTree = "<group>"; };
 		75A0E7912E3D205C00A60BD5 /* MockTestStorePurchaseUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTestStorePurchaseUI.swift; sourceTree = "<group>"; };
@@ -4008,6 +4011,7 @@
 				351B517126D44EF300BD2BD7 /* MockInMemoryCachedOfferings.swift */,
 				4FFFE6C92AA946A700B2955C /* MockInternalAPI.swift */,
 				351B515B26D44B7900BD2BD7 /* MockIntroEligibilityCalculator.swift */,
+				75902AF92F156865005B712A /* MockLocalTransactionMetadataStore.swift */,
 				35E840CD2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift */,
 				351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */,
 				B3CAFF0F285CE8E30048A994 /* MockOfferingsAPI.swift */,
@@ -6782,6 +6786,7 @@
 				57DE80BF2807705F008D6C6F /* XCTestCase+Extensions.swift in Sources */,
 				2D90F8CA26FD257A009B9142 /* MockStoreKit2TransactionListener.swift in Sources */,
 				35B745A82711001A00458D46 /* MockManageSubscriptionsHelper.swift in Sources */,
+				75902AFB2F156865005B712A /* MockLocalTransactionMetadataStore.swift in Sources */,
 				2D90F8B126FD1E52009B9142 /* BasePurchasesOrchestratorTests.swift in Sources */,
 				A563F589271E1DAD00246E0C /* MockBeginRefundRequestHelper.swift in Sources */,
 				57F3C10C29B7EAE90004FD7E /* MockUserDefaults.swift in Sources */,
@@ -7286,6 +7291,7 @@
 				4F5C05BF2A43A2C500651C7D /* LocaleExtensionsTests.swift in Sources */,
 				5766AAC9283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift in Sources */,
 				351B517426D44F4B00BD2BD7 /* MockPaymentDiscount.swift in Sources */,
+				75902AFA2F156865005B712A /* MockLocalTransactionMetadataStore.swift in Sources */,
 				57488B8B29CB756A0000EE7E /* ProductEntitlementMappingTests.swift in Sources */,
 				1D20E1D82EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */,
 				57ACB12428174B9F000DCC9F /* CustomerInfo+TestExtensions.swift in Sources */,
