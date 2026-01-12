@@ -749,7 +749,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         try await self.orchestrator.storeKit2TransactionListener(
             self.mockStoreKit2TransactionListener!,
-            updatedTransaction: transaction
+            updatedTransaction: transaction,
+            transactionSource: .updatesQueue
         )
 
         expect(transaction.finishInvoked) == true
@@ -775,7 +776,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         do {
             try await self.orchestrator.storeKit2TransactionListener(
                 self.mockStoreKit2TransactionListener!,
-                updatedTransaction: transaction
+                updatedTransaction: transaction,
+                transactionSource: .updatesQueue
             )
             fail("Expected error")
         } catch {
@@ -804,7 +806,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         try await self.orchestrator.storeKit2TransactionListener(
             self.mockStoreKit2TransactionListener!,
-            updatedTransaction: transaction
+            updatedTransaction: transaction,
+            transactionSource: .updatesQueue
         )
 
         expect(operations) == [
@@ -825,7 +828,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         try await self.orchestrator.storeKit2TransactionListener(
             self.mockStoreKit2TransactionListener!,
-            updatedTransaction: transaction
+            updatedTransaction: transaction,
+            transactionSource: .updatesQueue
         )
 
         expect(transaction.finishInvoked) == false
