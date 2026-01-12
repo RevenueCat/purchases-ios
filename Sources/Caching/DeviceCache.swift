@@ -16,7 +16,8 @@ import Foundation
 
 // swiftlint:disable file_length type_body_length
 class DeviceCache {
-    private static let defaultBasePath = "RevenueCat"
+    private static let defaultBasePath = "device-cache"
+    private static let oldDefaultBasePath = "RevenueCat"
 
     var cachedAppUserID: String? { return self._cachedAppUserID.value }
     var cachedLegacyAppUserID: String? { return self._cachedLegacyAppUserID.value }
@@ -33,7 +34,6 @@ class DeviceCache {
     private var userDefaultsObserver: NSObjectProtocol?
 
     private var offeringsCachePreferredLocales: [String] = []
-    private let cacheURL: URL?
 
     init(systemInfo: SystemInfo,
          userDefaults: UserDefaults,
@@ -44,8 +44,11 @@ class DeviceCache {
         self.userDefaults = .init(userDefaults: userDefaults)
         self._cachedAppUserID = .init(userDefaults.string(forKey: CacheKeys.appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults))
-        self.cacheURL = fileManager.createDocumentDirectoryIfNeeded(basePath: Self.defaultBasePath)
-        self.largeItemCache = .init(cache: fileManager, basePath: Self.defaultBasePath)
+        self.largeItemCache = .init(
+            cache: fileManager,
+            basePath: Self.defaultBasePath,
+            documentsDirectoryMigrationStrategy: .migrate(oldBasePath: Self.oldDefaultBasePath)
+        )
 
         Logger.verbose(Strings.purchase.device_cache_init(self))
     }
