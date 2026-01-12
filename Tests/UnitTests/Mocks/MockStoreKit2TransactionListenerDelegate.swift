@@ -19,6 +19,8 @@ final class MockStoreKit2TransactionListenerDelegate: StoreKit2TransactionListen
 
     var invokedTransactionUpdated: Bool { return self._invokedTransactionUpdated.value }
     var updatedTransactions: [StoreTransactionType] { return self._updatedTransactions.value }
+    var transactionSources: [StoreKit2TransactionSource] { return self._transactionSources.value }
+
     var fakeHandlingDelay: DispatchTimeInterval {
         get { return self._fakeHandlingDelay.value }
         set { self._fakeHandlingDelay.value = newValue }
@@ -29,6 +31,7 @@ final class MockStoreKit2TransactionListenerDelegate: StoreKit2TransactionListen
 
     private let _invokedTransactionUpdated: Atomic<Bool> = false
     private let _updatedTransactions: Atomic<[StoreTransactionType]> = .init([])
+    private let _transactionSources: Atomic<[StoreKit2TransactionSource]> = .init([])
 
     // Useful for detecting if this listener receives concurrent requests
     private let _fakeHandlingDelay: Atomic<DispatchTimeInterval> = .init(.never)
@@ -49,6 +52,7 @@ final class MockStoreKit2TransactionListenerDelegate: StoreKit2TransactionListen
 
         self._invokedTransactionUpdated.value = true
         self._updatedTransactions.value.append(transaction)
+        self._transactionSources.value.append(transactionSource)
 
         try await Task.sleep(nanoseconds: self.fakeHandlingDelay.nanoseconds)
     }
