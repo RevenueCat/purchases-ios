@@ -116,7 +116,6 @@ private struct ProductRequestDataEncodedWrapper: Sendable, Codable {
 }
 
 private struct PurchasedTransactionDataEncodedWrapper: Codable {
-    private let appUserId: String
     private let presentedPaywall: PaywallEvent?
     private let unsyncedAttributes: SubscriberAttribute.Dictionary?
     private let metadata: [String: String]?
@@ -131,7 +130,6 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
     private let targetingContextRuleId: String?
 
     init(purchasedTransactionData: PurchasedTransactionData) {
-        self.appUserId = purchasedTransactionData.appUserID
         self.presentedPaywall = purchasedTransactionData.presentedPaywall
         self.unsyncedAttributes = purchasedTransactionData.unsyncedAttributes
         self.metadata = purchasedTransactionData.metadata
@@ -146,7 +144,6 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
 
     var purchasedTransactionData: PurchasedTransactionData {
         return PurchasedTransactionData(
-            appUserID: self.appUserId,
             presentedOfferingContext: self.presentedOfferingContext,
             presentedPaywall: self.presentedPaywall,
             unsyncedAttributes: self.unsyncedAttributes,

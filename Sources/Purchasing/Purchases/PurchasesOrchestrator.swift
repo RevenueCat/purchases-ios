@@ -1410,7 +1410,6 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let subscriberAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
-            appUserID: self.appUserID,
             presentedOfferingContext: nil,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
@@ -1424,7 +1423,8 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let transaction = StoreTransaction.from(transaction: transaction)
         let result: Result<CustomerInfo, BackendError> = await self.transactionPoster.handlePurchasedTransaction(
             transaction,
-            data: transactionData
+            data: transactionData,
+            currentUserID: self.appUserID
         )
         
         if case let .success(customerInfo) = result {
@@ -1686,7 +1686,6 @@ private extension PurchasesOrchestrator {
 
                 self.createProductRequestData(with: receiptData) { productRequestData in
                     let transactionData: PurchasedTransactionData = .init(
-                        appUserID: currentAppUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: unsyncedAttributes,
                         storeCountry: productRequestData?.storeCountry,
@@ -1697,7 +1696,8 @@ private extension PurchasesOrchestrator {
                                       productData: productRequestData,
                                       transactionData: transactionData,
                                       observerMode: self.observerMode,
-                                      originalPurchaseCompletedBy: nil) { result in
+                                      originalPurchaseCompletedBy: nil,
+                                      appUserID: currentAppUserID) { result in
                         self.handleReceiptPost(result: result,
                                                transactionData: transactionData,
                                                subscriberAttributes: unsyncedAttributes,
@@ -1770,7 +1770,6 @@ private extension PurchasesOrchestrator {
                 }
 
                 let transactionData: PurchasedTransactionData = .init(
-                    appUserID: currentAppUserID,
                     presentedOfferingContext: nil,
                     unsyncedAttributes: unsyncedAttributes,
                     source: .init(
@@ -1784,7 +1783,8 @@ private extension PurchasesOrchestrator {
                                   transactionData: transactionData,
                                   observerMode: self.observerMode,
                                   originalPurchaseCompletedBy: nil,
-                                  appTransaction: appTransactionJWS) { result in
+                                  appTransaction: appTransactionJWS,
+                                  appUserID: currentAppUserID) { result in
 
                     self.handleReceiptPost(result: result,
                                            transactionData: transactionData,
@@ -1799,7 +1799,6 @@ private extension PurchasesOrchestrator {
 
             self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
                 let transactionData: PurchasedTransactionData = .init(
-                    appUserID: currentAppUserID,
                     presentedOfferingContext: nil,
                     unsyncedAttributes: unsyncedAttributes,
                     storeCountry: transaction.storefront?.countryCode,
@@ -1811,7 +1810,8 @@ private extension PurchasesOrchestrator {
                                   transactionData: transactionData,
                                   observerMode: self.observerMode,
                                   originalPurchaseCompletedBy: nil,
-                                  appTransaction: appTransactionJWS) { result in
+                                  appTransaction: appTransactionJWS,
+                                  appUserID: currentAppUserID) { result in
                     self.handleReceiptPost(result: result,
                                            transactionData: transactionData,
                                            subscriberAttributes: unsyncedAttributes,
@@ -1869,7 +1869,6 @@ private extension PurchasesOrchestrator {
         let unsyncedAttributes = self.unsyncedAttributes
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
-                appUserID: self.appUserID,
                 presentedOfferingContext: offeringContext,
                 presentedPaywall: paywall,
                 unsyncedAttributes: unsyncedAttributes,
@@ -1881,7 +1880,8 @@ private extension PurchasesOrchestrator {
 
             self.transactionPoster.handlePurchasedTransaction(
                 purchasedTransaction,
-                data: transactionData
+                data: transactionData,
+                currentUserID: self.appUserID
             ) { result in
 
                 self.handlePostReceiptResult(result,
@@ -2159,7 +2159,6 @@ extension PurchasesOrchestrator {
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
-            appUserID: self.appUserID,
             presentedOfferingContext: offeringContext,
             presentedPaywall: paywall,
             unsyncedAttributes: unsyncedAttributes,
@@ -2172,7 +2171,8 @@ extension PurchasesOrchestrator {
 
         let result = await self.transactionPoster.handlePurchasedTransaction(
             transaction,
-            data: transactionData
+            data: transactionData,
+            currentUserID: self.appUserID
         )
 
         self.handlePostReceiptResult(result,

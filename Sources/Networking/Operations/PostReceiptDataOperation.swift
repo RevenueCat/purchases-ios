@@ -172,6 +172,7 @@ extension PostReceiptDataOperation.PostData {
 
     init(
         transactionData data: PurchasedTransactionData,
+        appUserID: String,
         productData: ProductRequestData?,
         receipt: EncodedAppleReceipt,
         observerMode: Bool,
@@ -180,7 +181,7 @@ extension PostReceiptDataOperation.PostData {
         appTransaction: String?
     ) {
         self.init(
-            appUserID: data.appUserID,
+            appUserID: appUserID,
             receipt: receipt,
             isRestore: data.source.isRestore,
             productData: productData,
