@@ -1404,13 +1404,13 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
     func storeKit2TransactionListener(
         _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType,
-        transactionSource: StoreKit2TransactionListener.TransactionSource
+        transactionSource: StoreKit2TransactionSource
     ) async throws {
 
         let storefront = await self.storefront(from: transaction)
         let subscriberAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
-        
+
         let initiationSource: ProductRequestData.InitiationSource = {
             switch transactionSource {
             case .purchaseThroughSDK, .observerModePurchase:
@@ -1419,7 +1419,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
                 return .queue
             }
         }()
-        
+
         let transactionData: PurchasedTransactionData = .init(
             appUserID: self.appUserID,
             presentedOfferingContext: nil,

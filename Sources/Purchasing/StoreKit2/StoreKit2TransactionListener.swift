@@ -20,13 +20,24 @@ import Foundation
 import StoreKit
 #endif
 
+/// Describes the source of a StoreKit 2 transaction
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+enum StoreKit2TransactionSource: Sendable {
+    /// Transaction initiated through the SDK's purchase flow
+    case purchaseThroughSDK
+    /// Transaction detected from StoreKit's Transaction.updates queue
+    case updatesQueue
+    /// Transaction received in Observer Mode (through the recordPurchase method)
+    case observerModePurchase
+}
+
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 protocol StoreKit2TransactionListenerDelegate: AnyObject, Sendable {
 
     func storeKit2TransactionListener(
         _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType,
-        transactionSource: StoreKit2TransactionListener.TransactionSource
+        transactionSource: StoreKit2TransactionSource
     ) async throws
 
 }
@@ -41,7 +52,7 @@ protocol StoreKit2TransactionListenerType: Sendable {
     /// - Throws: ``PurchasesError`` if purchase was not completed successfully
     func handle(
         purchaseResult: StoreKit.Product.PurchaseResult,
-        transactionSource: StoreKit2TransactionListener.TransactionSource
+        transactionSource: StoreKit2TransactionSource
     ) async throws -> StoreKit2TransactionListener.ResultData
 
     func handleSK2ObserverModeTransaction(
@@ -59,16 +70,6 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
     /// Similar to ``PurchaseResultData`` but with an optional `CustomerInfo`
     typealias ResultData = (userCancelled: Bool, transaction: StoreTransaction?)
     typealias TransactionResult = StoreKit.VerificationResult<StoreKit.Transaction>
-    
-    /// Describes the source of a StoreKit 2 transaction
-    enum TransactionSource: Sendable {
-        /// Transaction initiated through the SDK's purchase flow
-        case purchaseThroughSDK
-        /// Transaction detected from StoreKit's Transaction.updates queue
-        case updatesQueue
-        /// Transaction received in Observer Mode (through the recordPurchase method)
-        case observerModePurchase
-    }
 
     private(set) var taskHandle: Task<Void, Never>?
 
@@ -134,7 +135,7 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
 
     func handle(
         purchaseResult: StoreKit.Product.PurchaseResult,
-        transactionSource: TransactionSource = .purchaseThroughSDK
+        transactionSource: StoreKit2TransactionSource = .purchaseThroughSDK
     ) async throws -> ResultData {
         switch purchaseResult {
         case let .success(verificationResult):
@@ -162,7 +163,7 @@ private extension StoreKit2TransactionListener {
     /// - Parameter transactionSource: The source of the transaction.
     func handle(
         transactionResult: TransactionResult,
-        transactionSource: TransactionSource
+        transactionSource: StoreKit2TransactionSource
     ) async throws -> StoreTransaction {
         switch transactionResult {
         case let .unverified(unverifiedTransaction, verificationError):

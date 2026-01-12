@@ -52,12 +52,12 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
     var invokedHandleCount = 0
     // `purchaseResult` can't be stored directly as a property.
     // See https://openradar.appspot.com/radar?id=4970535809187840
-    var invokedHandleParameters: (purchaseResult: Box<StoreKit.Product.PurchaseResult>, transactionSource: StoreKit2TransactionListener.TransactionSource)?
-    var invokedHandleParametersList = [(purchaseResult: Box<StoreKit.Product.PurchaseResult>, transactionSource: StoreKit2TransactionListener.TransactionSource)]()
+    var invokedHandleParameters: (purchaseResult: Box<StoreKit.Product.PurchaseResult>, transactionSource: StoreKit2TransactionSource)?
+    var invokedHandleParametersList = [(purchaseResult: Box<StoreKit.Product.PurchaseResult>, transactionSource: StoreKit2TransactionSource)]()
 
     func handle(
         purchaseResult: StoreKit.Product.PurchaseResult,
-        transactionSource: StoreKit2TransactionListener.TransactionSource = .purchaseThroughSDK
+        transactionSource: StoreKit2TransactionSource = .purchaseThroughSDK
     ) async throws -> StoreKit2TransactionListener.ResultData {
         self.invokedHandle = true
         self.invokedHandleCount += 1
