@@ -37,7 +37,8 @@ final class MockStoreKit2TransactionListenerDelegate: StoreKit2TransactionListen
 
     func storeKit2TransactionListener(
         _ listener: StoreKit2TransactionListenerType,
-        updatedTransaction transaction: StoreTransactionType
+        updatedTransaction transaction: StoreTransactionType,
+        transactionSource: StoreKit2TransactionListener.TransactionSource
     ) async throws {
         if self._wasHandlingRequest.value {
             self._receivedConcurrentRequest.value = true

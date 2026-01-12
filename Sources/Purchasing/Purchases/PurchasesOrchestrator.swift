@@ -768,7 +768,7 @@ final class PurchasesOrchestrator {
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
             // This detects if `Product.PurchaseResult.userCancelled` is true.
             let (userCancelled, transaction) = try await self.storeKit2TransactionListener
-                .handle(purchaseResult: result, fromTransactionUpdate: false)
+                .handle(purchaseResult: result, transactionSource: .purchaseThroughSDK)
 
             if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
                 throw ErrorUtils.purchaseCancelledError()
@@ -1403,12 +1403,23 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
     func storeKit2TransactionListener(
         _ listener: StoreKit2TransactionListenerType,
-        updatedTransaction transaction: StoreTransactionType
+        updatedTransaction transaction: StoreTransactionType,
+        transactionSource: StoreKit2TransactionListener.TransactionSource
     ) async throws {
 
         let storefront = await self.storefront(from: transaction)
         let subscriberAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
+        
+        let initiationSource: ProductRequestData.InitiationSource = {
+            switch transactionSource {
+            case .purchaseThroughSDK, .observerModePurchase:
+                return .purchase
+            case .updatesQueue:
+                return .queue
+            }
+        }()
+        
         let transactionData: PurchasedTransactionData = .init(
             appUserID: self.appUserID,
             presentedOfferingContext: nil,
@@ -1417,7 +1428,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             storefront: storefront,
             source: .init(
                 isRestore: self.allowSharingAppStoreAccount,
-                initiationSource: .queue
+                initiationSource: initiationSource
             )
         )
 

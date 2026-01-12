@@ -25,7 +25,8 @@ protocol StoreKit2TransactionListenerDelegate: AnyObject, Sendable {
 
     func storeKit2TransactionListener(
         _ listener: StoreKit2TransactionListenerType,
-        updatedTransaction transaction: StoreTransactionType
+        updatedTransaction transaction: StoreTransactionType,
+        transactionSource: StoreKit2TransactionListener.TransactionSource
     ) async throws
 
 }
@@ -38,10 +39,9 @@ protocol StoreKit2TransactionListenerType: Sendable {
     func set(delegate: StoreKit2TransactionListenerDelegate) async
 
     /// - Throws: ``PurchasesError`` if purchase was not completed successfully
-    /// - Parameter fromTransactionUpdate: `true` only for transactions detected outside of a manual purchase flow.
     func handle(
         purchaseResult: StoreKit.Product.PurchaseResult,
-        fromTransactionUpdate: Bool
+        transactionSource: StoreKit2TransactionListener.TransactionSource
     ) async throws -> StoreKit2TransactionListener.ResultData
 
     func handleSK2ObserverModeTransaction(
@@ -59,6 +59,16 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
     /// Similar to ``PurchaseResultData`` but with an optional `CustomerInfo`
     typealias ResultData = (userCancelled: Bool, transaction: StoreTransaction?)
     typealias TransactionResult = StoreKit.VerificationResult<StoreKit.Transaction>
+    
+    /// Describes the source of a StoreKit 2 transaction
+    enum TransactionSource: Sendable {
+        /// Transaction initiated through the SDK's purchase flow
+        case purchaseThroughSDK
+        /// Transaction detected from StoreKit's Transaction.updates queue
+        case updatesQueue
+        /// Transaction received in Observer Mode (through the recordPurchase method)
+        case observerModePurchase
+    }
 
     private(set) var taskHandle: Task<Void, Never>?
 
@@ -108,7 +118,7 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
                 // and get de-duped if they share the same cache key.
                 Task.detached {
                     do {
-                        _ = try await self.handle(transactionResult: result, fromTransactionUpdate: true)
+                        _ = try await self.handle(transactionResult: result, transactionSource: .updatesQueue)
                     } catch {
                         Logger.error(error.localizedDescription)
                     }
@@ -124,12 +134,12 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
 
     func handle(
         purchaseResult: StoreKit.Product.PurchaseResult,
-        fromTransactionUpdate: Bool = false
+        transactionSource: TransactionSource = .purchaseThroughSDK
     ) async throws -> ResultData {
         switch purchaseResult {
         case let .success(verificationResult):
             let transaction = try await self.handle(transactionResult: verificationResult,
-                                                    fromTransactionUpdate: fromTransactionUpdate)
+                                                    transactionSource: transactionSource)
             return (false, transaction)
         case .pending:
             throw ErrorUtils.paymentDeferredError()
@@ -149,10 +159,10 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
 private extension StoreKit2TransactionListener {
 
     /// - Throws: ``ErrorCode`` if the transaction fails to verify.
-    /// - Parameter fromTransactionUpdate: `true` only for transactions detected outside of a manual purchase flow.
+    /// - Parameter transactionSource: The source of the transaction.
     func handle(
         transactionResult: TransactionResult,
-        fromTransactionUpdate: Bool
+        transactionSource: TransactionSource
     ) async throws -> StoreTransaction {
         switch transactionResult {
         case let .unverified(unverifiedTransaction, verificationError):
@@ -167,7 +177,7 @@ private extension StoreKit2TransactionListener {
         case let .verified(verifiedTransaction):
             let transaction = StoreTransaction(sk2Transaction: verifiedTransaction,
                                                jwsRepresentation: transactionResult.jwsRepresentation)
-            if fromTransactionUpdate, let delegate = self.delegate {
+            if transactionSource != .purchaseThroughSDK, let delegate = self.delegate {
                 Logger.debug(Strings.purchase.sk2_transactions_update_received_transaction(
                     productID: verifiedTransaction.productID
                 ))
@@ -177,7 +187,8 @@ private extension StoreKit2TransactionListener {
 
                 try await delegate.storeKit2TransactionListener(
                     self,
-                    updatedTransaction: transaction
+                    updatedTransaction: transaction,
+                    transactionSource: transactionSource
                 )
             }
 
@@ -204,7 +215,8 @@ extension StoreKit2TransactionListener {
                                                         sk2Transaction: verifiedTransaction)
             try await delegate.storeKit2TransactionListener(
                 self,
-                updatedTransaction: transaction
+                updatedTransaction: transaction,
+                transactionSource: .observerModePurchase
             )
         }
     }

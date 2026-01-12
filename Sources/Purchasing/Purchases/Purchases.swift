@@ -1353,7 +1353,7 @@ public extension Purchases {
         }
         do {
             let (_, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
-                purchaseResult: purchaseResult, fromTransactionUpdate: true
+                purchaseResult: purchaseResult, transactionSource: .observerModePurchase
             )
             return transaction
         } catch {
