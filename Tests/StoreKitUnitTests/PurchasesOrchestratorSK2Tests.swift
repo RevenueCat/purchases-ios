@@ -829,13 +829,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         try await self.orchestrator.storeKit2TransactionListener(
             self.mockStoreKit2TransactionListener!,
             updatedTransaction: transaction,
-            transactionSource: .updatesQueue
+            transactionSource: .observerModePurchase
         )
 
         expect(transaction.finishInvoked) == false
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
     }
 
     func testSK2ListensForSK2Transactions() throws {
