@@ -71,13 +71,13 @@ class SynchronizedLargeItemCacheTests: TestCase {
         XCTAssertEqual(mock.removeInvocations.count, 1)
     }
 
-    func testClearRemovesEntireDocumentDirectory() throws {
+    func testClearRemovesEntireCacheDirectory() throws {
         let (mock, sut) = self.makeSystemUnderTest()
 
         sut.clear()
 
         XCTAssertEqual(mock.removeInvocations.count, 1)
-        XCTAssertEqual(mock.removeInvocations[0], mock.workingDocsDirectory)
+        XCTAssertEqual(mock.removeInvocations[0], mock.workingCacheDirectory)
     }
 
     func testSetReturnsFalseWhenCacheWriteFails() throws {
@@ -102,6 +102,143 @@ class SynchronizedLargeItemCacheTests: TestCase {
         let cached: TestValue? = sut.value(forKey: key)
 
         XCTAssertNil(cached)
+    }
+
+    // MARK: - Old directory deletion
+
+    func testClearDeletesOldDirectoryFromDocumentsForRemoveStrategy() throws {
+        let fileManager = FileManager.default
+
+        // Create old directory in documents
+        let documentsURL = fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )[0]
+
+        let basePath = "TestCacheDirectory-ClearRemove-\(UUID().uuidString)"
+        let oldDirectory = documentsURL.appendingPathComponent(basePath)
+        let testFile = oldDirectory.appendingPathComponent("test-file")
+
+        // Initialize SynchronizedLargeItemCache with .remove strategy
+        // This will delete the old directory on init, so we need to recreate it after
+        let sut = SynchronizedLargeItemCache(
+            cache: fileManager,
+            basePath: basePath,
+            documentsDirectoryMigrationStrategy: .remove(oldBasePath: basePath)
+        )
+
+        // Recreate the old directory to test that clear() deletes it
+        try fileManager.createDirectory(
+            at: oldDirectory,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        // Create a test file
+        try "test content".write(to: testFile, atomically: true, encoding: .utf8)
+
+        // Verify old directory exists
+        XCTAssertTrue(fileManager.fileExists(atPath: oldDirectory.path))
+
+        // Clear the cache
+        sut.clear()
+
+        // Verify old directory is deleted after clear
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+    }
+
+    func testClearDeletesOldDirectoryFromDocumentsForMigrateStrategy() throws {
+        let fileManager = FileManager.default
+
+        // Create old directory in documents
+        let documentsURL = fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )[0]
+
+        let basePath = "TestCacheDirectory-ClearMigrate-\(UUID().uuidString)"
+        let oldDirectory = documentsURL.appendingPathComponent(basePath)
+        let testFile = oldDirectory.appendingPathComponent("test-file")
+
+        // Create directory structure
+        try fileManager.createDirectory(
+            at: oldDirectory,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        // Create a test file
+        try "test content".write(to: testFile, atomically: true, encoding: .utf8)
+
+        // Verify old directory exists
+        XCTAssertTrue(fileManager.fileExists(atPath: oldDirectory.path))
+
+        // Initialize SynchronizedLargeItemCache with .migrate strategy
+        let sut = SynchronizedLargeItemCache(
+            cache: fileManager,
+            basePath: basePath,
+            documentsDirectoryMigrationStrategy: .migrate(oldBasePath: basePath)
+        )
+
+        // Verify old directory still exists (not deleted on init for .migrate strategy)
+        XCTAssertTrue(fileManager.fileExists(atPath: oldDirectory.path))
+
+        // Clear the cache
+        sut.clear()
+
+        // Verify old directory is deleted after clear
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+    }
+
+    func testDeletesOldDirectoryFromDocumentsOnInitialization() throws {
+
+        // Needs a real file manager in order to test the old file being removed from documents.
+        // Since the cache no longer works with the documents directory
+        let fileManager = FileManager.default
+
+        // Create old directory in documents
+        let documentsURL = fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )[0]
+
+        let basePath = "TestCacheDirectory-\(UUID().uuidString)"
+        let oldDirectory = documentsURL.appendingPathComponent(basePath)
+        let testFile = oldDirectory.appendingPathComponent("test-file")
+
+        // Create directory structure
+        try fileManager.createDirectory(
+            at: oldDirectory,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        // Create a test file
+        try "test content".write(to: testFile, atomically: true, encoding: .utf8)
+
+        // Verify old directory exists
+        XCTAssertTrue(fileManager.fileExists(atPath: oldDirectory.path))
+
+        // Initialize SynchronizedLargeItemCache (deletion is deferred to first access)
+        let sut = SynchronizedLargeItemCache(
+            cache: fileManager,
+            basePath: basePath,
+            documentsDirectoryMigrationStrategy: .remove(oldBasePath: basePath)
+        )
+
+        // Verify old directory still exists after init (deletion is lazy)
+        XCTAssertTrue(fileManager.fileExists(atPath: oldDirectory.path))
+
+        // Trigger first access to cause lazy deletion
+        let _: String? = sut.value(forKey: TestCacheKey(rawValue: "dummy-key"))
+
+        // Verify old directory is deleted after first access
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+
+        // Verify new cache directory is used
+        let newCacheDirectory = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent(basePath))
+
+        XCTAssertTrue(fileManager.fileExists(atPath: newCacheDirectory.path))
     }
 
     // MARK: - Helpers
