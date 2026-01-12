@@ -19,11 +19,6 @@ import Foundation
  */
 internal struct LocalTransactionMetadata: Codable, Sendable {
 
-    static let currentSchemaVersion: Int = 1
-
-    /// The version of the schema used for encoding/decoding
-    let schemaVersion: Int
-
     private let productDataWrapper: ProductRequestDataEncodedWrapper?
 
     /// Product request data (product info, pricing, discounts, etc.).
@@ -46,7 +41,6 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
         transactionData: PurchasedTransactionData,
         originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
     ) {
-        self.schemaVersion = Self.currentSchemaVersion
         self.productDataWrapper = productData.map(ProductRequestDataEncodedWrapper.init)
         self.purchasedTransactionDataWrapper = PurchasedTransactionDataEncodedWrapper(
             purchasedTransactionData: transactionData
