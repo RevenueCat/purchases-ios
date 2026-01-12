@@ -141,8 +141,8 @@ internal final class SynchronizedLargeItemCache {
         }
     }
 
-    private func oldFileURL(for key: DeviceCacheKeyType) -> URL? {
-        return oldDirectoryURL?.appendingPathComponent(key.rawValue)
+    private func oldFileURL(for key: String) -> URL? {
+        return oldDirectoryURL?.appendingPathComponent(key)
     }
 
     private var oldDirectoryURL: URL? {
