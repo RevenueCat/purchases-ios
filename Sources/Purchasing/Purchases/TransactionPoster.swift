@@ -101,7 +101,6 @@ final class TransactionPoster: TransactionPosterType {
         guard let productIdentifier = transaction.productIdentifier.notEmpty else {
             self.handleReceiptPost(withTransaction: transaction,
                                    result: .failure(.missingTransactionProductIdentifier()),
-                                   subscriberAttributes: nil,
                                    completion: completion)
             return
         }
@@ -122,7 +121,6 @@ final class TransactionPoster: TransactionPosterType {
             case .failure(let error):
                 self.handleReceiptPost(withTransaction: transaction,
                                        result: .failure(error),
-                                       subscriberAttributes: nil,
                                        completion: completion)
             }
         }
@@ -208,7 +206,6 @@ private extension TransactionPoster {
 
     func handleReceiptPost(withTransaction transaction: StoreTransactionType,
                            result: Result<(info: CustomerInfo, product: StoreProduct?), BackendError>,
-                           subscriberAttributes: SubscriberAttribute.Dictionary?,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let customerInfoResult = result.map(\.info)
 
@@ -289,7 +286,6 @@ private extension TransactionPoster {
             }
             self.handleReceiptPost(withTransaction: transaction,
                                    result: result.map { ($0, product) },
-                                   subscriberAttributes: effectiveTransactionData.unsyncedAttributes,
                                    completion: completion)
         }
     }
