@@ -178,10 +178,11 @@ private extension StoreKit2TransactionListener {
             let transaction = StoreTransaction(sk2Transaction: verifiedTransaction,
                                                jwsRepresentation: transactionResult.jwsRepresentation)
             if transactionSource != .purchaseThroughSDK, let delegate = self.delegate {
-                Logger.debug(Strings.purchase.sk2_transactions_update_received_transaction(
-                    productID: verifiedTransaction.productID
-                ))
-
+                if transactionSource == .updatesQueue {
+                    Logger.debug(Strings.purchase.sk2_transactions_update_received_transaction(
+                        productID: verifiedTransaction.productID
+                    ))
+                }
                 self.trackTransactionUpdateReceivedIfNeeded(transaction: transaction,
                                                             sk2Transaction: verifiedTransaction)
 
