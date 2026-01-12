@@ -22,7 +22,11 @@ class ETagManager {
     private let cache: SynchronizedLargeItemCache
 
     convenience init() {
-        self.init(largeItemCache: .init(cache: FileManager.default, basePath: Self.suiteName) )
+        self.init(largeItemCache: .init(
+            cache: FileManager.default,
+            basePath: Self.cacheBasePath,
+            documentsDirectoryMigrationStrategy: .remove(oldBasePath: Self.oldDocumentsDirectoryBasePath)
+        ))
     }
 
     init(largeItemCache: SynchronizedLargeItemCache) {
@@ -186,12 +190,13 @@ private extension ETagManager {
         }
     }
 
-    static let suiteNameBase: String  = "revenuecat.etags"
-    static var suiteName: String {
-        guard let bundleID = Bundle.main.bundleIdentifier else {
-            return suiteNameBase
-        }
-        return bundleID + ".\(suiteNameBase)"
+    static var cacheBasePath: String {
+        return "etags"
+    }
+
+    static var oldDocumentsDirectoryBasePath: String {
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.revenuecat"
+        return "\(bundleID).revenuecat.etags"
     }
 
 }
