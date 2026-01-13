@@ -1795,29 +1795,19 @@ private extension PurchasesOrchestrator {
                 return
             }
 
-            let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
+            let transactionData: PurchasedTransactionData = .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: unsyncedAttributes,
+                storeCountry: transaction.storefront?.countryCode,
+                source: .init(isRestore: isRestore, initiationSource: initiationSource)
+            )
 
-            self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
-                let transactionData: PurchasedTransactionData = .init(
-                    presentedOfferingContext: nil,
-                    unsyncedAttributes: unsyncedAttributes,
-                    storeCountry: transaction.storefront?.countryCode,
-                    source: .init(isRestore: isRestore, initiationSource: initiationSource)
-                )
-
-                self.backend.post(receipt: receipt,
-                                  productData: productRequestData,
-                                  transactionData: transactionData,
-                                  observerMode: self.observerMode,
-                                  originalPurchaseCompletedBy: nil,
-                                  appTransaction: appTransactionJWS,
-                                  appUserID: currentAppUserID) { result in
-                    self.handleReceiptPost(result: result,
-                                           transactionData: transactionData,
-                                           subscriberAttributes: unsyncedAttributes,
-                                           adServicesToken: nil,
-                                           completion: completion)
-                }
+            self.transactionPoster.postReceiptFromSyncedSK2Transaction(transaction, data: transactionData, appTransactionJWS: appTransactionJWS, currentUserID: currentAppUserID) { result in
+                self.handleReceiptPost(result: result,
+                                       transactionData: transactionData,
+                                       subscriberAttributes: unsyncedAttributes,
+                                       adServicesToken: nil,
+                                       completion: completion)
             }
         }
     }

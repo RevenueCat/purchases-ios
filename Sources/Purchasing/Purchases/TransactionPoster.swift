@@ -53,6 +53,14 @@ protocol TransactionPosterType: AnyObject, Sendable {
         completion: @escaping @Sendable @MainActor () -> Void
     )
 
+    func postReceiptFromSyncedSK2Transaction(
+        _ transaction: StoreTransactionType,
+        data: PurchasedTransactionData,
+        appTransactionJWS: String?,
+        currentUserID: String,
+        completion: @escaping CustomerAPI.CustomerInfoResponseHandler
+    )
+
 }
 
 final class TransactionPoster: TransactionPosterType {
@@ -100,9 +108,9 @@ final class TransactionPoster: TransactionPosterType {
         ))
 
         guard let productIdentifier = transaction.productIdentifier.notEmpty else {
-            self.handleReceiptPost(withTransaction: transaction,
-                                   result: .failure(.missingTransactionProductIdentifier()),
-                                   completion: completion)
+            self.finishTransactionIfNeededFromReceiptPost(transaction: transaction,
+                                                          result: .failure(.missingTransactionProductIdentifier()),
+                                                          completion: completion)
             return
         }
 
@@ -121,9 +129,34 @@ final class TransactionPoster: TransactionPosterType {
                     }
                 }
             case .failure(let error):
-                self.handleReceiptPost(withTransaction: transaction,
-                                       result: .failure(error),
-                                       completion: completion)
+                self.finishTransactionIfNeededFromReceiptPost(transaction: transaction,
+                                                              result: .failure(error),
+                                                              completion: completion)
+            }
+        }
+    }
+
+    func postReceiptFromSyncedSK2Transaction(
+        _ transaction: StoreTransactionType,
+        data: PurchasedTransactionData,
+        appTransactionJWS: String?,
+        currentUserID: String,
+        completion: @escaping CustomerAPI.CustomerInfoResponseHandler
+    ) {
+        self.fetchEncodedReceipt(transaction: transaction) { result in
+            switch result {
+            case .success(let encodedReceipt):
+                self.product(with: transaction.productIdentifier) { product in
+                    self.postReceipt(transaction: transaction,
+                                     purchasedTransactionData: data,
+                                     receipt: encodedReceipt,
+                                     product: product,
+                                     appTransaction: appTransactionJWS,
+                                     currentUserID: currentUserID,
+                                     completion: completion)
+                }
+            case .failure(let error):
+                completion(.failure(error))
             }
         }
     }
@@ -210,11 +243,11 @@ extension PurchaseSource: Codable {}
 
 // MARK: - Implementation
 
-private extension TransactionPoster {
+extension TransactionPoster {
 
-    func handleReceiptPost(withTransaction transaction: StoreTransactionType,
-                           result: Result<(info: CustomerInfo, product: StoreProduct?), BackendError>,
-                           completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+    func finishTransactionIfNeededFromReceiptPost(transaction: StoreTransactionType,
+                                                  result: Result<(info: CustomerInfo, product: StoreProduct?), BackendError>,
+                                                  completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let customerInfoResult = result.map(\.info)
 
         self.operationDispatcher.dispatchOnMainActor {
@@ -294,9 +327,9 @@ private extension TransactionPoster {
                     break
                 }
             }
-            self.handleReceiptPost(withTransaction: transaction,
-                                   result: result.map { ($0, product) },
-                                   completion: completion)
+            self.finishTransactionIfNeededFromReceiptPost(transaction: transaction,
+                                                          result: result.map { ($0, product) },
+                                                          completion: completion)
         }
     }
 
