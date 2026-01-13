@@ -74,16 +74,14 @@ final class UIConfigProvider {
         if let genericFont = GenericFont(rawValue: fontName) {
             return genericFont.makeFont(fontSize: fontSize, useDynamicType: useDynamicType)
         } else if PlatformFont(name: fontName, size: fontSize) != nil {
-#if canImport(UIKit)
             if useDynamicType {
-                let scaledSize = UIFontMetrics.default.scaledValue(for: fontSize)
-                return Font.custom(fontName, size: scaledSize)
+                // Use relativeTo: to enable proper Dynamic Type support that automatically
+                // scales when the user changes accessibility text size settings.
+                let textStyle = GenericFont.textStyle(for: fontSize)
+                return Font.custom(fontName, size: fontSize, relativeTo: textStyle)
             } else {
                 return Font.custom(fontName, size: fontSize)
             }
-#else
-            return Font.custom(fontName, size: fontSize)
-#endif
         } else {
             self.logMessageIfNeeded(.customFontFailedToLoad(fontName: fontName))
             self.failedToLoadFont?(fontsConfig)

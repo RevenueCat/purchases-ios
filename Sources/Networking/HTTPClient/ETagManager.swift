@@ -119,17 +119,13 @@ class ETagManager {
         self.cache.clear()
     }
 
-    struct CacheKey: DeviceCacheKeyType {
-        let rawValue: String
-    }
-
 }
 
 extension ETagManager {
 
     // Visible for tests
-    static func cacheKey(for request: URLRequest) -> CacheKey? {
-        return (request.url?.absoluteString.asData.md5String).map(ETagManager.CacheKey.init)
+    static func cacheKey(for request: URLRequest) -> String? {
+        return request.url?.absoluteString.asData.md5String
     }
 
 }
