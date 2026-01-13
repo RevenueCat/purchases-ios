@@ -230,7 +230,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
         XCTAssertTrue(fileManager.fileExists(atPath: oldDirectory.path))
 
         // Trigger first access to cause lazy deletion
-        let _: String? = sut.value(forKey: TestCacheKey(rawValue: "dummy-key"))
+        let _: String? = sut.value(forKey: "dummy-key")
 
         // Verify old directory is deleted after first access
         XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
