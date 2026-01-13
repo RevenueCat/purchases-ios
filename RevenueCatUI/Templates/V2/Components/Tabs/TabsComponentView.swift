@@ -116,6 +116,21 @@ struct LoadedTabsComponentView: View {
             self.viewModel.tabViewModels.values.first
     }
 
+    /// Determines the effective parent-owned package to use when switching tabs.
+    ///
+    /// - Package-less tabs: always use `parentOwnedPackage` for inheritance from parent
+    /// - Tabs with packages + user made selection: preserve user's selection
+    /// - Tabs with packages + no user selection: return nil to use tab's default
+    private func effectiveParentOwnedPackage(for tabViewModel: TabViewModel) -> Package? {
+        if tabViewModel.packages.isEmpty {
+            return self.parentOwnedPackage
+        } else if self.didUserSelectPackage {
+            return self.parentOwnedPackage
+        } else {
+            return nil
+        }
+    }
+
     init(viewModel: TabsComponentViewModel,
          parentPackageContext: PackageContext,
          onDismiss: @escaping () -> Void) {
@@ -215,22 +230,8 @@ struct LoadedTabsComponentView: View {
                     return
                 }
 
-                // For tabs WITH packages: only preserve parentOwnedPackage if user made an explicit selection.
-                // For tabs WITHOUT packages: always use parentOwnedPackage (for inheritance from parent).
-                let effectiveParentOwnedPackage: Package?
-                if newTabViewModel.packages.isEmpty {
-                    // Package-less tab: use parentOwnedPackage for inheritance
-                    effectiveParentOwnedPackage = self.parentOwnedPackage
-                } else if self.didUserSelectPackage {
-                    // Tab with packages + user made selection: try to preserve it
-                    effectiveParentOwnedPackage = self.parentOwnedPackage
-                } else {
-                    // Tab with packages + no user selection: use tab's default
-                    effectiveParentOwnedPackage = nil
-                }
-
                 let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
-                    parentOwnedPackage: effectiveParentOwnedPackage,
+                    parentOwnedPackage: effectiveParentOwnedPackage(for: newTabViewModel),
                     parentOwnedVariableContext: self.parentOwnedVariableContext,
                     parentCurrentVariableContext: self.packageContext.variableContext,
                     tabPackages: newTabViewModel.packages,
