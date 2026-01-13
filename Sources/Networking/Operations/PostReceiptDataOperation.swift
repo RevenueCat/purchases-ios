@@ -115,7 +115,6 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
             completion()
         }
     }
-
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
@@ -163,7 +162,6 @@ extension PostReceiptDataOperation {
         var ruleId: String
 
     }
-
 }
 
 extension PostReceiptDataOperation.PostData {
@@ -198,7 +196,6 @@ extension PostReceiptDataOperation.PostData {
             metadata: data.metadata
         )
     }
-
 }
 
 private extension PurchasedTransactionData {
@@ -212,7 +209,6 @@ private extension PurchasedTransactionData {
                      darkMode: paywall.data.darkMode,
                      localeIdentifier: paywall.data.localeIdentifier)
     }
-
 }
 
 // MARK: - Private
@@ -256,7 +252,6 @@ private extension PostReceiptDataOperation {
             return
         }
     }
-
 }
 
 // MARK: - Codable
@@ -316,7 +311,6 @@ extension PostReceiptDataOperation.PostData: Encodable {
     }
 
     var fetchToken: String? { return self.receipt.serialized() }
-
 }
 
 extension PostReceiptDataOperation.Paywall: Codable {
@@ -330,7 +324,6 @@ extension PostReceiptDataOperation.Paywall: Codable {
         case localeIdentifier = "locale"
 
     }
-
 }
 
 extension PostReceiptDataOperation.AppliedTargetingRule: Codable {
@@ -341,7 +334,6 @@ extension PostReceiptDataOperation.AppliedTargetingRule: Codable {
         case ruleId
 
     }
-
 }
 
 // MARK: - HTTPRequestBody
@@ -355,7 +347,6 @@ extension PostReceiptDataOperation.PostData: HTTPRequestBody {
             (Self.CodingKeys.appTransaction.stringValue, self.appTransaction)
         ]
     }
-
 }
 
 // MARK: - InitiationSource
@@ -379,7 +370,6 @@ extension ProductRequestData.InitiationSource: Encodable, RawRepresentable {
     private static let codes: [String: ProductRequestData.InitiationSource] = Self
         .allCases
         .dictionaryWithKeys { $0.rawValue }
-
 }
 
 // MARK: - EncodedAppleReceipt
@@ -403,5 +393,4 @@ private extension EncodedAppleReceipt {
             return "empty"
         }
     }
-
 }
