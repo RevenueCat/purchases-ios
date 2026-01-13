@@ -435,6 +435,11 @@ extension PurchaseHandler {
     @discardableResult
     func trackPaywallClose() -> Bool {
         guard let data = self.eventData, !self.hasTrackedClose else {
+            if self.eventData == nil {
+                Logger.debug("Attempted to track paywall close but eventData is nil")
+            } else if self.hasTrackedClose {
+                Logger.debug("Attempted to track paywall close but close was already tracked")
+            }
             return false
         }
 
