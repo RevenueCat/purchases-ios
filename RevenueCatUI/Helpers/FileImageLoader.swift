@@ -22,12 +22,18 @@ final class FileImageLoader: ObservableObject {
     let fileRepository: FileRepository
     let url: URL?
 
+    private var loadTask: Task<Void, Never>?
+
     @MainActor
     init(fileRepository: FileRepository, url: URL?) {
         self.fileRepository = fileRepository
         self.url = url
 
         self.loadFromCache(url: url)
+    }
+
+    deinit {
+        loadTask?.cancel()
     }
 
     typealias Value = (image: Image, size: CGSize)
@@ -74,6 +80,46 @@ final class FileImageLoader: ObservableObject {
         } catch {
 
         }
+    }
+
+    /// Start loading without requiring external task management.
+    /// The loader manages its own task lifecycle.
+    @MainActor
+    func startLoading() {
+        guard loadTask == nil, result == nil else { return }
+
+        // Capture only what we need - avoid capturing self during the await
+        let url = self.url
+        let fileRepository = self.fileRepository
+
+        loadTask = Task { [weak self] in
+            guard !Task.isCancelled else { return }
+            guard let url = url else { return }
+
+            do {
+                // Don't hold strong reference to self during network await
+                let cachedURL = try await fileRepository.generateOrGetCachedFileURL(
+                    for: url, withChecksum: nil
+                )
+
+                guard !Task.isCancelled else { return }
+
+                let imageInfo = cachedURL.asImageAndSize
+
+                await MainActor.run { [weak self] in
+                    guard !Task.isCancelled else { return }
+                    self?.result = imageInfo
+                }
+            } catch {
+                Logger.debug(Strings.image_result(.failure(.responseError(error as NSError))))
+            }
+        }
+    }
+
+    /// Cancel any ongoing loading
+    func cancelLoading() {
+        loadTask?.cancel()
+        loadTask = nil
     }
 
 }

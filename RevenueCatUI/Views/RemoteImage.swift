@@ -113,10 +113,10 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
 
     // Preferred method of loading images
 
-    @ObservedObject
+    @StateObject
     private var highResFileLoader: FileImageLoader
 
-    @ObservedObject
+    @StateObject
     private var lowResFileLoader: FileImageLoader
 
     // Legacy method of loading images
@@ -190,8 +190,8 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             for: colorScheme
         )
 
-        self.highResFileLoader = FileImageLoader(fileRepository: .shared, url: highResURL)
-        self.lowResFileLoader = FileImageLoader(fileRepository: .shared, url: lowResURL)
+        _highResFileLoader = StateObject(wrappedValue: FileImageLoader(fileRepository: .shared, url: highResURL))
+        _lowResFileLoader = StateObject(wrappedValue: FileImageLoader(fileRepository: .shared, url: lowResURL))
     }
 
     private static func selectURL(
@@ -239,8 +239,7 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             }
         }
         .transition(self.transition)
-        // This cancels the previous task when the URL or color scheme change, ensuring a proper update of the UI
-        .task(id: "\(self.url)\(self.colorScheme)") {
+        .onAppear {
             #if DEBUG
             // Don't attempt to load if local image
             // This is used for paywall screenshot validation
@@ -249,30 +248,15 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             }
             #endif
 
-            guard self.highResFileLoader.result == nil else {
-                return
-            }
-
-            async let high: Void = await self.lowResFileLoader.load()
-            async let low: Void = await self.highResFileLoader.load()
-            _ = await (high, low)
-
-            if self.highResFileLoader.result == nil {
-                switch self.colorScheme {
-                case .dark:
-                    await loadImages(
-                        url: self.darkUrl ?? self.url,
-                        lowResUrl: self.darkLowResUrl ?? self.lowResUrl
-                    )
-                case .light:
-                    fallthrough
-                @unknown default:
-                    await loadImages(
-                        url: self.url,
-                        lowResUrl: self.lowResUrl
-                    )
-                }
-            }
+            // Start loading using the loader's internal task management
+            // This avoids the view's task capturing the loaders
+            highResFileLoader.startLoading()
+            lowResFileLoader.startLoading()
+        }
+        .onDisappear {
+            // Cancel loading when view disappears
+            highResFileLoader.cancelLoading()
+            lowResFileLoader.cancelLoading()
         }
     }
 
