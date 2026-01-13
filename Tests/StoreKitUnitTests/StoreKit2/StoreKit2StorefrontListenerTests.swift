@@ -34,14 +34,14 @@ class StoreKit2StorefrontListenerTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-
         // Create isolated UserDefaults for each test
         self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
         self.userDefaults.removePersistentDomain(forName: Self.userDefaultsSuiteName)
         self.userDefaults.synchronize()
 
         self.delegate = .init()
+
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
     }
 
     override func tearDown() {
