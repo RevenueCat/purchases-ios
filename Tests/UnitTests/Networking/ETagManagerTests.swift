@@ -1099,9 +1099,15 @@ class ETagManagerTests: TestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: oldETagDirectory.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: testFile.path))
 
-        // Initialize ETagManager using default initializer (should delete old directory)
+        // Initialize ETagManager using default initializer
         let eTagManager = ETagManager()
         XCTAssertNotNil(eTagManager)
+
+        let request = URLRequest(url: Self.testURL)
+
+        // Reading or writing anything to/from the cache should trigger the deletion of the old files
+        let response = eTagManager.eTagHeader(for: request, withSignatureVerification: true)
+        expect(response[ETagManager.eTagResponseHeader.rawValue]).to(beEmpty())
 
         // Verify old directory is deleted
         XCTAssertFalse(FileManager.default.fileExists(atPath: oldETagDirectory.path))
