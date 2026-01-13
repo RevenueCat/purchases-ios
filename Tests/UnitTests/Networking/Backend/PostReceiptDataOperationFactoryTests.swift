@@ -187,4 +187,110 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         expect(factory1.cacheKey) != factory2.cacheKey
     }
 
+    func testCacheKeyDifferenceWhenTransactionIdChanges() {
+        let config = self.createConfig()
+
+        let postData1 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                appUserID: self.appUserID,
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storefront: nil,
+                source: .init(isRestore: false, initiationSource: .queue)
+            ),
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: "transaction_id_1"
+        )
+
+        let postData2 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                appUserID: self.appUserID,
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storefront: nil,
+                source: .init(isRestore: false, initiationSource: .queue)
+            ),
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: "transaction_id_2"
+        )
+
+        let factory1 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData1,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        let factory2 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData2,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        // Cache keys should be different when transaction IDs differ, even with same receipt
+        expect(factory1.cacheKey) != factory2.cacheKey
+    }
+
+    func testCacheKeySameWhenTransactionIdIsNil() {
+        let config = self.createConfig()
+
+        let postData1 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                appUserID: self.appUserID,
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storefront: nil,
+                source: .init(isRestore: false, initiationSource: .queue)
+            ),
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil
+        )
+
+        let postData2 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                appUserID: self.appUserID,
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storefront: nil,
+                source: .init(isRestore: false, initiationSource: .queue)
+            ),
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil
+        )
+
+        let factory1 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData1,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        let factory2 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData2,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        // Cache keys should be the same when both transaction IDs are nil
+        expect(factory1.cacheKey) == factory2.cacheKey
+    }
+
 }

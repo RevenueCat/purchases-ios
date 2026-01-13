@@ -52,12 +52,14 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `presentedOfferingIdentifier`
         /// - `observerMode`
         /// - `subscriberAttributesByKey`
+        /// - `transactionId`
         let cacheKey =
         """
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.hash)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
+        -\(postData.transactionId ?? "")
         """
 
         return .init({ cacheKey in
@@ -276,7 +278,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case paywall
         case testReceiptIdentifier = "test_receipt_identifier"
         case appTransaction = "app_transaction"
-        case transactionI
+        case transactionId = "transaction_id"
         case metadata
 
     }
