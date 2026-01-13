@@ -174,7 +174,8 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         )
 
         let isRestore = false
-        let observerMode = true
+        let purchaseCompletedBy: PurchasesAreCompletedBy = .myApp
+        let observerMode = purchaseCompletedBy.observerMode
         let associatedTransactionId = "test_transaction_id_12345"
         let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
 
@@ -182,14 +183,14 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             self.backend.post(receipt: Self.receipt,
                               productData: productData,
                               transactionData: .init(
-                                 appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: isRestore, initiationSource: .purchase)
                               ),
                               observerMode: observerMode,
-                              associatedTransactionId: associatedTransactionId,
+                              originalPurchaseCompletedBy: purchaseCompletedBy,
+                              associatedTransactionId: associatedTransactionId, appUserID: Self.userID,
                               completion: { _ in
                 completed()
             })

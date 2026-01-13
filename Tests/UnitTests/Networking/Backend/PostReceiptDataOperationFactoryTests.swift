@@ -194,17 +194,20 @@ class PostReceiptDataOperationFactoryTests: TestCase {
     func testCacheKeyDifferenceWhenTransactionIdChanges() {
         let config = self.createConfig()
 
+        let purchaseCompletedBy: PurchasesAreCompletedBy = .revenueCat
+        let observerMode = purchaseCompletedBy.observerMode
+
         let postData1 = PostReceiptDataOperation.PostData(
             transactionData: .init(
-                appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: nil,
-                storefront: nil,
+                storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
-            productData: nil,
+            appUserID: self.appUserID, productData: nil,
             receipt: self.receipt,
-            observerMode: false,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
             testReceiptIdentifier: nil,
             appTransaction: nil,
             associatedTransactionId: "transaction_id_1"
@@ -212,15 +215,15 @@ class PostReceiptDataOperationFactoryTests: TestCase {
 
         let postData2 = PostReceiptDataOperation.PostData(
             transactionData: .init(
-                appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: nil,
-                storefront: nil,
+                storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
-            productData: nil,
+            appUserID: self.appUserID, productData: nil,
             receipt: self.receipt,
-            observerMode: false,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
             testReceiptIdentifier: nil,
             appTransaction: nil,
             associatedTransactionId: "transaction_id_2"
@@ -247,17 +250,21 @@ class PostReceiptDataOperationFactoryTests: TestCase {
     func testCacheKeySameWhenTransactionIdIsNil() {
         let config = self.createConfig()
 
+        let purchaseCompletedBy: PurchasesAreCompletedBy = .revenueCat
+        let observerMode = purchaseCompletedBy.observerMode
+
         let postData1 = PostReceiptDataOperation.PostData(
             transactionData: .init(
-                appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: nil,
-                storefront: nil,
+                storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
+            appUserID: self.appUserID,
             productData: nil,
             receipt: self.receipt,
-            observerMode: false,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
             testReceiptIdentifier: nil,
             appTransaction: nil,
             associatedTransactionId: nil
@@ -265,15 +272,16 @@ class PostReceiptDataOperationFactoryTests: TestCase {
 
         let postData2 = PostReceiptDataOperation.PostData(
             transactionData: .init(
-                appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: nil,
-                storefront: nil,
+                storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
+            appUserID: self.appUserID,
             productData: nil,
             receipt: self.receipt,
-            observerMode: false,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
             testReceiptIdentifier: nil,
             appTransaction: nil,
             associatedTransactionId: nil

@@ -72,7 +72,7 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
-        ) == self.mockTransaction.associatedTransactionIdentifier
+        ) == self.mockTransaction.transactionIdentifier
         expect(self.mockTransaction.finishInvoked) == true
     }
 
@@ -128,7 +128,7 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
-        ) == self.mockTransaction.associatedTransactionIdentifier
+        ) == self.mockTransaction.transactionIdentifier
         expect(self.mockTransaction.finishInvoked) == true
     }
 
@@ -174,7 +174,7 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
-        ) == self.mockTransaction.associatedTransactionIdentifier
+        ) == self.mockTransaction.transactionIdentifier
         expect(self.mockTransaction.finishInvoked) == true
     }
 
@@ -386,7 +386,7 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
-        ) == self.mockTransaction.associatedTransactionIdentifier
+        ) == self.mockTransaction.transactionIdentifier
 
         expect(self.receiptFetcher.receiptDataCalled) == false
         expect(self.transactionFetcher.appTransactionJWSCalled.value) == false
@@ -455,8 +455,8 @@ private extension TransactionPosterTests {
                     CustomerInfoResponse.Transaction(
                         purchaseDate: Date(),
                         originalPurchaseDate: Date(),
-                        associatedTransactionIdentifier: UUID().uuidString,
-                        storeTransactionIdentifier: self.mockTransaction.associatedTransactionIdentifier,
+                        transactionIdentifier: UUID().uuidString,
+                        storeTransactionIdentifier: self.mockTransaction.transactionIdentifier,
                         store: .appStore,
                         isSandbox: true
                     )
