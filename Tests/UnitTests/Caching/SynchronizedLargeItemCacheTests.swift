@@ -20,7 +20,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
 
     func testSetPersistsDataToCacheDirectory() throws {
         let (mock, sut) = self.makeSystemUnderTest()
-        let key = TestCacheKey(rawValue: "test-key")
+        let key = "test-key"
         let value = TestValue(identifier: "abc", count: 42)
 
         mock
@@ -28,7 +28,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
                 with: .success(
                     .init(
                         data: value.asData,
-                        url: baseDirectory.appendingPathExtension(key.rawValue)
+                        url: baseDirectory.appendingPathExtension(key)
                     )
                 )
             )
@@ -41,7 +41,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
 
     func testValueReturnsDecodedData() throws {
         let (mock, sut) = self.makeSystemUnderTest()
-        let key = TestCacheKey(rawValue: "value-key")
+        let key = "value-key"
         let value = TestValue(identifier: "value", count: 7)
 
         mock.stubLoadFile(with: .success(value.asData))
@@ -53,7 +53,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
 
     func testValueReturnsNilWhenErrorIsReturned() {
         let (mock, sut) = self.makeSystemUnderTest()
-        let key = TestCacheKey(rawValue: "missing-key")
+        let key = "missing-key"
 
         mock.stubLoadFile(with: .failure(MockError()))
 
@@ -64,7 +64,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
 
     func testRemoveObjectDeletesStoredFile() throws {
         let (mock, sut) = self.makeSystemUnderTest()
-        let key = TestCacheKey(rawValue: "remove-key")
+        let key = "remove-key"
 
         sut.removeObject(forKey: key)
 
@@ -82,7 +82,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
 
     func testSetReturnsFalseWhenCacheWriteFails() throws {
         let (mock, sut) = self.makeSystemUnderTest()
-        let key = TestCacheKey(rawValue: "fail-key")
+        let key = "fail-key"
         let value = TestValue(identifier: "test", count: 1)
 
         mock.stubSaveData(with: .failure(MockError()))
@@ -94,7 +94,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
 
     func testValueReturnsNilWhenDecodingFails() throws {
         let (mock, sut) = self.makeSystemUnderTest()
-        let key = TestCacheKey(rawValue: "bad-data-key")
+        let key = "bad-data-key"
 
         // Return invalid JSON data that can't be decoded to TestValue
         mock.stubLoadFile(with: .success(Data("invalid json".utf8)))
@@ -130,10 +130,6 @@ class SynchronizedLargeItemCacheTests: TestCase {
 }
 
 // MARK: - Test helpers
-
-private struct TestCacheKey: DeviceCacheKeyType {
-    let rawValue: String
-}
 
 private struct TestValue: Codable, Equatable {
     var identifier: String
