@@ -22,6 +22,7 @@ extension PurchaseHandler {
 
     static func mock(
         _ customerInfo: CustomerInfo = TestData.customerInfo,
+        transaction: StoreTransaction? = nil,
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
@@ -40,8 +41,7 @@ extension PurchaseHandler {
             purchases: MockPurchases(purchasesAreCompletedBy: purchasesAreCompletedBy,
                                      preferredLocaleOverride: preferredLocaleOverride) { _ in
                 return (
-                    // No current way to create a mock transaction with RevenueCat's public methods.
-                    transaction: nil,
+                    transaction: transaction,
                     customerInfo: customerInfo,
                     userCancelled: false
                 )

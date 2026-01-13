@@ -88,11 +88,11 @@ extension View {
     /// [Documentation](https://rev.cat/paywalls)
     ///
     /// - Tag: presentPaywallIfNeeded
-    @available(iOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
-    @available(tvOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
-    @available(watchOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
-    @available(macOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
-    @available(macCatalyst, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(iOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCompletedWithTransaction:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(tvOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCompletedWithTransaction:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(watchOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCompletedWithTransaction:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(macOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCompletedWithTransaction:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(macCatalyst, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCompletedWithTransaction:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
     // swiftlint:enable line_length
     public func presentPaywallIfNeeded(
         requiredEntitlementIdentifier: String,
@@ -101,6 +101,7 @@ extension View {
         presentationMode: PaywallPresentationMode = .default,
         purchaseStarted: @escaping PurchaseStartedHandler,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCompletedWithTransaction: PurchaseCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
@@ -116,6 +117,7 @@ extension View {
                 purchaseStarted()
             },
             purchaseCompleted: purchaseCompleted,
+            purchaseCompletedWithTransaction: purchaseCompletedWithTransaction,
             purchaseCancelled: purchaseCancelled,
             restoreStarted: nil,
             restoreCompleted: restoreCompleted,
@@ -154,6 +156,7 @@ extension View {
         myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCompletedWithTransaction: PurchaseCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -174,6 +177,7 @@ extension View {
             },
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
+            purchaseCompletedWithTransaction: purchaseCompletedWithTransaction,
             purchaseCancelled: purchaseCancelled,
             restoreStarted: restoreStarted,
             restoreCompleted: restoreCompleted,
@@ -195,6 +199,8 @@ extension View {
     ///         print("Purchase started")
     ///     } purchaseCompleted: { customerInfo in
     ///         print("Customer info unlocked entitlement: \(customerInfo.entitlements)")
+    ///     } purchaseCompletedWithTransaction: { transaction, customerInfo in
+    ///         print("Purchase completed. Transaction: \(String(describing: transaction)), entitlements: \(customerInfo.entitlements)")
     ///     } purchaseCancelled: {
     ///         print("Purchase was cancelled")
     ///     } restoreCompleted: { customerInfo in
@@ -220,11 +226,11 @@ extension View {
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
-    @available(iOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
-    @available(tvOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
-    @available(watchOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
-    @available(macOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
-    @available(macCatalyst, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(iOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCompletedWithTransaction:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(tvOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCompletedWithTransaction:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(watchOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCompletedWithTransaction:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(macOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCompletedWithTransaction:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(macCatalyst, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCompletedWithTransaction:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
     // swiftlint:enable line_length
     public func presentPaywallIfNeeded(
         offering: Offering? = nil,
@@ -234,6 +240,7 @@ extension View {
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseStarted: @escaping PurchaseStartedHandler,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCompletedWithTransaction: PurchaseCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
@@ -250,6 +257,7 @@ extension View {
                 purchaseStarted()
             },
             purchaseCompleted: purchaseCompleted,
+            purchaseCompletedWithTransaction: purchaseCompletedWithTransaction,
             purchaseCancelled: purchaseCancelled,
             restoreStarted: nil,
             restoreCompleted: restoreCompleted,
@@ -277,6 +285,9 @@ extension View {
     ///         print("Purchase started \(package)")
     ///     } purchaseCompleted: { customerInfo in
     ///         print("Customer info unlocked entitlement: \(customerInfo.entitlements)")
+    ///     } purchaseCompletedWithTransaction: { transaction, customerInfo in
+    ///         print("Purchase completed. Transaction: \(String(describing: transaction)), " +
+    ///               "entitlements: \(customerInfo.entitlements)")
     ///     } purchaseCancelled: {
     ///         print("Purchase was cancelled")
     ///     } restoreStarted: {
@@ -312,6 +323,7 @@ extension View {
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCompletedWithTransaction: PurchaseCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -327,6 +339,7 @@ extension View {
             shouldDisplay: shouldDisplay,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
+            purchaseCompletedWithTransaction: purchaseCompletedWithTransaction,
             purchaseCancelled: purchaseCancelled,
             restoreStarted: restoreStarted,
             restoreCompleted: restoreCompleted,
@@ -354,6 +367,7 @@ extension View {
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCompletedWithTransaction: PurchaseCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -369,6 +383,7 @@ extension View {
                 presentationMode: presentationMode,
                 purchaseStarted: purchaseStarted,
                 purchaseCompleted: purchaseCompleted,
+                purchaseCompletedWithTransaction: purchaseCompletedWithTransaction,
                 purchaseCancelled: purchaseCancelled,
                 restoreCompleted: restoreCompleted,
                 purchaseFailure: purchaseFailure,
@@ -414,6 +429,8 @@ extension View {
     ///   - presentationMode: The desired presentation mode of the paywall. Defaults to `.sheet`.
     ///   - purchaseStarted: Called when a purchase is initiated.
     ///   - purchaseCompleted: Called when a purchase completes successfully.
+    ///   - purchaseCompletedWithTransaction: Called when a purchase completes successfully, including the
+    ///     resulting transaction (if available).
     ///   - purchaseCancelled: Called when a purchase is cancelled.
     ///   - restoreStarted: Called when a restore is initiated.
     ///   - restoreCompleted: Called when a restore completes successfully.
@@ -430,6 +447,7 @@ extension View {
         myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCompletedWithTransaction: PurchaseCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -444,6 +462,7 @@ extension View {
             fontProvider: fonts,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
+            purchaseCompletedWithTransaction: purchaseCompletedWithTransaction,
             purchaseCancelled: purchaseCancelled,
             restoreStarted: restoreStarted,
             restoreCompleted: restoreCompleted,
@@ -457,6 +476,7 @@ extension View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
+// swiftlint:disable type_body_length
 private struct PresentingPaywallModifier: ViewModifier {
 
     @Environment(\.scenePhase) var scenePhase
@@ -470,6 +490,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     var presentationMode: PaywallPresentationMode
     var purchaseStarted: PurchaseOfPackageStartedHandler?
     var purchaseCompleted: PurchaseOrRestoreCompletedHandler?
+    var purchaseCompletedWithTransaction: PurchaseCompletedHandler?
     var purchaseCancelled: PurchaseCancelledHandler?
     var restoreCompleted: PurchaseOrRestoreCompletedHandler?
     var purchaseFailure: PurchaseFailureHandler?
@@ -489,6 +510,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         presentationMode: PaywallPresentationMode,
         purchaseStarted: PurchaseOfPackageStartedHandler?,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
+        purchaseCompletedWithTransaction: PurchaseCompletedHandler?,
         purchaseCancelled: PurchaseCancelledHandler?,
         restoreCompleted: PurchaseOrRestoreCompletedHandler?,
         purchaseFailure: PurchaseFailureHandler?,
@@ -505,6 +527,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.presentationMode = presentationMode
         self.purchaseStarted = purchaseStarted
         self.purchaseCompleted = purchaseCompleted
+        self.purchaseCompletedWithTransaction = purchaseCompletedWithTransaction
         self.purchaseCancelled = purchaseCancelled
         self.restoreStarted = restoreStarted
         self.restoreCompleted = restoreCompleted
@@ -629,8 +652,12 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
-        .onPurchaseCompleted { customerInfo in
-            self.purchaseCompleted?(customerInfo)
+        .onPurchaseCompleted { transaction, customerInfo in
+            if let purchaseCompletedWithTransaction = self.purchaseCompletedWithTransaction {
+                purchaseCompletedWithTransaction(transaction, customerInfo)
+            } else {
+                self.purchaseCompleted?(customerInfo)
+            }
             // Always close on successful purchase - shouldDisplay drives when to show, not when to close
             self.close()
         }
@@ -730,8 +757,12 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
-        .onPurchaseCompleted { customerInfo in
-            self.purchaseCompleted?(customerInfo)
+        .onPurchaseCompleted { transaction, customerInfo in
+            if let purchaseCompletedWithTransaction = self.purchaseCompletedWithTransaction {
+                purchaseCompletedWithTransaction(transaction, customerInfo)
+            } else {
+                self.purchaseCompleted?(customerInfo)
+            }
             // Always close on successful purchase - shouldDisplay drives when to show, not when to close
             self.closeExitOffer()
         }
@@ -786,6 +817,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
 
     var purchaseStarted: PurchaseOfPackageStartedHandler?
     var purchaseCompleted: PurchaseOrRestoreCompletedHandler?
+    var purchaseCompletedWithTransaction: PurchaseCompletedHandler?
     var purchaseCancelled: PurchaseCancelledHandler?
     var restoreStarted: RestoreStartedHandler?
     var restoreCompleted: PurchaseOrRestoreCompletedHandler?
@@ -814,6 +846,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         fontProvider: PaywallFontProvider,
         purchaseStarted: PurchaseOfPackageStartedHandler?,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
+        purchaseCompletedWithTransaction: PurchaseCompletedHandler?,
         purchaseCancelled: PurchaseCancelledHandler?,
         restoreStarted: RestoreStartedHandler?,
         restoreCompleted: PurchaseOrRestoreCompletedHandler?,
@@ -826,6 +859,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self.fontProvider = fontProvider
         self.purchaseStarted = purchaseStarted
         self.purchaseCompleted = purchaseCompleted
+        self.purchaseCompletedWithTransaction = purchaseCompletedWithTransaction
         self.purchaseCancelled = purchaseCancelled
         self.restoreStarted = restoreStarted
         self.restoreCompleted = restoreCompleted
@@ -883,8 +917,12 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
-        .onPurchaseCompleted { customerInfo in
-            self.purchaseCompleted?(customerInfo)
+        .onPurchaseCompleted { transaction, customerInfo in
+            if let purchaseCompletedWithTransaction = self.purchaseCompletedWithTransaction {
+                purchaseCompletedWithTransaction(transaction, customerInfo)
+            } else {
+                self.purchaseCompleted?(customerInfo)
+            }
             // Always close on successful purchase
             self.offering = nil
         }
@@ -926,8 +964,12 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
-        .onPurchaseCompleted { customerInfo in
-            self.purchaseCompleted?(customerInfo)
+        .onPurchaseCompleted { transaction, customerInfo in
+            if let purchaseCompletedWithTransaction = self.purchaseCompletedWithTransaction {
+                purchaseCompletedWithTransaction(transaction, customerInfo)
+            } else {
+                self.purchaseCompleted?(customerInfo)
+            }
             // Always close on successful purchase
             self.presentedExitOffer = nil
             self.exitOfferOffering = nil
