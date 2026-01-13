@@ -379,6 +379,14 @@ public class PaywallViewController: UIViewController {
         self.dismiss(animated: true) { [weak self, weak presenter] in
             guard let self = self, let presenter = presenter else { return }
 
+            // Track exit offer event. Note: This may be called before or after onDisappear
+            // tracks the close event due to UIKit timing. The order doesn't matter as events
+            // are correlated by IDs, not by sequence.
+            self.purchaseHandler.trackExitOffer(
+                exitOfferType: .dismiss,
+                exitOfferingIdentifier: offering.identifier
+            )
+
             let exitOfferVC = PaywallViewController(
                 offering: offering,
                 fonts: fonts,
