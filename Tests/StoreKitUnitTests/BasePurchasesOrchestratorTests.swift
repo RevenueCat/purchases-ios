@@ -101,6 +101,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                          diagnosticsTracker: self.mockDiagnosticsTracker)
         self.setUpStoreKit1Wrapper()
         self.mockSimulatedStorePurchaseHandler = MockSimulatedStorePurchaseHandler()
+        self.mockLocalTransactionMetadataStore = MockLocalTransactionMetadataStore()
 
         self.customerInfoManager = MockCustomerInfoManager(
             offlineEntitlementsManager: MockOfflineEntitlementsManager(),
@@ -133,7 +134,6 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.notificationCenter = MockNotificationCenter()
         let identityManager = MockIdentityManager(mockAppUserID: "test-user-id",
                                                   mockDeviceCache: self.deviceCache)
-        self.mockLocalTransactionMetadataStore = MockLocalTransactionMetadataStore()
         self.webPurchaseRedemptionHelper = MockWebPurchaseRedemptionHelper()
         self.setUpStoreKit1Wrapper()
         self.setUpAttribution()
