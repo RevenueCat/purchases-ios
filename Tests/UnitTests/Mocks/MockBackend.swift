@@ -13,8 +13,10 @@ class MockBackend: Backend {
                                        productData: ProductRequestData?,
                                        transactionData: PurchasedTransactionData,
                                        observerMode: Bool,
+                                       originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                                        appTransaction: String?,
                                        transactionId: String?,
+                                       appUserID: String,
                                        completion: CustomerAPI.CustomerInfoResponseHandler?)
 
     var invokedPostReceiptData = false
@@ -59,8 +61,10 @@ class MockBackend: Backend {
                        productData: ProductRequestData?,
                        transactionData: PurchasedTransactionData,
                        observerMode: Bool,
+                       originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                        appTransaction: String? = nil,
                        transactionId: String? = nil,
+                       appUserID: String,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
@@ -68,15 +72,19 @@ class MockBackend: Backend {
                                             productData,
                                             transactionData,
                                             observerMode,
+                                            originalPurchaseCompletedBy,
                                             appTransaction,
                                             transactionId,
+                                            appUserID,
                                             completion)
         invokedPostReceiptDataParametersList.append((receipt,
                                                      productData,
                                                      transactionData,
                                                      observerMode,
+                                                     originalPurchaseCompletedBy,
                                                      appTransaction,
                                                      transactionId,
+                                                     appUserID,
                                                      completion))
 
         self.onPostReceipt?()

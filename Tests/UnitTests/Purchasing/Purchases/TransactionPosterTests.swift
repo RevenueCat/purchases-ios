@@ -25,6 +25,7 @@ class TransactionPosterTests: TestCase {
     private var paymentQueueWrapper: MockPaymentQueueWrapper!
     private var systemInfo: MockSystemInfo!
     private var operationDispatcher: MockOperationDispatcher!
+    private var localTransactionMetadataStore: MockLocalTransactionMetadataStore!
 
     private var poster: TransactionPoster!
 
@@ -45,7 +46,6 @@ class TransactionPosterTests: TestCase {
 
         let result = try self.handleTransaction(
             .init(
-                appUserID: "user",
                 source: .init(isRestore: false, initiationSource: .queue)
             )
         )
@@ -56,7 +56,6 @@ class TransactionPosterTests: TestCase {
     func testHandlePurchasedTransaction() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData(
-            appUserID: "user",
             source: .init(isRestore: false, initiationSource: .queue)
         )
 
@@ -82,7 +81,6 @@ class TransactionPosterTests: TestCase {
 
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData(
-            appUserID: "user",
             source: .init(isRestore: false, initiationSource: .queue)
         )
 
@@ -113,7 +111,6 @@ class TransactionPosterTests: TestCase {
         let product = MockSK1Product(mockProductIdentifier: "product")
 
         let transactionData = PurchasedTransactionData(
-            appUserID: "user",
             source: .init(isRestore: false, initiationSource: .queue)
         )
 
@@ -145,7 +142,6 @@ class TransactionPosterTests: TestCase {
         let product = MockSK1Product(mockProductIdentifier: "product")
 
         let transactionData = PurchasedTransactionData(
-            appUserID: "user",
             source: .init(isRestore: false, initiationSource: .queue)
         )
 
@@ -185,7 +181,6 @@ class TransactionPosterTests: TestCase {
     func testHandlePurchasedTransactionDoesNotFinishNonProcessedConsumables() throws {
         let product = Self.createTestProduct(.consumable)
         let transactionData = PurchasedTransactionData(
-            appUserID: "user",
             source: .init(isRestore: false, initiationSource: .queue)
         )
         let customerInfo = self.createCustomerInfo(nonSubscriptionProductID: nil)
@@ -216,7 +211,6 @@ class TransactionPosterTests: TestCase {
     func testHandlePurchasedTransactionFinishesProcessedConsumable() throws {
         let product = Self.createTestProduct(.consumable)
         let transactionData = PurchasedTransactionData(
-            appUserID: "user",
             source: .init(isRestore: false, initiationSource: .queue)
         )
         let customerInfo = self.createCustomerInfo(nonSubscriptionProductID: product.productIdentifier)
@@ -240,7 +234,6 @@ class TransactionPosterTests: TestCase {
 
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData(
-            appUserID: "user",
             source: .init(isRestore: false, initiationSource: .queue)
         )
 
@@ -376,7 +369,6 @@ class TransactionPosterTests: TestCase {
                                        locale: .current)
 
         let transactionData = PurchasedTransactionData(
-            appUserID: "user",
             source: .init(isRestore: false, initiationSource: .queue)
         )
 
@@ -419,6 +411,7 @@ private extension TransactionPosterTests {
         self.transactionFetcher = .init()
         self.backend = .init()
         self.paymentQueueWrapper = .init()
+        self.localTransactionMetadataStore = .init()
 
         self.poster = .init(
             productsManager: self.productsManager,
@@ -427,13 +420,14 @@ private extension TransactionPosterTests {
             backend: self.backend,
             paymentQueueWrapper: .right(self.paymentQueueWrapper),
             systemInfo: self.systemInfo,
-            operationDispatcher: self.operationDispatcher
+            operationDispatcher: self.operationDispatcher,
+            localTransactionMetadataStore: self.localTransactionMetadataStore
         )
     }
 
     func handleTransaction(_ data: PurchasedTransactionData) throws -> Result<CustomerInfo, BackendError> {
         let result = waitUntilValue { completion in
-            self.poster.handlePurchasedTransaction(self.mockTransaction, data: data) {
+            self.poster.handlePurchasedTransaction(self.mockTransaction, data: data, currentUserID: "user") {
                 completion($0)
             }
         }
@@ -494,8 +488,7 @@ private extension TransactionPosterTests {
 private func match(_ data: PurchasedTransactionData) -> Nimble.Matcher<PurchasedTransactionData> {
     return .init {
         let other = try $0.evaluate()
-        let matches = (other?.appUserID == data.appUserID &&
-                       other?.presentedOfferingContext == data.presentedOfferingContext &&
+        let matches = (other?.presentedOfferingContext == data.presentedOfferingContext &&
                        other?.source == data.source &&
                        other?.unsyncedAttributes == data.unsyncedAttributes)
 

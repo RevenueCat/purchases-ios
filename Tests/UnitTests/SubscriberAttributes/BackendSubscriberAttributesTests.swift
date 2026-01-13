@@ -96,13 +96,14 @@ class BackendSubscriberAttributesTests: TestCase {
         backend.post(receipt: self.receipt,
                      productData: nil,
                      transactionData: .init(
-                        appUserID: self.appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: subscriberAttributesByKey,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: false, initiationSource: .restore)
                      ),
-                     observerMode: false) { _ in }
+                     observerMode: false,
+                     originalPurchaseCompletedBy: .revenueCat,
+                     appUserID: self.appUserID) { _ in }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
     }
@@ -114,14 +115,15 @@ class BackendSubscriberAttributesTests: TestCase {
             self.backend.post(receipt: self.receipt,
                               productData: nil,
                               transactionData: .init(
-                                 appUserID: self.appUserID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: [:],
                                  aadAttributionToken: token,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .restore)
                               ),
-                              observerMode: false) { _ in
+                              observerMode: false,
+                              originalPurchaseCompletedBy: nil,
+                              appUserID: self.appUserID) { _ in
                 completion()
             }
         }
@@ -142,13 +144,14 @@ class BackendSubscriberAttributesTests: TestCase {
         backend.post(receipt: self.receipt,
                      productData: nil,
                      transactionData: .init(
-                        appUserID: self.appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: subscriberAttributesByKey,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: false, initiationSource: .queue)
                      ),
-                     observerMode: false) {
+                     observerMode: false,
+                     originalPurchaseCompletedBy: .revenueCat,
+                     appUserID: self.appUserID) {
             receivedResult.value = $0
         }
 
@@ -166,13 +169,14 @@ class BackendSubscriberAttributesTests: TestCase {
         backend.post(receipt: self.receipt,
                      productData: nil,
                      transactionData: .init(
-                        appUserID: self.appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: false, initiationSource: .purchase)
                      ),
-                     observerMode: false) { _ in }
+                     observerMode: false,
+                     originalPurchaseCompletedBy: .revenueCat,
+                     appUserID: self.appUserID) { _ in }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
     }
@@ -209,13 +213,14 @@ class BackendSubscriberAttributesTests: TestCase {
                 receipt: self.receipt,
                 productData: nil,
                 transactionData: .init(
-                    appUserID: self.appUserID,
                     presentedOfferingContext: nil,
                     unsyncedAttributes: subscriberAttributesByKey,
-                    storefront: nil,
+                    storeCountry: nil,
                     source: .init(isRestore: false, initiationSource: .queue)
                 ),
-                observerMode: false
+                observerMode: false,
+                originalPurchaseCompletedBy: .revenueCat,
+                appUserID: self.appUserID
             ) { result in
                 completion(result.value)
             }
@@ -263,13 +268,14 @@ class BackendSubscriberAttributesTests: TestCase {
                 receipt: self.receipt,
                 productData: nil,
                 transactionData: .init(
-                    appUserID: self.appUserID,
                     presentedOfferingContext: nil,
                     unsyncedAttributes: subscriberAttributesByKey,
-                    storefront: nil,
+                    storeCountry: nil,
                     source: .init(isRestore: false, initiationSource: .restore)
                 ),
-                observerMode: false
+                observerMode: false,
+                originalPurchaseCompletedBy: .revenueCat,
+                appUserID: self.appUserID
             ) { result in
                 completion(result.error)
             }
@@ -451,13 +457,14 @@ class BackendSubscriberAttributesTests: TestCase {
                 backend.post(receipt: self.receipt,
                              productData: nil,
                              transactionData: .init(
-                                appUserID: self.appUserID,
                                 presentedOfferingContext: nil,
                                 unsyncedAttributes: subscriberAttributesByKey,
-                                storefront: nil,
+                                storeCountry: nil,
                                 source: .init(isRestore: false, initiationSource: .purchase)
                              ),
-                             observerMode: false) { _ in
+                             observerMode: false,
+                             originalPurchaseCompletedBy: nil,
+                             appUserID: self.appUserID) { _ in
                     continuation.resume()
                 }
             }
@@ -515,13 +522,14 @@ class BackendSubscriberAttributesTests: TestCase {
                 backend.post(receipt: self.receipt,
                              productData: nil,
                              transactionData: .init(
-                                appUserID: self.appUserID,
                                 presentedOfferingContext: nil,
                                 unsyncedAttributes: emptySubscriberAttributes,
-                                storefront: nil,
+                                storeCountry: nil,
                                 source: .init(isRestore: false, initiationSource: .restore)
                              ),
-                             observerMode: false) { _ in
+                             observerMode: false,
+                             originalPurchaseCompletedBy: nil,
+                             appUserID: self.appUserID) { _ in
                     continuation.resume()
                 }
             }
@@ -595,13 +603,14 @@ class BackendSubscriberAttributesTests: TestCase {
                     backend.post(receipt: self.receipt,
                                  productData: nil,
                                  transactionData: .init(
-                                    appUserID: self.appUserID,
                                     presentedOfferingContext: nil,
                                     unsyncedAttributes: subscriberAttributesOrderedAMZ,
-                                    storefront: nil,
+                                    storeCountry: nil,
                                     source: .init(isRestore: false, initiationSource: .restore)
                                  ),
-                                 observerMode: false) { _ in
+                                 observerMode: false,
+                                 originalPurchaseCompletedBy: nil,
+                                 appUserID: self.appUserID) { _ in
                         continuation.resume()
                     }
                 }
@@ -612,13 +621,14 @@ class BackendSubscriberAttributesTests: TestCase {
                     backend.post(receipt: self.receipt,
                                  productData: nil,
                                  transactionData: .init(
-                                    appUserID: self.appUserID,
                                     presentedOfferingContext: nil,
                                     unsyncedAttributes: subscriberAttributesOrderedZMA,
-                                    storefront: nil,
+                                    storeCountry: nil,
                                     source: .init(isRestore: false, initiationSource: .restore)
                                  ),
-                                 observerMode: false) { _ in
+                                 observerMode: false,
+                                 originalPurchaseCompletedBy: nil,
+                                 appUserID: self.appUserID) { _ in
                         continuation.resume()
                     }
                 }

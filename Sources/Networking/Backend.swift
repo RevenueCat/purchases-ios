@@ -133,19 +133,25 @@ class Backend {
                                       completion: completion)
     }
 
+    // swiftlint:disable:next function_parameter_count
     func post(receipt: EncodedAppleReceipt,
               productData: ProductRequestData?,
               transactionData: PurchasedTransactionData,
               observerMode: Bool,
+              // Value at the time of the purchase (which might come from the `LocalTransactionMetadataStore`)
+              originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
               appTransaction: String? = nil,
               transactionId: String? = nil,
+              appUserID: String,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customer.post(receipt: receipt,
                            productData: productData,
                            transactionData: transactionData,
                            observerMode: observerMode,
+                           originalPurchaseCompletedBy: originalPurchaseCompletedBy,
                            appTransaction: appTransaction,
                            transactionId: transactionId,
+                           appUserID: appUserID,
                            completion: completion)
     }
 

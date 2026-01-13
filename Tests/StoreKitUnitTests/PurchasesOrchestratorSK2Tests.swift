@@ -952,7 +952,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataParameters?.appTransaction) == appTransactionJWS
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .empty // No fetch_token
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.appUserID
+            self.backend.invokedPostReceiptDataParameters?.appUserID
         ) == Self.mockUserID
 
         expect(self.customerInfoManager.invokedCustomerInfo).to(beFalse())
@@ -979,7 +979,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataParameters?.appTransaction) == appTransactionJWS
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .empty // No fetch_token
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.appUserID
+            self.backend.invokedPostReceiptDataParameters?.appUserID
         ) == Self.mockUserID
 
         expect(self.customerInfoManager.invokedCustomerInfo).to(beFalse())
@@ -1006,7 +1006,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataParameters?.appTransaction) == appTransactionJWS
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .empty // No fetch_token
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.appUserID
+            self.backend.invokedPostReceiptDataParameters?.appUserID
         ) == Self.mockUserID
 
         expect(self.customerInfoManager.invokedCustomerInfo).to(beFalse())

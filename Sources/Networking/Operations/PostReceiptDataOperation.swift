@@ -132,7 +132,12 @@ extension PostReceiptDataOperation {
         let presentedPlacementIdentifier: String?
         let appliedTargetingRule: AppliedTargetingRule?
         let paywall: Paywall?
+
+        /// The value of observer mode at the time of the request.
         let observerMode: Bool
+
+        /// The value of purchaseCompletedBy at purchase time.
+        let purchaseCompletedBy: PurchasesAreCompletedBy?
         let initiationSource: ProductRequestData.InitiationSource
         let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
         let aadAttributionToken: String?
@@ -168,15 +173,17 @@ extension PostReceiptDataOperation.PostData {
 
     init(
         transactionData data: PurchasedTransactionData,
+        appUserID: String,
         productData: ProductRequestData?,
         receipt: EncodedAppleReceipt,
         observerMode: Bool,
+        purchaseCompletedBy: PurchasesAreCompletedBy?,
         testReceiptIdentifier: String?,
         appTransaction: String?,
         transactionId: String?
     ) {
         self.init(
-            appUserID: data.appUserID,
+            appUserID: appUserID,
             receipt: receipt,
             isRestore: data.source.isRestore,
             productData: productData,
@@ -187,6 +194,7 @@ extension PostReceiptDataOperation.PostData {
             },
             paywall: data.paywall,
             observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
             initiationSource: data.source.initiationSource,
             subscriberAttributesByKey: data.unsyncedAttributes,
             aadAttributionToken: data.aadAttributionToken,
@@ -264,6 +272,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case appUserID = "app_user_id"
         case isRestore
         case observerMode
+        case purchaseCompletedBy = "purchase_completed_by"
         case initiationSource
         case attributes
         case aadAttributionToken
@@ -298,6 +307,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
         try container.encodeIfPresent(self.paywall, forKey: .paywall)
+        try container.encodeIfPresent(self.purchaseCompletedBy, forKey: .purchaseCompletedBy)
 
         try container.encodeIfPresent(
             self.subscriberAttributesByKey
@@ -351,7 +361,7 @@ extension PostReceiptDataOperation.PostData: HTTPRequestBody {
 
 // MARK: - InitiationSource
 
-extension ProductRequestData.InitiationSource: Encodable, RawRepresentable {
+extension ProductRequestData.InitiationSource: Codable, RawRepresentable {
 
     var rawValue: String {
         switch self {
