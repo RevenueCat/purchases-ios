@@ -52,14 +52,14 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `presentedOfferingIdentifier`
         /// - `observerMode`
         /// - `subscriberAttributesByKey`
-        /// - `transactionId`
+        /// - `associatedTransactionId`
         let cacheKey =
         """
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.hash)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
-        -\(postData.transactionId ?? "")
+        -\(postData.associatedTransactionId ?? "")
         """
 
         return .init({ cacheKey in
@@ -147,7 +147,7 @@ extension PostReceiptDataOperation {
         /// The [AppTransaction](https://developer.apple.com/documentation/storekit/apptransaction) JWS token
         /// retrieved from StoreKit 2.
         let appTransaction: String?
-        let transactionId: String?
+        let associatedTransactionId: String?
         let metadata: [String: String]?
     }
 
@@ -180,7 +180,7 @@ extension PostReceiptDataOperation.PostData {
         purchaseCompletedBy: PurchasesAreCompletedBy?,
         testReceiptIdentifier: String?,
         appTransaction: String?,
-        transactionId: String?
+        associatedTransactionId: String?
     ) {
         self.init(
             appUserID: appUserID,
@@ -200,7 +200,7 @@ extension PostReceiptDataOperation.PostData {
             aadAttributionToken: data.aadAttributionToken,
             testReceiptIdentifier: testReceiptIdentifier,
             appTransaction: appTransaction,
-            transactionId: transactionId,
+            associatedTransactionId: associatedTransactionId,
             metadata: data.metadata
         )
     }
@@ -282,7 +282,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case paywall
         case testReceiptIdentifier = "test_receipt_identifier"
         case appTransaction = "app_transaction"
-        case transactionId = "transaction_id"
+        case associatedTransactionId = "transaction_id"
         case metadata
 
     }
@@ -301,7 +301,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
 
         try container.encodeIfPresent(self.fetchToken, forKey: .fetchToken)
         try container.encodeIfPresent(self.appTransaction, forKey: .appTransaction)
-        try container.encodeIfPresent(self.transactionId, forKey: .transactionId)
+        try container.encodeIfPresent(self.associatedTransactionId, forKey: .associatedTransactionId)
         try container.encodeIfPresent(self.metadata, forKey: .metadata)
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)

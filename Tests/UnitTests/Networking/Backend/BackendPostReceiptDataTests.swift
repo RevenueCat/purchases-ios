@@ -175,7 +175,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         let isRestore = false
         let observerMode = true
-        let transactionId = "test_transaction_id_12345"
+        let associatedTransactionId = "test_transaction_id_12345"
         let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
 
         waitUntil { completed in
@@ -189,7 +189,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  source: .init(isRestore: isRestore, initiationSource: .purchase)
                               ),
                               observerMode: observerMode,
-                              transactionId: transactionId,
+                              associatedTransactionId: associatedTransactionId,
                               completion: { _ in
                 completed()
             })

@@ -15,7 +15,7 @@ class MockBackend: Backend {
                                        observerMode: Bool,
                                        originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                                        appTransaction: String?,
-                                       transactionId: String?,
+                                       associatedTransactionId: String?,
                                        appUserID: String,
                                        completion: CustomerAPI.CustomerInfoResponseHandler?)
 
@@ -63,7 +63,7 @@ class MockBackend: Backend {
                        observerMode: Bool,
                        originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                        appTransaction: String? = nil,
-                       transactionId: String? = nil,
+                       associatedTransactionId: String? = nil,
                        appUserID: String,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
@@ -74,7 +74,7 @@ class MockBackend: Backend {
                                             observerMode,
                                             originalPurchaseCompletedBy,
                                             appTransaction,
-                                            transactionId,
+                                            associatedTransactionId,
                                             appUserID,
                                             completion)
         invokedPostReceiptDataParametersList.append((receipt,
@@ -83,7 +83,7 @@ class MockBackend: Backend {
                                                      observerMode,
                                                      originalPurchaseCompletedBy,
                                                      appTransaction,
-                                                     transactionId,
+                                                     associatedTransactionId,
                                                      appUserID,
                                                      completion))
 

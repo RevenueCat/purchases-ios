@@ -275,13 +275,18 @@ private extension TransactionPoster {
                                                              forTransactionId: transaction.transactionIdentifier)
         }
 
+        // Only send transaction ID when there's associated metadata to track
+        let transactionIdToSend = (shouldClearMetadataOnSuccess || shouldStoreMetadata)
+            ? transaction.transactionIdentifier
+            : nil
+
         self.backend.post(receipt: receipt,
                           productData: effectiveProductData,
                           transactionData: effectiveTransactionData,
                           observerMode: self.observerMode,
                           originalPurchaseCompletedBy: effectivePurchasesAreCompletedBy,
                           appTransaction: appTransaction,
-                          transactionId: transaction.transactionIdentifier,
+                          associatedTransactionId: transactionIdToSend,
                           appUserID: currentUserID) { result in
             if shouldClearMetadataOnSuccess {
                 switch result {
