@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 final class PostReceiptDataOperation: CacheableNetworkOperation {
 
     private let postData: PostData
