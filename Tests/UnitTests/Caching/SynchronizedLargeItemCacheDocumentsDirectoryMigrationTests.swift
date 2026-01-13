@@ -50,7 +50,7 @@ final class LargeItemCacheTypeDocumentsDirectoryMigrationTests: TestCase {
         let sut = createSut(.remove(oldBasePath: Self.oldBasePath))
 
         // Reading a file should triger the removal of the old directory
-        let value: TestData? = sut.value(forKey: CacheKey(rawValue: "dummy-key"))
+        let value: TestData? = sut.value(forKey: "dummy-key")
         expect(value).to(beNil())
 
         expect(self.fileManager.fileExists(atPath: oldDocumentsDirectoryURL.path)).to(beFalse())
@@ -75,20 +75,20 @@ final class LargeItemCacheTypeDocumentsDirectoryMigrationTests: TestCase {
         let sut = createSut(.migrate(oldBasePath: Self.oldBasePath))
 
         // When retrieving the first file it should be migrated, but the old directory should still have the second file
-        let testDataOne: TestData = try XCTUnwrap(sut.value(forKey: CacheKey(rawValue: files[0])))
+        let testDataOne: TestData = try XCTUnwrap(sut.value(forKey: files[0]))
         expect(self.fileManager.fileExists(atPath: oldDocumentsDirectoryURL.path)).to(beTrue())
         expect(self.fileManager.fileExists(atPath: oldFileOne.path)).to(beFalse())
         expect(self.fileManager.fileExists(atPath: oldFileTwo.path)).to(beTrue())
 
         // Now the second file should be migrated as well and the old directory should be removed
-        let testDataTwo: TestData = try XCTUnwrap(sut.value(forKey: CacheKey(rawValue: files[1])))
+        let testDataTwo: TestData = try XCTUnwrap(sut.value(forKey: files[1]))
         expect(self.fileManager.fileExists(atPath: oldDocumentsDirectoryURL.path)).to(beFalse())
         expect(self.fileManager.fileExists(atPath: oldFileOne.path)).to(beFalse())
         expect(self.fileManager.fileExists(atPath: oldFileTwo.path)).to(beFalse())
 
         // Additional check, the file should now be loaded from the new location
-        expect(try XCTUnwrap(sut.value(forKey: CacheKey(rawValue: files[0])))) == testDataOne
-        expect(try XCTUnwrap(sut.value(forKey: CacheKey(rawValue: files[1])))) == testDataTwo
+        expect(try XCTUnwrap(sut.value(forKey: files[0]))) == testDataOne
+        expect(try XCTUnwrap(sut.value(forKey: files[1]))) == testDataTwo
     }
 
     func testSetMigratesFileFromOldDirectory() async throws {
@@ -109,7 +109,7 @@ final class LargeItemCacheTypeDocumentsDirectoryMigrationTests: TestCase {
 
         // Writing to the first file should write it to the new location and delete the old file
         let newDataOne = TestData()
-        sut.set(codable: newDataOne, forKey: CacheKey(rawValue: files[0]))
+        sut.set(codable: newDataOne, forKey: files[0])
         expect(self.fileManager.fileExists(atPath: newFileOne.path)).to(beTrue())
         expect(self.fileManager.fileExists(atPath: oldFileOne.path)).to(beFalse())
 
@@ -119,7 +119,7 @@ final class LargeItemCacheTypeDocumentsDirectoryMigrationTests: TestCase {
 
         // Writing to the second file should write it to thew new location as well
         let newDataTwo = TestData()
-        sut.set(codable: newDataTwo, forKey: CacheKey(rawValue: files[1]))
+        sut.set(codable: newDataTwo, forKey: files[1])
         expect(self.fileManager.fileExists(atPath: newFileTwo.path)).to(beTrue())
         expect(self.fileManager.fileExists(atPath: oldFileTwo.path)).to(beFalse())
 
@@ -127,8 +127,8 @@ final class LargeItemCacheTypeDocumentsDirectoryMigrationTests: TestCase {
         expect(self.fileManager.fileExists(atPath: oldDocumentsDirectoryURL.path)).to(beFalse())
 
         // Reading should return the new values from the new location
-        let retrievedOne: TestData? = sut.value(forKey: CacheKey(rawValue: files[0]))
-        let retrievedTwo: TestData? = sut.value(forKey: CacheKey(rawValue: files[1]))
+        let retrievedOne: TestData? = sut.value(forKey: files[0])
+        let retrievedTwo: TestData? = sut.value(forKey: files[1])
         expect(retrievedOne) == newDataOne
         expect(retrievedTwo) == newDataTwo
     }
