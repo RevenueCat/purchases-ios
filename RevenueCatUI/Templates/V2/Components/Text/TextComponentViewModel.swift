@@ -317,7 +317,10 @@ enum GenericFont: String {
     }
 
     /// Maps a font size to an appropriate `Font.TextStyle` for Dynamic Type scaling.
-    /// Based on the mapping from `PaywallComponent.FontSize`.
+    ///
+    /// The mapping is arbitrary and used only for scaling purposes. The exact text style
+    /// doesn't need to match Apple's defaults precisely since it only determines
+    /// how the font scales relative to the user's Dynamic Type setting.
     static func textStyle(for fontSize: CGFloat) -> Font.TextStyle {
         switch fontSize {
         case 34...:
