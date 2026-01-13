@@ -64,12 +64,13 @@ class StoreKit2StorefrontListener {
 
                 // Only emit if this is an actual change from the last known storefront
                 if self?.shouldEmitStorefrontChange(storefront) == true {
-                    await MainActor.run { @Sendable in
-                        delegate.storefrontIdentifierDidChange(with: storefront)
-                    }
 
                     // Update the last known storefront
                     self?.updateLastKnownStorefrontIdentifier(storefront.identifier)
+
+                    await MainActor.run { @Sendable in
+                        delegate.storefrontIdentifierDidChange(with: storefront)
+                    }
                 }
             }
         }
