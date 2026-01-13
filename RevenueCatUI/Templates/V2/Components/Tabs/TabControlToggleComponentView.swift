@@ -83,7 +83,7 @@ struct TabControlToggleComponentView: View {
     /// Computes the toggle's ON state based on the selected tab.
     /// The toggle is ON when the second tab (index 1) is selected.
     private func computeIsOn(selectedTabId: String, tabIds: [String]) -> Bool {
-        guard tabIds.count >= 2 else { return false }
+        guard tabIds.count == 2 else { return false }
         return selectedTabId == tabIds[1]
     }
 

@@ -122,9 +122,7 @@ struct LoadedTabsComponentView: View {
     /// - Tabs with packages + user made selection: preserve user's selection
     /// - Tabs with packages + no user selection: return nil to use tab's default
     private func effectiveParentOwnedPackage(for tabViewModel: TabViewModel) -> Package? {
-        if tabViewModel.packages.isEmpty {
-            return self.parentOwnedPackage
-        } else if self.didUserSelectPackage {
+        if tabViewModel.packages.isEmpty || self.didUserSelectPackage {
             return self.parentOwnedPackage
         } else {
             return nil
