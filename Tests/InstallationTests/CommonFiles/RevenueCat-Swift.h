@@ -702,6 +702,21 @@ SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWI
 /// \param kochavaDeviceID Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setKochavaDeviceID:(NSString * _Nullable)kochavaDeviceID;
+/// Subscriber attribute associated with the Solar Engine Distinct ID for the user.
+/// Recommended for the RevenueCat Solar Engine integration.
+/// \param solarEngineDistinctId Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setSolarEngineDistinctId:(NSString * _Nullable)solarEngineDistinctId;
+/// Subscriber attribute associated with the Solar Engine Account ID for the user.
+/// Recommended for the RevenueCat Solar Engine integration.
+/// \param solarEngineAccountId Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setSolarEngineAccountId:(NSString * _Nullable)solarEngineAccountId;
+/// Subscriber attribute associated with the Solar Engine Visitor ID for the user.
+/// Recommended for the RevenueCat Solar Engine integration.
+/// \param solarEngineVisitorId Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setSolarEngineVisitorId:(NSString * _Nullable)solarEngineVisitorId;
 /// Subscriber attribute associated with the Mixpanel Distinct ID for the user.
 /// Optional for the RevenueCat Mixpanel integration.
 /// <h4>Related Articles</h4>
