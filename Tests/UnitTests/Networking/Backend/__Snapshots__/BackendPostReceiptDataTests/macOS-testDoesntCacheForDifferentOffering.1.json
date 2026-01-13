@@ -33,7 +33,8 @@
       "initiation_source" : "queue",
       "is_restore" : true,
       "observer_mode" : false,
-      "presented_offering_identifier" : "offering_a"
+      "presented_offering_identifier" : "offering_a",
+      "purchase_completed_by" : 0
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

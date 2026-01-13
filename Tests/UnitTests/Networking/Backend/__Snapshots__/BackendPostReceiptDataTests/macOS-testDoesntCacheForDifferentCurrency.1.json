@@ -32,7 +32,8 @@
       "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
       "initiation_source" : "purchase",
       "is_restore" : false,
-      "observer_mode" : true
+      "observer_mode" : true,
+      "purchase_completed_by" : 1
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"
