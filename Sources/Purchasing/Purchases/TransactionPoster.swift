@@ -248,7 +248,8 @@ private extension TransactionPoster {
                           productData: productData,
                           transactionData: purchasedTransactionData,
                           observerMode: self.observerMode,
-                          appTransaction: appTransaction) { result in
+                          appTransaction: appTransaction,
+                          transactionId: transaction.transactionIdentifier) { result in
             self.handleReceiptPost(withTransaction: transaction,
                                    result: result.map { ($0, product) },
                                    subscriberAttributes: purchasedTransactionData.unsyncedAttributes,
