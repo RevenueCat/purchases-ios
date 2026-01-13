@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 /// Determines what triggered a purchase and whether it comes from a restore.
 struct PurchaseSource: Equatable {
 
@@ -124,8 +126,11 @@ final class TransactionPoster: TransactionPosterType {
                                          receipt: encodedReceipt,
                                          product: product,
                                          appTransaction: appTransaction,
-                                         currentUserID: currentUserID,
-                                         completion: completion)
+                                         currentUserID: currentUserID) { result in
+                            self.finishTransactionIfNeededFromReceiptPost(transaction: transaction,
+                                                                          result: result.map { ($0, product) },
+                                                                          completion: completion)
+                        }
                     }
                 }
             case .failure(let error):
@@ -245,9 +250,17 @@ extension PurchaseSource: Codable {}
 
 extension TransactionPoster {
 
-    func finishTransactionIfNeededFromReceiptPost(transaction: StoreTransactionType,
-                                                  result: Result<(info: CustomerInfo, product: StoreProduct?), BackendError>,
-                                                  completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+    func finishTransactionIfNeededFromReceiptPost(
+        transaction: StoreTransactionType,
+        result: Result<
+            (
+                info: CustomerInfo,
+                product: StoreProduct?
+            ),
+        BackendError
+        >,
+        completion: @escaping CustomerAPI.CustomerInfoResponseHandler
+    ) {
         let customerInfoResult = result.map(\.info)
 
         self.operationDispatcher.dispatchOnMainActor {
@@ -327,9 +340,7 @@ extension TransactionPoster {
                     break
                 }
             }
-            self.finishTransactionIfNeededFromReceiptPost(transaction: transaction,
-                                                          result: result.map { ($0, product) },
-                                                          completion: completion)
+            completion(result)
         }
     }
 
