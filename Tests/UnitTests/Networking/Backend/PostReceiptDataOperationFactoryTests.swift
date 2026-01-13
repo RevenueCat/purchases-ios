@@ -78,7 +78,8 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             receipt: self.receipt,
             observerMode: false,
             testReceiptIdentifier: nil,
-            appTransaction: nil
+            appTransaction: nil,
+            transactionId: nil
         )
 
         let postData2 = PostReceiptDataOperation.PostData(
@@ -93,7 +94,8 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             receipt: self.receipt,
             observerMode: false,
             testReceiptIdentifier: nil,
-            appTransaction: nil
+            appTransaction: nil,
+            transactionId: nil
         )
 
         let factory1 = PostReceiptDataOperation.createFactory(
@@ -147,7 +149,8 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             receipt: self.receipt,
             observerMode: false,
             testReceiptIdentifier: nil,
-            appTransaction: nil
+            appTransaction: nil,
+            transactionId: nil
         )
 
         let postData2 = PostReceiptDataOperation.PostData(
@@ -162,7 +165,8 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             receipt: self.receipt,
             observerMode: false,
             testReceiptIdentifier: nil,
-            appTransaction: nil
+            appTransaction: nil,
+            transactionId: nil
         )
 
         let factory1 = PostReceiptDataOperation.createFactory(

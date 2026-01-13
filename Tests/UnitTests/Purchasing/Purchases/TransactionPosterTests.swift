@@ -71,6 +71,7 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionId) == self.mockTransaction.transactionIdentifier
         expect(self.mockTransaction.finishInvoked) == true
     }
 
@@ -126,6 +127,7 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(jwsRepresentation)
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionId) == self.mockTransaction.transactionIdentifier
         expect(self.mockTransaction.finishInvoked) == true
     }
 
@@ -170,6 +172,7 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .sk2receipt(receipt)
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionId) == self.mockTransaction.transactionIdentifier
         expect(self.mockTransaction.finishInvoked) == true
     }
 
@@ -383,6 +386,7 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(purchaseToken)
         expect(self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier) == "fake_product"
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionId) == self.mockTransaction.transactionIdentifier
 
         expect(self.receiptFetcher.receiptDataCalled) == false
         expect(self.transactionFetcher.appTransactionJWSCalled.value) == false
