@@ -1,12 +1,9 @@
-## RevenueCat SDK
-### ✨ New Features
-* Add Solar Engine integration support (#5992) via Lim Hoang (@limdauto)
-### 🐞 Bugfixes
-* Ensure cache writes create parent directory (#5986) via Facundo Menzella (@facumenzella)
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* Add exit offer support to PaywallViewController for hybrid SDKs (#6003) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Add zeroDecimalPlaceCountries support for Paywalls V2 (#5991) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Updated Loadshedder backend integration test reference snapshot (#6001) via Rick (@rickvdl)
-* Updated reference snapshot for testCanGetOfferingsFromFallbackURL test (#6000) via Rick (@rickvdl)
-* chore: Update swiftlint commit hook (#5993) via Facundo Menzella (@facumenzella)
-* Install Swiftlint via Mise (#5998) via Facundo Menzella (@facumenzella)
-* Fix Nimble test failure reporting in Tuist workspace (#5987) via Facundo Menzella (@facumenzella)
+* Added zero_decimal_place_countries in backend integration tests offerings snapshot reference (#6011) via Rick (@rickvdl)

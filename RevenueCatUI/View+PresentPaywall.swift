@@ -455,6 +455,7 @@ extension View {
 
 }
 
+// swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 private struct PresentingPaywallModifier: ViewModifier {
@@ -687,6 +688,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         guard self.presentedExitOffer == nil else { return }
 
         guard !purchaseHandler.hasPurchasedInSession else {
+            self.purchaseHandler.trackPaywallClose()
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
             return
@@ -696,13 +698,20 @@ private struct PresentingPaywallModifier: ViewModifier {
         if let purchaseResult = self.purchaseHandler.sessionPurchaseResult,
            !purchaseResult.userCancelled,
            !self.shouldDisplay(purchaseResult.customerInfo) {
+            self.purchaseHandler.trackPaywallClose()
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
             return
         }
 
+        self.purchaseHandler.trackPaywallClose()
+
         if let exitOffering = self.exitOfferOffering {
             Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
+            self.purchaseHandler.trackExitOffer(
+                exitOfferType: .dismiss,
+                exitOfferingIdentifier: exitOffering.identifier
+            )
             self.presentedExitOffer = exitOffering
         } else {
             self.purchaseHandler.resetForNewSession()
@@ -966,6 +975,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         guard self.presentedExitOffer == nil else { return }
 
         guard !self.purchaseHandler.hasPurchasedInSession else {
+            self.purchaseHandler.trackPaywallClose()
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
             return
@@ -977,8 +987,14 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             return
         }
 
+        self.purchaseHandler.trackPaywallClose()
+
         if let exitOffering = self.exitOfferOffering {
             Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
+            self.purchaseHandler.trackExitOffer(
+                exitOfferType: .dismiss,
+                exitOfferingIdentifier: exitOffering.identifier
+            )
             self.presentedExitOffer = exitOffering
         } else {
             self.purchaseHandler.resetForNewSession()
