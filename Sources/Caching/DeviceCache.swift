@@ -44,8 +44,9 @@ import Foundation
 /// called from background threads.
 ///
 /// ### SK2 Observer Mode Transaction IDs
-/// `registerNewSyncedSK2ObserverModeTransactionIDs()` performs RMW but intentionally uses the lock-free
-/// wrapper because the operation is idempotent - lost transaction IDs will be re-processed on the next sync.
+/// `registerNewSyncedSK2ObserverModeTransactionIDs()` performs RMW using a dedicated lock
+/// (`cachedSyncedSK2ObserverModeTransactionIDsLock`) that is separate from the subscriber attributes lock.
+/// This avoids potential deadlocks since this lock is not shared with main thread operations.
 ///
 /// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/4137
 /// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/5729
@@ -411,35 +412,32 @@ class DeviceCache {
     }
 
     // MARK: - StoreKit 2
-    // Note: `registerNewSyncedSK2ObserverModeTransactionIDs` performs a read-modify-write operation
-    // which has a potential race condition (concurrent appends could lose data). We intentionally
-    // avoid using a lock because it causes deadlocks when the main thread waits for the lock while
-    // a background thread holds it and writes to UserDefaults (which posts a notification to main).
-    // The race condition is acceptable here because:
-    // 1. Transaction IDs that get lost will be re-processed on the next sync
-    // 2. The operation is idempotent - re-syncing a transaction is safe
-    // See: https://github.com/RevenueCat/purchases-ios/issues/4137
+    private let cachedSyncedSK2ObserverModeTransactionIDsLock = Lock(.nonRecursive)
 
     func registerNewSyncedSK2ObserverModeTransactionIDs(_ ids: [UInt64]) {
-        var transactionIDs = self.userDefaults.read { userDefaults in
-            userDefaults.array(
-                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64]
-        } ?? []
-
-        transactionIDs.append(contentsOf: ids)
-
-        self.userDefaults.write {
-            $0.set(
-                transactionIDs,
-                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs
-            )
+        cachedSyncedSK2ObserverModeTransactionIDsLock.perform {
+            var transactionIDs = self.userDefaults.read { userDefaults in
+                userDefaults.array(
+                    forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64]
+            } ?? []
+            
+            transactionIDs.append(contentsOf: ids)
+            
+            self.userDefaults.write {
+                $0.set(
+                    transactionIDs,
+                    forKey: CacheKey.syncedSK2ObserverModeTransactionIDs
+                )
+            }
         }
     }
 
     func cachedSyncedSK2ObserverModeTransactionIDs() -> [UInt64] {
-        return self.userDefaults.read { userDefaults in
-            userDefaults.array(
-                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64] ?? []
+        cachedSyncedSK2ObserverModeTransactionIDsLock.perform {
+            return self.userDefaults.read { userDefaults in
+                userDefaults.array(
+                    forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64] ?? []
+            }
         }
     }
 
