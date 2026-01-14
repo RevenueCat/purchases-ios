@@ -903,7 +903,7 @@ final class PurchasesOrchestrator {
         case .close:
             self.clearPresentedPaywall()
 
-        case .cancel:
+        case .cancel, .exitOffer:
             break
         }
     }

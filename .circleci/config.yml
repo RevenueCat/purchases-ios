@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.9.0
+  revenuecat: revenuecat/sdks-common-config@3.10.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -152,7 +152,6 @@ commands:
     steps:
       - install-dependencies:
           install_xcbeautify: false
-          install_swiftlint: false
           install_xcodes: true
       - run:
           name: Install simulator
@@ -217,9 +216,6 @@ commands:
       install_mint_0_17_5:
         type: boolean
         default: false
-      install_swiftlint:
-        type: boolean
-        default: true
       install_xcodes:
         type: boolean
         default: false
@@ -232,7 +228,6 @@ commands:
             echo "xcbeautify:<< parameters.install_xcbeautify >>" > .homebrew-deps
             echo "mint:<< parameters.install_mint >>" >> .homebrew-deps
             echo "mint_0_17_5:<< parameters.install_mint_0_17_5 >>" >> .homebrew-deps
-            echo "swiftlint:<< parameters.install_swiftlint >>" >> .homebrew-deps
             echo "xcodes:<< parameters.install_xcodes >>" >> .homebrew-deps
       - restore_cache:
           keys:
@@ -252,11 +247,6 @@ commands:
           steps:
             - install-mint-0_17_5
       - when:
-          condition: << parameters.install_swiftlint >>
-          steps:
-            - install-brew-dependency:
-                dependency_name: "swiftlint"
-      - when:
           condition: << parameters.install_xcodes >>
           steps:
             - install-brew-dependency:
@@ -264,7 +254,6 @@ commands:
       - save_cache:
           key: homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
           paths:
-            - /usr/local/Cellar/swiftlint/
             - /usr/local/Cellar/xcbeautify/
             - /usr/local/Cellar/xcodes/
             - /Users/$USER/Library/Caches/Homebrew/
@@ -624,11 +613,10 @@ jobs:
 
     steps:
       - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
-          install_mint: true
-          install_swiftlint: false
-      - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -657,11 +645,10 @@ jobs:
 
     steps:
       - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
-          install_mint: true
-          install_swiftlint: false
-      - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -694,11 +681,10 @@ jobs:
 
     steps:
       - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
           install_xcbeautify: false
-          install_mint: true
-          install_swiftlint: false
-      - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -730,8 +716,10 @@ jobs:
 
     steps:
       - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
-          install_swiftlint: false
+          install_xcbeautify: false
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -763,8 +751,10 @@ jobs:
 
     steps:
       - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
       - install-dependencies:
-          install_swiftlint: false
+          install_xcbeautify: false
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -794,7 +784,10 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - install-dependencies
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
+      - install-dependencies:
+          install_xcbeautify: false
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -844,8 +837,7 @@ jobs:
       xcode_version: "26.0.1"
     steps:
       - checkout
-      - install-dependencies:
-          install_swiftlint: false
+      - install-dependencies
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -872,8 +864,7 @@ jobs:
 
     steps:
       - checkout
-      - install-dependencies:
-          install_swiftlint: false
+      - install-dependencies
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -903,7 +894,6 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_swiftlint: false
       - install-xcbeautify-for-xcode15
       - run:
           name: Run tests
@@ -934,7 +924,6 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_swiftlint: false
       - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
       - run:
@@ -970,7 +959,6 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_swiftlint: false
       - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
       - install-runtime:
@@ -1056,7 +1044,6 @@ jobs:
           install_xcbeautify: false
           # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
           install_mint_0_17_5: true
-          install_swiftlint: false
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
@@ -1091,7 +1078,6 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_swiftlint: false
       - macos/install-rosetta
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
@@ -1199,8 +1185,7 @@ jobs:
           platform: "iOS"
           device: "iPhone 16 Pro"
       - checkout
-      - install-dependencies:
-          install_swiftlint: false
+      - install-dependencies
       - revenuecat/install-maestro
       - tuist-generate-workspace:
           query: "Maestro"
@@ -1439,14 +1424,18 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_xcbeautify: false
+      - revenuecat/install-swiftlint
       - run:
           command: mkdir -p fastlane/test_output/swiftlint
       - run:
           name: Run fastlane swiftlint lane
           command: |
+            export PATH="$HOME/.local/share/mise/shims:$PATH"
             bundle exec fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
             reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
+          no_output_timeout: 5m
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -1605,8 +1594,7 @@ jobs:
 
     steps:
       - checkout
-      - install-dependencies:
-          install_swiftlint: false
+      - install-dependencies
       - run:
           name: Fetch paywall-preview-resources
           command: bundle exec fastlane ios fetch_paywall_preview_resources

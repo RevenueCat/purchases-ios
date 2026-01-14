@@ -23,9 +23,25 @@ import UIKit
 
 /// A view controller for displaying the paywall for an `Offering`.
 ///
+/// ## Exit Offer Support
+///
+/// This view controller sets itself as the `presentationController?.delegate` to intercept
+/// swipe-to-dismiss gestures for exit offer support. When an exit offer is available and the user
+/// attempts to dismiss without purchasing, the exit offer paywall will be presented instead.
+///
+/// Exit offers take priority over any existing presentation controller delegate. If you have an
+/// existing delegate, it will be preserved and delegate methods will be forwarded to it only when
+/// exit offers are not being handled.
+///
+/// - Important: If you need to set a custom `presentationController?.delegate` in a subclass,
+///   do so **before** calling `super.viewWillAppear(_:)`. This ensures your delegate is captured
+///   and forwarded. Setting it afterwards will override the exit offer handling, potentially
+///   breaking exit offer support.
+///
 /// - Seealso: ``PaywallView`` for `SwiftUI`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @objc(RCPaywallViewController)
+// swiftlint:disable:next type_body_length
 public class PaywallViewController: UIViewController {
 
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
@@ -40,6 +56,25 @@ public class PaywallViewController: UIViewController {
             // This is used by some Hybrid SDKs that require modifying the content after creation.
             self.hostingController = self.createHostingController()
         }
+    }
+
+    // MARK: - Exit Offer State
+
+    /// The prefetched exit offer, loaded while the main paywall is showing.
+    private var exitOfferOffering: Offering?
+
+    /// Whether we're currently showing an exit offer (to prevent multiple presentations).
+    private var isShowingExitOffer: Bool = false
+
+    /// Whether we're dismissing to show an exit offer (skip dismissal notification).
+    private var isDismissingForExitOffer: Bool = false
+
+    /// The original presentation controller delegate, if one was set before we took over.
+    /// We forward all delegate calls to this after handling our exit offer logic.
+    private weak var originalPresentationControllerDelegate: UIAdaptivePresentationControllerDelegate?
+
+    private var purchaseHandler: PurchaseHandler {
+        return configuration.purchaseHandler
     }
 
     /// Initialize a `PaywallViewController` with an optional `Offering`.
@@ -192,10 +227,24 @@ public class PaywallViewController: UIViewController {
         if self.hostingController == nil {
             self.hostingController = self.createHostingController()
         }
+
+        // Prefetch exit offer
+        Task { @MainActor in
+            await self.prefetchExitOffer()
+        }
+    }
+
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        // Set ourselves as the presentation controller delegate to intercept swipe-to-dismiss
+        // for exit offer support. We store any existing delegate to forward calls to it.
+        self.originalPresentationControllerDelegate = self.presentationController?.delegate
+        self.presentationController?.delegate = self
     }
 
     public override func viewDidDisappear(_ animated: Bool) {
-        if self.isBeingDismissed {
+        if self.isBeingDismissed && !self.isDismissingForExitOffer {
             self.delegate?.paywallViewControllerWasDismissed?(self)
         }
         super.viewDidDisappear(animated)
@@ -265,6 +314,104 @@ public class PaywallViewController: UIViewController {
         return .fullScreen
     }
 
+    // MARK: - Exit Offer Handling
+
+    /// Prefetches the exit offer for the current offering.
+    @MainActor
+    private func prefetchExitOffer() async {
+        guard let offering = await self.configuration.content.resolveOffering() else {
+            return
+        }
+        self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
+    }
+
+    /// Handles dismissal requests, checking for exit offers before calling the original handler.
+    private func handleDismissalRequest() {
+        // If purchased, dismiss immediately without showing exit offer
+        guard !self.purchaseHandler.hasPurchasedInSession else {
+            self.purchaseHandler.resetForNewSession()
+            self.dismissPaywall()
+            return
+        }
+
+        // Show exit offer if available
+        if let exitOffering = self.exitOfferOffering, !self.isShowingExitOffer {
+            self.presentExitOffer(for: exitOffering)
+        } else {
+            self.purchaseHandler.resetForNewSession()
+            self.dismissPaywall()
+        }
+    }
+
+    /// Dismisses the paywall, either via the handler or directly.
+    private func dismissPaywall() {
+        if let handler = self.dismissRequestedHandler {
+            handler(self)
+        } else {
+            self.dismiss(animated: true)
+        }
+    }
+
+    /// Presents the exit offer paywall as a sheet.
+    private func presentExitOffer(for offering: Offering) {
+        Logger.debug(Strings.presentingExitOffer(offering.identifier))
+
+        self.isShowingExitOffer = true
+
+        // Capture the presenting view controller and other needed state before dismissing
+        guard let presenter = self.presentingViewController else {
+            // No presenter, just dismiss normally
+            self.purchaseHandler.resetForNewSession()
+            self.dismissPaywall()
+            return
+        }
+
+        // Capture state we need after self is dismissed
+        let originalDelegate = self.delegate
+        let originalDismissHandler = self.dismissRequestedHandler
+        let fonts = self.configuration.fonts
+        let shouldBlock = self.shouldBlockTouchEvents
+
+        // Mark that we're dismissing to show exit offer (skip dismissal notification)
+        self.isDismissingForExitOffer = true
+
+        // Dismiss the main paywall first
+        self.dismiss(animated: true) { [weak self, weak presenter] in
+            guard let self = self, let presenter = presenter else { return }
+
+            // Track exit offer event. Note: This may be called before or after onDisappear
+            // tracks the close event due to UIKit timing. The order doesn't matter as events
+            // are correlated by IDs, not by sequence.
+            self.purchaseHandler.trackExitOffer(
+                exitOfferType: .dismiss,
+                exitOfferingIdentifier: offering.identifier
+            )
+
+            let exitOfferVC = PaywallViewController(
+                offering: offering,
+                fonts: fonts,
+                displayCloseButton: true,
+                shouldBlockTouchEvents: shouldBlock,
+                dismissRequestedHandler: { controller in
+                    // When exit offer is dismissed, call the original handler
+                    if let handler = originalDismissHandler {
+                        handler(controller)
+                    } else {
+                        controller.dismiss(animated: true)
+                    }
+                }
+            )
+
+            // Set delegate directly - exit offer is now standalone
+            exitOfferVC.delegate = originalDelegate
+
+            // Notify delegate about exit offer so it can associate result tracking
+            originalDelegate?.paywallViewController?(self, willPresentExitOfferController: exitOfferVC)
+
+            presenter.present(exitOfferVC, animated: true)
+        }
+    }
+
     // MARK: - Private
 
     private var hostingController: UIHostingController<PaywallContainerView>? {
@@ -293,6 +440,68 @@ public class PaywallViewController: UIViewController {
                 newController.view.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
             ])
         }
+    }
+
+}
+
+// MARK: - UIAdaptivePresentationControllerDelegate
+//
+// PaywallViewController sets itself as the presentationController's delegate in viewWillAppear
+// to intercept swipe-to-dismiss gestures for exit offer support. Any existing delegate is stored
+// and calls are forwarded to it when we're not handling exit offers.
+//
+// Note on `presentationControllerShouldDismiss`:
+// - Exit offers have priority. If an exit offer is available (and no purchase happened), we
+//   return `false` to block the swipe dismiss. This triggers `presentationControllerDidAttemptToDismiss`,
+//   where we present the exit offer paywall.
+// - If no exit offer, we check if the original delegate wants to block dismiss and respect that.
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
+
+    // swiftlint:disable:next missing_docs
+    public func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
+        // Exit offer has priority - block dismiss to show exit offer if available and no purchase happened.
+        // This will trigger `presentationControllerDidAttemptToDismiss` where we present the exit offer.
+        if self.exitOfferOffering != nil && !self.purchaseHandler.hasPurchasedInSession {
+            return false
+        }
+
+        // Check if original delegate wants to block dismiss - if so, respect that
+        let originalDelegateShouldDismiss = self.originalPresentationControllerDelegate?
+            .presentationControllerShouldDismiss?(presentationController)
+        if originalDelegateShouldDismiss == false {
+            return false
+        }
+
+        return true
+    }
+
+    // swiftlint:disable:next missing_docs
+    public func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
+        // Exit offer has priority - if we blocked for exit offer, handle it ourselves
+        if self.exitOfferOffering != nil && !self.purchaseHandler.hasPurchasedInSession {
+            self.handleDismissalRequest()
+        } else {
+            // Original delegate blocked - let them handle it
+            self.originalPresentationControllerDelegate?
+                .presentationControllerDidAttemptToDismiss?(presentationController)
+        }
+    }
+
+    // swiftlint:disable:next missing_docs
+    public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
+        // Dismissal is happening (we allowed it) - clean up
+        self.purchaseHandler.resetForNewSession()
+
+        // Forward to original delegate
+        self.originalPresentationControllerDelegate?.presentationControllerWillDismiss?(presentationController)
+    }
+
+    // swiftlint:disable:next missing_docs
+    public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        // Forward to original delegate
+        self.originalPresentationControllerDelegate?.presentationControllerDidDismiss?(presentationController)
     }
 
 }
@@ -360,6 +569,16 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     optional func paywallViewController(_ controller: PaywallViewController,
                                         didChangeSizeTo size: CGSize)
 
+    /// Notifies that an exit offer paywall is about to be presented.
+    /// - Parameters:
+    ///   - controller: The original ``PaywallViewController`` that was dismissed.
+    ///   - exitOfferController: The new ``PaywallViewController`` that will present the exit offer.
+    /// - Note: This is called after the original controller is dismissed and before the exit offer is presented.
+    ///         Use this to associate the exit offer controller with the original controller for result tracking.
+    @objc(paywallViewController:willPresentExitOfferController:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        willPresentExitOfferController exitOfferController: PaywallViewController)
+
 }
 
 // MARK: - Private
@@ -367,14 +586,11 @@ public protocol PaywallViewControllerDelegate: AnyObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PaywallViewController {
 
-    // swiftlint:disable:next function_body_length
     func createHostingController() -> UIHostingController<PaywallContainerView> {
-        var onRequestedDismissal: (() -> Void)?
-        if let dismissRequestedHandler = self.dismissRequestedHandler {
-            onRequestedDismissal = { [weak self] in
-                guard let self = self else { return }
-                dismissRequestedHandler(self)
-            }
+        // Always route close button through exit offer handling
+        let onRequestedDismissal: () -> Void = { [weak self] in
+            guard let self = self else { return }
+            self.handleDismissalRequest()
         }
 
         let container = PaywallContainerView(
@@ -442,7 +658,7 @@ private struct PaywallContainerView: View {
     let purchaseFailure: PurchaseFailureHandler
     let restoreStarted: RestoreStartedHandler
     let restoreFailure: PurchaseFailureHandler
-    let requestedDismissal: (() -> Void)?
+    let requestedDismissal: () -> Void
 
     let onSizeChange: (CGSize) -> Void
 
@@ -456,9 +672,7 @@ private struct PaywallContainerView: View {
             .onRestoreCompleted(self.restoreCompleted)
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
-            .applyIfLet(self.requestedDismissal, apply: { view, requestedDismissal in
-                view.onRequestedDismissal(requestedDismissal)
-            })
+            .onRequestedDismissal(self.requestedDismissal)
     }
 
 }
