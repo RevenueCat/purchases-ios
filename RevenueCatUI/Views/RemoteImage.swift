@@ -249,7 +249,7 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             #endif
 
             // Start loading using the loader's internal task management
-            // This avoids the view's task capturing the loaders
+            // This avoids any task capturing the loaders
             highResFileLoader.startLoading()
             lowResFileLoader.startLoading()
         }
@@ -257,6 +257,22 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             // Cancel loading when view disappears
             highResFileLoader.cancelLoading()
             lowResFileLoader.cancelLoading()
+        }
+        .onChange(of: colorScheme) { newColorScheme in
+            // Reload with correct URL when color scheme changes
+            let highResURL = Self.selectURL(lightURL: url, darkURL: darkUrl, for: newColorScheme)
+            let lowResURL = Self.selectURL(
+                lightURL: lowResUrl,
+                darkURL: darkLowResUrl ?? lowResUrl,
+                for: newColorScheme
+            )
+
+            if let url = highResURL {
+                highResFileLoader.startLoading(url: url)
+            }
+            if let url = lowResURL {
+                lowResFileLoader.startLoading(url: url)
+            }
         }
     }
 
