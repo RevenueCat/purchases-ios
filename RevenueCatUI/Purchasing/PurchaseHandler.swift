@@ -34,7 +34,7 @@ final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
 
-    /// Where responsibiliy for completing purchases lies
+    /// Where responsibility for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         purchases.purchasesAreCompletedBy
     }
@@ -114,6 +114,10 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var restoreError: Error?
 
     private var eventData: PaywallEvent.Data?
+
+    /// Whether the close event has already been tracked for the current session.
+    /// Used to prevent duplicate close tracking from both dismiss handlers and onDisappear.
+    private var hasTrackedClose: Bool = false
 
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
@@ -205,6 +209,8 @@ final class PurchaseHandler: ObservableObject {
     func resetForNewSession() {
         self.sessionPurchaseResult = nil
         self.purchaseResult = nil
+        self.eventData = nil
+        self.hasTrackedClose = false
     }
 
 }
@@ -421,19 +427,24 @@ extension PurchaseHandler {
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.eventData = eventData
+        self.hasTrackedClose = false
         self.track(.impression(.init(), eventData))
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallClose() -> Bool {
-        guard let data = self.eventData else {
-            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+        guard let data = self.eventData, !self.hasTrackedClose else {
+            if self.eventData == nil {
+                Logger.debug("Attempted to track paywall close but eventData is nil")
+            } else if self.hasTrackedClose {
+                Logger.debug("Attempted to track paywall close but close was already tracked")
+            }
             return false
         }
 
         self.track(.close(.init(), data))
-        self.eventData = nil
+        self.hasTrackedClose = true
         return true
     }
 
@@ -446,6 +457,26 @@ extension PurchaseHandler {
         }
 
         self.track(.cancel(.init(), data))
+        return true
+    }
+
+    /// Tracks an exit offer event and clears the pending exit offer flag.
+    /// - Parameters:
+    ///   - exitOfferType: The type of exit offer
+    ///   - exitOfferingIdentifier: The offering identifier of the exit offer
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    func trackExitOffer(exitOfferType: ExitOfferType, exitOfferingIdentifier: String) -> Bool {
+        guard let data = self.eventData else {
+            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+            return false
+        }
+
+        let exitOfferData = PaywallEvent.ExitOfferData(
+            exitOfferType: exitOfferType,
+            exitOfferingIdentifier: exitOfferingIdentifier
+        )
+        self.track(.exitOffer(.init(), data, exitOfferData))
         return true
     }
 
