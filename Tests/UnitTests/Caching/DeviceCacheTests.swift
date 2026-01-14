@@ -18,8 +18,20 @@ class DeviceCacheTests: TestCase {
     private var mockFileCache: MockSimpleCache! = nil
     private var deviceCache: DeviceCache! = nil
     private var mockVirtualCurrenciesData: Data!
+    private let fileManager = FileManager.default
 
     override func setUp() {
+        super.setUp()
+
+        let directoryURLs = [
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first,
+            DirectoryHelper.baseUrl(for: .cache)
+        ].compactMap(\.self)
+
+        for directoryURL in directoryURLs {
+            try? fileManager.removeItem(at: directoryURL)
+        }
+
         self.preferredLocalesProvider = .mock(locales: ["en-US"])
         self.systemInfo = MockSystemInfo(finishTransactions: false,
                                          preferredLocalesProvider: self.preferredLocalesProvider)
@@ -233,12 +245,12 @@ class DeviceCacheTests: TestCase {
                 with: .success(.init(data: try expectedOfferings.response.jsonEncodedData, url: .mockFileLocation))
             )
 
-        expect(self.mockFileCache.saveDataInvocations.count == 0)
+        expect(self.mockFileCache.saveDataInvocations.count) == 0
 
         self.deviceCache.cache(offerings: expectedOfferings, preferredLocales: ["en-US"], appUserID: "user")
 
         expect(self.deviceCache.cachedOfferings) === expectedOfferings
-        expect(self.mockFileCache.saveDataInvocations.count == 1)
+        expect(self.mockFileCache.saveDataInvocations.count) == 1
     }
 
     func testCacheOfferingsInMemory() throws {
@@ -402,12 +414,13 @@ class DeviceCacheTests: TestCase {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
         self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults,
+                                       fileManager: self.mockFileCache,
                                        offeringsCachedObject: mockCachedObject)
 
         self.deviceCache.clearOfferingsCache(appUserID: "user")
 
         expect(mockCachedObject.invokedClearCache) == true
-        expect(self.mockFileCache.removeInvocations.count == 1)
+        expect(self.mockFileCache.removeInvocations.count) == 1
     }
 
     func testClearCachesRemovesOfferingsFromLargeItemCache() throws {
@@ -424,7 +437,7 @@ class DeviceCacheTests: TestCase {
         // Verify that removeObject was called on the file cache with the correct key
         expect(self.mockFileCache.removeInvocations.count) == 1
         let expectedURL = self.mockFileCache.cacheDirectory?
-            .appendingPathComponent("docs–RevenueCat")
+            .appendingPathComponent("device-cache")
             .appendingPathComponent("com.revenuecat.userdefaults.offerings.\(appUserID)")
         expect(self.mockFileCache.removeInvocations.first) == expectedURL
     }
@@ -880,6 +893,147 @@ class DeviceCacheTests: TestCase {
         expect(
             self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrenciesLastUpdated.\(appUserID2)"]
         ).toNot(beNil())
+    }
+
+    // MARK: - Migration Tests
+
+    func testMigratesOfferingsFromOldDocumentsDirectory() throws {
+        let appUserID1 = "test-user1"
+        let appUserID2 = "test-user2"
+
+        // Create old directory in documents
+        let documentsURL = fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )[0]
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+        let oldFileURL1 = oldDirectory.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID1).rawValue)
+        let oldFileURL2 = oldDirectory.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID2).rawValue)
+
+        // Create old documents directory and file
+        try fileManager.createDirectory(
+            at: oldDirectory,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        let testOfferings = try Self.createSampleOfferings()
+        let offeringsData = try JSONEncoder.default.encode(testOfferings.contents)
+        try offeringsData.write(to: oldFileURL1)
+        try offeringsData.write(to: oldFileURL2)
+
+        // Verify old files exist
+        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL1.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL2.path))
+
+        // Create local DeviceCache with FileManager
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.mockUserDefaults,
+            fileManager: fileManager
+        )
+
+        // Retrieve cached offerings 1, old file should be removed but directory should still exist
+        var cachedOfferings1: Offerings.Contents? = deviceCache.cachedOfferingsContents(appUserID: appUserID1)
+        expect(cachedOfferings1).toNot(beNil())
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL1.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: oldDirectory.path))
+
+        // Retrieve cached offerings 2, old file should be removed and old directory should be removed now
+        var cachedOfferings2: Offerings.Contents? = deviceCache.cachedOfferingsContents(appUserID: appUserID2)
+        expect(cachedOfferings2).toNot(beNil())
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL2.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+
+        // Try fetching them from the new location
+        cachedOfferings1 = deviceCache.cachedOfferingsContents(appUserID: appUserID1)
+        cachedOfferings2 = deviceCache.cachedOfferingsContents(appUserID: appUserID2)
+        expect(cachedOfferings1).toNot(beNil())
+        expect(cachedOfferings2).toNot(beNil())
+    }
+
+    func testMigratesProductEntitlementMappingFromOldDocumentsDirectory() throws {
+        // Create old directory in documents
+        let documentsURL = fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )[0]
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+
+        let oldFileURL = oldDirectory.appendingPathComponent(DeviceCache.CacheKeys.productEntitlementMapping.rawValue)
+
+        // Create directory and file
+        try fileManager.createDirectory(
+            at: oldDirectory,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        let testMapping = ProductEntitlementMapping(entitlementsByProduct: ["product1": ["entitlement1"]])
+        let mappingData = try JSONEncoder.default.encode(testMapping)
+        try mappingData.write(to: oldFileURL)
+
+        // Verify old file exists
+        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
+
+        // Create local DeviceCache with FileManager
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.mockUserDefaults,
+            fileManager: fileManager
+        )
+
+        // Access product entitlement mapping - should trigger migration
+        let cachedMapping = deviceCache.cachedProductEntitlementMapping
+
+        // Verify mapping was migrated and can be read
+        expect(cachedMapping).toNot(beNil())
+        expect(cachedMapping?.entitlementsByProduct) == testMapping.entitlementsByProduct
+
+        // Verify old file and directory is removed since it's empty
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+    }
+
+    func testWritingOfferingsDeletesOldFileFromDocumentsDirectory() throws {
+        let appUserID = "test-user"
+
+        // Create old directory in documents
+        let documentsURL = fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )[0]
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+        let oldFileURL = oldDirectory.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID).rawValue)
+
+        // Create directory and file
+        try fileManager.createDirectory(
+            at: oldDirectory,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        let oldOfferings = try Self.createSampleOfferings()
+        let oldOfferingsData = try JSONEncoder.default.encode(oldOfferings.contents)
+        try oldOfferingsData.write(to: oldFileURL)
+
+        // Verify old file exists
+        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
+
+        // Create local DeviceCache with fileManager
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.mockUserDefaults,
+            fileManager: fileManager
+        )
+
+        // Write new offerings, should delete old file
+        let newOfferings = try Self.createSampleOfferings()
+        deviceCache.cache(offerings: newOfferings, preferredLocales: ["en-US"], appUserID: appUserID)
+
+        // Verify old file and directory is removed since it's empty
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
     }
 }
 

@@ -27,6 +27,7 @@ class DeviceCache {
     private let userDefaults: SynchronizedUserDefaults
     private let largeItemCache: SynchronizedLargeItemCache
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
+    private let fileManager = FileManager.default
 
     private let _cachedAppUserID: Atomic<String?>
     private let _cachedLegacyAppUserID: Atomic<String?>
@@ -46,8 +47,7 @@ class DeviceCache {
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults))
         self.largeItemCache = .init(
             cache: fileManager,
-            basePath: Self.defaultBasePath,
-            documentsDirectoryMigrationStrategy: .migrate(oldBasePath: Self.oldDefaultBasePath)
+            basePath: Self.defaultBasePath
         )
 
         Logger.verbose(Strings.purchase.device_cache_init(self))
@@ -65,7 +65,14 @@ class DeviceCache {
         userDefaults.write { defaults in
             defaults.removeObject(forKey: key)
         }
-        return self.largeItemCache.value(forKey: key.rawValue)
+
+        // Try to get from new cache location first
+        if let value: Value = self.largeItemCache.value(forKey: key.rawValue) {
+            return value
+        }
+
+        // Check old documents directory and migrate if found
+        return self.migrateAndReturnValueIfNeeded(for: key)
     }
 
     // MARK: - appUserID
@@ -175,6 +182,10 @@ class DeviceCache {
         // For the cache we need the preferred locales that were used in the request.
         self.cacheInMemory(offerings: offerings)
         self.offeringsCachePreferredLocales = preferredLocales
+
+        // Migrate old file if it exists before writing
+        self.migrateFileIfNeeded(for: CacheKey.offerings(appUserID).rawValue)
+
         self.largeItemCache.set(codable: offerings.contents, forKey: CacheKey.offerings(appUserID).rawValue)
     }
 
@@ -352,6 +363,9 @@ class DeviceCache {
     }
 
     func store(productEntitlementMapping: ProductEntitlementMapping) {
+        // Migrate old file if it exists before writing
+        self.migrateFileIfNeeded(for: CacheKeys.productEntitlementMapping.rawValue)
+
         if self.largeItemCache.set(
             codable: productEntitlementMapping,
             forKey: CacheKeys.productEntitlementMapping.rawValue
@@ -463,7 +477,7 @@ class DeviceCache {
 
     }
 
-    fileprivate enum CacheKey: DeviceCacheKeyType {
+    internal enum CacheKey: DeviceCacheKeyType {
 
         static let base = "com.revenuecat.userdefaults."
         static let legacySubscriberAttributesBase = "\(Self.base)subscriberAttributes."
@@ -781,6 +795,98 @@ private extension DeviceCache {
     }
 
     static let productEntitlementMappingCacheDuration: DispatchTimeInterval = .hours(25)
+
+    // MARK: - Migration Helpers
+
+    /*
+     We were previously storing these cache files in the Documents directory
+     which may end up in the Files app or the user's Documents directory on macOS.
+     We'll migrate files to the caches directory and try to delete the old documents
+     directory if it's empty after migrating.
+     */
+
+    private func oldDocumentsDirectoryURL() -> URL? {
+        let documentsDirectoryURL: URL?
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            documentsDirectoryURL = URL.documentsDirectory
+        } else {
+            documentsDirectoryURL = FileManager.default.urls(
+                for: .documentDirectory,
+                in: .userDomainMask
+            ).first
+        }
+        return documentsDirectoryURL?.appendingPathComponent(Self.oldDefaultBasePath)
+    }
+
+    private func migrateAndReturnValueIfNeeded<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
+        guard let oldDirectoryURL = self.oldDocumentsDirectoryURL(),
+              let newCacheURL = DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent(Self.defaultBasePath)
+        else { return nil }
+
+        let oldFileURL = oldDirectoryURL.appendingPathComponent(key.rawValue)
+        let newFileURL = newCacheURL.appendingPathComponent(key.rawValue)
+
+        // Try to load from old location
+        guard fileManager.fileExists(atPath: oldFileURL.path),
+              let data = try? Data(contentsOf: oldFileURL),
+              let value: Value = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
+            return nil
+        }
+
+        // Make sure the new location exists
+        guard fileManager.fileExists(atPath: newCacheURL.path) else {
+            return value
+        }
+
+        // Migrate file to new location
+        do {
+            try fileManager.moveItem(at: oldFileURL, to: newFileURL)
+            self.deleteOldDocumentsDirectoryIfEmpty()
+        } catch {
+            Logger.error(Strings.cache.failed_to_migrate_file(oldFileURL.path, error))
+        }
+
+        return value
+    }
+
+    private func migrateFileIfNeeded(for key: String) {
+        guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else {
+            return
+        }
+
+        let oldFileURL = oldDirectoryURL.appendingPathComponent(key)
+
+        // Use FileManager.default for file operations since LargeItemCacheType doesn't provide fileExists
+        guard fileManager.fileExists(atPath: oldFileURL.path) else {
+            return
+        }
+
+        // Delete old file if it exists (we're about to write a new one)
+        do {
+            try fileManager.removeItem(at: oldFileURL)
+            self.deleteOldDocumentsDirectoryIfEmpty()
+        } catch {
+            Logger.error(Strings.cache.failed_to_delete_old_cache_directory(error))
+        }
+    }
+
+    private func deleteOldDocumentsDirectoryIfEmpty() {
+        guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else {
+            return
+        }
+
+        // Use FileManager.default for file operations since LargeItemCacheType doesn't provide these
+        guard fileManager.fileExists(atPath: oldDirectoryURL.path),
+              (try? fileManager.contentsOfDirectory(atPath: oldDirectoryURL.path).isEmpty) == true else {
+            return
+        }
+
+        do {
+            try fileManager.removeItem(at: oldDirectoryURL)
+        } catch {
+            Logger.error(Strings.cache.failed_to_delete_old_cache_directory(error))
+        }
+    }
 
 }
 
