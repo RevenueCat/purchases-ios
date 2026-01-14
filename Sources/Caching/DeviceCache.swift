@@ -40,18 +40,16 @@ import Foundation
 /// `unsyncedAttributesForAllUsers()`) use the lock-free wrapper since they don't modify data.
 ///
 /// The locking wrapper has a potential deadlock risk if called from the main thread while a background thread
-/// holds the lock. This is mitigated by the fact that subscriber attribute write operations are typically
-/// called from background threads.
+/// holds the lock. This will be addressed in a future PR by refactoring subscriber attributes to use
+/// individual keys, eliminating the need for RMW operations.
 ///
 /// ### SK2 Observer Mode Transaction IDs
 /// `registerNewSyncedSK2ObserverModeTransactionIDs()` performs RMW using a dedicated lock
 /// (`cachedSyncedSK2ObserverModeTransactionIDsLock`) that is separate from the subscriber attributes lock.
-/// This avoids potential deadlocks since this lock is not shared with main thread operations.
 ///
 /// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/4137
 /// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/5729
 ///
-/// - TODO: Refactor subscriber attributes to store by individual key to eliminate RMW operations entirely.
 class DeviceCache {
     private static let defaultBasePath = "RevenueCat"
 
@@ -61,8 +59,6 @@ class DeviceCache {
 
     private let systemInfo: SystemInfo
     private let userDefaults: SynchronizedUserDefaults
-    /// Used for subscriber attributes which require atomic read-modify-write operations.
-    /// Uses locking to ensure thread-safety, unlike `userDefaults` which is lock-free.
     private let lockingUserDefaults: LockingSynchronizedUserDefaults
     private let largeItemCache: SynchronizedLargeItemCache
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
@@ -116,8 +112,6 @@ class DeviceCache {
     }
 
     func clearCaches(oldAppUserID: String, andSaveWithNewUserID newUserID: String) {
-        // Uses lockingUserDefaults because this method contains subscriber attribute operations
-        // which require atomic read-modify-write.
         self.lockingUserDefaults.write { userDefaults in
             userDefaults.removeObject(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
             userDefaults.removeObject(
@@ -256,9 +250,8 @@ class DeviceCache {
     // MARK: - subscriber attributes
     // Write operations use `lockingUserDefaults` to ensure atomic read-modify-write.
     // Read operations use the lock-free `userDefaults` since they don't modify data.
-    // TODO: Refactor to store attributes by individual key to eliminate the need for locking.
-    // Storing by key (e.g., "com.revenuecat.subscriberAttributes.{appUserID}.{key}") would make each
-    // attribute write atomic and avoid the potential deadlock risk from locking.
+    // This will be addressed in a future PR by refactoring subscriber attributes to use
+    // individual keys, eliminating the need for RMW operations.
 
     func store(subscriberAttribute: SubscriberAttribute, appUserID: String) {
         store(subscriberAttributesByKey: [subscriberAttribute.key: subscriberAttribute], appUserID: appUserID)
