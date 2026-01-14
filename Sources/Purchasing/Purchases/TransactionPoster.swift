@@ -324,10 +324,8 @@ extension TransactionPoster {
                                                              forTransactionId: transaction.transactionIdentifier)
         }
 
-        // Only send transaction ID when there's associated metadata to track
-        let transactionIdToSend = (shouldClearMetadataOnSuccess || shouldStoreMetadata)
-            ? transaction.transactionIdentifier
-            : nil
+        // Only send transactionId when there's any associated metadata to send for this transaction
+        let transactionIdToSend = shouldClearMetadataOnSuccess ? transaction.transactionIdentifier : nil
 
         self.backend.post(receipt: receipt,
                           productData: effectiveProductData,
