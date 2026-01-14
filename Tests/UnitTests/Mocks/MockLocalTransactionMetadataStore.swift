@@ -21,7 +21,10 @@ final class MockLocalTransactionMetadataStore: LocalTransactionMetadataStoreType
     let invokedStoreMetadata: Atomic<Bool> = false
     let invokedStoreMetadataCount: Atomic<Int> = .init(0)
     let invokedStoreMetadataParameters: Atomic<(metadata: LocalTransactionMetadata, transactionId: String)?> = nil
-    let invokedStoreMetadataParametersList: Atomic<[(metadata: LocalTransactionMetadata, transactionId: String)]> = .init([])
+    let invokedStoreMetadataParametersList: Atomic<[(
+        metadata: LocalTransactionMetadata,
+        transactionId: String
+    )]> = .init([])
 
     // MARK: - getMetadata
 

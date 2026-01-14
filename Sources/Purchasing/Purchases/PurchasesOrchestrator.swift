@@ -1426,7 +1426,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             data: transactionData,
             currentUserID: self.appUserID
         )
-        
+
         if case let .success(customerInfo) = result {
             let purchaseData = PurchaseResultData(transaction, customerInfo, false)
             self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
@@ -1802,7 +1802,12 @@ private extension PurchasesOrchestrator {
                 source: .init(isRestore: isRestore, initiationSource: initiationSource)
             )
 
-            self.transactionPoster.postReceiptFromSyncedSK2Transaction(transaction, data: transactionData, appTransactionJWS: appTransactionJWS, currentUserID: currentAppUserID) { result in
+            self.transactionPoster.postReceiptFromSyncedSK2Transaction(
+                transaction,
+                data: transactionData,
+                appTransactionJWS: appTransactionJWS,
+                currentUserID: currentAppUserID
+            ) { result in
                 self.handleReceiptPost(result: result,
                                        transactionData: transactionData,
                                        subscriberAttributes: unsyncedAttributes,
