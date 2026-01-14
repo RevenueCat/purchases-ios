@@ -67,7 +67,6 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
 
     private var allowsMissingPurchaseAction: Bool = true
 
-    private var refreshingCancellable: AnyCancellable?
     private var cancellables: Set<AnyCancellable> = []
     private let customerInfoViewModel: CustomerCenterViewModel
 
@@ -114,18 +113,26 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     }
 
     func refreshPurchase() {
-        refreshingCancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
-            .dropFirst() // skip current value
-            .sink(receiveValue: { @MainActor [weak self] in
-                self?.purchaseInformation = $0
-                self?.isRefreshing = false
-            })
-
         isRefreshing = true
 
         Task {
             await customerInfoViewModel.loadScreen(shouldSync: true)
-            // In case loadScreen does not trigger a new update (error)
+
+            // Only update purchaseInformation if loadScreen succeeded.
+            // If it failed, keep showing the current state rather than
+            // potentially showing stale data after a failed refresh.
+            if case .success = customerInfoViewModel.state,
+               let productIdentifier = purchaseInformation?.productIdentifier {
+                let updatedPurchase = customerInfoViewModel.subscriptionsSection
+                    .first(where: { $0.productIdentifier == productIdentifier })
+                    ?? customerInfoViewModel.nonSubscriptionsSection
+                        .first(where: { $0.productIdentifier == productIdentifier })
+
+                if let updatedPurchase {
+                    self.purchaseInformation = updatedPurchase
+                }
+            }
+
             isRefreshing = false
         }
     }
