@@ -108,7 +108,9 @@ class LocalTransactionMetadataStoreTests: TestCase {
         let retrieved = self.store.getMetadata(forTransactionId: transactionId)
 
         expect(retrieved).to(beNil())
-        expect(self.mockCache.loadFileInvocations.count) == 1
+        // When file doesn't exist, only cachedContentExists is called (returns false)
+        expect(self.mockCache.cachedContentExistsInvocations.count) == 1
+        expect(self.mockCache.loadFileInvocations.count) == 0
     }
 
     func testGetMetadataWithMultipleTransactions() throws {
@@ -297,12 +299,12 @@ class LocalTransactionMetadataStoreTests: TestCase {
         let expectedHash = transactionId.asData.sha1String
         let expectedKey = "local_transaction_metadata_\(expectedHash)"
 
-        expect(self.mockCache.loadFileInvocations.count) == 1
-        guard let loadedURL = self.mockCache.loadFileInvocations.first else {
-            fail("No loadFile invocations")
+        expect(self.mockCache.cachedContentExistsInvocations.count) == 1
+        guard let checkedURL = self.mockCache.cachedContentExistsInvocations.first else {
+            fail("No cachedContentExists invocations")
             return
         }
-        expect(loadedURL.absoluteString).to(contain(expectedKey))
+        expect(checkedURL.absoluteString).to(contain(expectedKey))
     }
 
     func testRemoveMetadataKeyUsesSHA1Hashing() throws {

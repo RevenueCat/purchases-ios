@@ -44,20 +44,21 @@ class SynchronizedLargeItemCacheTests: TestCase {
         let key = "value-key"
         let value = TestValue(identifier: "value", count: 7)
 
+        mock.stubCachedContentExists(with: true)
         mock.stubLoadFile(with: .success(value.asData))
 
-        let cached: TestValue? = sut.value(forKey: key)
+        let cached: TestValue? = try sut.value(forKey: key)
 
         XCTAssertEqual(cached, value)
     }
 
-    func testValueReturnsNilWhenErrorIsReturned() {
-        let (mock, sut) = self.makeSystemUnderTest()
+    func testValueReturnsNilWhenFileNotFound() {
+        let (_, sut) = self.makeSystemUnderTest()
         let key = "missing-key"
 
-        mock.stubLoadFile(with: .failure(MockError()))
+        // By default, cachedContentExists returns false
 
-        let cached: TestValue? = sut.value(forKey: key)
+        let cached: TestValue? = try? sut.value(forKey: key)
 
         XCTAssertNil(cached)
     }
@@ -92,16 +93,25 @@ class SynchronizedLargeItemCacheTests: TestCase {
         XCTAssertFalse(didStore)
     }
 
-    func testValueReturnsNilWhenDecodingFails() throws {
+    func testValueThrowsWhenDecodingFails() throws {
         let (mock, sut) = self.makeSystemUnderTest()
         let key = "bad-data-key"
 
+        mock.stubCachedContentExists(with: true)
         // Return invalid JSON data that can't be decoded to TestValue
         mock.stubLoadFile(with: .success(Data("invalid json".utf8)))
 
-        let cached: TestValue? = sut.value(forKey: key)
+        XCTAssertThrowsError(try sut.value(forKey: key) as TestValue?)
+    }
 
-        XCTAssertNil(cached)
+    func testValueThrowsWhenLoadFileFails() throws {
+        let (mock, sut) = self.makeSystemUnderTest()
+        let key = "load-error-key"
+
+        mock.stubCachedContentExists(with: true)
+        mock.stubLoadFile(with: .failure(MockError()))
+
+        XCTAssertThrowsError(try sut.value(forKey: key) as TestValue?)
     }
 
     // MARK: - Helpers

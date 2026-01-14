@@ -149,7 +149,7 @@ private extension ETagManager {
 
     func storedETagAndResponse(for request: URLRequest) -> Response? {
         if let cacheKey = Self.cacheKey(for: request) {
-            return self.cache.value(forKey: cacheKey)
+            return try? self.cache.value(forKey: cacheKey)
         }
         return nil
     }
