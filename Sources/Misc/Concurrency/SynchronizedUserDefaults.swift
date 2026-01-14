@@ -59,3 +59,47 @@ internal final class SynchronizedUserDefaults {
 }
 
 extension SynchronizedUserDefaults: Sendable {}
+
+/// A `UserDefaults` wrapper that uses a lock to synchronize access.
+///
+/// This is the original implementation that provides thread-safe read-modify-write operations.
+/// Use this for operations that need atomicity (e.g., subscriber attributes).
+///
+/// - Warning: This can cause deadlocks in scenarios where the main thread is waiting for the lock
+///   while a background thread holds it and writes to UserDefaults (which posts `didChangeNotification`
+///   to the main queue). Use `SynchronizedUserDefaults` for simple read/write operations that don't
+///   require atomicity.
+///
+/// - SeeAlso: `SynchronizedUserDefaults` for a lock-free alternative.
+/// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/4137
+internal final class LockingSynchronizedUserDefaults {
+
+    private let atomic: Atomic<UserDefaults>
+
+    init(userDefaults: UserDefaults) {
+        self.atomic = .init(userDefaults)
+    }
+
+    func read<T>(_ action: (UserDefaults) throws -> T) rethrows -> T {
+        return try self.atomic.withValue {
+            return try action($0)
+        }
+    }
+
+    func write(_ action: (UserDefaults) throws -> Void) rethrows {
+        return try self.atomic.withValue {
+            try action($0)
+
+            // While Apple states `this method is unnecessary and shouldn't be used`
+            // https://developer.apple.com/documentation/foundation/userdefaults/1414005-synchronize
+            // It didn't become unnecessary until iOS 12 and macOS 10.14 (Mojave):
+            // https://developer.apple.com/documentation/macos-release-notes/foundation-release-notes
+            // there are reports it is still needed if you save to defaults then immediately kill the app.
+            // Also, it has not been marked deprecated... yet.
+            $0.synchronize()
+        }
+    }
+
+}
+
+extension LockingSynchronizedUserDefaults: Sendable {}
