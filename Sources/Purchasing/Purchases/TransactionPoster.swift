@@ -310,7 +310,6 @@ extension TransactionPoster {
         let effectiveProductData = storedTransactionMetadata?.productData ?? product.map {
             ProductRequestData(with: $0, storeCountry: purchasedTransactionData.storeCountry)
         }
-        // TODO: Merge metadata if both exist?
         let effectiveTransactionData = storedTransactionMetadata?.transactionData ?? purchasedTransactionData
         let effectivePurchasesAreCompletedBy = storedTransactionMetadata?.originalPurchasesAreCompletedBy ??
         self.purchasesAreCompletedBy
