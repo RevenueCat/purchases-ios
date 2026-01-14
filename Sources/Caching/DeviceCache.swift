@@ -796,14 +796,14 @@ private extension DeviceCache {
 
     static let productEntitlementMappingCacheDuration: DispatchTimeInterval = .hours(25)
 
-    // MARK: - Migration Helpers
-
     /*
      We were previously storing these cache files in the Documents directory
      which may end up in the Files app or the user's Documents directory on macOS.
      We'll migrate files to the caches directory and try to delete the old documents
      directory if it's empty after migrating.
      */
+
+    // MARK: - Migration Helpers
 
     private func oldDocumentsDirectoryURL() -> URL? {
         let documentsDirectoryURL: URL?
