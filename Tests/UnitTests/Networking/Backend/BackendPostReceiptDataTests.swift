@@ -686,8 +686,8 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
-                                 presentedOfferingContext: nil,
-                                 unsyncedAttributes: nil,
+                        presentedOfferingContext: nil,
+                        unsyncedAttributes: nil,
                         storeCountry: nil,
                         source: .init(isRestore: false, initiationSource: .queue)
                      ),

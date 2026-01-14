@@ -299,8 +299,12 @@ extension TransactionPoster {
                              appTransaction: String?,
                              currentUserID: String,
                              completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        let storedTransactionMetadata = self.localTransactionMetadataStore.getMetadata(forTransactionId: transaction.transactionIdentifier)
-        let shouldStoreMetadata = storedTransactionMetadata == nil && purchasedTransactionData.source.initiationSource == .purchase
+        let storedTransactionMetadata = self.localTransactionMetadataStore.getMetadata(
+            forTransactionId: transaction.transactionIdentifier
+        )
+        let shouldStoreMetadata = storedTransactionMetadata == nil &&
+        purchasedTransactionData.source.initiationSource == .purchase
+
         let shouldClearMetadataOnSuccess = storedTransactionMetadata != nil || shouldStoreMetadata
 
         let effectiveProductData = storedTransactionMetadata?.productData ?? product.map {

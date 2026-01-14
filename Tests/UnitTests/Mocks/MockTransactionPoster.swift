@@ -111,8 +111,8 @@ final class MockTransactionPoster: TransactionPosterType {
             currentUserID
         )
 
-        self.operationDispatcher.dispatchOnMainActor { [result = self.stubbedPostReceiptFromSyncedSK2TransactionResult.value] in
-            completion(result)
+        self.operationDispatcher.dispatchOnMainActor {
+            completion(self.stubbedPostReceiptFromSyncedSK2TransactionResult.value)
         }
     }
 

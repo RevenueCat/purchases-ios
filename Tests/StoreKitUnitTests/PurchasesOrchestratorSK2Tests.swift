@@ -965,7 +965,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataCount) == 1
 
         // Verify that stored metadata was used
-        expect(self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier) == "stored_product_from_purchase"
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier
+        ) == "stored_product_from_purchase"
         expect(self.backend.invokedPostReceiptDataParameters?.productData?.currencyCode) == "EUR"
         expect(self.backend.invokedPostReceiptDataParameters?.productData?.price) == 19.99
         expect(
@@ -975,7 +977,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         // Verify metadata was cleared after successful post
         expect(self.mockLocalTransactionMetadataStore.invokedRemoveMetadata.value) == true
-        expect(self.mockLocalTransactionMetadataStore.invokedRemoveMetadataTransactionId.value) == transaction.transactionIdentifier
+        expect(
+            self.mockLocalTransactionMetadataStore.invokedRemoveMetadataTransactionId.value
+        ) == transaction.transactionIdentifier
 
         expect(customerInfo) == mockCustomerInfo
     }
