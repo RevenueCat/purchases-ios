@@ -103,7 +103,6 @@
 		16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */; };
 		1D20E1D62EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */; };
 		1D20E1D82EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1D72EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift */; };
-		1D291F612F1172DC008E4FDA /* SynchronizedLargeItemCacheDocumentsDirectoryMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D291F5B2F1172CF008E4FDA /* SynchronizedLargeItemCacheDocumentsDirectoryMigrationTests.swift */; };
 		1D291F722F154834008E4FDA /* CacheStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D291F712F154834008E4FDA /* CacheStrings.swift */; };
 		1D58A16C2ED59AD90086809D /* ConnectionErrorReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D58A16B2ED59AD90086809D /* ConnectionErrorReason.swift */; };
 		1D73D6612EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */; };
@@ -1599,7 +1598,6 @@
 		16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeItemCacheTypeTests.swift; sourceTree = "<group>"; };
 		1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
 		1D20E1D72EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
-		1D291F5B2F1172CF008E4FDA /* SynchronizedLargeItemCacheDocumentsDirectoryMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedLargeItemCacheDocumentsDirectoryMigrationTests.swift; sourceTree = "<group>"; };
 		1D291F712F154834008E4FDA /* CacheStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStrings.swift; sourceTree = "<group>"; };
 		1D58A16B2ED59AD90086809D /* ConnectionErrorReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionErrorReason.swift; sourceTree = "<group>"; };
 		1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockHTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
@@ -4568,7 +4566,6 @@
 		37E35AE0CDC4C2AA8260FB58 /* Caching */ = {
 			isa = PBXGroup;
 			children = (
-				1D291F5B2F1172CF008E4FDA /* SynchronizedLargeItemCacheDocumentsDirectoryMigrationTests.swift */,
 				16E2B7F02EA01DFA00F04A7A /* SynchronizedLargeItemCacheTests.swift */,
 				16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */,
 				16BCA36F2E4D9BA700B39E7F /* FileRepositoryTests.swift */,
@@ -7425,7 +7422,6 @@
 				16BCA3772E4D9BF400B39E7F /* MockSimpleCache.swift in Sources */,
 				351B516126D44BEB00BD2BD7 /* IdentityManagerTests.swift in Sources */,
 				579D2E3A28F0BF5A0094B36F /* BackendInternalTests.swift in Sources */,
-				1D291F612F1172DC008E4FDA /* SynchronizedLargeItemCacheDocumentsDirectoryMigrationTests.swift in Sources */,
 				351B51C126D450E800BD2BD7 /* OfferingsManagerTests.swift in Sources */,
 				5796A39927D6C1E000653165 /* BackendPostSubscriberAttributesTests.swift in Sources */,
 				35D8330A262FBA9A00E60AC5 /* MockUserDefaults.swift in Sources */,

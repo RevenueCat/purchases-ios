@@ -19,6 +19,7 @@ enum CacheStrings {
     case cache_url_not_available
     case failed_to_save_codable_to_cache(Error)
     case failed_to_delete_old_cache_directory(Error)
+    case failed_to_migrate_file(String, Error)
 
 }
 
@@ -31,6 +32,8 @@ extension CacheStrings: LogMessage {
             return "Failed to save codable to cache: \(error)"
         case .failed_to_delete_old_cache_directory(let error):
             return "Failed to delete old cache directory: \(error)"
+        case .failed_to_migrate_file(let path, let error):
+            return "Failed to migrate file from \(path): \(error)"
         }
     }
 
