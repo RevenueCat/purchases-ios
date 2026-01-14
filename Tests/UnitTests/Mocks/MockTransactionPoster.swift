@@ -82,4 +82,38 @@ final class MockTransactionPoster: TransactionPosterType {
         }
     }
 
+    let stubbedPostReceiptFromSyncedSK2TransactionResult: Atomic<Result<CustomerInfo, BackendError>> = .init(
+        .failure(.missingCachedCustomerInfo())
+    )
+
+    let invokedPostReceiptFromSyncedSK2Transaction: Atomic<Bool> = false
+    let invokedPostReceiptFromSyncedSK2TransactionCount: Atomic<Int> = .init(0)
+    let invokedPostReceiptFromSyncedSK2TransactionParameters: Atomic<(
+        transaction: StoreTransactionType,
+        data: PurchasedTransactionData,
+        appTransactionJWS: String?,
+        currentUserID: String
+    )?> = nil
+
+    func postReceiptFromSyncedSK2Transaction(
+        _ transaction: StoreTransactionType,
+        data: PurchasedTransactionData,
+        appTransactionJWS: String?,
+        currentUserID: String,
+        completion: @escaping CustomerAPI.CustomerInfoResponseHandler
+    ) {
+        self.invokedPostReceiptFromSyncedSK2Transaction.value = true
+        self.invokedPostReceiptFromSyncedSK2TransactionCount.modify { $0 += 1 }
+        self.invokedPostReceiptFromSyncedSK2TransactionParameters.value = (
+            transaction,
+            data,
+            appTransactionJWS,
+            currentUserID
+        )
+
+        self.operationDispatcher.dispatchOnMainActor { [result = self.stubbedPostReceiptFromSyncedSK2TransactionResult.value] in
+            completion(result)
+        }
+    }
+
 }

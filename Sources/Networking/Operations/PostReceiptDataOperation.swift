@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 final class PostReceiptDataOperation: CacheableNetworkOperation {
 
     private let postData: PostData
@@ -307,7 +309,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
         try container.encodeIfPresent(self.paywall, forKey: .paywall)
-        try container.encodeIfPresent(self.purchaseCompletedBy, forKey: .purchaseCompletedBy)
+        try container.encodeIfPresent(self.purchaseCompletedBy?.name, forKey: .purchaseCompletedBy)
 
         try container.encodeIfPresent(
             self.subscriberAttributesByKey
@@ -403,4 +405,15 @@ private extension EncodedAppleReceipt {
             return "empty"
         }
     }
+}
+
+private extension PurchasesAreCompletedBy {
+
+    var name: String {
+        switch self {
+        case .revenueCat: return "revenuecat"
+        case .myApp: return "my_app"
+        }
+    }
+
 }

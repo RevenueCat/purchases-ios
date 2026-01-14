@@ -36,6 +36,7 @@
       "observer_mode" : false,
       "price" : "15.99",
       "product_id" : "product_id",
+      "purchase_completed_by" : "revenuecat",
       "store_country" : "ESP"
     },
     "method" : "POST",

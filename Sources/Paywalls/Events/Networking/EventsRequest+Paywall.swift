@@ -28,6 +28,8 @@ extension FeatureEventsRequest {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
+        var exitOfferType: ExitOfferType?
+        var exitOfferingID: String?
 
     }
 
@@ -40,6 +42,7 @@ extension FeatureEventsRequest.PaywallEvent {
         case impression = "paywall_impression"
         case cancel = "paywall_cancel"
         case close = "paywall_close"
+        case exitOffer = "paywall_exit_offer"
 
     }
 
@@ -54,6 +57,7 @@ extension FeatureEventsRequest.PaywallEvent {
             let paywallEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
             let creationData = paywallEvent.creationData
             let data = paywallEvent.data
+            let exitOfferData = paywallEvent.exitOfferData
 
             self.init(
                 id: creationData.id.uuidString,
@@ -66,7 +70,9 @@ extension FeatureEventsRequest.PaywallEvent {
                 timestamp: creationData.date.millisecondsSince1970,
                 displayMode: data.displayMode,
                 darkMode: data.darkMode,
-                localeIdentifier: data.localeIdentifier
+                localeIdentifier: data.localeIdentifier,
+                exitOfferType: exitOfferData?.exitOfferType,
+                exitOfferingID: exitOfferData?.exitOfferingIdentifier
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -86,6 +92,7 @@ private extension PaywallEvent {
         case .impression: return .impression
         case .cancel: return .cancel
         case .close: return .close
+        case .exitOffer: return .exitOffer
         }
 
     }
@@ -111,6 +118,8 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case displayMode
         case darkMode
         case localeIdentifier = "locale"
+        case exitOfferType
+        case exitOfferingID = "exitOfferingId"
 
     }
 

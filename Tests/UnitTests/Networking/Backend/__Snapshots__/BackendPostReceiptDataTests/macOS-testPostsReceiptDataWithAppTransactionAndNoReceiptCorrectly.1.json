@@ -32,7 +32,8 @@
       },
       "initiation_source" : "purchase",
       "is_restore" : false,
-      "observer_mode" : true
+      "observer_mode" : true,
+      "purchase_completed_by" : "my_app"
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"
