@@ -316,6 +316,7 @@ extension TransactionPoster {
 
         if shouldStoreMetadata {
             let metadataToStore = LocalTransactionMetadata(
+                transactionId: transaction.transactionIdentifier,
                 productData: effectiveProductData,
                 transactionData: effectiveTransactionData,
                 originalPurchasesAreCompletedBy: effectivePurchasesAreCompletedBy

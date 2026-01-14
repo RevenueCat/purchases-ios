@@ -260,7 +260,10 @@ class LocalTransactionMetadataStoreTests: TestCase {
 
     // MARK: - Helper methods
 
-    private func createTestMetadata(productIdentifier: String = "test_product") -> LocalTransactionMetadata {
+    private func createTestMetadata(
+        transactionId: String = "test_transaction",
+        productIdentifier: String = "test_product"
+    ) -> LocalTransactionMetadata {
         let productData = ProductRequestData(
             productIdentifier: productIdentifier,
             paymentMode: nil,
@@ -280,13 +283,16 @@ class LocalTransactionMetadataStoreTests: TestCase {
         )
 
         return LocalTransactionMetadata(
+            transactionId: transactionId,
             productData: productData,
             transactionData: transactionData,
             originalPurchasesAreCompletedBy: .revenueCat
         )
     }
 
-    private func createCompleteTestMetadata() -> LocalTransactionMetadata {
+    private func createCompleteTestMetadata(
+        transactionId: String = "complete_test_transaction"
+    ) -> LocalTransactionMetadata {
         let productData = ProductRequestData(
             productIdentifier: "complete_test_product",
             paymentMode: .payUpFront,
@@ -316,6 +322,7 @@ class LocalTransactionMetadataStoreTests: TestCase {
         )
 
         return LocalTransactionMetadata(
+            transactionId: transactionId,
             productData: productData,
             transactionData: transactionData,
             originalPurchasesAreCompletedBy: .revenueCat

@@ -505,6 +505,7 @@ class TransactionPosterTests: TestCase {
             source: .init(isRestore: false, initiationSource: .purchase)
         )
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: storedProductData,
             transactionData: storedTransactionData,
             originalPurchasesAreCompletedBy: .myApp
@@ -547,6 +548,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptFromSyncedSK2TransactionClearsMetadataOnSuccess() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -714,6 +716,7 @@ class TransactionPosterTests: TestCase {
             source: .init(isRestore: false, initiationSource: .purchase)
         )
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: storedProductData,
             transactionData: storedTransactionData,
             originalPurchasesAreCompletedBy: .myApp
@@ -818,6 +821,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptClearsExistingMetadataOnSuccess() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -863,6 +867,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptDoesNotStoreMetadataWhenMetadataAlreadyExists() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -907,6 +912,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptFromQueueClearsExistingMetadataWhenMetadataOnSuccessWhenMetadataAlreadyExists() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -954,6 +960,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptFromQueueClearsExistingMetadataWhenMetadataOnFinishableErrorWhenMetadataAlreadyExists() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,

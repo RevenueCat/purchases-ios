@@ -19,6 +19,9 @@ import Foundation
  */
 internal struct LocalTransactionMetadata: Codable, Sendable {
 
+    /// The identifier of the transaction this metadata is associated with.
+    let transactionId: String
+
     private let productDataWrapper: ProductRequestDataEncodedWrapper?
 
     /// Product request data (product info, pricing, discounts, etc.).
@@ -37,10 +40,12 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
     let originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
 
     init(
+        transactionId: String,
         productData: ProductRequestData?,
         transactionData: PurchasedTransactionData,
         originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
     ) {
+        self.transactionId = transactionId
         self.productDataWrapper = productData.map(ProductRequestDataEncodedWrapper.init)
         self.purchasedTransactionDataWrapper = PurchasedTransactionDataEncodedWrapper(
             purchasedTransactionData: transactionData

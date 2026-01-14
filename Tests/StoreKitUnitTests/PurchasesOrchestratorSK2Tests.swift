@@ -943,6 +943,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             source: .init(isRestore: false, initiationSource: .purchase)
         )
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: transaction.transactionIdentifier,
             productData: storedProductData,
             transactionData: storedTransactionData,
             originalPurchasesAreCompletedBy: .myApp
