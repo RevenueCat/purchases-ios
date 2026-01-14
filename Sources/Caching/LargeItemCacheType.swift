@@ -36,6 +36,9 @@ protocol LargeItemCacheType {
 
     /// Creates a directory in the documents directory from a base path
     func createDocumentDirectoryIfNeeded(basePath: String) -> URL?
+
+    /// List all file URLs in a directory
+    func contentsOfDirectory(at url: URL) throws -> [URL]
 }
 
 extension FileManager: LargeItemCacheType {
@@ -179,5 +182,9 @@ extension FileManager: LargeItemCacheType {
 
     func remove(_ url: URL) throws {
         try self.removeItem(at: url)
+    }
+
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        return try self.contentsOfDirectory(at: url, includingPropertiesForKeys: nil, options: [])
     }
 }

@@ -27,6 +27,7 @@ final class MockLargeItemCache: LargeItemCacheType {
     var removeInvocations: [URL] = []
     var createCacheDirectoryInvocations: [String] = []
     var createDocumentDirectoryInvocations: [String] = []
+    var contentsOfDirectoryInvocations: [URL] = []
 
     func saveData(_ data: Data, to url: URL) throws {
         lock.lock()
@@ -86,6 +87,17 @@ final class MockLargeItemCache: LargeItemCacheType {
 
         createDocumentDirectoryInvocations.append(basePath)
         return URL(string: "file:///mock/documents/\(basePath)")
+    }
+
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        lock.lock()
+        defer { lock.unlock() }
+
+        contentsOfDirectoryInvocations.append(url)
+        // Return all URLs in storage that are within the given directory
+        return storage.keys.filter { storedURL in
+            storedURL.absoluteString.hasPrefix(url.absoluteString)
+        }
     }
 
 }

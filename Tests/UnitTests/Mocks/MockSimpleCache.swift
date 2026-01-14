@@ -136,6 +136,10 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
         return url
     }
 
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        return []
+    }
+
     struct SaveData: Equatable {
         var data: Data
         var url: URL

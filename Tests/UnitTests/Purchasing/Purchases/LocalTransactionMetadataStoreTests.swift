@@ -182,6 +182,95 @@ class LocalTransactionMetadataStoreTests: TestCase {
         expect(self.store.getMetadata(forTransactionId: transactionId2)).to(beNil())
     }
 
+    // MARK: - getAllStoredMetadata tests
+
+    func testGetAllStoredMetadataReturnsEmptyArrayWhenNoMetadataStored() throws {
+        let allMetadata = self.store.getAllStoredMetadata()
+
+        expect(allMetadata).to(beEmpty())
+    }
+
+    func testGetAllStoredMetadataReturnsSingleStoredMetadata() throws {
+        let transactionId = "single_transaction"
+        let metadata = self.createTestMetadata(transactionId: transactionId, productIdentifier: "single_product")
+
+        self.store.storeMetadata(metadata, forTransactionId: transactionId)
+
+        let allMetadata = self.store.getAllStoredMetadata()
+
+        expect(allMetadata.count) == 1
+        let retrieved = allMetadata.first
+        expect(retrieved?.productData?.productIdentifier) == "single_product"
+        expect(retrieved?.transactionId) == transactionId
+    }
+
+    func testGetAllStoredMetadataReturnsAllStoredMetadata() throws {
+        let transactionId1 = "transaction_1"
+        let transactionId2 = "transaction_2"
+        let transactionId3 = "transaction_3"
+        let metadata1 = self.createTestMetadata(transactionId: transactionId1, productIdentifier: "product_1")
+        let metadata2 = self.createTestMetadata(transactionId: transactionId2, productIdentifier: "product_2")
+        let metadata3 = self.createTestMetadata(transactionId: transactionId3, productIdentifier: "product_3")
+
+        self.store.storeMetadata(metadata1, forTransactionId: transactionId1)
+        self.store.storeMetadata(metadata2, forTransactionId: transactionId2)
+        self.store.storeMetadata(metadata3, forTransactionId: transactionId3)
+
+        let allMetadata = self.store.getAllStoredMetadata()
+
+        expect(allMetadata.count) == 3
+
+        let productIdentifiers = Set(allMetadata.compactMap { $0.productData?.productIdentifier })
+        expect(productIdentifiers) == Set(["product_1", "product_2", "product_3"])
+
+        let transactionIds = Set(allMetadata.compactMap { $0.transactionId })
+        expect(transactionIds) == Set([transactionId1, transactionId2, transactionId3])
+    }
+
+    func testGetAllStoredMetadataReflectsRemovals() throws {
+        let transactionId1 = "transaction_keep"
+        let transactionId2 = "transaction_remove"
+        let metadata1 = self.createTestMetadata(transactionId: transactionId1, productIdentifier: "product_keep")
+        let metadata2 = self.createTestMetadata(transactionId: transactionId2, productIdentifier: "product_remove")
+
+        // Store both metadata objects
+        self.store.storeMetadata(metadata1, forTransactionId: transactionId1)
+        self.store.storeMetadata(metadata2, forTransactionId: transactionId2)
+
+        // Verify both are returned
+        expect(self.store.getAllStoredMetadata().count) == 2
+
+        // Remove one
+        self.store.removeMetadata(forTransactionId: transactionId2)
+
+        // Verify only one remains
+        let allMetadata = self.store.getAllStoredMetadata()
+        expect(allMetadata.count) == 1
+        expect(allMetadata.first?.productData?.productIdentifier) == "product_keep"
+        expect(allMetadata.first?.transactionId) == "transaction_keep"
+    }
+
+    func testGetAllStoredMetadataPreservesCompleteData() throws {
+        let transactionId = "complete_data_test"
+        let originalMetadata = self.createCompleteTestMetadata(transactionId: transactionId)
+
+        self.store.storeMetadata(originalMetadata, forTransactionId: transactionId)
+
+        let allMetadata = self.store.getAllStoredMetadata()
+
+        expect(allMetadata.count) == 1
+        let retrieved = allMetadata.first
+        expect(retrieved?.productData?.productIdentifier) == originalMetadata.productData?.productIdentifier
+        expect(retrieved?.productData?.currencyCode) == originalMetadata.productData?.currencyCode
+        expect(retrieved?.productData?.price) == originalMetadata.productData?.price
+        expect(retrieved?.transactionData.source.isRestore) == originalMetadata.transactionData.source.isRestore
+        expect(
+            retrieved?.transactionData.source.initiationSource
+        ) == originalMetadata.transactionData.source.initiationSource
+        expect(retrieved?.originalPurchasesAreCompletedBy) == originalMetadata.originalPurchasesAreCompletedBy
+        expect(retrieved?.transactionId) == transactionId
+    }
+
     // MARK: - Key hashing tests
 
     func testStoreKeyUsesSHA1Hashing() throws {

@@ -25,6 +25,9 @@ protocol LocalTransactionMetadataStoreType: Sendable {
 
     /// Remove transaction metadata for a given transaction ID.
     func removeMetadata(forTransactionId transactionId: String)
+
+    /// Retrieve all stored transaction metadata.
+    func getAllStoredMetadata() -> [LocalTransactionMetadata]
 }
 
 /// Cache for storing local transaction metadata persistently on disk.
@@ -76,6 +79,15 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
 
         let key = self.getStoreKey(for: transactionId)
         self.cache.removeObject(forKey: key)
+    }
+
+    /// Retrieve all stored transaction metadata.
+    func getAllStoredMetadata() -> [LocalTransactionMetadata] {
+        let keys = self.cache.allKeys()
+        return keys.compactMap { key -> LocalTransactionMetadata? in
+            // TODO: Deal with potential errors (e.g. decoding errors)
+            return self.cache.value(forKey: key)
+        }
     }
 
     // MARK: - Private helper methods

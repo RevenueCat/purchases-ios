@@ -158,6 +158,10 @@ extension SynchronizedLargeItemCache {
             return url
         }
 
+        func contentsOfDirectory(at url: URL) throws -> [URL] {
+            return []
+        }
+
         private func cacheURL(from url: URL) -> URL {
             workingDocsDirectory.unsafelyUnwrapped.appendingPathComponent(url.absoluteString.asData.md5String)
         }
