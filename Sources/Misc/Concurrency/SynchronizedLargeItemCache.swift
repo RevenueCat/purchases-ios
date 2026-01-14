@@ -19,17 +19,12 @@ internal final class SynchronizedLargeItemCache {
     private let cache: LargeItemCacheType
     private let lock: Lock
     private let cacheURL: URL?
-    private let documentsDirectoryMigrationStrategy: DocumentsDirectoryMigrationStrategy?
-    private let fileManager = FileManager.default
-    private var hasDeletedOldDirectory = false
 
     init(
         cache: LargeItemCacheType,
-        basePath: String,
-        documentsDirectoryMigrationStrategy: DocumentsDirectoryMigrationStrategy? = nil
+        basePath: String
     ) {
         self.cache = cache
-        self.documentsDirectoryMigrationStrategy = documentsDirectoryMigrationStrategy
         self.lock = Lock(.nonRecursive)
 
         self.cacheURL = cache.createCacheDirectoryIfNeeded(basePath: basePath)
@@ -37,14 +32,12 @@ internal final class SynchronizedLargeItemCache {
 
     private func read<T>(_ action: (LargeItemCacheType, URL?) throws -> T) rethrows -> T {
         return try self.lock.perform {
-            self.deleteOldDirectoryIfNeededLazy()
             return try action(self.cache, self.cacheURL)
         }
     }
 
     private func write(_ action: (LargeItemCacheType, URL?) throws -> Void) rethrows {
         return try self.lock.perform {
-            self.deleteOldDirectoryIfNeededLazy()
             try action(self.cache, self.cacheURL)
         }
     }
@@ -70,15 +63,8 @@ internal final class SynchronizedLargeItemCache {
         }
 
         do {
-            try self.write { [weak self] cache, _ in
+            try self.write { cache, _ in
                 try cache.saveData(data, to: fileURL)
-
-                // Delete old file if it exists
-                if let oldFileURL = self?.oldFileURL(for: key),
-                   self?.fileManager.fileExists(atPath: oldFileURL.path) == true {
-                    try? self?.fileManager.removeItem(at: oldFileURL)
-                    try? self?.deleteOldDirectoryIfEmpty()
-                }
             }
             return true
         } catch {
@@ -93,22 +79,9 @@ internal final class SynchronizedLargeItemCache {
             return nil
         }
 
-        return self.read { [weak self] cache, _ in
+        return self.read { cache, _ in
             if let data = try? cache.loadFile(at: fileURL) {
                 return try? JSONDecoder.default.decode(jsonData: data, logErrors: true)
-            }
-
-            // Check if the file exists in the old documents directory
-            if let oldFileURL = self?.oldFileURL(for: key), let data = try? cache.loadFile(at: oldFileURL) {
-                let data: T? = try? JSONDecoder.default.decode(jsonData: data, logErrors: true)
-
-                // Migrate file and remove old directory if it's empty
-                if let fileManager = self?.fileManager {
-                    try? fileManager.moveItem(at: oldFileURL, to: fileURL)
-                }
-                try? self?.deleteOldDirectoryIfEmpty()
-
-                return data
             }
 
             return nil
@@ -131,89 +104,6 @@ internal final class SynchronizedLargeItemCache {
             // Clear the cache directory
             if let cacheURL = cacheURL {
                 try? cache.remove(cacheURL)
-            }
-
-            // Delete the old documents directory if it exists (for both migration strategies)
-            if let oldDirectoryURL = self.oldDirectoryURL,
-               self.fileManager.fileExists(atPath: oldDirectoryURL.path) {
-                try? self.fileManager.removeItem(at: oldDirectoryURL)
-            }
-        }
-    }
-
-    private func oldFileURL(for key: String) -> URL? {
-        return oldDirectoryURL?.appendingPathComponent(key)
-    }
-
-    private var oldDirectoryURL: URL? {
-        guard let oldBasePath = documentsDirectoryMigrationStrategy?.oldBasePath else { return nil }
-
-        guard let documentsURL = fileManager.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first else {
-            return nil
-        }
-
-        return documentsURL.appendingPathComponent(oldBasePath)
-    }
-
-    private func deleteOldDirectoryIfNeededLazy() {
-        guard !self.hasDeletedOldDirectory else {
-            return
-        }
-
-        guard let documentsDirectoryMigrationStrategy, case .remove = documentsDirectoryMigrationStrategy,
-                let oldDirectoryURL else {
-            self.hasDeletedOldDirectory = true
-            return
-        }
-
-        guard fileManager.fileExists(atPath: oldDirectoryURL.path) else {
-            self.hasDeletedOldDirectory = true
-            return
-        }
-
-        do {
-            try fileManager.removeItem(at: oldDirectoryURL)
-        } catch {
-            Logger.error(Strings.cache.failed_to_delete_old_cache_directory(error))
-        }
-
-        self.hasDeletedOldDirectory = true
-    }
-
-    private func deleteOldDirectoryIfEmpty() throws {
-        guard let oldDirectoryURL else {
-            return
-        }
-
-        guard fileManager.fileExists(atPath: oldDirectoryURL.path),
-            try fileManager.contentsOfDirectory(atPath: oldDirectoryURL.path).isEmpty else {
-            return
-        }
-
-        do {
-            try fileManager.removeItem(at: oldDirectoryURL)
-        } catch {
-            Logger.error(Strings.cache.failed_to_delete_old_cache_directory(error))
-        }
-    }
-}
-
-extension SynchronizedLargeItemCache {
-    /// Migration strategy for handling old cache directories when moving from documents to cache directory
-    enum DocumentsDirectoryMigrationStrategy {
-        /// Remove the old directory at the specified base path from documents directory
-        case remove(oldBasePath: String)
-
-        /// Migrate files from the old documents directory to the new directory as they are read/updated
-        case migrate(oldBasePath: String)
-
-        var oldBasePath: String {
-            switch self {
-            case let .remove(oldBasePath), let .migrate(oldBasePath: oldBasePath):
-                return oldBasePath
             }
         }
     }
