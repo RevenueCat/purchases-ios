@@ -23,13 +23,12 @@ class DeviceCacheTests: TestCase {
     override func setUp() {
         super.setUp()
 
-        let directoryURLs = [
-            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first,
-            DirectoryHelper.baseUrl(for: .cache)
-        ].compactMap(\.self)
+        if let documentsDirectoryURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            try? fileManager.removeItem(at: documentsDirectoryURL)
+        }
 
-        for directoryURL in directoryURLs {
-            try? fileManager.removeItem(at: directoryURL)
+        if let cacheURL = DirectoryHelper.baseUrl(for: .cache) {
+            try? fileManager.removeItem(at: cacheURL)
         }
 
         self.preferredLocalesProvider = .mock(locales: ["en-US"])
