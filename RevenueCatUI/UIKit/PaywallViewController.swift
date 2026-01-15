@@ -239,7 +239,14 @@ public class PaywallViewController: UIViewController {
 
         // Set ourselves as the presentation controller delegate to intercept swipe-to-dismiss
         // for exit offer support. We store any existing delegate to forward calls to it.
-        self.originalPresentationControllerDelegate = self.presentationController?.delegate
+        // Important: Only capture the original delegate if it's not self to prevent infinite recursion
+        // when delegate methods forward to originalPresentationControllerDelegate.
+        // This can happen in hybrid SDK scenarios (Flutter, React Native) where viewWillAppear
+        // is called multiple times or the delegate is already set to self.
+        let existingDelegate = self.presentationController?.delegate
+        if existingDelegate !== self {
+            self.originalPresentationControllerDelegate = existingDelegate
+        }
         self.presentationController?.delegate = self
     }
 
@@ -467,11 +474,12 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
             return false
         }
 
-        // Check if original delegate wants to block dismiss - if so, respect that
-        let originalDelegateShouldDismiss = self.originalPresentationControllerDelegate?
-            .presentationControllerShouldDismiss?(presentationController)
-        if originalDelegateShouldDismiss == false {
-            return false
+        // Check if original delegate wants to block dismiss - if so, respect that.
+        // Safety check: ensure originalPresentationControllerDelegate is not self to prevent infinite recursion.
+        if let originalDelegate = self.originalPresentationControllerDelegate, originalDelegate !== self {
+            if originalDelegate.presentationControllerShouldDismiss?(presentationController) == false {
+                return false
+            }
         }
 
         return true
@@ -482,10 +490,9 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
         // Exit offer has priority - if we blocked for exit offer, handle it ourselves
         if self.exitOfferOffering != nil && !self.purchaseHandler.hasPurchasedInSession {
             self.handleDismissalRequest()
-        } else {
+        } else if let originalDelegate = self.originalPresentationControllerDelegate, originalDelegate !== self {
             // Original delegate blocked - let them handle it
-            self.originalPresentationControllerDelegate?
-                .presentationControllerDidAttemptToDismiss?(presentationController)
+            originalDelegate.presentationControllerDidAttemptToDismiss?(presentationController)
         }
     }
 
@@ -494,14 +501,18 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
         // Dismissal is happening (we allowed it) - clean up
         self.purchaseHandler.resetForNewSession()
 
-        // Forward to original delegate
-        self.originalPresentationControllerDelegate?.presentationControllerWillDismiss?(presentationController)
+        // Forward to original delegate (with safety check to prevent recursion)
+        if let originalDelegate = self.originalPresentationControllerDelegate, originalDelegate !== self {
+            originalDelegate.presentationControllerWillDismiss?(presentationController)
+        }
     }
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-        // Forward to original delegate
-        self.originalPresentationControllerDelegate?.presentationControllerDidDismiss?(presentationController)
+        // Forward to original delegate (with safety check to prevent recursion)
+        if let originalDelegate = self.originalPresentationControllerDelegate, originalDelegate !== self {
+            originalDelegate.presentationControllerDidDismiss?(presentationController)
+        }
     }
 
 }
