@@ -72,26 +72,26 @@ fileprivate extension View {
             )
         case let .image(imageInfo, fitMode, colorOverlay):
             self.background(alignment: alignment) {
-                RemoteImage(
-                    url: imageInfo.light.heic,
-                    lowResUrl: imageInfo.light.heicLowRes,
-                    darkUrl: imageInfo.dark?.heic,
-                    darkLowResUrl: imageInfo.dark?.heicLowRes
-                ) { (image, _) in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: fitMode.contentMode)
-                        .ignoresSafeArea()
-                }.overlay {
-                    ZStack {
-                        HStack { Spacer() }
-                        VStack { Spacer() }
-                        if let colorOverlay {
-                            colorOverlay
-                                .toView(colorScheme: colorScheme)
-                        }
+                ZStack(alignment: .top) {
+                    RemoteImage(
+                        url: imageInfo.light.heic,
+                        lowResUrl: imageInfo.light.heicLowRes,
+                        darkUrl: imageInfo.dark?.heic,
+                        darkLowResUrl: imageInfo.dark?.heicLowRes
+                    ) { (image, _) in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: fitMode.contentMode)
+                            .ignoresSafeArea()
                     }
-                    .edgesIgnoringSafeArea(.all)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    // Color overlay fills the full container, not just the image bounds.
+                    // This matches the web builder behavior where the overlay covers 100% of the viewport.
+                    if let colorOverlay {
+                        colorOverlay
+                            .toView(colorScheme: colorScheme)
+                            .ignoresSafeArea()
+                    }
                 }
                 // Enforces image clipping to the exact bounds of the view where .clipped does not.
                 // This prevents the background image from influencing the parent view's size,
@@ -105,23 +105,20 @@ fileprivate extension View {
             self.background(alignment: alignment) {
                 ZStack {
                     VideoComponentView(viewModel: viewModel)
-                        .overlay {
-                            ZStack {
-                                HStack { Spacer() }
-                                VStack { Spacer() }
-                                if let colorOverlay {
-                                    colorOverlay
-                                        .toView(colorScheme: colorScheme)
-                                }
-                            }
-                            .edgesIgnoringSafeArea(.all)
-                        }
-                        // enforces video clipping to the exact bounds of the view where .clipped does not
-                        .mask(self.overlay(content: {
-                            Color.black
-                        }))
                         .edgesIgnoringSafeArea(.all)
+                    // Color overlay fills the full container, not just the video bounds.
+                    // This matches the web builder behavior where the overlay covers 100% of the viewport.
+                    if let colorOverlay {
+                        colorOverlay
+                            .toView(colorScheme: colorScheme)
+                            .ignoresSafeArea()
+                    }
                 }
+                // enforces video clipping to the exact bounds of the view where .clipped does not
+                .mask(self.overlay(content: {
+                    Color.black
+                }))
+                .edgesIgnoringSafeArea(.all)
             }
         }
     }
