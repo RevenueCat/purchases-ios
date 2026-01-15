@@ -47,6 +47,32 @@ class ImageComponentViewModel {
         }
     }
 
+    var allImageURLsToPrefetch: [URL] {
+        var urls: [URL] = []
+
+        urls.append(imageInfo.light.heic)
+        urls.append(imageInfo.light.heicLowRes)
+        if let dark = imageInfo.dark {
+            urls.append(dark.heic)
+            urls.append(dark.heicLowRes)
+        }
+
+        if let overrides = presentedOverrides {
+            for presentedOverride in overrides {
+                if let source = presentedOverride.properties?.imageInfo {
+                    urls.append(source.light.heic)
+                    urls.append(source.light.heicLowRes)
+                    if let dark = source.dark {
+                        urls.append(dark.heic)
+                        urls.append(dark.heicLowRes)
+                    }
+                }
+            }
+        }
+
+        return urls
+    }
+
     @ViewBuilder
     // swiftlint:disable:next function_parameter_count
     func styles(

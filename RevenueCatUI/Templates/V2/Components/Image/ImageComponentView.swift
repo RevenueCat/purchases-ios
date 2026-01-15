@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 6/11/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -41,6 +41,7 @@ struct ImageComponentView: View {
     let viewModel: ImageComponentViewModel
 
     @State var size: CGSize?
+    @State private var hasPrefetchedOverrideImages = false
 
     var body: some View {
         viewModel.styles(
@@ -110,6 +111,22 @@ struct ImageComponentView: View {
                 }
                 .onSizeChange({ size = $0 })
 
+            }
+        }
+        .task {
+            guard !hasPrefetchedOverrideImages else { return }
+            hasPrefetchedOverrideImages = true
+
+            let urlsToPrefetch = viewModel.allImageURLsToPrefetch
+            await withTaskGroup(of: Void.self) { group in
+                for url in urlsToPrefetch {
+                    group.addTask {
+                        _ = try? await FileRepository.shared.generateOrGetCachedFileURL(
+                            for: url,
+                            withChecksum: nil
+                        )
+                    }
+                }
             }
         }
     }
