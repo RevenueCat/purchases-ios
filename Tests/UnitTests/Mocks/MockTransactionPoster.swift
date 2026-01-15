@@ -92,19 +92,21 @@ final class MockTransactionPoster: TransactionPosterType {
     let invokedPostReceiptFromSyncedSK2Transaction: Atomic<Bool> = false
     let invokedPostReceiptFromSyncedSK2TransactionCount: Atomic<Int> = .init(0)
 
-    // swiftlint:disable:next large_tuple
+    // swiftlint:disable large_tuple
     let invokedPostReceiptFromSyncedSK2TransactionParameters: Atomic<(
         transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        receipt: EncodedAppleReceipt,
         postReceiptSource: PostReceiptSource,
         appTransactionJWS: String?,
         currentUserID: String
     )?> = nil
 
-    // swiftlint:disable:next function_parameter_count
+    // swiftlint:disable function_parameter_count
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        receipt: EncodedAppleReceipt,
         postReceiptSource: PostReceiptSource,
         appTransactionJWS: String?,
         currentUserID: String,
@@ -115,6 +117,7 @@ final class MockTransactionPoster: TransactionPosterType {
         self.invokedPostReceiptFromSyncedSK2TransactionParameters.value = (
             transaction,
             data,
+            receipt,
             postReceiptSource,
             appTransactionJWS,
             currentUserID
