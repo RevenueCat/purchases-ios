@@ -160,8 +160,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
     }
 
     private var presentedOfferingContext: PresentedOfferingContext? {
-        guard let offeringIdentifier = self.offeringIdentifier,
-              let placementIdentifier = self.placementIdentifier else {
+        guard let offeringIdentifier = self.offeringIdentifier else {
             return nil
         }
         let targetingContext: PresentedOfferingContext.TargetingContext? = {
@@ -175,7 +174,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
 
         return PresentedOfferingContext(
             offeringIdentifier: offeringIdentifier,
-            placementIdentifier: placementIdentifier,
+            placementIdentifier: self.placementIdentifier,
             targetingContext: targetingContext
         )
     }

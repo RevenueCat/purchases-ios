@@ -98,7 +98,7 @@ class TransactionPosterTests: TestCase {
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
         ) == self.mockTransaction.transactionIdentifier
-        
+
         expect(self.mockTransaction.finishInvoked) == true
     }
 
