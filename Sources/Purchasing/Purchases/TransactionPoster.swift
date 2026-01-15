@@ -69,10 +69,11 @@ protocol TransactionPosterType: AnyObject, Sendable {
         completion: @escaping @Sendable @MainActor () -> Void
     )
 
-    // swiftlint:disable:next function_parameter_count
+    // swiftlint:disable function_parameter_count
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        receipt: EncodedAppleReceipt,
         postReceiptSource: PostReceiptSource,
         appTransactionJWS: String?,
         currentUserID: String,
@@ -159,31 +160,25 @@ final class TransactionPoster: TransactionPosterType {
         }
     }
 
-    // swiftlint:disable:next function_parameter_count
+    // swiftlint:disable function_parameter_count
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        receipt: EncodedAppleReceipt,
         postReceiptSource: PostReceiptSource,
         appTransactionJWS: String?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
-        self.fetchEncodedReceipt(transaction: transaction) { result in
-            switch result {
-            case .success(let encodedReceipt):
-                self.product(with: transaction.productIdentifier) { product in
-                    self.postReceipt(transaction: transaction,
-                                     purchasedTransactionData: data,
-                                     postReceiptSource: postReceiptSource,
-                                     receipt: encodedReceipt,
-                                     product: product,
-                                     appTransaction: appTransactionJWS,
-                                     currentUserID: currentUserID,
-                                     completion: completion)
-                }
-            case .failure(let error):
-                completion(.failure(error))
-            }
+        self.product(with: transaction.productIdentifier) { product in
+            self.postReceipt(transaction: transaction,
+                             purchasedTransactionData: data,
+                             postReceiptSource: postReceiptSource,
+                             receipt: receipt,
+                             product: product,
+                             appTransaction: appTransactionJWS,
+                             currentUserID: currentUserID,
+                             completion: completion)
         }
     }
 
