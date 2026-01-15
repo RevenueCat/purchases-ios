@@ -216,7 +216,7 @@ private extension ETagManager {
     }
 
     /*
-     We were previously storing these files file in the Documents directory
+     We were previously storing these files in the Documents directory
      which may end up in the Files app or the user's Documents directory on macOS.
      We'll try to delete it if the new file did not exist yet.
      */
@@ -225,12 +225,8 @@ private extension ETagManager {
             return
         }
 
-        guard let oldDirectoryURL = self.oldETagDirectoryURL() else {
-            self.hasDeletedOldDirectory = true
-            return
-        }
-
-        guard fileManager.fileExists(atPath: oldDirectoryURL.path) else {
+        guard let oldDirectoryURL = self.oldETagDirectoryURL(),
+              fileManager.fileExists(atPath: oldDirectoryURL.path) else {
             self.hasDeletedOldDirectory = true
             return
         }

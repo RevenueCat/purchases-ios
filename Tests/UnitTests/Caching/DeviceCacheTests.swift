@@ -413,7 +413,8 @@ class DeviceCacheTests: TestCase {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
         self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults,
-                                       fileManager: self.mockFileCache,
+                                       cache: self.mockFileCache,
+                                       fileManager: self.fileManager,
                                        offeringsCachedObject: mockCachedObject)
 
         self.deviceCache.clearOfferingsCache(appUserID: "user")
@@ -929,7 +930,7 @@ class DeviceCacheTests: TestCase {
         let deviceCache = DeviceCache(
             systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults,
-            fileManager: fileManager
+            cache: fileManager
         )
 
         // Retrieve cached offerings 1, old file should be removed but directory should still exist
@@ -979,7 +980,7 @@ class DeviceCacheTests: TestCase {
         let deviceCache = DeviceCache(
             systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults,
-            fileManager: fileManager
+            cache: fileManager
         )
 
         // Access product entitlement mapping - should trigger migration
@@ -1023,7 +1024,7 @@ class DeviceCacheTests: TestCase {
         let deviceCache = DeviceCache(
             systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults,
-            fileManager: fileManager
+            cache: fileManager
         )
 
         // Write new offerings, should delete old file
@@ -1042,7 +1043,7 @@ private extension DeviceCacheTests {
         return DeviceCache(
             systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults,
-            fileManager: self.mockFileCache
+            cache: self.mockFileCache
         )
     }
 
