@@ -563,13 +563,13 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptStoresMetadataForPurchaseInitiatedTransaction() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData()
-        let initiationSource = PurchaseSource(isRestore: false, initiationSource: .purchase)
+        let initiationSource = PostReceiptSource(isRestore: false, initiationSource: .purchase)
 
         self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
-        let result = try self.handleTransaction(transactionData, initiationSource: initiationSource)
+        let result = try self.handleTransaction(transactionData, postReceiptSource: initiationSource)
         expect(result).to(beSuccess())
 
         expect(self.localTransactionMetadataStore.invokedStoreMetadata.value) == true
@@ -596,13 +596,13 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptDoesNotStoreMetadataForRestoreInitiatedTransaction() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData()
-        let initiationSource = PurchaseSource(isRestore: true, initiationSource: .restore)
+        let initiationSource = PostReceiptSource(isRestore: true, initiationSource: .restore)
 
         self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
-        let result = try self.handleTransaction(transactionData, initiationSource: initiationSource)
+        let result = try self.handleTransaction(transactionData, postReceiptSource: initiationSource)
         expect(result).to(beSuccess())
 
         expect(self.localTransactionMetadataStore.invokedStoreMetadata.value) == false
@@ -664,13 +664,13 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptClearsMetadataOnSuccess() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData()
-        let initiationSource = PurchaseSource(isRestore: false, initiationSource: .purchase)
+        let initiationSource = PostReceiptSource(isRestore: false, initiationSource: .purchase)
 
         self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
-        let result = try self.handleTransaction(transactionData, initiationSource: initiationSource)
+        let result = try self.handleTransaction(transactionData, postReceiptSource: initiationSource)
         expect(result).to(beSuccess())
 
         expect(self.localTransactionMetadataStore.invokedRemoveMetadata.value) == true
@@ -682,7 +682,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptClearsMetadataOnFinishableError() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData()
-        let initiationSource = PurchaseSource(isRestore: false, initiationSource: .purchase)
+        let initiationSource = PostReceiptSource(isRestore: false, initiationSource: .purchase)
 
         self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
@@ -698,7 +698,7 @@ class TransactionPosterTests: TestCase {
         let finishableError = BackendError.networkError(error)
         self.backend.stubbedPostReceiptResult = .failure(finishableError)
 
-        let result = try self.handleTransaction(transactionData, initiationSource: initiationSource)
+        let result = try self.handleTransaction(transactionData, postReceiptSource: initiationSource)
         expect(result).to(beFailure())
 
         expect(self.localTransactionMetadataStore.invokedRemoveMetadata.value) == true
@@ -710,7 +710,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptDoesNotClearMetadataOnNonFinishableError() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData()
-        let initiationSource = PurchaseSource(isRestore: false, initiationSource: .purchase)
+        let initiationSource = PostReceiptSource(isRestore: false, initiationSource: .purchase)
 
         self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
@@ -720,7 +720,7 @@ class TransactionPosterTests: TestCase {
         let nonFinishableError = BackendError.networkError(.networkError(networkError))
         self.backend.stubbedPostReceiptResult = .failure(nonFinishableError)
 
-        let result = try self.handleTransaction(transactionData, initiationSource: initiationSource)
+        let result = try self.handleTransaction(transactionData, postReceiptSource: initiationSource)
         expect(result).to(beFailure())
 
         expect(self.localTransactionMetadataStore.invokedRemoveMetadata.value) == false
@@ -796,13 +796,13 @@ class TransactionPosterTests: TestCase {
         expect(self.localTransactionMetadataStore.invokedStoreMetadataCount.value) == 1
 
         let transactionData = PurchasedTransactionData()
-        let purchaseInitiationSource = PurchaseSource(isRestore: false, initiationSource: .purchase)
+        let purchaseInitiationSource = PostReceiptSource(isRestore: false, initiationSource: .purchase)
 
         self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
-        let result = try self.handleTransaction(transactionData, initiationSource: purchaseInitiationSource)
+        let result = try self.handleTransaction(transactionData, postReceiptSource: purchaseInitiationSource)
         expect(result).to(beSuccess())
 
         // Should not store metadata again
@@ -940,13 +940,13 @@ private extension TransactionPosterTests {
 
     func handleTransaction(
         _ data: PurchasedTransactionData,
-        initiationSource: PurchaseSource = .init(isRestore: false, initiationSource: .queue)
+        postReceiptSource: PostReceiptSource = .init(isRestore: false, initiationSource: .queue)
     ) throws -> Result<CustomerInfo, BackendError> {
         let result = waitUntilValue { completion in
             self.poster.handlePurchasedTransaction(
                 self.mockTransaction,
                 data: data,
-                initiationSource: initiationSource,
+                postReceiptSource: postReceiptSource,
                 currentUserID: "user"
             ) {
                 completion($0)
@@ -958,14 +958,14 @@ private extension TransactionPosterTests {
 
     func postReceiptFromSyncedSK2Transaction(
         _ data: PurchasedTransactionData,
-        initiationSource: PurchaseSource = .init(isRestore: false, initiationSource: .queue),
+        postReceiptSource: PostReceiptSource = .init(isRestore: false, initiationSource: .queue),
         appTransactionJWS: String?
     ) throws -> Result<CustomerInfo, BackendError> {
         let result = waitUntilValue { completion in
             self.poster.postReceiptFromSyncedSK2Transaction(
                 self.mockTransaction,
                 data: data,
-                initiationSource: initiationSource,
+                postReceiptSource: postReceiptSource,
                 appTransactionJWS: appTransactionJWS,
                 currentUserID: "user"
             ) {

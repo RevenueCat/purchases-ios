@@ -137,7 +137,7 @@ class Backend {
     func post(receipt: EncodedAppleReceipt,
               productData: ProductRequestData?,
               transactionData: PurchasedTransactionData,
-              initiationSource: PurchaseSource,
+              postReceiptSource: PostReceiptSource,
               observerMode: Bool,
               // Value at the time of the purchase (which might come from the `LocalTransactionMetadataStore`)
               originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
@@ -147,7 +147,7 @@ class Backend {
         self.customer.post(receipt: receipt,
                            productData: productData,
                            transactionData: transactionData,
-                           initiationSource: initiationSource,
+                           postReceiptSource: postReceiptSource,
                            observerMode: observerMode,
                            originalPurchaseCompletedBy: originalPurchaseCompletedBy,
                            appTransaction: appTransaction,

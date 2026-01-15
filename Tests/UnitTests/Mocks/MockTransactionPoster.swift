@@ -27,11 +27,11 @@ final class MockTransactionPoster: TransactionPosterType {
     let invokedHandlePurchasedTransactionCount: Atomic<Int> = .init(0)
     let invokedHandlePurchasedTransactionParameters: Atomic<(transaction: StoreTransactionType,
                                                              data: PurchasedTransactionData,
-                                                             initiationSource: PurchaseSource,
+                                                             postReceiptSource: PostReceiptSource,
                                                              currentUserID: String)?> = nil
     let invokedHandlePurchasedTransactionParameterList: Atomic<[(transaction: StoreTransactionType,
                                                                  data: PurchasedTransactionData,
-                                                                 initiationSource: PurchaseSource)]> = .init([])
+                                                                 postReceiptSource: PostReceiptSource)]> = .init([])
 
     var allHandledTransactions: Set<StoreTransaction> {
         return Set(
@@ -45,7 +45,7 @@ final class MockTransactionPoster: TransactionPosterType {
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
-        initiationSource: PurchaseSource,
+        postReceiptSource: PostReceiptSource,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
@@ -58,9 +58,9 @@ final class MockTransactionPoster: TransactionPosterType {
 
         self.invokedHandlePurchasedTransaction.value = true
         self.invokedHandlePurchasedTransactionCount.modify { $0 += 1 }
-        self.invokedHandlePurchasedTransactionParameters.value = (transaction, data, initiationSource, currentUserID)
+        self.invokedHandlePurchasedTransactionParameters.value = (transaction, data, postReceiptSource, currentUserID)
         self.invokedHandlePurchasedTransactionParameterList.modify {
-            $0.append((transaction, data, initiationSource))
+            $0.append((transaction, data, postReceiptSource))
         }
 
         self.operationDispatcher.dispatchOnMainActor { [result = result()] in
@@ -91,18 +91,21 @@ final class MockTransactionPoster: TransactionPosterType {
 
     let invokedPostReceiptFromSyncedSK2Transaction: Atomic<Bool> = false
     let invokedPostReceiptFromSyncedSK2TransactionCount: Atomic<Int> = .init(0)
+
+    // swiftlint:disable:next large_tuple
     let invokedPostReceiptFromSyncedSK2TransactionParameters: Atomic<(
         transaction: StoreTransactionType,
         data: PurchasedTransactionData,
-        initiationSource: PurchaseSource,
+        postReceiptSource: PostReceiptSource,
         appTransactionJWS: String?,
         currentUserID: String
     )?> = nil
 
+    // swiftlint:disable:next function_parameter_count
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
-        initiationSource: PurchaseSource,
+        postReceiptSource: PostReceiptSource,
         appTransactionJWS: String?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
@@ -112,7 +115,7 @@ final class MockTransactionPoster: TransactionPosterType {
         self.invokedPostReceiptFromSyncedSK2TransactionParameters.value = (
             transaction,
             data,
-            initiationSource,
+            postReceiptSource,
             appTransactionJWS,
             currentUserID
         )

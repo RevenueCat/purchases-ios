@@ -15,11 +15,25 @@ import Foundation
 
 // swiftlint:disable file_length
 
-/// Determines what triggered a purchase and whether it comes from a restore.
-struct PurchaseSource: Equatable {
+/// Determines what triggered a receipt to be posted and whether it comes from a restore.
+struct PostReceiptSource: Equatable {
+
+    /// Determines what triggered a receipt to be posted
+    enum InitiationSource: CaseIterable {
+
+        /// From a call to restore purchases
+        case restore
+
+        /// From a purchase
+        case purchase
+
+        /// From a transaction in the queue
+        case queue
+
+    }
 
     let isRestore: Bool
-    let initiationSource: ProductRequestData.InitiationSource
+    let initiationSource: InitiationSource
 
 }
 
@@ -42,7 +56,7 @@ protocol TransactionPosterType: AnyObject, Sendable {
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
-        initiationSource: PurchaseSource,
+        postReceiptSource: PostReceiptSource,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     )
@@ -55,10 +69,11 @@ protocol TransactionPosterType: AnyObject, Sendable {
         completion: @escaping @Sendable @MainActor () -> Void
     )
 
+    // swiftlint:disable:next function_parameter_count
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
-        initiationSource: PurchaseSource,
+        postReceiptSource: PostReceiptSource,
         appTransactionJWS: String?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
@@ -99,7 +114,7 @@ final class TransactionPoster: TransactionPosterType {
 
     func handlePurchasedTransaction(_ transaction: StoreTransactionType,
                                     data: PurchasedTransactionData,
-                                    initiationSource: PurchaseSource,
+                                    postReceiptSource: PostReceiptSource,
                                     currentUserID: String,
                                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         Logger.debug(Strings.purchase.transaction_poster_handling_transaction(
@@ -125,7 +140,7 @@ final class TransactionPoster: TransactionPosterType {
                     self.getAppTransactionJWSIfNeeded { appTransaction in
                         self.postReceipt(transaction: transaction,
                                          purchasedTransactionData: data,
-                                         initiationSource: initiationSource,
+                                         postReceiptSource: postReceiptSource,
                                          receipt: encodedReceipt,
                                          product: product,
                                          appTransaction: appTransaction,
@@ -144,10 +159,11 @@ final class TransactionPoster: TransactionPosterType {
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
-        initiationSource: PurchaseSource,
+        postReceiptSource: PostReceiptSource,
         appTransactionJWS: String?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
@@ -158,7 +174,7 @@ final class TransactionPoster: TransactionPosterType {
                 self.product(with: transaction.productIdentifier) { product in
                     self.postReceipt(transaction: transaction,
                                      purchasedTransactionData: data,
-                                     initiationSource: initiationSource,
+                                     postReceiptSource: postReceiptSource,
                                      receipt: encodedReceipt,
                                      product: product,
                                      appTransaction: appTransactionJWS,
@@ -235,14 +251,14 @@ extension TransactionPosterType {
     func handlePurchasedTransaction(
         _ transaction: StoreTransaction,
         data: PurchasedTransactionData,
-        initiationSource: PurchaseSource,
+        postReceiptSource: PostReceiptSource,
         currentUserID: String
     ) async -> Result<CustomerInfo, BackendError> {
         await Async.call { completion in
             self.handlePurchasedTransaction(
                 transaction,
                 data: data,
-                initiationSource: initiationSource,
+                postReceiptSource: postReceiptSource,
                 currentUserID: currentUserID,
                 completion: completion
             )
@@ -251,7 +267,7 @@ extension TransactionPosterType {
 
 }
 
-extension PurchaseSource: Codable {}
+extension PostReceiptSource: Codable {}
 
 // MARK: - Implementation
 
@@ -301,7 +317,7 @@ extension TransactionPoster {
     // swiftlint:disable function_parameter_count
     private func postReceipt(transaction: StoreTransactionType,
                              purchasedTransactionData: PurchasedTransactionData,
-                             initiationSource: PurchaseSource,
+                             postReceiptSource: PostReceiptSource,
                              receipt: EncodedAppleReceipt,
                              product: StoreProduct?,
                              appTransaction: String?,
@@ -311,7 +327,7 @@ extension TransactionPoster {
             forTransactionId: transaction.transactionIdentifier
         )
         let shouldStoreMetadata = storedTransactionMetadata == nil &&
-        initiationSource.initiationSource == .purchase
+        postReceiptSource.initiationSource == .purchase
 
         let shouldClearMetadataOnSuccess = storedTransactionMetadata != nil || shouldStoreMetadata
 
@@ -335,7 +351,7 @@ extension TransactionPoster {
         self.backend.post(receipt: receipt,
                           productData: effectiveProductData,
                           transactionData: effectiveTransactionData,
-                          initiationSource: initiationSource,
+                          postReceiptSource: postReceiptSource,
                           observerMode: self.observerMode,
                           originalPurchaseCompletedBy: effectivePurchasesAreCompletedBy,
                           appTransaction: appTransaction,
