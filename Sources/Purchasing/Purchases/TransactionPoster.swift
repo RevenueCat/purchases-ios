@@ -32,7 +32,6 @@ struct PurchasedTransactionData {
     var metadata: [String: String]?
     var aadAttributionToken: String?
     var storeCountry: String?
-    var source: PurchaseSource
 
 }
 
@@ -43,6 +42,7 @@ protocol TransactionPosterType: AnyObject, Sendable {
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        initiationSource: PurchaseSource,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     )
@@ -58,6 +58,7 @@ protocol TransactionPosterType: AnyObject, Sendable {
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        initiationSource: PurchaseSource,
         appTransactionJWS: String?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
@@ -98,6 +99,7 @@ final class TransactionPoster: TransactionPosterType {
 
     func handlePurchasedTransaction(_ transaction: StoreTransactionType,
                                     data: PurchasedTransactionData,
+                                    initiationSource: PurchaseSource,
                                     currentUserID: String,
                                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         Logger.debug(Strings.purchase.transaction_poster_handling_transaction(
@@ -123,6 +125,7 @@ final class TransactionPoster: TransactionPosterType {
                     self.getAppTransactionJWSIfNeeded { appTransaction in
                         self.postReceipt(transaction: transaction,
                                          purchasedTransactionData: data,
+                                         initiationSource: initiationSource,
                                          receipt: encodedReceipt,
                                          product: product,
                                          appTransaction: appTransaction,
@@ -144,6 +147,7 @@ final class TransactionPoster: TransactionPosterType {
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        initiationSource: PurchaseSource,
         appTransactionJWS: String?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
@@ -154,6 +158,7 @@ final class TransactionPoster: TransactionPosterType {
                 self.product(with: transaction.productIdentifier) { product in
                     self.postReceipt(transaction: transaction,
                                      purchasedTransactionData: data,
+                                     initiationSource: initiationSource,
                                      receipt: encodedReceipt,
                                      product: product,
                                      appTransaction: appTransactionJWS,
@@ -230,12 +235,14 @@ extension TransactionPosterType {
     func handlePurchasedTransaction(
         _ transaction: StoreTransaction,
         data: PurchasedTransactionData,
+        initiationSource: PurchaseSource,
         currentUserID: String
     ) async -> Result<CustomerInfo, BackendError> {
         await Async.call { completion in
             self.handlePurchasedTransaction(
                 transaction,
                 data: data,
+                initiationSource: initiationSource,
                 currentUserID: currentUserID,
                 completion: completion
             )
@@ -294,6 +301,7 @@ extension TransactionPoster {
     // swiftlint:disable function_parameter_count
     private func postReceipt(transaction: StoreTransactionType,
                              purchasedTransactionData: PurchasedTransactionData,
+                             initiationSource: PurchaseSource,
                              receipt: EncodedAppleReceipt,
                              product: StoreProduct?,
                              appTransaction: String?,
@@ -303,7 +311,7 @@ extension TransactionPoster {
             forTransactionId: transaction.transactionIdentifier
         )
         let shouldStoreMetadata = storedTransactionMetadata == nil &&
-        purchasedTransactionData.source.initiationSource == .purchase
+        initiationSource.initiationSource == .purchase
 
         let shouldClearMetadataOnSuccess = storedTransactionMetadata != nil || shouldStoreMetadata
 
@@ -327,6 +335,7 @@ extension TransactionPoster {
         self.backend.post(receipt: receipt,
                           productData: effectiveProductData,
                           transactionData: effectiveTransactionData,
+                          initiationSource: initiationSource,
                           observerMode: self.observerMode,
                           originalPurchaseCompletedBy: effectivePurchasesAreCompletedBy,
                           appTransaction: appTransaction,

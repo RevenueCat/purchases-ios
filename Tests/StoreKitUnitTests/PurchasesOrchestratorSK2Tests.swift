@@ -939,8 +939,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 offeringIdentifier: "stored_offering",
                 placementIdentifier: "stored_placement",
                 targetingContext: nil
-            ),
-            source: .init(isRestore: false, initiationSource: .purchase)
+            )
         )
         let storedMetadata = LocalTransactionMetadata(
             productData: storedProductData,

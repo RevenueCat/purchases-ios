@@ -1413,17 +1413,18 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             presentedOfferingContext: nil,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
-            storeCountry: storefront?.countryCode,
-            source: .init(
-                isRestore: self.allowSharingAppStoreAccount,
-                initiationSource: .queue
-            )
+            storeCountry: storefront?.countryCode
+        )
+        let purchaseSource: PurchaseSource = .init(
+            isRestore: self.allowSharingAppStoreAccount,
+            initiationSource: .queue
         )
 
         let transaction = StoreTransaction.from(transaction: transaction)
         let result: Result<CustomerInfo, BackendError> = await self.transactionPoster.handlePurchasedTransaction(
             transaction,
             data: transactionData,
+            initiationSource: purchaseSource,
             currentUserID: self.appUserID
         )
 
@@ -1688,13 +1689,14 @@ private extension PurchasesOrchestrator {
                     let transactionData: PurchasedTransactionData = .init(
                         presentedOfferingContext: nil,
                         unsyncedAttributes: unsyncedAttributes,
-                        storeCountry: productRequestData?.storeCountry,
-                        source: .init(isRestore: isRestore, initiationSource: initiationSource)
+                        storeCountry: productRequestData?.storeCountry
                     )
+                    let purchaseSource: PurchaseSource = .init(isRestore: isRestore, initiationSource: initiationSource)
 
                     self.backend.post(receipt: .receipt(receiptData),
                                       productData: productRequestData,
                                       transactionData: transactionData,
+                                      initiationSource: purchaseSource,
                                       observerMode: self.observerMode,
                                       originalPurchaseCompletedBy: nil,
                                       appUserID: currentAppUserID) { result in
@@ -1771,16 +1773,17 @@ private extension PurchasesOrchestrator {
 
                 let transactionData: PurchasedTransactionData = .init(
                     presentedOfferingContext: nil,
-                    unsyncedAttributes: unsyncedAttributes,
-                    source: .init(
-                        isRestore: isRestore,
-                        initiationSource: initiationSource
-                    )
+                    unsyncedAttributes: unsyncedAttributes
+                )
+                let purchaseSource: PurchaseSource = .init(
+                    isRestore: isRestore,
+                    initiationSource: initiationSource
                 )
 
                 self.backend.post(receipt: .empty,
                                   productData: nil,
                                   transactionData: transactionData,
+                                  initiationSource: purchaseSource,
                                   observerMode: self.observerMode,
                                   originalPurchaseCompletedBy: nil,
                                   appTransaction: appTransactionJWS,
@@ -1798,13 +1801,14 @@ private extension PurchasesOrchestrator {
             let transactionData: PurchasedTransactionData = .init(
                 presentedOfferingContext: nil,
                 unsyncedAttributes: unsyncedAttributes,
-                storeCountry: transaction.storefront?.countryCode,
-                source: .init(isRestore: isRestore, initiationSource: initiationSource)
+                storeCountry: transaction.storefront?.countryCode
             )
+            let purchaseSource: PurchaseSource = .init(isRestore: isRestore, initiationSource: initiationSource)
 
             self.transactionPoster.postReceiptFromSyncedSK2Transaction(
                 transaction,
                 data: transactionData,
+                initiationSource: purchaseSource,
                 appTransactionJWS: appTransactionJWS,
                 currentUserID: currentAppUserID
             ) { result in
@@ -1868,14 +1872,15 @@ private extension PurchasesOrchestrator {
                 presentedPaywall: paywall,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
-                storeCountry: storefront?.countryCode,
-                source: self.purchaseSource(for: purchasedTransaction.productIdentifier,
-                                            restored: restored)
+                storeCountry: storefront?.countryCode
             )
+            let purchaseSource = self.purchaseSource(for: purchasedTransaction.productIdentifier,
+                                                     restored: restored)
 
             self.transactionPoster.handlePurchasedTransaction(
                 purchasedTransaction,
                 data: transactionData,
+                initiationSource: purchaseSource,
                 currentUserID: self.appUserID
             ) { result in
 
@@ -2159,14 +2164,15 @@ extension PurchasesOrchestrator {
             unsyncedAttributes: unsyncedAttributes,
             metadata: metadata,
             aadAttributionToken: adServicesToken,
-            storeCountry: transaction.storefront?.countryCode,
-            source: .init(isRestore: self.allowSharingAppStoreAccount,
-                          initiationSource: initiationSource)
+            storeCountry: transaction.storefront?.countryCode
         )
+        let purchaseSource: PurchaseSource = .init(isRestore: self.allowSharingAppStoreAccount,
+                                                   initiationSource: initiationSource)
 
         let result = await self.transactionPoster.handlePurchasedTransaction(
             transaction,
             data: transactionData,
+            initiationSource: purchaseSource,
             currentUserID: self.appUserID
         )
 

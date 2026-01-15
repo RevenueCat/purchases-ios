@@ -91,6 +91,7 @@ final class CustomerAPI {
     func post(receipt: EncodedAppleReceipt,
               productData: ProductRequestData?,
               transactionData: PurchasedTransactionData,
+              initiationSource: PurchaseSource,
               observerMode: Bool,
               originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
               appTransaction: String?,
@@ -113,6 +114,7 @@ final class CustomerAPI {
 
         let postData = PostReceiptDataOperation.PostData(
             transactionData: transactionData.withAttributesToPost(subscriberAttributesToPost),
+            initiationSource: initiationSource,
             appUserID: appUserID,
             productData: productData,
             receipt: receipt,

@@ -275,9 +275,7 @@ class LocalTransactionMetadataStoreTests: TestCase {
             discounts: nil
         )
 
-        let transactionData = PurchasedTransactionData(
-            source: .init(isRestore: false, initiationSource: .purchase)
-        )
+        let transactionData = PurchasedTransactionData()
 
         return LocalTransactionMetadata(
             productData: productData,
@@ -311,8 +309,7 @@ class LocalTransactionMetadataStoreTests: TestCase {
             unsyncedAttributes: ["key": .init(attribute: .email, value: "test@example.com")],
             metadata: ["custom_key": "custom_value"],
             aadAttributionToken: "test_token",
-            storeCountry: "US",
-            source: .init(isRestore: false, initiationSource: .purchase)
+            storeCountry: "US"
         )
 
         return LocalTransactionMetadata(

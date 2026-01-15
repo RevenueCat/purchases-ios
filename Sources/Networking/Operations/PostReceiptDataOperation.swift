@@ -174,6 +174,7 @@ extension PostReceiptDataOperation.PostData {
 
     init(
         transactionData data: PurchasedTransactionData,
+        initiationSource: PurchaseSource,
         appUserID: String,
         productData: ProductRequestData?,
         receipt: EncodedAppleReceipt,
@@ -185,7 +186,7 @@ extension PostReceiptDataOperation.PostData {
         self.init(
             appUserID: appUserID,
             receipt: receipt,
-            isRestore: data.source.isRestore,
+            isRestore: initiationSource.isRestore,
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingContext?.offeringIdentifier,
             presentedPlacementIdentifier: data.presentedOfferingContext?.placementIdentifier,
@@ -195,7 +196,7 @@ extension PostReceiptDataOperation.PostData {
             paywall: data.paywall,
             observerMode: observerMode,
             purchaseCompletedBy: purchaseCompletedBy,
-            initiationSource: data.source.initiationSource,
+            initiationSource: initiationSource.initiationSource,
             subscriberAttributesByKey: data.unsyncedAttributes,
             aadAttributionToken: data.aadAttributionToken,
             testReceiptIdentifier: testReceiptIdentifier,

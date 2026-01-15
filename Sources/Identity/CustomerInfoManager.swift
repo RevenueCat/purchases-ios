@@ -436,8 +436,7 @@ private extension CustomerInfoManager {
                     let transactionData = PurchasedTransactionData(
                         presentedOfferingContext: nil,
                         unsyncedAttributes: [:],
-                        storeCountry: await Storefront.currentStorefront?.countryCode,
-                        source: Self.sourceForUnfinishedTransaction
+                        storeCountry: await Storefront.currentStorefront?.countryCode
                     )
 
                     // Post everything but the first transaction in the background
@@ -447,6 +446,7 @@ private extension CustomerInfoManager {
                         await self.postTransactions(
                             otherTransactionsToPostInParalel,
                             transactionData,
+                            initiationSource: Self.sourceForUnfinishedTransaction,
                             appUserID: appUserID
                         )
                     }
@@ -457,6 +457,7 @@ private extension CustomerInfoManager {
                     let result = await self.transactionPoster.handlePurchasedTransaction(
                         transactionToPost,
                         data: transactionData,
+                        initiationSource: Self.sourceForUnfinishedTransaction,
                         currentUserID: appUserID
                     )
                     completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
@@ -544,6 +545,7 @@ private extension CustomerInfoManager {
     private func postTransactions(
         _ transactions: [StoreTransaction],
         _ data: PurchasedTransactionData,
+        initiationSource: PurchaseSource,
         appUserID: String
     ) async {
         await withTaskGroup(of: Void.self) { group in
@@ -552,6 +554,7 @@ private extension CustomerInfoManager {
                     _ = await self.transactionPoster.handlePurchasedTransaction(
                         transaction,
                         data: data,
+                        initiationSource: initiationSource,
                         currentUserID: appUserID
                     )
                 }
