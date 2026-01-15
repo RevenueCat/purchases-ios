@@ -231,11 +231,7 @@ private extension ETagManager {
             return
         }
 
-        do {
-            try fileManager.removeItem(at: oldDirectoryURL)
-        } catch {
-            Logger.error(Strings.cache.failed_to_delete_old_cache_directory(error))
-        }
+        try? fileManager.removeItem(at: oldDirectoryURL)
 
         self.hasDeletedOldDirectory = true
     }

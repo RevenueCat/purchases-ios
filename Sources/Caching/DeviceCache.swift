@@ -74,7 +74,7 @@ class DeviceCache {
         }
 
         // Check old documents directory and migrate if found
-        return self.migrateAndReturnValueIfNeeded(for: key)
+        return self.migrateAndReturnValueIfNeeded(for: key.rawValue)
     }
 
     // MARK: - appUserID
@@ -185,10 +185,12 @@ class DeviceCache {
         self.cacheInMemory(offerings: offerings)
         self.offeringsCachePreferredLocales = preferredLocales
 
-        // Migrate old file if it exists before writing
-        self.migrateFileIfNeeded(for: CacheKey.offerings(appUserID).rawValue)
+        let key = CacheKey.offerings(appUserID).rawValue
+        if self.largeItemCache.set(codable: offerings.contents, forKey: key) {
 
-        self.largeItemCache.set(codable: offerings.contents, forKey: CacheKey.offerings(appUserID).rawValue)
+            // Delete old file if it exists
+            self.deleteOldFileIfNeeded(for: key)
+        }
     }
 
     func cacheInMemory(offerings: Offerings) {
@@ -365,16 +367,17 @@ class DeviceCache {
     }
 
     func store(productEntitlementMapping: ProductEntitlementMapping) {
-        // Migrate old file if it exists before writing
-        self.migrateFileIfNeeded(for: CacheKeys.productEntitlementMapping.rawValue)
-
+        let productEntitlementMappingKey = CacheKeys.productEntitlementMapping.rawValue
         if self.largeItemCache.set(
             codable: productEntitlementMapping,
-            forKey: CacheKeys.productEntitlementMapping.rawValue
+            forKey: productEntitlementMappingKey
         ) {
             self.userDefaults.write {
                 $0.set(Date(), forKey: CacheKeys.productEntitlementMappingLastUpdated)
             }
+
+            // Delete old file if it still exists
+            self.deleteOldFileIfNeeded(for: productEntitlementMappingKey)
         }
     }
 
@@ -820,18 +823,23 @@ private extension DeviceCache {
         return documentsDirectoryURL?.appendingPathComponent(Self.oldDefaultBasePath)
     }
 
-    private func migrateAndReturnValueIfNeeded<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
+    private func migrateAndReturnValueIfNeeded<Value: Codable>(for key: String) -> Value? {
         guard let oldDirectoryURL = self.oldDocumentsDirectoryURL(),
               let newCacheURL = DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent(Self.defaultBasePath)
         else { return nil }
 
-        let oldFileURL = oldDirectoryURL.appendingPathComponent(key.rawValue)
-        let newFileURL = newCacheURL.appendingPathComponent(key.rawValue)
+        let oldFileURL = oldDirectoryURL.appendingPathComponent(key)
+        let newFileURL = newCacheURL.appendingPathComponent(key)
 
         // Try to load from old location
-        guard fileManager.fileExists(atPath: oldFileURL.path),
-              let data = try? Data(contentsOf: oldFileURL),
+        guard fileManager.fileExists(atPath: oldFileURL.path) else {
+            return nil
+        }
+
+        // If decoding of the file from the old location fails, remove it since the file is corrupt
+        guard let data = try? Data(contentsOf: oldFileURL),
               let value: Value = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
+            try? fileManager.removeItem(at: oldFileURL)
             return nil
         }
 
@@ -851,7 +859,7 @@ private extension DeviceCache {
         return value
     }
 
-    private func migrateFileIfNeeded(for key: String) {
+    private func deleteOldFileIfNeeded(for key: String) {
         guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else {
             return
         }
