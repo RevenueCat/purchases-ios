@@ -1377,8 +1377,8 @@ private extension PurchasesOrchestrator {
     private func purchaseSource(
         for productIdentifier: String,
         restored: Bool
-    ) -> PurchaseSource {
-        let initiationSource: ProductRequestData.InitiationSource = {
+    ) -> PostReceiptSource {
+        let initiationSource: PostReceiptSource.InitiationSource = {
             // Having a purchase completed callback implies that the transation comes from an explicit call
             // to `purchase()` instead of a StoreKit transaction notification.
             let hasPurchaseCallback = self.purchaseCompleteCallbacksByProductID.value.keys.contains(productIdentifier)
@@ -1413,17 +1413,18 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             presentedOfferingContext: nil,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
-            storeCountry: storefront?.countryCode,
-            source: .init(
-                isRestore: self.allowSharingAppStoreAccount,
-                initiationSource: .queue
-            )
+            storeCountry: storefront?.countryCode
+        )
+        let purchaseSource: PostReceiptSource = .init(
+            isRestore: self.allowSharingAppStoreAccount,
+            initiationSource: .queue
         )
 
         let transaction = StoreTransaction.from(transaction: transaction)
         let result: Result<CustomerInfo, BackendError> = await self.transactionPoster.handlePurchasedTransaction(
             transaction,
             data: transactionData,
+            postReceiptSource: purchaseSource,
             currentUserID: self.appUserID
         )
 
@@ -1613,7 +1614,7 @@ private extension PurchasesOrchestrator {
 
     private func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                                isRestore: Bool,
-                               initiationSource: ProductRequestData.InitiationSource,
+                               initiationSource: PostReceiptSource.InitiationSource,
                                completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         self.trackSyncOrRestorePurchasesStartedIfNeeded(receiptRefreshPolicy)
         let startTime = self.dateProvider.now()
@@ -1645,16 +1646,16 @@ private extension PurchasesOrchestrator {
 
     func syncPurchasesSK1(receiptRefreshPolicy: ReceiptRefreshPolicy,
                           isRestore: Bool,
-                          initiationSource: ProductRequestData.InitiationSource,
+                          initiationSource: PostReceiptSource.InitiationSource,
                           completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.unsyncedAttributes
+        let postReceiptSource = PostReceiptSource(isRestore: isRestore, initiationSource: initiationSource)
 
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
         // https://rev.cat/apple-restoring-purchased-products
         self.receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData, receiptURL in
-            guard let receiptData = receiptData,
-                  !receiptData.isEmpty else {
+            guard let receiptData = receiptData, !receiptData.isEmpty else {
                 if self.systemInfo.isSandbox {
                     Logger.appleWarning(Strings.receipt.no_sandbox_receipt_restore)
                 }
@@ -1684,19 +1685,19 @@ private extension PurchasesOrchestrator {
                 }
 
                 self.createProductRequestData(with: receiptData) { productRequestData in
-                    let transactionData: PurchasedTransactionData = .init(
-                        presentedOfferingContext: nil,
-                        unsyncedAttributes: unsyncedAttributes,
-                        storeCountry: productRequestData?.storeCountry,
-                        source: .init(isRestore: isRestore, initiationSource: initiationSource)
-                    )
+                    let transactionData = PurchasedTransactionData(presentedOfferingContext: nil,
+                                                                   unsyncedAttributes: unsyncedAttributes,
+                                                                   storeCountry: productRequestData?.storeCountry)
 
-                    self.backend.post(receipt: .receipt(receiptData),
-                                      productData: productRequestData,
-                                      transactionData: transactionData,
-                                      observerMode: self.observerMode,
-                                      originalPurchaseCompletedBy: nil,
-                                      appUserID: currentAppUserID) { result in
+                    self.backend.post(
+                        receipt: .receipt(receiptData),
+                        productData: productRequestData,
+                        transactionData: transactionData,
+                        postReceiptSource: .init(isRestore: isRestore, initiationSource: initiationSource),
+                        observerMode: self.observerMode,
+                        originalPurchaseCompletedBy: nil,
+                        appUserID: currentAppUserID
+                    ) { result in
                         self.handleReceiptPost(result: result,
                                                transactionData: transactionData,
                                                adServicesToken: nil,
@@ -1710,7 +1711,7 @@ private extension PurchasesOrchestrator {
     // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private func syncPurchasesSK2(isRestore: Bool,
-                                  initiationSource: ProductRequestData.InitiationSource,
+                                  initiationSource: PostReceiptSource.InitiationSource,
                                   completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.unsyncedAttributes
@@ -1769,16 +1770,17 @@ private extension PurchasesOrchestrator {
 
                 let transactionData: PurchasedTransactionData = .init(
                     presentedOfferingContext: nil,
-                    unsyncedAttributes: unsyncedAttributes,
-                    source: .init(
-                        isRestore: isRestore,
-                        initiationSource: initiationSource
-                    )
+                    unsyncedAttributes: unsyncedAttributes
+                )
+                let purchaseSource: PostReceiptSource = .init(
+                    isRestore: isRestore,
+                    initiationSource: initiationSource
                 )
 
                 self.backend.post(receipt: .empty,
                                   productData: nil,
                                   transactionData: transactionData,
+                                  postReceiptSource: purchaseSource,
                                   observerMode: self.observerMode,
                                   originalPurchaseCompletedBy: nil,
                                   appTransaction: appTransactionJWS,
@@ -1795,13 +1797,14 @@ private extension PurchasesOrchestrator {
             let transactionData: PurchasedTransactionData = .init(
                 presentedOfferingContext: nil,
                 unsyncedAttributes: unsyncedAttributes,
-                storeCountry: transaction.storefront?.countryCode,
-                source: .init(isRestore: isRestore, initiationSource: initiationSource)
+                storeCountry: transaction.storefront?.countryCode
             )
+            let purchaseSource: PostReceiptSource = .init(isRestore: isRestore, initiationSource: initiationSource)
 
             self.transactionPoster.postReceiptFromSyncedSK2Transaction(
                 transaction,
                 data: transactionData,
+                postReceiptSource: purchaseSource,
                 appTransactionJWS: appTransactionJWS,
                 currentUserID: currentAppUserID
             ) { result in
@@ -1861,14 +1864,15 @@ private extension PurchasesOrchestrator {
                 presentedPaywall: paywall,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
-                storeCountry: storefront?.countryCode,
-                source: self.purchaseSource(for: purchasedTransaction.productIdentifier,
-                                            restored: restored)
+                storeCountry: storefront?.countryCode
             )
+            let purchaseSource = self.purchaseSource(for: purchasedTransaction.productIdentifier,
+                                                     restored: restored)
 
             self.transactionPoster.handlePurchasedTransaction(
                 purchasedTransaction,
                 data: transactionData,
+                postReceiptSource: purchaseSource,
                 currentUserID: self.appUserID
             ) { result in
 
@@ -2138,7 +2142,7 @@ extension PurchasesOrchestrator {
 
     private func handlePurchasedTransaction(
         _ transaction: StoreTransaction,
-        _ initiationSource: ProductRequestData.InitiationSource,
+        _ initiationSource: PostReceiptSource.InitiationSource,
         _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
@@ -2151,14 +2155,15 @@ extension PurchasesOrchestrator {
             unsyncedAttributes: unsyncedAttributes,
             metadata: metadata,
             aadAttributionToken: adServicesToken,
-            storeCountry: transaction.storefront?.countryCode,
-            source: .init(isRestore: self.allowSharingAppStoreAccount,
-                          initiationSource: initiationSource)
+            storeCountry: transaction.storefront?.countryCode
         )
+        let purchaseSource: PostReceiptSource = .init(isRestore: self.allowSharingAppStoreAccount,
+                                                      initiationSource: initiationSource)
 
         let result = await self.transactionPoster.handlePurchasedTransaction(
             transaction,
             data: transactionData,
+            postReceiptSource: purchaseSource,
             currentUserID: self.appUserID
         )
 
@@ -2175,7 +2180,7 @@ extension PurchasesOrchestrator {
     // This method is only intended to be used from unit tests.
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
-                       initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {
+                       initiationSource: PostReceiptSource.InitiationSource) async throws -> CustomerInfo {
         return try await Async.call { completion in
             self.syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy,
                                isRestore: isRestore,

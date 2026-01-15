@@ -130,7 +130,6 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
     private let metadata: [String: String]?
     private let aadAttributionToken: String?
     private let storeCountry: String?
-    private let source: PurchaseSource
 
     // Raw properties of PresentedOfferingContext, to avoid making it `Codable` because it's public
     private let offeringIdentifier: String?
@@ -144,7 +143,6 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
         self.metadata = purchasedTransactionData.metadata
         self.aadAttributionToken = purchasedTransactionData.aadAttributionToken
         self.storeCountry = purchasedTransactionData.storeCountry
-        self.source = purchasedTransactionData.source
         self.offeringIdentifier = purchasedTransactionData.presentedOfferingContext?.offeringIdentifier
         self.placementIdentifier = purchasedTransactionData.presentedOfferingContext?.placementIdentifier
         self.targetingContextRevision = purchasedTransactionData.presentedOfferingContext?.targetingContext?.revision
@@ -158,8 +156,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
             unsyncedAttributes: self.unsyncedAttributes,
             metadata: self.metadata,
             aadAttributionToken: self.aadAttributionToken,
-            storeCountry: self.storeCountry,
-            source: self.source
+            storeCountry: self.storeCountry
         )
     }
 
