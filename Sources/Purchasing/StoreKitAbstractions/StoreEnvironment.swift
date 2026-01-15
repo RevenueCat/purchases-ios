@@ -16,7 +16,7 @@ import Foundation
 import StoreKit
 
 /// A wrapper for `StoreKit.AppStore.Environment`.
-enum StoreEnvironment: String {
+public enum StoreEnvironment: String {
 
     case production
     case sandbox

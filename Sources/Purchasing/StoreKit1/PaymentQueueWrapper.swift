@@ -29,7 +29,7 @@ protocol PaymentQueueWrapperDelegate: AnyObject, Sendable {
 
 /// A wrapper for `SKPaymentQueue`
 @objc
-protocol PaymentQueueWrapperType: AnyObject {
+public protocol PaymentQueueWrapperType: AnyObject {
 
     func finishTransaction(_ transaction: SKPaymentTransaction, completion: @escaping () -> Void)
 
