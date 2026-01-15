@@ -27,7 +27,7 @@ class DeviceCache {
     private let userDefaults: SynchronizedUserDefaults
     private let largeItemCache: SynchronizedLargeItemCache
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
-    private let fileManager = FileManager.default
+    private let fileManager: FileManager
 
     private let _cachedAppUserID: Atomic<String?>
     private let _cachedLegacyAppUserID: Atomic<String?>
@@ -38,7 +38,8 @@ class DeviceCache {
 
     init(systemInfo: SystemInfo,
          userDefaults: UserDefaults,
-         fileManager: LargeItemCacheType = FileManager.default,
+         cache: LargeItemCacheType = FileManager.default,
+         fileManager: FileManager = FileManager.default,
          offeringsCachedObject: InMemoryCachedObject<Offerings> = .init()) {
         self.offeringsCachedObject = offeringsCachedObject
         self.systemInfo = systemInfo
@@ -46,9 +47,10 @@ class DeviceCache {
         self._cachedAppUserID = .init(userDefaults.string(forKey: CacheKeys.appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults))
         self.largeItemCache = .init(
-            cache: fileManager,
+            cache: cache,
             basePath: Self.defaultBasePath
         )
+        self.fileManager = fileManager
 
         Logger.verbose(Strings.purchase.device_cache_init(self))
     }
@@ -810,7 +812,7 @@ private extension DeviceCache {
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             documentsDirectoryURL = URL.documentsDirectory
         } else {
-            documentsDirectoryURL = FileManager.default.urls(
+            documentsDirectoryURL = fileManager.urls(
                 for: .documentDirectory,
                 in: .userDomainMask
             ).first
@@ -856,7 +858,7 @@ private extension DeviceCache {
 
         let oldFileURL = oldDirectoryURL.appendingPathComponent(key)
 
-        // Use FileManager.default for file operations since LargeItemCacheType doesn't provide fileExists
+        // Use fileManager directly for file operations since LargeItemCacheType doesn't provide fileExists
         guard fileManager.fileExists(atPath: oldFileURL.path) else {
             return
         }
@@ -875,7 +877,7 @@ private extension DeviceCache {
             return
         }
 
-        // Use FileManager.default for file operations since LargeItemCacheType doesn't provide these
+        // Use fileManager directly for file operations since LargeItemCacheType doesn't provide these
         guard fileManager.fileExists(atPath: oldDirectoryURL.path),
               (try? fileManager.contentsOfDirectory(atPath: oldDirectoryURL.path).isEmpty) == true else {
             return
