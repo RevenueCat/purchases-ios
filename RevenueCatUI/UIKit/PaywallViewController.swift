@@ -47,6 +47,30 @@ public class PaywallViewController: UIViewController {
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
+    /// Custom variables to be used in paywall text replacement.
+    ///
+    /// Set this property before presenting the view controller to provide custom variable values.
+    /// Variables are defined in the RevenueCat dashboard using the `{{ $custom.key }}` syntax.
+    ///
+    /// ### Example
+    /// ```swift
+    /// let vc = PaywallViewController(offering: offering)
+    /// vc.customVariables = [
+    ///     "player_name": .string("John"),
+    ///     "max_health": .number(100),
+    ///     "is_premium": .bool(true)
+    /// ]
+    /// present(vc, animated: true)
+    /// ```
+    public var customVariables: [String: CustomVariableValue] = [:] {
+        didSet {
+            // Re-create the hosting controller when custom variables change
+            if self.hostingController != nil {
+                self.hostingController = self.createHostingController()
+            }
+        }
+    }
+
     private final var shouldBlockTouchEvents: Bool
     private final var dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
 
@@ -606,6 +630,7 @@ private extension PaywallViewController {
 
         let container = PaywallContainerView(
             configuration: self.configuration,
+            customVariables: self.customVariables,
             purchaseStarted: { [weak self] package in
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidStartPurchase?(self)
@@ -661,6 +686,7 @@ private extension PaywallViewController {
 private struct PaywallContainerView: View {
 
     var configuration: PaywallViewConfiguration
+    var customVariables: [String: CustomVariableValue]
 
     let purchaseStarted: PurchaseOfPackageStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
@@ -675,6 +701,7 @@ private struct PaywallContainerView: View {
 
     var body: some View {
         PaywallView(configuration: self.configuration)
+            .customPaywallVariables(self.customVariables)
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)

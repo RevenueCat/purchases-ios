@@ -90,6 +90,9 @@ enum Strings {
     case customFontFailedToLoad(fontName: String)
     case googleFontsNotSupported
 
+    // Custom Variables
+    case paywall_custom_variable_not_found(variableName: String)
+
     // Exit Offers
     case errorFetchingOfferings(Error)
     case exitOfferNotFound(String)
@@ -298,6 +301,10 @@ extension Strings: CustomStringConvertible {
             return "Custom font '\(fontName)' could not be loaded. Falling back to system font."
         case .googleFontsNotSupported:
             return "Google Fonts are not supported on this platform"
+
+        case .paywall_custom_variable_not_found(let variableName):
+            return "Custom variable '\(variableName)' was not found. " +
+            "Make sure to provide a value using .customPaywallVariables() or set a default in the dashboard."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"

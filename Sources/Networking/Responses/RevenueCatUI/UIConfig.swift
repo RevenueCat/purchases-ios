@@ -112,16 +112,62 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
     }
 
+    /// Definition of a custom variable as configured in the RevenueCat dashboard.
+    public struct CustomVariableDefinition: Codable, Equatable, Sendable {
+
+        /// The type of the variable: "string", "boolean", or "number".
+        public let type: String
+
+        /// The default value for this variable (always stored as a string).
+        public let defaultValue: String
+
+        public init(type: String, defaultValue: String) {
+            self.type = type
+            self.defaultValue = defaultValue
+        }
+
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case defaultValue = "default_value"
+        }
+
+    }
+
     public var app: AppConfig
     public var localizations: [String: [String: String]]
     public var variableConfig: VariableConfig
 
+    /// Custom variables defined in the RevenueCat dashboard.
+    /// Keys are variable names, values contain type and default value.
+    public var customVariables: [String: CustomVariableDefinition]
+
+    private enum CodingKeys: String, CodingKey {
+        case app
+        case localizations
+        case variableConfig = "variable_config"
+        case customVariables = "custom_variables"
+    }
+
     public init(app: AppConfig,
                 localizations: [String: [String: String]],
-                variableConfig: VariableConfig) {
+                variableConfig: VariableConfig,
+                customVariables: [String: CustomVariableDefinition] = [:]) {
         self.app = app
         self.localizations = localizations
         self.variableConfig = variableConfig
+        self.customVariables = customVariables
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.app = try container.decode(AppConfig.self, forKey: .app)
+        self.localizations = try container.decode([String: [String: String]].self, forKey: .localizations)
+        self.variableConfig = try container.decode(VariableConfig.self, forKey: .variableConfig)
+        self.customVariables = try container.decodeIfPresent(
+            [String: CustomVariableDefinition].self,
+            forKey: .customVariables
+        ) ?? [:]
     }
 
 }

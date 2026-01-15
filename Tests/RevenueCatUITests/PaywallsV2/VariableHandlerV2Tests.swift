@@ -844,4 +844,265 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class CustomVariablesV2Tests: TestCase {
+
+    let localizations = [
+        "en_US": [
+            "month": "month"
+        ]
+    ]
+
+    let locale = Locale(identifier: "en_US")
+
+    // MARK: - Custom Variables Tests
+
+    func testCustomVariableWithSDKProvidedValue() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["player_name": "John"],
+            defaultCustomVariables: ["player_name": "Player"]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ $custom.player_name }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Hello John!"))
+    }
+
+    func testCustomVariableFallsBackToDefaultValue() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: [:],
+            defaultCustomVariables: ["player_name": "Player"]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ $custom.player_name }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Hello Player!"))
+    }
+
+    func testCustomVariableReturnsEmptyWhenNotFound() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: [:],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ $custom.unknown_var }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Hello !"))
+    }
+
+    func testCustomVariableWithFunction() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["player_name": "john"],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ $custom.player_name | uppercase }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Hello JOHN!"))
+    }
+
+    func testCustomVariableWithNumericValue() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["max_health": "100"],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Your max health is {{ $custom.max_health }}.",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Your max health is 100."))
+    }
+
+    func testCustomVariableWithBooleanValue() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["is_premium": "true"],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Premium status: {{ $custom.is_premium }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Premium status: true"))
+    }
+
+    func testMultipleCustomVariables() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: [
+                "player_name": "John",
+                "level": "42"
+            ],
+            defaultCustomVariables: [
+                "max_health": "100"
+            ]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ $custom.player_name }} (Level {{ $custom.level }}) - Max HP: {{ $custom.max_health }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("John (Level 42) - Max HP: 100"))
+    }
+
+    func testCustomVariableMixedWithBuiltInVariables() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["player_name": "John"],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ $custom.player_name }}! Subscribe for {{ product.price }}/{{ product.period }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Hello John! Subscribe for $6.99/month"))
+    }
+
+    func testSDKProvidedValueOverridesDefault() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["setting": "override"],
+            defaultCustomVariables: ["setting": "default"]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Setting: {{ $custom.setting }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Setting: override"))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class CustomVariableValueTests: TestCase {
+
+    // MARK: - stringValue Tests
+
+    func testStringValueForString() {
+        let value = CustomVariableValue.string("Hello")
+        expect(value.stringValue).to(equal("Hello"))
+    }
+
+    func testStringValueForWholeNumber() {
+        let value = CustomVariableValue.number(100.0)
+        expect(value.stringValue).to(equal("100"))
+    }
+
+    func testStringValueForDecimalNumber() {
+        let value = CustomVariableValue.number(99.99)
+        expect(value.stringValue).to(equal("99.99"))
+    }
+
+    func testStringValueForBoolTrue() {
+        let value = CustomVariableValue.bool(true)
+        expect(value.stringValue).to(equal("true"))
+    }
+
+    func testStringValueForBoolFalse() {
+        let value = CustomVariableValue.bool(false)
+        expect(value.stringValue).to(equal("false"))
+    }
+
+    // MARK: - ExpressibleBy Literal Tests
+
+    func testExpressibleByStringLiteral() {
+        let value: CustomVariableValue = "test"
+        expect(value).to(equal(.string("test")))
+    }
+
+    func testExpressibleByIntegerLiteral() {
+        let value: CustomVariableValue = 42
+        expect(value).to(equal(.number(42.0)))
+    }
+
+    func testExpressibleByFloatLiteral() {
+        let value: CustomVariableValue = 3.14
+        expect(value).to(equal(.number(3.14)))
+    }
+
+    func testExpressibleByBooleanLiteral() {
+        let value: CustomVariableValue = true
+        expect(value).to(equal(.bool(true)))
+    }
+
+    // MARK: - Dictionary Conversion Tests
+
+    func testAsStringDictionary() {
+        let variables: [String: CustomVariableValue] = [
+            "name": .string("John"),
+            "level": .number(42),
+            "premium": .bool(true)
+        ]
+
+        let stringDict = variables.asStringDictionary
+
+        expect(stringDict["name"]).to(equal("John"))
+        expect(stringDict["level"]).to(equal("42"))
+        expect(stringDict["premium"]).to(equal("true"))
+    }
+
+}
+
 #endif

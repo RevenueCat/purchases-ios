@@ -40,6 +40,9 @@ struct TextComponentView: View {
     @Environment(\.countdownTime)
     private var countdownTime: CountdownTime?
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
     // Observing dynamicTypeSize triggers view rebuilds when Dynamic Type settings change,
     // which causes fonts to be recreated with the correct scaled size.
     @Environment(\.dynamicTypeSize)
@@ -60,7 +63,8 @@ struct TextComponentView: View {
                 package: self.packageContext.package
             ),
             promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package),
-            countdownTime: countdownTime
+            countdownTime: countdownTime,
+            customVariables: self.customVariables.asStringDictionary
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(
