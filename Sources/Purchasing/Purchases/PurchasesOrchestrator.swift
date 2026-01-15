@@ -1651,7 +1651,6 @@ private extension PurchasesOrchestrator {
                           completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.unsyncedAttributes
-        let postReceiptSource = PostReceiptSource(isRestore: isRestore, initiationSource: initiationSource)
 
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
         // https://rev.cat/apple-restoring-purchased-products
