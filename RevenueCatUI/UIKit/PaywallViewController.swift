@@ -336,7 +336,6 @@ public class PaywallViewController: UIViewController {
     private func handleDismissalRequest() {
         // If purchased, dismiss immediately without showing exit offer
         guard !self.purchaseHandler.hasPurchasedInSession else {
-            self.purchaseHandler.resetForNewSession()
             self.dismissPaywall()
             return
         }
@@ -345,7 +344,6 @@ public class PaywallViewController: UIViewController {
         if let exitOffering = self.exitOfferOffering, !self.isShowingExitOffer {
             self.presentExitOffer(for: exitOffering)
         } else {
-            self.purchaseHandler.resetForNewSession()
             self.dismissPaywall()
         }
     }
@@ -368,7 +366,6 @@ public class PaywallViewController: UIViewController {
         // Capture the presenting view controller and other needed state before dismissing
         guard let presenter = self.presentingViewController else {
             // No presenter, just dismiss normally
-            self.purchaseHandler.resetForNewSession()
             self.dismissPaywall()
             return
         }
@@ -498,9 +495,6 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
-        // Dismissal is happening (we allowed it) - clean up
-        self.purchaseHandler.resetForNewSession()
-
         // Forward to original delegate (with safety check to prevent recursion)
         if let originalDelegate = self.originalPresentationControllerDelegate, originalDelegate !== self {
             originalDelegate.presentationControllerWillDismiss?(presentationController)
