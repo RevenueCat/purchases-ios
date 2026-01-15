@@ -28,7 +28,7 @@ public typealias SK2Transaction = StoreKit.Transaction
 
     private let transaction: StoreTransactionType
 
-    public init(_ transaction: StoreTransactionType) {
+    init(_ transaction: StoreTransactionType) {
         self.transaction = transaction
 
         super.init()
@@ -42,13 +42,13 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var transactionIdentifier: String { self.transaction.transactionIdentifier }
     @objc public var quantity: Int { self.transaction.quantity }
     @objc public var storefront: Storefront? { self.transaction.storefront }
-    @objc public var jwsRepresentation: String? { self.transaction.jwsRepresentation }
-    public var environment: StoreEnvironment? { self.transaction.environment }
+    @objc internal var jwsRepresentation: String? { self.transaction.jwsRepresentation }
+    internal var environment: StoreEnvironment? { self.transaction.environment }
 
-    public var hasKnownPurchaseDate: Bool { return self.transaction.hasKnownPurchaseDate }
-    public var hasKnownTransactionIdentifier: Bool { self.transaction.hasKnownTransactionIdentifier }
+    var hasKnownPurchaseDate: Bool { return self.transaction.hasKnownPurchaseDate }
+    var hasKnownTransactionIdentifier: Bool { self.transaction.hasKnownTransactionIdentifier }
 
-    public func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
+    func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         self.transaction.finish(wrapper, completion: completion)
     }
 
@@ -86,7 +86,7 @@ public typealias SK2Transaction = StoreKit.Transaction
 }
 
 /// Information that represents the customer’s purchase of a product.
-public protocol StoreTransactionType: Sendable {
+internal protocol StoreTransactionType: Sendable {
 
     /// The product identifier.
     var productIdentifier: String { get }
