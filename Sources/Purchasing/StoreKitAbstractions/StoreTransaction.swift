@@ -132,6 +132,31 @@ internal protocol StoreTransactionType: Sendable {
 
 extension StoreTransaction {
 
+    /// Creates a `StoreTransaction` instance for testing purposes.
+    /// - Parameters:
+    ///   - productIdentifier: The product identifier.
+    ///   - purchaseDate: The date that the user's account was charged for a purchased or restored product.
+    ///   - transactionIdentifier: The unique identifier for the transaction.
+    ///   - quantity: The number of consumable products purchased. Defaults to 1.
+    ///   - storefront: The App Store storefront associated with the transaction. Defaults to `nil`.
+    public convenience init(
+        productIdentifier: String,
+        purchaseDate: Date,
+        transactionIdentifier: String,
+        quantity: Int = 1,
+        storefront: Storefront? = nil
+    ) {
+        self.init(
+            TestStoreTransaction(
+                productIdentifier: productIdentifier,
+                purchaseDate: purchaseDate,
+                transactionIdentifier: transactionIdentifier,
+                quantity: quantity,
+                storefront: storefront
+            )
+        )
+    }
+
     internal convenience init(sk1Transaction: SK1Transaction) {
         self.init(SK1StoreTransaction(sk1Transaction: sk1Transaction))
     }
