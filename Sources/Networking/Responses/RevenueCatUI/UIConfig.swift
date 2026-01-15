@@ -126,10 +126,12 @@ public struct UIConfig: Codable, Equatable, Sendable {
             self.defaultValue = defaultValue
         }
 
+        // Note: Using camelCase rawValues because JSONDecoder.default uses .convertFromSnakeCase
+        // JSON "default_value" → converted to "defaultValue" → matches CodingKey .defaultValue
         // swiftlint:disable:next nesting
         private enum CodingKeys: String, CodingKey {
             case type
-            case defaultValue = "default_value"
+            case defaultValue
         }
 
     }
@@ -142,11 +144,14 @@ public struct UIConfig: Codable, Equatable, Sendable {
     /// Keys are variable names, values contain type and default value.
     public var customVariables: [String: CustomVariableDefinition]
 
+    // Note: CodingKeys use camelCase rawValues (the default) because JSONDecoder.default
+    // uses .convertFromSnakeCase which converts JSON keys before matching against CodingKeys.
+    // JSON "custom_variables" → converted to "customVariables" → matches CodingKey .customVariables
     private enum CodingKeys: String, CodingKey {
         case app
         case localizations
-        case variableConfig = "variable_config"
-        case customVariables = "custom_variables"
+        case variableConfig
+        case customVariables
     }
 
     public init(app: AppConfig,
@@ -163,11 +168,29 @@ public struct UIConfig: Codable, Equatable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.app = try container.decode(AppConfig.self, forKey: .app)
         self.localizations = try container.decode([String: [String: String]].self, forKey: .localizations)
-        self.variableConfig = try container.decode(VariableConfig.self, forKey: .variableConfig)
-        self.customVariables = try container.decodeIfPresent(
-            [String: CustomVariableDefinition].self,
-            forKey: .customVariables
-        ) ?? [:]
+        self.variableConfig = try container.decodeIfPresent(
+            VariableConfig.self,
+            forKey: .variableConfig
+        ) ?? VariableConfig(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+
+        // Try to decode custom_variables with detailed error logging
+        do {
+            self.customVariables = try container.decodeIfPresent(
+                [String: CustomVariableDefinition].self,
+                forKey: .customVariables
+            ) ?? [:]
+        } catch {
+            Logger.error(Strings.offering.ui_config_custom_variables_decode_error(error: error))
+            self.customVariables = [:]
+        }
+
+        // Debug logging for custom variables
+        let hasCustomVariablesKey = container.contains(.customVariables)
+        Logger.debug(Strings.offering.ui_config_custom_variables_status(
+            keyPresent: hasCustomVariablesKey,
+            count: self.customVariables.count,
+            keys: Array(self.customVariables.keys)
+        ))
     }
 
 }

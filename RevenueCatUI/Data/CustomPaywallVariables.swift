@@ -28,10 +28,11 @@ import SwiftUI
 ///     ])
 /// ```
 ///
-/// In the paywall text (configured in the dashboard), use the `$custom.` prefix:
+/// In the paywall text (configured in the dashboard), use the `custom.` prefix:
 /// ```
-/// Hello {{ $custom.player_name }}!
+/// Hello {{ custom.player_name }}!
 /// ```
+/// Note: Both `{{ custom.key }}` and `{{ $custom.key }}` formats are supported.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum CustomVariableValue: Sendable, Equatable, Hashable {
 

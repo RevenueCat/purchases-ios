@@ -1033,6 +1033,65 @@ class CustomVariablesV2Tests: TestCase {
         expect(result).to(equal("Setting: override"))
     }
 
+    // MARK: - Custom Variable Prefix Tests (without $)
+
+    func testCustomVariableWithoutDollarPrefix() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["player_name": "John"],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ custom.player_name }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Hello John!"))
+    }
+
+    func testCustomVariableWithoutDollarPrefixFallsBackToDefault() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: [:],
+            defaultCustomVariables: ["max_health": "100"]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Your max health is {{ custom.max_health }}.",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Your max health is 100."))
+    }
+
+    func testCustomVariableWithoutDollarPrefixWithFunction() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["name": "john"],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ custom.name | uppercase }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Hello JOHN!"))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
