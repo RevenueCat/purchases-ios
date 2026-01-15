@@ -58,6 +58,7 @@ protocol TransactionPosterType: AnyObject, Sendable {
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        receipt: EncodedAppleReceipt,
         appTransactionJWS: String?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
@@ -144,25 +145,19 @@ final class TransactionPoster: TransactionPosterType {
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        receipt: EncodedAppleReceipt,
         appTransactionJWS: String?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
-        self.fetchEncodedReceipt(transaction: transaction) { result in
-            switch result {
-            case .success(let encodedReceipt):
-                self.product(with: transaction.productIdentifier) { product in
-                    self.postReceipt(transaction: transaction,
-                                     purchasedTransactionData: data,
-                                     receipt: encodedReceipt,
-                                     product: product,
-                                     appTransaction: appTransactionJWS,
-                                     currentUserID: currentUserID,
-                                     completion: completion)
-                }
-            case .failure(let error):
-                completion(.failure(error))
-            }
+        self.product(with: transaction.productIdentifier) { product in
+            self.postReceipt(transaction: transaction,
+                             purchasedTransactionData: data,
+                             receipt: receipt,
+                             product: product,
+                             appTransaction: appTransactionJWS,
+                             currentUserID: currentUserID,
+                             completion: completion)
         }
     }
 

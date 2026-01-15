@@ -388,31 +388,25 @@ class TransactionPosterTests: TestCase {
             source: .init(isRestore: false, initiationSource: .queue)
         )
         let appTransactionJWS = "test_app_transaction_jws"
+        let receiptData = "mock receipt".asData
+        let receipt: EncodedAppleReceipt = .receipt(receiptData)
 
-        self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
-        let result = try self.postReceiptFromSyncedSK2Transaction(transactionData, appTransactionJWS: appTransactionJWS)
+        let result = try self.postReceiptFromSyncedSK2Transaction(
+            transactionData,
+            receipt: receipt,
+            appTransactionJWS: appTransactionJWS
+        )
         expect(result).to(beSuccess())
         expect(result.value) === Self.mockCustomerInfo
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == receipt
         expect(self.backend.invokedPostReceiptDataParameters?.appTransaction) == appTransactionJWS
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
-    }
-
-    func testPostReceiptFromSyncedSK2TransactionWithMissingReceipt() throws {
-        self.receiptFetcher.mockReceiptURL = URL(string: "file://receipt_file")!
-        self.receiptFetcher.shouldReturnReceipt = false
-
-        let result = try self.postReceiptFromSyncedSK2Transaction(
-            .init(source: .init(isRestore: false, initiationSource: .queue)),
-            appTransactionJWS: nil
-        )
-        expect(result).to(beFailure())
-        expect(result.error) == BackendError.missingReceiptFile(self.receiptFetcher.mockReceiptURL)
     }
 
     func testPostReceiptFromSyncedSK2TransactionSendsJWS() throws {
@@ -427,12 +421,16 @@ class TransactionPosterTests: TestCase {
             source: .init(isRestore: false, initiationSource: .queue)
         )
         let appTransactionJWS = "test_app_transaction_jws"
+        let receipt: EncodedAppleReceipt = .jws(jwsRepresentation)
 
-        self.receiptFetcher.shouldReturnReceipt = false
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
-        let result = try self.postReceiptFromSyncedSK2Transaction(transactionData, appTransactionJWS: appTransactionJWS)
+        let result = try self.postReceiptFromSyncedSK2Transaction(
+            transactionData,
+            receipt: receipt,
+            appTransactionJWS: appTransactionJWS
+        )
         expect(result).to(beSuccess())
         expect(result.value) === Self.mockCustomerInfo
 
@@ -482,12 +480,17 @@ class TransactionPosterTests: TestCase {
             source: .init(isRestore: false, initiationSource: .queue)
         )
         let appTransactionJWS = "test_app_transaction_jws"
+        let receiptData = "mock receipt".asData
+        let receipt: EncodedAppleReceipt = .receipt(receiptData)
 
-        self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
-        let result = try self.postReceiptFromSyncedSK2Transaction(transactionData, appTransactionJWS: appTransactionJWS)
+        let result = try self.postReceiptFromSyncedSK2Transaction(
+            transactionData,
+            receipt: receipt,
+            appTransactionJWS: appTransactionJWS
+        )
         expect(result).to(beSuccess())
 
         // Verify that the stored metadata was used
@@ -532,12 +535,17 @@ class TransactionPosterTests: TestCase {
         let transactionData = PurchasedTransactionData(
             source: .init(isRestore: false, initiationSource: .queue)
         )
+        let receiptData = "mock receipt".asData
+        let receipt: EncodedAppleReceipt = .receipt(receiptData)
 
-        self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
-        let result = try self.postReceiptFromSyncedSK2Transaction(transactionData, appTransactionJWS: nil)
+        let result = try self.postReceiptFromSyncedSK2Transaction(
+            transactionData,
+            receipt: receipt,
+            appTransactionJWS: nil
+        )
         expect(result).to(beSuccess())
 
         expect(self.localTransactionMetadataStore.invokedRemoveMetadata.value) == true
@@ -551,12 +559,17 @@ class TransactionPosterTests: TestCase {
         let transactionData = PurchasedTransactionData(
             source: .init(isRestore: false, initiationSource: .queue)
         )
+        let receiptData = "mock receipt".asData
+        let receipt: EncodedAppleReceipt = .receipt(receiptData)
 
-        self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
-        let result = try self.postReceiptFromSyncedSK2Transaction(transactionData, appTransactionJWS: nil)
+        let result = try self.postReceiptFromSyncedSK2Transaction(
+            transactionData,
+            receipt: receipt,
+            appTransactionJWS: nil
+        )
         expect(result).to(beSuccess())
 
         // Verify transaction was NOT finished (unlike handlePurchasedTransaction)
@@ -568,8 +581,9 @@ class TransactionPosterTests: TestCase {
         let transactionData = PurchasedTransactionData(
             source: .init(isRestore: false, initiationSource: .queue)
         )
+        let receiptData = "mock receipt".asData
+        let receipt: EncodedAppleReceipt = .receipt(receiptData)
 
-        self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
 
         // Create a finishable error (4xx client error)
@@ -585,7 +599,11 @@ class TransactionPosterTests: TestCase {
 
         self.backend.stubbedPostReceiptResult = .failure(finishableError)
 
-        let result = try self.postReceiptFromSyncedSK2Transaction(transactionData, appTransactionJWS: nil)
+        let result = try self.postReceiptFromSyncedSK2Transaction(
+            transactionData,
+            receipt: receipt,
+            appTransactionJWS: nil
+        )
         expect(result).to(beFailure())
 
         // Verify transaction was NOT finished even on finishable error
@@ -1010,12 +1028,14 @@ private extension TransactionPosterTests {
 
     func postReceiptFromSyncedSK2Transaction(
         _ data: PurchasedTransactionData,
+        receipt: EncodedAppleReceipt,
         appTransactionJWS: String?
     ) throws -> Result<CustomerInfo, BackendError> {
         let result = waitUntilValue { completion in
             self.poster.postReceiptFromSyncedSK2Transaction(
                 self.mockTransaction,
                 data: data,
+                receipt: receipt,
                 appTransactionJWS: appTransactionJWS,
                 currentUserID: "user"
             ) {

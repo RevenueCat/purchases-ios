@@ -91,6 +91,7 @@ final class MockTransactionPoster: TransactionPosterType {
     let invokedPostReceiptFromSyncedSK2TransactionParameters: Atomic<(
         transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        receipt: EncodedAppleReceipt,
         appTransactionJWS: String?,
         currentUserID: String
     )?> = nil
@@ -98,6 +99,7 @@ final class MockTransactionPoster: TransactionPosterType {
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        receipt: EncodedAppleReceipt,
         appTransactionJWS: String?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
@@ -107,6 +109,7 @@ final class MockTransactionPoster: TransactionPosterType {
         self.invokedPostReceiptFromSyncedSK2TransactionParameters.value = (
             transaction,
             data,
+            receipt,
             appTransactionJWS,
             currentUserID
         )

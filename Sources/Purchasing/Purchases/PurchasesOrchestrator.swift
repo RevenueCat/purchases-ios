@@ -1802,9 +1802,12 @@ private extension PurchasesOrchestrator {
                 source: .init(isRestore: isRestore, initiationSource: initiationSource)
             )
 
+            let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
+
             self.transactionPoster.postReceiptFromSyncedSK2Transaction(
                 transaction,
                 data: transactionData,
+                receipt: receipt,
                 appTransactionJWS: appTransactionJWS,
                 currentUserID: currentAppUserID
             ) { result in
