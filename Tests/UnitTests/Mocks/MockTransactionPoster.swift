@@ -88,6 +88,8 @@ final class MockTransactionPoster: TransactionPosterType {
 
     let invokedPostReceiptFromSyncedSK2Transaction: Atomic<Bool> = false
     let invokedPostReceiptFromSyncedSK2TransactionCount: Atomic<Int> = .init(0)
+
+    // swiftlint:disable large_tuple
     let invokedPostReceiptFromSyncedSK2TransactionParameters: Atomic<(
         transaction: StoreTransactionType,
         data: PurchasedTransactionData,
@@ -96,6 +98,7 @@ final class MockTransactionPoster: TransactionPosterType {
         currentUserID: String
     )?> = nil
 
+    // swiftlint:disable function_parameter_count
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,

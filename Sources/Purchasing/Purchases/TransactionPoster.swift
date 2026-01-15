@@ -55,6 +55,7 @@ protocol TransactionPosterType: AnyObject, Sendable {
         completion: @escaping @Sendable @MainActor () -> Void
     )
 
+    // swiftlint:disable function_parameter_count
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
@@ -142,6 +143,7 @@ final class TransactionPoster: TransactionPosterType {
         }
     }
 
+    // swiftlint:disable function_parameter_count
     func postReceiptFromSyncedSK2Transaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
