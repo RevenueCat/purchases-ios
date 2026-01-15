@@ -319,6 +319,7 @@ extension TransactionPoster {
                 transactionId: transaction.transactionIdentifier,
                 productData: effectiveProductData,
                 transactionData: effectiveTransactionData,
+                encodedAppleReceipt: receipt,
                 originalPurchasesAreCompletedBy: effectivePurchasesAreCompletedBy
             )
             self.localTransactionMetadataStore.storeMetadata(metadataToStore,

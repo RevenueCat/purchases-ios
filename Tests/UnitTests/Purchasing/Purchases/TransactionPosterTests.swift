@@ -508,6 +508,7 @@ class TransactionPosterTests: TestCase {
             transactionId: self.mockTransaction.transactionIdentifier,
             productData: storedProductData,
             transactionData: storedTransactionData,
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .myApp
         )
 
@@ -565,6 +566,7 @@ class TransactionPosterTests: TestCase {
             transactionData: PurchasedTransactionData(
                 source: .init(isRestore: false, initiationSource: .purchase)
             ),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat
         )
 
@@ -719,6 +721,7 @@ class TransactionPosterTests: TestCase {
             transactionId: self.mockTransaction.transactionIdentifier,
             productData: storedProductData,
             transactionData: storedTransactionData,
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .myApp
         )
 
@@ -838,6 +841,7 @@ class TransactionPosterTests: TestCase {
             transactionData: PurchasedTransactionData(
                 source: .init(isRestore: false, initiationSource: .purchase)
             ),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat
         )
 
@@ -884,6 +888,7 @@ class TransactionPosterTests: TestCase {
             transactionData: PurchasedTransactionData(
                 source: .init(isRestore: false, initiationSource: .purchase)
             ),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat
         )
 
@@ -929,6 +934,7 @@ class TransactionPosterTests: TestCase {
             transactionData: PurchasedTransactionData(
                 source: .init(isRestore: false, initiationSource: .purchase)
             ),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat
         )
 
@@ -977,6 +983,7 @@ class TransactionPosterTests: TestCase {
             transactionData: PurchasedTransactionData(
                 source: .init(isRestore: false, initiationSource: .purchase)
             ),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat
         )
 

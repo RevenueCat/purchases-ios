@@ -946,6 +946,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             transactionId: transaction.transactionIdentifier,
             productData: storedProductData,
             transactionData: storedTransactionData,
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .myApp
         )
 

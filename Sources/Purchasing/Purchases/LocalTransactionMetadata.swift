@@ -35,6 +35,8 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
     var transactionData: PurchasedTransactionData {
         return self.purchasedTransactionDataWrapper.purchasedTransactionData
     }
+    /// The receipt at the time of the transaction.
+    let encodedAppleReceipt: EncodedAppleReceipt
 
     /// The value of ``Purchases.purchasesAreCompletedBy`` at the time of the transaction.
     let originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
@@ -43,13 +45,15 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
         transactionId: String,
         productData: ProductRequestData?,
         transactionData: PurchasedTransactionData,
-        originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
+        encodedAppleReceipt: EncodedAppleReceipt,
+        originalPurchasesAreCompletedBy: PurchasesAreCompletedBy,
     ) {
         self.transactionId = transactionId
         self.productDataWrapper = productData.map(ProductRequestDataEncodedWrapper.init)
         self.purchasedTransactionDataWrapper = PurchasedTransactionDataEncodedWrapper(
             purchasedTransactionData: transactionData
         )
+        self.encodedAppleReceipt = encodedAppleReceipt
         self.originalPurchasesAreCompletedBy = originalPurchasesAreCompletedBy
     }
 
