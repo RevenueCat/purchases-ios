@@ -251,10 +251,6 @@ class LocalTransactionMetadataStoreTests: TestCase {
         expect(retrieved?.productData?.productIdentifier) == originalMetadata.productData?.productIdentifier
         expect(retrieved?.productData?.currencyCode) == originalMetadata.productData?.currencyCode
         expect(retrieved?.productData?.price) == originalMetadata.productData?.price
-        expect(retrieved?.transactionData.source.isRestore) == originalMetadata.transactionData.source.isRestore
-        expect(
-            retrieved?.transactionData.source.initiationSource
-        ) == originalMetadata.transactionData.source.initiationSource
         expect(retrieved?.originalPurchasesAreCompletedBy) == originalMetadata.originalPurchasesAreCompletedBy
     }
 
@@ -275,9 +271,7 @@ class LocalTransactionMetadataStoreTests: TestCase {
             discounts: nil
         )
 
-        let transactionData = PurchasedTransactionData(
-            source: .init(isRestore: false, initiationSource: .purchase)
-        )
+        let transactionData = PurchasedTransactionData()
 
         return LocalTransactionMetadata(
             productData: productData,
@@ -311,8 +305,7 @@ class LocalTransactionMetadataStoreTests: TestCase {
             unsyncedAttributes: ["key": .init(attribute: .email, value: "test@example.com")],
             metadata: ["custom_key": "custom_value"],
             aadAttributionToken: "test_token",
-            storeCountry: "US",
-            source: .init(isRestore: false, initiationSource: .purchase)
+            storeCountry: "US"
         )
 
         return LocalTransactionMetadata(

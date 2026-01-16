@@ -27,9 +27,11 @@ final class MockTransactionPoster: TransactionPosterType {
     let invokedHandlePurchasedTransactionCount: Atomic<Int> = .init(0)
     let invokedHandlePurchasedTransactionParameters: Atomic<(transaction: StoreTransactionType,
                                                              data: PurchasedTransactionData,
+                                                             postReceiptSource: PostReceiptSource,
                                                              currentUserID: String)?> = nil
     let invokedHandlePurchasedTransactionParameterList: Atomic<[(transaction: StoreTransactionType,
-                                                                 data: PurchasedTransactionData)]> = .init([])
+                                                                 data: PurchasedTransactionData,
+                                                                 postReceiptSource: PostReceiptSource)]> = .init([])
 
     var allHandledTransactions: Set<StoreTransaction> {
         return Set(
@@ -43,6 +45,7 @@ final class MockTransactionPoster: TransactionPosterType {
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        postReceiptSource: PostReceiptSource,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
@@ -55,9 +58,9 @@ final class MockTransactionPoster: TransactionPosterType {
 
         self.invokedHandlePurchasedTransaction.value = true
         self.invokedHandlePurchasedTransactionCount.modify { $0 += 1 }
-        self.invokedHandlePurchasedTransactionParameters.value = (transaction, data, currentUserID)
+        self.invokedHandlePurchasedTransactionParameters.value = (transaction, data, postReceiptSource, currentUserID)
         self.invokedHandlePurchasedTransactionParameterList.modify {
-            $0.append((transaction, data))
+            $0.append((transaction, data, postReceiptSource))
         }
 
         self.operationDispatcher.dispatchOnMainActor { [result = result()] in
@@ -94,6 +97,7 @@ final class MockTransactionPoster: TransactionPosterType {
         transaction: StoreTransactionType,
         data: PurchasedTransactionData,
         receipt: EncodedAppleReceipt,
+        postReceiptSource: PostReceiptSource,
         appTransactionJWS: String?,
         currentUserID: String
     )?> = nil
@@ -103,6 +107,7 @@ final class MockTransactionPoster: TransactionPosterType {
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
         receipt: EncodedAppleReceipt,
+        postReceiptSource: PostReceiptSource,
         appTransactionJWS: String?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
@@ -113,6 +118,7 @@ final class MockTransactionPoster: TransactionPosterType {
             transaction,
             data,
             receipt,
+            postReceiptSource,
             appTransactionJWS,
             currentUserID
         )

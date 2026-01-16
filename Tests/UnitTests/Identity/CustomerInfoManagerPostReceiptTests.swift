@@ -78,8 +78,8 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         expect(parameters.currentUserID) == Self.userID
         expect(parameters.data.presentedOfferingContext?.offeringIdentifier).to(beNil())
         expect(parameters.data.unsyncedAttributes).to(beEmpty())
-        expect(parameters.data.source.isRestore) == false
-        expect(parameters.data.source.initiationSource) == .queue
+        expect(parameters.postReceiptSource.isRestore) == false
+        expect(parameters.postReceiptSource.initiationSource) == .queue
     }
 
     func testPostsFirstTransaction() async throws {
