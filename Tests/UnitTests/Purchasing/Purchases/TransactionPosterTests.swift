@@ -65,22 +65,27 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
 
-        // No specific metadata was sent as it comes from the .queue and no stored metadata existed for that transaction
-        expect(self.backend.invokedPostReceiptDataParameters?.associatedTransactionId) == nil
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
+        ) == self.mockTransaction.transactionIdentifier
+
+        // sdkOriginated is false because it comes from .queue and no stored metadata existed for that transaction
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
         expect(self.mockTransaction.finishInvoked) == true
     }
 
-    func testHandlePurchasedTransactionFromPurchaseInitiationSourceSendsTransactionId() throws {
+    func testHandlePurchasedTransactionFromPurchaseInitiationSourceSendsTransactionIdAndSdkOriginated() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
-        let transactionData = PurchasedTransactionData(
-            source: .init(isRestore: false, initiationSource: .purchase)
-        )
+        let transactionData = PurchasedTransactionData()
 
         self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
-        let result = try self.handleTransaction(transactionData)
+        let result = try self.handleTransaction(
+            transactionData,
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase)
+        )
         expect(result).to(beSuccess())
         expect(result.value) === Self.mockCustomerInfo
 
@@ -88,10 +93,12 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
 
-        // The stored transaction metadata was sent
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
         ) == self.mockTransaction.transactionIdentifier
+
+        // sdkOriginated is true because it comes from .purchase
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
 
         expect(self.mockTransaction.finishInvoked) == true
     }
@@ -143,8 +150,12 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(jwsRepresentation)
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
 
-        // No specific metadata was sent as it comes from the .queue and no stored metadata existed for that transaction
-        expect(self.backend.invokedPostReceiptDataParameters?.associatedTransactionId) == nil
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
+        ) == self.mockTransaction.transactionIdentifier
+
+        // sdkOriginated is false because it comes from .queue and no stored metadata existed for that transaction
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
         expect(self.mockTransaction.finishInvoked) == true
     }
 
@@ -187,8 +198,12 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .sk2receipt(receipt)
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
 
-        // No specific metadata was sent as it comes from the .queue and no stored metadata existed for that transaction
-        expect(self.backend.invokedPostReceiptDataParameters?.associatedTransactionId) == nil
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
+        ) == self.mockTransaction.transactionIdentifier
+
+        // sdkOriginated is false because it comes from .queue and no stored metadata existed for that transaction
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
         expect(self.mockTransaction.finishInvoked) == true
     }
 
@@ -391,8 +406,12 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier) == "fake_product"
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
 
-        // No specific metadata was sent as it comes from the .queue and no stored metadata existed for that transaction
-        expect(self.backend.invokedPostReceiptDataParameters?.associatedTransactionId) == nil
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
+        ) == self.mockTransaction.transactionIdentifier
+
+        // sdkOriginated is false because it comes from .queue and no stored metadata existed for that transaction
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
 
         expect(self.receiptFetcher.receiptDataCalled) == false
         expect(self.transactionFetcher.appTransactionJWSCalled.value) == false
@@ -502,7 +521,7 @@ class TransactionPosterTests: TestCase {
         let result = try self.postReceiptFromSyncedSK2Transaction(
             transactionData,
             receipt: receipt,
-            postReceiptSource: PostReceiptSource(isRestore: false, initiationSource: .purchase),
+            postReceiptSource: PostReceiptSource(isRestore: false, initiationSource: .queue),
             appTransactionJWS: appTransactionJWS
         )
         expect(result).to(beSuccess())
@@ -517,10 +536,12 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.originalPurchaseCompletedBy) == .myApp
         expect(self.backend.invokedPostReceiptDataParameters?.appTransaction) == appTransactionJWS
 
-        // The stored transaction metadata was sent
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
         ) == self.mockTransaction.transactionIdentifier
+
+        // sdkOriginated is true because stored metadata existed
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
     }
 
     func testPostReceiptFromSyncedSK2TransactionClearsMetadataOnSuccess() throws {
