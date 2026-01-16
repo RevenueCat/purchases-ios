@@ -35,7 +35,6 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        let isRestore = false
         let purchaseCompletedBy: PurchasesAreCompletedBy = .myApp
         let observerMode = purchaseCompletedBy.observerMode
 
@@ -190,7 +189,8 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               postReceiptSource: .init(isRestore: isRestore, initiationSource: .purchase),
                               observerMode: observerMode,
                               originalPurchaseCompletedBy: purchaseCompletedBy,
-                              associatedTransactionId: associatedTransactionId, appUserID: Self.userID,
+                              associatedTransactionId: associatedTransactionId,
+                              sdkOriginated: true, appUserID: Self.userID,
                               completion: { _ in
                 completed()
             })
@@ -441,6 +441,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      postReceiptSource: .init(isRestore: isRestore, initiationSource: .queue),
                      observerMode: observerMode,
                      originalPurchaseCompletedBy: purchaseCompletedBy,
+                     sdkOriginated: true,
                      appUserID: Self.userID,
                      completion: { _ in
             completionCalled.value += 1
@@ -456,6 +457,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      postReceiptSource: .init(isRestore: isRestore, initiationSource: .queue),
                      observerMode: observerMode,
                      originalPurchaseCompletedBy: purchaseCompletedBy,
+                     sdkOriginated: true,
                      appUserID: Self.userID,
                      completion: { _ in
             completionCalled.value += 1
@@ -497,6 +499,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
                               observerMode: false,
                               originalPurchaseCompletedBy: .revenueCat,
+                              sdkOriginated: true,
                               appUserID: Self.userID,
                               completion: { _ in
                 completed()
@@ -544,6 +547,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
                               observerMode: false,
                               originalPurchaseCompletedBy: .revenueCat,
+                              sdkOriginated: true,
                               appUserID: Self.userID,
                               completion: { _ in
                 completed()
@@ -597,6 +601,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
                               observerMode: false,
                               originalPurchaseCompletedBy: .revenueCat,
+                              sdkOriginated: true,
                               appUserID: Self.userID,
                               completion: { _ in
                 completed()
