@@ -45,6 +45,7 @@
       "price" : "15.99",
       "product_id" : "a_great_product",
       "purchase_completed_by" : "revenuecat",
+      "sdk_originated" : false,
       "store_country" : "ESP",
       "subscription_group_id" : "sub_group"
     },

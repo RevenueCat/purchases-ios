@@ -96,6 +96,7 @@ final class CustomerAPI {
               originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
               appTransaction: String?,
               associatedTransactionId: String?,
+              sdkOriginated: Bool = false,
               appUserID: String,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         var subscriberAttributesToPost: SubscriberAttribute.Dictionary?
@@ -123,7 +124,8 @@ final class CustomerAPI {
             purchaseCompletedBy: originalPurchaseCompletedBy,
             testReceiptIdentifier: self.backendConfig.systemInfo.testReceiptIdentifier,
             appTransaction: appTransaction,
-            associatedTransactionId: associatedTransactionId
+            associatedTransactionId: associatedTransactionId,
+            sdkOriginated: sdkOriginated
         )
         let factory = PostReceiptDataOperation.createFactory(
             configuration: config,

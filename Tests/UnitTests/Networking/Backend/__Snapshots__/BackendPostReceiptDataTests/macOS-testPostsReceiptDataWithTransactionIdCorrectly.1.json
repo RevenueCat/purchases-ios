@@ -37,6 +37,7 @@
       "price" : "15.99",
       "product_id" : "product_id",
       "purchase_completed_by" : "my_app",
+      "sdk_originated" : true,
       "store_country" : "ESP",
       "transaction_id" : "test_transaction_id_12345"
     },

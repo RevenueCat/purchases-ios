@@ -143,6 +143,7 @@ class Backend {
               originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
               appTransaction: String? = nil,
               associatedTransactionId: String? = nil,
+              sdkOriginated: Bool = false,
               appUserID: String,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customer.post(receipt: receipt,
@@ -153,6 +154,7 @@ class Backend {
                            originalPurchaseCompletedBy: originalPurchaseCompletedBy,
                            appTransaction: appTransaction,
                            associatedTransactionId: associatedTransactionId,
+                           sdkOriginated: sdkOriginated,
                            appUserID: appUserID,
                            completion: completion)
     }
