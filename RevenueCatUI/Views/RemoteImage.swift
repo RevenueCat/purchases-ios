@@ -261,7 +261,7 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
         }
         .onChange(of: colorScheme) { newColorScheme in
             // Reload with correct URL when color scheme changes
-            let highResURL = Self.selectURL(lightURL: url, darkURL: darkUrl, for: newColorScheme)
+            let highResURL = Self.selectURL(lightURL: url, darkURL: darkUrl ?? self.url, for: newColorScheme)
             let lowResURL = Self.selectURL(
                 lightURL: lowResUrl,
                 darkURL: darkLowResUrl ?? lowResUrl,
