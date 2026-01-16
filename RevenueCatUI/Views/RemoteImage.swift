@@ -112,6 +112,7 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
     let content: (Image, CGSize) -> Content
 
     // Preferred method of loading images
+    // Using @StateObject so SwiftUI manages the lifecycle and preserves across view updates
 
     @StateObject
     private var highResFileLoader: FileImageLoader

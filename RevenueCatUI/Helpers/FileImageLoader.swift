@@ -72,13 +72,15 @@ final class FileImageLoader: ObservableObject {
                 for: url, withChecksum: nil
             ).asImageAndSize
 
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled else {
+                return
+            }
 
             await MainActor.run {
                 self.result = imageInfo
             }
         } catch {
-
+            Logger.warning(Strings.image_failed_to_load(url, error))
         }
     }
 
