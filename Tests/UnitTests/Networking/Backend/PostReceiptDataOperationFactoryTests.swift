@@ -201,9 +201,9 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             transactionData: .init(
                 presentedOfferingContext: nil,
                 unsyncedAttributes: nil,
-                storeCountry: nil,
-                source: .init(isRestore: false, initiationSource: .queue)
+                storeCountry: nil
             ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
             appUserID: self.appUserID, productData: nil,
             receipt: self.receipt,
             observerMode: observerMode,
@@ -217,9 +217,9 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             transactionData: .init(
                 presentedOfferingContext: nil,
                 unsyncedAttributes: nil,
-                storeCountry: nil,
-                source: .init(isRestore: false, initiationSource: .queue)
+                storeCountry: nil
             ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
             appUserID: self.appUserID, productData: nil,
             receipt: self.receipt,
             observerMode: observerMode,
@@ -257,9 +257,9 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             transactionData: .init(
                 presentedOfferingContext: nil,
                 unsyncedAttributes: nil,
-                storeCountry: nil,
-                source: .init(isRestore: false, initiationSource: .queue)
+                storeCountry: nil
             ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
             appUserID: self.appUserID,
             productData: nil,
             receipt: self.receipt,
@@ -274,9 +274,9 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             transactionData: .init(
                 presentedOfferingContext: nil,
                 unsyncedAttributes: nil,
-                storeCountry: nil,
-                source: .init(isRestore: false, initiationSource: .queue)
+                storeCountry: nil
             ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
             appUserID: self.appUserID,
             productData: nil,
             receipt: self.receipt,

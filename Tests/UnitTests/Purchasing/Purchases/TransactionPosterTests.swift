@@ -72,15 +72,14 @@ class TransactionPosterTests: TestCase {
 
     func testHandlePurchasedTransactionFromPurchaseInitiationSourceSendsTransactionId() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
-        let transactionData = PurchasedTransactionData(
-            source: .init(isRestore: false, initiationSource: .purchase)
-        )
+        let transactionData = PurchasedTransactionData()
+        let purchaseInitiationSource = PostReceiptSource(isRestore: false, initiationSource: .purchase)
 
         self.receiptFetcher.shouldReturnReceipt = true
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
-        let result = try self.handleTransaction(transactionData)
+        let result = try self.handleTransaction(transactionData, postReceiptSource: purchaseInitiationSource)
         expect(result).to(beSuccess())
         expect(result.value) === Self.mockCustomerInfo
 

@@ -265,10 +265,6 @@ class LocalTransactionMetadataStoreTests: TestCase {
         expect(retrieved?.productData?.productIdentifier) == originalMetadata.productData?.productIdentifier
         expect(retrieved?.productData?.currencyCode) == originalMetadata.productData?.currencyCode
         expect(retrieved?.productData?.price) == originalMetadata.productData?.price
-        expect(retrieved?.transactionData.source.isRestore) == originalMetadata.transactionData.source.isRestore
-        expect(
-            retrieved?.transactionData.source.initiationSource
-        ) == originalMetadata.transactionData.source.initiationSource
         expect(retrieved?.originalPurchasesAreCompletedBy) == originalMetadata.originalPurchasesAreCompletedBy
         expect(retrieved?.transactionId) == transactionId
     }

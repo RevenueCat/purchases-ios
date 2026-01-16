@@ -185,9 +185,9 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               transactionData: .init(
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storeCountry: nil,
-                                 source: .init(isRestore: isRestore, initiationSource: .purchase)
+                                 storeCountry: nil
                               ),
+                              postReceiptSource: .init(isRestore: isRestore, initiationSource: .purchase),
                               observerMode: observerMode,
                               originalPurchaseCompletedBy: purchaseCompletedBy,
                               associatedTransactionId: associatedTransactionId, appUserID: Self.userID,
