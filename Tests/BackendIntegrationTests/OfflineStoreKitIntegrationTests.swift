@@ -281,6 +281,42 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testCallToGetCustomerInfoWithPendingTransactionsPostsReceiptIncludingTransactionId() async throws {
+        // This test requires the "production" behavior to make sure
+        // we don't refresh the receipt a second time when posting the second transaction.
+        self.enableReceiptFetchRetry = false
+
+        self.serverDown()
+
+        let purchaseResult = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        let transactionId = try XCTUnwrap(purchaseResult.transaction?.transactionIdentifier)
+
+        try await self.waitUntilUnfinishedTransactions { $0 >= 1 }
+
+        self.allServersUp()
+
+        let customerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        try await self.verifyEntitlementWentThrough(customerInfo)
+
+        self.logger.verifyMessageWasLogged(
+            "unfinished transactions, will post receipt in lieu of fetching CustomerInfo",
+            level: .debug,
+            expectedCount: 1
+        )
+
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            "Enqueing network operation 'PostReceiptDataOperation' with cache key:",
+            level: .verbose
+        )
+
+        let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: .*-\(transactionId)'"
+        self.logger.verifyMessageWasLogged(regexPattern: regex,
+                                           level: .verbose,
+                                           expectedCount: 1)
+
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingConsumableInvalidatesOfflineMode() async throws {
         self.serverDown()
 

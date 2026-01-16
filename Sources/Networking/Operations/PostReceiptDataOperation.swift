@@ -54,12 +54,14 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `presentedOfferingIdentifier`
         /// - `observerMode`
         /// - `subscriberAttributesByKey`
+        /// - `associatedTransactionId`
         let cacheKey =
         """
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.hash)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
+        -\(postData.associatedTransactionId ?? "")
         """
 
         return .init({ cacheKey in
@@ -115,7 +117,6 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
             completion()
         }
     }
-
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
@@ -148,6 +149,7 @@ extension PostReceiptDataOperation {
         /// The [AppTransaction](https://developer.apple.com/documentation/storekit/apptransaction) JWS token
         /// retrieved from StoreKit 2.
         let appTransaction: String?
+        let associatedTransactionId: String?
         let metadata: [String: String]?
     }
 
@@ -167,7 +169,6 @@ extension PostReceiptDataOperation {
         var ruleId: String
 
     }
-
 }
 
 extension PostReceiptDataOperation.PostData {
@@ -181,7 +182,8 @@ extension PostReceiptDataOperation.PostData {
         observerMode: Bool,
         purchaseCompletedBy: PurchasesAreCompletedBy?,
         testReceiptIdentifier: String?,
-        appTransaction: String?
+        appTransaction: String?,
+        associatedTransactionId: String?
     ) {
         self.init(
             appUserID: appUserID,
@@ -201,10 +203,10 @@ extension PostReceiptDataOperation.PostData {
             aadAttributionToken: data.aadAttributionToken,
             testReceiptIdentifier: testReceiptIdentifier,
             appTransaction: appTransaction,
+            associatedTransactionId: associatedTransactionId,
             metadata: data.metadata
         )
     }
-
 }
 
 private extension PurchasedTransactionData {
@@ -218,7 +220,6 @@ private extension PurchasedTransactionData {
                      darkMode: paywall.data.darkMode,
                      localeIdentifier: paywall.data.localeIdentifier)
     }
-
 }
 
 // MARK: - Private
@@ -262,7 +263,6 @@ private extension PostReceiptDataOperation {
             return
         }
     }
-
 }
 
 // MARK: - Codable
@@ -285,6 +285,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case paywall
         case testReceiptIdentifier = "test_receipt_identifier"
         case appTransaction = "app_transaction"
+        case associatedTransactionId = "transaction_id"
         case metadata
 
     }
@@ -303,6 +304,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
 
         try container.encodeIfPresent(self.fetchToken, forKey: .fetchToken)
         try container.encodeIfPresent(self.appTransaction, forKey: .appTransaction)
+        try container.encodeIfPresent(self.associatedTransactionId, forKey: .associatedTransactionId)
         try container.encodeIfPresent(self.metadata, forKey: .metadata)
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
@@ -322,7 +324,6 @@ extension PostReceiptDataOperation.PostData: Encodable {
     }
 
     var fetchToken: String? { return self.receipt.serialized() }
-
 }
 
 extension PostReceiptDataOperation.Paywall: Codable {
@@ -336,7 +337,6 @@ extension PostReceiptDataOperation.Paywall: Codable {
         case localeIdentifier = "locale"
 
     }
-
 }
 
 extension PostReceiptDataOperation.AppliedTargetingRule: Codable {
@@ -347,7 +347,6 @@ extension PostReceiptDataOperation.AppliedTargetingRule: Codable {
         case ruleId
 
     }
-
 }
 
 // MARK: - HTTPRequestBody
@@ -361,7 +360,6 @@ extension PostReceiptDataOperation.PostData: HTTPRequestBody {
             (Self.CodingKeys.appTransaction.stringValue, self.appTransaction)
         ]
     }
-
 }
 
 // MARK: - InitiationSource
@@ -385,7 +383,6 @@ extension PostReceiptSource.InitiationSource: Codable, RawRepresentable {
     private static let codes: [String: PostReceiptSource.InitiationSource] = Self
         .allCases
         .dictionaryWithKeys { $0.rawValue }
-
 }
 
 // MARK: - EncodedAppleReceipt
@@ -409,7 +406,6 @@ private extension EncodedAppleReceipt {
             return "empty"
         }
     }
-
 }
 
 private extension PurchasesAreCompletedBy {

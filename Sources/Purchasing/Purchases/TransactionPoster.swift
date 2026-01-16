@@ -350,6 +350,7 @@ extension TransactionPoster {
                           observerMode: self.observerMode,
                           originalPurchaseCompletedBy: effectivePurchasesAreCompletedBy,
                           appTransaction: appTransaction,
+                          associatedTransactionId: transaction.transactionIdentifier,
                           appUserID: currentUserID) { result in
             if shouldClearMetadataOnSuccess {
                 switch result {
