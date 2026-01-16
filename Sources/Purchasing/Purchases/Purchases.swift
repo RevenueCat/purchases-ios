@@ -420,6 +420,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                           requestTimeout: storeKitTimeout)
         )
 
+        let localTransactionMetadataStore = LocalTransactionMetadataStore(apiKey: apiKey)
         let transactionPoster = TransactionPoster(
             productsManager: productsManager,
             receiptFetcher: receiptFetcher,
@@ -427,7 +428,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             backend: backend,
             paymentQueueWrapper: paymentQueueWrapper,
             systemInfo: systemInfo,
-            operationDispatcher: operationDispatcher
+            operationDispatcher: operationDispatcher,
+            localTransactionMetadataStore: localTransactionMetadataStore
         )
 
         let offlineEntitlementsManager = OfflineEntitlementsManager(deviceCache: deviceCache,

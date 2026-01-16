@@ -42,6 +42,7 @@
       "presented_placement_identifier" : "a_placement",
       "price" : "10.98",
       "product_id" : "a_great_product",
+      "purchase_completed_by" : "revenuecat",
       "store_country" : "ESP",
       "subscription_group_id" : "sub_group"
     },

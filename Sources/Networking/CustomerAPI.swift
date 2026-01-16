@@ -92,7 +92,9 @@ final class CustomerAPI {
               productData: ProductRequestData?,
               transactionData: PurchasedTransactionData,
               observerMode: Bool,
+              originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
               appTransaction: String?,
+              appUserID: String,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         var subscriberAttributesToPost: SubscriberAttribute.Dictionary?
 
@@ -107,13 +109,15 @@ final class CustomerAPI {
         }
 
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: transactionData.appUserID)
+                                                                appUserID: appUserID)
 
         let postData = PostReceiptDataOperation.PostData(
             transactionData: transactionData.withAttributesToPost(subscriberAttributesToPost),
+            appUserID: appUserID,
             productData: productData,
             receipt: receipt,
             observerMode: observerMode,
+            purchaseCompletedBy: originalPurchaseCompletedBy,
             testReceiptIdentifier: self.backendConfig.systemInfo.testReceiptIdentifier,
             appTransaction: appTransaction
         )

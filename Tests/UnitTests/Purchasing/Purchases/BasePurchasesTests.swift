@@ -227,7 +227,8 @@ class BasePurchasesTests: TestCase {
             backend: self.backend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
-            operationDispatcher: self.mockOperationDispatcher
+            operationDispatcher: self.mockOperationDispatcher,
+            localTransactionMetadataStore: MockLocalTransactionMetadataStore()
         )
     }
 
@@ -513,7 +514,9 @@ extension BasePurchasesTests {
                            productData: ProductRequestData?,
                            transactionData: PurchasedTransactionData,
                            observerMode: Bool,
+                           originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                            appTransaction: String? = nil,
+                           appUserID: String,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.postReceiptDataCalled = true
             self.postedReceiptData = receipt
