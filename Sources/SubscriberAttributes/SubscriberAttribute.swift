@@ -115,6 +115,7 @@ extension SubscriberAttribute {
 }
 
 extension SubscriberAttribute: Equatable {}
+extension SubscriberAttribute: Codable {}
 
 extension SubscriberAttribute: CustomStringConvertible {
 

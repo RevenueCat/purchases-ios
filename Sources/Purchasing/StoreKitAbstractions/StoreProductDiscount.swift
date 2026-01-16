@@ -308,7 +308,8 @@ extension StoreProductDiscount.DiscountType {
 
 }
 
-extension StoreProductDiscount.PaymentMode: Encodable {}
+extension StoreProductDiscount.PaymentMode: Codable {}
+extension StoreProductDiscount.DiscountType: Codable {}
 
 extension StoreProductDiscount: Identifiable {
 
