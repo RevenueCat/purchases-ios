@@ -21,6 +21,7 @@ extension FeatureEventsRequest {
         let version: Int
         var type: EventType
         var appUserID: String
+        var paywallID: String?
         var sessionID: String
         var offeringID: String
         var paywallRevision: Int
@@ -64,6 +65,7 @@ extension FeatureEventsRequest.PaywallEvent {
                 version: Self.version,
                 type: paywallEvent.eventType,
                 appUserID: storedEvent.userID,
+                paywallID: data.paywallIdentifier,
                 sessionID: data.sessionIdentifier.uuidString,
                 offeringID: data.offeringIdentifier,
                 paywallRevision: data.paywallRevision,
@@ -111,6 +113,7 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case version
         case type
         case appUserID = "appUserId"
+        case paywallID = "paywallId"
         case sessionID = "sessionId"
         case offeringID = "offeringId"
         case paywallRevision

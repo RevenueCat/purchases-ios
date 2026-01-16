@@ -146,6 +146,7 @@ extension PostReceiptDataOperation {
 
     struct Paywall {
 
+        var paywallID: String?
         var sessionID: String
         var revision: Int
         var displayMode: PaywallViewMode
@@ -201,7 +202,8 @@ private extension PurchasedTransactionData {
     var paywall: PostReceiptDataOperation.Paywall? {
         guard let paywall = self.presentedPaywall else { return nil }
 
-        return .init(sessionID: paywall.data.sessionIdentifier.uuidString,
+        return .init(paywallID: paywall.data.paywallIdentifier,
+                     sessionID: paywall.data.sessionIdentifier.uuidString,
                      revision: paywall.data.paywallRevision,
                      displayMode: paywall.data.displayMode,
                      darkMode: paywall.data.darkMode,
@@ -316,6 +318,7 @@ extension PostReceiptDataOperation.Paywall: Codable {
 
     private enum CodingKeys: String, CodingKey {
 
+        case paywallID = "paywallId"
         case sessionID = "sessionId"
         case revision
         case displayMode
