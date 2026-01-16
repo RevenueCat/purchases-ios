@@ -651,7 +651,7 @@ extension PaywallData {
 
     /// Creates a test ``PaywallData`` with one localization.
     public init(
-        id: String?,
+        id: String? = nil,
         templateName: String,
         config: Configuration,
         localization: LocalizedConfiguration,
@@ -674,7 +674,7 @@ extension PaywallData {
 
     /// Creates a test multi-tier ``PaywallData`` with a single localization.
     public init(
-        id: String?,
+        id: String? = nil,
         templateName: String,
         config: Configuration,
         localizationByTier: [String: LocalizedConfiguration],

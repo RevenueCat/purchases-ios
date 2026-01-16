@@ -115,7 +115,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         case exitOffers
     }
 
-    public init(id: String?,
+    public init(id: String? = nil,
                 templateName: String,
                 assetBaseURL: URL,
                 componentsConfig: ComponentsConfig,
