@@ -220,6 +220,11 @@ public class PaywallViewController: UIViewController {
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    deinit {
+        // Ensure close event is tracked when view controller is deallocated (safety net for missed onDisappear)
+        self.purchaseHandler.trackPaywallClose()
+    }
 
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -253,6 +258,7 @@ public class PaywallViewController: UIViewController {
     public override func viewDidDisappear(_ animated: Bool) {
         if self.isBeingDismissed && !self.isDismissingForExitOffer {
             self.delegate?.paywallViewControllerWasDismissed?(self)
+            self.purchaseHandler.resetForNewSession()
         }
         super.viewDidDisappear(animated)
     }
