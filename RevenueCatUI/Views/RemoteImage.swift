@@ -112,11 +112,12 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
     let content: (Image, CGSize) -> Content
 
     // Preferred method of loading images
+    // Using @StateObject so SwiftUI manages the lifecycle and preserves across view updates
 
-    @ObservedObject
+    @StateObject
     private var highResFileLoader: FileImageLoader
 
-    @ObservedObject
+    @StateObject
     private var lowResFileLoader: FileImageLoader
 
     // Legacy method of loading images
@@ -190,8 +191,8 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             for: colorScheme
         )
 
-        self.highResFileLoader = FileImageLoader(fileRepository: .shared, url: highResURL)
-        self.lowResFileLoader = FileImageLoader(fileRepository: .shared, url: lowResURL)
+        _highResFileLoader = StateObject(wrappedValue: FileImageLoader(fileRepository: .shared, url: highResURL))
+        _lowResFileLoader = StateObject(wrappedValue: FileImageLoader(fileRepository: .shared, url: lowResURL))
     }
 
     private static func selectURL(
