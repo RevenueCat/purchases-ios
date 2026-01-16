@@ -46,7 +46,7 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
         productData: ProductRequestData?,
         transactionData: PurchasedTransactionData,
         encodedAppleReceipt: EncodedAppleReceipt,
-        originalPurchasesAreCompletedBy: PurchasesAreCompletedBy,
+        originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
     ) {
         self.transactionId = transactionId
         self.productDataWrapper = productData.map(ProductRequestDataEncodedWrapper.init)

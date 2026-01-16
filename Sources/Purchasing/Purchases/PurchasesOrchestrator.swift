@@ -1612,6 +1612,28 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    /// Posts any remaining cached transaction metadata that wasn't synced during normal transaction processing.
+    /// This handles edge cases where a transaction is not returned by the store anymore but we still have
+    /// metadata cached for it.
+    /// - Parameter isRestore: Whether this is being called as part of a restore operation.
+    func syncRemainingCachedTransactionMetadataIfNeeded(isRestore: Bool) async {
+        let currentAppUserID = self.appUserID
+        let isRestore = self.allowSharingAppStoreAccount
+
+        let resultsStream = self.transactionPoster.postRemainingCachedTransactionMetadata(
+            appUserID: currentAppUserID,
+            isRestore: isRestore
+        )
+
+        for await (transactionData, result) in resultsStream {
+            self.markSyncedIfNeeded(
+                subscriberAttributes: transactionData.unsyncedAttributes,
+                adServicesToken: transactionData.aadAttributionToken,
+                error: result.error
+            )
+        }
+    }
+
     private func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                                isRestore: Bool,
                                initiationSource: PostReceiptSource.InitiationSource,
