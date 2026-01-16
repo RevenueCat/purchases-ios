@@ -34,6 +34,7 @@ enum Strings {
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
+    case image_failed_to_load(URL, Error)
 
     case restoring_purchases
     case restored_purchases
@@ -89,6 +90,14 @@ enum Strings {
     case fontMappingNotFound(name: String)
     case customFontFailedToLoad(fontName: String)
     case googleFontsNotSupported
+
+    // Exit Offers
+    case errorFetchingOfferings(Error)
+    case exitOfferNotFound(String)
+    case exitOfferSameAsCurrent
+    case prefetchedExitOffer(String)
+    case presentingExitOffer(String)
+    case errorLoadingExitOffer(Error)
 }
 
 extension Strings: CustomStringConvertible {
@@ -137,6 +146,9 @@ extension Strings: CustomStringConvertible {
             case let .failure(error):
                 return "Failed loading image: \(error)"
             }
+
+        case let .image_failed_to_load(url, error):
+            return "Failed to load image from '\(url)': \(error)"
 
         case .restoring_purchases:
             return "Restoring purchases"
@@ -290,6 +302,19 @@ extension Strings: CustomStringConvertible {
             return "Custom font '\(fontName)' could not be loaded. Falling back to system font."
         case .googleFontsNotSupported:
             return "Google Fonts are not supported on this platform"
+
+        case .errorFetchingOfferings(let error):
+            return "Error fetching offerings: \(error)"
+        case .exitOfferNotFound(let offeringId):
+            return "Exit offer offering '\(offeringId)' not found"
+        case .exitOfferSameAsCurrent:
+            return "Exit offer is the same as the current offering, skipping"
+        case .prefetchedExitOffer(let offeringId):
+            return "Prefetched exit offer offering '\(offeringId)'"
+        case .presentingExitOffer(let offeringId):
+            return "Presenting exit offer paywall for offering '\(offeringId)'"
+        case .errorLoadingExitOffer(let error):
+            return "Error loading exit offer: \(error)"
         }
     }
 

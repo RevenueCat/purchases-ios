@@ -1,15 +1,10 @@
-## RevenueCat SDK
-### ✨ New Features
-* Adds `setAppsFlyerConversionData` to conveniently track AppsFlyer conversion data (#5936) via JayShortway (@JayShortway)
-### 🐞 Bugfixes
-* Jzdesign/video component load bug (#5926) via Jacob Rakidzich (@JZDesign)
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Fix paywall selection reset after eligibility redraw (#5972) via Facundo Menzella (@facumenzella)
+* Fix gradient overlay to cover full viewport instead of image bounds (#6072) via Facundo Menzella (@facumenzella)
+* Prewarm images in tabs control (#6077) via Cesar de la Vega (@vegaro)
+* Fix image loading on tab switch with @StateObject (#6078) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix flaky tests (#5938) via Antonio Pallares (@ajpallares)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5937) via RevenueCat Git Bot (@RCGitBot)
-* Format test store price strings with same currency code and locale as localizedPriceString (#5784) via Rick (@rickvdl)
-* Improve flakiness of some tests + add extra logs for easier debugging (#5919) via Antonio Pallares (@ajpallares)
-* Replace `RCPurchasesErrorCodeDomain` with `ErrorCode.errorDomain` in tests (#5924) via Antonio Pallares (@ajpallares)
-* Update broken docs links (#5933) via Jens-Fabian Goetzmann (@jefago)
-* Remove Brewfile + lock file and fix Homebrew formula caching in CircleCI (#5927) via Rick (@rickvdl)
-* Fix Carthage installation tests (#5922) via Antonio Pallares (@ajpallares)
+* Reduce flakiness of an Offline StoreKit integration test (#6084) via Antonio Pallares (@ajpallares)

@@ -51,6 +51,8 @@ extension FileManager: LargeItemCacheType {
 
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws {
+        let directoryURL = url.deletingLastPathComponent()
+        try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         try data.write(to: url)
     }
 
@@ -67,7 +69,7 @@ extension FileManager: LargeItemCacheType {
         let tempFileURL = temporaryDirectory.appendingPathComponent((checksum?.value ?? "") + url.lastPathComponent)
 
         guard createFile(atPath: tempFileURL.path, contents: nil, attributes: nil) else {
-            let message = Strings.fileRepository.failedToCreateTemporaryFile(tempFileURL).description
+            let message = Strings.fileRepository.failedToCreateTemporaryFile(tempFileURL)
             Logger.error(message)
             throw CocoaError(.fileWriteUnknown)
         }
@@ -111,6 +113,8 @@ extension FileManager: LargeItemCacheType {
 
         // If all succeeds, move the temporary file to the more permanant storage location
         // effectively a "save" operation
+        let directoryURL = url.deletingLastPathComponent()
+        try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         try moveItem(at: tempFileURL, to: url)
     }
 
@@ -140,7 +144,7 @@ extension FileManager: LargeItemCacheType {
                 attributes: nil
             )
         } catch {
-            let message = Strings.fileRepository.failedToCreateCacheDirectory(path).description
+            let message = Strings.fileRepository.failedToCreateCacheDirectory(path)
             Logger.error(message)
         }
 
@@ -161,7 +165,7 @@ extension FileManager: LargeItemCacheType {
                 attributes: nil
             )
         } catch {
-            let message = Strings.fileRepository.failedToCreateDocumentDirectory(path).description
+            let message = Strings.fileRepository.failedToCreateDocumentDirectory(path)
             Logger.error(message)
         }
 

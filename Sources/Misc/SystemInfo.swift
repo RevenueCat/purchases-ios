@@ -102,7 +102,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.52.0-SNAPSHOT"
+        return "5.56.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
@@ -343,6 +343,16 @@ extension SystemInfo {
             NSApplication.willBecomeActiveNotification
         #elseif os(watchOS)
             Notification.Name.NSExtensionHostWillEnterForeground
+        #endif
+    }
+
+    static var applicationWillResignActiveNotification: Notification.Name {
+        #if os(iOS) || os(tvOS) || VISION_OS
+            UIApplication.willResignActiveNotification
+        #elseif os(macOS)
+            NSApplication.willResignActiveNotification
+        #elseif os(watchOS)
+            Notification.Name.NSExtensionHostWillResignActive
         #endif
     }
 

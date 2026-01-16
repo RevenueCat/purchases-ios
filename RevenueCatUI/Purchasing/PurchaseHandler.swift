@@ -34,7 +34,7 @@ final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
 
-    /// Where responsibiliy for completing purchases lies
+    /// Where responsibility for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         purchases.purchasesAreCompletedBy
     }
@@ -67,11 +67,22 @@ final class PurchaseHandler: ObservableObject {
         return actionTypeInProgress != nil
     }
 
-    /// Whether a purchase was successfully completed.
+    /// The result of a purchase completed in the current session.
+    /// This is reset when a new paywall session starts, allowing us to track
+    /// whether a purchase happened during this specific paywall presentation.
+    /// More extensible than a boolean - gives access to full result data for
+    /// potential future exit offer triggers (e.g., based on specific products).
     @Published
-    fileprivate(set) var purchased: Bool = false
+    fileprivate(set) var sessionPurchaseResult: PurchaseResultData?
 
-    /// When `purchased` becomes `true`, this will include the `CustomerInfo` 
+    /// Whether a purchase was successfully completed in the current session.
+    /// Convenience property for checking if we should skip exit offers.
+    var hasPurchasedInSession: Bool {
+        guard let result = sessionPurchaseResult else { return false }
+        return !result.userCancelled
+    }
+
+    /// When a purchase completes, this will include the `CustomerInfo`
     /// associated to it IF RevenueCat is making the purchase.
     @Published
     fileprivate(set) var purchaseResult: PurchaseResultData?
@@ -103,6 +114,10 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var restoreError: Error?
 
     private var eventData: PaywallEvent.Data?
+
+    /// Whether the close event has already been tracked for the current session.
+    /// Used to prevent duplicate close tracking from both dismiss handlers and onDisappear.
+    private var hasTrackedClose: Bool = false
 
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
@@ -186,6 +201,18 @@ final class PurchaseHandler: ObservableObject {
         cancellables.removeAll()
     }
 
+    /// Resets purchase state for a new paywall session.
+    ///
+    /// This is called when a paywall appears to ensure we track purchases for the current session only.
+    /// We reset both `sessionPurchaseResult` (used for exit offer logic) and `purchaseResult`
+    /// (used for `onPurchaseCompleted` preference) to avoid stale values triggering handlers.
+    func resetForNewSession() {
+        self.sessionPurchaseResult = nil
+        self.purchaseResult = nil
+        self.eventData = nil
+        self.hasTrackedClose = false
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -254,15 +281,17 @@ extension PurchaseHandler {
                 result = try await self.purchases.purchase(package: package)
             }
 
-            self.setResult(result)
-
             if result.userCancelled {
                 self.trackCancelledPurchase()
             } else {
+                // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
+                // sees the correct state when the sheet dismisses
                 withAnimation(Constants.defaultAnimation) {
-                    self.purchased = true
+                    self.sessionPurchaseResult = result
                 }
             }
+
+            self.setResult(result)
 
         } catch {
             self.purchaseError = error
@@ -305,14 +334,15 @@ extension PurchaseHandler {
                                              customerInfo: try await self.purchases.customerInfo(),
                                             userCancelled: result.userCancelled)
 
-        self.setResult(resultInfo)
-
         if !result.userCancelled && result.error == nil {
-
+            // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
+            // sees the correct state when the sheet dismisses
             withAnimation(Constants.defaultAnimation) {
-                self.purchased = true
+                self.sessionPurchaseResult = resultInfo
             }
         }
+
+        self.setResult(resultInfo)
 
     }
 
@@ -397,19 +427,24 @@ extension PurchaseHandler {
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.eventData = eventData
+        self.hasTrackedClose = false
         self.track(.impression(.init(), eventData))
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallClose() -> Bool {
-        guard let data = self.eventData else {
-            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+        guard let data = self.eventData, !self.hasTrackedClose else {
+            if self.eventData == nil {
+                Logger.debug("Attempted to track paywall close but eventData is nil")
+            } else if self.hasTrackedClose {
+                Logger.debug("Attempted to track paywall close but close was already tracked")
+            }
             return false
         }
 
         self.track(.close(.init(), data))
-        self.eventData = nil
+        self.hasTrackedClose = true
         return true
     }
 
@@ -422,6 +457,26 @@ extension PurchaseHandler {
         }
 
         self.track(.cancel(.init(), data))
+        return true
+    }
+
+    /// Tracks an exit offer event and clears the pending exit offer flag.
+    /// - Parameters:
+    ///   - exitOfferType: The type of exit offer
+    ///   - exitOfferingIdentifier: The offering identifier of the exit offer
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    func trackExitOffer(exitOfferType: ExitOfferType, exitOfferingIdentifier: String) -> Bool {
+        guard let data = self.eventData else {
+            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+            return false
+        }
+
+        let exitOfferData = PaywallEvent.ExitOfferData(
+            exitOfferType: exitOfferType,
+            exitOfferingIdentifier: exitOfferingIdentifier
+        )
+        self.track(.exitOffer(.init(), data, exitOfferData))
         return true
     }
 

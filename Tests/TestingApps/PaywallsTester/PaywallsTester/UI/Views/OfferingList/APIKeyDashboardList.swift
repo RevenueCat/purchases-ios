@@ -41,6 +41,9 @@ struct APIKeyDashboardList: View {
     @State
     private var offeringToPresent: Offering?
 
+    @State
+    private var presentPaywallOffering: Offering?
+
     var body: some View {
         NavigationView {
             self.content
@@ -207,7 +210,8 @@ struct APIKeyDashboardList: View {
                 }
         }
         #endif
-                .presentPaywallIfNeededModifier(offering: $offeringToPresent)       
+                .presentPaywallIfNeededModifier(offering: $offeringToPresent)
+                .presentPaywall(offering: $presentPaywallOffering, onDismiss: { })
     }
 
     #if !os(watchOS)
@@ -229,6 +233,8 @@ struct APIKeyDashboardList: View {
                 self.presentedPaywall = .init(offering: offering, mode: selectedMode)
             case .presentIfNeeded:
                 self.offeringToPresent = offering
+            case .presentPaywall:
+                self.presentPaywallOffering = offering
             }
         } label: {
             Text(selectedMode.name)
