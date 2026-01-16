@@ -1,8 +1,10 @@
 ## RevenueCatUI SDK
 ### Paywallv2
-#### ✨ New Features
-* Add Basque and Serbian (Latin and Cyrillic) support for paywalls (#5995) via Rosie Watson (@RosieWatson)
+#### 🐞 Bugfixes
+* Fix paywall selection reset after eligibility redraw (#5972) via Facundo Menzella (@facumenzella)
+* Fix gradient overlay to cover full viewport instead of image bounds (#6072) via Facundo Menzella (@facumenzella)
+* Prewarm images in tabs control (#6077) via Cesar de la Vega (@vegaro)
+* Fix image loading on tab switch with @StateObject (#6078) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Add public initializer of `StoreTransaction` for unit tests (#6079) via Rick (@rickvdl)
-* Added a public initializer to the CustomerInfo class (#6075) via Rick (@rickvdl)
+* Reduce flakiness of an Offline StoreKit integration test (#6084) via Antonio Pallares (@ajpallares)
