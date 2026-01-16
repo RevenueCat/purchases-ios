@@ -299,6 +299,7 @@ extension BasePurchasesOrchestratorTests {
     )
 
     static let paywallEvent: PaywallEvent.Data = .init(
+        paywallIdentifier: "test_paywall_id",
         offeringIdentifier: "offering",
         paywallRevision: 5,
         sessionID: .init(),
