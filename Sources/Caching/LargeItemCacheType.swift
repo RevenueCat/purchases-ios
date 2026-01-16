@@ -33,20 +33,12 @@ protocol LargeItemCacheType {
 
     /// Creates a directory in the cache from a base path
     func createCacheDirectoryIfNeeded(basePath: String) -> URL?
-
-    /// Creates a directory in the documents directory from a base path
-    func createDocumentDirectoryIfNeeded(basePath: String) -> URL?
 }
 
 extension FileManager: LargeItemCacheType {
     /// A URL for a cache directory if one is present
     private var cacheDirectory: URL? {
-        return urls(for: .cachesDirectory, in: .userDomainMask).first
-    }
-
-    ///// A URL for a document directory if one is present
-    private var documentDirectory: URL? {
-        return urls(for: .documentDirectory, in: .userDomainMask).first
+        return DirectoryHelper.baseUrl(for: .cache)
     }
 
     /// Store data to a url
@@ -145,27 +137,6 @@ extension FileManager: LargeItemCacheType {
             )
         } catch {
             let message = Strings.fileRepository.failedToCreateCacheDirectory(path)
-            Logger.error(message)
-        }
-
-        return path
-    }
-
-    /// Creates a directory in the documents directory from a base path
-    func createDocumentDirectoryIfNeeded(basePath: String) -> URL? {
-        guard let documentDirectory else {
-            return nil
-        }
-
-        let path = documentDirectory.appendingPathComponent(basePath)
-        do {
-            try createDirectory(
-                at: path,
-                withIntermediateDirectories: true,
-                attributes: nil
-            )
-        } catch {
-            let message = Strings.fileRepository.failedToCreateDocumentDirectory(path)
             Logger.error(message)
         }
 

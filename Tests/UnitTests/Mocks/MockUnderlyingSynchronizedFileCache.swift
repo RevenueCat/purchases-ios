@@ -23,7 +23,6 @@ extension SynchronizedLargeItemCache {
 
         var cacheDirectory: URL?
         var workingCacheDirectory: URL?
-        var workingDocsDirectory: URL?
         let lock = NSLock()
 
         var saveDataInvocations: [SaveData] = []
@@ -152,14 +151,8 @@ extension SynchronizedLargeItemCache {
             return url
         }
 
-        func createDocumentDirectoryIfNeeded(basePath: String) -> URL? {
-            let url = cacheDirectory?.appendingPathComponent("docs–" + basePath)
-            workingDocsDirectory = url
-            return url
-        }
-
         private func cacheURL(from url: URL) -> URL {
-            workingDocsDirectory.unsafelyUnwrapped.appendingPathComponent(url.absoluteString.asData.md5String)
+            workingCacheDirectory.unsafelyUnwrapped.appendingPathComponent(url.absoluteString.asData.md5String)
         }
 
         // swiftlint:disable:next nesting

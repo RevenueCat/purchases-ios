@@ -20,9 +20,14 @@ class ETagManager {
     static let eTagResponseHeader = HTTPClient.ResponseHeader.eTag
 
     private let cache: SynchronizedLargeItemCache
+    private let fileManager = FileManager.default
+    private var hasDeletedOldDirectory = false
 
     convenience init() {
-        self.init(largeItemCache: .init(cache: FileManager.default, basePath: Self.suiteName) )
+        self.init(largeItemCache: .init(
+            cache: FileManager.default,
+            basePath: Self.cacheBasePath
+        ))
     }
 
     init(largeItemCache: SynchronizedLargeItemCache) {
@@ -148,6 +153,8 @@ private extension ETagManager {
     }
 
     func storedETagAndResponse(for request: URLRequest) -> Response? {
+        self.deleteOldETagDirectoryIfNeeded()
+
         if let cacheKey = Self.cacheKey(for: request) {
             return self.cache.value(forKey: cacheKey)
         }
@@ -179,6 +186,8 @@ private extension ETagManager {
     }
 
     func storeIfPossible(_ response: Response, for request: URLRequest) {
+        self.deleteOldETagDirectoryIfNeeded()
+
         if let cacheKey = Self.cacheKey(for: request) {
             Logger.verbose(Strings.etag.storing_response(request, response))
 
@@ -186,12 +195,45 @@ private extension ETagManager {
         }
     }
 
-    static let suiteNameBase: String  = "revenuecat.etags"
-    static var suiteName: String {
-        guard let bundleID = Bundle.main.bundleIdentifier else {
-            return suiteNameBase
+    static var cacheBasePath: String {
+        return "etags"
+    }
+
+    static var oldDocumentsDirectoryBasePath: String {
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.revenuecat"
+        return "\(bundleID).revenuecat.etags"
+    }
+
+    private func oldETagDirectoryURL() -> URL? {
+        guard let documentsURL = fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first else {
+            return nil
         }
-        return bundleID + ".\(suiteNameBase)"
+
+        return documentsURL.appendingPathComponent(Self.oldDocumentsDirectoryBasePath)
+    }
+
+    /*
+     We were previously storing these files in the Documents directory
+     which may end up in the Files app or the user's Documents directory on macOS.
+     We'll try to delete it if the new file did not exist yet.
+     */
+    private func deleteOldETagDirectoryIfNeeded() {
+        guard !self.hasDeletedOldDirectory else {
+            return
+        }
+
+        guard let oldDirectoryURL = self.oldETagDirectoryURL(),
+              fileManager.fileExists(atPath: oldDirectoryURL.path) else {
+            self.hasDeletedOldDirectory = true
+            return
+        }
+
+        try? fileManager.removeItem(at: oldDirectoryURL)
+
+        self.hasDeletedOldDirectory = true
     }
 
 }
