@@ -343,6 +343,11 @@ extension TransactionPoster {
                                                              forTransactionId: transaction.transactionIdentifier)
         }
 
+        // Indicates whether this specific app installation originated the transaction.
+        // When false, the transaction was detected but not originated by this installation
+        // (e.g., it may have been made on another device with the same app or even outside of the app).
+        let sdkOriginated = shouldClearMetadataOnSuccess
+
         self.backend.post(receipt: receipt,
                           productData: effectiveProductData,
                           transactionData: effectiveTransactionData,
@@ -351,6 +356,7 @@ extension TransactionPoster {
                           originalPurchaseCompletedBy: effectivePurchasesAreCompletedBy,
                           appTransaction: appTransaction,
                           associatedTransactionId: transaction.transactionIdentifier,
+                          sdkOriginated: sdkOriginated,
                           appUserID: currentUserID) { result in
             if shouldClearMetadataOnSuccess {
                 switch result {
