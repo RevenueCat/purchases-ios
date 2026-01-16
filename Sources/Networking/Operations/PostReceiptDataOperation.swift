@@ -55,13 +55,14 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `observerMode`
         /// - `subscriberAttributesByKey`
         /// - `associatedTransactionId`
+        /// - `sdkOriginated`
         let cacheKey =
         """
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.hash)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
-        -\(postData.associatedTransactionId ?? "")
+        -\(postData.associatedTransactionId ?? "")-\(postData.sdkOriginated)
         """
 
         return .init({ cacheKey in
@@ -150,6 +151,12 @@ extension PostReceiptDataOperation {
         /// retrieved from StoreKit 2.
         let appTransaction: String?
         let associatedTransactionId: String?
+
+        /// When `true`, indicates that this specific app installation originated the transaction (i.e., the purchase
+        /// was initiated on this device and metadata was stored locally). When `false`, the transaction was detected
+        /// but not originated by this installation (e.g., it may have been made on another device with the same app
+        /// or even outside of the app).
+        let sdkOriginated: Bool
         let metadata: [String: String]?
     }
 
@@ -183,7 +190,8 @@ extension PostReceiptDataOperation.PostData {
         purchaseCompletedBy: PurchasesAreCompletedBy?,
         testReceiptIdentifier: String?,
         appTransaction: String?,
-        associatedTransactionId: String?
+        associatedTransactionId: String?,
+        sdkOriginated: Bool = false
     ) {
         self.init(
             appUserID: appUserID,
@@ -204,6 +212,7 @@ extension PostReceiptDataOperation.PostData {
             testReceiptIdentifier: testReceiptIdentifier,
             appTransaction: appTransaction,
             associatedTransactionId: associatedTransactionId,
+            sdkOriginated: sdkOriginated,
             metadata: data.metadata
         )
     }
@@ -286,6 +295,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case testReceiptIdentifier = "test_receipt_identifier"
         case appTransaction = "app_transaction"
         case associatedTransactionId = "transaction_id"
+        case sdkOriginated = "sdk_originated"
         case metadata
 
     }
@@ -305,6 +315,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.fetchToken, forKey: .fetchToken)
         try container.encodeIfPresent(self.appTransaction, forKey: .appTransaction)
         try container.encodeIfPresent(self.associatedTransactionId, forKey: .associatedTransactionId)
+        try container.encode(self.sdkOriginated, forKey: .sdkOriginated)
         try container.encodeIfPresent(self.metadata, forKey: .metadata)
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)

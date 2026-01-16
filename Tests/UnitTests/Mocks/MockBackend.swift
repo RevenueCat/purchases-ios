@@ -17,6 +17,7 @@ class MockBackend: Backend {
                                        originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                                        appTransaction: String?,
                                        associatedTransactionId: String?,
+                                       sdkOriginated: Bool,
                                        appUserID: String,
                                        completion: CustomerAPI.CustomerInfoResponseHandler?)
 
@@ -66,6 +67,7 @@ class MockBackend: Backend {
                        originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                        appTransaction: String? = nil,
                        associatedTransactionId: String? = nil,
+                       sdkOriginated: Bool = false,
                        appUserID: String,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
@@ -78,6 +80,7 @@ class MockBackend: Backend {
                                             originalPurchaseCompletedBy,
                                             appTransaction,
                                             associatedTransactionId,
+                                            sdkOriginated,
                                             appUserID,
                                             completion)
         invokedPostReceiptDataParametersList.append((receipt,
@@ -88,6 +91,7 @@ class MockBackend: Backend {
                                                      originalPurchaseCompletedBy,
                                                      appTransaction,
                                                      associatedTransactionId,
+                                                     sdkOriginated,
                                                      appUserID,
                                                      completion))
 
