@@ -171,12 +171,20 @@ struct PaywallsV2View: View {
         self._paywallStateManager = .init(
             wrappedValue: .init(state: initialState)
         )
-        self._selectedPackageContext = .init(
-            wrappedValue: Self.makeSelectedPackageContext(
-                from: initialState,
+
+        let selectedPackageContext: PackageContext
+        if case .success(let paywallState) = initialState {
+            selectedPackageContext = Self.makeSelectedPackageContext(
+                from: paywallState,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
-        )
+        } else {
+            selectedPackageContext = .init(
+                package: nil,
+                variableContext: .init(packages: [], showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            )
+        }
+        self._selectedPackageContext = .init(wrappedValue: selectedPackageContext)
     }
 
     public var body: some View {
@@ -419,25 +427,13 @@ fileprivate extension PaywallsV2View {
     }
 
     static func makeSelectedPackageContext(
-        from state: Result<PaywallState, Error>,
+        from paywallState: PaywallState,
         showZeroDecimalPlacePrices: Bool
     ) -> PackageContext {
-        let package: Package?
-        let packages: [Package]
-
-        switch state {
-        case .success(let paywallState):
-            package = paywallState.viewModelFactory.packageValidator.defaultSelectedPackage
-            packages = paywallState.packages
-        case .failure:
-            package = nil
-            packages = []
-        }
-
         return .init(
-            package: package,
+            package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
             variableContext: .init(
-                packages: packages,
+                packages: paywallState.packages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         )
