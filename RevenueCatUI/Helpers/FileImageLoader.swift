@@ -20,7 +20,7 @@ import SwiftUI
 final class FileImageLoader: ObservableObject {
 
     let fileRepository: FileRepository
-    private(set) var url: URL?
+    let url: URL?
 
     @MainActor
     init(fileRepository: FileRepository, url: URL?) {
