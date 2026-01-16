@@ -60,7 +60,7 @@ class DeviceCache {
         userDefaults.write { defaults in
             defaults.removeObject(forKey: key)
         }
-        return self.largeItemCache.value(forKey: key.rawValue)
+        return try? self.largeItemCache.value(forKey: key.rawValue)
     }
 
     // MARK: - appUserID

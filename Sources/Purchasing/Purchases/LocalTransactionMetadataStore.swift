@@ -25,6 +25,9 @@ protocol LocalTransactionMetadataStoreType: Sendable {
 
     /// Remove transaction metadata for a given transaction ID.
     func removeMetadata(forTransactionId transactionId: String)
+
+    /// Retrieve all stored transaction metadata.
+    func getAllStoredMetadata() -> [LocalTransactionMetadata]
 }
 
 /// Cache for storing local transaction metadata persistently on disk.
@@ -60,7 +63,13 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
     /// Retrieve transaction metadata for a given transaction ID.
     func getMetadata(forTransactionId transactionId: String) -> LocalTransactionMetadata? {
         let key = self.getStoreKey(for: transactionId)
-        return self.cache.value(forKey: key)
+        do {
+            return try self.cache.value(forKey: key)
+        } catch {
+            Logger.error("Error loading transaction metadata from cache: \(error.localizedDescription)")
+            self.cache.removeObject(forKey: key)
+            return nil
+        }
     }
 
     /// Remove transaction metadata for a given transaction ID.
@@ -78,6 +87,20 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
         self.cache.removeObject(forKey: key)
     }
 
+    /// Retrieve all stored transaction metadata.
+    func getAllStoredMetadata() -> [LocalTransactionMetadata] {
+        let keys = self.cache.allKeys()
+        return keys.compactMap { key -> LocalTransactionMetadata? in
+            do {
+                return try self.cache.value(forKey: key)
+            } catch {
+                Logger.error("Error loading transaction metadata from cache: \(error.localizedDescription)")
+                self.cache.removeObject(forKey: key)
+                return nil
+            }
+        }
+    }
+
     // MARK: - Private helper methods
 
     private func getStoreKey(for identifier: String) -> String {
@@ -86,11 +109,6 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
 
     private struct CacheKey: DeviceCacheKeyType {
         let rawValue: String
-    }
-
-    private func getCachedMetadata(forKey key: String) -> LocalTransactionMetadata? {
-        let metadata: LocalTransactionMetadata? = self.cache.value(forKey: key)
-        return metadata
     }
 
 }

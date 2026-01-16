@@ -499,8 +499,10 @@ class TransactionPosterTests: TestCase {
             )
         )
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: storedProductData,
             transactionData: storedTransactionData,
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .myApp
         )
 
@@ -547,6 +549,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptFromSyncedSK2TransactionClearsMetadataOnSuccess() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -561,6 +564,7 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat
         )
 
@@ -719,8 +723,10 @@ class TransactionPosterTests: TestCase {
             )
         )
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: storedProductData,
             transactionData: storedTransactionData,
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .myApp
         )
 
@@ -818,6 +824,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptClearsExistingMetadataOnSuccess() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -832,6 +839,7 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat
         )
 
@@ -859,6 +867,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptDoesNotStoreMetadataWhenMetadataAlreadyExists() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -873,6 +882,7 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat
         )
 
@@ -900,6 +910,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptFromQueueClearsExistingMetadataWhenMetadataOnSuccessWhenMetadataAlreadyExists() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -914,6 +925,7 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat
         )
 
@@ -943,6 +955,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptFromQueueClearsExistingMetadataWhenMetadataOnFinishableErrorWhenMetadataAlreadyExists() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -957,6 +970,7 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat
         )
 

@@ -83,4 +83,8 @@ final class MockLocalTransactionMetadataStore: LocalTransactionMetadataStoreType
         }
     }
 
+    func getAllStoredMetadata() -> [LocalTransactionMetadata] {
+        return Array(self.storedMetadata.value.values)
+    }
+
 }

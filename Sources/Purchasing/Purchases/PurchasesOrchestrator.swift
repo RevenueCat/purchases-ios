@@ -931,6 +931,17 @@ final class PurchasesOrchestrator {
         }
     }
 
+    /// Posts any remaining cached transaction metadata that wasn't synced during normal transaction processing.
+    /// This handles edge cases where a transaction is not returned by the store anymore but we still have
+    /// metadata cached for it.
+    func syncRemainingCachedTransactionMetadataIfNeeded() {
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .default) {
+            Task {
+                await self.performCachedTransactionMetadataSync()
+            }
+        }
+    }
+
 #if os(iOS) || os(macOS) || VISION_OS
 
     @available(watchOS, unavailable)
@@ -1435,7 +1446,6 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
         self.handlePostReceiptResult(result,
                                      transactionData: transactionData,
-                                     subscriberAttributes: subscriberAttributes,
                                      adServicesToken: adServicesToken)
 
         if let error = result.error {
@@ -1613,6 +1623,24 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    func performCachedTransactionMetadataSync() async {
+        let currentAppUserID = self.appUserID
+        let isRestore = self.allowSharingAppStoreAccount
+
+        let resultsStream = self.transactionPoster.postRemainingCachedTransactionMetadata(
+            appUserID: currentAppUserID,
+            isRestore: isRestore
+        )
+
+        for await (transactionData, result) in resultsStream {
+            self.markSyncedIfNeeded(
+                subscriberAttributes: transactionData.unsyncedAttributes,
+                adServicesToken: transactionData.aadAttributionToken,
+                error: result.error
+            )
+        }
+    }
+
     private func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                                isRestore: Bool,
                                initiationSource: PostReceiptSource.InitiationSource,
@@ -1700,7 +1728,6 @@ private extension PurchasesOrchestrator {
                     ) { result in
                         self.handleReceiptPost(result: result,
                                                transactionData: transactionData,
-                                               subscriberAttributes: unsyncedAttributes,
                                                adServicesToken: nil,
                                                completion: completion)
                     }
@@ -1789,7 +1816,6 @@ private extension PurchasesOrchestrator {
 
                     self.handleReceiptPost(result: result,
                                            transactionData: transactionData,
-                                           subscriberAttributes: unsyncedAttributes,
                                            adServicesToken: nil,
                                            completion: completion)
                 }
@@ -1815,7 +1841,6 @@ private extension PurchasesOrchestrator {
             ) { result in
                 self.handleReceiptPost(result: result,
                                        transactionData: transactionData,
-                                       subscriberAttributes: unsyncedAttributes,
                                        adServicesToken: nil,
                                        completion: completion)
             }
@@ -1823,14 +1848,12 @@ private extension PurchasesOrchestrator {
     }
 
     func handleReceiptPost(result: Result<CustomerInfo, BackendError>,
-                           transactionData: PurchasedTransactionData?,
-                           subscriberAttributes: SubscriberAttribute.Dictionary,
+                           transactionData: PurchasedTransactionData,
                            adServicesToken: String?,
                            completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         self.handlePostReceiptResult(
             result,
             transactionData: transactionData,
-            subscriberAttributes: subscriberAttributes,
             adServicesToken: adServicesToken
         )
 
@@ -1843,7 +1866,6 @@ private extension PurchasesOrchestrator {
 
     func handlePostReceiptResult(_ result: Result<CustomerInfo, BackendError>,
                                  transactionData: PurchasedTransactionData?,
-                                 subscriberAttributes: SubscriberAttribute.Dictionary,
                                  adServicesToken: String?) {
         switch result {
         case let .success(customerInfo):
@@ -1856,7 +1878,7 @@ private extension PurchasesOrchestrator {
             }
         }
 
-        self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
+        self.markSyncedIfNeeded(subscriberAttributes: transactionData?.unsyncedAttributes,
                                 adServicesToken: adServicesToken,
                                 error: result.error)
     }
@@ -1887,7 +1909,6 @@ private extension PurchasesOrchestrator {
 
                 self.handlePostReceiptResult(result,
                                              transactionData: transactionData,
-                                             subscriberAttributes: unsyncedAttributes,
                                              adServicesToken: adServicesToken)
 
                 if let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: purchasedTransaction) {
@@ -2179,7 +2200,6 @@ extension PurchasesOrchestrator {
 
         self.handlePostReceiptResult(result,
                                      transactionData: transactionData,
-                                     subscriberAttributes: unsyncedAttributes,
                                      adServicesToken: adServicesToken)
 
         return try result
