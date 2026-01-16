@@ -85,6 +85,44 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
         expect(transaction?.sk2Transaction) == fakeTransaction.underlyingTransaction
     }
 
+    func testTransactionWithPurchaseThroughSDKSourceDoesNotCallDelegateOrDiagnosticsTracker() async throws {
+        let fakeTransaction = try await self.simulateAnyPurchase()
+
+        _ = try await self.listener.handle(
+            purchaseResult: .success(fakeTransaction),
+            transactionSource: .purchaseThroughSDK
+        )
+
+        expect(self.delegate.invokedTransactionUpdated) == false
+        expect(self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value.count) == 0
+    }
+
+    func testTransactionWithUpdateQueueSourceCallsDelegateAndTracksTransactionUpdate() async throws {
+        let fakeTransaction = try await self.simulateAnyPurchase()
+
+        _ = try await self.listener.handle(
+            purchaseResult: .success(fakeTransaction),
+            transactionSource: .updatesQueue
+        )
+
+        expect(self.delegate.invokedTransactionUpdated) == true
+        expect(self.delegate.transactionSources) == [.updatesQueue]
+        expect(self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value.count) == 1
+    }
+
+    func testTransactionWithObserverModePurchaseSourceCallsDelegateAndTracksTransactionUpdate() async throws {
+        let fakeTransaction = try await self.simulateAnyPurchase()
+
+        _ = try await self.listener.handle(
+            purchaseResult: .success(fakeTransaction),
+            transactionSource: .observerModePurchase
+        )
+
+        expect(self.delegate.invokedTransactionUpdated) == true
+        expect(self.delegate.transactionSources) == [.observerModePurchase]
+        expect(self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value.count) == 1
+    }
+
     func testIsCancelledIsTrueWhenPurchaseIsCancelled() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
