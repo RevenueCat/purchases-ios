@@ -68,7 +68,7 @@ fileprivate extension View {
             self.background(
                 color
                     .toView(colorScheme: colorScheme)
-                    .edgesIgnoringSafeArea(.all)
+                    .ignoresSafeArea()
             )
         case let .image(imageInfo, fitMode, colorOverlay):
             self.background(alignment: alignment) {
@@ -82,43 +82,42 @@ fileprivate extension View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: fitMode.contentMode)
-                            .ignoresSafeArea()
                     }
+                    // Align image to top so it overlaps with the transparent portion of the gradient.
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    // Enforces image clipping to the exact bounds of the view where .clipped does not.
+                    // This prevents the background image from influencing the parent view's size,
+                    // which was causing the footer to enlarge when using "fill" fit mode with tall images.
+                    .mask(self.overlay(content: {
+                        Color.black
+                    }))
+
                     // Color overlay fills the full container, not just the image bounds.
-                    // This matches the web builder behavior where the overlay covers 100% of the viewport.
+                    // This matches the web builder behavior where overlays cover 100% of the viewport.
                     if let colorOverlay {
                         colorOverlay
                             .toView(colorScheme: colorScheme)
-                            .ignoresSafeArea()
                     }
                 }
-                // Enforces image clipping to the exact bounds of the view where .clipped does not.
-                // This prevents the background image from influencing the parent view's size,
-                // which was causing the footer to enlarge when using "fill" fit mode with tall images.
-                .mask(self.overlay(content: {
-                    Color.black
-                }))
-                .edgesIgnoringSafeArea(.all)
+                .ignoresSafeArea()
             }
         case let .video(viewModel, colorOverlay):
             self.background(alignment: alignment) {
                 ZStack {
                     VideoComponentView(viewModel: viewModel)
-                        .edgesIgnoringSafeArea(.all)
+                        // Enforces video clipping to the exact bounds of the view where .clipped does not
+                        .mask(self.overlay(content: {
+                            Color.black
+                        }))
+
                     // Color overlay fills the full container, not just the video bounds.
-                    // This matches the web builder behavior where the overlay covers 100% of the viewport.
+                    // This matches the web builder behavior where overlays cover 100% of the viewport.
                     if let colorOverlay {
                         colorOverlay
                             .toView(colorScheme: colorScheme)
-                            .ignoresSafeArea()
                     }
                 }
-                // enforces video clipping to the exact bounds of the view where .clipped does not
-                .mask(self.overlay(content: {
-                    Color.black
-                }))
-                .edgesIgnoringSafeArea(.all)
+                .ignoresSafeArea()
             }
         }
     }
