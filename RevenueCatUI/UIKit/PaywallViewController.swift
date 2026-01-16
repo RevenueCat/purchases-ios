@@ -220,6 +220,11 @@ public class PaywallViewController: UIViewController {
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    deinit {
+        // Ensure close event is tracked and event state is cleared when view controller is deallocated
+        self.purchaseHandler.finalizeEventTracking()
+    }
 
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -253,6 +258,7 @@ public class PaywallViewController: UIViewController {
     public override func viewDidDisappear(_ animated: Bool) {
         if self.isBeingDismissed && !self.isDismissingForExitOffer {
             self.delegate?.paywallViewControllerWasDismissed?(self)
+            self.purchaseHandler.resetForNewSession()
         }
         super.viewDidDisappear(animated)
     }
@@ -336,6 +342,7 @@ public class PaywallViewController: UIViewController {
     private func handleDismissalRequest() {
         // If purchased, dismiss immediately without showing exit offer
         guard !self.purchaseHandler.hasPurchasedInSession else {
+            self.purchaseHandler.resetForNewSession()
             self.dismissPaywall()
             return
         }
@@ -344,6 +351,7 @@ public class PaywallViewController: UIViewController {
         if let exitOffering = self.exitOfferOffering, !self.isShowingExitOffer {
             self.presentExitOffer(for: exitOffering)
         } else {
+            self.purchaseHandler.resetForNewSession()
             self.dismissPaywall()
         }
     }
@@ -366,6 +374,7 @@ public class PaywallViewController: UIViewController {
         // Capture the presenting view controller and other needed state before dismissing
         guard let presenter = self.presentingViewController else {
             // No presenter, just dismiss normally
+            self.purchaseHandler.resetForNewSession()
             self.dismissPaywall()
             return
         }
@@ -495,6 +504,8 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
+        self.purchaseHandler.resetForNewSession()
+
         // Forward to original delegate (with safety check to prevent recursion)
         if let originalDelegate = self.originalPresentationControllerDelegate, originalDelegate !== self {
             originalDelegate.presentationControllerWillDismiss?(presentationController)
