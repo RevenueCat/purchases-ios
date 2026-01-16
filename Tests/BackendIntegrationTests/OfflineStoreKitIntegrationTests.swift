@@ -369,6 +369,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingMultipleProductsWhileServerIsDownHandlesAllTransactionsWhenForegroundingApp() async throws {
+        // To prevent the subscription renewal from happening during the test. Otherwise,
+        // it could sometimes interfere with the consumable purchase verification, causing flakiness.
+        self.setLongestTestSessionTimeRate(self.testSession)
+
         self.logger.clearMessages()
 
         // 1. Purchase while server is down

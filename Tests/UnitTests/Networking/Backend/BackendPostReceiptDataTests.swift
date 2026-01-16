@@ -47,7 +47,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  unsyncedAttributes: nil,
                                  storeCountry: nil
                               ),
-                              postReceiptSource: .init(isRestore: false, initiationSource: .restore),
+                              postReceiptSource: .init(isRestore: false, initiationSource: .queue),
                               observerMode: observerMode,
                               originalPurchaseCompletedBy: purchaseCompletedBy,
                               appUserID: Self.userID,
