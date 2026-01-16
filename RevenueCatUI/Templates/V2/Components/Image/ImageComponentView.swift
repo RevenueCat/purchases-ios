@@ -108,6 +108,7 @@ struct ImageComponentView: View {
                     })
                     .padding(style.margin)
                 }
+                .id(style.url)
                 .onSizeChange({ size = $0 })
 
             }
