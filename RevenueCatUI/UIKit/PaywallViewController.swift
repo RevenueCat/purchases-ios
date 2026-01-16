@@ -222,8 +222,8 @@ public class PaywallViewController: UIViewController {
     }
     
     deinit {
-        // Ensure close event is tracked and event state is cleared when view controller is deallocated
-        self.purchaseHandler.finalizeEventTracking()
+        // Ensure close event is tracked when view controller is deallocated (safety net for missed onDisappear)
+        self.purchaseHandler.trackPaywallClose()
     }
 
     public override func viewDidLoad() {
@@ -504,6 +504,7 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
+        // Dismissal is happening (we allowed it) - clean up
         self.purchaseHandler.resetForNewSession()
 
         // Forward to original delegate (with safety check to prevent recursion)

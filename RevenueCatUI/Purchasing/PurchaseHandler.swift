@@ -452,17 +452,6 @@ extension PurchaseHandler {
         self.hasTrackedClose = true
         return true
     }
-    
-    /// Finalizes event tracking, ensuring close event is tracked.
-    /// This should be called when the paywall is truly done (dismissed, deallocated, etc).
-    /// Safe to call multiple times - will only track close once due to hasTrackedClose guard.
-    ///
-    /// Note: Does NOT clear eventData or hasTrackedClose. This ensures both SwiftUI's onDisappear
-    /// and UIKit's deinit can safely call this in any order without race conditions. Old event
-    /// data is automatically cleaned up when trackPaywallImpression is called for the next paywall.
-    func finalizeEventTracking() {
-        self.trackPaywallClose()
-    }
 
     /// - Returns: whether the event was tracked
     @discardableResult
