@@ -56,6 +56,7 @@ class TextComponentViewModel {
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?,
         countdownTime: CountdownTime? = nil,
+        customVariables: [String: String] = [:],
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
@@ -79,7 +80,9 @@ class TextComponentViewModel {
                 locale: self.localizationProvider.locale,
                 localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
                 promoOffer: promoOffer,
-                countdownTime: countdownTime
+                countdownTime: countdownTime,
+                customVariables: customVariables,
+                defaultCustomVariables: uiConfigProvider.defaultCustomVariables
             ),
             fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
@@ -102,7 +105,9 @@ class TextComponentViewModel {
         locale: Locale,
         localizations: [String: String],
         promoOffer: PromotionalOffer? = nil,
-        countdownTime: CountdownTime? = nil
+        countdownTime: CountdownTime? = nil,
+        customVariables: [String: String] = [:],
+        defaultCustomVariables: [String: String] = [:]
     ) -> String {
 
         let processedWithV2 = Self.processTextV2(
@@ -112,13 +117,17 @@ class TextComponentViewModel {
             locale: locale,
             localizations: localizations,
             promoOffer: promoOffer,
-            countdownTime: countdownTime
+            countdownTime: countdownTime,
+            customVariables: customVariables,
+            defaultCustomVariables: defaultCustomVariables
         )
         // Note: This is temporary while in closed beta and shortly after
         let processedWithV2AndV1 = Self.processTextV1(
             processedWithV2,
             packageContext: packageContext,
-            locale: locale
+            locale: locale,
+            customVariables: customVariables,
+            defaultCustomVariables: defaultCustomVariables
         )
 
         return processedWithV2AndV1
@@ -131,7 +140,9 @@ class TextComponentViewModel {
         locale: Locale,
         localizations: [String: String],
         promoOffer: PromotionalOffer? = nil,
-        countdownTime: CountdownTime? = nil
+        countdownTime: CountdownTime? = nil,
+        customVariables: [String: String] = [:],
+        defaultCustomVariables: [String: String] = [:]
     ) -> String {
         guard let package = packageContext.package else {
             return text
@@ -146,7 +157,9 @@ class TextComponentViewModel {
             variableCompatibilityMap: variableConfig.variableCompatibilityMap,
             functionCompatibilityMap: variableConfig.functionCompatibilityMap,
             discountRelativeToMostExpensivePerMonth: discount,
-            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices
+            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices,
+            customVariables: customVariables,
+            defaultCustomVariables: defaultCustomVariables
         )
 
         return handler.processVariables(
@@ -159,9 +172,13 @@ class TextComponentViewModel {
         )
     }
 
-    private static func processTextV1(_ text: String,
-                                      packageContext: PackageContext,
-                                      locale: Locale) -> String {
+    private static func processTextV1(
+        _ text: String,
+        packageContext: PackageContext,
+        locale: Locale,
+        customVariables: [String: String] = [:],
+        defaultCustomVariables: [String: String] = [:]
+    ) -> String {
         guard let package = packageContext.package else {
             return text
         }
@@ -173,7 +190,9 @@ class TextComponentViewModel {
 
         let context: VariableHandler.Context = .init(
             discountRelativeToMostExpensivePerMonth: discount,
-            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices
+            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices,
+            customVariables: customVariables,
+            defaultCustomVariables: defaultCustomVariables
         )
 
         return VariableHandler.processVariables(

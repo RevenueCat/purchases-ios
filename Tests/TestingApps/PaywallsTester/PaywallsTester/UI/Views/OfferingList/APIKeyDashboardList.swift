@@ -203,6 +203,12 @@ struct APIKeyDashboardList: View {
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
+                .customPaywallVariables([
+                    "player_name": "John",
+                    "level": 42,
+                    "max_health": 90,
+                    "is_premium": true
+                ])
                 .onAppear {
                     self.isLoadingPaywall = false
                     if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
@@ -216,6 +222,12 @@ struct APIKeyDashboardList: View {
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
+                .customPaywallVariables([
+                    "player_name": "John",
+                    "level": 42,
+                    "max_health": 90,
+                    "is_premium": true
+                ])
                 .onAppear {
                     self.isLoadingPaywall = false
                     if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {

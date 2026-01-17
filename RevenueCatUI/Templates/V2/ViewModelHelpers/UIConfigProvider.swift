@@ -24,6 +24,7 @@ final class UIConfigProvider {
     private let uiConfig: UIConfig
     private let failedToLoadFont: FailedToLoadFont?
     private var loggedMessages: Set<LogMessage> = []
+    private var hasLoggedCustomVariablesStatus = false
 
     init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil) {
         self.uiConfig = uiConfig
@@ -32,6 +33,21 @@ final class UIConfigProvider {
 
     var variableConfig: UIConfig.VariableConfig {
         return self.uiConfig.variableConfig
+    }
+
+    /// Returns the default values for custom variables defined in the dashboard.
+    /// Keys are variable names (without the `$custom.` prefix), values are the default values as strings.
+    var defaultCustomVariables: [String: String] {
+        let defaults = self.uiConfig.customVariables.mapValues { $0.defaultValue }
+        if !hasLoggedCustomVariablesStatus {
+            hasLoggedCustomVariablesStatus = true
+            if defaults.isEmpty {
+                Logger.debug(Strings.paywall_no_default_custom_variables)
+            } else {
+                Logger.verbose(Strings.paywall_custom_variables_loaded(count: defaults.count))
+            }
+        }
+        return defaults
     }
 
     func getColor(for name: String) -> PaywallComponent.ColorScheme? {

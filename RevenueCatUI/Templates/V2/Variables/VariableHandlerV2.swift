@@ -18,6 +18,10 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct VariableHandlerV2 {
 
+    /// Supported prefixes for custom variables.
+    /// We support both `$custom.` and `custom.` for flexibility.
+    private static let customVariablePrefixes = ["$custom.", "custom."]
+
     private let variableCompatibilityMap: [String: String]
     private let functionCompatibilityMap: [String: String]
 
@@ -25,17 +29,26 @@ struct VariableHandlerV2 {
     private let discountRelativeToMostExpensivePerMonth: Double?
     private let dateProvider: () -> Date
 
+    /// Custom variables provided by the SDK at runtime.
+    private let customVariables: [String: String]
+    /// Default custom variables defined in the dashboard.
+    private let defaultCustomVariables: [String: String]
+
     init(
         variableCompatibilityMap: [String: String],
         functionCompatibilityMap: [String: String],
         discountRelativeToMostExpensivePerMonth: Double?,
         showZeroDecimalPlacePrices: Bool,
+        customVariables: [String: String] = [:],
+        defaultCustomVariables: [String: String] = [:],
         dateProvider: @escaping () -> Date = { Date() }
     ) {
         self.variableCompatibilityMap = variableCompatibilityMap
         self.functionCompatibilityMap = functionCompatibilityMap
         self.discountRelativeToMostExpensivePerMonth = discountRelativeToMostExpensivePerMonth
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        self.customVariables = customVariables
+        self.defaultCustomVariables = defaultCustomVariables
         self.dateProvider = dateProvider
     }
 
@@ -48,6 +61,13 @@ struct VariableHandlerV2 {
         countdownTime: CountdownTime? = nil
     ) -> String {
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
+            // Check for custom variable first (supports both $custom. and custom. prefixes)
+            if let matchedPrefix = Self.customVariablePrefixes.first(where: { variableRaw.hasPrefix($0) }) {
+                let processedValue = self.processCustomVariable(variableRaw, prefix: matchedPrefix)
+                let function = functionRaw.flatMap { self.findFunction($0) }
+                return function?.process(processedValue) ?? processedValue
+            }
+
             let variable = self.findVariable(variableRaw)
             let function = functionRaw.flatMap { self.findFunction($0) }
 
@@ -66,6 +86,38 @@ struct VariableHandlerV2 {
         }
 
         return whisker.render()
+    }
+
+    /// Process a custom variable, returning the resolved value.
+    /// Resolution order: SDK-provided value -> default value from dashboard -> empty string (with debug warning)
+    private func processCustomVariable(_ variableRaw: String, prefix: String) -> String {
+        let key = String(variableRaw.dropFirst(prefix.count))
+
+        Logger.verbose(Strings.paywall_custom_variable_resolving(
+            variableName: key,
+            sdkProvidedCount: customVariables.count,
+            defaultCount: defaultCustomVariables.count
+        ))
+
+        // First, check SDK-provided custom variables
+        if let value = customVariables[key] {
+            Logger.verbose(Strings.paywall_custom_variable_resolved_sdk(variableName: key, value: value))
+            return value
+        }
+
+        // Then, check default values from the dashboard
+        if let defaultValue = defaultCustomVariables[key] {
+            Logger.verbose(Strings.paywall_custom_variable_resolved_default(variableName: key, value: defaultValue))
+            return defaultValue
+        }
+
+        // Variable not found - log warning and return empty string
+        Logger.warning(Strings.paywall_custom_variable_not_found(variableName: key))
+        Logger.debug(Strings.paywall_custom_variable_available_keys(
+            sdkKeys: Array(customVariables.keys),
+            defaultKeys: Array(defaultCustomVariables.keys)
+        ))
+        return ""
     }
 
     private func findVariable(_ variableRaw: String) -> VariablesV2? {
