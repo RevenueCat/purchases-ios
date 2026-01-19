@@ -20,6 +20,25 @@ struct TransitionModifier: ViewModifier {
 
     @State var isPresented: Bool = false
 
+    /// The animation to use without the delay (delay is handled separately)
+    private var animationWithoutDelay: SwiftUI.Animation {
+        guard let animation = transition.animation else {
+            return .default
+        }
+        switch animation.type {
+        case .easeIn:
+            return .easeIn(duration: animation.msDuration.asSeconds)
+        case .easeInOut:
+            return .easeInOut(duration: animation.msDuration.asSeconds)
+        case .easeOut:
+            return .easeOut(duration: animation.msDuration.asSeconds)
+        case .linear:
+            return .linear(duration: animation.msDuration.asSeconds)
+        @unknown default:
+            return .default
+        }
+    }
+
     func body(content: Content) -> some View {
         ZStack {
             if isPresented {
@@ -31,6 +50,7 @@ struct TransitionModifier: ViewModifier {
                     case .greedy:
                         content
                             .hidden()
+                            .allowsHitTesting(false)
                             .accessibilityHidden(true)
                     case .lazy:
                         EmptyView()
@@ -40,8 +60,13 @@ struct TransitionModifier: ViewModifier {
                 }
                 .transition(transition.toTransition)
             }
-        }.onAppear {
-            withAnimation(transition.animation?.toAnimation ?? .none) {
+        }.task {
+            // Delay the state change by msDelay before showing the content
+            let delayMs = transition.animation?.msDelay ?? 0
+            if delayMs > 0 {
+                try? await Task.sleep(nanoseconds: UInt64(delayMs) * 1_000_000)
+            }
+            withAnimation(animationWithoutDelay) {
                 isPresented = true
             }
         }
@@ -79,25 +104,8 @@ extension PaywallComponent.Transition {
 
 }
 
-extension PaywallComponent.Animation {
-    var toAnimation: SwiftUI.Animation {
-        switch self.type {
-        case .easeIn:
-            return .easeIn(duration: msDuration.seconds).delay(msDelay.seconds)
-        case .easeInOut:
-            return .easeInOut(duration: msDuration.seconds).delay(msDelay.seconds)
-        case .easeOut:
-            return .easeOut(duration: msDuration.seconds).delay(msDelay.seconds)
-        case .linear:
-            return .linear(duration: msDuration.seconds).delay(msDelay.seconds)
-        @unknown default:
-            return .default
-        }
-    }
-}
-
 private extension Int {
-    var seconds: TimeInterval {
+    var asSeconds: TimeInterval {
         return TimeInterval(Double(self) / 1000)
     }
 }
