@@ -107,11 +107,14 @@ private enum TestImageVariant: String {
     var base64PNG: String {
         switch self {
         case .red:
-            return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGP8z8DAwMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
+            return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGP8z8DA" +
+                "wMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
         case .blue:
-            return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNgYPjPwMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
+            return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNgYPjP" +
+                "wMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
         case .green:
-            return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNg+M/AwMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
+            return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNg+M/A" +
+                "wMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
         }
     }
 }
