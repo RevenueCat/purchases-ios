@@ -430,7 +430,7 @@ extension PurchaseHandler {
         if self.eventData != nil && !self.hasTrackedClose {
             self.trackPaywallClose()
         }
-        
+
         self.eventData = eventData
         self.hasTrackedClose = false
         self.track(.impression(.init(), eventData))
