@@ -31,8 +31,8 @@ final class FileImageLoaderTests: TestCase {
         let url1 = Self.makeLocalURL(filename: "test-image-1.png")
         let url2 = Self.makeLocalURL(filename: "test-image-2.png")
 
-        let data1 = try Self.makeSolidImageData(color: .red)
-        let data2 = try Self.makeSolidImageData(color: .blue)
+        let data1 = try Self.makeImageData(variant: .red)
+        let data2 = try Self.makeImageData(variant: .blue)
 
         let cachedURL1 = try XCTUnwrap(fileRepository.generateLocalFilesystemURL(forRemoteURL: url1, withChecksum: nil))
         let cachedURL2 = try XCTUnwrap(fileRepository.generateLocalFilesystemURL(forRemoteURL: url2, withChecksum: nil))
@@ -57,7 +57,7 @@ final class FileImageLoaderTests: TestCase {
         let fileRepository = self.makeFileRepository()
         let url = Self.makeLocalURL(filename: "test-image-3.png")
 
-        let data = try Self.makeSolidImageData(color: .green)
+        let data = try Self.makeImageData(variant: .green)
         let cachedURL = try XCTUnwrap(fileRepository.generateLocalFilesystemURL(forRemoteURL: url, withChecksum: nil))
         try Self.writeImageData(data, to: cachedURL)
 
@@ -92,27 +92,28 @@ final class FileImageLoaderTests: TestCase {
 
     // We need valid image bytes because FileImageLoader uses URL.asImageAndSize,
     // which relies on platform decoders (UIImage/NSImage). Dummy bytes would fail to decode.
-    private static func makeSolidImageData(color: PlatformColor) throws -> Data {
-        #if os(macOS)
-        let image = NSImage(size: CGSize(width: 2, height: 2))
-        image.lockFocus()
-        color.setFill()
-        NSBezierPath(rect: CGRect(x: 0, y: 0, width: 2, height: 2)).fill()
-        image.unlockFocus()
-
-        let tiffData = try XCTUnwrap(image.tiffRepresentation)
-        let rep = try XCTUnwrap(NSBitmapImageRep(data: tiffData))
-        return try XCTUnwrap(rep.representation(using: .png, properties: [:]))
-        #else
-        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 2, height: 2))
-        let image = renderer.image { _ in
-            color.setFill()
-            UIBezierPath(rect: CGRect(x: 0, y: 0, width: 2, height: 2)).fill()
-        }
-        return try XCTUnwrap(image.pngData())
-        #endif
+    // Use tiny pre-encoded PNGs to keep the test platform-agnostic (watchOS has no UIGraphicsImageRenderer).
+    private static func makeImageData(variant: TestImageVariant) throws -> Data {
+        let base64 = variant.base64PNG
+        return try XCTUnwrap(Data(base64Encoded: base64))
     }
 
+}
+
+private enum TestImageVariant: String {
+    case red
+    case blue
+    case green
+    var base64PNG: String {
+        switch self {
+        case .red:
+            return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGP8z8DAwMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
+        case .blue:
+            return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNgYPjPwMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
+        case .green:
+            return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNg+M/AwMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
+        }
+    }
 }
 
 // MARK: - Private
