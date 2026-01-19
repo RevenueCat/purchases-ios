@@ -7,6 +7,6 @@ on:
 
 jobs:
   claude-review:
-    uses: revenuecat/sdk-github-workflows/.github/workflows/claude-code-review.yml@8c361bfe2c7753fa19a5a6380b7ce35f0ed2953f
+    uses: revenuecat/sdk-github-workflows/.github/workflows/claude-code-review.yml@03ed0eb1bb5061a2aa7c2882e58393b834b44cff
     secrets:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
