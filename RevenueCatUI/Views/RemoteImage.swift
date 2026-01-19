@@ -210,6 +210,14 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
         }
     }
 
+    private var effectiveHighResURL: URL? {
+        Self.selectURL(lightURL: self.url, darkURL: self.darkUrl, for: self.colorScheme)
+    }
+
+    private var effectiveLowResURL: URL? {
+        Self.selectURL(lightURL: self.lowResUrl, darkURL: self.darkLowResUrl ?? self.lowResUrl, for: self.colorScheme)
+    }
+
     var body: some View {
         Group {
             if let imageAndSize = self.localImage {
@@ -240,6 +248,13 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             }
         }
         .transition(self.transition)
+        // Keep file loaders in sync with effective URLs as selection/color scheme changes.
+        .onChangeOf(self.effectiveHighResURL) { newURL in
+            self.highResFileLoader.updateURL(newURL)
+        }
+        .onChangeOf(self.effectiveLowResURL) { newURL in
+            self.lowResFileLoader.updateURL(newURL)
+        }
         // This cancels the previous task when the URL or color scheme change, ensuring a proper update of the UI
         .task(id: "\(self.url)\(self.colorScheme)") {
             #if DEBUG
