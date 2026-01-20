@@ -39,7 +39,7 @@ protocol LargeItemCacheType {
 }
 
 extension FileManager: LargeItemCacheType {
-    
+
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws {
         let directoryURL = url.deletingLastPathComponent()

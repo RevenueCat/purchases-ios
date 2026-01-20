@@ -158,6 +158,7 @@ private extension DiagnosticsFileHandler {
             .appendingPathExtension("jsonl")
     }
 
+    // swiftlint:disable avoid_using_directory_apis_directly
     private static var oldDiagnosticsDirectoryURL: URL? {
         let documentsDirectoryURL: URL?
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
@@ -171,6 +172,7 @@ private extension DiagnosticsFileHandler {
 
         return documentsDirectoryURL?.appendingPathComponent("com.revenuecat", isDirectory: true)
     }
+    // swiftlint:enable avoid_using_directory_apis_directly
 
     private static var oldDiagnosticsFileURL: URL? {
         oldDiagnosticsDirectoryURL?
