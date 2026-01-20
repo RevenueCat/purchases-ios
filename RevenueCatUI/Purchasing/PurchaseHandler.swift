@@ -209,8 +209,6 @@ final class PurchaseHandler: ObservableObject {
     func resetForNewSession() {
         self.sessionPurchaseResult = nil
         self.purchaseResult = nil
-        self.eventData = nil
-        self.hasTrackedClose = false
     }
 
 }
@@ -426,6 +424,13 @@ extension PurchaseHandler {
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
+        // Auto-track close for previous session if it wasn't tracked yet (within same app session).
+        // This handles edge cases where onDisappear or deinit didn't fire (SwiftUI bugs, lifecycle issues).
+        // Note: Does not recover close events across app restarts - those are permanently lost.
+        if self.eventData != nil && !self.hasTrackedClose {
+            self.trackPaywallClose()
+        }
+
         self.eventData = eventData
         self.hasTrackedClose = false
         self.track(.impression(.init(), eventData))

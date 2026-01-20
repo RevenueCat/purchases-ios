@@ -253,6 +253,7 @@ public class PaywallViewController: UIViewController {
     public override func viewDidDisappear(_ animated: Bool) {
         if self.isBeingDismissed && !self.isDismissingForExitOffer {
             self.delegate?.paywallViewControllerWasDismissed?(self)
+            self.purchaseHandler.resetForNewSession()
         }
         super.viewDidDisappear(animated)
     }
