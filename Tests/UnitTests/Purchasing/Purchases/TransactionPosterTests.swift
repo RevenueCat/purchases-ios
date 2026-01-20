@@ -648,8 +648,9 @@ class TransactionPosterTests: TestCase {
         expect(self.localTransactionMetadataStore.invokedStoreMetadataParameters.value?.metadata).toNot(beNil())
     }
 
-    func testPostReceiptDoesNotStoreMetadataForQueueInitiatedTransaction() throws {
+    func testPostReceiptDoesNotStoreMetadataForQueueInitiatedTransactionWithoutOfferingContextOrPaywall() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
+        // Empty transaction data: no presentedOfferingContext or presentedPaywall
         let transactionData = PurchasedTransactionData()
 
         self.receiptFetcher.shouldReturnReceipt = true
@@ -662,8 +663,51 @@ class TransactionPosterTests: TestCase {
         expect(self.localTransactionMetadataStore.invokedStoreMetadata.value) == false
     }
 
-    func testPostReceiptDoesNotStoreMetadataForRestoreInitiatedTransaction() throws {
+    func testPostReceiptStoresMetadataForQueueInitiatedTransactionWithPresentedOfferingContext() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
+        let transactionData = PurchasedTransactionData(
+            presentedOfferingContext: .init(offeringIdentifier: "test_offering")
+        )
+        let initiationSource = PostReceiptSource(isRestore: false, initiationSource: .queue)
+
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let result = try self.handleTransaction(transactionData, postReceiptSource: initiationSource)
+        expect(result).to(beSuccess())
+
+        expect(self.localTransactionMetadataStore.invokedStoreMetadata.value) == true
+        expect(self.localTransactionMetadataStore.invokedStoreMetadataCount.value) == 1
+        expect(self.localTransactionMetadataStore.invokedStoreMetadataParameters.value?.transactionId) ==
+            self.mockTransaction.transactionIdentifier
+    }
+
+    func testPostReceiptStoresMetadataForQueueInitiatedTransactionWithPresentedPaywall() throws {
+        let product = MockSK1Product(mockProductIdentifier: "product")
+        let paywallEvent = PaywallEvent.impression(
+            .init(offeringIdentifier: "test_offering", paywallRevision: 1),
+            .init(id: UUID(), date: Date())
+        )
+        let transactionData = PurchasedTransactionData(presentedPaywall: paywallEvent)
+        let initiationSource = PostReceiptSource(isRestore: false, initiationSource: .queue)
+
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let result = try self.handleTransaction(transactionData, postReceiptSource: initiationSource)
+        expect(result).to(beSuccess())
+
+        expect(self.localTransactionMetadataStore.invokedStoreMetadata.value) == true
+        expect(self.localTransactionMetadataStore.invokedStoreMetadataCount.value) == 1
+        expect(self.localTransactionMetadataStore.invokedStoreMetadataParameters.value?.transactionId) ==
+            self.mockTransaction.transactionIdentifier
+    }
+
+    func testPostReceiptDoesNotStoreMetadataForRestoreInitiatedTransactionWithoutOfferingContextOrPaywall() throws {
+        let product = MockSK1Product(mockProductIdentifier: "product")
+        // Empty transaction data: no presentedOfferingContext or presentedPaywall
         let transactionData = PurchasedTransactionData()
         let initiationSource = PostReceiptSource(isRestore: true, initiationSource: .restore)
 
