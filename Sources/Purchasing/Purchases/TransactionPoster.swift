@@ -321,8 +321,11 @@ extension TransactionPoster {
         let storedTransactionMetadata = self.localTransactionMetadataStore.getMetadata(
             forTransactionId: transaction.transactionIdentifier
         )
-        let shouldStoreMetadata = storedTransactionMetadata == nil &&
-        postReceiptSource.initiationSource == .purchase
+        let shouldStoreMetadata = storedTransactionMetadata == nil && (
+            postReceiptSource.initiationSource == .purchase ||
+            purchasedTransactionData.presentedOfferingContext != nil ||
+            purchasedTransactionData.presentedPaywall != nil
+        )
 
         let shouldClearMetadataOnSuccess = storedTransactionMetadata != nil || shouldStoreMetadata
 
