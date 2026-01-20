@@ -75,5 +75,43 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) { }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(player: player)
+    }
+
+    class Coordinator: NSObject {
+        let player: AVPlayer
+        private var wasPlayingBeforeBackground: Bool = false
+
+        init(player: AVPlayer) {
+            self.player = player
+            super.init()
+
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(appWillResignActive),
+                name: UIApplication.willResignActiveNotification,
+                object: nil
+            )
+
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(appDidBecomeActive),
+                name: UIApplication.didBecomeActiveNotification,
+                object: nil
+            )
+        }
+
+        @objc private func appWillResignActive() {
+            wasPlayingBeforeBackground = player.timeControlStatus == .playing
+        }
+
+        @objc private func appDidBecomeActive() {
+            if wasPlayingBeforeBackground {
+                player.play()
+            }
+        }
+    }
 }
 #endif
