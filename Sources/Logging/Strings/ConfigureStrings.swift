@@ -80,6 +80,8 @@ enum ConfigureStrings {
     case sk2_required
 
     case sk2_invalid_inapp_purchase_key
+
+    case rustAddResult(UInt64)
 }
 
 extension ConfigureStrings: LogMessage {
@@ -210,6 +212,9 @@ extension ConfigureStrings: LogMessage {
             "invalid or not present. This error is thrown only in debug builds; in production, it will fail " +
             "silently. You must configure an In-App Purchase Key. Please see " +
             "https://rev.cat/in-app-purchase-key-configuration for more info."
+
+        case let .rustAddResult(result):
+            return "Rust add(2, 3) = \(result)"
         }
     }
 

@@ -19,6 +19,7 @@
 // swiftlint:disable missing_docs
 
 import Foundation
+import PurchasesCore
 import StoreKit
 
 // MARK: Block definitions
@@ -1817,6 +1818,10 @@ public extension Purchases {
         preferredLocale: String?,
         automaticDeviceIdentifierCollectionEnabled: Bool = true
     ) -> Purchases {
+        // Call Rust add() function to verify integration
+        let rustResult = PurchasesCore.add(left: 2, right: 3)
+        Logger.debug(Strings.configure.rustAddResult(rustResult))
+
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
                   appUserID: appUserID,
