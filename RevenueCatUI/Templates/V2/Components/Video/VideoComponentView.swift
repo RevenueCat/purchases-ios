@@ -156,7 +156,7 @@ struct VideoComponentView: View {
                     .clipped()
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
-                    .onChangeCompat(of: stagedURL) { newValue in
+                    .onChangeOf(stagedURL) { newValue in
                         guard let newURL = newValue, newURL != cachedURL else { return }
                         self.cachedURL = newURL
                         self.imageSource = nil
@@ -202,24 +202,6 @@ struct VideoComponentView: View {
         return parentWidth - totalBorderWidth
             - style.margin.leading - style.margin.trailing
             - style.padding.leading - style.padding.trailing
-    }
-}
-
-// MARK: - onChange Compatibility
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension View {
-    @ViewBuilder
-    func onChangeCompat<V: Equatable>(of value: V, perform action: @escaping (V) -> Void) -> some View {
-        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
-            self.onChange(of: value) { _, newValue in
-                action(newValue)
-            }
-        } else {
-            self.onChange(of: value) { newValue in
-                action(newValue)
-            }
-        }
     }
 }
 
