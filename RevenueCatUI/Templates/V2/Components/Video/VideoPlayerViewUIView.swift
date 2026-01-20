@@ -112,6 +112,10 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
                 player.play()
             }
         }
+
+        deinit {
+            NotificationCenter.default.removeObserver(self)
+        }
     }
 }
 #endif
