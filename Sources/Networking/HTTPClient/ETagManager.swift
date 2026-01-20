@@ -20,19 +20,30 @@ class ETagManager {
     static let eTagResponseHeader = HTTPClient.ResponseHeader.eTag
 
     private let cache: SynchronizedLargeItemCache
-    private let fileManager = FileManager.default
-    private var hasDeletedOldDirectory = false
+    private static let fileManager = FileManager.default
 
-    convenience init() {
-        self.init(largeItemCache: .init(
-            cache: FileManager.default,
+    init() {
+        // Check if new cache directory exists before it's created
+        let newCacheDirectoryExisted = Self.fileManager.cacheDirectoryURL(basePath: Self.cacheBasePath)
+            .map { Self.fileManager.fileExists(atPath: $0.path) } ?? false
+
+        self.cache = .init(
+            cache: Self.fileManager,
             basePath: Self.cacheBasePath
-        ))
+        )
+
+        // Perform one-time cleanup if needed
+        if !newCacheDirectoryExisted {
+            self.deleteOldDirectoryInDocumentsIfNeeded()
+        }
     }
 
+    #if DEBUG
+    /// Only used in testing. In any other case the init above should be used
     init(largeItemCache: SynchronizedLargeItemCache) {
         self.cache = largeItemCache
     }
+    #endif
 
     /// - Parameter withSignatureVerification: whether requests require a signature.
     func eTagHeader(
@@ -133,6 +144,14 @@ extension ETagManager {
         return request.url?.absoluteString.asData.md5String
     }
 
+    static var oldDocumentsDirectoryBasePath: String {
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.revenuecat"
+        return "\(bundleID).revenuecat.etags"
+    }
+
+    static var cacheBasePath: String {
+        return "etags"
+    }
 }
 
 // MARK: - Private
@@ -153,8 +172,6 @@ private extension ETagManager {
     }
 
     func storedETagAndResponse(for request: URLRequest) -> Response? {
-        self.deleteOldETagDirectoryIfNeeded()
-
         if let cacheKey = Self.cacheKey(for: request) {
             return self.cache.value(forKey: cacheKey)
         }
@@ -186,8 +203,6 @@ private extension ETagManager {
     }
 
     func storeIfPossible(_ response: Response, for request: URLRequest) {
-        self.deleteOldETagDirectoryIfNeeded()
-
         if let cacheKey = Self.cacheKey(for: request) {
             Logger.verbose(Strings.etag.storing_response(request, response))
 
@@ -195,17 +210,8 @@ private extension ETagManager {
         }
     }
 
-    static var cacheBasePath: String {
-        return "etags"
-    }
-
-    static var oldDocumentsDirectoryBasePath: String {
-        let bundleID = Bundle.main.bundleIdentifier ?? "com.revenuecat"
-        return "\(bundleID).revenuecat.etags"
-    }
-
     private func oldETagDirectoryURL() -> URL? {
-        guard let documentsURL = fileManager.urls(
+        guard let documentsURL = Self.fileManager.urls(
             for: .documentDirectory,
             in: .userDomainMask
         ).first else {
@@ -218,22 +224,15 @@ private extension ETagManager {
     /*
      We were previously storing these files in the Documents directory
      which may end up in the Files app or the user's Documents directory on macOS.
-     We'll try to delete it if the new file did not exist yet.
+     We'll delete it on initialization if the new cache directory didn't exist yet.
      */
-    private func deleteOldETagDirectoryIfNeeded() {
-        guard !self.hasDeletedOldDirectory else {
-            return
-        }
-
+    private func deleteOldDirectoryInDocumentsIfNeeded() {
         guard let oldDirectoryURL = self.oldETagDirectoryURL(),
-              fileManager.fileExists(atPath: oldDirectoryURL.path) else {
-            self.hasDeletedOldDirectory = true
+              Self.fileManager.fileExists(atPath: oldDirectoryURL.path) else {
             return
         }
 
-        try? fileManager.removeItem(at: oldDirectoryURL)
-
-        self.hasDeletedOldDirectory = true
+        try? Self.fileManager.removeItem(at: oldDirectoryURL)
     }
 
 }

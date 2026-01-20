@@ -146,9 +146,12 @@ extension SynchronizedLargeItemCache {
         }
 
         func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
-            let url = cacheDirectory?.appendingPathComponent(basePath)
-            workingCacheDirectory = url
-            return url
+            workingCacheDirectory = cacheDirectoryURL(basePath: basePath)
+            return workingCacheDirectory
+        }
+
+        func cacheDirectoryURL(basePath: String) -> URL? {
+            cacheDirectory?.appendingPathComponent(basePath)
         }
 
         private func cacheURL(from url: URL) -> URL {

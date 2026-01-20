@@ -6,6 +6,7 @@ import XCTest
 
 class ETagManagerTests: TestCase {
     let baseDirectory = URL(string: "data:mock-dir").unsafelyUnwrapped
+    let fileManager = FileManager.default
 
     private var mockCache: SynchronizedLargeItemCache.MockUnderlyingSynchronizedFileCache!
     private var eTagManager: ETagManager!
@@ -23,6 +24,16 @@ class ETagManagerTests: TestCase {
     override func tearDown() {
         self.mockCache = nil
         self.eTagManager = nil
+
+        // Clean up any test directories created
+        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let oldETagDirectory = documentsURL.appendingPathComponent(ETagManager.oldDocumentsDirectoryBasePath)
+            try? fileManager.removeItem(at: oldETagDirectory)
+        }
+
+        if let cacheURL = DirectoryHelper.baseUrl(for: .cache) {
+            try? fileManager.removeItem(at: cacheURL)
+        }
 
         super.tearDown()
     }
@@ -1076,17 +1087,16 @@ class ETagManagerTests: TestCase {
 
     func testDeletesOldETagCacheDirectoryFromDocuments() throws {
         // Create old ETag cache directory in documents directory
-        let documentsURL = FileManager.default.urls(
+        let documentsURL = fileManager.urls(
             for: .documentDirectory,
             in: .userDomainMask
         )[0]
 
-        let bundleID = Bundle.main.bundleIdentifier ?? "com.revenuecat"
-        let oldETagDirectory = documentsURL.appendingPathComponent("\(bundleID).revenuecat.etags")
+        let oldETagDirectory = documentsURL.appendingPathComponent(ETagManager.oldDocumentsDirectoryBasePath)
         let testFile = oldETagDirectory.appendingPathComponent("test-etag-file")
 
         // Create directory structure
-        try FileManager.default.createDirectory(
+        try fileManager.createDirectory(
             at: oldETagDirectory,
             withIntermediateDirectories: true,
             attributes: nil
@@ -1096,26 +1106,22 @@ class ETagManagerTests: TestCase {
         try "test etag data".write(to: testFile, atomically: true, encoding: .utf8)
 
         // Verify old directory and file exist
-        XCTAssertTrue(FileManager.default.fileExists(atPath: oldETagDirectory.path))
-        XCTAssertTrue(FileManager.default.fileExists(atPath: testFile.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: oldETagDirectory.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: testFile.path))
 
         // Initialize ETagManager using default initializer
         let eTagManager = ETagManager()
         XCTAssertNotNil(eTagManager)
 
-        let request = URLRequest(url: Self.testURL)
-
-        // Reading or writing anything to/from the cache should trigger the deletion of the old files
-        let response = eTagManager.eTagHeader(for: request, withSignatureVerification: true)
-        expect(response[ETagManager.eTagResponseHeader.rawValue]).to(beEmpty())
-
-        // Verify old directory is deleted
-        XCTAssertFalse(FileManager.default.fileExists(atPath: oldETagDirectory.path))
+        // Verify old directory is deleted after init
+        XCTAssertFalse(fileManager.fileExists(atPath: oldETagDirectory.path))
 
         // Verify new directory is created in cache location
-        let newETagDirectory = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("etags"))
+        let newETagDirectory = try XCTUnwrap(
+            fileManager.cacheDirectoryURL(basePath: ETagManager.cacheBasePath)
+        )
 
-        XCTAssertTrue(FileManager.default.fileExists(atPath: newETagDirectory.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: newETagDirectory.path))
     }
 
 }
