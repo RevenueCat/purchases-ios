@@ -20,25 +20,6 @@ struct TransitionModifier: ViewModifier {
 
     @State var isPresented: Bool = false
 
-    /// The animation to use without the delay (delay is handled separately)
-    private var animationWithoutDelay: SwiftUI.Animation {
-        guard let animation = transition.animation else {
-            return .default
-        }
-        switch animation.type {
-        case .easeIn:
-            return .easeIn(duration: animation.msDuration.asSeconds)
-        case .easeInOut:
-            return .easeInOut(duration: animation.msDuration.asSeconds)
-        case .easeOut:
-            return .easeOut(duration: animation.msDuration.asSeconds)
-        case .linear:
-            return .linear(duration: animation.msDuration.asSeconds)
-        @unknown default:
-            return .default
-        }
-    }
-
     func body(content: Content) -> some View {
         ZStack {
             if isPresented {
@@ -66,7 +47,7 @@ struct TransitionModifier: ViewModifier {
             if delayMs > 0 {
                 try? await Task.sleep(nanoseconds: UInt64(delayMs) * 1_000_000)
             }
-            withAnimation(animationWithoutDelay) {
+            withAnimation(transition.animation?.toAnimation ?? .default) {
                 isPresented = true
             }
         }
@@ -102,6 +83,24 @@ extension PaywallComponent.Transition {
         }
     }
 
+}
+
+extension PaywallComponent.Animation {
+    /// The animation without delay (delay is handled separately via Task.sleep)
+    var toAnimation: SwiftUI.Animation {
+        switch self.type {
+        case .easeIn:
+            return .easeIn(duration: msDuration.asSeconds)
+        case .easeInOut:
+            return .easeInOut(duration: msDuration.asSeconds)
+        case .easeOut:
+            return .easeOut(duration: msDuration.asSeconds)
+        case .linear:
+            return .linear(duration: msDuration.asSeconds)
+        @unknown default:
+            return .default
+        }
+    }
 }
 
 private extension Int {
