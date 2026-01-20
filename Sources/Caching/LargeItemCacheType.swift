@@ -31,16 +31,15 @@ protocol LargeItemCacheType {
     /// delete data at url
     func remove(_ url: URL) throws
 
+    /// Returns the cache directory URL for the given base path
+    func cacheDirectoryURL(basePath: String) -> URL?
+
     /// Creates a directory in the cache from a base path
     func createCacheDirectoryIfNeeded(basePath: String) -> URL?
 }
 
 extension FileManager: LargeItemCacheType {
-    /// A URL for a cache directory if one is present
-    private var cacheDirectory: URL? {
-        return DirectoryHelper.baseUrl(for: .cache)
-    }
-
+    
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws {
         let directoryURL = url.deletingLastPathComponent()
@@ -122,25 +121,29 @@ extension FileManager: LargeItemCacheType {
         }
     }
 
+    /// Returns the cache directory URL for the given base path
+    func cacheDirectoryURL(basePath: String) -> URL? {
+        DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent(basePath)
+    }
+
     /// Creates a directory in the cache from a base path
     func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
-        guard let cacheDirectory else {
+        guard let cacheDirectoryURL = cacheDirectoryURL(basePath: basePath) else {
             return nil
         }
 
-        let path = cacheDirectory.appendingPathComponent(basePath)
         do {
             try createDirectory(
-                at: path,
+                at: cacheDirectoryURL,
                 withIntermediateDirectories: true,
                 attributes: nil
             )
         } catch {
-            let message = Strings.fileRepository.failedToCreateCacheDirectory(path)
+            let message = Strings.fileRepository.failedToCreateCacheDirectory(cacheDirectoryURL)
             Logger.error(message)
         }
 
-        return path
+        return cacheDirectoryURL
     }
 
     /// Load data from url

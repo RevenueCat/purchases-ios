@@ -65,7 +65,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
     }
 
     #if DEBUG
-    /// Only used in testing. 
+    /// Only used in testing. In any other case the init above should be used
     init(_ fileHandler: FileHandlerType) {
         self.fileHandler = fileHandler
     }
