@@ -50,6 +50,14 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         }
 
         avPlayer.isMuted = muteAudio
+        avPlayer.preventsDisplaySleepDuringVideoPlayback = false
+        avPlayer.allowsExternalPlayback = false
+
+        try? AVAudioSession.sharedInstance().setCategory(
+            .ambient,
+            mode: .default,
+            options: [.mixWithOthers]
+        )
 
         self.player = avPlayer
 
@@ -63,6 +71,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         controller.player = player
         controller.view.backgroundColor = .clear
         controller.showsPlaybackControls = showControls
+        controller.allowsPictureInPicturePlayback = false
         DispatchQueue.main.async {
             switch contentMode {
             case .fit:
