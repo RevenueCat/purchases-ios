@@ -97,7 +97,7 @@ class TransactionPosterTests: TestCase {
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
         ) == self.mockTransaction.transactionIdentifier
 
-        // sdkOriginated is true because it comes from .purchase
+        // sdkOriginated is true because initiationSource is .purchase
         expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
 
         expect(self.mockTransaction.finishInvoked) == true
@@ -498,10 +498,13 @@ class TransactionPosterTests: TestCase {
                 targetingContext: nil
             )
         )
+        // sdkOriginated is false because this represents a non-SDK purchase
+        // (e.g., a paywall purchase with purchasesAreCompletedBy: .myApp)
         let storedMetadata = LocalTransactionMetadata(
             productData: storedProductData,
             transactionData: storedTransactionData,
-            originalPurchasesAreCompletedBy: .myApp
+            originalPurchasesAreCompletedBy: .myApp,
+            sdkOriginated: false
         )
 
         // Pre-store metadata
@@ -540,8 +543,8 @@ class TransactionPosterTests: TestCase {
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
         ) == self.mockTransaction.transactionIdentifier
 
-        // sdkOriginated is true because stored metadata existed
-        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
+        // sdkOriginated is false because the stored metadata had sdkOriginated = false
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
     }
 
     func testPostReceiptFromSyncedSK2TransactionClearsMetadataOnSuccess() throws {
@@ -561,7 +564,8 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata
@@ -721,7 +725,8 @@ class TransactionPosterTests: TestCase {
         let storedMetadata = LocalTransactionMetadata(
             productData: storedProductData,
             transactionData: storedTransactionData,
-            originalPurchasesAreCompletedBy: .myApp
+            originalPurchasesAreCompletedBy: .myApp,
+            sdkOriginated: false
         )
 
         // Pre-store metadata
@@ -832,7 +837,8 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata
@@ -873,7 +879,8 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata
@@ -914,7 +921,8 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata (simulating it was stored from a previous purchase attempt)
@@ -957,7 +965,8 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata (simulating it was stored from a previous purchase attempt)
