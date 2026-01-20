@@ -1466,7 +1466,17 @@
 
         },
         "revision" : 2,
-        "template_name" : "components"
+        "template_name" : "components",
+        "zero_decimal_place_countries" : {
+          "apple" : [
+            "TWN",
+            "KAZ",
+            "MEX",
+            "PHL",
+            "THA",
+            "IND"
+          ]
+        }
       }
     },
     {
