@@ -22,18 +22,12 @@ final class FileImageLoader: ObservableObject {
     let fileRepository: FileRepository
     private(set) var url: URL?
 
-    private var loadTask: Task<Void, Never>?
-
     @MainActor
     init(fileRepository: FileRepository, url: URL?) {
         self.fileRepository = fileRepository
         self.url = url
 
         self.loadFromCache(url: url)
-    }
-
-    deinit {
-        loadTask?.cancel()
     }
 
     typealias Value = (image: Image, size: CGSize)
@@ -72,44 +66,30 @@ final class FileImageLoader: ObservableObject {
         self.loadFromCache(url: url)
     }
 
-    /// Start loading using the loader's internal task management.
-    /// The loader manages its own task lifecycle.
-    /// Use `updateURL(_:)` to change the URL before calling this method.
-    @MainActor
-    func startLoading() {
-        guard loadTask == nil, result == nil else { return }
-        guard let url = self.url else { return }
-
-        // Capture only what we need - avoid capturing self during the await
-        let fileRepository = self.fileRepository
-
-        loadTask = Task { [weak self] in
-            guard !Task.isCancelled else { return }
-
-            do {
-                // Don't hold strong reference to self during network await
-                let cachedURL = try await fileRepository.generateOrGetCachedFileURL(
-                    for: url, withChecksum: nil
-                )
-
-                guard !Task.isCancelled else { return }
-
-                let imageInfo = cachedURL.asImageAndSize
-
-                await MainActor.run { [weak self] in
-                    guard !Task.isCancelled else { return }
-                    self?.result = imageInfo
-                }
-            } catch {
-                Logger.debug(Strings.image_result(.failure(.responseError(error as NSError))))
-            }
+    func load() async {
+        if await self.result != nil {
+            return
         }
-    }
 
-    /// Cancel any ongoing loading
-    func cancelLoading() {
-        loadTask?.cancel()
-        loadTask = nil
+        guard let url = self.url else {
+            return
+        }
+
+        do {
+            let imageInfo = try await self.fileRepository.generateOrGetCachedFileURL(
+                for: url, withChecksum: nil
+            ).asImageAndSize
+
+            guard !Task.isCancelled else {
+                return
+            }
+
+            await MainActor.run {
+                self.result = imageInfo
+            }
+        } catch {
+            Logger.warning(Strings.image_failed_to_load(url, error))
+        }
     }
 
 }

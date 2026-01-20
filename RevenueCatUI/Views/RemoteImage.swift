@@ -120,6 +120,18 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
     @StateObject
     private var lowResFileLoader: FileImageLoader
 
+    // Legacy method of loading images
+
+    @StateObject
+    private var highResLoader: ImageLoader = .init()
+
+    @StateObject
+    private var lowResLoader: ImageLoader = .init()
+
+    var fetchLowRes: Bool {
+        lowResUrl != nil
+    }
+
     private var transition: AnyTransition {
         #if DEBUG
         if ProcessInfo.isRunningRevenueCatTests && self.url.isFileURL {
@@ -214,6 +226,19 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
                 content(value.0, value.1)
             } else if let value = lowResFileLoader.result {
                 content(value.0, value.1)
+            // Legacy loaders used by paywalls v1
+            } else if case let .success(result) = highResLoader.result {
+                content(result.image, result.size)
+            } else if case let .success(result) = lowResLoader.result {
+                content(result.image, result.size)
+            } else if case let .failure(highResError) = highResLoader.result {
+                if !fetchLowRes {
+                    emptyView(error: highResError)
+                } else if case .failure = lowResLoader.result {
+                    emptyView(error: highResError)
+                } else {
+                    emptyView(error: nil)
+                }
             } else {
                 if let expectedSize = self.expectedSize {
                     content(Image.clearImage(size: expectedSize), expectedSize)
@@ -240,15 +265,41 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             }
             #endif
 
-            // Start loading using the loader's internal task management
-            // This avoids any task capturing the loaders
-            highResFileLoader.startLoading()
-            lowResFileLoader.startLoading()
+            guard self.highResFileLoader.result == nil else {
+                return
+            }
+
+            async let high: Void = await self.highResFileLoader.load()
+            async let low: Void = await self.lowResFileLoader.load()
+            _ = await (high, low)
+
+            // Fallback to legacy ImageLoader if FileImageLoader didn't get a result
+            if self.highResFileLoader.result == nil {
+                switch self.colorScheme {
+                case .dark:
+                    await loadImages(
+                        url: self.darkUrl ?? self.url,
+                        lowResUrl: self.darkLowResUrl ?? self.lowResUrl
+                    )
+                case .light:
+                    fallthrough
+                @unknown default:
+                    await loadImages(
+                        url: self.url,
+                        lowResUrl: self.lowResUrl
+                    )
+                }
+            }
         }
-        .onDisappear {
-            // Cancel loading when view disappears
-            highResFileLoader.cancelLoading()
-            lowResFileLoader.cancelLoading()
+    }
+
+    private func loadImages(url: URL, lowResUrl: URL?) async {
+        if fetchLowRes, let lowResLoc = lowResUrl {
+            async let lowResLoad: Void = lowResLoader.load(url: lowResLoc)
+            async let highResLoad: Void = highResLoader.load(url: url)
+            _ = await (lowResLoad, highResLoad)
+        } else {
+            await highResLoader.load(url: url)
         }
     }
 
