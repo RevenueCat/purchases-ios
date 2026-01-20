@@ -70,7 +70,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(player: player, shouldAutoPlay: shouldAutoPlay)
+        Coordinator(player: player)
     }
 
     func makeUIViewController(context: Context) -> AVPlayerViewController {
@@ -97,12 +97,19 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
 
     class Coordinator: NSObject {
         let player: AVPlayer
-        let shouldAutoPlay: Bool
+        private var wasPlayingBeforeBackground = false
 
-        init(player: AVPlayer, shouldAutoPlay: Bool) {
+        init(player: AVPlayer) {
             self.player = player
-            self.shouldAutoPlay = shouldAutoPlay
             super.init()
+
+            // Track playing state before app goes to background
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(appWillResignActive),
+                name: UIApplication.willResignActiveNotification,
+                object: nil
+            )
 
             // Resume playback when app becomes active (after screen unlock or returning from background)
             NotificationCenter.default.addObserver(
@@ -113,8 +120,12 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
             )
         }
 
+        @objc private func appWillResignActive() {
+            wasPlayingBeforeBackground = player.timeControlStatus == .playing
+        }
+
         @objc private func appDidBecomeActive() {
-            if shouldAutoPlay {
+            if wasPlayingBeforeBackground {
                 player.play()
             }
         }
