@@ -1,8 +1,8 @@
 ## RevenueCatUI SDK
 ### Paywallv2
-#### ✨ New Features
-* Add Basque and Serbian (Latin and Cyrillic) support for paywalls (#5995) via Rosie Watson (@RosieWatson)
+#### 🐞 Bugfixes
+* fix images not being updated in paywalls v2 (#6101) via Will Taylor (@fire-at-will)
 
 ### 🔄 Other Changes
-* Add public initializer of `StoreTransaction` for unit tests (#6079) via Rick (@rickvdl)
-* Added a public initializer to the CustomerInfo class (#6075) via Rick (@rickvdl)
+* Update CI to Xcode 26.2 (#6088) via Antonio Pallares (@ajpallares)
+* Add loading of paywall to paywall tester (#6074) via Cesar de la Vega (@vegaro)
