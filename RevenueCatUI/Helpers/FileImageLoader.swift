@@ -20,7 +20,7 @@ import SwiftUI
 final class FileImageLoader: ObservableObject {
 
     let fileRepository: FileRepository
-    let url: URL?
+    private(set) var url: URL?
 
     private var loadTask: Task<Void, Never>?
 
@@ -56,50 +56,29 @@ final class FileImageLoader: ObservableObject {
     @Published @MainActor
     private(set) var result: Value?
 
+    @MainActor
     private(set) var wasLoadedFromCache: Bool = false
 
-    func load() async {
-        if await self.result != nil {
+    @MainActor
+    func updateURL(_ url: URL?) {
+        guard url != self.url else {
             return
         }
 
-        guard let url = self.url else {
-            return
-        }
-
-        do {
-            let imageInfo = try await self.fileRepository.generateOrGetCachedFileURL(
-                for: url, withChecksum: nil
-            ).asImageAndSize
-
-            guard !Task.isCancelled else {
-                return
-            }
-
-            await MainActor.run {
-                self.result = imageInfo
-            }
-        } catch {
-            Logger.warning(Strings.image_failed_to_load(url, error))
-        }
+        // Reset cached state when the URL changes so callers don't need to recreate the loader.
+        self.url = url
+        self.wasLoadedFromCache = false
+        self.result = nil
+        self.loadFromCache(url: url)
     }
 
-    /// Start loading without requiring external task management.
+    /// Start loading using the loader's internal task management.
     /// The loader manages its own task lifecycle.
-    /// - Parameter url: Optional URL override. If provided and different from current,
-    /// cancels current loading and starts new.
+    /// Use `updateURL(_:)` to change the URL before calling this method.
     @MainActor
-    func startLoading(url: URL? = nil) {
-        let targetUrl = url ?? self.url
-
-        // If a different URL is requested, cancel current and reload
-        if let url = url, url != self.url {
-            cancelLoading()
-            result = nil
-        }
-
+    func startLoading() {
         guard loadTask == nil, result == nil else { return }
-        guard let targetUrl = targetUrl else { return }
+        guard let url = self.url else { return }
 
         // Capture only what we need - avoid capturing self during the await
         let fileRepository = self.fileRepository
@@ -110,7 +89,7 @@ final class FileImageLoader: ObservableObject {
             do {
                 // Don't hold strong reference to self during network await
                 let cachedURL = try await fileRepository.generateOrGetCachedFileURL(
-                    for: targetUrl, withChecksum: nil
+                    for: url, withChecksum: nil
                 )
 
                 guard !Task.isCancelled else { return }

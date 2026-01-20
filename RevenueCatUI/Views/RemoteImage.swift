@@ -198,6 +198,14 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
         }
     }
 
+    private var effectiveHighResURL: URL? {
+        Self.selectURL(lightURL: self.url, darkURL: self.darkUrl, for: self.colorScheme)
+    }
+
+    private var effectiveLowResURL: URL? {
+        Self.selectURL(lightURL: self.lowResUrl, darkURL: self.darkLowResUrl ?? self.lowResUrl, for: self.colorScheme)
+    }
+
     var body: some View {
         Group {
             if let imageAndSize = self.localImage {
@@ -215,7 +223,15 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             }
         }
         .transition(self.transition)
-        .onAppear {
+        // Keep file loaders in sync with effective URLs as selection/color scheme changes.
+        .onChangeOf(self.effectiveHighResURL) { newURL in
+            self.highResFileLoader.updateURL(newURL)
+        }
+        .onChangeOf(self.effectiveLowResURL) { newURL in
+            self.lowResFileLoader.updateURL(newURL)
+        }
+        // This cancels the previous task when the URL or color scheme change, ensuring a proper update of the UI
+        .task(id: "\(self.url)\(self.colorScheme)") {
             #if DEBUG
             // Don't attempt to load if local image
             // This is used for paywall screenshot validation
@@ -233,22 +249,6 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             // Cancel loading when view disappears
             highResFileLoader.cancelLoading()
             lowResFileLoader.cancelLoading()
-        }
-        .onChange(of: colorScheme) { newColorScheme in
-            // Reload with correct URL when color scheme changes
-            let highResURL = Self.selectURL(lightURL: url, darkURL: darkUrl ?? self.url, for: newColorScheme)
-            let lowResURL = Self.selectURL(
-                lightURL: lowResUrl,
-                darkURL: darkLowResUrl ?? lowResUrl,
-                for: newColorScheme
-            )
-
-            if let url = highResURL {
-                highResFileLoader.startLoading(url: url)
-            }
-            if let url = lowResURL {
-                lowResFileLoader.startLoading(url: url)
-            }
         }
     }
 
