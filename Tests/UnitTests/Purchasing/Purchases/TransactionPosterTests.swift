@@ -685,10 +685,19 @@ class TransactionPosterTests: TestCase {
 
     func testPostReceiptStoresMetadataForQueueInitiatedTransactionWithPresentedPaywall() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
-        let paywallEvent = PaywallEvent.impression(
-            .init(offeringIdentifier: "test_offering", paywallRevision: 1),
-            .init(id: UUID(), date: Date())
+        let paywallEventCreationData = PaywallEvent.CreationData(
+            id: UUID(),
+            date: Date()
         )
+        let paywallEventData = PaywallEvent.Data(
+            offeringIdentifier: "test_offering",
+            paywallRevision: 1,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false
+        )
+        let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
         let transactionData = PurchasedTransactionData(presentedPaywall: paywallEvent)
         let initiationSource = PostReceiptSource(isRestore: false, initiationSource: .queue)
 
