@@ -333,10 +333,9 @@ extension TransactionPoster {
         let effectivePurchasesAreCompletedBy = storedTransactionMetadata?.originalPurchasesAreCompletedBy ??
         self.purchasesAreCompletedBy
 
-        // sdkOriginated indicates whether this purchase was initiated by the SDK.
+        // sdkOriginated indicates whether this purchase was initiated by the SDK (stored metadata takes precedence):
         // - true when the purchase was initiated via SDK's purchase() methods (initiationSource == .purchase)
         // - false when the purchase was detected in the queue but triggered outside the SDK
-        // If we have stored metadata, use its value; otherwise compute from initiation source.
         let sdkOriginated = storedTransactionMetadata?.sdkOriginated ??
             (postReceiptSource.initiationSource == .purchase)
 

@@ -152,10 +152,7 @@ extension PostReceiptDataOperation {
         let appTransaction: String?
         let associatedTransactionId: String?
 
-        /// When `true`, indicates that this specific app installation originated the transaction (i.e., the purchase
-        /// was initiated on this device and metadata was stored locally). When `false`, the transaction was detected
-        /// but not originated by this installation (e.g., it may have been made on another device with the same app
-        /// or even outside of the app).
+        /// Indicates whether this purchase was initiated via the SDK's `purchase()` methods.
         let sdkOriginated: Bool
         let metadata: [String: String]?
     }
