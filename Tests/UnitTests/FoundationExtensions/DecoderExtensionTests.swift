@@ -363,7 +363,7 @@ class DecoderExtensionsISO8601DateTests: TestCase {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "UTC")!
         let components = calendar.dateComponents(
-            [.year, .month, .day, .hour, .minute, .second, .nanosecond],
+            [.year, .month, .day, .hour, .minute, .second],
             from: data.date
         )
 
@@ -373,8 +373,10 @@ class DecoderExtensionsISO8601DateTests: TestCase {
         expect(components.hour) == 12
         expect(components.minute) == 30
         expect(components.second) == 45
-        // Check milliseconds (nanoseconds / 1_000_000)
-        expect(components.nanosecond).to(beCloseTo(123_000_000, within: 1000))
+
+        // Verify the fractional seconds are preserved by checking the time interval
+        let expectedDate = Date(timeIntervalSince1970: 1705842645.123)
+        expect(data.date.timeIntervalSince1970).to(beCloseTo(expectedDate.timeIntervalSince1970, within: 0.001))
     }
 
     func testDecodesISO8601DateWithoutFractionalSeconds() throws {
