@@ -95,7 +95,6 @@ extension JSONDecoder {
         return formatter
     }()
 
-
     static let `default`: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase

@@ -285,19 +285,31 @@ extension VariablesV2 {
             }
         case .productPricePerDay:
             if let package {
-                return self.productPricePerDay(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+                return self.productPricePerDay(
+                    package: package,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
             }
         case .productPricePerWeek:
             if let package {
-                return self.productPricePerWeek(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+                return self.productPricePerWeek(
+                    package: package,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
             }
         case .productPricePerMonth:
             if let package {
-                return self.productPricePerMonth(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+                return self.productPricePerMonth(
+                    package: package,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
             }
         case .productPricePerYear:
             if let package {
-                return self.productPricePerYear(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+                return self.productPricePerYear(
+                    package: package,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
             }
         case .productPeriod:
             if let package {
