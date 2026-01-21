@@ -1118,7 +1118,7 @@ class ETagManagerTests: TestCase {
 
         // Verify new directory is created in cache location
         let newETagDirectory = try XCTUnwrap(
-            fileManager.cacheDirectoryURL(basePath: ETagManager.cacheBasePath)
+            DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent(ETagManager.cacheBasePath)
         )
 
         XCTAssertTrue(fileManager.fileExists(atPath: newETagDirectory.path))

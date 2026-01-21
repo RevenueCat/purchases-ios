@@ -23,19 +23,13 @@ class ETagManager {
     private static let fileManager = FileManager.default
 
     init() {
-        // Check if new cache directory exists before it's created
-        let newCacheDirectoryExisted = Self.fileManager.cacheDirectoryURL(basePath: Self.cacheBasePath)
-            .map { Self.fileManager.fileExists(atPath: $0.path) } ?? false
-
         self.cache = .init(
             cache: Self.fileManager,
             basePath: Self.cacheBasePath
         )
 
         // Perform one-time cleanup if needed
-        if !newCacheDirectoryExisted {
-            self.deleteOldDirectoryInDocumentsIfNeeded()
-        }
+        self.deleteOldDirectoryInDocumentsIfNeeded()
     }
 
     #if DEBUG
@@ -224,7 +218,7 @@ private extension ETagManager {
     /*
      We were previously storing these files in the Documents directory
      which may end up in the Files app or the user's Documents directory on macOS.
-     We'll delete it on initialization if the new cache directory didn't exist yet.
+     We'll delete it on initialization if it exists.
      */
     private func deleteOldDirectoryInDocumentsIfNeeded() {
         guard let oldDirectoryURL = self.oldETagDirectoryURL(),

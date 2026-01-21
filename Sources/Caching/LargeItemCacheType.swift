@@ -31,9 +31,6 @@ protocol LargeItemCacheType {
     /// delete data at url
     func remove(_ url: URL) throws
 
-    /// Returns the cache directory URL for the given base path
-    func cacheDirectoryURL(basePath: String) -> URL?
-
     /// Creates a directory in the cache from a base path
     func createCacheDirectoryIfNeeded(basePath: String) -> URL?
 }
@@ -121,29 +118,25 @@ extension FileManager: LargeItemCacheType {
         }
     }
 
-    /// Returns the cache directory URL for the given base path
-    func cacheDirectoryURL(basePath: String) -> URL? {
-        DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent(basePath)
-    }
-
     /// Creates a directory in the cache from a base path
     func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
-        guard let cacheDirectoryURL = cacheDirectoryURL(basePath: basePath) else {
+        guard let cacheDirectoryBaseURL = DirectoryHelper.baseUrl(for: .cache) else {
             return nil
         }
 
+        let directoryURL = cacheDirectoryBaseURL.appendingPathComponent(basePath)
         do {
             try createDirectory(
-                at: cacheDirectoryURL,
+                at: directoryURL,
                 withIntermediateDirectories: true,
                 attributes: nil
             )
         } catch {
-            let message = Strings.fileRepository.failedToCreateCacheDirectory(cacheDirectoryURL)
+            let message = Strings.fileRepository.failedToCreateCacheDirectory(directoryURL)
             Logger.error(message)
         }
 
-        return cacheDirectoryURL
+        return directoryURL
     }
 
     /// Load data from url
