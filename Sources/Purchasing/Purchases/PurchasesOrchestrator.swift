@@ -767,11 +767,22 @@ final class PurchasesOrchestrator {
 
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
             // This detects if `Product.PurchaseResult.userCancelled` is true.
-            let (userCancelled, transaction) = try await self.storeKit2TransactionListener
+            let handleResult = try await self.storeKit2TransactionListener
                 .handle(purchaseResult: result, fromTransactionUpdate: false)
 
-            if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
-                throw ErrorUtils.purchaseCancelledError()
+            let transaction: StoreTransaction?
+            let userCancelled: Bool
+
+            switch handleResult {
+            case .userCancelled:
+                userCancelled = true
+                transaction = nil
+                if self.systemInfo.dangerousSettings.customEntitlementComputation {
+                    throw ErrorUtils.purchaseCancelledError()
+                }
+            case let .successfulVerifiedTransaction(verifiedTransaction):
+                userCancelled = false
+                transaction = verifiedTransaction
             }
 
             let customerInfo: CustomerInfo
@@ -2164,24 +2175,19 @@ extension PurchasesOrchestrator {
             )
         }
 
-        let (userCancelled, transaction) = try await self.storeKit2TransactionListener.handle(
+        let handleResult = try await self.storeKit2TransactionListener.handle(
             purchaseResult: purchaseResult,
             fromTransactionUpdate: false
         )
 
-        if userCancelled {
+        switch handleResult {
+        case .userCancelled:
             return nil
+        case let .successfulVerifiedTransaction(transaction):
+            // Using .queue as initiation source since this is an externally-initiated purchase recorded by the developer
+            _ = try await self.handlePurchasedTransaction(transaction, .queue, nil)
+            return transaction
         }
-
-        guard let transaction = transaction else {
-            // Transaction is nil for pending purchases
-            return nil
-        }
-
-        // Using .queue as initiation source since this is an externally-initiated purchase recorded by the developer
-        _ = try await self.handlePurchasedTransaction(transaction, .queue, nil)
-
-        return transaction
     }
 
 }
