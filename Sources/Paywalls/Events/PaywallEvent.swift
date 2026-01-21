@@ -42,6 +42,17 @@ public enum PaywallEvent: FeatureEvent {
         return nil
     }
 
+    /// `purchaseInitiated` and `purchaseError` events are only used locally for attribution for now.
+    /// They should not be sent to the backend until the backend supports them.
+    var shouldStoreEvent: Bool {
+        switch self {
+        case .purchaseInitiated, .purchaseError:
+            return false
+        case .impression, .cancel, .close, .exitOffer:
+            return true
+        }
+    }
+
     /// A `PaywallView` was displayed.
     case impression(CreationData, Data)
 
