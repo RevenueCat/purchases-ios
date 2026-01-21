@@ -462,6 +462,7 @@ extension VariablesV2 {
             return self.countdownValue(countdownTime: countdownTime, format: .secondsWithoutZero)
         }
 
+        Logger.debug("Variable '\(self.rawValue)' returned empty string due to missing package context")
         return ""
     }
 

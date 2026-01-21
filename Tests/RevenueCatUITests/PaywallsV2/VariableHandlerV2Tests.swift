@@ -842,6 +842,63 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
         expect(resultWithoutZeroDecimal).to(equal("$6.99"))
     }
 
+    // MARK: - Optional Package Tests
+
+    func testProductVariablesWithNilPackageReturnEmptyString() {
+        // Test product.price with nil package
+        let priceResult = variableHandler.processVariables(
+            in: "{{ product.price }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(priceResult).to(equal(""))
+
+        // Test product.period with nil package
+        let periodResult = variableHandler.processVariables(
+            in: "{{ product.period }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(periodResult).to(equal(""))
+
+        // Test product.price_per_month with nil package
+        let pricePerMonthResult = variableHandler.processVariables(
+            in: "{{ product.price_per_month }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(pricePerMonthResult).to(equal(""))
+    }
+
+    func testNonProductVariablesWorkWithNilPackage() {
+        // Test product.currency_symbol (doesn't require package)
+        let currencySymbolResult = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(currencySymbolResult).to(equal("$"))
+
+        // Test product.relative_discount (doesn't require package)
+        let discountHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: 0.25,
+            showZeroDecimalPlacePrices: false
+        )
+        let discountResult = discountHandler.processVariables(
+            in: "{{ product.relative_discount }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(discountResult).to(equal("25%"))
+    }
+
 }
 
 #endif

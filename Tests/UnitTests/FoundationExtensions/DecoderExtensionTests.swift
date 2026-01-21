@@ -350,6 +350,60 @@ class DecoderExtensionsNonEmptyDictionaryTests: TestCase {
 
 }
 
+class DecoderExtensionsISO8601DateTests: TestCase {
+
+    private struct DataWithDate: Codable, Equatable {
+        let date: Date
+    }
+
+    func testDecodesISO8601DateWithFractionalSeconds() throws {
+        let json = "{\"date\": \"2024-01-21T12:30:45.123Z\"}"
+        let data = try DataWithDate.decode(json)
+
+        let calendar = Calendar.current
+        let components = calendar.dateComponents(
+            [.year, .month, .day, .hour, .minute, .second, .nanosecond],
+            from: data.date
+        )
+
+        expect(components.year) == 2024
+        expect(components.month) == 1
+        expect(components.day) == 21
+        expect(components.hour) == 12
+        expect(components.minute) == 30
+        expect(components.second) == 45
+        // Check milliseconds (nanoseconds / 1_000_000)
+        expect(components.nanosecond).to(beCloseTo(123_000_000, within: 1000))
+    }
+
+    func testDecodesISO8601DateWithoutFractionalSeconds() throws {
+        let json = "{\"date\": \"2024-01-21T12:30:45Z\"}"
+        let data = try DataWithDate.decode(json)
+
+        let calendar = Calendar.current
+        let components = calendar.dateComponents(
+            [.year, .month, .day, .hour, .minute, .second],
+            from: data.date
+        )
+
+        expect(components.year) == 2024
+        expect(components.month) == 1
+        expect(components.day) == 21
+        expect(components.hour) == 12
+        expect(components.minute) == 30
+        expect(components.second) == 45
+    }
+
+    func testThrowsForInvalidISO8601Date() throws {
+        let json = "{\"date\": \"not-a-date\"}"
+
+        expect {
+            try DataWithDate.decode(json)
+        }.to(throwError(errorType: DecodingError.self))
+    }
+
+}
+
 // MARK: - Extensions
 
 extension Decodable where Self: Encodable {
