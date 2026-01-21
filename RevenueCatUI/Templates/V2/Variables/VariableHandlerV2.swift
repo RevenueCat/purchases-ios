@@ -41,7 +41,7 @@ struct VariableHandlerV2 {
 
     func processVariables(
         in text: String,
-        with package: Package,
+        with package: Package?,
         locale: Locale,
         localizations: [String: String],
         promoOffer: PromotionalOffer? = nil,
@@ -243,7 +243,7 @@ extension VariablesV2 {
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length function_parameter_count
     func process(
-        package: Package,
+        package: Package?,
         locale: Locale,
         localizations: [String: String],
         discountRelativeToMostExpensivePerMonth: Double?,
@@ -254,118 +254,184 @@ extension VariablesV2 {
     ) -> String {
         switch self {
         case .productCurrencyCode:
-            return self.productCurrencyCode(package: package)
+            if let package {
+                return self.productCurrencyCode(package: package)
+            }
         case .productCurrencySymbol:
             return self.productCurrencySymbol(locale: locale)
         case .productPeriodly:
-            return self.productPeriodly(package: package, localizations: localizations)
+            if let package {
+                return self.productPeriodly(package: package, localizations: localizations)
+            }
         case .productPrice:
-            return self.productPrice(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            if let package {
+                return self.productPrice(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            }
         case .productPricePerPeriod:
-            return self.productPricePerPeriod(
-                package: package,
-                localizations: localizations,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-            )
+            if let package {
+                return self.productPricePerPeriod(
+                    package: package,
+                    localizations: localizations,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+            }
         case .productPricePerPeriodAbbreviated:
-            return self.productPricePerPeriodAbbreviated(
-                package: package,
-                localizations: localizations,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-            )
+            if let package {
+                return self.productPricePerPeriodAbbreviated(
+                    package: package,
+                    localizations: localizations,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+            }
         case .productPricePerDay:
-            return self.productPricePerDay(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            if let package {
+                return self.productPricePerDay(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            }
         case .productPricePerWeek:
-            return self.productPricePerWeek(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            if let package {
+                return self.productPricePerWeek(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            }
         case .productPricePerMonth:
-            return self.productPricePerMonth(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            if let package {
+                return self.productPricePerMonth(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            }
         case .productPricePerYear:
-            return self.productPricePerYear(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            if let package {
+                return self.productPricePerYear(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            }
         case .productPeriod:
-            return self.productPeriod(package: package, localizations: localizations)
+            if let package {
+                return self.productPeriod(package: package, localizations: localizations)
+            }
         case .productPeriodAbbreviated:
-            return self.productPeriodAbbreviated(package: package, localizations: localizations)
+            if let package {
+                return self.productPeriodAbbreviated(package: package, localizations: localizations)
+            }
         case .productPeriodInDays:
-            return self.productPeriodInDays(package: package)
+            if let package {
+                return self.productPeriodInDays(package: package)
+            }
         case .productPeriodInWeeks:
-            return self.productPeriodInWeeks(package: package)
+            if let package {
+                return self.productPeriodInWeeks(package: package)
+            }
         case .productPeriodInMonths:
-            return self.productPeriodInMonths(package: package)
+            if let package {
+                return self.productPeriodInMonths(package: package)
+            }
         case .productPeriodInYears:
-            return self.productPeriodInYears(package: package)
+            if let package {
+                return self.productPeriodInYears(package: package)
+            }
         case .productPeriodWithUnit:
-            return self.productPeriodWithUnit(package: package, localizations: localizations)
+            if let package {
+                return self.productPeriodWithUnit(package: package, localizations: localizations)
+            }
         case .productOfferPrice:
-            return self.productOfferPrice(
-                package: package,
-                localizations: localizations,
-                promoOffer: promoOffer
-            )
+            if let package {
+                return self.productOfferPrice(
+                    package: package,
+                    localizations: localizations,
+                    promoOffer: promoOffer
+                )
+            }
         case .productOfferPricePerDay:
-            return self.productOfferPricePerDay(
-                package: package,
-                localizations: localizations,
-                promoOffer: promoOffer
-            )
+            if let package {
+                return self.productOfferPricePerDay(
+                    package: package,
+                    localizations: localizations,
+                    promoOffer: promoOffer
+                )
+            }
         case .productOfferPricePerWeek:
-            return self.productOfferPricePerWeek(
-                package: package,
-                localizations: localizations,
-                promoOffer: promoOffer
-            )
+            if let package {
+                return self.productOfferPricePerWeek(
+                    package: package,
+                    localizations: localizations,
+                    promoOffer: promoOffer
+                )
+            }
         case .productOfferPricePerMonth:
-            return self.productOfferPricePerMonth(
-                package: package,
-                localizations: localizations,
-                promoOffer: promoOffer
-            )
+            if let package {
+                return self.productOfferPricePerMonth(
+                    package: package,
+                    localizations: localizations,
+                    promoOffer: promoOffer
+                )
+            }
         case .productOfferPricePerYear:
-            return self.productOfferPricePerYear(
-                package: package,
-                localizations: localizations,
-                promoOffer: promoOffer
-            )
+            if let package {
+                return self.productOfferPricePerYear(
+                    package: package,
+                    localizations: localizations,
+                    promoOffer: promoOffer
+                )
+            }
         case .productOfferPeriod:
-            return self.productOfferPeriod(
-                package: package,
-                localizations: localizations,
-                promoOffer: promoOffer
-            )
+            if let package {
+                return self.productOfferPeriod(
+                    package: package,
+                    localizations: localizations,
+                    promoOffer: promoOffer
+                )
+            }
         case .productOfferPeriodAbbreviated:
-            return self.productOfferPeriodAbbreviated(
-                package: package,
-                localizations: localizations,
-                promoOffer: promoOffer
-            )
+            if let package {
+                return self.productOfferPeriodAbbreviated(
+                    package: package,
+                    localizations: localizations,
+                    promoOffer: promoOffer
+                )
+            }
         case .productOfferPeriodInDays:
-            return self.productOfferPeriodInDays(package: package, promoOffer: promoOffer)
+            if let package {
+                return self.productOfferPeriodInDays(package: package, promoOffer: promoOffer)
+            }
         case .productOfferPeriodInWeeks:
-            return self.productOfferPeriodInWeeks(package: package, promoOffer: promoOffer)
+            if let package {
+                return self.productOfferPeriodInWeeks(package: package, promoOffer: promoOffer)
+            }
         case .productOfferPeriodInMonths:
-            return self.productOfferPeriodInMonths(package: package, promoOffer: promoOffer)
+            if let package {
+                return self.productOfferPeriodInMonths(package: package, promoOffer: promoOffer)
+            }
         case .productOfferPeriodInYears:
-            return self.productOfferPeriodInYears(package: package, promoOffer: promoOffer)
+            if let package {
+                return self.productOfferPeriodInYears(package: package, promoOffer: promoOffer)
+            }
         case .productOfferPeriodWithUnit:
-            return self.productOfferPeriodWithUnit(
-                package: package,
-                localizations: localizations,
-                promoOffer: promoOffer
-            )
+            if let package {
+                return self.productOfferPeriodWithUnit(
+                    package: package,
+                    localizations: localizations,
+                    promoOffer: promoOffer
+                )
+            }
         case .productOfferEndDate:
-            return self.productOfferEndDate(package: package, locale: locale, date: date, promoOffer: promoOffer)
+            if let package {
+                return self.productOfferEndDate(package: package, locale: locale, date: date, promoOffer: promoOffer)
+            }
         case .productSecondaryOfferPrice:
-            return self.productSecondaryOfferPrice(package: package)
+            if let package {
+                return self.productSecondaryOfferPrice(package: package)
+            }
         case .productSecondaryOfferPeriod:
-            return self.productSecondaryOfferPeriod(package: package)
+            if let package {
+                return self.productSecondaryOfferPeriod(package: package)
+            }
         case .productSecondaryOfferPeriodAbbreviated:
-            return self.productSecondaryOfferPeriodAbbreviated(package: package)
+            if let package {
+                return self.productSecondaryOfferPeriodAbbreviated(package: package)
+            }
         case .productRelativeDiscount:
             return self.productRelativeDiscount(
                 discountRelativeToMostExpensivePerMonth: discountRelativeToMostExpensivePerMonth,
                 localizations: localizations
             )
         case .productStoreProductName:
-            return self.productStoreProductName(package: package)
+            if let package {
+                return self.productStoreProductName(package: package)
+            }
         case .countDaysWithZero:
             return self.countdownValue(countdownTime: countdownTime, format: .daysWithZero)
         case .countDaysWithoutZero:
@@ -383,6 +449,8 @@ extension VariablesV2 {
         case .countSecondsWithoutZero:
             return self.countdownValue(countdownTime: countdownTime, format: .secondsWithoutZero)
         }
+
+        return ""
     }
 
     func productCurrencyCode(package: Package) -> String {
