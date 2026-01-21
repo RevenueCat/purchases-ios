@@ -834,6 +834,130 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
     }
 
+    func testSK2TransactionListenerDelegateDoesNotIncludePaywallAttribution() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Track a paywall impression
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
+
+        let transaction = MockStoreTransaction()
+
+        // Call the delegate method directly (simulating a transaction from the SK2 updates listener)
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        // Paywall attribution should NOT be included for transactions from the SK2 listener
+        // because those are for restores, renewals, or purchases from other devices
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
+    }
+
+    // MARK: - recordPurchase (handleRecordPurchase)
+
+    func testHandleRecordPurchaseIncludesPaywallAttribution() async throws {
+        self.setUpSystemInfo(finishTransactions: false) // Observer mode
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Track a paywall impression
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
+
+        // Perform an actual purchase to get the Product.PurchaseResult
+        let product = try await self.fetchSk2Product()
+        let purchaseResult = try await product.purchase()
+
+        // Verify we got a valid transaction
+        guard case let .success(verificationResult) = purchaseResult,
+              case let .verified(sk2Transaction) = verificationResult else {
+            fail("Expected verified transaction")
+            return
+        }
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(sk2Transaction)
+        mockListener.mockJWSToken = verificationResult.jwsRepresentation
+
+        let transaction = try await self.orchestrator.handleRecordPurchase(purchaseResult)
+
+        expect(transaction).toNot(beNil())
+        expect(self.backend.invokedPostReceiptData) == true
+        // Paywall attribution SHOULD be included for recordPurchase
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEvent
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
+    }
+
+    func testHandleRecordPurchaseWithoutPaywall() async throws {
+        self.setUpSystemInfo(finishTransactions: false) // Observer mode
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Don't track any paywall
+
+        // Perform an actual purchase to get the Product.PurchaseResult
+        let product = try await self.fetchSk2Product()
+        let purchaseResult = try await product.purchase()
+
+        guard case let .success(verificationResult) = purchaseResult,
+              case let .verified(sk2Transaction) = verificationResult else {
+            fail("Expected verified transaction")
+            return
+        }
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(sk2Transaction)
+        mockListener.mockJWSToken = verificationResult.jwsRepresentation
+
+        let transaction = try await self.orchestrator.handleRecordPurchase(purchaseResult)
+
+        expect(transaction).toNot(beNil())
+        expect(self.backend.invokedPostReceiptData) == true
+        // No paywall was tracked, so presentedPaywall should be nil
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
+    }
+
+    func testHandleRecordPurchaseUserCancelledReturnsNil() async throws {
+        self.setUpSystemInfo(finishTransactions: false) // Observer mode
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockCancelled = true
+
+        // Create a .userCancelled result
+        let purchaseResult = StoreKit.Product.PurchaseResult.userCancelled
+
+        let transaction = try await self.orchestrator.handleRecordPurchase(purchaseResult)
+
+        expect(transaction).to(beNil())
+        // Backend should not be called for cancelled purchases
+        expect(self.backend.invokedPostReceiptData) == false
+    }
+
     func testSK2ListensForSK2Transactions() throws {
         let transactionListener = MockStoreKit2TransactionListener()
         let storeKit2ObserverModePurchasesDetector = MockStoreKit2ObserverModePurchaseDetector()

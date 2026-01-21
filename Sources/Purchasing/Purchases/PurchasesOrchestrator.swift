@@ -2142,6 +2142,50 @@ private extension PurchasesOrchestrator {
 
 }
 
+// MARK: - Record Purchase (Observer Mode SK2)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchasesOrchestrator {
+
+    /// Handles a purchase result from `recordPurchase` API for observer mode with SK2.
+    /// - Parameter purchaseResult: The `Product.PurchaseResult` from the developer's StoreKit 2 purchase
+    /// - Returns: The `StoreTransaction` if the purchase was successful, `nil` if cancelled or pending
+    func handleRecordPurchase(
+        _ purchaseResult: StoreKit.Product.PurchaseResult
+    ) async throws -> StoreTransaction? {
+        guard self.systemInfo.observerMode else {
+            throw ErrorUtils.configurationError(
+                message: Strings.configure.record_purchase_requires_purchases_made_by_my_app.description
+            )
+        }
+        guard self.systemInfo.storeKitVersion == .storeKit2 else {
+            throw ErrorUtils.configurationError(
+                message: Strings.configure.sk2_required.description
+            )
+        }
+
+        let (userCancelled, transaction) = try await self.storeKit2TransactionListener.handle(
+            purchaseResult: purchaseResult,
+            fromTransactionUpdate: false
+        )
+
+        if userCancelled {
+            return nil
+        }
+
+        guard let transaction = transaction else {
+            // Transaction is nil for pending purchases
+            return nil
+        }
+
+        // Using .queue as initiation source since this is an externally-initiated purchase recorded by the developer
+        _ = try await self.handlePurchasedTransaction(transaction, .queue, nil)
+
+        return transaction
+    }
+
+}
+
 // MARK: - Async extensions
 
 extension PurchasesOrchestrator {
