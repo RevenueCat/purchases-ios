@@ -927,12 +927,21 @@ class DeviceCacheTests: TestCase {
         XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL1.path))
         XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL2.path))
 
+        // swiftlint:disable:next line_length
+        let newDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache"))
+
+        // Verify new directory does not exist yet
+        XCTAssertFalse(fileManager.fileExists(atPath: newDirectoryURL.path))
+
         // Create local DeviceCache with FileManager
         let deviceCache = DeviceCache(
             systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults,
             cache: fileManager
         )
+
+        // Verify new directory is created on init of DeviceCache
+        XCTAssertTrue(fileManager.fileExists(atPath: newDirectoryURL.path))
 
         // Retrieve cached offerings 1, old file should be removed but directory should still exist
         var cachedOfferings1: Offerings.Contents? = deviceCache.cachedOfferingsContents(appUserID: appUserID1)
@@ -959,13 +968,14 @@ class DeviceCacheTests: TestCase {
             for: .documentDirectory,
             in: .userDomainMask
         )[0]
-        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+        let oldDirectoryURL = documentsURL.appendingPathComponent("RevenueCat")
 
-        let oldFileURL = oldDirectory.appendingPathComponent(DeviceCache.CacheKeys.productEntitlementMapping.rawValue)
+        // swiftlint:disable:next line_length
+        let oldFileURL = oldDirectoryURL.appendingPathComponent(DeviceCache.CacheKeys.productEntitlementMapping.rawValue)
 
         // Create directory and file
         try fileManager.createDirectory(
-            at: oldDirectory,
+            at: oldDirectoryURL,
             withIntermediateDirectories: true,
             attributes: nil
         )
@@ -977,12 +987,21 @@ class DeviceCacheTests: TestCase {
         // Verify old file exists
         XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
 
+        // swiftlint:disable:next line_length
+        let newDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache"))
+
+        // Verify new directory does not exist yet
+        XCTAssertFalse(fileManager.fileExists(atPath: newDirectoryURL.path))
+
         // Create local DeviceCache with FileManager
         let deviceCache = DeviceCache(
             systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults,
             cache: fileManager
         )
+
+        // Verify new directory is created on init of DeviceCache
+        XCTAssertTrue(fileManager.fileExists(atPath: newDirectoryURL.path))
 
         // Access product entitlement mapping - should trigger migration
         let cachedMapping = deviceCache.cachedProductEntitlementMapping
@@ -993,7 +1012,7 @@ class DeviceCacheTests: TestCase {
 
         // Verify old file and directory is removed since it's empty
         XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
-        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectoryURL.path))
     }
 
     func testWritingOfferingsDeletesOldFileFromDocumentsDirectory() throws {
