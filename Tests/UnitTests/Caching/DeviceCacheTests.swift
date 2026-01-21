@@ -24,7 +24,8 @@ class DeviceCacheTests: TestCase {
         super.setUp()
 
         if let documentsDirectoryURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
-            try? fileManager.removeItem(at: documentsDirectoryURL)
+            let oldDirectory = documentsDirectoryURL.appendingPathComponent("RevenueCat")
+            try? fileManager.removeItem(at: oldDirectory)
         }
 
         if let cacheURL = DirectoryHelper.baseUrl(for: .cache) {
@@ -46,21 +47,6 @@ class DeviceCacheTests: TestCase {
         self.mockVirtualCurrenciesData = try! JSONEncoder().encode(mockVirtualCurrencies)
 
         self.deviceCache = self.create()
-    }
-
-    override func tearDown() {
-        // Clean up old documents directory
-        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
-            try? fileManager.removeItem(at: oldDirectory)
-        }
-
-        // Clean up new cache directory
-        if let cacheURL = DirectoryHelper.baseUrl(for: .cache) {
-            try? fileManager.removeItem(at: cacheURL)
-        }
-
-        super.tearDown()
     }
 
     func testLegacyCachedUserIDUsesRightKey() {
