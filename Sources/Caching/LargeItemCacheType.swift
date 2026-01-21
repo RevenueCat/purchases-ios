@@ -32,7 +32,16 @@ protocol LargeItemCacheType {
     func remove(_ url: URL) throws
 
     /// Creates a directory in the cache from a base path
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL?
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL?
+}
+
+extension LargeItemCacheType {
+    /// Defaults `inAppSpecificDirectory` to true
+    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
+        createCacheDirectoryIfNeeded(basePath: basePath, inAppSpecificDirectory: true)
+    }
 }
 
 extension FileManager: LargeItemCacheType {
@@ -119,10 +128,13 @@ extension FileManager: LargeItemCacheType {
     }
 
     /// Creates a directory in the cache from a base path
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
-        guard let cacheDirectoryBaseURL = DirectoryHelper.baseUrl(for: .cache) else {
-            return nil
-        }
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
+        guard let cacheDirectoryBaseURL = DirectoryHelper.baseUrl(
+            for: .cache,
+            inAppSpecificDirectory: inAppSpecificDirectory
+        ) else { return nil }
 
         let directoryURL = cacheDirectoryBaseURL.appendingPathComponent(basePath)
         do {
