@@ -43,7 +43,7 @@ final class PurchasesOrchestrator {
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let presentedOfferingContextsByProductID: Atomic<[String: PresentedOfferingContext]> = .init([:])
-    private let presentedPaywall: Atomic<PaywallEvent?> = nil
+    private let purchaseInitiatedPaywall: Atomic<PaywallEvent?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -892,13 +892,13 @@ final class PurchasesOrchestrator {
 
     func track(paywallEvent: PaywallEvent) {
         switch paywallEvent {
-        case .impression:
-            self.cachePresentedPaywall(paywallEvent)
+        case .purchaseInitiated:
+            self.cachePurchaseInitiatedPaywall(paywallEvent)
 
-        case .close:
-            self.clearPresentedPaywall()
+        case .cancel, .purchaseError:
+            self.clearPurchaseInitiatedPaywall()
 
-        case .cancel, .exitOffer:
+        case .impression, .close, .exitOffer:
             break
         }
     }
@@ -1849,7 +1849,7 @@ private extension PurchasesOrchestrator {
         case .failure:
             // Cache paywall again in case purchase is retried.
             if let paywall = transactionData?.presentedPaywall {
-                self.cachePresentedPaywall(paywall)
+                self.cachePurchaseInitiatedPaywall(paywall)
             }
         }
 
@@ -1862,7 +1862,7 @@ private extension PurchasesOrchestrator {
                                     storefront: StorefrontType?,
                                     restored: Bool) {
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
-        let paywall = self.getAndRemovePresentedPaywall()
+        let paywall = self.getAndRemovePurchaseInitiatedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
@@ -1925,14 +1925,14 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func cachePresentedPaywall(_ paywall: PaywallEvent) {
-        Logger.verbose(Strings.paywalls.caching_presented_paywall)
-        self.presentedPaywall.value = paywall
+    func cachePurchaseInitiatedPaywall(_ paywall: PaywallEvent) {
+        Logger.verbose(Strings.paywalls.caching_purchase_initiated_paywall)
+        self.purchaseInitiatedPaywall.value = paywall
     }
 
-    func clearPresentedPaywall() {
-        Logger.verbose(Strings.paywalls.clearing_presented_paywall)
-        self.presentedPaywall.value = nil
+    func clearPurchaseInitiatedPaywall() {
+        Logger.verbose(Strings.paywalls.clearing_purchase_initiated_paywall)
+        self.purchaseInitiatedPaywall.value = nil
     }
 
     func getAndRemovePresentedOfferingContext(for productIdentifier: String) -> PresentedOfferingContext? {
@@ -1945,8 +1945,8 @@ private extension PurchasesOrchestrator {
         return self.getAndRemovePresentedOfferingContext(for: transaction.productIdentifier)
     }
 
-    func getAndRemovePresentedPaywall() -> PaywallEvent? {
-        return self.presentedPaywall.getAndSet(nil)
+    func getAndRemovePurchaseInitiatedPaywall() -> PaywallEvent? {
+        return self.purchaseInitiatedPaywall.getAndSet(nil)
     }
 
     /// Computes a `ProductRequestData` for an active subscription found in the receipt,
@@ -2152,7 +2152,7 @@ extension PurchasesOrchestrator {
         _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
-        let paywall = self.getAndRemovePresentedPaywall()
+        let paywall = self.getAndRemovePurchaseInitiatedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(

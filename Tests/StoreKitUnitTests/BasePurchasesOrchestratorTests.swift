@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKit
 import XCTest
 
@@ -306,5 +306,28 @@ extension BasePurchasesOrchestratorTests {
         localeIdentifier: "en_US",
         darkMode: true
     )
+
+    static let testPackageId = "test_package"
+    static let testProductId = StoreKitConfigTestCase.productID
+    static let testErrorCode = 12
+    static let testErrorMessage = "Test error message"
+
+    static var paywallEventWithPurchaseInfo: PaywallEvent.Data {
+        return paywallEvent.withPurchaseInfo(
+            packageId: testPackageId,
+            productId: testProductId,
+            errorCode: nil,
+            errorMessage: nil
+        )
+    }
+
+    static var paywallEventForPurchaseError: PaywallEvent.Data {
+        return paywallEvent.withPurchaseInfo(
+            packageId: testPackageId,
+            productId: testProductId,
+            errorCode: testErrorCode,
+            errorMessage: testErrorMessage
+        )
+    }
 
 }

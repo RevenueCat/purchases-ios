@@ -8,7 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 //  PurchaseHandler.swift
-//  
+//
 //  Created by Nacho Soto on 7/13/23.
 
 import Combine
@@ -269,6 +269,7 @@ extension PurchaseHandler {
         }
 
         self.startAction(.purchase)
+        self.trackPurchaseInitiated(package: package)
 
         do {
             let result: PurchaseResultData
@@ -292,6 +293,7 @@ extension PurchaseHandler {
             self.setResult(result)
 
         } catch {
+            self.trackPurchaseError(package: package, error: error)
             self.purchaseError = error
             throw error
         }
@@ -316,6 +318,7 @@ extension PurchaseHandler {
         }
 
         self.startAction(.purchase)
+        self.trackPurchaseInitiated(package: package)
 
         let result = await externalPurchaseMethod(package)
 
@@ -324,6 +327,7 @@ extension PurchaseHandler {
         }
 
         if let error = result.error {
+            self.trackPurchaseError(package: package, error: error)
             self.purchaseError = error
             throw error
         }
@@ -462,6 +466,50 @@ extension PurchaseHandler {
         }
 
         self.track(.cancel(.init(), data))
+        return true
+    }
+
+    /// Tracks a purchase initiated event.
+    /// - Parameters:
+    ///   - package: The package being purchased
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    func trackPurchaseInitiated(package: Package) -> Bool {
+        guard let data = self.eventData else {
+            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+            return false
+        }
+
+        let purchaseData = data.withPurchaseInfo(
+            packageId: package.identifier,
+            productId: package.storeProduct.productIdentifier,
+            errorCode: nil,
+            errorMessage: nil
+        )
+        self.track(.purchaseInitiated(.init(), purchaseData))
+        return true
+    }
+
+    /// Tracks a purchase error event.
+    /// - Parameters:
+    ///   - package: The package that was being purchased
+    ///   - error: The error that occurred
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    func trackPurchaseError(package: Package, error: Error) -> Bool {
+        guard let data = self.eventData else {
+            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+            return false
+        }
+
+        let nsError = error as NSError
+        let purchaseData = data.withPurchaseInfo(
+            packageId: package.identifier,
+            productId: package.storeProduct.productIdentifier,
+            errorCode: nsError.code,
+            errorMessage: error.localizedDescription
+        )
+        self.track(.purchaseError(.init(), purchaseData))
         return true
     }
 
