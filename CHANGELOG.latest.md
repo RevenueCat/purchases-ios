@@ -1,8 +1,14 @@
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix paywall close tracking in PaywallViewController (#6083) via Cesar de la Vega (@vegaro)
+
 ## RevenueCatUI SDK
 ### Paywallv2
 #### 🐞 Bugfixes
-* fix images not being updated in paywalls v2 (#6101) via Will Taylor (@fire-at-will)
+* fix: Load high with high loader, load low with low loader (#6111) via Facundo Menzella (@facumenzella)
+* Fix close button being tappable during transition delay (#6106) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Update CI to Xcode 26.2 (#6088) via Antonio Pallares (@ajpallares)
-* Add loading of paywall to paywall tester (#6074) via Cesar de la Vega (@vegaro)
+* Fix loading in PaywallsTester when using present functions (#6109) via Cesar de la Vega (@vegaro)
+* Use `SKPaymentQueue.default()` instead of initializing a new instance in PurchaseTester app (#6108) via Antonio Pallares (@ajpallares)
+* Add Claude Code Review workflow configuration (#6107) via Cesar de la Vega (@vegaro)
