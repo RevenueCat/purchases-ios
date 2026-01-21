@@ -1847,10 +1847,7 @@ private extension PurchasesOrchestrator {
             self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
 
         case .failure:
-            // Cache paywall again in case purchase is retried.
-            if let paywall = transactionData?.presentedPaywall {
-                self.cachePurchaseInitiatedPaywall(paywall)
-            }
+            break
         }
 
         self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
