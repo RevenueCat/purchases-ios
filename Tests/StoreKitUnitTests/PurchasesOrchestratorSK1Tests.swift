@@ -564,6 +564,45 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testCancelEventClearsPresentedPaywall() async throws {
+        func purchase() async throws {
+            let product = try await self.fetchSk1Product()
+            let payment = self.storeKit1Wrapper.payment(with: product)
+
+            _ = await withCheckedContinuation { continuation in
+                self.orchestrator.purchase(
+                    sk1Product: product,
+                    payment: payment,
+                    package: nil,
+                    wrapper: self.storeKit1Wrapper
+                ) { transaction, customerInfo, error, userCancelled in
+                    continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+                }
+            }
+        }
+
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
+
+        // Simulate cancel event clearing the cache (as PurchaseHandler would do)
+        self.orchestrator.track(paywallEvent: .cancel(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
+
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        try await purchase()
+
+        // Verify the backend was called
+        expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
+        // After cancel clears the cache, the purchase should have no paywall data
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
+        ).to(beNil())
+    }
+
     func testPurchaseWithDifferentProductDoesNotIncludePaywallData() async throws {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
