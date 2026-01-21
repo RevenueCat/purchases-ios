@@ -2184,7 +2184,7 @@ extension PurchasesOrchestrator {
         case .userCancelled:
             return nil
         case let .successfulVerifiedTransaction(transaction):
-            // Using .queue as initiation source since this is an externally-initiated purchase recorded by the developer
+            // Using .queue initiation source since this is an externally-initiated purchase recorded by the developer
             _ = try await self.handlePurchasedTransaction(transaction, .queue, nil)
             return transaction
         }
