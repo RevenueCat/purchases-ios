@@ -360,7 +360,8 @@ class DecoderExtensionsISO8601DateTests: TestCase {
         let json = "{\"date\": \"2024-01-21T12:30:45.123Z\"}"
         let data = try DataWithDate.decode(json)
 
-        let calendar = Calendar.current
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
         let components = calendar.dateComponents(
             [.year, .month, .day, .hour, .minute, .second, .nanosecond],
             from: data.date
@@ -380,7 +381,8 @@ class DecoderExtensionsISO8601DateTests: TestCase {
         let json = "{\"date\": \"2024-01-21T12:30:45Z\"}"
         let data = try DataWithDate.decode(json)
 
-        let calendar = Calendar.current
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
         let components = calendar.dateComponents(
             [.year, .month, .day, .hour, .minute, .second],
             from: data.date
