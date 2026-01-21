@@ -958,6 +958,19 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData) == false
     }
 
+    func testHandleRecordPurchaseThrowsErrorWhenNotInObserverMode() async throws {
+        self.setUpSystemInfo(finishTransactions: true) // NOT observer mode
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        do {
+            _ = try await self.orchestrator.handleRecordPurchase(.userCancelled)
+            fail("Expected error to be thrown")
+        } catch {
+            expect(error).to(matchError(ErrorCode.configurationError))
+        }
+    }
+
     func testSK2ListensForSK2Transactions() throws {
         let transactionListener = MockStoreKit2TransactionListener()
         let storeKit2ObserverModePurchasesDetector = MockStoreKit2ObserverModePurchaseDetector()
