@@ -534,6 +534,38 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testPurchaseWithDifferentProductDoesNotIncludePaywallData() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Track a purchaseInitiated event with a DIFFERENT product ID
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithDifferentProductId
+        ))
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+
+        _ = try await self.orchestrator.purchase(sk2Product: product,
+                                                 package: nil,
+                                                 promotionalOffer: nil,
+                                                 winBackOffer: nil,
+                                                 introductoryOfferEligibilityJWS: nil,
+                                                 promotionalOfferOptions: nil)
+
+        // Verify the backend was called
+        expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
+        // The paywall data should NOT be included because the product ID doesn't match
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
+        ).to(beNil())
+    }
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSyncsPaywallEvents() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()

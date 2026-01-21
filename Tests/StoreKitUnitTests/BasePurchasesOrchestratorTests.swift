@@ -309,6 +309,7 @@ extension BasePurchasesOrchestratorTests {
 
     static let testPackageId = "test_package"
     static let testProductId = StoreKitConfigTestCase.productID
+    static let testDifferentProductId = "different_product_id"
     static let testErrorCode = 12
     static let testErrorMessage = "Test error message"
 
@@ -327,6 +328,15 @@ extension BasePurchasesOrchestratorTests {
             productId: testProductId,
             errorCode: testErrorCode,
             errorMessage: testErrorMessage
+        )
+    }
+
+    static var paywallEventWithDifferentProductId: PaywallEvent.Data {
+        return paywallEvent.withPurchaseInfo(
+            packageId: testPackageId,
+            productId: testDifferentProductId,
+            errorCode: nil,
+            errorMessage: nil
         )
     }
 

@@ -564,6 +564,37 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testPurchaseWithDifferentProductDoesNotIncludePaywallData() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        // Track a purchaseInitiated event with a DIFFERENT product ID
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithDifferentProductId
+        ))
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // Verify the backend was called
+        expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
+        // The paywall data should NOT be included because the product ID doesn't match
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
+        ).to(beNil())
+    }
+
     // MARK: - AdServices and Attributes
 
     func testPurchaseDoesNotPostAdServicesTokenIfNotEnabled() async throws {

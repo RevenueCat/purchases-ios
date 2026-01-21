@@ -1858,8 +1858,9 @@ private extension PurchasesOrchestrator {
     func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
                                     storefront: StorefrontType?,
                                     restored: Bool) {
-        let offeringContext = self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
-        let paywall = self.getAndRemovePurchaseInitiatedPaywall()
+        // Don't attribute offering context or paywall data for restored transactions
+        let offeringContext = restored ? nil : self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
+        let paywall = restored ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: purchasedTransaction)
         let unsyncedAttributes = self.unsyncedAttributes
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
@@ -1942,8 +1943,20 @@ private extension PurchasesOrchestrator {
         return self.getAndRemovePresentedOfferingContext(for: transaction.productIdentifier)
     }
 
-    func getAndRemovePurchaseInitiatedPaywall() -> PaywallEvent? {
-        return self.purchaseInitiatedPaywall.getAndSet(nil)
+    func getAndRemovePurchaseInitiatedPaywall(for transaction: StoreTransaction) -> PaywallEvent? {
+        return self.purchaseInitiatedPaywall.modify { cachedPaywall in
+            guard let paywall = cachedPaywall else {
+                return nil
+            }
+
+            guard paywall.data.productId == transaction.productIdentifier else {
+                // Keep the cache if product doesn't match - this transaction is not from the cached paywall
+                return nil
+            }
+
+            cachedPaywall = nil
+            return paywall
+        }
     }
 
     /// Computes a `ProductRequestData` for an active subscription found in the receipt,
@@ -2149,7 +2162,7 @@ extension PurchasesOrchestrator {
         _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
-        let paywall = self.getAndRemovePurchaseInitiatedPaywall()
+        let paywall = self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
