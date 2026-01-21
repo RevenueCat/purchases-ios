@@ -48,6 +48,21 @@ class DeviceCacheTests: TestCase {
         self.deviceCache = self.create()
     }
 
+    override func tearDown() {
+        // Clean up old documents directory
+        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+            try? fileManager.removeItem(at: oldDirectory)
+        }
+
+        // Clean up new cache directory
+        if let cacheURL = DirectoryHelper.baseUrl(for: .cache) {
+            try? fileManager.removeItem(at: cacheURL)
+        }
+
+        super.tearDown()
+    }
+
     func testLegacyCachedUserIDUsesRightKey() {
         self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] = "cesar"
 
@@ -1034,6 +1049,63 @@ class DeviceCacheTests: TestCase {
         // Verify old file and directory is removed since it's empty
         XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
         XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+    }
+
+    func testClearCachesDeletesOldOfferingsFileIfExists() throws {
+        let appUserID = "test_user"
+        let newUserID = "new_user"
+
+        // Create old documents directory structure
+        let documentsURL = try XCTUnwrap(fileManager.urls(for: .documentDirectory, in: .userDomainMask).first)
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+
+        // Create offerings file for this user and another file to ensure we only delete the offerings
+        let offeringsKey = DeviceCache.CacheKey.offerings(appUserID).rawValue
+        let offeringsFile = oldDirectory.appendingPathComponent(offeringsKey)
+        let otherFile = oldDirectory.appendingPathComponent("other-file.txt")
+
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
+        try "offerings data".write(to: offeringsFile, atomically: true, encoding: .utf8)
+        try "other data".write(to: otherFile, atomically: true, encoding: .utf8)
+
+        // Verify files exist
+        XCTAssertTrue(fileManager.fileExists(atPath: offeringsFile.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
+
+        // Call clearCaches
+        deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: newUserID)
+
+        // Verify only the offerings file is deleted, other file remains
+        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFile.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
+    }
+
+    func testClearOfferingsCacheDeletesOldOfferingsFileIfExists() throws {
+        let appUserID = "test_user"
+
+        // Create old documents directory structure
+        let documentsURL = try XCTUnwrap(fileManager.urls(for: .documentDirectory, in: .userDomainMask).first)
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+
+        // Create offerings file for this user and another file to ensure we only delete the offerings
+        let offeringsKey = DeviceCache.CacheKey.offerings(appUserID).rawValue
+        let offeringsFile = oldDirectory.appendingPathComponent(offeringsKey)
+        let otherFile = oldDirectory.appendingPathComponent("other-file.txt")
+
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
+        try "offerings data".write(to: offeringsFile, atomically: true, encoding: .utf8)
+        try "other data".write(to: otherFile, atomically: true, encoding: .utf8)
+
+        // Verify files exist
+        XCTAssertTrue(fileManager.fileExists(atPath: offeringsFile.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
+
+        // Call clearOfferingsCache
+        deviceCache.clearOfferingsCache(appUserID: appUserID)
+
+        // Verify only the offerings file is deleted, other file remains
+        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFile.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
     }
 }
 

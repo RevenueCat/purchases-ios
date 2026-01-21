@@ -120,6 +120,9 @@ class DeviceCache {
 
         // Clear offerings cache from large item cache
         self.largeItemCache.removeObject(forKey: CacheKey.offerings(oldAppUserID).rawValue)
+
+        // Delete old offerings file from documents directory if it exists
+        self.deleteOldFileIfNeeded(for: CacheKey.offerings(oldAppUserID).rawValue)
     }
 
     // MARK: - CustomerInfo
@@ -188,7 +191,7 @@ class DeviceCache {
         let key = CacheKey.offerings(appUserID).rawValue
         if self.largeItemCache.set(codable: offerings.contents, forKey: key) {
 
-            // Delete old file if it exists
+            // Delete old file from documents directory if it exists
             self.deleteOldFileIfNeeded(for: key)
         }
     }
@@ -201,6 +204,9 @@ class DeviceCache {
         self.offeringsCachedObject.clearCache()
         self.offeringsCachePreferredLocales = []
         self.largeItemCache.removeObject(forKey: CacheKey.offerings(appUserID).rawValue)
+
+        // Delete old offerings file from documents directory if it exists
+        self.deleteOldFileIfNeeded(for: CacheKey.offerings(appUserID).rawValue)
     }
 
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
@@ -873,7 +879,7 @@ private extension DeviceCache {
             return
         }
 
-        // Delete old file if it exists (we're about to write a new one)
+        // Delete old file if it exists
         do {
             try fileManager.removeItem(at: oldFileURL)
             self.deleteOldDocumentsDirectoryIfEmpty()
