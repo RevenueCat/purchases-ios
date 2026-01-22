@@ -837,6 +837,21 @@ private extension DeviceCache {
 
             let oldFileURL = oldDirectoryURL.appendingPathComponent(key)
 
+            // Check if file already exists in new location (it may have been migrated before the lock was released)
+            if let value: Value = self.largeItemCache.value(forKey: key) {
+                // File already migrated, clean up old file if it still exists
+                if fileManager.fileExists(atPath: oldFileURL.path) {
+                    try? fileManager.removeItem(at: oldFileURL)
+                    self.deleteOldDocumentsDirectoryIfEmpty()
+                }
+                return value
+            }
+
+            guard let newCacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: Self.defaultBasePath) else {
+                return nil
+            }
+            let newFileURL = newCacheURL.appendingPathComponent(key)
+
             // Try to load from old location
             guard fileManager.fileExists(atPath: oldFileURL.path) else {
                 return nil
@@ -848,11 +863,6 @@ private extension DeviceCache {
                 try? fileManager.removeItem(at: oldFileURL)
                 return nil
             }
-
-            guard let newCacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: Self.defaultBasePath) else {
-                return nil
-            }
-            let newFileURL = newCacheURL.appendingPathComponent(key)
 
             // Make sure the new location exists
             guard fileManager.fileExists(atPath: newCacheURL.path) else {

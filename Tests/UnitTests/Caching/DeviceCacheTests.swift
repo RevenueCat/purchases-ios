@@ -1112,6 +1112,79 @@ class DeviceCacheTests: TestCase {
         XCTAssertFalse(fileManager.fileExists(atPath: offeringsFile.path))
         XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
     }
+
+    func testMigrationOnConcurrentReadsIsThreadSafe() throws {
+        let appUserID = "test_user"
+
+        // Create old directory in documents
+        let documentsURL = try XCTUnwrap(fileManager.urls(for: .documentDirectory, in: .userDomainMask).first)
+        let oldDirectoryURL = documentsURL.appendingPathComponent("RevenueCat")
+        let oldFileURL = oldDirectoryURL.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID).rawValue)
+
+        // Create directory and file
+        try fileManager.createDirectory(
+            at: oldDirectoryURL,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        let testOfferings = try Self.createSampleOfferings()
+        let offeringsData = try JSONEncoder.default.encode(testOfferings.contents)
+        try offeringsData.write(to: oldFileURL)
+
+        // Verify old file exists
+        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
+
+        // Create DeviceCache instance
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.mockUserDefaults,
+            cache: fileManager
+        )
+
+        let newDirectoryURL = try XCTUnwrap(
+            DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache")
+        )
+        let newFileURL = newDirectoryURL.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID).rawValue)
+
+        // Verify new directory exists but file doesn't yet
+        XCTAssertTrue(fileManager.fileExists(atPath: newDirectoryURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: newFileURL.path))
+
+        // Trigger concurrent concurrent reads from multiple threads
+        let expectation = XCTestExpectation(description: "All concurrent migrations complete")
+        expectation.expectedFulfillmentCount = 10
+
+        let dispatchGroup = DispatchGroup()
+
+        for _ in 0..<10 {
+            dispatchGroup.enter()
+            DispatchQueue.global(qos: .userInitiated).async {
+                // Each thread tries to access the cached offerings, triggering migration (but should only migrate once)
+                let cachedOfferings = deviceCache.cachedOfferingsContents(appUserID: appUserID)
+
+                // Verify we got valid data
+                expect(cachedOfferings).toNot(beNil())
+
+                expectation.fulfill()
+                dispatchGroup.leave()
+            }
+        }
+
+        // Wait for all concurrent operations to complete
+        let result = dispatchGroup.wait(timeout: .now() + 5.0)
+        XCTAssertEqual(result, .success, "Concurrent migrations should complete within timeout")
+
+        wait(for: [expectation], timeout: 5.0)
+
+        // Verify migration succeeded
+        XCTAssertTrue(fileManager.fileExists(atPath: newFileURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
+
+        // Verify we can still read the migrated data
+        let finalOfferings = deviceCache.cachedOfferingsContents(appUserID: appUserID)
+        expect(finalOfferings).toNot(beNil())
+    }
 }
 
 private extension DeviceCacheTests {
