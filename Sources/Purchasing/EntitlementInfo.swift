@@ -14,6 +14,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 /**
  Enum of supported stores
  */
