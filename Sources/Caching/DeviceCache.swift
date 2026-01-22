@@ -413,9 +413,9 @@ class DeviceCache {
                 userDefaults.array(
                     forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64]
             } ?? []
-            
+
             transactionIDs.append(contentsOf: ids)
-            
+
             self.userDefaults.write {
                 $0.set(
                     transactionIDs,
