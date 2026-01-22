@@ -16,4 +16,17 @@ protocol FeatureEvent: Encodable, Sendable {
     var feature: Feature { get }
     var eventDiscriminator: String? { get }
 
+    /// Whether this event should be stored and sent to the backend.
+    /// WIP: Some PaywallEvents are not yet supported by the backend.
+    /// We should implement support for these events in the backend first
+    /// and then we can remove this `shouldStoreEvent` (as it will be always `true`)
+    var shouldStoreEvent: Bool { get }
+
+}
+
+extension FeatureEvent {
+
+    /// By default, all events should be stored.
+    var shouldStoreEvent: Bool { true }
+
 }
