@@ -28,8 +28,8 @@ class StoreKit2StorefrontListenerTests: TestCase {
     private static let defaultStorefronts = [
         MockStorefront(countryCode: "ESP"),
         MockStorefront(countryCode: "USA")
-    ]
-    private var storefronts: [MockStorefront]?
+    ].map(Storefront.from(storefront:))
+    private var storefronts: [RevenueCat.Storefront]?
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -75,8 +75,8 @@ class StoreKit2StorefrontListenerTests: TestCase {
 
         self.listener.listenForStorefrontChanges()
 
-        expect(self.delegate.invokedStorefrontIdentifierDidChangeStorefronts.value)
-            .toEventually(equal(Self.defaultStorefronts.map(Storefront.from(storefront:))))
+        expect(self.delegate.invokedStorefrontChangesStorefronts.value)
+            .toEventually(equal(Self.defaultStorefronts))
     }
 
     func testStopsPreviousTaskWhenStartListeningChangesMoreThanOneTime() throws {
@@ -98,23 +98,23 @@ class StoreKit2StorefrontListenerTests: TestCase {
 
     func testReceivesStorefrontUpdateThroughDelegate() throws {
         self.storefronts = [
-            MockStorefront(countryCode: "USA")
+            Storefront.from(storefront: MockStorefront(countryCode: "USA"))
         ]
 
         self.setupStorefrontListener()
 
         self.listener.listenForStorefrontChanges()
 
-        expect(self.delegate.invokedStorefrontIdentifierDidChangeStorefronts.value)
+        expect(self.delegate.invokedStorefrontChangesStorefronts.value)
             .toEventually(haveCount(1))
-        expect(self.delegate.invokedStorefrontIdentifierDidChangeStorefronts.value.first?.countryCode) == "USA"
+        expect(self.delegate.invokedStorefrontChangesStorefronts.value.first?.countryCode) == "USA"
     }
 
     /// The same storefront should not be emitted more than once
     func testDeduplicatesStorefrontUpdates() throws {
         self.storefronts = [
-            MockStorefront(countryCode: "USA"),
-            MockStorefront(countryCode: "USA")
+            Storefront.from(storefront: MockStorefront(countryCode: "USA")),
+            Storefront.from(storefront: MockStorefront(countryCode: "USA"))
         ]
 
         self.setupStorefrontListener()
@@ -122,9 +122,9 @@ class StoreKit2StorefrontListenerTests: TestCase {
         self.listener.listenForStorefrontChanges()
 
         // Verify the delegate receives only one update (the first one), not the duplicate
-        expect(self.delegate.invokedStorefrontIdentifierDidChangeStorefronts.value)
+        expect(self.delegate.invokedStorefrontChangesStorefronts.value)
             .toEventually(haveCount(1))
-        expect(self.delegate.invokedStorefrontIdentifierDidChangeStorefronts.value.first?.countryCode) == "USA"
+        expect(self.delegate.invokedStorefrontChangesStorefronts.value.first?.countryCode) == "USA"
     }
 
     /// Tests that a second instance of the listener (a new instance when relaunching the app)
@@ -146,9 +146,9 @@ class StoreKit2StorefrontListenerTests: TestCase {
 
         testListener1.listenForStorefrontChanges()
 
-        expect(testDelegate1.invokedStorefrontIdentifierDidChangeStorefronts.value)
+        expect(testDelegate1.invokedStorefrontChangesStorefronts.value)
             .toEventually(haveCount(1))
-        expect(testDelegate1.invokedStorefrontIdentifierDidChangeStorefronts.value.first?.countryCode) == "USA"
+        expect(testDelegate1.invokedStorefrontChangesStorefronts.value.first?.countryCode) == "USA"
 
         let testDelegate2 = MockStoreKit2StorefrontListenerDelegate()
         let testListener2 = StoreKit2StorefrontListener(
@@ -159,9 +159,24 @@ class StoreKit2StorefrontListenerTests: TestCase {
 
         testListener2.listenForStorefrontChanges()
 
-        expect(testDelegate2.invokedStorefrontIdentifierDidChangeStorefronts.value)
+        expect(testDelegate2.invokedStorefrontChangesStorefronts.value)
             .toEventually(haveCount(0))
-        expect(testDelegate2.invokedStorefrontIdentifierDidChangeStorefronts.value.first).to(beNil())
+        expect(testDelegate2.invokedStorefrontChangesStorefronts.value.first).to(beNil())
+
+        let storefront3 = MockStorefront(identifier: "USA", countryCode: "USA-V2")
+        let testDelegate3 = MockStoreKit2StorefrontListenerDelegate()
+        let testListener3 = StoreKit2StorefrontListener(
+            delegate: testDelegate3,
+            updates: MockAsyncSequence(with: [storefront3] as [StorefrontType]),
+            userDefaults: userDefaults
+        )
+
+        testListener3.listenForStorefrontChanges()
+
+        expect(testDelegate3.invokedStorefrontChangesStorefronts.value)
+            .toEventually(haveCount(1))
+        expect(testDelegate3.invokedStorefrontChangesStorefronts.value.first?.identifier) == "USA"
+        expect(testDelegate3.invokedStorefrontChangesStorefronts.value.first?.countryCode) == "USA-V2"
     }
 
     /// Tests that a second instance of the listener (a new instance when relaunching the app)
@@ -183,9 +198,9 @@ class StoreKit2StorefrontListenerTests: TestCase {
 
         testListener1.listenForStorefrontChanges()
 
-        expect(testDelegate1.invokedStorefrontIdentifierDidChangeStorefronts.value)
+        expect(testDelegate1.invokedStorefrontChangesStorefronts.value)
             .toEventually(haveCount(1))
-        expect(testDelegate1.invokedStorefrontIdentifierDidChangeStorefronts.value.first?.countryCode) == "USA"
+        expect(testDelegate1.invokedStorefrontChangesStorefronts.value.first?.countryCode) == "USA"
 
         let storefront2 = MockStorefront(countryCode: "NLD")
         let testDelegate2 = MockStoreKit2StorefrontListenerDelegate()
@@ -197,13 +212,13 @@ class StoreKit2StorefrontListenerTests: TestCase {
 
         testListener2.listenForStorefrontChanges()
 
-        expect(testDelegate2.invokedStorefrontIdentifierDidChangeStorefronts.value)
+        expect(testDelegate2.invokedStorefrontChangesStorefronts.value)
             .toEventually(haveCount(1))
-        expect(testDelegate2.invokedStorefrontIdentifierDidChangeStorefronts.value.first?.countryCode) == "NLD"
+        expect(testDelegate2.invokedStorefrontChangesStorefronts.value.first?.countryCode) == "NLD"
     }
 
     private func setupStorefrontListener() {
-        let storefronts = (storefronts ?? Self.defaultStorefronts).map(Storefront.from(storefront:))
+        let storefronts = (storefronts ?? Self.defaultStorefronts)
         self.listener = .init(
             delegate: self.delegate,
             updates: MockAsyncSequence(
@@ -216,10 +231,10 @@ class StoreKit2StorefrontListenerTests: TestCase {
 
 private final class MockStoreKit2StorefrontListenerDelegate: StoreKit2StorefrontListenerDelegate {
 
-    let invokedStorefrontIdentifierDidChangeStorefronts: Atomic<[RevenueCat.Storefront]> = .init([])
+    let invokedStorefrontChangesStorefronts: Atomic<[RevenueCat.Storefront]> = .init([])
 
-    func storefrontIdentifierDidChange(with storefront: StorefrontType) {
-        self.invokedStorefrontIdentifierDidChangeStorefronts.value.append(.from(storefront: storefront))
+    func storefrontIdentifierOrCountryDidChange(with storefront: StorefrontType) {
+        self.invokedStorefrontChangesStorefronts.value.append(.from(storefront: storefront))
     }
 
 }

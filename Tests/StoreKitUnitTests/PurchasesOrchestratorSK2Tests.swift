@@ -31,7 +31,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     // MARK: - StoreFront Changes
 
     func testClearCachedProductsAndOfferingsAfterStorefrontChanges() async throws {
-        self.orchestrator.storefrontIdentifierDidChange(with: MockStorefront(countryCode: "ESP"))
+        self.orchestrator.storefrontIdentifierOrCountryDidChange(with: MockStorefront(countryCode: "ESP"))
 
         expect(self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount) == 1
         expect(self.productsManager.invokedClearCacheCount) == 1

@@ -16,14 +16,14 @@ import StoreKit
 
 protocol StoreKit2StorefrontListenerDelegate: AnyObject, Sendable {
 
-    func storefrontIdentifierDidChange(with storefront: StorefrontType)
+    func storefrontIdentifierOrCountryDidChange(with storefront: StorefrontType)
 
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class StoreKit2StorefrontListener {
 
-    private static let lastKnownStorefrontIdentifierKey = "com.revenuecat.userdefaults.lastKnownStorefrontIdentifierKey"
+    private static let lastKnownStorefrontKey = "com.revenuecat.userdefaults.lastKnownStorefrontKey"
 
     private(set) var taskHandle: Task<Void, Never>? {
         didSet {
@@ -35,7 +35,7 @@ class StoreKit2StorefrontListener {
 
     weak var delegate: StoreKit2StorefrontListenerDelegate?
     private let updates: AsyncStream<StorefrontType>
-    private let userDefaults: UserDefaults
+    private let userDefaults: SynchronizedUserDefaults
 
     convenience init(delegate: StoreKit2StorefrontListenerDelegate?, userDefaults: UserDefaults?) {
         self.init(
@@ -54,7 +54,7 @@ class StoreKit2StorefrontListener {
     ) where S.Element == StorefrontType {
         self.delegate = delegate
         self.updates = updates.toAsyncStream()
-        self.userDefaults = userDefaults ?? UserDefaults.computeDefault()
+        self.userDefaults = SynchronizedUserDefaults(userDefaults: userDefaults ?? UserDefaults.computeDefault())
     }
 
     func listenForStorefrontChanges() {
@@ -66,10 +66,10 @@ class StoreKit2StorefrontListener {
                 if self?.shouldEmitStorefrontChange(storefront) == true {
 
                     // Update the last known storefront
-                    self?.updateLastKnownStorefrontIdentifier(storefront.identifier)
+                    self?.updateLastKnownStorefront(storefront)
 
-                    await MainActor.run { @Sendable in
-                        delegate.storefrontIdentifierDidChange(with: storefront)
+                    OperationDispatcher.dispatchOnMainActor {
+                        delegate.storefrontIdentifierOrCountryDidChange(with: storefront)
                     }
                 }
             }
@@ -78,18 +78,21 @@ class StoreKit2StorefrontListener {
 
     /// On macOS SK2 will emit a storefront update right away when subscribing to
     /// updates, even when the storefront hasn't changed
-    /// by storing the last known storefront identifier in UserDefaults we're ignoring this update
-    /// unless the storefront identifier has actually changed
+    /// by storing the last known storefront in UserDefaults we're ignoring this update
+    /// unless the storefront (identifier or country) has actually changed
     private func shouldEmitStorefrontChange(_ storefront: StorefrontType) -> Bool {
-        guard let lastIdentifier = self.userDefaults.string(forKey: Self.lastKnownStorefrontIdentifierKey) else {
-            return true
+        let lastKnownStorefrontValue = self.userDefaults.read {
+            $0.string(forKey: Self.lastKnownStorefrontKey)
         }
 
-        return storefront.identifier != lastIdentifier
+        return lastKnownStorefrontValue != Self.userDefaultsValue(for: storefront)
     }
 
-    private func updateLastKnownStorefrontIdentifier(_ identifier: String) {
-        self.userDefaults.set(identifier, forKey: Self.lastKnownStorefrontIdentifierKey)
+    private func updateLastKnownStorefront(_ storefront: StorefrontType) {
+        let value = Self.userDefaultsValue(for: storefront)
+        self.userDefaults.write {
+            $0.set(value, forKey: Self.lastKnownStorefrontKey)
+        }
     }
 
     deinit {
@@ -97,4 +100,7 @@ class StoreKit2StorefrontListener {
         self.taskHandle = nil
     }
 
+    private static func userDefaultsValue(for storefront: StorefrontType) -> String {
+        storefront.identifier + "." + storefront.countryCode
+    }
 }
