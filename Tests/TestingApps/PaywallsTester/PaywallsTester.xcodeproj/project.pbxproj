@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2DBCEDFD2AC4BC060064C274 /* PaywallViewMode+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */; };
+		51A5AA9A871F40789F283AD8 /* PaywallCondensedFooterUIKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462E16C6A4BF4B5C96B44E27 /* PaywallCondensedFooterUIKitView.swift */; };
 		4D5E92D92D09B09B0067D908 /* SnapshotTestingStub in Frameworks */ = {isa = PBXBuildFile; productRef = 4D5E92D82D09B09B0067D908 /* SnapshotTestingStub */; };
 		4F102E272A840ECC0059EED6 /* CustomPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F102E262A840ECC0059EED6 /* CustomPaywall.swift */; };
 		4F217A102A6DB6FB000B092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4FC046BF2A572E3700A28BCF /* Assets.xcassets */; };
@@ -86,6 +87,7 @@
 
 /* Begin PBXFileReference section */
 		2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallViewMode+Extensions.swift"; sourceTree = "<group>"; };
+		462E16C6A4BF4B5C96B44E27 /* PaywallCondensedFooterUIKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallCondensedFooterUIKitView.swift; sourceTree = "<group>"; };
 		4D2E84DB2D00EDA100C639D9 /* PaywallsTesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsTesterTests.swift; sourceTree = "<group>"; };
 		4D5E92F82D09B21B0067D908 /* SnapshotTestingStub */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SnapshotTestingStub; sourceTree = "<group>"; };
 		4F0B5EA02A97CD9300DB0FC9 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -285,6 +287,7 @@
 			isa = PBXGroup;
 			children = (
 				FD33CD612D0351BE000D13A4 /* CustomerCenterUIKitView.swift */,
+				462E16C6A4BF4B5C96B44E27 /* PaywallCondensedFooterUIKitView.swift */,
 				88DFC1872BCF39AF00273B6D /* Login */,
 				88DFC18F2BCF48B000273B6D /* AppList.swift */,
 				88B438092BDB0A28000AF27C /* PaywallForID.swift */,
@@ -535,6 +538,7 @@
 				88DFC1462BC7443B00273B6D /* ErrorResponse.swift in Sources */,
 				88DFC1402BC73D9D00273B6D /* HTTPStatusCode.swift in Sources */,
 				FD33CD622D0351BE000D13A4 /* CustomerCenterUIKitView.swift in Sources */,
+				51A5AA9A871F40789F283AD8 /* PaywallCondensedFooterUIKitView.swift in Sources */,
 				4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

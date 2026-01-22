@@ -128,6 +128,39 @@ func paywallFooterViewControllerAPI(_ delegate: Delegate,
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+func paywallCondensedFooterViewControllerAPI(_ delegate: Delegate,
+                                             _ offering: Offering?,
+                                             _ performPurchase: PerformPurchase?,
+                                             _ performRestore: PerformRestore?,
+                                             _ dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?) {
+    let controller = PaywallCondensedFooterViewController()
+    controller.delegate = delegate
+
+    let _: UIViewController = PaywallCondensedFooterViewController(offering: offering)
+    let _: UIViewController = PaywallCondensedFooterViewController(offering: offering,
+                                                                   dismissRequestedHandler: dismissRequestedHandler)
+    let _: UIViewController = PaywallCondensedFooterViewController(offeringIdentifier: "offering")
+    let _: UIViewController = PaywallCondensedFooterViewController(offeringIdentifier: "offering",
+                                                                   dismissRequestedHandler: dismissRequestedHandler)
+    let _: UIViewController = PaywallCondensedFooterViewController(offeringIdentifier: "offering",
+                                                                   fontName: "Papyrus",
+                                                                   dismissRequestedHandler: dismissRequestedHandler)
+
+    let _: UIViewController = PaywallCondensedFooterViewController(performPurchase: performPurchase!,
+                                                                   performRestore: performRestore!)
+    let _: UIViewController = PaywallCondensedFooterViewController(offering: offering,
+                                                                   performPurchase: performPurchase!,
+                                                                   performRestore: performRestore!)
+    let _: UIViewController = PaywallCondensedFooterViewController(performPurchase: performPurchase!,
+                                                                   performRestore: performRestore!,
+                                                                   dismissRequestedHandler: dismissRequestedHandler)
+    let _: UIViewController = PaywallCondensedFooterViewController(offering: offering,
+                                                                   performPurchase: performPurchase!,
+                                                                   performRestore: performRestore!,
+                                                                   dismissRequestedHandler: dismissRequestedHandler)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 final class Delegate: PaywallViewControllerDelegate {
 
     func paywallViewControllerDidStartPurchase(_ controller: PaywallViewController) {}
