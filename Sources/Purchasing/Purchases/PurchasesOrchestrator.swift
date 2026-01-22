@@ -934,7 +934,7 @@ final class PurchasesOrchestrator {
     /// Posts any remaining cached transaction metadata that wasn't synced during normal transaction processing.
     /// This handles edge cases where a transaction is not returned by the store anymore but we still have
     /// metadata cached for it.
-    func syncRemainingCachedTransactionMetadataIfNeeded() {
+    private func syncRemainingCachedTransactionMetadataIfNeeded() {
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .default) {
             Task {
                 await self.performCachedTransactionMetadataSync()
@@ -2276,6 +2276,7 @@ extension PurchasesOrchestrator {
 // MARK: - Application Lifecycle
 extension PurchasesOrchestrator {
     func handleApplicationDidBecomeActive() {
+        self.syncRemainingCachedTransactionMetadataIfNeeded()
 
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
            self.observerMode && self.systemInfo.storeKitVersion == .storeKit2 {

@@ -2169,7 +2169,6 @@ private extension Purchases {
         #endif
 
         self.purchasesOrchestrator.postEventsIfNeeded(delayed: true)
-        self.purchasesOrchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         #endif
     }
