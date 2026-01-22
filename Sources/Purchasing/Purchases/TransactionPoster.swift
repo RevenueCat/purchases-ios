@@ -371,8 +371,7 @@ extension TransactionPoster {
                 case let .failure(error) where error.finishable:
                     self.localTransactionMetadataStore
                         .removeMetadata(forTransactionId: transaction.transactionIdentifier)
-                default:
-                    break
+                default: break
                 }
             }
             completion(result)
