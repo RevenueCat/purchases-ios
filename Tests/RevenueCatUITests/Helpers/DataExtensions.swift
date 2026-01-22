@@ -118,7 +118,8 @@ extension PaywallData {
 
     /// Creates a copy of the paywall with a single localization
     func with(config: PaywallData.Configuration) -> Self {
-        return .init(templateName: self.templateName,
+        return .init(id: self.id,
+                     templateName: self.templateName,
                      config: config,
                      localization: self.localization,
                      localizationByTier: self.localizationByTier,
@@ -127,7 +128,8 @@ extension PaywallData {
 
     /// Creates a copy of the paywall with a new template name
     func with(templateName: String) -> Self {
-        return .init(templateName: templateName,
+        return .init(id: self.id,
+                     templateName: templateName,
                      config: self.config,
                      localization: self.localization,
                      localizationByTier: self.localizationByTier,
