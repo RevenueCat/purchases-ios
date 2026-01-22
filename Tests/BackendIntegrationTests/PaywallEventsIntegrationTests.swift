@@ -14,7 +14,7 @@
 import Foundation
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
@@ -38,7 +38,10 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
             displayMode: .fullScreen,
             locale: .current,
             darkMode: true
-        )
+        ).withPurchaseInfo(packageId: self.package.identifier,
+                           productId: self.package.storeProduct.productIdentifier,
+                           errorCode: nil,
+                           errorMessage: nil)
     }
 
     func testPurchasingPackageWithPresentedPaywall() async throws {
@@ -59,7 +62,19 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     @available(iOS 17.0, *)
-    func testPurchasingAfterAFailureRemembersPresentedPaywall() async throws {
+    func testPurchasingAfterPaywallInitiatedEventSendsData() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        self.testSession.disableDialogs = true
+
+        try await self.purchases.track(paywallEvent: .purchaseInitiated(.init(), self.eventData))
+        let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
+
+        self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)
+    }
+
+    @available(iOS 17.0, *)
+    func testPurchasingAfterAFailureDoesNotRememberPreviousPaywallInitiatedEventData() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
         try await self.testSession.setSimulatedError(.generic(.networkError(URLError(.unknown))), forAPI: .purchase)
@@ -82,7 +97,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
 
         let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
 
-        self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)
+        self.verifyTransactionHandled(with: transaction, sessionID: nil) // No paywall session id included
     }
 
     func testFlushingEmptyEvents() async throws {
