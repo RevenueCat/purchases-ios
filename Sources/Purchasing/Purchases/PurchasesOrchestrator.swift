@@ -681,7 +681,7 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
     func purchase(sk2Product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
@@ -767,11 +767,22 @@ final class PurchasesOrchestrator {
 
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
             // This detects if `Product.PurchaseResult.userCancelled` is true.
-            let (userCancelled, transaction) = try await self.storeKit2TransactionListener
+            let handleResult = try await self.storeKit2TransactionListener
                 .handle(purchaseResult: result, fromTransactionUpdate: false)
 
-            if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
-                throw ErrorUtils.purchaseCancelledError()
+            let transaction: StoreTransaction?
+            let userCancelled: Bool
+
+            switch handleResult {
+            case .userCancelled:
+                userCancelled = true
+                transaction = nil
+                if self.systemInfo.dangerousSettings.customEntitlementComputation {
+                    throw ErrorUtils.purchaseCancelledError()
+                }
+            case let .successfulVerifiedTransaction(verifiedTransaction):
+                userCancelled = false
+                transaction = verifiedTransaction
             }
 
             let customerInfo: CustomerInfo
@@ -2150,6 +2161,45 @@ private extension PurchasesOrchestrator {
                             metadata: [String: String]? = nil) {
         let string: PurchaseStrings = .purchasing_product(product, package, offer, metadata)
         Logger.purchase(string)
+    }
+
+}
+
+// MARK: - Record Purchase (Observer Mode SK2)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchasesOrchestrator {
+
+    /// Handles a purchase result from `recordPurchase` API for observer mode with SK2.
+    /// - Parameter purchaseResult: The `Product.PurchaseResult` from the developer's StoreKit 2 purchase
+    /// - Returns: The `StoreTransaction` if the purchase was successful, `nil` if cancelled or pending
+    func handleRecordPurchase(
+        _ purchaseResult: StoreKit.Product.PurchaseResult
+    ) async throws -> StoreTransaction? {
+        guard self.systemInfo.observerMode else {
+            throw ErrorUtils.configurationError(
+                message: Strings.configure.record_purchase_requires_purchases_made_by_my_app.description
+            )
+        }
+        guard self.systemInfo.storeKitVersion == .storeKit2 else {
+            throw ErrorUtils.configurationError(
+                message: Strings.configure.sk2_required.description
+            )
+        }
+
+        let handleResult = try await self.storeKit2TransactionListener.handle(
+            purchaseResult: purchaseResult,
+            fromTransactionUpdate: false
+        )
+
+        switch handleResult {
+        case .userCancelled:
+            return nil
+        case let .successfulVerifiedTransaction(transaction):
+            // Using .queue initiation source since this is an externally-initiated purchase recorded by the developer
+            _ = try await self.handlePurchasedTransaction(transaction, .queue, nil)
+            return transaction
+        }
     }
 
 }
