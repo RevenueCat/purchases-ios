@@ -52,6 +52,9 @@ import Foundation
     /// For entitlements granted via the Test Store.
     @objc(RCTestStore) case testStore = 10
 
+    /// For entitlements granted via the Galaxy Store.
+    @objc(RCGalaxy) case galaxy = 11
+
 }
 
 extension Store: CaseIterable {}
