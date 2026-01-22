@@ -45,6 +45,7 @@ final class PurchasesOrchestrator {
     private let presentedOfferingContextsByProductID: Atomic<[String: PresentedOfferingContext]> = .init([:])
     private let presentedPaywall: Atomic<PaywallEvent?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
+    private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttribute.Dictionary {
@@ -1624,6 +1625,13 @@ private extension PurchasesOrchestrator {
     }
 
     func performCachedTransactionMetadataSync() async {
+        // Prevent multiple simultaneous syncs
+        guard self.isSyncingCachedTransactionMetadata.getAndSet(true) == false else {
+            Logger.debug(Strings.purchase.cached_transaction_metadata_sync_already_in_progress)
+            return
+        }
+        defer { self.isSyncingCachedTransactionMetadata.value = false }
+
         let currentAppUserID = self.appUserID
         let isRestore = self.allowSharingAppStoreAccount
 

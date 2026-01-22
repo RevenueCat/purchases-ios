@@ -362,6 +362,28 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         expect(self.customerInfoManager.invokedCacheCustomerInfo) == false
     }
 
+    func testHandleApplicationDidBecomeActivePreventsConcurrentSyncs() async {
+        let transactionId = "cached_transaction_1"
+        let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
+
+        self.mockLocalTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Call handleApplicationDidBecomeActive multiple times rapidly
+        self.orchestrator.handleApplicationDidBecomeActive()
+        self.orchestrator.handleApplicationDidBecomeActive()
+        self.orchestrator.handleApplicationDidBecomeActive()
+
+        // Wait for the backend to be invoked
+        await expect(self.backend.invokedPostReceiptData).toEventually(beTrue())
+
+        // Wait a bit more to ensure any duplicate calls would have completed
+        try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
+
+        // Should only have posted once despite multiple calls
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+    }
+
     // MARK: - Helper methods
 
     private func createCachedMetadata(
