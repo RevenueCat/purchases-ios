@@ -868,7 +868,7 @@ class CustomVariablesV2Tests: TestCase {
         )
 
         let result = variableHandler.processVariables(
-            in: "Hello {{ $custom.player_name }}!",
+            in: "Hello {{ custom.player_name }}!",
             with: TestData.monthlyPackage,
             locale: locale,
             localizations: localizations["en_US"]!
@@ -887,7 +887,7 @@ class CustomVariablesV2Tests: TestCase {
         )
 
         let result = variableHandler.processVariables(
-            in: "Hello {{ $custom.player_name }}!",
+            in: "Hello {{ custom.player_name }}!",
             with: TestData.monthlyPackage,
             locale: locale,
             localizations: localizations["en_US"]!
@@ -906,7 +906,7 @@ class CustomVariablesV2Tests: TestCase {
         )
 
         let result = variableHandler.processVariables(
-            in: "Hello {{ $custom.unknown_var }}!",
+            in: "Hello {{ custom.unknown_var }}!",
             with: TestData.monthlyPackage,
             locale: locale,
             localizations: localizations["en_US"]!
@@ -925,7 +925,7 @@ class CustomVariablesV2Tests: TestCase {
         )
 
         let result = variableHandler.processVariables(
-            in: "Hello {{ $custom.player_name | uppercase }}!",
+            in: "Hello {{ custom.player_name | uppercase }}!",
             with: TestData.monthlyPackage,
             locale: locale,
             localizations: localizations["en_US"]!
@@ -944,7 +944,7 @@ class CustomVariablesV2Tests: TestCase {
         )
 
         let result = variableHandler.processVariables(
-            in: "Your max health is {{ $custom.max_health }}.",
+            in: "Your max health is {{ custom.max_health }}.",
             with: TestData.monthlyPackage,
             locale: locale,
             localizations: localizations["en_US"]!
@@ -963,7 +963,7 @@ class CustomVariablesV2Tests: TestCase {
         )
 
         let result = variableHandler.processVariables(
-            in: "Premium status: {{ $custom.is_premium }}",
+            in: "Premium status: {{ custom.is_premium }}",
             with: TestData.monthlyPackage,
             locale: locale,
             localizations: localizations["en_US"]!
@@ -987,7 +987,7 @@ class CustomVariablesV2Tests: TestCase {
         )
 
         let result = variableHandler.processVariables(
-            in: "{{ $custom.player_name }} (Level {{ $custom.level }}) - Max HP: {{ $custom.max_health }}",
+            in: "{{ custom.player_name }} (Level {{ custom.level }}) - Max HP: {{ custom.max_health }}",
             with: TestData.monthlyPackage,
             locale: locale,
             localizations: localizations["en_US"]!
@@ -1006,7 +1006,7 @@ class CustomVariablesV2Tests: TestCase {
         )
 
         let result = variableHandler.processVariables(
-            in: "Hello {{ $custom.player_name }}! Subscribe for {{ product.price }}/{{ product.period }}",
+            in: "Hello {{ custom.player_name }}! Subscribe for {{ product.price }}/{{ product.period }}",
             with: TestData.monthlyPackage,
             locale: locale,
             localizations: localizations["en_US"]!
@@ -1025,71 +1025,12 @@ class CustomVariablesV2Tests: TestCase {
         )
 
         let result = variableHandler.processVariables(
-            in: "Setting: {{ $custom.setting }}",
+            in: "Setting: {{ custom.setting }}",
             with: TestData.monthlyPackage,
             locale: locale,
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("Setting: override"))
-    }
-
-    // MARK: - Custom Variable Prefix Tests (without $)
-
-    func testCustomVariableWithoutDollarPrefix() {
-        let variableHandler = VariableHandlerV2(
-            variableCompatibilityMap: [:],
-            functionCompatibilityMap: [:],
-            discountRelativeToMostExpensivePerMonth: nil,
-            showZeroDecimalPlacePrices: false,
-            customVariables: ["player_name": "John"],
-            defaultCustomVariables: [:]
-        )
-
-        let result = variableHandler.processVariables(
-            in: "Hello {{ custom.player_name }}!",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
-        )
-        expect(result).to(equal("Hello John!"))
-    }
-
-    func testCustomVariableWithoutDollarPrefixFallsBackToDefault() {
-        let variableHandler = VariableHandlerV2(
-            variableCompatibilityMap: [:],
-            functionCompatibilityMap: [:],
-            discountRelativeToMostExpensivePerMonth: nil,
-            showZeroDecimalPlacePrices: false,
-            customVariables: [:],
-            defaultCustomVariables: ["max_health": "100"]
-        )
-
-        let result = variableHandler.processVariables(
-            in: "Your max health is {{ custom.max_health }}.",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
-        )
-        expect(result).to(equal("Your max health is 100."))
-    }
-
-    func testCustomVariableWithoutDollarPrefixWithFunction() {
-        let variableHandler = VariableHandlerV2(
-            variableCompatibilityMap: [:],
-            functionCompatibilityMap: [:],
-            discountRelativeToMostExpensivePerMonth: nil,
-            showZeroDecimalPlacePrices: false,
-            customVariables: ["name": "john"],
-            defaultCustomVariables: [:]
-        )
-
-        let result = variableHandler.processVariables(
-            in: "Hello {{ custom.name | uppercase }}!",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
-        )
-        expect(result).to(equal("Hello JOHN!"))
     }
 
 }

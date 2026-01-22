@@ -18,9 +18,9 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct VariableHandlerV2 {
 
-    /// Supported prefixes for custom variables.
-    /// We support both `$custom.` and `custom.` for flexibility.
-    private static let customVariablePrefixes = ["$custom.", "custom."]
+    /// Prefix for custom variables in paywall text.
+    /// Custom variables use the `{{ custom.variable_name }}` syntax.
+    private static let customVariablePrefix = "custom."
 
     private let variableCompatibilityMap: [String: String]
     private let functionCompatibilityMap: [String: String]
@@ -61,9 +61,9 @@ struct VariableHandlerV2 {
         countdownTime: CountdownTime? = nil
     ) -> String {
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
-            // Check for custom variable first (supports both $custom. and custom. prefixes)
-            if let matchedPrefix = Self.customVariablePrefixes.first(where: { variableRaw.hasPrefix($0) }) {
-                let processedValue = self.processCustomVariable(variableRaw, prefix: matchedPrefix)
+            // Check for custom variable first (uses custom. prefix)
+            if variableRaw.hasPrefix(Self.customVariablePrefix) {
+                let processedValue = self.processCustomVariable(variableRaw)
                 let function = functionRaw.flatMap { self.findFunction($0) }
                 return function?.process(processedValue) ?? processedValue
             }
@@ -90,8 +90,8 @@ struct VariableHandlerV2 {
 
     /// Process a custom variable, returning the resolved value.
     /// Resolution order: SDK-provided value -> default value from dashboard -> empty string (with debug warning)
-    private func processCustomVariable(_ variableRaw: String, prefix: String) -> String {
-        let key = String(variableRaw.dropFirst(prefix.count))
+    private func processCustomVariable(_ variableRaw: String) -> String {
+        let key = String(variableRaw.dropFirst(Self.customVariablePrefix.count))
 
         Logger.verbose(Strings.paywall_custom_variable_resolving(
             variableName: key,

@@ -32,7 +32,6 @@ import SwiftUI
 /// ```
 /// Hello {{ custom.player_name }}!
 /// ```
-/// Note: Both `{{ custom.key }}` and `{{ $custom.key }}` formats are supported.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum CustomVariableValue: Sendable, Equatable, Hashable {
 
@@ -142,7 +141,7 @@ extension View {
     /// Sets custom variables to be used in paywall text replacement.
     ///
     /// Custom variables allow you to personalize paywall text with dynamic values.
-    /// Variables are defined in the RevenueCat dashboard using the `{{ $custom.key }}` syntax.
+    /// Variables are defined in the RevenueCat dashboard using the `{{ custom.key }}` syntax.
     ///
     /// ### Example
     /// ```swift
@@ -163,7 +162,7 @@ extension View {
     /// ```
     ///
     /// - Parameter variables: A dictionary mapping variable names to their values.
-    ///   The keys should match the variable names defined in the dashboard (without the `$custom.` prefix).
+    ///   The keys should match the variable names defined in the dashboard (without the `custom.` prefix).
     /// - Returns: A view with the custom variables set in the environment.
     public func customPaywallVariables(
         _ variables: [String: CustomVariableValue]

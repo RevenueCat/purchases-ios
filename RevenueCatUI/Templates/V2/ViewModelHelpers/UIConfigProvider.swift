@@ -36,7 +36,7 @@ final class UIConfigProvider {
     }
 
     /// Returns the default values for custom variables defined in the dashboard.
-    /// Keys are variable names (without the `$custom.` prefix), values are the default values as strings.
+    /// Keys are variable names (without the `custom.` prefix), values are the default values as strings.
     var defaultCustomVariables: [String: String] {
         let defaults = self.uiConfig.customVariables.mapValues { $0.defaultValue }
         if !hasLoggedCustomVariablesStatus {

@@ -50,7 +50,7 @@ public class PaywallViewController: UIViewController {
     /// Custom variables to be used in paywall text replacement.
     ///
     /// Set this property before presenting the view controller to provide custom variable values.
-    /// Variables are defined in the RevenueCat dashboard using the `{{ $custom.key }}` syntax.
+    /// Variables are defined in the RevenueCat dashboard using the `{{ custom.key }}` syntax.
     ///
     /// ### Example
     /// ```swift
