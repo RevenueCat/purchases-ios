@@ -202,6 +202,42 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetKochavaDeviceIDParametersList.append((kochavaDeviceID, appUserID))
     }
 
+    var invokedSetSolarEngineDistinctId = false
+    var invokedSetSolarEngineDistinctIdCount = 0
+    var invokedSetSolarEngineDistinctIdParameters: (solarEngineDistinctId: String?, appUserID: String?)?
+    var invokedSetSolarEngineDistinctIdParametersList = [(solarEngineDistinctId: String?, appUserID: String?)]()
+
+    override func setSolarEngineDistinctId(_ solarEngineDistinctId: String?, appUserID: String) {
+        invokedSetSolarEngineDistinctId = true
+        invokedSetSolarEngineDistinctIdCount += 1
+        invokedSetSolarEngineDistinctIdParameters = (solarEngineDistinctId, appUserID)
+        invokedSetSolarEngineDistinctIdParametersList.append((solarEngineDistinctId, appUserID))
+    }
+
+    var invokedSetSolarEngineAccountId = false
+    var invokedSetSolarEngineAccountIdCount = 0
+    var invokedSetSolarEngineAccountIdParameters: (solarEngineAccountId: String?, appUserID: String?)?
+    var invokedSetSolarEngineAccountIdParametersList = [(solarEngineAccountId: String?, appUserID: String?)]()
+
+    override func setSolarEngineAccountId(_ solarEngineAccountId: String?, appUserID: String) {
+        invokedSetSolarEngineAccountId = true
+        invokedSetSolarEngineAccountIdCount += 1
+        invokedSetSolarEngineAccountIdParameters = (solarEngineAccountId, appUserID)
+        invokedSetSolarEngineAccountIdParametersList.append((solarEngineAccountId, appUserID))
+    }
+
+    var invokedSetSolarEngineVisitorId = false
+    var invokedSetSolarEngineVisitorIdCount = 0
+    var invokedSetSolarEngineVisitorIdParameters: (solarEngineVisitorId: String?, appUserID: String?)?
+    var invokedSetSolarEngineVisitorIdParametersList = [(solarEngineVisitorId: String?, appUserID: String?)]()
+
+    override func setSolarEngineVisitorId(_ solarEngineVisitorId: String?, appUserID: String) {
+        invokedSetSolarEngineVisitorId = true
+        invokedSetSolarEngineVisitorIdCount += 1
+        invokedSetSolarEngineVisitorIdParameters = (solarEngineVisitorId, appUserID)
+        invokedSetSolarEngineVisitorIdParametersList.append((solarEngineVisitorId, appUserID))
+    }
+
     var invokedSetMixpanelDistinctID = false
     var invokedSetMixpanelDistinctIDCount = 0
     var invokedSetMixpanelDistinctIDParameters: (mixpanelDistinctID: String?, appUserID: String?)?

@@ -34,6 +34,8 @@
 		53DA4FA02D9D8DA500D0CB3A /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 53DA4F9F2D9D8DA500D0CB3A /* RevenueCatUI */; };
 		53E9CF9A2DAD41F5000285C6 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 53E9CF992DAD41F5000285C6 /* RevenueCat */; };
 		53E9CF9C2DAD41F5000285C6 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 53E9CF9B2DAD41F5000285C6 /* RevenueCatUI */; };
+		BF03C6B52020202020202020 /* PaywallsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF03C6B42020202020202020 /* PaywallsTabView.swift */; };
+		F486E0442020202020202020 /* CustomerCenterTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F486E0432020202020202020 /* CustomerCenterTabView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +63,8 @@
 		5364A73C2DF198E3007436B0 /* HealthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthViewModel.swift; sourceTree = "<group>"; };
 		5364A73D2DF198E3007436B0 /* SampleCatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleCatApp.swift; sourceTree = "<group>"; };
 		5364A73E2DF198E3007436B0 /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
+		BF03C6B42020202020202020 /* PaywallsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsTabView.swift; sourceTree = "<group>"; };
+		F486E0432020202020202020 /* CustomerCenterTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterTabView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +134,8 @@
 			children = (
 				5364A7252DF198E3007436B0 /* Offerings */,
 				5364A7282DF198E3007436B0 /* Products */,
+				A89794432020202020202020 /* CustomerCenter */,
+				68A906072020202020202020 /* Paywalls */,
 				5364A72B2DF198E3007436B0 /* Views */,
 				5364A72C2DF198E3007436B0 /* ContentView.swift */,
 				5364A72D2DF198E3007436B0 /* FullScreenErrorView.swift */,
@@ -194,6 +200,22 @@
 				5364A73E2DF198E3007436B0 /* UserViewModel.swift */,
 			);
 			path = SampleCat;
+			sourceTree = "<group>";
+		};
+		68A906072020202020202020 /* Paywalls */ = {
+			isa = PBXGroup;
+			children = (
+				BF03C6B42020202020202020 /* PaywallsTabView.swift */,
+			);
+			path = Paywalls;
+			sourceTree = "<group>";
+		};
+		A89794432020202020202020 /* CustomerCenter */ = {
+			isa = PBXGroup;
+			children = (
+				F486E0432020202020202020 /* CustomerCenterTabView.swift */,
+			);
+			path = CustomerCenter;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -297,6 +319,8 @@
 				5364A7532DF198E3007436B0 /* HealthViewModel.swift in Sources */,
 				5364A7542DF198E3007436B0 /* SampleCatApp.swift in Sources */,
 				5364A7552DF198E3007436B0 /* UserViewModel.swift in Sources */,
+				F486E0442020202020202020 /* CustomerCenterTabView.swift in Sources */,
+				BF03C6B52020202020202020 /* PaywallsTabView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -507,7 +531,7 @@
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 5.52.0;
+				minimumVersion = 5.55.2;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
