@@ -18,7 +18,6 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
 
     var cacheDirectory: URL?
     var workingCacheDirectory: URL?
-    var workingDocsDirectory: URL?
     let lock = NSLock()
 
     var saveDataInvocations: [SaveData] = []
@@ -124,16 +123,13 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
         removeInvocations.append(url)
     }
 
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
-        let url = cacheDirectory?.appendingPathComponent(basePath)
-        workingCacheDirectory = url
-        return url
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
+        workingCacheDirectory = cacheDirectoryURL(basePath: basePath)
+        return workingCacheDirectory
     }
 
-    func createDocumentDirectoryIfNeeded(basePath: String) -> URL? {
-        let url = cacheDirectory?.appendingPathComponent("docs–" + basePath)
-        workingDocsDirectory = url
-        return url
+    func cacheDirectoryURL(basePath: String) -> URL? {
+        cacheDirectory?.appendingPathComponent(basePath)
     }
 
     func contentsOfDirectory(at url: URL) throws -> [URL] {

@@ -72,13 +72,13 @@ class SynchronizedLargeItemCacheTests: TestCase {
         XCTAssertEqual(mock.removeInvocations.count, 1)
     }
 
-    func testClearRemovesEntireDocumentDirectory() throws {
+    func testClearRemovesEntireCacheDirectory() throws {
         let (mock, sut) = self.makeSystemUnderTest()
 
         sut.clear()
 
         XCTAssertEqual(mock.removeInvocations.count, 1)
-        XCTAssertEqual(mock.removeInvocations[0], mock.workingDocsDirectory)
+        XCTAssertEqual(mock.removeInvocations[0], mock.workingCacheDirectory)
     }
 
     func testSetReturnsFalseWhenCacheWriteFails() throws {
