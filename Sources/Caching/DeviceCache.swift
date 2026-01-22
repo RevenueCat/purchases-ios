@@ -847,22 +847,23 @@ private extension DeviceCache {
                 return value
             }
 
-            guard let newCacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: Self.defaultBasePath) else {
-                return nil
-            }
-            let newFileURL = newCacheURL.appendingPathComponent(key)
-
-            // Try to load from old location
+            // Make sure the old file (still) exists
             guard fileManager.fileExists(atPath: oldFileURL.path) else {
                 return nil
             }
 
+            // Try to load from old location
             // If decoding of the file from the old location fails, remove it since the file is corrupt
             guard let data = try? Data(contentsOf: oldFileURL),
                   let value: Value = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
                 try? fileManager.removeItem(at: oldFileURL)
                 return nil
             }
+
+            guard let newCacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: Self.defaultBasePath) else {
+                return nil
+            }
+            let newFileURL = newCacheURL.appendingPathComponent(key)
 
             // Make sure the new location exists
             guard fileManager.fileExists(atPath: newCacheURL.path) else {
