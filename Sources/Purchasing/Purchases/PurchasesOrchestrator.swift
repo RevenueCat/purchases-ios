@@ -1633,6 +1633,9 @@ private extension PurchasesOrchestrator {
         )
 
         for await (transactionData, result) in resultsStream {
+            if let customerInfo = try? result.get() {
+                self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: currentAppUserID)
+            }
             self.markSyncedIfNeeded(
                 subscriberAttributes: transactionData.unsyncedAttributes,
                 adServicesToken: transactionData.aadAttributionToken,
