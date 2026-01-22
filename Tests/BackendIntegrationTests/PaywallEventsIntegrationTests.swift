@@ -76,6 +76,46 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
         self.verifyTransactionHandled(with: transaction, sessionID: nil)
     }
 
+    // MARK: - Events that do NOT cache paywall data
+
+    func testImpressionAloneDoesNotIncludePaywallData() async throws {
+        // Only tracking impression should NOT include paywall data
+        // (paywall data is only cached on purchaseInitiated)
+        try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
+
+        let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
+
+        self.verifyTransactionHandled(with: transaction, sessionID: nil)
+    }
+
+    // MARK: - Events that do NOT clear the cache
+
+    func testCloseDoesNotClearPurchaseInitiatedPaywall() async throws {
+        // close event should NOT clear the purchaseInitiated cache
+        try await self.purchases.track(paywallEvent: .purchaseInitiated(.init(), self.eventData))
+        try await self.purchases.track(paywallEvent: .close(.init(), self.eventData))
+
+        let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
+
+        // Paywall data should still be included because close doesn't clear the cache
+        self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)
+    }
+
+    func testExitOfferDoesNotClearPurchaseInitiatedPaywall() async throws {
+        // exitOffer event should NOT clear the purchaseInitiated cache
+        let exitOfferData = PaywallEvent.ExitOfferData(
+            exitOfferType: .dismiss,
+            exitOfferingIdentifier: "exit_offer_id"
+        )
+        try await self.purchases.track(paywallEvent: .purchaseInitiated(.init(), self.eventData))
+        try await self.purchases.track(paywallEvent: .exitOffer(.init(), self.eventData, exitOfferData))
+
+        let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
+
+        // Paywall data should still be included because exitOffer doesn't clear the cache
+        self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)
+    }
+
     @available(iOS 17.0, *)
     func testPurchasingAfterAFailureAndPurchaseErrorEventClearsPaywallData() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
