@@ -380,7 +380,8 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         // Wait a bit more to ensure any duplicate calls would have completed
         try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
 
-        // Should only have posted once despite multiple calls
+        // Should only have gotten cached metadata once and posted receipt once
+        expect(self.mockLocalTransactionMetadataStore.invokedGetAllStoredMetadataCount.value) == 1
         expect(self.backend.invokedPostReceiptDataCount) == 1
     }
 

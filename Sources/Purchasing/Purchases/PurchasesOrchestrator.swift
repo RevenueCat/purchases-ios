@@ -1625,7 +1625,6 @@ private extension PurchasesOrchestrator {
     }
 
     func performCachedTransactionMetadataSync() async {
-        // Prevent multiple simultaneous syncs
         guard self.isSyncingCachedTransactionMetadata.getAndSet(true) == false else {
             Logger.debug(Strings.purchase.cached_transaction_metadata_sync_already_in_progress)
             return
