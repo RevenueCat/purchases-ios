@@ -247,26 +247,26 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         expect(expectedResultCalled) == true
     }
 
-    // MARK: - handleApplicationDidBecomeActive (Cached Transaction Metadata Sync)
+    // MARK: - syncRemainingCachedTransactionMetadataIfNeeded (Cached Transaction Metadata Sync)
 
-    func testHandleApplicationDidBecomeActiveSyncsMetadataWhenNoCachedMetadata() {
+    func testSyncRemainingCachedTransactionMetadataDoesNothingWhenNoCachedMetadata() {
         // No metadata stored - should not call backend
         expect(self.mockLocalTransactionMetadataStore.getAllStoredMetadata()).to(beEmpty())
 
-        self.orchestrator.handleApplicationDidBecomeActive()
+        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         expect(self.operationDispatcher.invokedDispatchOnWorkerThread) == true
         expect(self.backend.invokedPostReceiptData) == false
     }
 
-    func testHandleApplicationDidBecomeActivePostsCachedMetadata() async {
+    func testSyncRemainingCachedTransactionMetadataPostsCachedMetadata() async {
         let transactionId = "cached_transaction_1"
         let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
 
         self.mockLocalTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        self.orchestrator.handleApplicationDidBecomeActive()
+        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         await expect(self.backend.invokedPostReceiptData).toEventually(beTrue())
         await expect(self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier)
@@ -275,35 +275,35 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
             .toEventually(equal(transactionId))
     }
 
-    func testHandleApplicationDidBecomeActiveCachesCustomerInfoOnSuccess() async {
+    func testSyncRemainingCachedTransactionMetadataCachesCustomerInfoOnSuccess() async {
         let transactionId = "cached_transaction_1"
         let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
 
         self.mockLocalTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        self.orchestrator.handleApplicationDidBecomeActive()
+        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         await expect(self.customerInfoManager.invokedCacheCustomerInfo).toEventually(beTrue())
         await expect(self.customerInfoManager.invokedCacheCustomerInfoParameters?.info)
             .toEventually(beIdenticalTo(self.mockCustomerInfo))
     }
 
-    func testHandleApplicationDidBecomeActiveRemovesMetadataOnSuccess() async {
+    func testSyncRemainingCachedTransactionMetadataRemovesMetadataOnSuccess() async {
         let transactionId = "cached_transaction_1"
         let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
 
         self.mockLocalTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        self.orchestrator.handleApplicationDidBecomeActive()
+        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         await expect(self.mockLocalTransactionMetadataStore.invokedRemoveMetadata.value).toEventually(beTrue())
         await expect(self.mockLocalTransactionMetadataStore.invokedRemoveMetadataTransactionId.value)
             .toEventually(equal(transactionId))
     }
 
-    func testHandleApplicationDidBecomeActivePostsMultipleEntries() async {
+    func testSyncRemainingCachedTransactionMetadataPostsMultipleEntries() async {
         let transactionId1 = "cached_transaction_1"
         let transactionId2 = "cached_transaction_2"
         let metadata1 = self.createCachedMetadata(transactionId: transactionId1, productIdentifier: "product_1")
@@ -313,37 +313,37 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         self.mockLocalTransactionMetadataStore.storeMetadata(metadata2, forTransactionId: transactionId2)
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        self.orchestrator.handleApplicationDidBecomeActive()
+        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(2))
     }
 
-    func testHandleApplicationDidBecomeActiveUsesCurrentAppUserID() async {
+    func testSyncRemainingCachedTransactionMetadataUsesCurrentAppUserID() async {
         let transactionId = "cached_transaction_1"
         let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
 
         self.mockLocalTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        self.orchestrator.handleApplicationDidBecomeActive()
+        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         await expect(self.backend.invokedPostReceiptDataParameters?.appUserID).toEventually(equal(Self.mockUserID))
     }
 
-    func testHandleApplicationDidBecomeActiveUsesQueueInitiationSource() async {
+    func testSyncRemainingCachedTransactionMetadataUsesQueueInitiationSource() async {
         let transactionId = "cached_transaction_1"
         let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
 
         self.mockLocalTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        self.orchestrator.handleApplicationDidBecomeActive()
+        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         await expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource)
             .toEventually(equal(.queue))
     }
 
-    func testHandleApplicationDidBecomeActiveDoesNotCacheCustomerInfoOnFailure() async {
+    func testSyncRemainingCachedTransactionMetadataDoesNotCacheCustomerInfoOnFailure() async {
         let transactionId = "cached_transaction_1"
         let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
 
@@ -354,7 +354,7 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         let nonFinishableError = BackendError.networkError(.networkError(networkError))
         self.backend.stubbedPostReceiptResult = .failure(nonFinishableError)
 
-        self.orchestrator.handleApplicationDidBecomeActive()
+        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         // Wait for the backend to be invoked (meaning the async work completed)
         await expect(self.backend.invokedPostReceiptData).toEventually(beTrue())
@@ -362,17 +362,17 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         expect(self.customerInfoManager.invokedCacheCustomerInfo) == false
     }
 
-    func testHandleApplicationDidBecomeActivePreventsConcurrentSyncs() async {
+    func testSyncRemainingCachedTransactionMetadataPreventsConcurrentSyncs() async {
         let transactionId = "cached_transaction_1"
         let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
 
         self.mockLocalTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        // Call handleApplicationDidBecomeActive multiple times rapidly
-        self.orchestrator.handleApplicationDidBecomeActive()
-        self.orchestrator.handleApplicationDidBecomeActive()
-        self.orchestrator.handleApplicationDidBecomeActive()
+        // Call syncRemainingCachedTransactionMetadataIfNeeded multiple times rapidly
+        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
+        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
+        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         // Wait for the backend to be invoked
         await expect(self.backend.invokedPostReceiptData).toEventually(beTrue())

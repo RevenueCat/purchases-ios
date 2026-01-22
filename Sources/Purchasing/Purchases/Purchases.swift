@@ -2159,6 +2159,7 @@ private extension Purchases {
         // of purchases due to pop-ups stealing focus from the app.
         self.updateAllCachesIfNeeded(isAppBackgrounded: false)
         self.dispatchSyncSubscriberAttributes()
+        self.purchasesOrchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
