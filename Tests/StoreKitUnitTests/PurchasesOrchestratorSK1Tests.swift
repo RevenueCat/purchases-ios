@@ -634,6 +634,39 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testPurchaseBeforePaywallEventDoesNotIncludePaywallData() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        // Track a purchaseInitiated event with a date in the FUTURE (2050)
+        // This simulates processing a transaction that was purchased BEFORE the paywall event
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationDataInFuture,
+            Self.paywallEventWithPurchaseInfo
+        ))
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // Verify the backend was called
+        expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
+        // The paywall data should NOT be included because the transaction's purchase date
+        // is before the paywall event's creation date
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
+        ).to(beNil())
+    }
+
     // MARK: - AdServices and Attributes
 
     func testPurchaseDoesNotPostAdServicesTokenIfNotEnabled() async throws {

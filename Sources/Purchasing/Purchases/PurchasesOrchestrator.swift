@@ -1949,8 +1949,10 @@ private extension PurchasesOrchestrator {
                 return nil
             }
 
-            guard paywall.data.productId == transaction.productIdentifier else {
-                // Keep the cache if product doesn't match - this transaction is not from the cached paywall
+            let shouldAttributePaywallToPurchase = paywall.data.productId == transaction.productIdentifier
+            && paywall.creationData.date <= transaction.purchaseDate
+
+            guard shouldAttributePaywallToPurchase else {
                 return nil
             }
 

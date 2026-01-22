@@ -604,6 +604,40 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testPurchaseBeforePaywallEventDoesNotIncludePaywallData() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Track a purchaseInitiated event with a date in the FUTURE (2050)
+        // This simulates processing a transaction that was purchased BEFORE the paywall event
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationDataInFuture,
+            Self.paywallEventWithPurchaseInfo
+        ))
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+
+        _ = try await self.orchestrator.purchase(sk2Product: product,
+                                                 package: nil,
+                                                 promotionalOffer: nil,
+                                                 winBackOffer: nil,
+                                                 introductoryOfferEligibilityJWS: nil,
+                                                 promotionalOfferOptions: nil)
+
+        // Verify the backend was called
+        expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
+        // The paywall data should NOT be included because the transaction's purchase date
+        // is before the paywall event's creation date
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
+        ).to(beNil())
+    }
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSyncsPaywallEvents() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()

@@ -298,6 +298,13 @@ extension BasePurchasesOrchestratorTests {
         date: .init(timeIntervalSince1970: 1694029328)
     )
 
+    /// A paywall event creation data with a date far in the future (year 2050)
+    /// Used to test that transactions purchased BEFORE the paywall event are not attributed
+    static let paywallEventCreationDataInFuture: PaywallEvent.CreationData = .init(
+        id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+        date: .init(timeIntervalSince1970: 2524608000) // January 1, 2050
+    )
+
     static let paywallEvent: PaywallEvent.Data = .init(
         offeringIdentifier: "offering",
         paywallRevision: 5,
