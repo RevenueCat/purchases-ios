@@ -114,7 +114,12 @@ extension SynchronizedLargeItemCache {
 
         func stubLoadFile(at url: URL, with result: Result<Data, Error>) {
             lock.withLock {
-                loadFileResponsesByURL[cacheURL(from: url)] = result
+                let cacheKey = cacheURL(from: url)
+                loadFileResponsesByURL[cacheKey] = result
+
+                if case .success = result {
+                    cachedContentExistsByURL[cacheKey] = true
+                }
             }
         }
 
