@@ -74,8 +74,10 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
             transaction = StoreTransaction(sk2Transaction: mockTransaction,
                                            jwsRepresentation: self.mockJWSToken,
                                            environmentOverride: self.mockEnvironment)
-        } else if let mockResult  = self.mockResult.value {
-            if let verificationResult = mockResult.verificationResult {
+        } else if let mockResult = self.mockResult.value {
+            if case .userCancelled = mockResult {
+                return .userCancelled
+            } else if let verificationResult = mockResult.verificationResult {
                 transaction = StoreTransaction(sk2Transaction: verificationResult.underlyingTransaction,
                                                jwsRepresentation: self.mockJWSToken,
                                                environmentOverride: self.mockEnvironment)

@@ -162,7 +162,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(transaction).to(beNil())
         expect(customerInfo) == self.mockCustomerInfo
-        expect(cancelled) == false
+        expect(cancelled) == true
         expect(self.backend.invokedPostReceiptData) == false
     }
 
