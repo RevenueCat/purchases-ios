@@ -21,9 +21,13 @@ enum DirectoryHelper {
         case persistence
     }
 
-    static func baseUrl(for type: DirectoryType) -> URL? {
+    static func baseUrl(for type: DirectoryType, inAppSpecificDirectory: Bool = true) -> URL? {
         guard let baseDirectory = type.url, let bundleIdentifier = Bundle.main.bundleIdentifier else {
             return nil
+        }
+
+        guard inAppSpecificDirectory else {
+            return baseDirectory
         }
 
         let appSpecificRevenueCatDirectory = "\(bundleIdentifier).revenuecat"
