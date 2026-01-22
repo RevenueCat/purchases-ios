@@ -67,9 +67,6 @@ public struct PaywallView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    @Environment(\.customPaywallVariables)
-    private var customVariables
-
     /// Create a view to display the paywall in `Offerings.current`.
     ///
     /// - Parameter fonts: An optional ``PaywallFontProvider``.

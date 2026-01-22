@@ -797,6 +797,22 @@ struct App: View {
     }
 
     @ViewBuilder
+    var checkCustomPaywallVariables: some View {
+        let customVariables: [String: CustomVariableValue] = [
+            "player_name": .string("John"),
+            "max_health": .number(100),
+            "is_premium": .bool(true)
+        ]
+
+        PaywallView()
+            .customPaywallVariables(customVariables)
+        PaywallView(offering: self.offering)
+            .customPaywallVariables(customVariables)
+        Text("")
+            .customPaywallVariables(customVariables)
+    }
+
+    @ViewBuilder
     var checkOnFailures: some View {
         Text("")
             .onPurchaseFailure(self.failureHandler)

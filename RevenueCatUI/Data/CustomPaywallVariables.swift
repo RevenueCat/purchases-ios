@@ -9,7 +9,7 @@
 //
 //  CustomPaywallVariables.swift
 //
-//  Created by RevenueCat.
+//  Created by Facundo Menzella on 1/22/26.
 
 import SwiftUI
 

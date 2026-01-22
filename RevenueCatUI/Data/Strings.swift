@@ -92,12 +92,6 @@ enum Strings {
 
     // Custom Variables
     case paywall_custom_variable_not_found(variableName: String)
-    case paywall_no_default_custom_variables
-    case paywall_custom_variables_loaded(count: Int)
-    case paywall_custom_variable_resolving(variableName: String, sdkProvidedCount: Int, defaultCount: Int)
-    case paywall_custom_variable_resolved_sdk(variableName: String, value: String)
-    case paywall_custom_variable_resolved_default(variableName: String, value: String)
-    case paywall_custom_variable_available_keys(sdkKeys: [String], defaultKeys: [String])
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -311,26 +305,6 @@ extension Strings: CustomStringConvertible {
         case .paywall_custom_variable_not_found(let variableName):
             return "Custom variable '\(variableName)' was not found. " +
             "Make sure to provide a value using .customPaywallVariables() or set a default in the dashboard."
-
-        case .paywall_no_default_custom_variables:
-            return "No default custom variables found in ui_config. " +
-            "If you expected defaults, make sure they are configured in the RevenueCat dashboard."
-
-        case .paywall_custom_variables_loaded(let count):
-            return "Loaded \(count) default custom variable(s) from ui_config"
-
-        case .paywall_custom_variable_resolving(let variableName, let sdkProvidedCount, let defaultCount):
-            return "Resolving custom variable '\(variableName)' " +
-            "(SDK-provided: \(sdkProvidedCount), defaults: \(defaultCount))"
-
-        case .paywall_custom_variable_resolved_sdk(let variableName, let value):
-            return "Custom variable '\(variableName)' resolved from SDK-provided value: '\(value)'"
-
-        case .paywall_custom_variable_resolved_default(let variableName, let value):
-            return "Custom variable '\(variableName)' resolved from default value: '\(value)'"
-
-        case .paywall_custom_variable_available_keys(let sdkKeys, let defaultKeys):
-            return "Available custom variable keys - SDK-provided: \(sdkKeys), defaults: \(defaultKeys)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"

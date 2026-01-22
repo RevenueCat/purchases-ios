@@ -71,6 +71,32 @@ public class PaywallViewController: UIViewController {
         }
     }
 
+    // MARK: - Objective-C Custom Variable Methods
+
+    /// Sets a string custom variable value for the given key.
+    /// - Parameters:
+    ///   - value: The string value to set.
+    ///   - key: The variable key (without the `custom.` prefix).
+    @objc public func setCustomVariable(_ value: String, forKey key: String) {
+        self.customVariables[key] = .string(value)
+    }
+
+    /// Sets a numeric custom variable value for the given key.
+    /// - Parameters:
+    ///   - value: The numeric value to set.
+    ///   - key: The variable key (without the `custom.` prefix).
+    @objc public func setCustomVariableNumber(_ value: Double, forKey key: String) {
+        self.customVariables[key] = .number(value)
+    }
+
+    /// Sets a boolean custom variable value for the given key.
+    /// - Parameters:
+    ///   - value: The boolean value to set.
+    ///   - key: The variable key (without the `custom.` prefix).
+    @objc public func setCustomVariableBool(_ value: Bool, forKey key: String) {
+        self.customVariables[key] = .bool(value)
+    }
+
     private final var shouldBlockTouchEvents: Bool
     private final var dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
 

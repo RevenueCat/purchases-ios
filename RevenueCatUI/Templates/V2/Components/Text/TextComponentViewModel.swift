@@ -125,9 +125,7 @@ class TextComponentViewModel {
         let processedWithV2AndV1 = Self.processTextV1(
             processedWithV2,
             packageContext: packageContext,
-            locale: locale,
-            customVariables: customVariables,
-            defaultCustomVariables: defaultCustomVariables
+            locale: locale
         )
 
         return processedWithV2AndV1
@@ -175,9 +173,7 @@ class TextComponentViewModel {
     private static func processTextV1(
         _ text: String,
         packageContext: PackageContext,
-        locale: Locale,
-        customVariables: [String: String] = [:],
-        defaultCustomVariables: [String: String] = [:]
+        locale: Locale
     ) -> String {
         guard let package = packageContext.package else {
             return text
@@ -190,9 +186,7 @@ class TextComponentViewModel {
 
         let context: VariableHandler.Context = .init(
             discountRelativeToMostExpensivePerMonth: discount,
-            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices,
-            customVariables: customVariables,
-            defaultCustomVariables: defaultCustomVariables
+            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices
         )
 
         return VariableHandler.processVariables(

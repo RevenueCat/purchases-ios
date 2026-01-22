@@ -65,11 +65,6 @@ enum VariableHandler {
         var discountRelativeToMostExpensivePerMonth: Double?
         var showZeroDecimalPlacePrices: Bool = false
 
-        /// Custom variables provided by the SDK at runtime (via Environment).
-        var customVariables: [String: String] = [:]
-        /// Default custom variables defined in the dashboard (from UIConfig).
-        var defaultCustomVariables: [String: String] = [:]
-
     }
 
     static func processVariables(

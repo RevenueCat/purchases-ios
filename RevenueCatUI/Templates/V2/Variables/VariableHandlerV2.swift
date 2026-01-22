@@ -89,34 +89,22 @@ struct VariableHandlerV2 {
     }
 
     /// Process a custom variable, returning the resolved value.
-    /// Resolution order: SDK-provided value -> default value from dashboard -> empty string (with debug warning)
+    /// Resolution order: SDK-provided value -> default value from dashboard -> empty string (with warning)
     private func processCustomVariable(_ variableRaw: String) -> String {
         let key = String(variableRaw.dropFirst(Self.customVariablePrefix.count))
 
-        Logger.verbose(Strings.paywall_custom_variable_resolving(
-            variableName: key,
-            sdkProvidedCount: customVariables.count,
-            defaultCount: defaultCustomVariables.count
-        ))
-
         // First, check SDK-provided custom variables
         if let value = customVariables[key] {
-            Logger.verbose(Strings.paywall_custom_variable_resolved_sdk(variableName: key, value: value))
             return value
         }
 
         // Then, check default values from the dashboard
         if let defaultValue = defaultCustomVariables[key] {
-            Logger.verbose(Strings.paywall_custom_variable_resolved_default(variableName: key, value: defaultValue))
             return defaultValue
         }
 
         // Variable not found - log warning and return empty string
         Logger.warning(Strings.paywall_custom_variable_not_found(variableName: key))
-        Logger.debug(Strings.paywall_custom_variable_available_keys(
-            sdkKeys: Array(customVariables.keys),
-            defaultKeys: Array(defaultCustomVariables.keys)
-        ))
         return ""
     }
 
