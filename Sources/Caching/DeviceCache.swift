@@ -36,6 +36,8 @@ class DeviceCache {
 
     private var offeringsCachePreferredLocales: [String] = []
 
+    private let migrationLock = Lock(.nonRecursive)
+
     init(systemInfo: SystemInfo,
          userDefaults: UserDefaults,
          cache: LargeItemCacheType = FileManager.default,
@@ -830,41 +832,43 @@ private extension DeviceCache {
     }
 
     private func migrateAndReturnValueIfNeeded<Value: Codable>(for key: String) -> Value? {
-        guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else { return nil }
+        return self.migrationLock.perform {
+            guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else { return nil }
 
-        let oldFileURL = oldDirectoryURL.appendingPathComponent(key)
+            let oldFileURL = oldDirectoryURL.appendingPathComponent(key)
 
-        // Try to load from old location
-        guard fileManager.fileExists(atPath: oldFileURL.path) else {
-            return nil
-        }
+            // Try to load from old location
+            guard fileManager.fileExists(atPath: oldFileURL.path) else {
+                return nil
+            }
 
-        // If decoding of the file from the old location fails, remove it since the file is corrupt
-        guard let data = try? Data(contentsOf: oldFileURL),
-              let value: Value = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
-            try? fileManager.removeItem(at: oldFileURL)
-            return nil
-        }
+            // If decoding of the file from the old location fails, remove it since the file is corrupt
+            guard let data = try? Data(contentsOf: oldFileURL),
+                  let value: Value = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
+                try? fileManager.removeItem(at: oldFileURL)
+                return nil
+            }
 
-        guard let newCacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: Self.defaultBasePath) else {
-            return nil
-        }
-        let newFileURL = newCacheURL.appendingPathComponent(key)
+            guard let newCacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: Self.defaultBasePath) else {
+                return nil
+            }
+            let newFileURL = newCacheURL.appendingPathComponent(key)
 
-        // Make sure the new location exists
-        guard fileManager.fileExists(atPath: newCacheURL.path) else {
+            // Make sure the new location exists
+            guard fileManager.fileExists(atPath: newCacheURL.path) else {
+                return value
+            }
+
+            // Migrate file to new location
+            do {
+                try fileManager.moveItem(at: oldFileURL, to: newFileURL)
+                self.deleteOldDocumentsDirectoryIfEmpty()
+            } catch {
+                Logger.error(Strings.cache.failed_to_migrate_file(oldFileURL.path, error))
+            }
+
             return value
         }
-
-        // Migrate file to new location
-        do {
-            try fileManager.moveItem(at: oldFileURL, to: newFileURL)
-            self.deleteOldDocumentsDirectoryIfEmpty()
-        } catch {
-            Logger.error(Strings.cache.failed_to_migrate_file(oldFileURL.path, error))
-        }
-
-        return value
     }
 
     private func deleteOldFileIfNeeded(for key: String) {
