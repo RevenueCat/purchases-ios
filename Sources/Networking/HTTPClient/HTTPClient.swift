@@ -127,7 +127,7 @@ class HTTPClient {
             "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)"
         ]
 
-        if let storefront = self.systemInfo.storefront {
+        if let storefront = self.getStorefrontSynchronously() {
             headers["X-Storefront"] = storefront.countryCode
         }
 
@@ -148,6 +148,24 @@ class HTTPClient {
         }
 
         return headers
+    }
+
+    /// Returns the current storefront synchronously.
+    ///
+    /// Because this method is synchronous, it should be used only from a background thread to avoid blocking
+    /// the main thread.
+    private func getStorefrontSynchronously() -> StorefrontType? {
+        let storefront: Atomic<StorefrontType?> = .init(nil)
+        let semaphore = DispatchSemaphore(value: 0)
+
+        Task.detached(priority: .high) {
+            storefront.value = await self.systemInfo.storefront
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+
+        return storefront.value
     }
 
 }

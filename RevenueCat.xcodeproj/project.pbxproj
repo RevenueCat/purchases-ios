@@ -4303,7 +4303,6 @@
 		354235D624C11160008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
-				4D2A00672CD1EED2008318CA /* PurchaseParamsTests.swift */,
 				57E0474B27729A1E0082FE91 /* __Snapshots__ */,
 				2D1015DF275A67560086173F /* StoreKitAbstractions */,
 				5766AABB283E809D00FA6091 /* Purchases */,
@@ -4328,6 +4327,7 @@
 				57554C61282ABFD9009A7E58 /* StoreTests.swift */,
 				57554C83282AC273009A7E58 /* PeriodTypeTests.swift */,
 				57554C87282AC293009A7E58 /* PurchaseOwnershipTypeTests.swift */,
+				4D2A00672CD1EED2008318CA /* PurchaseParamsTests.swift */,
 				57BA943028330ACA00CD5FC5 /* ConfigurationTests.swift */,
 				57BB071528D282A4007F5DF0 /* CachingProductsManagerTests.swift */,
 				57E9CF10290B2ADC00EE12D1 /* CachingTrialOrIntroPriceEligibilityCheckerTests.swift */,

@@ -1255,17 +1255,19 @@ private extension PurchasesOrchestrator {
                 ?? error?.localizedDescription
             let errorCode = error?.code
             let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
-            diagnosticsTracker.trackPurchaseAttempt(wasSuccessful: successful,
-                                                    storeKitVersion: storeKitVersion,
-                                                    errorMessage: errorMessage,
-                                                    errorCode: errorCode,
-                                                    storeKitErrorDescription: storeKitErrorDescription,
-                                                    storefront: self.systemInfo.storefront?.countryCode,
-                                                    productId: productId,
-                                                    promotionalOfferId: promotionalOfferId,
-                                                    winBackOfferApplied: winBackOfferApplied,
-                                                    purchaseResult: purchaseResult,
-                                                    responseTime: responseTime)
+            Task {
+                diagnosticsTracker.trackPurchaseAttempt(wasSuccessful: successful,
+                                                        storeKitVersion: storeKitVersion,
+                                                        errorMessage: errorMessage,
+                                                        errorCode: errorCode,
+                                                        storeKitErrorDescription: storeKitErrorDescription,
+                                                        storefront: await self.systemInfo.storefront?.countryCode,
+                                                        productId: productId,
+                                                        promotionalOfferId: promotionalOfferId,
+                                                        winBackOfferApplied: winBackOfferApplied,
+                                                        purchaseResult: purchaseResult,
+                                                        responseTime: responseTime)
+            }
         }
     }
 
@@ -1969,11 +1971,14 @@ private extension PurchasesOrchestrator {
         completion: @escaping (ProductRequestData?) -> Void
     ) {
         self.productsManager.products(withIdentifiers: [productIdentifier]) { products in
-            let result = products.value?.first.map {
-                ProductRequestData(with: $0, storefront: self.systemInfo.storefront)
-            }
+            Task {
+                let storefront = await self.systemInfo.storefront
+                let result = products.value?.first.map {
+                    ProductRequestData(with: $0, storefront: storefront)
+                }
 
-            completion(result)
+                completion(result)
+            }
         }
     }
 
