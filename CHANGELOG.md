@@ -1,3 +1,35 @@
+## 5.55.2
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* fix images not being updated in paywalls v2 (#6101) via Will Taylor (@fire-at-will)
+
+### 🔄 Other Changes
+* Update CI to Xcode 26.2 (#6088) via Antonio Pallares (@ajpallares)
+* Add loading of paywall to paywall tester (#6074) via Cesar de la Vega (@vegaro)
+
+## 5.55.1
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Fix paywall selection reset after eligibility redraw (#5972) via Facundo Menzella (@facumenzella)
+* Fix gradient overlay to cover full viewport instead of image bounds (#6072) via Facundo Menzella (@facumenzella)
+* Prewarm images in tabs control (#6077) via Cesar de la Vega (@vegaro)
+* Fix image loading on tab switch with @StateObject (#6078) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Reduce flakiness of an Offline StoreKit integration test (#6084) via Antonio Pallares (@ajpallares)
+
+## 5.55.0
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* Add Basque and Serbian (Latin and Cyrillic) support for paywalls (#5995) via Rosie Watson (@RosieWatson)
+
+### 🔄 Other Changes
+* Add public initializer of `StoreTransaction` for unit tests (#6079) via Rick (@rickvdl)
+* Added a public initializer to the CustomerInfo class (#6075) via Rick (@rickvdl)
+
 ## 5.54.1
 ## RevenueCat SDK
 ### 🐞 Bugfixes

@@ -34,6 +34,7 @@ enum Strings {
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
+    case image_failed_to_load(URL, Error)
 
     case restoring_purchases
     case restored_purchases
@@ -154,6 +155,9 @@ extension Strings: CustomStringConvertible {
             case let .failure(error):
                 return "Failed loading image: \(error)"
             }
+
+        case let .image_failed_to_load(url, error):
+            return "Failed to load image from '\(url)': \(error)"
 
         case .restoring_purchases:
             return "Restoring purchases"
