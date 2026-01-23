@@ -30,15 +30,12 @@ internal final class SynchronizedLargeItemCache {
         self.cacheURL = cache.createCacheDirectoryIfNeeded(basePath: basePath)
     }
 
-    private func read<T>(_ action: (LargeItemCacheType, URL?) throws -> T) rethrows -> T {
+    @inline(__always)
+    private func withLock<T>(
+        _ action: (_ cache: LargeItemCacheType, _ documentURL: URL?) throws -> T
+    ) rethrows -> T {
         return try self.lock.perform {
             return try action(self.cache, self.cacheURL)
-        }
-    }
-
-    private func write(_ action: (LargeItemCacheType, URL?) throws -> Void) rethrows {
-        return try self.lock.perform {
-            try action(self.cache, self.cacheURL)
         }
     }
 
@@ -63,7 +60,7 @@ internal final class SynchronizedLargeItemCache {
         }
 
         do {
-            try self.write { cache, _ in
+            try self.withLock { cache, _ in
                 try cache.saveData(data, to: fileURL)
             }
             return true
@@ -79,7 +76,7 @@ internal final class SynchronizedLargeItemCache {
             return nil
         }
 
-        return self.read { cache, _ in
+        return self.withLock { cache, _ in
             if let data = try? cache.loadFile(at: fileURL) {
                 return try? JSONDecoder.default.decode(jsonData: data, logErrors: true)
             }
@@ -94,13 +91,13 @@ internal final class SynchronizedLargeItemCache {
             return
         }
 
-        self.write { _, _ in
-            try? self.cache.remove(fileURL)
+        self.withLock { cache, _ in
+            try? cache.remove(fileURL)
         }
     }
 
     func clear() {
-        self.write { cache, cacheURL in
+        self.withLock { cache, cacheURL in
             // Clear the cache directory
             if let cacheURL = cacheURL {
                 try? cache.remove(cacheURL)

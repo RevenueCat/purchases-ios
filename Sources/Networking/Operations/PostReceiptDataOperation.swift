@@ -353,7 +353,7 @@ extension PostReceiptDataOperation.PostData: HTTPRequestBody {
 
 // MARK: - InitiationSource
 
-extension ProductRequestData.InitiationSource: Encodable, RawRepresentable {
+extension ProductRequestData.InitiationSource: Codable, RawRepresentable {
 
     var rawValue: String {
         switch self {

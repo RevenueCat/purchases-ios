@@ -32,3 +32,4 @@ extension PurchasesAreCompletedBy {
 }
 
 extension PurchasesAreCompletedBy: Sendable {}
+extension PurchasesAreCompletedBy: Codable {}

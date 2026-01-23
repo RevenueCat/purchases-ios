@@ -355,7 +355,7 @@ class ETagManagerTests: TestCase {
             let responseObject: [String: AnyEncodable]
 
             var asData: Data? {
-                return try? JSONSerialization.data(withJSONObject: self.asDictionary(),
+                return try? JSONSerialization.data(withJSONObject: self.asJSONDictionary(),
                                                    options: .prettyPrinted)
             }
 
