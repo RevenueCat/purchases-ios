@@ -280,11 +280,6 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         // both will result in separate POST /receipt requests.
         try await self.logger.verifyMessageIsEventuallyLogged(
             "API request completed: POST '/v1/receipts'",
-            level: .debug
-        )
-
-        self.logger.verifyMessageWasLogged(
-            "API request completed: POST '/v1/receipts'",
             level: .debug,
             expectedCount: 2
         )
@@ -468,6 +463,52 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         self.verifySpecificTransactionWasFinished(transaction)
         self.verifyTransactionWasFinishedForProductIdentifier(Self.consumable10Coins)
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseWhileServerIsDownPreservesOfferingContextWhenServerRecovers() async throws {
+        self.logger.clearMessages()
+        self.setLongestTestSessionTimeRate(self.testSession)
+
+        // 1. Get the package to capture the offering context before purchase
+        let package = try await self.monthlyPackage
+
+        // 2. Purchase package while server is down
+        self.serverDown()
+        let purchaseData = try await self.purchases.purchase(package: package)
+        let transaction = try XCTUnwrap(purchaseData.transaction)
+
+        // Verify offline purchase succeeded but transaction wasn't finished
+        self.verifyCustomerInfoWasComputedOffline(customerInfo: purchaseData.customerInfo)
+        self.verifySpecificTransactionWasNotFinished(transaction)
+
+        // 3. Clear logs before server comes back to isolate the re-post logs
+        self.logger.clearMessages()
+
+        // 4. Server is back
+        self.allServersUp()
+
+        // 5. Request CustomerInfo to trigger receipt re-post
+        let info = try await self.purchases.customerInfo()
+        try await self.verifyEntitlementWentThrough(info)
+
+        // 6. Verify transaction is finished and receipt was posted, including the transaction id in the cache key
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            "Enqueing network operation 'PostReceiptDataOperation' with cache key:",
+            level: .verbose
+        )
+
+        let transactionId = transaction.transactionIdentifier
+        let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: .*-\(transactionId)'"
+        self.logger.verifyMessageWasLogged(regexPattern: regex,
+                                           level: .verbose,
+                                           expectedCount: 1)
+
+        self.verifySpecificTransactionWasFinished(transaction)
+        self.logger.verifyMessageWasLogged(
+            "API request completed: POST '/v1/receipts'",
+            level: .debug
+        )
     }
 
 }
