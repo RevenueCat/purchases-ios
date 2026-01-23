@@ -35,7 +35,8 @@
       "is_restore" : true,
       "observer_mode" : false,
       "presented_offering_identifier" : "offering_b",
-      "purchase_completed_by" : "revenuecat"
+      "purchase_completed_by" : "revenuecat",
+      "sdk_originated" : true
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

@@ -437,4 +437,66 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         expect(factory1.cacheKey) == factory2.cacheKey
     }
 
+    func testCacheKeyDifferenceWhenSdkOriginatedChanges() {
+        let config = self.createConfig()
+
+        let purchaseCompletedBy: PurchasesAreCompletedBy = .revenueCat
+        let observerMode = purchaseCompletedBy.observerMode
+
+        let postData1 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: "transaction_id",
+            containsAttributionData: true,
+            sdkOriginated: true
+        )
+
+        let postData2 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: "transaction_id",
+            containsAttributionData: true,
+            sdkOriginated: false
+        )
+
+        let factory1 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData1,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        let factory2 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData2,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        // Cache keys should be different when sdkOriginated differs, even with same transaction ID
+        expect(factory1.cacheKey) != factory2.cacheKey
+    }
+
 }

@@ -356,7 +356,7 @@ extension TransactionPoster {
         }
     }
 
-    // swiftlint:disable function_parameter_count
+    // swiftlint:disable function_parameter_count function_body_length
     private func postReceipt(transaction: StoreTransactionType,
                              purchasedTransactionData: PurchasedTransactionData,
                              postReceiptSource: PostReceiptSource,
@@ -383,13 +383,20 @@ extension TransactionPoster {
         let effectivePurchasesAreCompletedBy = storedTransactionMetadata?.originalPurchasesAreCompletedBy ??
         self.purchasesAreCompletedBy
 
+        // sdkOriginated indicates whether this purchase was initiated by the SDK (stored metadata takes precedence):
+        // - true when the purchase was initiated via SDK's purchase() methods (initiationSource == .purchase)
+        // - false when the purchase was detected in the queue but triggered outside the SDK
+        let sdkOriginated = storedTransactionMetadata?.sdkOriginated ??
+            (postReceiptSource.initiationSource == .purchase)
+
         if shouldStoreMetadata {
             let metadataToStore = LocalTransactionMetadata(
                 transactionId: transaction.transactionIdentifier,
                 productData: effectiveProductData,
                 transactionData: effectiveTransactionData,
                 encodedAppleReceipt: receipt,
-                originalPurchasesAreCompletedBy: effectivePurchasesAreCompletedBy
+                originalPurchasesAreCompletedBy: effectivePurchasesAreCompletedBy,
+                sdkOriginated: sdkOriginated
             )
             self.localTransactionMetadataStore.storeMetadata(metadataToStore,
                                                              forTransactionId: transaction.transactionIdentifier)
@@ -403,6 +410,7 @@ extension TransactionPoster {
                           originalPurchaseCompletedBy: effectivePurchasesAreCompletedBy,
                           appTransaction: appTransaction,
                           associatedTransactionId: transaction.transactionIdentifier,
+                          sdkOriginated: sdkOriginated,
                           appUserID: currentUserID,
                           containsAttributionData: containsAttributionData) { result in
             if containsAttributionData {
@@ -414,8 +422,7 @@ extension TransactionPoster {
                 case let .failure(error) where error.finishable:
                     self.localTransactionMetadataStore
                         .removeMetadata(forTransactionId: transaction.transactionIdentifier)
-                default:
-                    break
+                default: break
                 }
             }
             completion(result)

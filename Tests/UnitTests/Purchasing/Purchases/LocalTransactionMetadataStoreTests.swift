@@ -368,7 +368,8 @@ class LocalTransactionMetadataStoreTests: TestCase {
             productData: productData,
             transactionData: transactionData,
             encodedAppleReceipt: .receipt("test_receipt".asData),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
     }
 
@@ -407,7 +408,8 @@ class LocalTransactionMetadataStoreTests: TestCase {
             productData: productData,
             transactionData: transactionData,
             encodedAppleReceipt: .receipt("complete_test_receipt".asData),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
     }
 

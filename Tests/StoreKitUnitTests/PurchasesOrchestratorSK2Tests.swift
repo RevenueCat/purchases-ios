@@ -1207,7 +1207,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             productData: storedProductData,
             transactionData: storedTransactionData,
             encodedAppleReceipt: .receipt("test_receipt".asData),
-            originalPurchasesAreCompletedBy: .myApp
+            originalPurchasesAreCompletedBy: .myApp,
+            sdkOriginated: true
         )
 
         self.mockLocalTransactionMetadataStore.storeMetadata(
@@ -1236,6 +1237,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
         ) == "stored_offering"
         expect(self.backend.invokedPostReceiptDataParameters?.originalPurchaseCompletedBy) == .myApp
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
 
         // Verify metadata was cleared after successful post
         expect(self.mockLocalTransactionMetadataStore.invokedRemoveMetadata.value) == true
