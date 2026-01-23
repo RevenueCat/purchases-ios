@@ -190,7 +190,8 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               observerMode: observerMode,
                               originalPurchaseCompletedBy: purchaseCompletedBy,
                               associatedTransactionId: associatedTransactionId,
-                              sdkOriginated: true, appUserID: Self.userID,
+                              sdkOriginated: true,
+                              appUserID: Self.userID,
                               completion: { _ in
                 completed()
             })
