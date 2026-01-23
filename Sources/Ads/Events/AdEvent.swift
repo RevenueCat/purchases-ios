@@ -81,8 +81,8 @@ internal protocol AdImpressionEventData: AdEventData {
         super.init()
     }
 
-    /// Ad format type cannot be determined
-    @objc public static let unknown = AdFormat(rawValue: "unknown")
+    /// Ad format type not in our predefined list
+    @objc public static let other = AdFormat(rawValue: "other")
 
     /// Standard banner ad format
     @objc public static let banner = AdFormat(rawValue: "banner")
