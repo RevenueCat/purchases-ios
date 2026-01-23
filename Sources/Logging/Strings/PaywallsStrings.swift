@@ -29,8 +29,8 @@ enum PaywallsStrings {
     case error_installing_font(URL, Error)
     case error_prefetching_font_invalid_url(name: String, invalidURLString: String)
 
-    case caching_presented_paywall
-    case clearing_presented_paywall
+    case caching_purchase_initiated_paywall
+    case clearing_purchase_initiated_paywall
 
     // MARK: - Localization
 
@@ -97,11 +97,11 @@ extension PaywallsStrings: LogMessage {
         case let .error_prefetching_font_invalid_url(name, invalidURLString):
             return "Error installing font \(name). Malformed url: \(invalidURLString)"
 
-        case .caching_presented_paywall:
-            return "PurchasesOrchestrator: caching presented paywall"
+        case .caching_purchase_initiated_paywall:
+            return "PurchasesOrchestrator: caching paywall from purchase initiated event"
 
-        case .clearing_presented_paywall:
-            return "PurchasesOrchestrator: clearing presented paywall"
+        case .clearing_purchase_initiated_paywall:
+            return "PurchasesOrchestrator: clearing paywall from purchase initiated event"
 
         case .empty_localization:
             return "Looking up localization but found no strings"
