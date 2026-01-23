@@ -457,7 +457,8 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             purchaseCompletedBy: purchaseCompletedBy,
             testReceiptIdentifier: nil,
             appTransaction: nil,
-            associatedTransactionId: "transaction_id",
+            transactionId: "transaction_id",
+            containsAttributionData: true,
             sdkOriginated: true
         )
 
@@ -475,7 +476,8 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             purchaseCompletedBy: purchaseCompletedBy,
             testReceiptIdentifier: nil,
             appTransaction: nil,
-            associatedTransactionId: "transaction_id",
+            transactionId: "transaction_id",
+            containsAttributionData: true,
             sdkOriginated: false
         )
 
