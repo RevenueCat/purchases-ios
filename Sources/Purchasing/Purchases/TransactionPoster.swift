@@ -356,7 +356,8 @@ extension TransactionPoster {
                           appUserID: currentUserID) { result in
             if shouldClearMetadataOnSuccess {
                 switch result {
-                case .success:
+                case let .success(customerInfo) where !customerInfo.isComputedOffline:
+                    // Offline-computed CustomerInfo means server is down, so it didn't process the transaction yet
                     self.localTransactionMetadataStore
                         .removeMetadata(forTransactionId: transaction.transactionIdentifier)
                 case let .failure(error) where error.finishable:
