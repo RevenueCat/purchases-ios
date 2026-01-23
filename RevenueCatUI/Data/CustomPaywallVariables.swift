@@ -61,6 +61,35 @@ public enum CustomVariableValue: Sendable, Equatable, Hashable {
         }
     }
 
+    /// The numeric representation of this value.
+    /// Returns the underlying value for `.number`, attempts conversion for `.string`,
+    /// and returns `1.0` for `true` or `0.0` for `false` in `.bool` cases.
+    public var doubleValue: Double {
+        switch self {
+        case .string(let value):
+            return Double(value) ?? 0
+        case .number(let value):
+            return value
+        case .bool(let value):
+            return value ? 1.0 : 0.0
+        }
+    }
+
+    /// The boolean representation of this value.
+    /// Returns the underlying value for `.bool`, `true` for non-zero `.number`,
+    /// and `true` for non-empty `.string` (case-insensitive "true", "1", "yes").
+    public var boolValue: Bool {
+        switch self {
+        case .string(let value):
+            let lowercased = value.lowercased()
+            return lowercased == "true" || lowercased == "1" || lowercased == "yes"
+        case .number(let value):
+            return value != 0
+        case .bool(let value):
+            return value
+        }
+    }
+
 }
 
 // MARK: - ExpressibleByStringLiteral

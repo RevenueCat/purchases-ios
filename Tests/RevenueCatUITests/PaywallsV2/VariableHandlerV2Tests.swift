@@ -1065,6 +1065,59 @@ class CustomVariableValueTests: TestCase {
         expect(value.stringValue).to(equal("false"))
     }
 
+    // MARK: - doubleValue Tests
+
+    func testDoubleValueForNumber() {
+        let value = CustomVariableValue.number(42.5)
+        expect(value.doubleValue).to(equal(42.5))
+    }
+
+    func testDoubleValueForString() {
+        let value = CustomVariableValue.string("123.45")
+        expect(value.doubleValue).to(equal(123.45))
+    }
+
+    func testDoubleValueForInvalidString() {
+        let value = CustomVariableValue.string("not a number")
+        expect(value.doubleValue).to(equal(0))
+    }
+
+    func testDoubleValueForBoolTrue() {
+        let value = CustomVariableValue.bool(true)
+        expect(value.doubleValue).to(equal(1.0))
+    }
+
+    func testDoubleValueForBoolFalse() {
+        let value = CustomVariableValue.bool(false)
+        expect(value.doubleValue).to(equal(0.0))
+    }
+
+    // MARK: - boolValue Tests
+
+    func testBoolValueForBool() {
+        expect(CustomVariableValue.bool(true).boolValue).to(beTrue())
+        expect(CustomVariableValue.bool(false).boolValue).to(beFalse())
+    }
+
+    func testBoolValueForNumber() {
+        expect(CustomVariableValue.number(1).boolValue).to(beTrue())
+        expect(CustomVariableValue.number(42).boolValue).to(beTrue())
+        expect(CustomVariableValue.number(-1).boolValue).to(beTrue())
+        expect(CustomVariableValue.number(0).boolValue).to(beFalse())
+    }
+
+    func testBoolValueForString() {
+        expect(CustomVariableValue.string("true").boolValue).to(beTrue())
+        expect(CustomVariableValue.string("TRUE").boolValue).to(beTrue())
+        expect(CustomVariableValue.string("1").boolValue).to(beTrue())
+        expect(CustomVariableValue.string("yes").boolValue).to(beTrue())
+        expect(CustomVariableValue.string("YES").boolValue).to(beTrue())
+        expect(CustomVariableValue.string("false").boolValue).to(beFalse())
+        expect(CustomVariableValue.string("0").boolValue).to(beFalse())
+        expect(CustomVariableValue.string("no").boolValue).to(beFalse())
+        expect(CustomVariableValue.string("random").boolValue).to(beFalse())
+    }
+
     // MARK: - ExpressibleBy Literal Tests
 
     func testExpressibleByStringLiteral() {
