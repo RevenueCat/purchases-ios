@@ -325,8 +325,8 @@ extension BaseStoreKitIntegrationTests {
     }
 
     static let finishingAnyTransactionLog = "Finishing transaction"
-    static func finishingSpecificTransactionLog(transaction: StoreTransaction) -> String {
-        return "Finishing transaction '\(transaction.id)' for product '\(transaction.productIdentifier)'"
+    static func finishingSpecificTransactionLog(transactionId: String, productId: String) -> String {
+        return "Finishing transaction '\(transactionId)' for product '\(productId)'"
     }
 
     static func finishingTransactionLogRegexPattern(productIdentifier: String) -> String {

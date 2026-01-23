@@ -32,22 +32,19 @@ protocol LargeItemCacheType {
     func remove(_ url: URL) throws
 
     /// Creates a directory in the cache from a base path
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL?
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL?
+}
 
-    /// Creates a directory in the documents directory from a base path
-    func createDocumentDirectoryIfNeeded(basePath: String) -> URL?
+extension LargeItemCacheType {
+    /// Defaults `inAppSpecificDirectory` to true
+    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
+        createCacheDirectoryIfNeeded(basePath: basePath, inAppSpecificDirectory: true)
+    }
 }
 
 extension FileManager: LargeItemCacheType {
-    /// A URL for a cache directory if one is present
-    private var cacheDirectory: URL? {
-        return urls(for: .cachesDirectory, in: .userDomainMask).first
-    }
-
-    ///// A URL for a document directory if one is present
-    private var documentDirectory: URL? {
-        return urls(for: .documentDirectory, in: .userDomainMask).first
-    }
 
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws {
@@ -131,45 +128,27 @@ extension FileManager: LargeItemCacheType {
     }
 
     /// Creates a directory in the cache from a base path
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
-        guard let cacheDirectory else {
-            return nil
-        }
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
+        guard let cacheDirectoryBaseURL = DirectoryHelper.baseUrl(
+            for: .cache,
+            inAppSpecificDirectory: inAppSpecificDirectory
+        ) else { return nil }
 
-        let path = cacheDirectory.appendingPathComponent(basePath)
+        let directoryURL = cacheDirectoryBaseURL.appendingPathComponent(basePath)
         do {
             try createDirectory(
-                at: path,
+                at: directoryURL,
                 withIntermediateDirectories: true,
                 attributes: nil
             )
         } catch {
-            let message = Strings.fileRepository.failedToCreateCacheDirectory(path)
+            let message = Strings.fileRepository.failedToCreateCacheDirectory(directoryURL)
             Logger.error(message)
         }
 
-        return path
-    }
-
-    /// Creates a directory in the documents directory from a base path
-    func createDocumentDirectoryIfNeeded(basePath: String) -> URL? {
-        guard let documentDirectory else {
-            return nil
-        }
-
-        let path = documentDirectory.appendingPathComponent(basePath)
-        do {
-            try createDirectory(
-                at: path,
-                withIntermediateDirectories: true,
-                attributes: nil
-            )
-        } catch {
-            let message = Strings.fileRepository.failedToCreateDocumentDirectory(path)
-            Logger.error(message)
-        }
-
-        return path
+        return directoryURL
     }
 
     /// Load data from url

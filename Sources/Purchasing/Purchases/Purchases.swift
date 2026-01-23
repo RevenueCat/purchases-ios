@@ -420,6 +420,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                           requestTimeout: storeKitTimeout)
         )
 
+        let localTransactionMetadataStore = LocalTransactionMetadataStore(apiKey: apiKey)
         let transactionPoster = TransactionPoster(
             productsManager: productsManager,
             receiptFetcher: receiptFetcher,
@@ -427,7 +428,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             backend: backend,
             paymentQueueWrapper: paymentQueueWrapper,
             systemInfo: systemInfo,
-            operationDispatcher: operationDispatcher
+            operationDispatcher: operationDispatcher,
+            localTransactionMetadataStore: localTransactionMetadataStore
         )
 
         let offlineEntitlementsManager = OfflineEntitlementsManager(deviceCache: deviceCache,
@@ -1341,21 +1343,8 @@ public extension Purchases {
     func recordPurchase(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction? {
-        guard self.systemInfo.observerMode else {
-            throw NewErrorUtils.configurationError(
-                message: Strings.configure.record_purchase_requires_purchases_made_by_my_app.description
-            ).asPublicError
-        }
-        guard self.systemInfo.storeKitVersion == .storeKit2 else {
-            throw NewErrorUtils.configurationError(
-                message: Strings.configure.sk2_required.description
-            ).asPublicError
-        }
         do {
-            let (_, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
-                purchaseResult: purchaseResult, fromTransactionUpdate: true
-            )
-            return transaction
+            return try await self.purchasesOrchestrator.handleRecordPurchase(purchaseResult)
         } catch {
             throw NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
         }

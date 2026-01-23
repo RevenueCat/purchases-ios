@@ -104,7 +104,6 @@ class TextComponentViewModel {
         promoOffer: PromotionalOffer? = nil,
         countdownTime: CountdownTime? = nil
     ) -> String {
-
         let processedWithV2 = Self.processTextV2(
             text,
             packageContext: packageContext,
@@ -114,6 +113,7 @@ class TextComponentViewModel {
             promoOffer: promoOffer,
             countdownTime: countdownTime
         )
+
         // Note: This is temporary while in closed beta and shortly after
         let processedWithV2AndV1 = Self.processTextV1(
             processedWithV2,
@@ -133,14 +133,14 @@ class TextComponentViewModel {
         promoOffer: PromotionalOffer? = nil,
         countdownTime: CountdownTime? = nil
     ) -> String {
-        guard let package = packageContext.package else {
-            return text
-        }
+        let pkg = packageContext.package
 
-        let discount = Self.discount(
-            from: package.storeProduct.pricePerMonth?.doubleValue,
-            relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
-        )
+        let discount = pkg.flatMap { package in
+            Self.discount(
+                from: package.storeProduct.pricePerMonth?.doubleValue,
+                relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
+            )
+        }
 
         let handler = VariableHandlerV2(
             variableCompatibilityMap: variableConfig.variableCompatibilityMap,
@@ -151,7 +151,7 @@ class TextComponentViewModel {
 
         return handler.processVariables(
             in: text,
-            with: package,
+            with: pkg,
             locale: locale,
             localizations: localizations,
             promoOffer: promoOffer,

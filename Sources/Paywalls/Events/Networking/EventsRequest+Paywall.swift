@@ -31,6 +31,10 @@ extension FeatureEventsRequest {
         var localeIdentifier: String
         var exitOfferType: ExitOfferType?
         var exitOfferingID: String?
+        var packageId: String?
+        var productId: String?
+        var errorCode: Int?
+        var errorMessage: String?
 
     }
 
@@ -44,6 +48,8 @@ extension FeatureEventsRequest.PaywallEvent {
         case cancel = "paywall_cancel"
         case close = "paywall_close"
         case exitOffer = "paywall_exit_offer"
+        case purchaseInitiated = "paywall_purchase_initiated"
+        case purchaseError = "paywall_purchase_error"
 
     }
 
@@ -74,7 +80,11 @@ extension FeatureEventsRequest.PaywallEvent {
                 darkMode: data.darkMode,
                 localeIdentifier: data.localeIdentifier,
                 exitOfferType: exitOfferData?.exitOfferType,
-                exitOfferingID: exitOfferData?.exitOfferingIdentifier
+                exitOfferingID: exitOfferData?.exitOfferingIdentifier,
+                packageId: data.packageId,
+                productId: data.productId,
+                errorCode: data.errorCode,
+                errorMessage: data.errorMessage
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -95,6 +105,8 @@ private extension PaywallEvent {
         case .cancel: return .cancel
         case .close: return .close
         case .exitOffer: return .exitOffer
+        case .purchaseInitiated: return .purchaseInitiated
+        case .purchaseError: return .purchaseError
         }
 
     }
@@ -123,6 +135,10 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case localeIdentifier = "locale"
         case exitOfferType
         case exitOfferingID = "exitOfferingId"
+        case packageId = "packageId"
+        case productId = "productId"
+        case errorCode
+        case errorMessage
 
     }
 
