@@ -205,6 +205,7 @@ private extension ETagManager {
     }
 
     private func oldETagDirectoryURL() -> URL? {
+        // swiftlint:disable:next avoid_using_directory_apis_directly
         guard let documentsURL = Self.fileManager.urls(
             for: .documentDirectory,
             in: .userDomainMask
