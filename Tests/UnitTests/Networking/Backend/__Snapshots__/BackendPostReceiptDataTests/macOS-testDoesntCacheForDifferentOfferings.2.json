@@ -33,6 +33,7 @@
       "initiation_source" : "queue",
       "is_restore" : false,
       "observer_mode" : true,
+      "payload_version" : 1,
       "presented_offering_identifier" : "offering_a",
       "purchase_completed_by" : "my_app"
     },

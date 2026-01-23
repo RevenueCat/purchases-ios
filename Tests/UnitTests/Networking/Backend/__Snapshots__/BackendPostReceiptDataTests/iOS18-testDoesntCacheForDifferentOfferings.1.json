@@ -34,6 +34,7 @@
       "initiation_source" : "queue",
       "is_restore" : false,
       "observer_mode" : true,
+      "payload_version" : 1,
       "purchase_completed_by" : "my_app"
     },
     "method" : "POST",

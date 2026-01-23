@@ -35,6 +35,7 @@
       "initiation_source" : "purchase",
       "is_restore" : false,
       "observer_mode" : true,
+      "payload_version" : 1,
       "price" : "15.99",
       "product_id" : "product_id",
       "purchase_completed_by" : "my_app",
