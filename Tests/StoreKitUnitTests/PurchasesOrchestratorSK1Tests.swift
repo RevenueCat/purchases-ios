@@ -560,6 +560,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         // After purchaseError clears the cache, the second purchase should have no paywall data
         expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData).toNot(beNil())
+        expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
         ).to(beNil())
     }
