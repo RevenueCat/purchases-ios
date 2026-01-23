@@ -54,7 +54,8 @@ func checkEntitlementInfoEnums() {
          .unknownStore,
          .external,
          .paddle,
-         .testStore:
+         .testStore,
+         .galaxy:
         print(store!)
     @unknown default:
         fatalError()
