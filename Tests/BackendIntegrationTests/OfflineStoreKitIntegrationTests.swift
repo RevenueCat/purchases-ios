@@ -247,14 +247,17 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testCallToGetCustomerInfoWithPendingPurchaseAndRenewalPostsReceiptTwice() async throws {
+    func testCallToGetCustomerInfoWithPendingPurchaseAndRenewalPostsReceiptAtLeastTwice() async throws {
         // This test requires the "production" behavior to make sure
         // we don't refresh the receipt a second time when posting the second transaction.
         self.enableReceiptFetchRetry = false
+        self.setLongestTestSessionTimeRate(self.testSession)
 
         self.serverDown()
 
-        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        let result = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        let transaction = try XCTUnwrap(result.transaction)
+        
         // Add 1s delay to ensure the renewal transaction has a later purchase date than the original one
         try await Task.sleep(for: .seconds(1))
         try self.testSession.forceRenewalOfSubscription(
@@ -275,14 +278,29 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             expectedCount: 1
         )
 
-        // The purchase contains attribution data (product info, offering context, etc.)
-        // while the renewal does not. This means they have different cache keys and
-        // both will result in separate POST /receipt requests.
-        try await self.logger.verifyMessageIsEventuallyLogged(
-            "API request completed: POST '/v1/receipts'",
-            level: .debug,
-            expectedCount: 2
-        )
+        let allTransactions = self.testSession.allTransactions()
+
+        expect(allTransactions.count) == 2 // Purchase + renewal
+
+        for transaction in allTransactions {
+            try await self.verifySpecificTransactionIsEventuallyFinished(
+                transactionId: String(transaction.identifier),
+                productId: transaction.productIdentifier,
+                count: nil
+            )
+        }
+
+        let transactionId = transaction.transactionIdentifier
+
+        // 1 POST receipt for the original transaction
+        let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: .*-\(transactionId)'"
+        self.logger.verifyMessageWasLogged(regexPattern: regex,
+                                           level: .verbose)
+
+        // 1 POST receipt for the renewal (regex: the cache key does not end with the original transactionId)
+        let regex2 = "Enqueing network operation 'PostReceiptDataOperation' with cache key: (?!.*-\(transactionId)'$).*"
+        self.logger.verifyMessageWasLogged(regexPattern: regex2,
+                                           level: .verbose)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
