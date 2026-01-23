@@ -48,6 +48,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var eventsManager: EventsManagerType!
     var webPurchaseRedemptionHelper: MockWebPurchaseRedemptionHelper!
     var mockDiagnosticsTracker: DiagnosticsTrackerType!
+    var mockLocalTransactionMetadataStore: MockLocalTransactionMetadataStore!
 
     static let eventTimestamp1: Date = .init(timeIntervalSince1970: 1694029328)
     static let eventTimestamp2: Date = .init(timeIntervalSince1970: 1694022321)
@@ -100,6 +101,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                          diagnosticsTracker: self.mockDiagnosticsTracker)
         self.setUpStoreKit1Wrapper()
         self.mockSimulatedStorePurchaseHandler = MockSimulatedStorePurchaseHandler()
+        self.mockLocalTransactionMetadataStore = MockLocalTransactionMetadataStore()
 
         self.customerInfoManager = MockCustomerInfoManager(
             offlineEntitlementsManager: MockOfflineEntitlementsManager(),
@@ -261,7 +263,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             backend: self.backend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
-            operationDispatcher: self.operationDispatcher
+            operationDispatcher: self.operationDispatcher,
+            localTransactionMetadataStore: self.mockLocalTransactionMetadataStore
         )
     }
 }

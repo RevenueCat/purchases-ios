@@ -68,30 +68,32 @@ class PostReceiptDataOperationFactoryTests: TestCase {
 
         let postData1 = PostReceiptDataOperation.PostData(
             transactionData: .init(
-                appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: [attribute1.key: attribute1],
                 storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
+            appUserID: self.appUserID,
             productData: nil,
             receipt: self.receipt,
             observerMode: false,
+            purchaseCompletedBy: .revenueCat,
             testReceiptIdentifier: nil,
             appTransaction: nil
         )
 
         let postData2 = PostReceiptDataOperation.PostData(
             transactionData: .init(
-                appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: [attribute2.key: attribute2],
                 storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
+            appUserID: self.appUserID,
             productData: nil,
             receipt: self.receipt,
             observerMode: false,
+            purchaseCompletedBy: .revenueCat,
             testReceiptIdentifier: nil,
             appTransaction: nil
         )
@@ -137,30 +139,32 @@ class PostReceiptDataOperationFactoryTests: TestCase {
 
         let postData1 = PostReceiptDataOperation.PostData(
             transactionData: .init(
-                appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: [attribute1.key: attribute1],
                 storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
+            appUserID: self.appUserID,
             productData: nil,
             receipt: self.receipt,
             observerMode: false,
+            purchaseCompletedBy: .revenueCat,
             testReceiptIdentifier: nil,
             appTransaction: nil
         )
 
         let postData2 = PostReceiptDataOperation.PostData(
             transactionData: .init(
-                appUserID: self.appUserID,
                 presentedOfferingContext: nil,
                 unsyncedAttributes: [attribute2.key: attribute2],
                 storeCountry: nil,
                 source: .init(isRestore: false, initiationSource: .queue)
             ),
+            appUserID: self.appUserID,
             productData: nil,
             receipt: self.receipt,
             observerMode: false,
+            purchaseCompletedBy: .revenueCat,
             testReceiptIdentifier: nil,
             appTransaction: nil
         )
