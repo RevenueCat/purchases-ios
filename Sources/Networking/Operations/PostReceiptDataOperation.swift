@@ -139,7 +139,7 @@ extension PostReceiptDataOperation {
 
         /// The value of purchaseCompletedBy at purchase time.
         let purchaseCompletedBy: PurchasesAreCompletedBy?
-        let initiationSource: ProductRequestData.InitiationSource
+        let initiationSource: PostReceiptSource.InitiationSource
         let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
         let aadAttributionToken: String?
         /// - Note: this is only used for the backend to disambiguate receipts created in `SKTestSession`s.
@@ -174,6 +174,7 @@ extension PostReceiptDataOperation.PostData {
 
     init(
         transactionData data: PurchasedTransactionData,
+        postReceiptSource: PostReceiptSource,
         appUserID: String,
         productData: ProductRequestData?,
         receipt: EncodedAppleReceipt,
@@ -185,7 +186,7 @@ extension PostReceiptDataOperation.PostData {
         self.init(
             appUserID: appUserID,
             receipt: receipt,
-            isRestore: data.source.isRestore,
+            isRestore: postReceiptSource.isRestore,
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingContext?.offeringIdentifier,
             presentedPlacementIdentifier: data.presentedOfferingContext?.placementIdentifier,
@@ -195,7 +196,7 @@ extension PostReceiptDataOperation.PostData {
             paywall: data.paywall,
             observerMode: observerMode,
             purchaseCompletedBy: purchaseCompletedBy,
-            initiationSource: data.source.initiationSource,
+            initiationSource: postReceiptSource.initiationSource,
             subscriberAttributesByKey: data.unsyncedAttributes,
             aadAttributionToken: data.aadAttributionToken,
             testReceiptIdentifier: testReceiptIdentifier,
@@ -365,7 +366,7 @@ extension PostReceiptDataOperation.PostData: HTTPRequestBody {
 
 // MARK: - InitiationSource
 
-extension ProductRequestData.InitiationSource: Codable, RawRepresentable {
+extension PostReceiptSource.InitiationSource: Codable, RawRepresentable {
 
     var rawValue: String {
         switch self {
@@ -381,7 +382,7 @@ extension ProductRequestData.InitiationSource: Codable, RawRepresentable {
         self = value
     }
 
-    private static let codes: [String: ProductRequestData.InitiationSource] = Self
+    private static let codes: [String: PostReceiptSource.InitiationSource] = Self
         .allCases
         .dictionaryWithKeys { $0.rawValue }
 

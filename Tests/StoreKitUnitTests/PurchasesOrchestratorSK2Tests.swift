@@ -66,7 +66,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
         ) == "offering"
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .purchase
     }
 
     func testPurchaseReturnsCorrectValues() async throws {
@@ -289,7 +289,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
         ).to(beNil())
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .purchase
     }
 
     // MARK: - PurchaseParams
@@ -335,7 +335,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
         ) == "offering"
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .purchase
     }
 
     func testPurchaseWithPurchaseParamsReturnsCorrectValues() async throws {
@@ -875,8 +875,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(transaction.finishInvoked) == true
         expect(self.backend.invokedPostReceiptData) == true
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.isRestore) == false
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
         expect(self.customerInfoManager.invokedCacheCustomerInfo) == true
         expect(self.customerInfoManager.invokedCacheCustomerInfoParameters?.appUserID) == Self.mockUserID
         expect(self.customerInfoManager.invokedCacheCustomerInfoParameters?.info) === self.mockCustomerInfo
@@ -905,7 +905,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(transaction.finishInvoked) == false
         expect(self.backend.invokedPostReceiptData) == true
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.isRestore) == false
     }
 
     func testSK2TransactionListenerOnlyFinishesTransactionsAfterPostingReceipt() async throws {
@@ -951,8 +951,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(transaction.finishInvoked) == false
         expect(self.backend.invokedPostReceiptData) == true
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.isRestore) == false
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
     }
 
     func testSK2TransactionListenerDelegateDoesNotIncludePaywallAttribution() async throws {
@@ -1022,7 +1022,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
         ) == Self.paywallEventWithPurchaseInfo
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
     }
 
     func testHandleRecordPurchaseWithoutPaywall() async throws {
@@ -1057,7 +1057,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData) == true
         // No paywall was tracked, so presentedPaywall should be nil
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
     }
 
     func testHandleRecordPurchaseUserCancelledReturnsNil() async throws {
@@ -1200,8 +1200,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 offeringIdentifier: "stored_offering",
                 placementIdentifier: "stored_placement",
                 targetingContext: nil
-            ),
-            source: .init(isRestore: false, initiationSource: .purchase)
+            )
         )
         let storedMetadata = LocalTransactionMetadata(
             productData: storedProductData,

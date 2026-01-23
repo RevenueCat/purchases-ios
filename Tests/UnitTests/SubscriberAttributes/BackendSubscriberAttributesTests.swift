@@ -98,9 +98,9 @@ class BackendSubscriberAttributesTests: TestCase {
                      transactionData: .init(
                         presentedOfferingContext: nil,
                         unsyncedAttributes: subscriberAttributesByKey,
-                        storeCountry: nil,
-                        source: .init(isRestore: false, initiationSource: .restore)
+                        storeCountry: nil
                      ),
+                     postReceiptSource: .init(isRestore: false, initiationSource: .restore),
                      observerMode: false,
                      originalPurchaseCompletedBy: .revenueCat,
                      appUserID: self.appUserID) { _ in }
@@ -118,9 +118,9 @@ class BackendSubscriberAttributesTests: TestCase {
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: [:],
                                  aadAttributionToken: token,
-                                 storeCountry: nil,
-                                 source: .init(isRestore: false, initiationSource: .restore)
+                                 storeCountry: nil
                               ),
+                              postReceiptSource: .init(isRestore: false, initiationSource: .restore),
                               observerMode: false,
                               originalPurchaseCompletedBy: nil,
                               appUserID: self.appUserID) { _ in
@@ -146,9 +146,9 @@ class BackendSubscriberAttributesTests: TestCase {
                      transactionData: .init(
                         presentedOfferingContext: nil,
                         unsyncedAttributes: subscriberAttributesByKey,
-                        storeCountry: nil,
-                        source: .init(isRestore: false, initiationSource: .queue)
+                        storeCountry: nil
                      ),
+                     postReceiptSource: .init(isRestore: false, initiationSource: .queue),
                      observerMode: false,
                      originalPurchaseCompletedBy: .revenueCat,
                      appUserID: self.appUserID) {
@@ -171,9 +171,9 @@ class BackendSubscriberAttributesTests: TestCase {
                      transactionData: .init(
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storeCountry: nil,
-                        source: .init(isRestore: false, initiationSource: .purchase)
+                        storeCountry: nil
                      ),
+                     postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
                      observerMode: false,
                      originalPurchaseCompletedBy: .revenueCat,
                      appUserID: self.appUserID) { _ in }
@@ -215,9 +215,9 @@ class BackendSubscriberAttributesTests: TestCase {
                 transactionData: .init(
                     presentedOfferingContext: nil,
                     unsyncedAttributes: subscriberAttributesByKey,
-                    storeCountry: nil,
-                    source: .init(isRestore: false, initiationSource: .queue)
+                    storeCountry: nil
                 ),
+                postReceiptSource: .init(isRestore: false, initiationSource: .queue),
                 observerMode: false,
                 originalPurchaseCompletedBy: .revenueCat,
                 appUserID: self.appUserID
@@ -270,9 +270,9 @@ class BackendSubscriberAttributesTests: TestCase {
                 transactionData: .init(
                     presentedOfferingContext: nil,
                     unsyncedAttributes: subscriberAttributesByKey,
-                    storeCountry: nil,
-                    source: .init(isRestore: false, initiationSource: .restore)
+                    storeCountry: nil
                 ),
+                postReceiptSource: .init(isRestore: false, initiationSource: .restore),
                 observerMode: false,
                 originalPurchaseCompletedBy: .revenueCat,
                 appUserID: self.appUserID
@@ -459,9 +459,9 @@ class BackendSubscriberAttributesTests: TestCase {
                              transactionData: .init(
                                 presentedOfferingContext: nil,
                                 unsyncedAttributes: subscriberAttributesByKey,
-                                storeCountry: nil,
-                                source: .init(isRestore: false, initiationSource: .purchase)
+                                storeCountry: nil
                              ),
+                             postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
                              observerMode: false,
                              originalPurchaseCompletedBy: nil,
                              appUserID: self.appUserID) { _ in
@@ -524,9 +524,9 @@ class BackendSubscriberAttributesTests: TestCase {
                              transactionData: .init(
                                 presentedOfferingContext: nil,
                                 unsyncedAttributes: emptySubscriberAttributes,
-                                storeCountry: nil,
-                                source: .init(isRestore: false, initiationSource: .restore)
+                                storeCountry: nil
                              ),
+                             postReceiptSource: .init(isRestore: false, initiationSource: .restore),
                              observerMode: false,
                              originalPurchaseCompletedBy: nil,
                              appUserID: self.appUserID) { _ in
@@ -605,9 +605,9 @@ class BackendSubscriberAttributesTests: TestCase {
                                  transactionData: .init(
                                     presentedOfferingContext: nil,
                                     unsyncedAttributes: subscriberAttributesOrderedAMZ,
-                                    storeCountry: nil,
-                                    source: .init(isRestore: false, initiationSource: .restore)
+                                    storeCountry: nil
                                  ),
+                                 postReceiptSource: .init(isRestore: false, initiationSource: .restore),
                                  observerMode: false,
                                  originalPurchaseCompletedBy: nil,
                                  appUserID: self.appUserID) { _ in
@@ -623,9 +623,9 @@ class BackendSubscriberAttributesTests: TestCase {
                                  transactionData: .init(
                                     presentedOfferingContext: nil,
                                     unsyncedAttributes: subscriberAttributesOrderedZMA,
-                                    storeCountry: nil,
-                                    source: .init(isRestore: false, initiationSource: .restore)
+                                    storeCountry: nil
                                  ),
+                                 postReceiptSource: .init(isRestore: false, initiationSource: .restore),
                                  observerMode: false,
                                  originalPurchaseCompletedBy: nil,
                                  appUserID: self.appUserID) { _ in
