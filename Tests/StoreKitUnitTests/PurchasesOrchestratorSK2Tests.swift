@@ -1022,7 +1022,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
         ) == Self.paywallEventWithPurchaseInfo
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
     }
 
     func testHandleRecordPurchaseWithoutPaywall() async throws {
@@ -1057,7 +1057,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData) == true
         // No paywall was tracked, so presentedPaywall should be nil
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
     }
 
     func testHandleRecordPurchaseUserCancelledReturnsNil() async throws {
