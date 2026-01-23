@@ -35,6 +35,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
+        let isRestore = false
         let purchaseCompletedBy: PurchasesAreCompletedBy = .myApp
         let observerMode = purchaseCompletedBy.observerMode
 

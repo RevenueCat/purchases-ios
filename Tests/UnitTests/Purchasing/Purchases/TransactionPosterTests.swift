@@ -1099,7 +1099,8 @@ class TransactionPosterTests: TestCase {
             transactionData: PurchasedTransactionData(
                 presentedOfferingContext: .init(offeringIdentifier: "stored_offering")
             ),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata (simulating it was stored from a previous offline purchase attempt)
