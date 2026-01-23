@@ -263,6 +263,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         try await self.waitUntilUnfinishedTransactions { $0 >= 2 }
 
+        self.logger.clearMessages()
         self.allServersUp()
 
         let customerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
@@ -293,6 +294,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         try await self.waitUntilUnfinishedTransactions { $0 >= 1 }
 
+        self.logger.clearMessages()
         self.allServersUp()
 
         let customerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
