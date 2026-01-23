@@ -31,9 +31,6 @@ protocol LargeItemCacheType {
     /// delete data at url
     func remove(_ url: URL) throws
 
-    /// Returns the cache directory URL for the given base path
-    func cacheDirectoryURL(basePath: String) -> URL?
-
     /// Creates a directory in the cache from a base path
     /// The `inAppSpecificDirectory` should be set to false only for components
     /// that haven't migrated to the new app specific directory structure yet
