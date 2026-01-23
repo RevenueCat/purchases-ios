@@ -213,7 +213,7 @@ extension PostReceiptDataOperation.PostData {
             testReceiptIdentifier: testReceiptIdentifier,
             appTransaction: appTransaction,
             transactionId: transactionId,
-			sdkOriginated: sdkOriginated,
+            sdkOriginated: sdkOriginated,
             metadata: data.metadata,
             containsAttributionData: containsAttributionData
         )
