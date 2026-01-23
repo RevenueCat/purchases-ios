@@ -133,6 +133,9 @@ final class Delegate: PaywallViewControllerDelegate {
     func paywallViewControllerDidStartPurchase(_ controller: PaywallViewController) {}
 
     func paywallViewController(_ controller: PaywallViewController,
+                               didStartPurchaseWith package: Package) {}
+
+    func paywallViewController(_ controller: PaywallViewController,
                                didFinishPurchasingWith customerInfo: CustomerInfo) {}
 
     func paywallViewController(_ controller: PaywallViewController,
@@ -156,6 +159,9 @@ final class Delegate: PaywallViewControllerDelegate {
 
     func paywallViewController(_ controller: PaywallViewController,
                                didChangeSizeTo size: CGSize) {}
+
+    func paywallViewController(_ controller: PaywallViewController,
+                               willPresentExitOfferController exitOfferController: PaywallViewController) {}
 
 }
 
