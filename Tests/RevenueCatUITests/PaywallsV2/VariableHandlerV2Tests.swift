@@ -843,8 +843,84 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
     }
 
     // MARK: - Optional Package Tests
-    // Note: Tests for optional package handling removed due to CI issues
-    // The implementation supports optional packages - when nil, variables return empty strings
+
+    func testProductVariablesReturnEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.price }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductCurrencyCodeReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.currency_code }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductPricePerPeriodReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductPeriodReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.period }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductStoreProductNameReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.store_product_name }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testNonProductVariablesWorkWhenPackageIsNil() {
+        // Currency symbol doesn't require a package
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$"))
+    }
+
+    func testRelativeDiscountWorksWhenPackageIsNil() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: 0.25,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.relative_discount }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("25%"))
+    }
 
 }
 

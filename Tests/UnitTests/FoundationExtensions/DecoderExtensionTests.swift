@@ -350,64 +350,39 @@ class DecoderExtensionsNonEmptyDictionaryTests: TestCase {
 
 }
 
-// Tests temporarily disabled - investigating CI failures
-// class DecoderExtensionsISO8601DateTests: TestCase {
-//
-//     private struct DataWithDate: Codable, Equatable {
-//         let date: Date
-//     }
-//
-//     func testDecodesISO8601DateWithFractionalSeconds() throws {
-//         let json = "{\"date\": \"2024-01-21T12:30:45.123Z\"}"
-//         let data = try DataWithDate.decode(json)
-//
-//         var calendar = Calendar(identifier: .gregorian)
-//         calendar.timeZone = TimeZone(identifier: "UTC")!
-//         let components = calendar.dateComponents(
-//             [.year, .month, .day, .hour, .minute, .second],
-//             from: data.date
-//         )
-//
-//         expect(components.year) == 2024
-//         expect(components.month) == 1
-//         expect(components.day) == 21
-//         expect(components.hour) == 12
-//         expect(components.minute) == 30
-//         expect(components.second) == 45
-//
-//         // Verify the fractional seconds are preserved by checking the time interval
-//         let expectedDate = Date(timeIntervalSince1970: 1705842645.123)
-//         expect(data.date.timeIntervalSince1970).to(beCloseTo(expectedDate.timeIntervalSince1970, within: 0.001))
-//     }
-//
-//     func testDecodesISO8601DateWithoutFractionalSeconds() throws {
-//         let json = "{\"date\": \"2024-01-21T12:30:45Z\"}"
-//         let data = try DataWithDate.decode(json)
-//
-//         var calendar = Calendar(identifier: .gregorian)
-//         calendar.timeZone = TimeZone(identifier: "UTC")!
-//         let components = calendar.dateComponents(
-//             [.year, .month, .day, .hour, .minute, .second],
-//             from: data.date
-//         )
-//
-//         expect(components.year) == 2024
-//         expect(components.month) == 1
-//         expect(components.day) == 21
-//         expect(components.hour) == 12
-//         expect(components.minute) == 30
-//         expect(components.second) == 45
-//     }
-//
-//     func testThrowsForInvalidISO8601Date() throws {
-//         let json = "{\"date\": \"not-a-date\"}"
-//
-//         expect {
-//             try DataWithDate.decode(json)
-//         }.to(throwError(errorType: DecodingError.self))
-//     }
-//
-// }
+class DecoderExtensionsISO8601DateTests: TestCase {
+
+    private struct DataWithDate: Codable, Equatable {
+        let date: Date
+    }
+
+    func testDecodesISO8601DateWithFractionalSeconds() throws {
+        let json = "{\"date\": \"2024-01-21T12:30:45.123Z\"}"
+        let data = try DataWithDate.decode(json)
+
+        // Known timestamp for 2024-01-21T12:30:45.123Z
+        let expectedTimestamp: TimeInterval = 1705840245.123
+        expect(data.date.timeIntervalSince1970).to(beCloseTo(expectedTimestamp, within: 0.001))
+    }
+
+    func testDecodesISO8601DateWithoutFractionalSeconds() throws {
+        let json = "{\"date\": \"2024-01-21T12:30:45Z\"}"
+        let data = try DataWithDate.decode(json)
+
+        // Known timestamp for 2024-01-21T12:30:45Z
+        let expectedTimestamp: TimeInterval = 1705840245.0
+        expect(data.date.timeIntervalSince1970).to(beCloseTo(expectedTimestamp, within: 0.001))
+    }
+
+    func testThrowsForInvalidISO8601Date() throws {
+        let json = "{\"date\": \"not-a-date\"}"
+
+        expect {
+            try DataWithDate.decode(json)
+        }.to(throwError(errorType: DecodingError.self))
+    }
+
+}
 
 // MARK: - Extensions
 

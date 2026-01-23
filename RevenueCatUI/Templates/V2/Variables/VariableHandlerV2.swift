@@ -462,6 +462,7 @@ extension VariablesV2 {
             return self.countdownValue(countdownTime: countdownTime, format: .secondsWithoutZero)
         }
 
+        Logger.verbose(Strings.variable_requires_package(variableName: self.rawValue))
         return ""
     }
 
