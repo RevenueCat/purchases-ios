@@ -274,6 +274,14 @@ Tag current branch with current version number
 
 Trigger bump
 
+### ios trigger_bump_sdk_in_rc_mobile_app
+
+```sh
+[bundle exec] fastlane ios trigger_bump_sdk_in_rc_mobile_app
+```
+
+Trigger bump SDK in RC mobile app
+
 ### ios generate_snapshots_RC
 
 ```sh
