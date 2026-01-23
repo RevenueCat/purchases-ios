@@ -818,6 +818,7 @@ private extension DeviceCache {
 
     // MARK: - Migration Helpers
 
+    // swiftlint:disable avoid_using_directory_apis_directly
     private func oldDocumentsDirectoryURL() -> URL? {
         let documentsDirectoryURL: URL?
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
@@ -831,6 +832,7 @@ private extension DeviceCache {
         return documentsDirectoryURL?.appendingPathComponent(Self.oldDefaultBasePath)
     }
 
+    // swiftlint:enable avoid_using_directory_apis_directly
     private func migrateAndReturnValueIfNeeded<Value: Codable>(for key: String) -> Value? {
         return self.migrationLock.perform {
             guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else { return nil }
