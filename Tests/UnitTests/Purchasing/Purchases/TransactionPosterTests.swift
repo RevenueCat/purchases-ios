@@ -603,8 +603,9 @@ class TransactionPosterTests: TestCase {
         expect(self.localTransactionMetadataStore.invokedStoreMetadataParameters.value?.metadata).toNot(beNil())
     }
 
-    func testPostReceiptDoesNotStoreMetadataForQueueInitiatedTransaction() throws {
+    func testPostReceiptDoesNotStoreMetadataForQueueInitiatedTransactionWithoutOfferingContextOrPaywall() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
+        // Empty transaction data: no presentedOfferingContext or presentedPaywall
         let transactionData = PurchasedTransactionData()
 
         self.receiptFetcher.shouldReturnReceipt = true
@@ -617,8 +618,60 @@ class TransactionPosterTests: TestCase {
         expect(self.localTransactionMetadataStore.invokedStoreMetadata.value) == false
     }
 
-    func testPostReceiptDoesNotStoreMetadataForRestoreInitiatedTransaction() throws {
+    func testPostReceiptStoresMetadataForQueueInitiatedTransactionWithPresentedOfferingContext() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
+        let transactionData = PurchasedTransactionData(
+            presentedOfferingContext: .init(offeringIdentifier: "test_offering")
+        )
+        let initiationSource = PostReceiptSource(isRestore: false, initiationSource: .queue)
+
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let result = try self.handleTransaction(transactionData, postReceiptSource: initiationSource)
+        expect(result).to(beSuccess())
+
+        expect(self.localTransactionMetadataStore.invokedStoreMetadata.value) == true
+        expect(self.localTransactionMetadataStore.invokedStoreMetadataCount.value) == 1
+        expect(self.localTransactionMetadataStore.invokedStoreMetadataParameters.value?.transactionId) ==
+            self.mockTransaction.transactionIdentifier
+    }
+
+    func testPostReceiptStoresMetadataForQueueInitiatedTransactionWithPresentedPaywall() throws {
+        let product = MockSK1Product(mockProductIdentifier: "product")
+        let paywallEventCreationData = PaywallEvent.CreationData(
+            id: UUID(),
+            date: Date()
+        )
+        let paywallEventData = PaywallEvent.Data(
+            offeringIdentifier: "test_offering",
+            paywallRevision: 1,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false
+        )
+        let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
+        let transactionData = PurchasedTransactionData(presentedPaywall: paywallEvent)
+        let initiationSource = PostReceiptSource(isRestore: false, initiationSource: .queue)
+
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let result = try self.handleTransaction(transactionData, postReceiptSource: initiationSource)
+        expect(result).to(beSuccess())
+
+        expect(self.localTransactionMetadataStore.invokedStoreMetadata.value) == true
+        expect(self.localTransactionMetadataStore.invokedStoreMetadataCount.value) == 1
+        expect(self.localTransactionMetadataStore.invokedStoreMetadataParameters.value?.transactionId) ==
+            self.mockTransaction.transactionIdentifier
+    }
+
+    func testPostReceiptDoesNotStoreMetadataForRestoreInitiatedTransactionWithoutOfferingContextOrPaywall() throws {
+        let product = MockSK1Product(mockProductIdentifier: "product")
+        // Empty transaction data: no presentedOfferingContext or presentedPaywall
         let transactionData = PurchasedTransactionData()
         let initiationSource = PostReceiptSource(isRestore: true, initiationSource: .restore)
 
