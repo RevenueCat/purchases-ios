@@ -1055,6 +1055,87 @@ class TransactionPosterTests: TestCase {
             self.mockTransaction.transactionIdentifier
     }
 
+    func testPostReceiptDoesNotClearNewMetadataWhenCustomerInfoIsComputedOffline() throws {
+        let product = MockSK1Product(mockProductIdentifier: "product")
+        let transactionData = PurchasedTransactionData()
+        let initiationSource = PostReceiptSource(isRestore: false, initiationSource: .purchase)
+
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
+
+        // Return offline-computed CustomerInfo (server was down, so receipt wasn't actually processed)
+        let offlineCustomerInfo = Self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
+        self.backend.stubbedPostReceiptResult = .success(offlineCustomerInfo)
+
+        let result = try self.handleTransaction(transactionData, postReceiptSource: initiationSource)
+        expect(result).to(beSuccess())
+        expect(result.value?.isComputedOffline) == true
+
+        // Metadata should be stored for purchase-initiated transactions
+        expect(self.localTransactionMetadataStore.invokedStoreMetadata.value) == true
+
+        // But metadata should NOT be cleared because CustomerInfo was computed offline
+        // (server didn't process the transaction, so we need to keep metadata for retry)
+        expect(self.localTransactionMetadataStore.invokedRemoveMetadata.value) == false
+        expect(self.localTransactionMetadataStore.invokedRemoveMetadataCount.value) == 0
+    }
+
+    func testPostReceiptDoesNotClearPreexistingMetadataWhenCustomerInfoIsComputedOffline() throws {
+        let product = MockSK1Product(mockProductIdentifier: "product")
+        let storedMetadata = LocalTransactionMetadata(
+            productData: ProductRequestData(
+                productIdentifier: "stored_product",
+                paymentMode: nil,
+                currencyCode: "EUR",
+                storeCountry: "DE",
+                price: 19.99,
+                normalDuration: nil,
+                introDuration: nil,
+                introDurationType: nil,
+                introPrice: nil,
+                subscriptionGroup: nil,
+                discounts: nil
+            ),
+            transactionData: PurchasedTransactionData(
+                presentedOfferingContext: .init(offeringIdentifier: "stored_offering")
+            ),
+            originalPurchasesAreCompletedBy: .revenueCat
+        )
+
+        // Pre-store metadata (simulating it was stored from a previous offline purchase attempt)
+        self.localTransactionMetadataStore.storeMetadata(
+            storedMetadata,
+            forTransactionId: self.mockTransaction.transactionIdentifier
+        )
+        expect(self.localTransactionMetadataStore.invokedStoreMetadataCount.value) == 1
+
+        let transactionData = PurchasedTransactionData()
+
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
+
+        // Return offline-computed CustomerInfo (server still down)
+        let offlineCustomerInfo = Self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
+        self.backend.stubbedPostReceiptResult = .success(offlineCustomerInfo)
+
+        let result = try self.handleTransaction(transactionData)
+        expect(result).to(beSuccess())
+        expect(result.value?.isComputedOffline) == true
+
+        // Metadata should NOT be stored again (already exists)
+        expect(self.localTransactionMetadataStore.invokedStoreMetadataCount.value) == 1
+
+        // Metadata should NOT be cleared because CustomerInfo was computed offline
+        expect(self.localTransactionMetadataStore.invokedRemoveMetadata.value) == false
+        expect(self.localTransactionMetadataStore.invokedRemoveMetadataCount.value) == 0
+
+        // Verify the stored metadata was used in the request
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
+        ) == "stored_offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.productData?.currencyCode) == "EUR"
+    }
+
 }
 
 // MARK: -

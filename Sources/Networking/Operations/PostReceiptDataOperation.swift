@@ -54,15 +54,16 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `presentedOfferingIdentifier`
         /// - `observerMode`
         /// - `subscriberAttributesByKey`
-        /// - `associatedTransactionId`
-        /// - `sdkOriginated`
+		/// - `sdkOriginated`
+        /// - `transactionId` (only if there is attribution data, to always post receipts with attribution data)
         let cacheKey =
         """
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.hash)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
-        -\(postData.associatedTransactionId ?? "")-\(postData.sdkOriginated)
+        -\(postData.sdkOriginated)
+        -\(postData.containsAttributionData ? (postData.transactionId ?? "") : "")
         """
 
         return .init({ cacheKey in
@@ -150,11 +151,12 @@ extension PostReceiptDataOperation {
         /// The [AppTransaction](https://developer.apple.com/documentation/storekit/apptransaction) JWS token
         /// retrieved from StoreKit 2.
         let appTransaction: String?
-        let associatedTransactionId: String?
+        let transactionId: String?
 
         /// Indicates whether this purchase was initiated via the SDK's `purchase()` methods.
         let sdkOriginated: Bool
         let metadata: [String: String]?
+        let containsAttributionData: Bool
     }
 
     struct Paywall {
@@ -187,7 +189,9 @@ extension PostReceiptDataOperation.PostData {
         purchaseCompletedBy: PurchasesAreCompletedBy?,
         testReceiptIdentifier: String?,
         appTransaction: String?,
-        associatedTransactionId: String?,
+        transactionId: String?,
+        /// Whether it contains attribution data for `transactionId`. This field is not included in the request
+        containsAttributionData: Bool,
         sdkOriginated: Bool = false
     ) {
         self.init(
@@ -208,9 +212,10 @@ extension PostReceiptDataOperation.PostData {
             aadAttributionToken: data.aadAttributionToken,
             testReceiptIdentifier: testReceiptIdentifier,
             appTransaction: appTransaction,
-            associatedTransactionId: associatedTransactionId,
-            sdkOriginated: sdkOriginated,
-            metadata: data.metadata
+            transactionId: transactionId,
+			sdkOriginated: sdkOriginated,
+            metadata: data.metadata,
+            containsAttributionData: containsAttributionData
         )
     }
 }
@@ -291,7 +296,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case paywall
         case testReceiptIdentifier = "test_receipt_identifier"
         case appTransaction = "app_transaction"
-        case associatedTransactionId = "transaction_id"
+        case transactionId = "transaction_id"
         case sdkOriginated = "sdk_originated"
         case metadata
 
@@ -311,7 +316,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
 
         try container.encodeIfPresent(self.fetchToken, forKey: .fetchToken)
         try container.encodeIfPresent(self.appTransaction, forKey: .appTransaction)
-        try container.encodeIfPresent(self.associatedTransactionId, forKey: .associatedTransactionId)
+        try container.encodeIfPresent(self.transactionId, forKey: .transactionId)
         try container.encode(self.sdkOriginated, forKey: .sdkOriginated)
         try container.encodeIfPresent(self.metadata, forKey: .metadata)
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
