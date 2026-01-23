@@ -11,6 +11,7 @@
 //
 //  Created by Antonio Pallares on 13/1/26.
 
+import Foundation
 @testable import RevenueCat
 
 /// A dictionary-backed mock implementation of `LargeItemCacheType` for testing.
@@ -25,8 +26,7 @@ final class MockLargeItemCache: LargeItemCacheType {
     var cachedContentExistsInvocations: [URL] = []
     var loadFileInvocations: [URL] = []
     var removeInvocations: [URL] = []
-    var createCacheDirectoryInvocations: [String] = []
-    var createDocumentDirectoryInvocations: [String] = []
+    var createCacheDirectoryInvocations: [(basePath: String, inAppSpecificDirectory: Bool)] = []
     var contentsOfDirectoryInvocations: [URL] = []
 
     func saveData(_ data: Data, to url: URL) throws {
@@ -73,20 +73,12 @@ final class MockLargeItemCache: LargeItemCacheType {
         storage.removeValue(forKey: url)
     }
 
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
         lock.lock()
         defer { lock.unlock() }
 
-        createCacheDirectoryInvocations.append(basePath)
+        createCacheDirectoryInvocations.append((basePath: basePath, inAppSpecificDirectory: inAppSpecificDirectory))
         return URL(string: "file:///mock/cache/\(basePath)")
-    }
-
-    func createDocumentDirectoryIfNeeded(basePath: String) -> URL? {
-        lock.lock()
-        defer { lock.unlock() }
-
-        createDocumentDirectoryInvocations.append(basePath)
-        return URL(string: "file:///mock/documents/\(basePath)")
     }
 
     func contentsOfDirectory(at url: URL) throws -> [URL] {

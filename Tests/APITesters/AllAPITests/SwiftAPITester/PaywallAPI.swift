@@ -204,6 +204,15 @@ func checkPaywallEvent(_ event: PaywallEvent) {
     case let .close(creationData, data):
         checkPaywallEventCreationData(creationData)
         checkPaywallEventData(data)
+    case let .exitOffer(creationData, data, _):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
+    case let .purchaseInitiated(creationData, data):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
+    case let .purchaseError(creationData, data):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
     @unknown default: break
     }
 
