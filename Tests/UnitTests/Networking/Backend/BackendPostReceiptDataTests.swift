@@ -45,7 +45,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: isRestore, initiationSource: .queue)
                               ),
                               observerMode: observerMode,
@@ -76,7 +76,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: isRestore, initiationSource: .purchase)
                               ),
                               observerMode: observerMode,
@@ -110,7 +110,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: isRestore, initiationSource: .purchase)
                               ),
                               observerMode: observerMode,
@@ -144,7 +144,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: isRestore, initiationSource: .purchase)
                               ),
                               observerMode: observerMode,
@@ -179,7 +179,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
                               ),
                               observerMode: true,
@@ -208,7 +208,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .purchase)
                      ),
                      observerMode: observerMode) { _ in
@@ -221,7 +221,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
                      ),
                      observerMode: observerMode,
@@ -251,7 +251,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .purchase)
                      ),
                      observerMode: observerMode,
@@ -265,7 +265,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: !isRestore, initiationSource: .queue)
                      ),
                      observerMode: observerMode,
@@ -294,7 +294,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
                      ),
                      observerMode: observerMode,
@@ -308,7 +308,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
                      ),
                      observerMode: observerMode,
@@ -337,7 +337,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .purchase)
                      ),
                      observerMode: observerMode,
@@ -352,7 +352,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .purchase)
                      ),
                      observerMode: observerMode,
@@ -381,7 +381,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: .init(offeringIdentifier: "offering_a"),
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
                      ),
                      observerMode: observerMode,
@@ -395,7 +395,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: .init(offeringIdentifier: "offering_b"),
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
                      ),
                      observerMode: observerMode,
@@ -435,7 +435,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
                               ),
                               observerMode: false,
@@ -481,7 +481,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  presentedOfferingContext: context,
                                  presentedPaywall: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
                               ),
                               observerMode: false,
@@ -533,7 +533,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
                                  presentedPaywall: .impression(paywallEventCreationData, paywallEventData),
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
                               ),
                               observerMode: false,
@@ -561,7 +561,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .queue)
                               ),
                               observerMode: false,
@@ -661,7 +661,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: false, initiationSource: .queue)
                      ),
                      observerMode: true) { result in
@@ -701,7 +701,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
                               ),
                               observerMode: false,
@@ -728,7 +728,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: true, initiationSource: .queue)
                               ),
                               observerMode: false,
@@ -757,7 +757,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
                      ),
                      observerMode: observerMode,
@@ -780,7 +780,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
                      ),
                      observerMode: observerMode,
@@ -826,7 +826,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .queue)
                               ),
                               observerMode: false,
@@ -854,7 +854,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
                      ),
                      observerMode: observerMode,
@@ -868,7 +868,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         appUserID: Self.userID,
                         presentedOfferingContext: .init(offeringIdentifier: "offering_a"),
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
                      ),
                      observerMode: observerMode,
@@ -899,7 +899,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
                               ),
                               observerMode: false,
@@ -934,7 +934,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
                               ),
                               observerMode: false,
@@ -969,7 +969,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: isRestore, initiationSource: .purchase)
                               ),
                               observerMode: observerMode,
@@ -1000,7 +1000,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: isRestore, initiationSource: .purchase)
                               ),
                               observerMode: observerMode,
@@ -1034,7 +1034,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
                               ),
                               observerMode: false,
@@ -1062,7 +1062,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
                               ),
                               observerMode: false,
@@ -1103,7 +1103,7 @@ class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .queue)
                               ),
                               observerMode: false,
@@ -1147,7 +1147,7 @@ private extension BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .queue)
                               ),
                               observerMode: false,
