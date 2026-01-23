@@ -185,7 +185,7 @@ extension PostReceiptDataOperation.PostData {
         testReceiptIdentifier: String?,
         appTransaction: String?,
         transactionId: String?,
-        /// Weather it contains attribution data for `transactionId`. This field is not included in the request
+        /// Whether it contains attribution data for `transactionId`. This field is not included in the request
         containsAttributionData: Bool
     ) {
         self.init(
