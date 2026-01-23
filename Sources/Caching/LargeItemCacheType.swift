@@ -15,9 +15,12 @@ import Foundation
 
 /// An inteface representing a simple cache
 protocol LargeItemCacheType {
-
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws
+
+    /// Store data to a url
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
+    func saveData(_ bytes: AsyncThrowingStream<UInt8, Error>, to url: URL, checksum: Checksum?) async throws
 
     /// Check if there is content cached at the url
     func cachedContentExists(at url: URL) -> Bool
@@ -25,33 +28,135 @@ protocol LargeItemCacheType {
     /// Load data from url
     func loadFile(at url: URL) throws -> Data
 
-    /// Generate a url for a location on disk based in the input URL
-    func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL?
+    /// delete data at url
+    func remove(_ url: URL) throws
+
+    /// Creates a directory in the cache from a base path
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL?
+}
+
+extension LargeItemCacheType {
+    /// Defaults `inAppSpecificDirectory` to true
+    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
+        createCacheDirectoryIfNeeded(basePath: basePath, inAppSpecificDirectory: true)
+    }
 }
 
 extension FileManager: LargeItemCacheType {
-    /// A URL for a cache directory if one is present
-    private var cacheDirectory: URL? {
-        return urls(for: .cachesDirectory, in: .userDomainMask).first
-    }
 
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws {
-        return try data.write(to: url)
+        let directoryURL = url.deletingLastPathComponent()
+        try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+        try data.write(to: url)
+    }
+
+    /// Store data to a url and validate that the file is correct before saving
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
+    func saveData(
+        _ bytes: AsyncThrowingStream<UInt8, Error>,
+        to url: URL,
+        checksum: Checksum?
+    ) async throws {
+
+        // Set up file handling
+
+        let tempFileURL = temporaryDirectory.appendingPathComponent((checksum?.value ?? "") + url.lastPathComponent)
+
+        guard createFile(atPath: tempFileURL.path, contents: nil, attributes: nil) else {
+            let message = Strings.fileRepository.failedToCreateTemporaryFile(tempFileURL)
+            Logger.error(message)
+            throw CocoaError(.fileWriteUnknown)
+        }
+
+        let fileHandle = try FileHandle(forWritingTo: tempFileURL)
+        defer { try? fileHandle.close() }
+        defer { try? removeItem(at: tempFileURL) }
+
+        // Write data in chunks to the temporary file
+
+        let bufferSize: Int = 262_144 // 256KB
+        var buffer = Data()
+        buffer.reserveCapacity(bufferSize)
+        var hasher = checksum?.algorithm.getHasher()
+
+        for try await byte in bytes {
+            buffer.append(byte)
+
+            if buffer.count >= bufferSize {
+                hasher?.update(data: buffer)
+                try fileHandle.write(contentsOf: buffer)
+                buffer.removeAll(keepingCapacity: true)
+            }
+        }
+
+        // Write any remaining bytes missed during the while loop
+        if !buffer.isEmpty {
+            hasher?.update(data: buffer)
+            try fileHandle.write(contentsOf: buffer)
+        }
+
+        // Validate the stored data matches what the server has
+        if let checksum = checksum, let hasher = hasher {
+            // If this fails… should we retry?
+
+            let digest = hasher.finalize()
+            let value = digest.compactMap { String(format: "%02x", $0) }.joined()
+            try Checksum(algorithm: checksum.algorithm, value: value)
+                .compare(to: checksum)
+        }
+
+        // If all succeeds, move the temporary file to the more permanant storage location
+        // effectively a "save" operation
+        let directoryURL = url.deletingLastPathComponent()
+        try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+        try moveItem(at: tempFileURL, to: url)
     }
 
     /// Check if there is content cached at the given path
     func cachedContentExists(at url: URL) -> Bool {
-        return (try? loadFile(at: url)) != nil
+        do {
+            if let size = try self.attributesOfItem(atPath: url.path)[.size] as? UInt64 {
+                return size > 0
+            }
+            return false
+        } catch {
+            return false
+        }
     }
 
-    /// Generate a url for a location on disk based in the input URL
-    func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL? {
-        return cacheDirectory?.appendingPathComponent(url.pathComponents.joined(separator: "/"))
+    /// Creates a directory in the cache from a base path
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
+        guard let cacheDirectoryBaseURL = DirectoryHelper.baseUrl(
+            for: .cache,
+            inAppSpecificDirectory: inAppSpecificDirectory
+        ) else { return nil }
+
+        let directoryURL = cacheDirectoryBaseURL.appendingPathComponent(basePath)
+        do {
+            try createDirectory(
+                at: directoryURL,
+                withIntermediateDirectories: true,
+                attributes: nil
+            )
+        } catch {
+            let message = Strings.fileRepository.failedToCreateCacheDirectory(directoryURL)
+            Logger.error(message)
+        }
+
+        return directoryURL
     }
 
     /// Load data from url
     func loadFile(at url: URL) throws -> Data {
         return try Data(contentsOf: url)
+    }
+
+    func remove(_ url: URL) throws {
+        try self.removeItem(at: url)
     }
 }

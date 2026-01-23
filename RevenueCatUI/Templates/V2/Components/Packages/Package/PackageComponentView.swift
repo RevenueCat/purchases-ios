@@ -15,7 +15,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PackageComponentView: View {
@@ -199,7 +199,8 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 serverDescription: "",
                                 availablePackages: [package],
                                 webCheckoutUrl: nil),
-                hasPurchaseButton: false
+                hasPurchaseButton: false,
+                colorScheme: .light
             ), onDismiss: {}
         )
         .previewRequiredPaywallsV2Properties(
@@ -229,7 +230,8 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 serverDescription: "",
                                 availablePackages: [package],
                                 webCheckoutUrl: nil),
-                hasPurchaseButton: false
+                hasPurchaseButton: false,
+                colorScheme: .light
             ), onDismiss: {}
         )
         .previewRequiredPaywallsV2Properties(
@@ -247,17 +249,19 @@ fileprivate extension PackageComponentViewModel {
         component: PaywallComponent.PackageComponent,
         localizationProvider: LocalizationProvider,
         offering: Offering,
-        hasPurchaseButton: Bool
+        hasPurchaseButton: Bool,
+        colorScheme: ColorScheme
     ) throws {
         let factory = ViewModelFactory()
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
-            firstImageInfo: nil,
+            firstItemIgnoresSafeAreaInfo: nil,
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            offering: offering
+            offering: offering,
+            colorScheme: colorScheme
         )
 
         self.init(

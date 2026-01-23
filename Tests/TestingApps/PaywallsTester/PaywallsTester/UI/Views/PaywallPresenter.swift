@@ -57,6 +57,7 @@ struct PaywallPresenter: View {
                 })
 
 #if !os(watchOS)
+#if !os(macOS)
 #if DEBUG
         case .footer:
             CustomPaywallContent()
@@ -82,7 +83,11 @@ struct PaywallPresenter: View {
                 .originalTemplatePaywallFooter(offering: self.offering,
                                                condensed: true)
 #endif
+#endif
         case .presentIfNeeded:
+            fatalError()
+
+        case .presentPaywall:
             fatalError()
 
 #endif

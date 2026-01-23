@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct IconComponentView: View {
@@ -41,7 +41,7 @@ struct IconComponentView: View {
     let viewModel: IconComponentViewModel
 
     var body: some View {
-        viewModel.styles(
+        self.viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
@@ -49,11 +49,15 @@ struct IconComponentView: View {
             ),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
-            )
+            ),
+            colorScheme: colorScheme
         ) { style in
             if style.visible {
                 RemoteImage(
-                    url: style.url
+                    url: style.url,
+                    // The expectedSize is important
+                    // It renders a clear image if actual image is being fetched
+                    expectedSize: self.viewModel.expectedSize
                 ) { (image, size) in
                     self.renderImage(image, size, with: style)
                 }
@@ -111,8 +115,7 @@ struct IconComponentView_Previews: PreviewProvider {
         // Default
         VStack {
             IconComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
+                viewModel: .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
@@ -143,8 +146,7 @@ struct IconComponentView_Previews: PreviewProvider {
         // Default - Background
         VStack {
             IconComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
+                viewModel: .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]

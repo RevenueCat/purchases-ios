@@ -16,7 +16,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
@@ -405,7 +405,8 @@ struct MultiTierPreview_Previews: PreviewProvider {
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
-            failedToLoadFont: { _ in }
+            failedToLoadFont: { _ in },
+            colorScheme: .light
         )
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))

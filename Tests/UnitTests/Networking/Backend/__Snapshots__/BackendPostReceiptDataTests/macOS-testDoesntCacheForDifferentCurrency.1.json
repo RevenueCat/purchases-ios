@@ -1,7 +1,6 @@
 {
   "headers" : {
     "Authorization" : "Bearer asharedsecret",
-    "content-type" : "application/json",
     "X-Client-Build-Version" : "12345",
     "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
     "X-Client-Version" : "17.0.0",
@@ -15,10 +14,11 @@
     "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
     "X-Preferred-Locales" : "en_EN",
     "X-Retry-Count" : "0",
-    "X-Storefront" : "USA",
     "X-StoreKit-Version" : "2",
     "X-StoreKit2-Enabled" : "true",
-    "X-Version" : "4.0.0"
+    "X-Storefront" : "USA",
+    "X-Version" : "4.0.0",
+    "content-type" : "application/json"
   },
   "request" : {
     "body" : {
@@ -32,7 +32,8 @@
       "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
       "initiation_source" : "purchase",
       "is_restore" : false,
-      "observer_mode" : true
+      "observer_mode" : true,
+      "purchase_completed_by" : "my_app"
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

@@ -9,6 +9,7 @@ excluded:
   - scan_derived_data
   - .git
   - .build
+  - ./**/Project.swift
 
 opt_in_rules:
   - force_unwrapping
@@ -34,10 +35,11 @@ custom_rules:
     excluded:
       - Tests/ReceiptParserTests
       - Tests/v3LoadShedderIntegration
+      - Tests/v4LoadShedderIntegration
     regex: "\\: XCTestCase \\{"
     name: "XCTestCase Superclass"
     message: "Test classes must inherit `TestCase` instead."
-    
+
   return_switch_forbidden:
     included: ".*\\.swift"
     name: "Forbidden 'return switch' usage"
@@ -45,9 +47,39 @@ custom_rules:
     message: "Inline 'return switch' is not allowed."
     severity: error
 
+  no_preview_macro:
+    name: "No Preview Macro"
+    regex: "#Preview"
+    message: "The '#Preview' macro will not compile in the CI pipeline during deployment, use a PreviewProvider instead."
+    severity: error
+
+  no_assignments_from_switch:
+    name: "No Assignments from Switch Statements"
+    regex: " = switch "
+    message: "In older versions of xcode build tools, this is not supported and will fail in CI"
+    severity: error
+
+  no_trailing_comma_multiline:
+    name: "No Trailing Commas"
+    regex: ',\s*\n\s*\)'
+    message: "Trailing commas are not allowed"
+    severity: error
+
+  avoid_using_directory_apis_directly:
+    name: "Avoid Using Directory APIs Directly"
+    regex: '\b(URL\.(cachesDirectory|applicationDirectory|libraryDirectory|userDirectory|documentsDirectory|desktopDirectory|applicationSupportDirectory|downloadsDirectory|moviesDirectory|musicDirectory|picturesDirectory|sharedPublicDirectory|trashDirectory|homeDirectory|temporaryDirectory)|URL\.(currentDirectory\(\)|homeDirectory\(forUser:)|FileManager\.default\.(urls?)\s*\(|(?<!FileManager\.)(?!default\.)[a-zA-Z_][a-zA-Z0-9_]*\.(urls?)\s*\(\s*for\s*:\s*\.)'
+    match_kinds:
+      - identifier
+      - keyword
+    message: "Use DirectoryHelper.baseUrl(for:) instead of FileManager or URL directory APIs."
+    severity: error
+    excluded:
+      - Sources/Caching/DirectoryHelper.swift
+      - Tests/
+
 identifier_name:
-  max_length: 
-    warning: 60 
+  max_length:
+    warning: 60
     error: 80
 
 large_tuple:

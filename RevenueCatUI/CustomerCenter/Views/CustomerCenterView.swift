@@ -41,6 +41,10 @@ public struct CustomerCenterView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    // Propagate dismiss from the container to child views (iOS 15 fix)
+    @Environment(\.dismiss)
+    private var dismiss
+
     private let mode: CustomerCenterPresentationMode
 
     private let navigationOptions: CustomerCenterNavigationOptions
@@ -141,8 +145,9 @@ private extension CustomerCenterView {
             case .error:
                 ErrorView()
                     .environment(\.customerCenterPresentationMode, self.mode)
-                    .environment(\.navigationOptions, self.navigationOptions)
-                    .dismissCircleButtonToolbarIfNeeded()
+                    .environment(\.navigationOptions, self.navigationOptionsWithDismiss)
+                    // Use explicit options to avoid any environment propagation issues
+                    .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
 
             case .notLoaded:
                 TintedProgressView()
@@ -153,7 +158,7 @@ private extension CustomerCenterView {
                         .environment(\.appearance, configuration.appearance)
                         .environment(\.localization, configuration.localization)
                         .environment(\.customerCenterPresentationMode, self.mode)
-                        .environment(\.navigationOptions, self.navigationOptions)
+                        .environment(\.navigationOptions, self.navigationOptionsWithDismiss)
                         .environment(\.supportInformation, configuration.support)
                 } else {
                     TintedProgressView()
@@ -195,6 +200,7 @@ private extension CustomerCenterView {
                         }
                     }
                 )
+                .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
             } else if viewModel.shouldShowList {
                 listView(screen)
             } else {
@@ -231,7 +237,7 @@ private extension CustomerCenterView {
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )
-        .dismissCircleButtonToolbarIfNeeded()
+        .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
     }
 
     func singlePurchaseView(_ screen: CustomerCenterConfigData.Screen) -> some View {
@@ -246,7 +252,7 @@ private extension CustomerCenterView {
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )
-        .dismissCircleButtonToolbarIfNeeded()
+        .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
     }
 
     func trackImpression() {
@@ -254,6 +260,24 @@ private extension CustomerCenterView {
                                   displayMode: self.mode)
     }
 
+}
+
+@available(iOS 15.0, *)
+private extension CustomerCenterView {
+    /// Provide a navigation options instance that always includes a close handler.
+    ///
+    /// - Note: Using `@Environment(.dismiss)` directly inside child views (e.g., toolbar buttons) can fail to dismiss
+    /// the view when presented. To ensure reliable behavior on iOS 15, we capture `dismiss` at the
+    /// container level and propagate it via `navigationOptions.onCloseHandler`.
+    var navigationOptionsWithDismiss: CustomerCenterNavigationOptions {
+        // Only inject a dismissal handler if missing, to ensure reliability on iOS 15.
+        return CustomerCenterNavigationOptions(
+            usesNavigationStack: self.navigationOptions.usesNavigationStack,
+            usesExistingNavigation: self.navigationOptions.usesExistingNavigation,
+            shouldShowCloseButton: self.navigationOptions.shouldShowCloseButton,
+            onCloseHandler: self.navigationOptions.onCloseHandler ?? { self.dismiss() }
+        )
+    }
 }
 
 #if DEBUG

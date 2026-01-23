@@ -1,15 +1,6 @@
 {
   "pins" : [
     {
-      "identity" : "accessibilitysnapshot",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/EmergeTools/AccessibilitySnapshot.git",
-      "state" : {
-        "revision" : "54046d8fa44b9fa9f0e2229526f6ed89cb5e0ec2",
-        "version" : "1.0.2"
-      }
-    },
-    {
       "identity" : "cwlcatchexception",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mattgallagher/CwlCatchException.git",
@@ -55,12 +46,21 @@
       }
     },
     {
+      "identity" : "simpledebugger",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/EmergeTools/SimpleDebugger.git",
+      "state" : {
+        "revision" : "f065263eb5db95874b690408d136b573c939db9e",
+        "version" : "1.0.0"
+      }
+    },
+    {
       "identity" : "snapshotpreviews",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/EmergeTools/SnapshotPreviews.git",
       "state" : {
-        "revision" : "e29969072e600518867af25d4d2acd0d1d2ffd5f",
-        "version" : "0.10.20"
+        "revision" : "6dfb281493e48e7c09ae9717593ae0b8eb47b15c",
+        "version" : "0.11.0"
       }
     },
     {

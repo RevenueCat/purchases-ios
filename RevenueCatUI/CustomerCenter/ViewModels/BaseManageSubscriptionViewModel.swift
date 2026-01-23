@@ -67,6 +67,9 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     var showAllInAppCurrenciesScreen: Bool = false
 
     @Published
+    var showCreateTicket: Bool = false
+
+    @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
     private var error: Error?
@@ -110,7 +113,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                 }
 
         case let .promotionalOffer(promotionalOffer) where purchaseInformation?.store == .appStore:
-            if promotionalOffer.eligible, let productIdentifier = feedbackSurveyData?.productIdentifier {
+            if promotionalOffer.eligible, let productIdentifier = purchaseInformation?.productIdentifier {
                 self.loadingPath = path
                 let result = await loadPromotionalOfferUseCase.execute(
                     promoOfferDetails: promotionalOffer,
@@ -132,6 +135,20 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 
         default:
             await self.onPathSelected(path: path)
+        }
+    }
+
+    func onDismissPromotionalOffer(action: PromotionalOfferViewAction) {
+        self.promotionalOfferData = nil
+        defer {
+            self.loadingPath = nil
+        }
+
+        if let path = self.loadingPath,
+           !action.shouldTerminateCurrentPathFlow {
+            Task.detached(priority: .userInitiated) { @MainActor in
+                await self.onPathSelected(path: path)
+            }
         }
     }
 

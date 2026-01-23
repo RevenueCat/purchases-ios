@@ -21,7 +21,9 @@ let project = Project(
                     ],
                     "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)",
                     "REVENUECAT_PROXY_URL_SCHEME": "$(REVENUECAT_PROXY_URL_SCHEME)",
-                    "REVENUECAT_PROXY_URL_HOST": "$(REVENUECAT_PROXY_URL_HOST)"
+                    "REVENUECAT_PROXY_URL_HOST": "$(REVENUECAT_PROXY_URL_HOST)",
+                    "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY": "$(REVENUECAT_FORCE_SERVER_ERROR_STRATEGY)",
+                    "REVENUECAT_API_HOST": "$(REVENUECAT_API_HOST)"
                 ]
             ),
             sources: ["rc-maestro/Sources/**/*.swift"],

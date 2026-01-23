@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 final class PostReceiptDataOperation: CacheableNetworkOperation {
 
     private let postData: PostData
@@ -57,7 +59,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.hash)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
-        -\(postData.subscriberAttributesByKey?.debugDescription ?? "")
+        -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
         """
 
         return .init({ cacheKey in
@@ -131,8 +133,13 @@ extension PostReceiptDataOperation {
         let presentedPlacementIdentifier: String?
         let appliedTargetingRule: AppliedTargetingRule?
         let paywall: Paywall?
+
+        /// The value of observer mode at the time of the request.
         let observerMode: Bool
-        let initiationSource: ProductRequestData.InitiationSource
+
+        /// The value of purchaseCompletedBy at purchase time.
+        let purchaseCompletedBy: PurchasesAreCompletedBy?
+        let initiationSource: PostReceiptSource.InitiationSource
         let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
         let aadAttributionToken: String?
         /// - Note: this is only used for the backend to disambiguate receipts created in `SKTestSession`s.
@@ -167,16 +174,19 @@ extension PostReceiptDataOperation.PostData {
 
     init(
         transactionData data: PurchasedTransactionData,
+        postReceiptSource: PostReceiptSource,
+        appUserID: String,
         productData: ProductRequestData?,
         receipt: EncodedAppleReceipt,
         observerMode: Bool,
+        purchaseCompletedBy: PurchasesAreCompletedBy?,
         testReceiptIdentifier: String?,
         appTransaction: String?
     ) {
         self.init(
-            appUserID: data.appUserID,
+            appUserID: appUserID,
             receipt: receipt,
-            isRestore: data.source.isRestore,
+            isRestore: postReceiptSource.isRestore,
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingContext?.offeringIdentifier,
             presentedPlacementIdentifier: data.presentedOfferingContext?.placementIdentifier,
@@ -185,7 +195,8 @@ extension PostReceiptDataOperation.PostData {
             },
             paywall: data.paywall,
             observerMode: observerMode,
-            initiationSource: data.source.initiationSource,
+            purchaseCompletedBy: purchaseCompletedBy,
+            initiationSource: postReceiptSource.initiationSource,
             subscriberAttributesByKey: data.unsyncedAttributes,
             aadAttributionToken: data.aadAttributionToken,
             testReceiptIdentifier: testReceiptIdentifier,
@@ -264,6 +275,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case appUserID = "app_user_id"
         case isRestore
         case observerMode
+        case purchaseCompletedBy = "purchase_completed_by"
         case initiationSource
         case attributes
         case aadAttributionToken
@@ -296,6 +308,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
         try container.encodeIfPresent(self.paywall, forKey: .paywall)
+        try container.encodeIfPresent(self.purchaseCompletedBy?.name, forKey: .purchaseCompletedBy)
 
         try container.encodeIfPresent(
             self.subscriberAttributesByKey
@@ -353,7 +366,7 @@ extension PostReceiptDataOperation.PostData: HTTPRequestBody {
 
 // MARK: - InitiationSource
 
-extension ProductRequestData.InitiationSource: Encodable, RawRepresentable {
+extension PostReceiptSource.InitiationSource: Codable, RawRepresentable {
 
     var rawValue: String {
         switch self {
@@ -369,7 +382,7 @@ extension ProductRequestData.InitiationSource: Encodable, RawRepresentable {
         self = value
     }
 
-    private static let codes: [String: ProductRequestData.InitiationSource] = Self
+    private static let codes: [String: PostReceiptSource.InitiationSource] = Self
         .allCases
         .dictionaryWithKeys { $0.rawValue }
 
@@ -394,6 +407,17 @@ private extension EncodedAppleReceipt {
             }
         case .empty:
             return "empty"
+        }
+    }
+
+}
+
+private extension PurchasesAreCompletedBy {
+
+    var name: String {
+        switch self {
+        case .revenueCat: return "revenuecat"
+        case .myApp: return "my_app"
         }
     }
 

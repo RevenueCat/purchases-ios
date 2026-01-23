@@ -262,6 +262,114 @@
                     }
                 }
             }
+        },
+        {
+            "description": "Offering with paywall components and exit offers",
+            "identifier": "paywall_components_with_exit_offers",
+            "packages": [
+                {
+                    "identifier": "$rc_monthly",
+                    "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+                }
+            ],
+            "paywall_components": {
+                "default_locale": "en_US",
+                "revision": 3,
+                "template_name": "componentsTEST",
+                "asset_base_url": "https://assets.pawwalls.com",
+                "components_localizations": [],
+                "components_config": {
+                    "base": {
+                        "background": {
+                            "type": "color",
+                            "value": {
+                                "light": {
+                                    "type": "hex",
+                                    "value": "#220000ff"
+                                }
+                            }
+                        },
+                        "stack": {
+                            "type": "stack",
+                            "components": [],
+                            "margin": {},
+                            "padding": {},
+                            "size": {
+                                "width": {
+                                    "type": "fill"
+                                },
+                                "height": {
+                                    "type": "fill"
+                                }
+                            },
+                            "dimension": {
+                                "type": "vertical",
+                                "alignment": "center",
+                                "distribution": "center"
+                            },
+                            "spacing": 16
+                        }
+                    }
+                },
+                "exit_offers": {
+                    "dismiss": {
+                        "offering_id": "exit_offer_offering_id"
+                    }
+                }
+            }
+        },
+        {
+            "description": "Offering with paywall components and zero decimal place countries",
+            "identifier": "paywall_components_with_zero_decimal_countries",
+            "packages": [
+                {
+                    "identifier": "$rc_monthly",
+                    "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+                }
+            ],
+            "paywall_components": {
+                "default_locale": "en_US",
+                "revision": 3,
+                "template_name": "componentsTEST",
+                "asset_base_url": "https://assets.pawwalls.com",
+                "components_localizations": [],
+                "components_config": {
+                    "base": {
+                        "background": {
+                            "type": "color",
+                            "value": {
+                                "light": {
+                                    "type": "hex",
+                                    "value": "#220000ff"
+                                }
+                            }
+                        },
+                        "stack": {
+                            "type": "stack",
+                            "components": [],
+                            "margin": {},
+                            "padding": {},
+                            "size": {
+                                "width": {
+                                    "type": "fill"
+                                },
+                                "height": {
+                                    "type": "fill"
+                                }
+                            },
+                            "dimension": {
+                                "type": "vertical",
+                                "alignment": "center",
+                                "distribution": "center"
+                            },
+                            "spacing": 16
+                        }
+                    }
+                },
+                "zeroDecimalPlaceCountries": {
+                    "apple": ["TWN", "KAZ", "MEX", "PHL", "THA", "IND"]
+                }
+            }
         }
     ]
 }

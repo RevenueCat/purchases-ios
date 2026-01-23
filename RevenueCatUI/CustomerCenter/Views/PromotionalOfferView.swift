@@ -98,14 +98,10 @@ struct PromotionalOfferView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
+        .applyIfLet(appearance.tintColor(colorScheme: colorScheme), apply: { $0.tint($1)})
         .onAppear {
             self.viewModel.onPromotionalOfferPurchaseFlowComplete = self.dismissPromotionalOfferView
         }
-    }
-
-    private var tintColor: Color? {
-        Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
     }
 
     // Called when the promotional offer flow is purchased, successfully or not
@@ -199,6 +195,9 @@ struct PromoOfferButtonView: View {
     @Environment(\.locale)
     private var locale
 
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     @ObservedObject
     private(set) var viewModel: PromotionalOfferViewModel
 
@@ -207,7 +206,7 @@ struct PromoOfferButtonView: View {
     var body: some View {
         if let product = self.viewModel.promotionalOfferData?.product,
            let discount = self.viewModel.promotionalOfferData?.promotionalOffer.discount {
-            let mainTitle = discount.localizedPricePerPeriodByPaymentMode(.current)
+            let mainTitle = discount.localizedPricePerPeriodByPaymentMode(.current, localization: self.localization)
             let localizedProductPricePerPeriod = product.localizedPricePerPeriod(.current)
 
             AsyncButton {
@@ -226,10 +225,10 @@ struct PromoOfferButtonView: View {
                         Text(mainTitle)
                             .font(.headline)
 
-                        let format = Localization.localizedBundle(self.locale)
-                            .localizedString(forKey: "then_price_per_period", value: "then %@", table: nil)
+                        let subtitle = self.localization[.promoOfferButtonRegularPrice]
+                            .replacingOccurrences(of: "{{ price }}", with: localizedProductPricePerPeriod)
 
-                        Text(String(format: format, localizedProductPricePerPeriod))
+                        Text(subtitle)
                             .font(.subheadline)
                     }
                 }

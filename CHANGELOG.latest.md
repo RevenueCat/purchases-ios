@@ -1,19 +1,16 @@
 ## RevenueCat SDK
-### ✨ New Features
-* Add option to disable automatic ID collection when setting attribution network IDs at configuration time (#5504) via Toni Rico (@tonidero)
 ### 🐞 Bugfixes
-* fix compilation errors for Xcode 14.2 (swift 5.7) (#5494) via Facundo Menzella (@facumenzella)
+* Fix cache files visible in documents directory: Etags, offerings and product entitlements mapping  (#6020) via Rick (@rickvdl)
+* Fix paywall close tracking in PaywallViewController (#6083) via Cesar de la Vega (@vegaro)
 
 ## RevenueCatUI SDK
-### Customer Center
-#### ✨ New Features
-* Add button_text to ScreenOffering (#5501) via Facundo Menzella (@facumenzella)
+### Paywallv2
 #### 🐞 Bugfixes
-* Fix dark mode button for featured offering + localized header (#5502) via Facundo Menzella (@facumenzella)
-* Address virtual currencies with zero units in customer center (#5500) via Facundo Menzella (@facumenzella)
-* Fix title and price of non-Google purchases in Customer Center (#5465) via Facundo Menzella (@facumenzella)
+* fix: Load high with high loader, load low with low loader (#6111) via Facundo Menzella (@facumenzella)
+* Fix close button being tappable during transition delay (#6106) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix backend integration tests (#5505) via Toni Rico (@tonidero)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5498) via RevenueCat Git Bot (@RCGitBot)
-* Fix spelling errors in the style guide (#5497) via Jacob Rakidzich (@JZDesign)
+* Add LocalKhepri file to be able to work with local instance (#6123) via Facundo Menzella (@facumenzella)
+* Fix loading in PaywallsTester when using present functions (#6109) via Cesar de la Vega (@vegaro)
+* Use `SKPaymentQueue.default()` instead of initializing a new instance in PurchaseTester app (#6108) via Antonio Pallares (@ajpallares)
+* Add Claude Code Review workflow configuration (#6107) via Cesar de la Vega (@vegaro)

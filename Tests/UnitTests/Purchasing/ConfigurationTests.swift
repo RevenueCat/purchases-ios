@@ -35,11 +35,9 @@ class ConfigurationTests: TestCase {
         expect(Configuration.validateAndLog(apiKey: "swRTCezdEzjnJSxdexDNJfcfiFrMXwqZ")) == .legacy
     }
 
-    #if TEST_STORE
     func testValidateAPIKeyWithTestStoreKey() {
-        expect(Configuration.validateAndLog(apiKey: "test_eg2t9g3098bgqqn")) == .testStore
+        expect(Configuration.validateAndLog(apiKey: "test_eg2t9g3098bgqqn")) == .simulatedStore
     }
-    #endif
 
     func testNoObserverModeWithStoreKit1() {
         let configuration = Configuration.Builder(withAPIKey: "test")

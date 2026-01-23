@@ -1,0 +1,68 @@
+{
+  "asset_base_url" : "https://assets.pawwalls.com",
+  "config" : {
+    "blurred_background_image" : true,
+    "colors" : {
+      "light" : {
+        "background" : "#FFFFFF",
+        "call_to_action_background" : "#FFFFFF",
+        "call_to_action_foreground" : "#FFFFFF",
+        "text1" : "#FFFFFF"
+      }
+    },
+    "colors_by_tier" : {
+
+    },
+    "display_restore_purchases" : true,
+    "images_by_tier" : {
+
+    },
+    "images_heic" : {
+      "background" : "background.jpg",
+      "header" : null,
+      "icon" : "revenuecatui_default_paywall_app_icon"
+    },
+    "images_heic_low_res" : {
+      "background" : null,
+      "header" : null,
+      "icon" : null
+    },
+    "packages" : [
+      "$rc_annual",
+      "$rc_monthly"
+    ],
+    "privacy_url" : null,
+    "tiers" : [
+
+    ],
+    "tos_url" : null
+  },
+  "localized_strings" : {
+    "en_US" : {
+      "call_to_action" : "Continue",
+      "call_to_action_with_intro_offer" : null,
+      "features" : [
+
+      ],
+      "offer_details" : "{{ total_price_and_per_month }}",
+      "offer_details_with_intro_offer" : "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}.",
+      "offer_name" : null,
+      "offer_overrides" : {
+
+      },
+      "subtitle" : null,
+      "tier_name" : null,
+      "title" : "{{ app_name }}"
+    }
+  },
+  "localized_strings_by_tier" : {
+
+  },
+  "revision" : -1,
+  "template_name" : "2",
+  "zero_decimal_place_countries" : {
+    "apple" : [
+
+    ]
+  }
+}

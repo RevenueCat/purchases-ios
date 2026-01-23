@@ -26,7 +26,101 @@ struct RemoteImage<Content: View>: View {
     let darkLowResUrl: URL?
     let aspectRatio: CGFloat?
     let maxWidth: CGFloat?
+    let expectedSize: CGSize?
     let content: (Image, CGSize) -> Content
+
+    init(
+        url: URL,
+        lowResUrl: URL? = nil,
+        darkUrl: URL? = nil,
+        darkLowResUrl: URL? = nil,
+        expectedSize: CGSize? = nil,
+        @ViewBuilder content: @escaping (Image, CGSize) -> Content
+    ) {
+        self.url = url
+        self.lowResUrl = lowResUrl
+        self.darkUrl = darkUrl
+        self.darkLowResUrl = darkLowResUrl
+        self.content = content
+        self.aspectRatio = nil
+        self.maxWidth = nil
+        self.expectedSize = expectedSize
+    }
+
+    init(
+        url: URL,
+        lowResUrl: URL? = nil,
+        darkUrl: URL? = nil,
+        darkLowResUrl: URL? = nil,
+        aspectRatio: CGFloat? = nil,
+        maxWidth: CGFloat? = nil
+    ) where Content == AnyView {
+        self.url = url
+        self.lowResUrl = lowResUrl
+        self.darkUrl = darkUrl
+        self.darkLowResUrl = darkLowResUrl
+        self.maxWidth = maxWidth
+        self.aspectRatio = aspectRatio
+        self.expectedSize = nil
+        self.content = { (image, _) in
+            if let aspectRatio {
+                return AnyView(
+                    image
+                        .fitToAspect(aspectRatio, contentMode: .fill)
+                        .frame(maxWidth: maxWidth)
+                        .accessibilityHidden(true)
+                )
+            } else {
+                return AnyView(
+                    image
+                        .resizable()
+                        .accessibilityHidden(true)
+                )
+            }
+        }
+    }
+
+    var body: some View {
+        ColorSchemeRemoteImage(
+            url: self.url,
+            lowResUrl: self.lowResUrl,
+            darkUrl: self.darkUrl,
+            darkLowResUrl: self.darkLowResUrl,
+            expectedSize: self.expectedSize,
+            aspectRatio: self.aspectRatio,
+            maxWidth: self.maxWidth,
+            colorScheme: self.colorScheme
+        ) { image, size in
+            content(image, size)
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct ColorSchemeRemoteImage<Content: View>: View {
+
+    private var colorScheme: ColorScheme
+
+    let url: URL
+    let lowResUrl: URL?
+    let darkUrl: URL?
+    let darkLowResUrl: URL?
+    let aspectRatio: CGFloat?
+    let maxWidth: CGFloat?
+    let expectedSize: CGSize?
+    let content: (Image, CGSize) -> Content
+
+    // Preferred method of loading images
+    // Using @StateObject so SwiftUI manages the lifecycle and preserves across view updates
+
+    @StateObject
+    private var highResFileLoader: FileImageLoader
+
+    @StateObject
+    private var lowResFileLoader: FileImageLoader
+
+    // Legacy method of loading images
 
     @StateObject
     private var highResLoader: ImageLoader = .init()
@@ -46,54 +140,13 @@ struct RemoteImage<Content: View>: View {
             return .identity
         }
         #endif
-        return .opacity.animation(Constants.defaultAnimation)
-    }
 
-    init(
-        url: URL,
-        lowResUrl: URL? = nil,
-        darkUrl: URL? = nil,
-        darkLowResUrl: URL? = nil,
-        @ViewBuilder content: @escaping (Image, CGSize) -> Content
-    ) {
-        self.url = url
-        self.lowResUrl = lowResUrl
-        self.darkUrl = darkUrl
-        self.darkLowResUrl = darkLowResUrl
-        self.content = content
-        self.aspectRatio = nil
-        self.maxWidth = nil
-    }
-
-    init(
-        url: URL,
-        lowResUrl: URL? = nil,
-        darkUrl: URL? = nil,
-        darkLowResUrl: URL? = nil,
-        aspectRatio: CGFloat? = nil,
-        maxWidth: CGFloat? = nil
-    ) where Content == AnyView {
-        self.url = url
-        self.lowResUrl = lowResUrl
-        self.darkUrl = darkUrl
-        self.darkLowResUrl = darkLowResUrl
-        self.maxWidth = maxWidth
-        self.aspectRatio = aspectRatio
-        self.content = { (image, _) in
-            if let aspectRatio {
-                return AnyView(
-                    image
-                        .fitToAspect(aspectRatio, contentMode: .fill)
-                        .frame(maxWidth: maxWidth)
-                        .accessibilityHidden(true)
-                )
-            } else {
-                return AnyView(
-                    image
-                        .resizable()
-                        .accessibilityHidden(true)
-                )
-            }
+        let loadedFromCache = highResFileLoader.wasLoadedFromCache || lowResFileLoader.wasLoadedFromCache
+        if loadedFromCache {
+            // No transition if image is fully loaded from cache
+            return .identity
+        } else {
+            return .opacity.animation(Constants.defaultAnimation)
         }
     }
 
@@ -102,25 +155,78 @@ struct RemoteImage<Content: View>: View {
             return nil
         }
 
-        #if os(macOS)
-        if let image = NSImage(contentsOfFile: url.path) {
-            return (Image(nsImage: image), image.size)
-        } else {
-            return nil
+        return url.asImageAndSize
+    }
+
+    init(
+        url: URL,
+        lowResUrl: URL? = nil,
+        darkUrl: URL? = nil,
+        darkLowResUrl: URL? = nil,
+        expectedSize: CGSize? = nil,
+        aspectRatio: CGFloat? = nil,
+        maxWidth: CGFloat? = nil,
+        colorScheme: ColorScheme,
+        @ViewBuilder content: @escaping (Image, CGSize) -> Content
+    ) {
+        self.url = url
+        self.lowResUrl = lowResUrl
+        self.darkUrl = darkUrl
+        self.darkLowResUrl = darkLowResUrl
+        self.content = content
+        self.aspectRatio = aspectRatio
+        self.maxWidth = maxWidth
+        self.expectedSize = expectedSize
+        self.colorScheme = colorScheme
+
+        let highResURL = Self.selectURL(
+            lightURL: url,
+            darkURL: darkUrl,
+            for: colorScheme
+        )
+
+        let lowResURL = Self.selectURL(
+            lightURL: lowResUrl,
+            darkURL: darkLowResUrl ?? lowResUrl,
+            for: colorScheme
+        )
+
+        _highResFileLoader = StateObject(wrappedValue: FileImageLoader(fileRepository: .shared, url: highResURL))
+        _lowResFileLoader = StateObject(wrappedValue: FileImageLoader(fileRepository: .shared, url: lowResURL))
+    }
+
+    private static func selectURL(
+        lightURL: URL?,
+        darkURL: URL?,
+        for colorScheme: ColorScheme
+    ) -> URL? {
+        switch colorScheme {
+        case .dark:
+            return darkURL ?? lightURL
+        case .light:
+            fallthrough
+        @unknown default:
+            return lightURL
         }
-        #else
-        if let image = UIImage(contentsOfFile: url.path) {
-            return (Image(uiImage: image), image.size)
-        } else {
-            return nil
-        }
-        #endif
+    }
+
+    private var effectiveHighResURL: URL? {
+        Self.selectURL(lightURL: self.url, darkURL: self.darkUrl, for: self.colorScheme)
+    }
+
+    private var effectiveLowResURL: URL? {
+        Self.selectURL(lightURL: self.lowResUrl, darkURL: self.darkLowResUrl ?? self.lowResUrl, for: self.colorScheme)
     }
 
     var body: some View {
         Group {
             if let imageAndSize = self.localImage {
                 content(imageAndSize.0, imageAndSize.1)
+            } else if let value = self.highResFileLoader.result {
+                content(value.0, value.1)
+            } else if let value = lowResFileLoader.result {
+                content(value.0, value.1)
+            // Legacy loaders used by paywalls v1
             } else if case let .success(result) = highResLoader.result {
                 content(result.image, result.size)
             } else if case let .success(result) = lowResLoader.result {
@@ -134,11 +240,23 @@ struct RemoteImage<Content: View>: View {
                     emptyView(error: nil)
                 }
             } else {
-                emptyView(error: nil)
+                if let expectedSize = self.expectedSize {
+                    content(Image.clearImage(size: expectedSize), expectedSize)
+                } else {
+                    emptyView(error: nil)
+                }
             }
         }
         .transition(self.transition)
-        .task(id: self.url) { // This cancels the previous task when the URL changes.
+        // Keep file loaders in sync with effective URLs as selection/color scheme changes.
+        .onChangeOf(self.effectiveHighResURL) { newURL in
+            self.highResFileLoader.updateURL(newURL)
+        }
+        .onChangeOf(self.effectiveLowResURL) { newURL in
+            self.lowResFileLoader.updateURL(newURL)
+        }
+        // This cancels the previous task when the URL or color scheme change, ensuring a proper update of the UI
+        .task(id: "\(self.url)\(self.colorScheme)") {
             #if DEBUG
             // Don't attempt to load if local image
             // This is used for paywall screenshot validation
@@ -147,19 +265,29 @@ struct RemoteImage<Content: View>: View {
             }
             #endif
 
-            switch self.colorScheme {
-            case .dark:
-                await loadImages(
-                    url: self.darkUrl ?? self.url,
-                    lowResUrl: self.darkLowResUrl ?? self.lowResUrl
-                )
-            case .light:
-                fallthrough
-            @unknown default:
-                await loadImages(
-                    url: self.url,
-                    lowResUrl: self.lowResUrl
-                )
+            guard self.highResFileLoader.result == nil else {
+                return
+            }
+
+            async let high: Void = await self.highResFileLoader.load()
+            async let low: Void = await self.lowResFileLoader.load()
+            _ = await (high, low)
+
+            if self.highResFileLoader.result == nil {
+                switch self.colorScheme {
+                case .dark:
+                    await loadImages(
+                        url: self.darkUrl ?? self.url,
+                        lowResUrl: self.darkLowResUrl ?? self.lowResUrl
+                    )
+                case .light:
+                    fallthrough
+                @unknown default:
+                    await loadImages(
+                        url: self.url,
+                        lowResUrl: self.lowResUrl
+                    )
+                }
             }
         }
     }
@@ -199,4 +327,37 @@ struct RemoteImage<Content: View>: View {
         }
     }
 
+}
+
+private extension Image {
+    /// Returns a fully transparent SwiftUI Image of the given size.
+    static func clearImage(size: CGSize) -> Image {
+        #if os(iOS) || os(visionOS)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let uiImage = renderer.image { ctx in
+            UIColor.clear.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+        }
+        return Image(uiImage: uiImage)
+
+        #elseif os(tvOS) || os(watchOS)
+        // Fallback for tvOS/watchOS: create a blank UIImage
+        UIGraphicsBeginImageContextWithOptions(size, false, 0)
+        UIColor.clear.setFill()
+        UIRectFill(CGRect(origin: .zero, size: size))
+        let uiImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return Image(uiImage: uiImage ?? UIImage())
+
+        #elseif os(macOS)
+        let nsImage = NSImage(size: size)
+        nsImage.lockFocus()
+        NSColor.clear.setFill()
+        NSBezierPath(rect: CGRect(origin: .zero, size: size)).fill()
+        nsImage.unlockFocus()
+        return Image(nsImage: nsImage)
+
+        #endif
+    }
 }

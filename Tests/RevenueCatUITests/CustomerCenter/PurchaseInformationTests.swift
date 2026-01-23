@@ -12,6 +12,7 @@
 //  Created by Cesar de la Vega on 10/25/24.
 
 import Nimble
+import StoreKit
 import XCTest
 
 @_spi(Internal) import RevenueCat
@@ -68,6 +69,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -131,6 +133,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -191,6 +194,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -252,6 +256,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -311,6 +316,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -773,7 +779,7 @@ final class PurchaseInformationTests: TestCase {
 
         expect(subscriptionInfo.title) == "Subscription"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
-        expect(subscriptionInfo.renewalPrice) == .nonFree("$1.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
@@ -1051,8 +1057,8 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.store) == .stripe
     }
 
-    func testInitWithTestStoreEntitlement() throws {
-        let customerInfo = CustomerInfoFixtures.customerInfoWithTestStoreSubscriptions
+    func testInitWithSimulatedStoreEntitlement() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithSimulatedStoreSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let mockTransaction = MockTransaction(
@@ -1094,11 +1100,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        #if TEST_STORE
         expect(subscriptionInfo.store) == .testStore
-        #else
-        expect(subscriptionInfo.store) == .unknownStore
-        #endif
     }
 
     // MARK: - Tests for improved title and price determination logic
@@ -1151,6 +1153,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Premium Monthly Subscription",
             price: 9.99,
+            currencyCode: "USD",
             localizedPriceString: "$9.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -1200,6 +1203,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Premium Product",
             price: 19.99, // Different from transaction price
+            currencyCode: "USD",
             localizedPriceString: "$19.99",
             productIdentifier: "com.app.premium",
             productType: .autoRenewableSubscription,
@@ -1321,6 +1325,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Premium Product",
             price: 14.99,
+            currencyCode: "USD",
             localizedPriceString: "$14.99",
             productIdentifier: "com.app.premium",
             productType: .autoRenewableSubscription,
@@ -1505,4 +1510,333 @@ final class PurchaseInformationTests: TestCase {
         expect(oneTimeInfo.title) == "One-time Purchase"
     }
 
+    func testSK1SubscriptionIsNotLifetime() throws {
+        // SK1 products always report productType as .nonConsumable, regardless of actual type.
+        // Subscriptions should never show "Lifetime" badge, even though they report as .nonConsumable.
+        // We use transaction.isSubscription and product.sk1Product checks to prevent this.
+
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let sk1Product = TestSK1Product(
+            productIdentifier: entitlement.productIdentifier,
+            price: 9.99,
+            priceLocale: Locale(identifier: "en_US"),
+            subscriptionPeriod: SKProductSubscriptionPeriod()
+        )
+        let mockProduct = StoreProduct(sk1Product: sk1Product)
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .appStore,
+            type: .subscription(
+                isActive: true,
+                willRenew: true,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false,
+                ownershipType: .purchased
+            ),
+            isCancelled: false,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 9.99),
+            displayName: "Monthly subscription",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let subscriptionInfo = PurchaseInformation(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct,
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            localization: Self.mockLocalization
+        )
+
+        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isSubscription) == true
+        expect(subscriptionInfo.productType) == StoreProduct.ProductType.nonConsumable
+        expect(mockProduct.sk1Product).toNot(beNil())
+    }
+
+    func testSK1NonConsumableIsNotLifetime() throws {
+        // SK1 products always report productType as .nonConsumable, but we can't distinguish
+        // between actual non-consumables and consumables in SK1. To be safe and avoid showing
+        // incorrect "Lifetime" badges, we don't show the badge for any SK1 products.
+        // Only SK2 products (iOS 15+) have reliable productType information.
+
+        let sk1Product = TestSK1Product(
+            productIdentifier: "lifetime_product",
+            price: 49.99,
+            priceLocale: Locale(identifier: "en_US"),
+            subscriptionPeriod: nil
+        )
+        let mockProduct = StoreProduct(sk1Product: sk1Product)
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: "lifetime_product",
+            store: .appStore,
+            type: .nonSubscription,
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 49.99),
+            displayName: "Lifetime product",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: false
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: nil,
+            subscribedProduct: mockProduct,
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        expect(purchaseInfo.isLifetime).to(beFalse())
+        expect(purchaseInfo.isSubscription) == false
+        expect(purchaseInfo.productType) == StoreProduct.ProductType.nonConsumable
+        expect(mockProduct.sk1Product).toNot(beNil())
+    }
+
+    func testSK1ConsumableIsNotLifetime() throws {
+        // SK1 products always report productType as .nonConsumable, but we can't distinguish
+        // between actual non-consumables and consumables in SK1. To be safe and avoid showing
+        // incorrect "Lifetime" badges, we don't show the badge for any SK1 products.
+        // Only SK2 products (iOS 15+) have reliable productType information.
+
+        let sk1Product = TestSK1Product(
+            productIdentifier: "consumable_product",
+            price: 0.99,
+            priceLocale: Locale(identifier: "en_US"),
+            subscriptionPeriod: nil
+        )
+        let mockProduct = StoreProduct(sk1Product: sk1Product)
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: "consumable_product",
+            store: .appStore,
+            type: .nonSubscription,
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 0.99),
+            displayName: "Consumable product",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: false
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: nil,
+            subscribedProduct: mockProduct,
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        expect(purchaseInfo.isLifetime).to(beFalse())
+        expect(purchaseInfo.isSubscription) == false
+        expect(purchaseInfo.productType) == StoreProduct.ProductType.nonConsumable
+        expect(mockProduct.sk1Product).toNot(beNil())
+    }
+
+    func testSK1SubscriptionIsAppStoreRenewable() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let sk1Product = TestSK1Product(
+            productIdentifier: entitlement.productIdentifier,
+            price: 9.99,
+            priceLocale: Locale(identifier: "en_US"),
+            subscriptionPeriod: TestSK1SubscriptionPeriod(numberOfUnits: 1, unit: .month)
+        )
+        let mockProduct = StoreProduct(sk1Product: sk1Product)
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .appStore,
+            type: .subscription(
+                isActive: true,
+                willRenew: true,
+                expiresDate: Date().addingTimeInterval(60*60*24*30),
+                isTrial: false,
+                ownershipType: .purchased
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 9.99),
+            displayName: "Monthly",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct,
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        expect(purchaseInfo.isAppStoreRenewableSubscription).to(beTrue())
+        expect(purchaseInfo.isSubscription) == true
+        expect(purchaseInfo.store) == Store.appStore
+    }
+
+    func testSK2SubscriptionIsAppStoreRenewable() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "Monthly",
+            price: 9.99,
+            currencyCode: "USD",
+            localizedPriceString: "$9.99",
+            productIdentifier: entitlement.productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Monthly subscription",
+            locale: Self.locale
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .appStore,
+            type: .subscription(
+                isActive: true,
+                willRenew: true,
+                expiresDate: Date().addingTimeInterval(60*60*24*30),
+                isTrial: false,
+                ownershipType: .purchased
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 9.99),
+            displayName: "Monthly",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        expect(purchaseInfo.isAppStoreRenewableSubscription).to(beTrue())
+        expect(purchaseInfo.isSubscription) == true
+        expect(purchaseInfo.productType) == StoreProduct.ProductType.autoRenewableSubscription
+    }
+
+    func testNonRenewableSubscriptionIsNotAppStoreRenewable() throws {
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "Seasonal Pass",
+            price: 19.99,
+            currencyCode: "USD",
+            localizedPriceString: "$19.99",
+            productIdentifier: "seasonal_pass",
+            productType: .nonRenewableSubscription,
+            localizedDescription: "3-month pass",
+            locale: Self.locale
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: "seasonal_pass",
+            store: .appStore,
+            type: .subscription(
+                isActive: true,
+                willRenew: false,
+                expiresDate: Date().addingTimeInterval(60*60*24*90),
+                isTrial: false,
+                ownershipType: .purchased
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 19.99),
+            displayName: "Seasonal Pass",
+            periodType: .normal,
+            purchaseDate: Date().addingTimeInterval(-60*60*24),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: nil,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        expect(purchaseInfo.isAppStoreRenewableSubscription).to(beFalse())
+        expect(purchaseInfo.productType) == StoreProduct.ProductType.nonRenewableSubscription
+    }
+
+}
+
+private class TestSK1Product: SKProduct, @unchecked Sendable {
+    private let _productIdentifier: String
+    private let _price: NSDecimalNumber
+    private let _priceLocale: Locale
+    private let _subscriptionPeriod: SKProductSubscriptionPeriod?
+
+    init(productIdentifier: String,
+         price: Decimal = 0.99,
+         priceLocale: Locale = Locale(identifier: "en_US"),
+         subscriptionPeriod: SKProductSubscriptionPeriod? = nil) {
+        self._productIdentifier = productIdentifier
+        self._price = price as NSDecimalNumber
+        self._priceLocale = priceLocale
+        self._subscriptionPeriod = subscriptionPeriod
+        super.init()
+    }
+
+    override var productIdentifier: String { _productIdentifier }
+    override var price: NSDecimalNumber { _price }
+    override var priceLocale: Locale { _priceLocale }
+
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    override var subscriptionPeriod: SKProductSubscriptionPeriod? { _subscriptionPeriod }
+}
+
+@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+private class TestSK1SubscriptionPeriod: SKProductSubscriptionPeriod, @unchecked Sendable {
+    private let _numberOfUnits: Int
+    private let _unit: SKProduct.PeriodUnit
+
+    init(numberOfUnits: Int, unit: SKProduct.PeriodUnit) {
+        self._numberOfUnits = numberOfUnits
+        self._unit = unit
+        super.init()
+    }
+
+    override var numberOfUnits: Int { _numberOfUnits }
+    override var unit: SKProduct.PeriodUnit { _unit }
 }

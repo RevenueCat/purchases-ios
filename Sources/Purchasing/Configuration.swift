@@ -115,6 +115,10 @@ import Foundation
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
+
+        /// The preferred locale for the requests.
+        ///
+        /// This locale is included in all requests made by `HTTPClient`.
         private(set) var preferredLocale: String?
         private(set) var automaticDeviceIdentifierCollectionEnabled: Bool = true
 
@@ -339,11 +343,13 @@ import Foundation
             return timeout
         }
 
-        /// Sets the preferred locale for the requests.
+        /// Overrides the preferred locale for RevenueCatUI components.
         ///
-        /// This locale is included in all requests made by `HTTPClient`.
-        @_spi(Internal) public func with(preferredLocale: String?) -> Builder {
-            self.preferredLocale = preferredLocale
+        /// - Parameter preferredUILocaleOverride: A locale string in the format "language_region" (e.g., "en_US").
+        ///
+        /// Defaults to `nil`, which means using the default user locale for RevenueCatUI components.
+        public func with(preferredUILocaleOverride: String?) -> Builder {
+            self.preferredLocale = preferredUILocaleOverride
             return self
         }
     }
@@ -395,7 +401,11 @@ extension Configuration {
 
     enum APIKeyValidationResult {
         case validApplePlatform
-        case testStore
+
+        /// An API key used for the Simulated Store.
+        ///
+        /// Note that "Simulated Store" is the internal name of the "Test Store".
+        case simulatedStore
         case otherPlatforms
         case legacy
     }
@@ -407,25 +417,13 @@ extension Configuration {
     }
 
     private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
-    private static let testStoreKeyPrefix = "test_"
+    private static let simulatedStoreKeyPrefix = "test_"
 
     private static func validate(apiKey: String) -> APIKeyValidationResult {
-        #if TEST_STORE
-        if apiKey.hasPrefix(testStoreKeyPrefix) {
-            // Test Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
-
-            #if DEBUG
-            return .testStore
-            #else
-            // In release builds, we intentionally crash to prevent submitting an app with a Test Store API key.
-            //
-            // Also note that developing with a Test Store API key isn’t supported when adding the SDK dependency
-            // as an XCFramework, since the XCFramework is built using the Release configuration..
-            fatalError("[RevenueCat]: Test Store API key used in Release build. Please configure the App Store " +
-                       " app on the RevenueCat dashboard and use its corresponding Apple API key before releasing.")
-            #endif
+        if apiKey.hasPrefix(simulatedStoreKeyPrefix) {
+            // Simulated Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+            return .simulatedStore
         }
-        #endif // TEST_STORE
 
         if applePlatformKeyPrefixes.contains(where: { prefix in apiKey.hasPrefix(prefix) }) {
             // Apple key format: "apple_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
@@ -445,7 +443,7 @@ extension Configuration.APIKeyValidationResult {
     fileprivate func logIfNeeded() {
         switch self {
         case .validApplePlatform: break
-        case .testStore: Logger.warn(Strings.configure.testStoreAPIKey)
+        case .simulatedStore: Logger.warn(Strings.configure.simulatedStoreAPIKey)
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
         case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
         }
@@ -466,4 +464,34 @@ extension Configuration {
 
     }
 
+}
+
+extension Configuration.APIKeyValidationResult {
+
+    func checkForSimulatedStoreAPIKeyInRelease(systemInfo: SystemInfo, apiKey: String) {
+        #if !DEBUG
+        guard self == .simulatedStore, !systemInfo.dangerousSettings.uiPreviewMode else {
+            return
+        }
+
+        let redactedApiKey = apiKey.asRedactedAPIKey
+
+        // In release builds, we intentionally crash to prevent submitting an app with a Test Store API key.
+        //
+        // Also note that developing with a Test Store API key isn't supported when adding the SDK dependency
+        // as an XCFramework, since the XCFramework is built using the Release configuration.
+        Task {
+            let errorMessage = "[RevenueCat]: Test Store API key used in Release build: \(redactedApiKey). " +
+            "Please configure the App Store app on the RevenueCat dashboard and use its corresponding Apple API key " +
+            "before releasing. Visit https://rev.cat/sdk-test-store to learn more."
+
+            Logger.error(errorMessage)
+
+            let uiHelper = DefaultSimulatedStorePurchaseUI(systemInfo: systemInfo)
+            await uiHelper.showTestKeyInReleaseAlert(redactedApiKey: redactedApiKey)
+
+            fatalError(errorMessage)
+        }
+        #endif
+    }
 }

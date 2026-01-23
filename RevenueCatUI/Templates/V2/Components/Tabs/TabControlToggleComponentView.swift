@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TabControlToggleComponentView: View {
@@ -58,9 +58,10 @@ struct TabControlToggleComponentView: View {
             )
             .labelsHidden()
             .onAppear {
-                let tabIds = tabControlContext.tabIds
-                let selectedId = tabControlContext.selectedTabId
-                self.isOn = tabIds.indices.contains(1) && selectedId == tabIds[1]
+                self.isOn = computeIsOn(
+                    selectedTabId: tabControlContext.selectedTabId,
+                    tabIds: tabControlContext.tabIds
+                )
             }
             .onChangeOf(self.isOn) { newValue in
                 let tabIds = tabControlContext.tabIds
@@ -68,6 +69,22 @@ struct TabControlToggleComponentView: View {
 
                 tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
             }
+            .onChangeOf(tabControlContext.selectedTabId) { newSelectedTabId in
+                let newIsOn = computeIsOn(
+                    selectedTabId: newSelectedTabId,
+                    tabIds: tabControlContext.tabIds
+                )
+                if self.isOn != newIsOn {
+                    self.isOn = newIsOn
+                }
+            }
+    }
+
+    /// Computes the toggle's ON state based on the selected tab.
+    /// The toggle is ON when the second tab (index 1) is selected.
+    private func computeIsOn(selectedTabId: String, tabIds: [String]) -> Bool {
+        guard tabIds.count == 2 else { return false }
+        return selectedTabId == tabIds[1]
     }
 
 }
@@ -107,7 +124,8 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
         component: .init(components: []),
         localizationProvider: .init(
             locale: .init(identifier: "en-US"),
-            localizedStrings: [:])
+            localizedStrings: [:]),
+        colorScheme: .light
     )
 
     static var previews: some View {
@@ -122,7 +140,8 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
                     trackColorOn: .init(light: .hex("#dedede")),
                     trackColorOff: .init(light: .hex("#bebebe"))
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewMock.uiConfig)
+                uiConfigProvider: .init(uiConfig: PreviewMock.uiConfig),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
@@ -149,7 +168,8 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
                     trackColorOn: .init(light: .hex("#dedede")),
                     trackColorOff: .init(light: .hex("#bebebe"))
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewMock.uiConfig)
+                uiConfigProvider: .init(uiConfig: PreviewMock.uiConfig),
+                colorScheme: .light
             ),
             onDismiss: {}
         )

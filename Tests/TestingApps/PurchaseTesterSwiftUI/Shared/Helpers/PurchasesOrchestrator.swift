@@ -18,7 +18,7 @@ final class PurchasesOrchestrator: NSObject {
     private var purchaseCompleteCallbacksByProductID: [String: (PurchaseCompletedResult) -> Void] = [:]
 
     override init() {
-        self.paymentQueue = .init()
+        self.paymentQueue = .default()
 
         super.init()
 
@@ -43,7 +43,9 @@ final class PurchasesOrchestrator: NSObject {
 
     // Fix-me: inject @Environment(\.product) to fix this
     #if !os(visionOS)
-    func purchase(sk2Product product: SK2Product) async throws {
+
+    /// - Returns: `true` if the purchase succeeded. `false` if user cancelled the purchase.
+    func purchase(sk2Product product: SK2Product) async throws -> Bool {
         let result = try await product.purchase()
 
         switch result {
@@ -51,14 +53,15 @@ final class PurchasesOrchestrator: NSObject {
             await transaction.finish()
 
             print("Successfully purchased SK2 product")
+            return true
         case let .success(.unverified(transaction, error)):
             await transaction.finish()
 
             throw error
         case .userCancelled:
-            return
+            return false
         case .pending:
-            return
+            return true
         @unknown default:
             fatalError()
         }

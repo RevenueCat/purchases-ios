@@ -11,8 +11,9 @@
 //
 //  Created by Nacho Soto on 7/31/23.
 
+import Combine
 import Nimble
-import RevenueCat
+@testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -22,12 +23,16 @@ import XCTest
 @MainActor
 class PurchaseHandlerTests: TestCase {
 
+    private var purchaseResult = CurrentValueSubject<PurchaseResultData, Never>((nil, TestData.customerInfo, false))
+
+    lazy var purchaseResultPublisher = purchaseResult.dropFirst().eraseToAnyPublisher()
+
     func testInitialState() async throws {
         let handler: PurchaseHandler = .mock()
 
         expect(handler.purchaseResult).to(beNil())
         expect(handler.restoredCustomerInfo).to(beNil())
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
@@ -43,7 +48,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
         expect(handler.purchaseResult?.userCancelled) == false
         expect(handler.restoredCustomerInfo).to(beNil())
-        expect(handler.purchased) == true
+        expect(handler.hasPurchasedInSession) == true
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
@@ -55,7 +60,7 @@ class PurchaseHandlerTests: TestCase {
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
         expect(handler.purchaseResult?.userCancelled) == true
         expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
@@ -74,7 +79,7 @@ class PurchaseHandlerTests: TestCase {
         }
 
         expect(handler.purchaseResult).to(beNil())
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
@@ -149,9 +154,10 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.actionInProgress) == false
         expect(handler.restoreInProgress) == false
 
-        handler.setRestored(TestData.customerInfo)
+        handler.setRestored(TestData.customerInfo, success: false)
 
-        expect(handler.restoredCustomerInfo) === TestData.customerInfo
+        expect(handler.restoredCustomerInfo?.customerInfo) === TestData.customerInfo
+        expect(handler.restoredCustomerInfo?.success) == false
         expect(handler.purchaseResult).to(beNil())
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.actionInProgress) == false
@@ -185,7 +191,7 @@ class PurchaseHandlerTests: TestCase {
             expect(thrownError).to(matchError(error))
         }
         expect(handler.purchaseResult).to(beNil())
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.actionInProgress) == false
         expect(handler.restoreInProgress) == false
@@ -215,6 +221,34 @@ class PurchaseHandlerTests: TestCase {
         let result3 = handler.trackPaywallClose()
         expect(result3) == false
 
+    }
+
+    func test_dedupedSubmissions_ofPurchaseCompletedEvents() async throws {
+        let handler: PurchaseHandler = .mock(purchaseResultPublisher: purchaseResultPublisher)
+
+        var count = 0
+
+        let job = handler.$purchaseResult
+            .drop(while: { $0 == nil })
+            .sink { _ in
+                count += 1
+            }
+
+        let transaction = StoreTransaction(MockStoreTransaction())
+        for _ in 0...10 {
+            purchaseResult.send((transaction, TestData.customerInfo, true))
+            await Task.yield()
+        }
+
+        XCTAssertEqual(count, 1, "setting this should have only ouccured once from \(job)")
+
+        let transaction2 = StoreTransaction(MockStoreTransaction())
+        for _ in 0...10 {
+            purchaseResult.send((transaction2, TestData.customerInfo, true))
+            await Task.yield()
+        }
+
+        XCTAssertEqual(count, 2, "setting this should have only ouccured twice from \(job)")
     }
 }
 

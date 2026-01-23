@@ -21,13 +21,13 @@ class MockInternalAPI: InternalAPI {
     }
 
     var invokedPostPaywallEvents: Bool = false
-    var invokedPostPaywallEventsParameters: [[StoredEvent]] = []
+    var invokedPostPaywallEventsParameters: [[StoredFeatureEvent]] = []
     var stubbedPostPaywallEventsCompletionResult: BackendError?
     var stubbedPostPaywallEventsCallback: ((@escaping InternalAPI.ResponseHandler) -> Void)?
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    override func postPaywallEvents(
-        events: [StoredEvent],
+    override func postFeatureEvents(
+        events: [StoredFeatureEvent],
         completion: @escaping InternalAPI.ResponseHandler
     ) {
         self.invokedPostPaywallEvents = true
@@ -53,6 +53,26 @@ class MockInternalAPI: InternalAPI {
         self.invokedPostDiagnosticsEventsParameters.append(events)
 
         completion(self.stubbedPostDiagnosticsEventsCompletionResult)
+    }
+
+    var invokedPostAdEvents: Bool = false
+    var invokedPostAdEventsParameters: [[StoredAdEvent]] = []
+    var stubbedPostAdEventsCompletionResult: BackendError?
+    var stubbedPostAdEventsCallback: ((@escaping InternalAPI.ResponseHandler) -> Void)?
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    override func postAdEvents(
+        events: [StoredAdEvent],
+        completion: @escaping InternalAPI.ResponseHandler
+    ) {
+        self.invokedPostAdEvents = true
+        self.invokedPostAdEventsParameters.append(events)
+
+        if let callback = stubbedPostAdEventsCallback {
+            callback(completion)
+        } else {
+            completion(self.stubbedPostAdEventsCompletionResult)
+        }
     }
 
 }

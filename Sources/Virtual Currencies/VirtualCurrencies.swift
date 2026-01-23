@@ -14,7 +14,7 @@
 import Foundation
 
 /// This class contains all the virtual currencies associated to the user.
-@objc(RCVirtualCurrencies) public final class VirtualCurrencies: NSObject {
+@objc(RCVirtualCurrencies) public final class VirtualCurrencies: NSObject, Codable {
 
     /// Dictionary of all ``VirtualCurrency`` objects keyed by virtual currency code.
     /// This dictionary can also be accessed through an index subscript on ``VirtualCurrencies``, e.g.
@@ -34,7 +34,6 @@ import Foundation
 }
 
 extension VirtualCurrencies: Sendable {}
-extension VirtualCurrencies: Codable {}
 
 extension VirtualCurrencies {
     /// Compares two ``VirtualCurrencies`` objects for equality by comparing their underlying dictionaries.

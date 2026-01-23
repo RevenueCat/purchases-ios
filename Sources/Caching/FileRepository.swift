@@ -13,12 +13,19 @@
 
 import Foundation
 
-/// A file cache
-@_spi(Internal) public class FileRepository: FileRepositoryType, @unchecked Sendable {
+/// A file repository
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
+@_spi(Internal) public final class FileRepository: FileRepositoryType, @unchecked Sendable {
+    /// A shared file repository
+    @_spi(Internal) public static let shared = FileRepository()
+
+    private static let defaultBasePath = "RevenueCat"
+
     let networkService: SimpleNetworkServiceType
 
-    private let store = KeyedDeferredValueStore<InputURL, OutputURL>()
+    private let store = KeyedDeferredValueStore<JobKey, OutputURL>()
     private let fileManager: LargeItemCacheType
+    private let cacheURL: URL?
 
     /// Create a file repository
     /// - Parameters:
@@ -26,10 +33,21 @@ import Foundation
     ///   - fileManager: A service capable of storing data and returning the URL where that stored data exists
     init(
         networkService: SimpleNetworkServiceType = URLSession.shared,
-        fileManager: LargeItemCacheType = FileManager.default
+        fileManager: LargeItemCacheType = FileManager.default,
+        basePath: String = FileRepository.defaultBasePath
     ) {
         self.networkService = networkService
         self.fileManager = fileManager
+
+        self.cacheURL = fileManager.createCacheDirectoryIfNeeded(
+            basePath: basePath,
+            /*
+             In order to use the app specific directory structure the existing
+             cached files will have to be moved first.
+             Until that happens we'll keep using the existing 'RevenueCat' directory
+            */
+            inAppSpecificDirectory: false
+        )
     }
 
     /// Create a file repository
@@ -45,7 +63,7 @@ import Foundation
     @_spi(Internal) public func prefetch(urls: [InputURL]) {
         for url in urls {
             Task { [weak self] in
-                try await self?.generateOrGetCachedFileURL(for: url)
+                try await self?.generateOrGetCachedFileURL(for: url, withChecksum: nil)
             }
         }
     }
@@ -53,11 +71,19 @@ import Foundation
     /// Create and/or get the cached file url
     /// - Parameters:
     ///   - url: The url for the remote data to cache into a file
-    @_spi(Internal) public func generateOrGetCachedFileURL(for url: InputURL) async throws -> OutputURL {
+    @_spi(Internal) public func generateOrGetCachedFileURL(
+        for url: InputURL,
+        withChecksum checksum: Checksum?
+    ) async throws -> OutputURL {
         return try await store.getOrPut(
             Task { [weak self] in
-                guard let self, let cachedUrl = self.fileManager.generateLocalFilesystemURL(forRemoteURL: url) else {
-                    Logger.error(Strings.fileRepository.failedToCreateCacheDirectory(url).description)
+                guard let self,
+                      let cachedUrl = self.generateLocalFilesystemURL(
+                        forRemoteURL: url,
+                        withChecksum: checksum
+                      )
+                else {
+                    Logger.error(Strings.fileRepository.failedToCreateCacheDirectory(url))
                     throw Error.failedToCreateCacheDirectory(url.absoluteString)
                 }
 
@@ -65,37 +91,61 @@ import Foundation
                     return cachedUrl
                 }
 
-                let data = try await self.downloadFile(from: url)
-                try self.saveCachedFile(url: cachedUrl, data: data)
+                let bytes = try await self.getBytes(from: url)
+
+                try await self.saveCachedFile(url: cachedUrl, fromBytes: bytes, withChecksum: checksum)
                 return cachedUrl
             },
-            forKey: url
+            forKey: JobKey(url, checksum)
         ).value
     }
 
-    private func downloadFile(from url: URL) async throws -> Data {
+    /// Get the cached file url (if it exists)
+    /// - Parameters:
+    ///   - url: The url for the remote data to cache into a file
+    @_spi(Internal) public func getCachedFileURL(for url: InputURL, withChecksum checksum: Checksum?) -> OutputURL? {
+        let cachedUrl = self.generateLocalFilesystemURL(forRemoteURL: url, withChecksum: checksum)
+
+        if let cachedUrl, self.fileManager.cachedContentExists(at: cachedUrl) {
+            return cachedUrl
+        }
+
+        return nil
+    }
+
+    private func getBytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Swift.Error> {
         do {
-            return try await networkService.data(from: url)
+            return try await networkService.bytes(from: url)
         } catch {
-            let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error).description
+            let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error)
             Logger.error(message)
-            throw Error.failedToFetchFileFromRemoteSource(message)
+            throw Error.failedToFetchFileFromRemoteSource(message.description)
         }
     }
 
-    private func saveCachedFile(url: URL, data: Data) throws {
+    private func saveCachedFile(
+        url: URL,
+        fromBytes bytes: AsyncThrowingStream<UInt8, Swift.Error>,
+        withChecksum checksum: Checksum?
+    ) async throws {
         do {
-            try fileManager.saveData(data, to: url)
+            try await fileManager.saveData(bytes, to: url, checksum: checksum)
         } catch {
-            let message = Strings.fileRepository.failedToSaveCachedFile(url, error).description
+            let message = Strings.fileRepository.failedToSaveCachedFile(url, error)
             Logger.error(message)
-            throw Error.failedToSaveCachedFile(message)
+            throw Error.failedToSaveCachedFile(message.description)
         }
+    }
+
+    func generateLocalFilesystemURL(forRemoteURL url: URL, withChecksum checksum: Checksum?) -> URL? {
+        let path = checksum?.value ?? url.absoluteString.asData.md5String
+        return cacheURL?
+            .appendingPathComponent(path + url.lastPathComponent)
     }
 }
 
 /// A file cache
-@_spi(Internal) public protocol FileRepositoryType {
+@_spi(Internal) public protocol FileRepositoryType: Sendable {
 
     /// Prefetch files at the given urls
     /// - Parameter urls: An array of URL to fetch data from
@@ -104,7 +154,11 @@ import Foundation
     /// Create and/or get the cached file url
     /// - Parameters:
     ///   - url: The url for the remote data to cache into a file
-    func generateOrGetCachedFileURL(for url: InputURL) async throws -> OutputURL
+    ///   - checksum: A checksum of the remote file if there is any
+    func generateOrGetCachedFileURL(
+        for url: InputURL,
+        withChecksum checksum: Checksum?
+    ) async throws -> OutputURL
 }
 
 /// The input URL is the URL that the repository will read remote data from
@@ -113,6 +167,7 @@ import Foundation
 /// The output URL is the local file's URL where the data can be found after caching is complete
 @_spi(Internal) public typealias OutputURL = URL
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 extension FileRepository {
 
     /// File repository error cases
@@ -125,5 +180,15 @@ extension FileRepository {
 
         /// Used when fetching the data fails
         case failedToFetchFileFromRemoteSource(String)
+    }
+}
+
+private struct JobKey: Hashable {
+    let url: InputURL
+    let checksum: Checksum?
+
+    init(_ url: InputURL, _ checksum: Checksum?) {
+        self.url = url
+        self.checksum = checksum
     }
 }

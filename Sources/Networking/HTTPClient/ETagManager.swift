@@ -15,25 +15,29 @@
 import Foundation
 
 class ETagManager {
-
     static let eTagRequestHeader = HTTPClient.RequestHeader.eTag
     static let eTagValidationTimeRequestHeader = HTTPClient.RequestHeader.eTagValidationTime
     static let eTagResponseHeader = HTTPClient.ResponseHeader.eTag
 
-    private let userDefaults: SynchronizedUserDefaults
+    private let cache: SynchronizedLargeItemCache
+    private static let fileManager = FileManager.default
 
-    convenience init() {
-        self.init(
-            userDefaults: UserDefaults(suiteName: Self.suiteName)
-            // This should never return `nil` for this known `suiteName`,
-            // but `.standard` is a good fallback anyway.
-            ?? UserDefaults.standard
+    init() {
+        self.cache = .init(
+            cache: Self.fileManager,
+            basePath: Self.cacheBasePath
         )
+
+        // Perform one-time cleanup if needed
+        self.deleteOldDirectoryInDocumentsIfNeeded()
     }
 
-    init(userDefaults: UserDefaults) {
-        self.userDefaults = .init(userDefaults: userDefaults)
+    #if DEBUG
+    /// Only used in testing. In any other case the init above should be used
+    init(largeItemCache: SynchronizedLargeItemCache) {
+        self.cache = largeItemCache
     }
+    #endif
 
     /// - Parameter withSignatureVerification: whether requests require a signature.
     func eTagHeader(
@@ -80,7 +84,8 @@ class ETagManager {
     /// or the cached `HTTPResponse`, always including the headers in `response`.
     func httpResultFromCacheOrBackend(with response: VerifiedHTTPResponse<Data?>,
                                       request: URLRequest,
-                                      retried: Bool) -> VerifiedHTTPResponse<Data>? {
+                                      retried: Bool,
+                                      isFallbackURLRequest: Bool) -> VerifiedHTTPResponse<Data>? {
         let statusCode: HTTPStatusCode = response.httpStatusCode
         let resultFromBackend = response.asOptionalResponse
 
@@ -111,7 +116,9 @@ class ETagManager {
         self.storeStatusCodeAndResponseIfNoError(
             for: request,
             response: response,
-            eTag: eTagInResponse
+            eTag: eTagInResponse,
+            isLoadShedderResponse: response.response.isLoadShedder,
+            isFallbackURLRequest: isFallbackURLRequest
         )
         return resultFromBackend
     }
@@ -119,9 +126,7 @@ class ETagManager {
     func clearCaches() {
         Logger.debug(Strings.etag.clearing_cache)
 
-        self.userDefaults.write {
-            $0.removePersistentDomain(forName: ETagManager.suiteName)
-        }
+        self.cache.clear()
     }
 
 }
@@ -130,9 +135,17 @@ extension ETagManager {
 
     // Visible for tests
     static func cacheKey(for request: URLRequest) -> String? {
-        return request.url?.absoluteString
+        return request.url?.absoluteString.asData.md5String
     }
 
+    static var oldDocumentsDirectoryBasePath: String {
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.revenuecat"
+        return "\(bundleID).revenuecat.etags"
+    }
+
+    static var cacheBasePath: String {
+        return "etags"
+    }
 }
 
 // MARK: - Private
@@ -153,20 +166,17 @@ private extension ETagManager {
     }
 
     func storedETagAndResponse(for request: URLRequest) -> Response? {
-        return self.userDefaults.read {
-            if let cacheKey = Self.cacheKey(for: request),
-               let value = $0.object(forKey: cacheKey),
-               let data = value as? Data {
-                return try? JSONDecoder.default.decode(Response.self, jsonData: data)
-            }
-
-            return nil
+        if let cacheKey = Self.cacheKey(for: request) {
+            return self.cache.value(forKey: cacheKey)
         }
+        return nil
     }
 
     func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
                                              response: VerifiedHTTPResponse<Data?>,
-                                             eTag: String) {
+                                             eTag: String,
+                                             isLoadShedderResponse: Bool,
+                                             isFallbackURLRequest: Bool) {
         if let data = response.body {
             if response.shouldStore {
                 self.storeIfPossible(
@@ -174,7 +184,9 @@ private extension ETagManager {
                         eTag: eTag,
                         statusCode: response.httpStatusCode,
                         data: data,
-                        verificationResult: response.verificationResult
+                        verificationResult: response.verificationResult,
+                        isLoadShedderResponse: isLoadShedderResponse,
+                        isFallbackUrlResponse: isFallbackURLRequest
                     ),
                     for: request
                 )
@@ -185,22 +197,37 @@ private extension ETagManager {
     }
 
     func storeIfPossible(_ response: Response, for request: URLRequest) {
-        if let cacheKey = Self.cacheKey(for: request),
-           let dataToStore = response.asData() {
+        if let cacheKey = Self.cacheKey(for: request) {
             Logger.verbose(Strings.etag.storing_response(request, response))
 
-            self.userDefaults.write {
-                $0.set(dataToStore, forKey: cacheKey)
-            }
+            self.cache.set(codable: response, forKey: cacheKey)
         }
     }
 
-    static let suiteNameBase: String  = "revenuecat.etags"
-    static var suiteName: String {
-        guard let bundleID = Bundle.main.bundleIdentifier else {
-            return suiteNameBase
+    private func oldETagDirectoryURL() -> URL? {
+        // swiftlint:disable:next avoid_using_directory_apis_directly
+        guard let documentsURL = Self.fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first else {
+            return nil
         }
-        return bundleID + ".\(suiteNameBase)"
+
+        return documentsURL.appendingPathComponent(Self.oldDocumentsDirectoryBasePath)
+    }
+
+    /*
+     We were previously storing these files in the Documents directory
+     which may end up in the Files app or the user's Documents directory on macOS.
+     We'll delete it on initialization if it exists.
+     */
+    private func deleteOldDirectoryInDocumentsIfNeeded() {
+        guard let oldDirectoryURL = self.oldETagDirectoryURL(),
+              Self.fileManager.fileExists(atPath: oldDirectoryURL.path) else {
+            return
+        }
+
+        try? Self.fileManager.removeItem(at: oldDirectoryURL)
     }
 
 }
@@ -224,18 +251,27 @@ extension ETagManager {
         @DefaultValue<VerificationResult>
         var verificationResult: VerificationResult
 
+        @DefaultDecodable.False
+        var isLoadShedderResponse: Bool
+        @DefaultDecodable.False
+        var isFallbackUrlResponse: Bool
+
         init(
             eTag: String,
             statusCode: HTTPStatusCode,
             data: Data,
             validationTime: Date? = nil,
-            verificationResult: VerificationResult
+            verificationResult: VerificationResult,
+            isLoadShedderResponse: Bool,
+            isFallbackUrlResponse: Bool
         ) {
             self.eTag = eTag
             self.statusCode = statusCode
             self.data = data
             self.validationTime = validationTime
             self.verificationResult = verificationResult
+            self.isLoadShedderResponse = isLoadShedderResponse
+            self.isFallbackUrlResponse = isFallbackUrlResponse
         }
 
     }
@@ -263,7 +299,9 @@ extension ETagManager.Response {
             requestDate: requestDate,
             origin: .cache
         )
-        .verified(with: responseVerificationResult)
+        .verified(with: responseVerificationResult,
+                  isLoadShedderResponse: self.isLoadShedderResponse,
+                  isFallbackUrlResponse: self.isFallbackUrlResponse)
     }
 
     fileprivate func withUpdatedValidationTime() -> Self {

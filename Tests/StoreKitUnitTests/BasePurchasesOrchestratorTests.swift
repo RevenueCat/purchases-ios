@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKit
 import XCTest
 
@@ -32,7 +32,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var receiptParser: MockReceiptParser!
     var customerInfoManager: MockCustomerInfoManager!
     var paymentQueueWrapper: EitherPaymentQueueWrapper!
-    var mockTestStorePurchaseHandler: MockTestStorePurchaseHandler!
+    var mockSimulatedStorePurchaseHandler: MockSimulatedStorePurchaseHandler!
     var backend: MockBackend!
     var offerings: MockOfferingsAPI!
     var currentUserProvider: MockCurrentUserProvider!
@@ -45,9 +45,10 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
-    private var paywallEventsManager: PaywallEventsManagerType!
+    private var eventsManager: EventsManagerType!
     var webPurchaseRedemptionHelper: MockWebPurchaseRedemptionHelper!
     var mockDiagnosticsTracker: DiagnosticsTrackerType!
+    var mockLocalTransactionMetadataStore: MockLocalTransactionMetadataStore!
 
     static let eventTimestamp1: Date = .init(timeIntervalSince1970: 1694029328)
     static let eventTimestamp2: Date = .init(timeIntervalSince1970: 1694022321)
@@ -55,9 +56,9 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                             subsequentNows: eventTimestamp2)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var mockPaywallEventsManager: MockPaywallEventsManager {
+    var mockEventsManager: MockEventsManager {
         get throws {
-            return try XCTUnwrap(self.paywallEventsManager as? MockPaywallEventsManager)
+            return try XCTUnwrap(self.eventsManager as? MockEventsManager)
         }
     }
 
@@ -84,10 +85,10 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.backend = MockBackend()
         self.offerings = try XCTUnwrap(self.backend.offerings as? MockOfferingsAPI)
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            self.paywallEventsManager = MockPaywallEventsManager()
+            self.eventsManager = MockEventsManager()
             self.mockDiagnosticsTracker = MockDiagnosticsTracker()
         } else {
-            self.paywallEventsManager = nil
+            self.eventsManager = nil
             self.mockDiagnosticsTracker = nil
         }
 
@@ -99,7 +100,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                          productsManager: self.productsManager,
                                                          diagnosticsTracker: self.mockDiagnosticsTracker)
         self.setUpStoreKit1Wrapper()
-        self.mockTestStorePurchaseHandler = MockTestStorePurchaseHandler()
+        self.mockSimulatedStorePurchaseHandler = MockSimulatedStorePurchaseHandler()
+        self.mockLocalTransactionMetadataStore = MockLocalTransactionMetadataStore()
 
         self.customerInfoManager = MockCustomerInfoManager(
             offlineEntitlementsManager: MockOfflineEntitlementsManager(),
@@ -188,7 +190,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.orchestrator = PurchasesOrchestrator(
             productsManager: self.productsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
-            testStorePurchaseHandler: self.mockTestStorePurchaseHandler,
+            simulatedStorePurchaseHandler: self.mockSimulatedStorePurchaseHandler,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.operationDispatcher,
@@ -207,7 +209,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsTracker: self.mockDiagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
-            paywallEventsManager: self.paywallEventsManager,
+            eventsManager: self.eventsManager,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
@@ -223,7 +225,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.orchestrator = PurchasesOrchestrator(
             productsManager: self.productsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
-            testStorePurchaseHandler: self.mockTestStorePurchaseHandler,
+            simulatedStorePurchaseHandler: self.mockSimulatedStorePurchaseHandler,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.operationDispatcher,
@@ -246,7 +248,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             diagnosticsSynchronizer: diagnosticsSynchronizer,
             diagnosticsTracker: diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
-            paywallEventsManager: self.paywallEventsManager,
+            eventsManager: self.eventsManager,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
             dateProvider: self.mockDateProvider
         )
@@ -261,7 +263,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             backend: self.backend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
-            operationDispatcher: self.operationDispatcher
+            operationDispatcher: self.operationDispatcher,
+            localTransactionMetadataStore: self.mockLocalTransactionMetadataStore
         )
     }
 }
@@ -269,9 +272,9 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 extension BasePurchasesOrchestratorTests {
 
-    func fetchSk1Product() async throws -> SK1Product {
+    func fetchSk1Product(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK1Product {
         return MockSK1Product(
-            mockProductIdentifier: Self.productID,
+            mockProductIdentifier: productID,
             mockSubscriptionGroupIdentifier: "group1"
         )
     }
@@ -285,15 +288,24 @@ extension BasePurchasesOrchestratorTests {
     static let testProduct = TestStoreProduct(
         localizedTitle: "Product",
         price: 3.99,
+        currencyCode: "USD",
         localizedPriceString: "$3.99",
         productIdentifier: "product",
         productType: .autoRenewableSubscription,
-        localizedDescription: "Description"
+        localizedDescription: "Description",
+        locale: Locale(identifier: "en_US")
     ).toStoreProduct()
 
     static let paywallEventCreationData: PaywallEvent.CreationData = .init(
         id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
         date: .init(timeIntervalSince1970: 1694029328)
+    )
+
+    /// A paywall event creation data with a date far in the future (year 2050)
+    /// Used to test that transactions purchased BEFORE the paywall event are not attributed
+    static let paywallEventCreationDataInFuture: PaywallEvent.CreationData = .init(
+        id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+        date: .init(timeIntervalSince1970: 2524608000) // January 1, 2050
     )
 
     static let paywallEvent: PaywallEvent.Data = .init(
@@ -304,5 +316,38 @@ extension BasePurchasesOrchestratorTests {
         localeIdentifier: "en_US",
         darkMode: true
     )
+
+    static let testPackageId = "test_package"
+    static let testProductId = StoreKitConfigTestCase.productID
+    static let testDifferentProductId = "different_product_id"
+    static let testErrorCode = 12
+    static let testErrorMessage = "Test error message"
+
+    static var paywallEventWithPurchaseInfo: PaywallEvent.Data {
+        return paywallEvent.withPurchaseInfo(
+            packageId: testPackageId,
+            productId: testProductId,
+            errorCode: nil,
+            errorMessage: nil
+        )
+    }
+
+    static var paywallEventForPurchaseError: PaywallEvent.Data {
+        return paywallEvent.withPurchaseInfo(
+            packageId: testPackageId,
+            productId: testProductId,
+            errorCode: testErrorCode,
+            errorMessage: testErrorMessage
+        )
+    }
+
+    static var paywallEventWithDifferentProductId: PaywallEvent.Data {
+        return paywallEvent.withPurchaseInfo(
+            packageId: testPackageId,
+            productId: testDifferentProductId,
+            errorCode: nil,
+            errorMessage: nil
+        )
+    }
 
 }

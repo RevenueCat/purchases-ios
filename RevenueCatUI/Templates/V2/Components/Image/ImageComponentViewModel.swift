@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ImageComponentViewModel {
@@ -48,11 +48,13 @@ class ImageComponentViewModel {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (ImageComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedImagePartial.buildPartial(
@@ -75,7 +77,8 @@ class ImageComponentViewModel {
             margin: partial?.margin ?? self.component.margin,
             border: partial?.border ?? self.component.border,
             shadow: partial?.shadow ?? self.component.shadow,
-            uiConfigProvider: self.uiConfigProvider
+            uiConfigProvider: self.uiConfigProvider,
+            colorScheme: colorScheme
         )
 
         apply(style)
@@ -160,7 +163,8 @@ struct ImageComponentStyle {
         margin: PaywallComponent.Padding? = nil,
         border: PaywallComponent.Border? = nil,
         shadow: PaywallComponent.Shadow? = nil,
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        colorScheme: ColorScheme
     ) {
         self.visible = visible
         self.widthLight = source.light.width
@@ -177,34 +181,8 @@ struct ImageComponentStyle {
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
-        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider, colorScheme: colorScheme)
         self.contentMode = fitMode.contentMode
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallComponent.MaskShape {
-
-    var shape: ShapeModifier.Shape? {
-        switch self {
-        case .rectangle(let cornerRadiuses):
-            let corners = cornerRadiuses.flatMap { cornerRadiuses in
-                ShapeModifier.RadiusInfo(
-                    topLeft: cornerRadiuses.topLeading ?? 0,
-                    topRight: cornerRadiuses.topTrailing ?? 0,
-                    bottomLeft: cornerRadiuses.bottomLeading ?? 0,
-                    bottomRight: cornerRadiuses.bottomTrailing ?? 0
-                )
-            }
-            return .rectangle(corners)
-        case .circle:
-            return .circle
-        case .concave:
-            return .concave
-        case .convex:
-            return .convex
-        }
     }
 
 }

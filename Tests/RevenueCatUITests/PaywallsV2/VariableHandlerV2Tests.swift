@@ -13,11 +13,11 @@
 // swiftlint:disable file_length type_body_length 
 
 import Nimble
-import RevenueCat
+@testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class VariableHandlerV2Test: TestCase {
@@ -197,7 +197,7 @@ class VariableHandlerV2Test: TestCase {
             locale: locale,
             localizations: localizations["en_US"]!
         )
-        expect(result).to(equal("$1.61"))
+        expect(result).to(equal("$1.60"))
     }
 
     func testProductPricePerMonth() {
@@ -386,6 +386,37 @@ class VariableHandlerV2Test: TestCase {
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
             localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$0.28"))
+    }
+
+    func testProductPayUpFrontPromoOfferPrice() {
+        let discount = TestData.packageWithPromoOfferPayUpFront.storeProduct.discounts.first!
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithPromoOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            promoOffer: .init(
+                discount: discount,
+                signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
+            )
+        )
+        expect(result).to(equal("$1.99"))
+    }
+
+    func testProductPayUpFrontPromoOfferPricePerDay() {
+        let discount = TestData.packageWithPromoOfferPayUpFront.storeProduct.discounts.first!
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_day }}",
+            with: TestData.packageWithPromoOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            promoOffer: .init(
+                discount: discount,
+                signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
+            )
         )
         expect(result).to(equal("$0.28"))
     }
@@ -647,6 +678,248 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("Monthly"))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class V2ZeroDecimalPlacePricesTest: TestCase {
+
+    let localizations = [
+        "en_US": [
+            "day": "day",
+            "daily": "daily",
+            "day_short": "day",
+            "week": "week",
+            "weekly": "weekly",
+            "week_short": "wk",
+            "month": "month",
+            "monthly": "monthly",
+            "month_short": "mo",
+            "year": "year",
+            "yearly": "yearly",
+            "year_short": "yr",
+            "annual": "annual",
+            "annually": "annually",
+            "annual_short": "yr",
+            "free_price": "free",
+            "percent": "%d%%",
+            "num_day_zero": "%d day",
+            "num_day_one": "%d day",
+            "num_day_two": "%d days",
+            "num_day_few": "%d days",
+            "num_day_many": "%d days",
+            "num_day_other": "%d days",
+            "num_week_zero": "%d week",
+            "num_week_one": "%d week",
+            "num_week_two": "%d weeks",
+            "num_week_few": "%d weeks",
+            "num_week_many": "%d weeks",
+            "num_week_other": "%d weeks",
+            "num_month_zero": "%d month",
+            "num_month_one": "%d month",
+            "num_month_two": "%d months",
+            "num_month_few": "%d months",
+            "num_month_many": "%d months",
+            "num_month_other": "%d months",
+            "num_year_zero": "%d year",
+            "num_year_one": "%d year",
+            "num_year_two": "%d years",
+            "num_year_few": "%d years",
+            "num_year_many": "%d years",
+            "num_year_other": "%d years",
+            "num_days_short": "%dd",
+            "num_weeks_short": "%dwk",
+            "num_months_short": "%dmo",
+            "num_years_short": "%dyr"
+        ]
+    ]
+
+    let locale = Locale(identifier: "en_US")
+
+    // Variable handler with showZeroDecimalPlacePrices enabled
+    let variableHandlerWithZeroDecimal = VariableHandlerV2(
+        variableCompatibilityMap: [:],
+        functionCompatibilityMap: [:],
+        discountRelativeToMostExpensivePerMonth: nil,
+        showZeroDecimalPlacePrices: true,
+        dateProvider: {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            return formatter.date(from: "2024-12-12")!
+        }
+    )
+
+    // Variable handler with showZeroDecimalPlacePrices disabled (default)
+    let variableHandlerWithoutZeroDecimal = VariableHandlerV2(
+        variableCompatibilityMap: [:],
+        functionCompatibilityMap: [:],
+        discountRelativeToMostExpensivePerMonth: nil,
+        showZeroDecimalPlacePrices: false,
+        dateProvider: {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            return formatter.date(from: "2024-12-12")!
+        }
+    )
+
+    func testProductPriceWithZeroDecimalPlacePrices() {
+        // With showZeroDecimalPlacePrices: true, whole number prices should not show .00
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.price }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(resultWithZeroDecimal).to(equal("$60"))
+
+        // With showZeroDecimalPlacePrices: false, whole number prices should show .00
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.price }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$60.00"))
+    }
+
+    func testProductPricePerMonthWithZeroDecimalPlacePrices() {
+        // With showZeroDecimalPlacePrices: true, whole number prices should not show .00
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.price_per_month }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(resultWithZeroDecimal).to(equal("$5"))
+
+        // With showZeroDecimalPlacePrices: false, whole number prices should show .00
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.price_per_month }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$5.00"))
+    }
+
+    func testProductPricePerPeriodWithZeroDecimalPlacePrices() {
+        // With showZeroDecimalPlacePrices: true
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(resultWithZeroDecimal).to(equal("$60/year"))
+
+        // With showZeroDecimalPlacePrices: false
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$60.00/year"))
+    }
+
+    func testNonWholeNumberPricesAreUnaffected() {
+        // Non-whole number prices should show decimals regardless of flag
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.price }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(resultWithZeroDecimal).to(equal("$6.99"))
+
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.price }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$6.99"))
+    }
+
+    // MARK: - Optional Package Tests
+
+    func testProductVariablesReturnEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.price }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductCurrencyCodeReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.currency_code }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductPricePerPeriodReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductPeriodReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.period }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductStoreProductNameReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.store_product_name }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testNonProductVariablesWorkWhenPackageIsNil() {
+        // Currency symbol doesn't require a package
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$"))
+    }
+
+    func testRelativeDiscountWorksWhenPackageIsNil() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: 0.25,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.relative_discount }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("25%"))
     }
 
 }

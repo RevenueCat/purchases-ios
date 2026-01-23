@@ -35,11 +35,15 @@ class SystemInfo {
     }
 
     let storeKitVersion: StoreKitVersion
-    private let apiKeyValidationResult: Configuration.APIKeyValidationResult
+    private var _apiKeyValidationResult: Configuration.APIKeyValidationResult
+    var apiKeyValidationResult: Configuration.APIKeyValidationResult {
+        get { return self._apiKeyValidationResult }
+        set { self._apiKeyValidationResult = newValue }
+    }
 
-    /// Whether the API key used to configure the SDK is a Test Store API key.
-    var isTestStoreAPIKey: Bool {
-        return self.apiKeyValidationResult == .testStore
+    /// Whether the API key used to configure the SDK is a Simulated Store API key.
+    var isSimulatedStoreAPIKey: Bool {
+        return self.apiKeyValidationResult == .simulatedStore
     }
 
     let operationDispatcher: OperationDispatcher
@@ -73,6 +77,10 @@ class SystemInfo {
     private static let _forceUniversalAppStore: Atomic<Bool> = false
     private static let _proxyURL: Atomic<URL?> = nil
 
+    // swiftlint:disable:next force_unwrapping
+    static let defaultApiBaseURL = URL(string: "https://api.revenuecat.com")!
+    private static let _apiBaseURL: Atomic<URL> = .init(defaultApiBaseURL)
+
     private lazy var _isSandbox: Bool = {
         return self.sandboxEnvironmentDetector.isSandbox
     }()
@@ -94,7 +102,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.37.0-SNAPSHOT"
+        return "5.56.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
@@ -159,6 +167,21 @@ class SystemInfo {
         }
     }
 
+    /*
+     Allows for updating the base URL for API calls that use `HTTPRequest.Path`.
+     Useful for testing in case we want to perform tests against another instance of our backend.
+     
+     We've decided not to use the proxy URL for this, because it's behavior is slightly different. 
+     Specifically, when using a proxy URL the fallback logic is not used, because all requests should 
+     be going through the proxy URL instead. 
+     */
+    static var apiBaseURL: URL {
+        get { return self._apiBaseURL.value }
+        set {
+            self._apiBaseURL.value = newValue
+        }
+    }
+
     static let appSessionID = UUID()
 
     init(platformInfo: Purchases.PlatformInfo?,
@@ -182,7 +205,7 @@ class SystemInfo {
         self._isAppBackgroundedState = .init(isAppBackgrounded ?? false)
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
-        self.apiKeyValidationResult = apiKeyValidationResult
+        self._apiKeyValidationResult = apiKeyValidationResult
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.storefrontProvider = storefrontProvider
         self.responseVerificationMode = responseVerificationMode
@@ -320,6 +343,16 @@ extension SystemInfo {
             NSApplication.willBecomeActiveNotification
         #elseif os(watchOS)
             Notification.Name.NSExtensionHostWillEnterForeground
+        #endif
+    }
+
+    static var applicationWillResignActiveNotification: Notification.Name {
+        #if os(iOS) || os(tvOS) || VISION_OS
+            UIApplication.willResignActiveNotification
+        #elseif os(macOS)
+            NSApplication.willResignActiveNotification
+        #elseif os(watchOS)
+            Notification.Name.NSExtensionHostWillResignActive
         #endif
     }
 

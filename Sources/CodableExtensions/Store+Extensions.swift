@@ -66,9 +66,7 @@ private extension Store {
         case .rcBilling: return "rc_billing"
         case .external: return "external"
         case .paddle: return "paddle"
-        #if TEST_STORE
-        case .testStore: return "test"
-        #endif
+        case .testStore: return "test_store"
         }
     }
 

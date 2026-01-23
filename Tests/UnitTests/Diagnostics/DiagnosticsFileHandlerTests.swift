@@ -87,8 +87,8 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - getEntries
 
     func testGetEntries() async throws {
-        await self.fileHandler.append(line: Self.line1)
-        await self.fileHandler.append(line: Self.line2)
+        try await self.fileHandler.append(line: Self.line1)
+        try await self.fileHandler.append(line: Self.line2)
 
         let content1 = DiagnosticsEvent(id: UUID(uuidString: "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC")!,
                                         name: .customerInfoVerificationResult,
@@ -110,8 +110,8 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - emptyFile
 
     func testEmptyFile() async throws {
-        await self.fileHandler.append(line: Self.line1)
-        await self.fileHandler.append(line: Self.line2)
+        try await self.fileHandler.append(line: Self.line1)
+        try await self.fileHandler.append(line: Self.line2)
 
         var data = try await self.fileHandler.readFile()
         expect(data).toNot(beEmpty())
@@ -153,7 +153,7 @@ class DiagnosticsFileHandlerTests: TestCase {
               "version": \(iterator)
             }
             """.trimmingWhitespacesAndNewLines
-            await self.fileHandler.append(line: line)
+            try await self.fileHandler.append(line: line)
         }
 
         let data = try await self.fileHandler.readFile()
@@ -177,7 +177,7 @@ class DiagnosticsFileHandlerTests: TestCase {
               "version": \(iterator)
             }
             """.trimmingWhitespacesAndNewLines
-            await self.fileHandler.append(line: line)
+            try await self.fileHandler.append(line: line)
         }
 
         let data = try await self.fileHandler.readFile()
@@ -219,9 +219,9 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - Invalid entries
 
     func testGetEntriesWithInvalidLine() async throws {
-        await self.fileHandler.append(line: Self.invalidEntryLine)
-        await self.fileHandler.append(line: Self.line1)
-        await self.fileHandler.append(line: Self.line2)
+        try await self.fileHandler.append(line: Self.invalidEntryLine)
+        try await self.fileHandler.append(line: Self.line1)
+        try await self.fileHandler.append(line: Self.line2)
 
         let content1 = DiagnosticsEvent(id: UUID(uuidString: "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC")!,
                                         name: .customerInfoVerificationResult,
@@ -241,6 +241,22 @@ class DiagnosticsFileHandlerTests: TestCase {
         expect(entries[2]).to(equal(content2))
     }
 
+    // MARK: - FileHandler throwing errors
+
+    func testAppendEventWhenFileManagerAppendLineThrowsError() async throws {
+        struct FakeError: Error {}
+
+        let fileHandler = MockFileHandler()
+        await fileHandler.setAppendLineError(FakeError())
+
+        self.handler = DiagnosticsFileHandler(fileHandler)
+
+        await self.handler.appendEvent(diagnosticsEvent: Self.sampleEvent())
+
+        expect(self.logger.messages).to(containElementSatisfying {
+            $0.message.contains("Failed to store diagnostics event: ")
+        })
+    }
 }
 
 // MARK: - Private
@@ -291,6 +307,116 @@ private extension DiagnosticsFileHandlerTests {
                                 appSessionId: UUID())
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class DiagnosticsFileOldFileDeletionTests: TestCase {
+
+    fileprivate var handler: DiagnosticsFileHandler!
+
+    override func setUp() async throws {
+        try await super.setUp()
+
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // Remove any stored data used in migration tests
+        if let url = DirectoryHelper.baseUrl(for: .persistence), FileManager.default.fileExists(atPath: url.path) {
+            try FileManager.default.removeItem(at: url)
+        }
+    }
+
+    func testDeletesOldDiagnosticsFileFromDocumentsDirectory() async throws {
+
+        // Create old directory structure
+        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let comRevenueCatFolder = documentsURL.appendingPathComponent("com.revenuecat")
+        let oldDiagnosticsFile = comRevenueCatFolder
+            .appendingPathComponent("diagnostics")
+            .appendingPathExtension("jsonl")
+
+        try FileManager.default.createDirectory(
+            at: oldDiagnosticsFile.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        try "old file contents".write(to: oldDiagnosticsFile, atomically: true, encoding: .utf8)
+
+        expect(FileManager.default.fileExists(atPath: oldDiagnosticsFile.path)).to(beTrue())
+        expect(FileManager.default.fileExists(atPath: comRevenueCatFolder.path)).to(beTrue())
+
+        let handler = DiagnosticsFileHandler()
+        expect(handler).toNot(beNil())
+
+        // Storing something should trigger the deletion of the old file
+        await handler?.appendEvent(diagnosticsEvent: Self.sampleEvent())
+
+        expect(FileManager.default.fileExists(atPath: oldDiagnosticsFile.path)).to(beFalse())
+        expect(FileManager.default.fileExists(atPath: comRevenueCatFolder.path)).to(beFalse())
+
+        // Verify new file is created
+        let persistenceDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .persistence))
+
+        let newDiagnosticsFileURL = persistenceDirectoryURL
+            .appendingPathComponent("diagnostics", isDirectory: true)
+            .appendingPathComponent("diagnostics")
+            .appendingPathExtension("jsonl")
+
+        expect(FileManager.default.fileExists(atPath: newDiagnosticsFileURL.path)).to(beTrue())
+    }
+
+    func testDoesNotDeleteOldDiagnosticsFileFromDocumentsDirectoryIfNewFileExists() async throws {
+        // Create old directory structure
+        let documentsURL = try XCTUnwrap(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first)
+        let comRevenueCatFolder = documentsURL.appendingPathComponent("com.revenuecat")
+        let oldDiagnosticsFile = comRevenueCatFolder
+            .appendingPathComponent("diagnostics")
+            .appendingPathExtension("jsonl")
+
+        try FileManager.default.createDirectory(
+            at: oldDiagnosticsFile.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        // Verify new file is created
+        let persistenceDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .persistence))
+
+        let newDiagnosticsFileURL = persistenceDirectoryURL
+            .appendingPathComponent("diagnostics", isDirectory: true)
+            .appendingPathComponent("diagnostics")
+            .appendingPathExtension("jsonl")
+
+        try FileManager.default.createDirectory(
+            at: newDiagnosticsFileURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        try "new file contents".write(to: newDiagnosticsFileURL, atomically: true, encoding: .utf8)
+        try "old file content".write(to: oldDiagnosticsFile, atomically: true, encoding: .utf8)
+
+        expect(FileManager.default.fileExists(atPath: oldDiagnosticsFile.path)).to(beTrue())
+        expect(FileManager.default.fileExists(atPath: newDiagnosticsFileURL.path)).to(beTrue())
+
+        let handler = DiagnosticsFileHandler()
+        expect(handler).toNot(beNil())
+
+        // Storing something should trigger the deletion of the old file
+        // but not in this case because there was already a new file
+        await handler?.appendEvent(diagnosticsEvent: Self.sampleEvent())
+
+        // They should both still exist
+        expect(FileManager.default.fileExists(atPath: oldDiagnosticsFile.path)).to(beTrue())
+        expect(FileManager.default.fileExists(atPath: newDiagnosticsFileURL.path)).to(beTrue())
+    }
+
+    static func sampleEvent() -> DiagnosticsEvent {
+        return DiagnosticsEvent(name: .httpRequestPerformed,
+                                properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                                timestamp: Date(),
+                                appSessionId: UUID())
+    }
 }
 
 private extension String {

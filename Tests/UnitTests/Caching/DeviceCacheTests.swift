@@ -15,15 +15,29 @@ class DeviceCacheTests: TestCase {
     private var systemInfo: MockSystemInfo! = nil
     private var preferredLocalesProvider: PreferredLocalesProvider! = nil
     private var mockUserDefaults: MockUserDefaults! = nil
+    private var mockFileCache: MockSimpleCache! = nil
     private var deviceCache: DeviceCache! = nil
     private var mockVirtualCurrenciesData: Data!
+    private let fileManager = FileManager.default
 
     override func setUp() {
+        super.setUp()
+
+        if let documentsDirectoryURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let oldDirectory = documentsDirectoryURL.appendingPathComponent("RevenueCat")
+            try? fileManager.removeItem(at: oldDirectory)
+        }
+
+        if let cacheURL = DirectoryHelper.baseUrl(for: .cache) {
+            try? fileManager.removeItem(at: cacheURL)
+        }
+
         self.preferredLocalesProvider = .mock(locales: ["en-US"])
         self.systemInfo = MockSystemInfo(finishTransactions: false,
                                          preferredLocalesProvider: self.preferredLocalesProvider)
         self.systemInfo.stubbedIsSandbox = false
         self.mockUserDefaults = MockUserDefaults()
+        self.mockFileCache = MockSimpleCache()
 
         let mockVirtualCurrencies = VirtualCurrencies(virtualCurrencies: [
             "USD": VirtualCurrency(balance: 100, name: "US Dollar", code: "USD", serverDescription: "dollar"),
@@ -78,6 +92,7 @@ class DeviceCacheTests: TestCase {
 
     func testClearCachesForAppUserIDAndSaveNewUserIDRemovesCachedOfferings() {
         let offerings: Offerings = .empty
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
         self.deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: "cesar")
         expect(self.deviceCache.cachedOfferings) == offerings
 
@@ -225,15 +240,17 @@ class DeviceCacheTests: TestCase {
     func testOfferingsAreProperlyCached() throws {
         let expectedOfferings = try Self.createSampleOfferings()
 
+        mockFileCache
+            .stubSaveData(
+                with: .success(.init(data: try expectedOfferings.response.jsonEncodedData, url: .mockFileLocation))
+            )
+
+        expect(self.mockFileCache.saveDataInvocations.count) == 0
+
         self.deviceCache.cache(offerings: expectedOfferings, preferredLocales: ["en-US"], appUserID: "user")
 
         expect(self.deviceCache.cachedOfferings) === expectedOfferings
-
-        let storedData = try XCTUnwrap(
-            self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.offerings.user"] as? Data
-        )
-        let offerings = try JSONDecoder.default.decode(OfferingsResponse.self, from: storedData)
-        expect(offerings) == expectedOfferings.response
+        expect(self.mockFileCache.saveDataInvocations.count) == 1
     }
 
     func testCacheOfferingsInMemory() throws {
@@ -367,6 +384,8 @@ class DeviceCacheTests: TestCase {
 
     func testIsOfferingsCacheStaleIfPreferredLocalesChange() throws {
         let sampleOfferings = try Self.createSampleOfferings()
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+
         self.deviceCache.cache(offerings: sampleOfferings, preferredLocales: ["en-US"], appUserID: "user")
 
         expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == false
@@ -378,6 +397,7 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == true
         expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == true
 
+        self.mockFileCache.stubSaveData(at: 1, with: .success(.init(data: .init(), url: .mockFileLocation)))
         self.deviceCache.cache(offerings: .empty, preferredLocales: ["es-ES", "en-US"], appUserID: "user")
 
         expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == false
@@ -394,14 +414,86 @@ class DeviceCacheTests: TestCase {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
         self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults,
+                                       cache: self.mockFileCache,
+                                       fileManager: self.fileManager,
                                        offeringsCachedObject: mockCachedObject)
 
         self.deviceCache.clearOfferingsCache(appUserID: "user")
 
         expect(mockCachedObject.invokedClearCache) == true
-        expect(self.mockUserDefaults.removeObjectForKeyCalledValues).to(contain([
-            "com.revenuecat.userdefaults.offerings.user"
-        ]))
+        expect(self.mockFileCache.removeInvocations.count) == 1
+    }
+
+    func testClearCachesRemovesOfferingsFromLargeItemCache() throws {
+        let appUserID = "testUser"
+        let offerings = try Self.createSampleOfferings()
+
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: appUserID)
+
+        expect(self.mockFileCache.removeInvocations.count) == 0
+
+        self.deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: "newUser")
+
+        // Verify that removeObject was called on the file cache with the correct key
+        expect(self.mockFileCache.removeInvocations.count) == 1
+        let expectedURL = self.mockFileCache.cacheDirectory?
+            .appendingPathComponent("device-cache")
+            .appendingPathComponent("com.revenuecat.userdefaults.offerings.\(appUserID)")
+        expect(self.mockFileCache.removeInvocations.first) == expectedURL
+    }
+
+    func testCachedOfferingsContentsRemovesOldUserDefaultsCache() throws {
+        let appUserID = "testUser"
+        let offerings = try Self.createSampleOfferings()
+        let offeringsKey = "com.revenuecat.userdefaults.offerings.\(appUserID)"
+
+        // Put some data in UserDefaults to simulate old cached data
+        self.mockUserDefaults.mockValues[offeringsKey] = try offerings.contents.jsonEncodedData
+
+        self.mockFileCache.stubLoadFile(with: .success(try offerings.contents.jsonEncodedData))
+
+        // Call cachedOfferingsContents
+        _ = self.deviceCache.cachedOfferingsContents(appUserID: appUserID)
+
+        // Verify that the old UserDefaults cache was removed
+        expect(self.mockUserDefaults.removeObjectForKeyCalledValues).to(contain(offeringsKey))
+    }
+
+    func testCachedOfferingsContentsReturnsSameContentAsSaved() throws {
+        let appUserID = "testUser"
+        let offerings = try Self.createSampleOfferings()
+
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubLoadFile(with: .success(try offerings.contents.jsonEncodedData))
+
+        // Cache the offerings
+        self.deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: appUserID)
+
+        // Retrieve the cached offerings contents
+        let cachedContents: Offerings.Contents? = self.deviceCache.cachedOfferingsContents(appUserID: appUserID)
+
+        // Verify that the cached contents match what was saved
+        expect(cachedContents).toNot(beNil())
+        expect(cachedContents?.response.currentOfferingId) == offerings.contents.response.currentOfferingId
+        expect(cachedContents?.response.offerings.count) == offerings.contents.response.offerings.count
+    }
+
+    func testOfferingsAreNeverSavedToUserDefaults() throws {
+        let appUserID = "testUser"
+        let offerings = try Self.createSampleOfferings()
+        let offeringsKey = "com.revenuecat.userdefaults.offerings.\(appUserID)"
+
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+
+        // Cache the offerings
+        self.deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: appUserID)
+
+        // Verify that offerings were NOT saved to UserDefaults
+        expect(self.mockUserDefaults.mockValues[offeringsKey]).to(beNil())
+
+        // Verify that offerings WERE saved to the file cache
+        expect(self.mockFileCache.saveDataInvocations.count) == 1
     }
 
     func testSetLatestAdvertisingIdsByNetworkSentMapsAttributionNetworksToStringKeys() {
@@ -468,20 +560,22 @@ class DeviceCacheTests: TestCase {
         expect(storedAttributes as? [String: [String: [String: NSObject]]]) == expectedAttributesSet
     }
 
-    func testCacheEmptyProductEntitlementMapping() {
+    func testCacheEmptyProductEntitlementMapping() throws {
         let data = ProductEntitlementMapping(entitlementsByProduct: [:])
-
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubLoadFile(with: .success(try data.jsonEncodedData))
         self.deviceCache.store(productEntitlementMapping: data)
         expect(self.deviceCache.cachedProductEntitlementMapping) == data
     }
 
-    func testCacheProductEntitlementMapping() {
+    func testCacheProductEntitlementMapping() throws {
         let data = ProductEntitlementMapping(entitlementsByProduct: [
             "1": ["pro_1"],
             "2": ["pro_2"],
             "3": ["pro_1", "pro_2"]
         ])
-
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubLoadFile(with: .success(try data.jsonEncodedData))
         self.deviceCache.store(productEntitlementMapping: data)
         expect(self.deviceCache.cachedProductEntitlementMapping) == data
     }
@@ -491,6 +585,7 @@ class DeviceCacheTests: TestCase {
     }
 
     func testCacheProductEntitlementMappingUpdatesLastUpdatedDate() throws {
+        self.mockFileCache.stubSaveData(with: .success(.init(data: Data(), url: .mockFileLocation)))
         self.deviceCache.store(productEntitlementMapping: .init(entitlementsByProduct: [:]))
 
         let key = DeviceCache.CacheKeys.productEntitlementMappingLastUpdated.rawValue
@@ -800,13 +895,306 @@ class DeviceCacheTests: TestCase {
             self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrenciesLastUpdated.\(appUserID2)"]
         ).toNot(beNil())
     }
+
+    // MARK: - Migration Tests
+
+    func testMigratesOfferingsFromOldDocumentsDirectory() throws {
+        let appUserID1 = "test-user1"
+        let appUserID2 = "test-user2"
+
+        // Create old directory in documents
+        let documentsURL = fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )[0]
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+        let oldFileURL1 = oldDirectory.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID1).rawValue)
+        let oldFileURL2 = oldDirectory.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID2).rawValue)
+
+        // Create old documents directory and file
+        try fileManager.createDirectory(
+            at: oldDirectory,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        let testOfferings = try Self.createSampleOfferings()
+        let offeringsData = try JSONEncoder.default.encode(testOfferings.contents)
+        try offeringsData.write(to: oldFileURL1)
+        try offeringsData.write(to: oldFileURL2)
+
+        // Verify old files exist
+        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL1.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL2.path))
+
+        // swiftlint:disable:next line_length
+        let newDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache"))
+
+        // Verify new directory does not exist yet
+        XCTAssertFalse(fileManager.fileExists(atPath: newDirectoryURL.path))
+
+        // Create local DeviceCache with FileManager
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.mockUserDefaults,
+            cache: fileManager
+        )
+
+        // Verify new directory is created on init of DeviceCache
+        XCTAssertTrue(fileManager.fileExists(atPath: newDirectoryURL.path))
+
+        // Retrieve cached offerings 1, old file should be removed but directory should still exist
+        var cachedOfferings1: Offerings.Contents? = deviceCache.cachedOfferingsContents(appUserID: appUserID1)
+        expect(cachedOfferings1).toNot(beNil())
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL1.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: oldDirectory.path))
+
+        // Retrieve cached offerings 2, old file should be removed and old directory should be removed now
+        var cachedOfferings2: Offerings.Contents? = deviceCache.cachedOfferingsContents(appUserID: appUserID2)
+        expect(cachedOfferings2).toNot(beNil())
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL2.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+
+        // Try fetching them from the new location
+        cachedOfferings1 = deviceCache.cachedOfferingsContents(appUserID: appUserID1)
+        cachedOfferings2 = deviceCache.cachedOfferingsContents(appUserID: appUserID2)
+        expect(cachedOfferings1).toNot(beNil())
+        expect(cachedOfferings2).toNot(beNil())
+    }
+
+    func testMigratesProductEntitlementMappingFromOldDocumentsDirectory() throws {
+        // Create old directory in documents
+        let documentsURL = fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )[0]
+        let oldDirectoryURL = documentsURL.appendingPathComponent("RevenueCat")
+
+        // swiftlint:disable:next line_length
+        let oldFileURL = oldDirectoryURL.appendingPathComponent(DeviceCache.CacheKeys.productEntitlementMapping.rawValue)
+
+        // Create directory and file
+        try fileManager.createDirectory(
+            at: oldDirectoryURL,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        let testMapping = ProductEntitlementMapping(entitlementsByProduct: ["product1": ["entitlement1"]])
+        let mappingData = try JSONEncoder.default.encode(testMapping)
+        try mappingData.write(to: oldFileURL)
+
+        // Verify old file exists
+        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
+
+        // swiftlint:disable:next line_length
+        let newDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache"))
+
+        // Verify new directory does not exist yet
+        XCTAssertFalse(fileManager.fileExists(atPath: newDirectoryURL.path))
+
+        // Create local DeviceCache with FileManager
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.mockUserDefaults,
+            cache: fileManager
+        )
+
+        // Verify new directory is created on init of DeviceCache
+        XCTAssertTrue(fileManager.fileExists(atPath: newDirectoryURL.path))
+
+        // Access product entitlement mapping - should trigger migration
+        let cachedMapping = deviceCache.cachedProductEntitlementMapping
+
+        // Verify mapping was migrated and can be read
+        expect(cachedMapping).toNot(beNil())
+        expect(cachedMapping?.entitlementsByProduct) == testMapping.entitlementsByProduct
+
+        // Verify old file and directory is removed since it's empty
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectoryURL.path))
+    }
+
+    func testWritingOfferingsDeletesOldFileFromDocumentsDirectory() throws {
+        let appUserID = "test-user"
+
+        // Create old directory in documents
+        let documentsURL = fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )[0]
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+        let oldFileURL = oldDirectory.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID).rawValue)
+
+        // Create directory and file
+        try fileManager.createDirectory(
+            at: oldDirectory,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        let oldOfferings = try Self.createSampleOfferings()
+        let oldOfferingsData = try JSONEncoder.default.encode(oldOfferings.contents)
+        try oldOfferingsData.write(to: oldFileURL)
+
+        // Verify old file exists
+        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
+
+        // Create local DeviceCache with fileManager
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.mockUserDefaults,
+            cache: fileManager
+        )
+
+        // Write new offerings, should delete old file
+        let newOfferings = try Self.createSampleOfferings()
+        deviceCache.cache(offerings: newOfferings, preferredLocales: ["en-US"], appUserID: appUserID)
+
+        // Verify old file and directory is removed since it's empty
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+    }
+
+    func testClearCachesDeletesOldOfferingsFileIfExists() throws {
+        let appUserID = "test_user"
+        let newUserID = "new_user"
+
+        // Create old documents directory structure
+        let documentsURL = try XCTUnwrap(fileManager.urls(for: .documentDirectory, in: .userDomainMask).first)
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+
+        // Create offerings file for this user and another file to ensure we only delete the offerings
+        let offeringsKey = DeviceCache.CacheKey.offerings(appUserID).rawValue
+        let offeringsFile = oldDirectory.appendingPathComponent(offeringsKey)
+        let otherFile = oldDirectory.appendingPathComponent("other-file.txt")
+
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
+        try "offerings data".write(to: offeringsFile, atomically: true, encoding: .utf8)
+        try "other data".write(to: otherFile, atomically: true, encoding: .utf8)
+
+        // Verify files exist
+        XCTAssertTrue(fileManager.fileExists(atPath: offeringsFile.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
+
+        // Call clearCaches
+        deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: newUserID)
+
+        // Verify only the offerings file is deleted, other file remains
+        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFile.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
+    }
+
+    func testClearOfferingsCacheDeletesOldOfferingsFileIfExists() throws {
+        let appUserID = "test_user"
+
+        // Create old documents directory structure
+        let documentsURL = try XCTUnwrap(fileManager.urls(for: .documentDirectory, in: .userDomainMask).first)
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+
+        // Create offerings file for this user and another file to ensure we only delete the offerings
+        let offeringsKey = DeviceCache.CacheKey.offerings(appUserID).rawValue
+        let offeringsFile = oldDirectory.appendingPathComponent(offeringsKey)
+        let otherFile = oldDirectory.appendingPathComponent("other-file.txt")
+
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
+        try "offerings data".write(to: offeringsFile, atomically: true, encoding: .utf8)
+        try "other data".write(to: otherFile, atomically: true, encoding: .utf8)
+
+        // Verify files exist
+        XCTAssertTrue(fileManager.fileExists(atPath: offeringsFile.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
+
+        // Call clearOfferingsCache
+        deviceCache.clearOfferingsCache(appUserID: appUserID)
+
+        // Verify only the offerings file is deleted, other file remains
+        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFile.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
+    }
+
+    func testMigrationOnConcurrentReadsIsThreadSafe() throws {
+        let appUserID = "test_user"
+
+        // Create old directory in documents
+        let documentsURL = try XCTUnwrap(fileManager.urls(for: .documentDirectory, in: .userDomainMask).first)
+        let oldDirectoryURL = documentsURL.appendingPathComponent("RevenueCat")
+        let oldFileURL = oldDirectoryURL.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID).rawValue)
+
+        // Create directory and file
+        try fileManager.createDirectory(
+            at: oldDirectoryURL,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        let testOfferings = try Self.createSampleOfferings()
+        let offeringsData = try JSONEncoder.default.encode(testOfferings.contents)
+        try offeringsData.write(to: oldFileURL)
+
+        // Verify old file exists
+        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
+
+        // Create DeviceCache instance
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.mockUserDefaults,
+            cache: fileManager
+        )
+
+        let newDirectoryURL = try XCTUnwrap(
+            DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache")
+        )
+        let newFileURL = newDirectoryURL.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID).rawValue)
+
+        // Verify new directory exists but file doesn't yet
+        XCTAssertTrue(fileManager.fileExists(atPath: newDirectoryURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: newFileURL.path))
+
+        // Trigger concurrent concurrent reads from multiple threads
+        let expectation = XCTestExpectation(description: "All concurrent migrations complete")
+        expectation.expectedFulfillmentCount = 10
+
+        let dispatchGroup = DispatchGroup()
+
+        for _ in 0..<10 {
+            dispatchGroup.enter()
+            DispatchQueue.global(qos: .userInitiated).async {
+                // Each thread tries to access the cached offerings, triggering migration (but should only migrate once)
+                let cachedOfferings = deviceCache.cachedOfferingsContents(appUserID: appUserID)
+
+                // Verify we got valid data
+                expect(cachedOfferings).toNot(beNil())
+
+                expectation.fulfill()
+                dispatchGroup.leave()
+            }
+        }
+
+        // Wait for all concurrent operations to complete
+        let result = dispatchGroup.wait(timeout: .now() + 5.0)
+        XCTAssertEqual(result, .success, "Concurrent migrations should complete within timeout")
+
+        wait(for: [expectation], timeout: 5.0)
+
+        // Verify migration succeeded
+        XCTAssertTrue(fileManager.fileExists(atPath: newFileURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
+
+        // Verify we can still read the migrated data
+        let finalOfferings = deviceCache.cachedOfferingsContents(appUserID: appUserID)
+        expect(finalOfferings).toNot(beNil())
+    }
 }
 
 private extension DeviceCacheTests {
 
     func create() -> DeviceCache {
-        return DeviceCache(systemInfo: self.systemInfo,
-                           userDefaults: self.mockUserDefaults)
+        return DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.mockUserDefaults,
+            cache: self.mockFileCache
+        )
     }
 
     static func createSampleOfferings() throws -> Offerings {
@@ -849,11 +1237,13 @@ private extension DeviceCacheTests {
             currentOfferingID: "base",
             placements: nil,
             targeting: nil,
-            response: .init(currentOfferingId: "base",
-                            offerings: [offeringsData],
-                            placements: nil,
-                            targeting: nil,
-                            uiConfig: nil)
+            contents: Offerings.Contents(response: OfferingsResponse(currentOfferingId: "base",
+                                                                     offerings: [offeringsData],
+                                                                     placements: nil,
+                                                                     targeting: nil,
+                                                                     uiConfig: nil),
+                                         httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
         )
     }
 
@@ -866,13 +1256,19 @@ private extension Offerings {
         currentOfferingID: "",
         placements: nil,
         targeting: nil,
-        response: .init(
+        contents: Offerings.Contents(response: OfferingsResponse(
             currentOfferingId: "",
             offerings: [],
             placements: nil,
             targeting: nil,
             uiConfig: nil
-        )
+        ),
+                                     httpResponseOriginalSource: .mainServer),
+        loadedFromDiskCache: false
     )
 
+}
+
+private extension URL {
+    static let mockFileLocation: URL = URL(string: "data:mock-file-location").unsafelyUnwrapped
 }

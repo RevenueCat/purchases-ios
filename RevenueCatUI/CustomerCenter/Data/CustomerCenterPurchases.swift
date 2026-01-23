@@ -61,12 +61,12 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData {
         if let promotionalOffer = promotionalOffer {
-            try await Purchases.shared.purchase(
+            return try await Purchases.shared.purchase(
                 product: product,
                 promotionalOffer: promotionalOffer
             )
         } else {
-            try await Purchases.shared.purchase(product: product)
+            return try await Purchases.shared.purchase(product: product)
         }
     }
 
@@ -96,6 +96,13 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
 
     func offerings() async throws -> Offerings {
         return try await Purchases.shared.offerings()
+    }
+
+    func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
+        return try await Purchases.shared.createTicket(
+            customerEmail: customerEmail,
+            ticketDescription: ticketDescription
+        )
     }
 
     #if os(iOS) || os(visionOS)

@@ -96,9 +96,12 @@ struct NoSubscriptionsCardView: View {
             }
         }
         .padding(16)
+        #if compiler(>=5.9)
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
-                          : UIColor.secondarySystemBackground))
+                          : UIColor.secondarySystemBackground),
+                    in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+        #endif
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoadingOffering)
         .sheet(isPresented: $viewModel.showOffering, content: {
             PaywallView(
@@ -140,18 +143,14 @@ private struct BuySubscriptionButtonStyle: ButtonStyle {
             .padding(.vertical, 14)
             .background(
                 configuration.isPressed
-                ? tintColor?.opacity(0.8)
-                : tintColor
+                ? appearance.tintColor(colorScheme: self.colorScheme)?.opacity(0.8)
+                : appearance.tintColor(colorScheme: self.colorScheme)
             )
             .foregroundColor(.white)
             .clipShape(Capsule())
             .opacity(configuration.isPressed ? 0.95 : 1.0)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
-    }
-
-    private var tintColor: Color? {
-        Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
     }
 }
 
@@ -172,7 +171,6 @@ struct NoSubscriptionsCardView_Previews: PreviewProvider {
                     localization: CustomerCenterConfigData.default.localization,
                     purchasesProvider: MockCustomerCenterPurchases()
                 )
-                .cornerRadius(10)
                 .padding([.leading, .trailing])
             }
             .preferredColorScheme(colorScheme)

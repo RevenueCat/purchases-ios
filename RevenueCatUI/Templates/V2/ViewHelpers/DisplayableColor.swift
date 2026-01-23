@@ -15,17 +15,33 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.Background {
 
-    func asDisplayable(uiConfigProvider: UIConfigProvider) -> BackgroundStyle {
+    func asDisplayable(
+        uiConfigProvider: UIConfigProvider,
+        localizationProvider: LocalizationProvider? = nil
+    ) -> BackgroundStyle {
         switch self {
         case .color(let color):
             return .color(color.asDisplayable(uiConfigProvider: uiConfigProvider))
-        case .image(let image, let fitMode):
-            return .image(image, fitMode)
+        case .image(let image, let fitMode, let colorScheme):
+            return .image(image, fitMode, colorScheme?.asDisplayable(uiConfigProvider: uiConfigProvider))
+        case let .video(video, image, loop, mute, fitMode, colorScheme):
+            let viewModel = VideoComponentViewModel(
+                localizationProvider: localizationProvider ?? .init(locale: .current, localizedStrings: .init()),
+                uiConfigProvider: uiConfigProvider,
+                component: .init(
+                    source: video,
+                    fallbackSource: image,
+                    loop: loop,
+                    muteAudio: mute,
+                    fitMode: fitMode
+                )
+            )
+            return .video(viewModel, colorScheme?.asDisplayable(uiConfigProvider: uiConfigProvider))
         }
     }
 

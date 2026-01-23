@@ -247,7 +247,7 @@ class CustomerInfoManager {
             let info: CustomerInfo = try JSONDecoder.default.decode(jsonData: customerInfoData)
 
             if info.schemaVersionIsCompatible {
-                return info
+                return info.loadedFromCache()
             } else {
                 let msg = Strings.customerInfo.cached_customerinfo_incompatible_schema.description
                 throw ErrorUtils.customerInfoError(withMessage: msg)
@@ -434,18 +434,21 @@ private extension CustomerInfoManager {
                     )
 
                     let transactionData = PurchasedTransactionData(
-                        appUserID: appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: [:],
-                        storefront: await Storefront.currentStorefront,
-                        source: Self.sourceForUnfinishedTransaction
+                        storeCountry: await Storefront.currentStorefront?.countryCode
                     )
 
                     // Post everything but the first transaction in the background
                     // in parallel so they can be de-duped
                     let otherTransactionsToPostInParalel = Array(transactions.dropFirst())
                     Task.detached(priority: .background) {
-                        await self.postTransactions(otherTransactionsToPostInParalel, transactionData)
+                        await self.postTransactions(
+                            otherTransactionsToPostInParalel,
+                            transactionData,
+                            postReceiptSource: Self.sourceForUnfinishedTransaction,
+                            appUserID: appUserID
+                        )
                     }
 
                     // Return the result of posting the first transaction.
@@ -453,7 +456,9 @@ private extension CustomerInfoManager {
                     // so we don't need to wait for those.
                     let result = await self.transactionPoster.handlePurchasedTransaction(
                         transactionToPost,
-                        data: transactionData
+                        data: transactionData,
+                        postReceiptSource: Self.sourceForUnfinishedTransaction,
+                        currentUserID: appUserID
                     )
                     completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
                 } else {
@@ -539,14 +544,18 @@ private extension CustomerInfoManager {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     private func postTransactions(
         _ transactions: [StoreTransaction],
-        _ data: PurchasedTransactionData
+        _ data: PurchasedTransactionData,
+        postReceiptSource: PostReceiptSource,
+        appUserID: String
     ) async {
         await withTaskGroup(of: Void.self) { group in
             for transaction in transactions {
                 group.addTask {
                     _ = await self.transactionPoster.handlePurchasedTransaction(
                         transaction,
-                        data: data
+                        data: data,
+                        postReceiptSource: postReceiptSource,
+                        currentUserID: appUserID
                     )
                 }
             }
@@ -554,7 +563,7 @@ private extension CustomerInfoManager {
     }
 
     // Note: this is just a best guess.
-    private static let sourceForUnfinishedTransaction: PurchaseSource = .init(
+    private static let sourceForUnfinishedTransaction: PostReceiptSource = .init(
         isRestore: false,
         // This might have been in theory a `.purchase`. The only downside of this is that the server
         // won't validate that the product is present in the receipt.
@@ -580,7 +589,8 @@ extension CustomerInfoManager {
                                                                rawData: [:])
         let previewCustomerInfo = CustomerInfo(response: previewCustomerInfoResponse,
                                                entitlementVerification: .verified,
-                                               sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default)
+                                               sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default,
+                                               httpResponseOriginalSource: .mainServer)
         return previewCustomerInfo
     }
 

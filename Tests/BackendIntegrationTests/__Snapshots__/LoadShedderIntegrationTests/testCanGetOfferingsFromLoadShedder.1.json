@@ -1,0 +1,3856 @@
+{
+  "current_offering_id" : "default",
+  "offerings" : [
+    {
+      "description" : "standard set of packages",
+      "identifier" : "default",
+      "metadata" : {
+        "dontdeletethis" : "useforintegrationtesting",
+        "meta" : "data"
+      },
+      "packages" : [
+        {
+          "identifier" : "$rc_lifetime",
+          "platform_product_identifier" : "lifetime"
+        },
+        {
+          "identifier" : "$rc_monthly",
+          "platform_product_identifier" : "com.revenuecat.loadShedder.monthly"
+        }
+      ],
+      "paywall" : null,
+      "paywall_components" : {
+        "asset_base_url" : "https://assets.pawwalls.com",
+        "components_config" : {
+          "base" : {
+            "background" : {
+              "type" : "color",
+              "value" : {
+                "light" : {
+                  "degrees" : 0,
+                  "points" : [
+                    {
+                      "color" : "#c1e3e0ff",
+                      "percent" : 0
+                    },
+                    {
+                      "color" : "#ffffffff",
+                      "percent" : 52
+                    }
+                  ],
+                  "type" : "linear"
+                }
+              }
+            },
+            "stack" : {
+              "components" : [
+                {
+                  "components" : [
+                    {
+                      "components" : [
+                        {
+                          "color" : {
+                            "light" : {
+                              "type" : "hex",
+                              "value" : "#000000"
+                            }
+                          },
+                          "font_size" : 32,
+                          "font_weight" : "regular",
+                          "font_weight_int" : 400,
+                          "horizontal_alignment" : "leading",
+                          "margin" : {
+                            "bottom" : 0,
+                            "leading" : 0,
+                            "top" : 0,
+                            "trailing" : 0
+                          },
+                          "padding" : {
+                            "bottom" : 0,
+                            "leading" : 0,
+                            "top" : 0,
+                            "trailing" : 0
+                          },
+                          "size" : {
+                            "height" : {
+                              "type" : "fit"
+                            },
+                            "width" : {
+                              "type" : "fit"
+                            }
+                          },
+                          "text_lid" : "LpG-1OsWhB",
+                          "type" : "text"
+                        }
+                      ],
+                      "dimension" : {
+                        "alignment" : "center",
+                        "distribution" : "space_between",
+                        "type" : "vertical"
+                      },
+                      "margin" : {
+                        "bottom" : 0,
+                        "leading" : 24,
+                        "top" : 0,
+                        "trailing" : 24
+                      },
+                      "padding" : {
+                        "bottom" : 0,
+                        "leading" : 0,
+                        "top" : 0,
+                        "trailing" : 0
+                      },
+                      "shape" : {
+                        "corners" : {
+                          "bottom_leading" : 0,
+                          "bottom_trailing" : 0,
+                          "top_leading" : 0,
+                          "top_trailing" : 0
+                        },
+                        "type" : "rectangle"
+                      },
+                      "size" : {
+                        "height" : {
+                          "type" : "fit"
+                        },
+                        "width" : {
+                          "type" : "fill"
+                        }
+                      },
+                      "spacing" : 0,
+                      "type" : "stack"
+                    },
+                    {
+                      "components" : [
+                        {
+                          "action" : {
+                            "type" : "navigate_back"
+                          },
+                          "stack" : {
+                            "components" : [
+                              {
+                                "base_url" : "https://icons.pawwalls.com/icons",
+                                "color" : {
+                                  "light" : {
+                                    "type" : "hex",
+                                    "value" : "#ffffffff"
+                                  }
+                                },
+                                "formats" : {
+                                  "heic" : "x.heic",
+                                  "png" : "x.png",
+                                  "svg" : "x.svg",
+                                  "webp" : "x.webp"
+                                },
+                                "icon_background" : {
+                                  "color" : {
+                                    "light" : {
+                                      "type" : "hex",
+                                      "value" : "#0e0e0e4d"
+                                    }
+                                  },
+                                  "shape" : {
+                                    "type" : "circle"
+                                  }
+                                },
+                                "icon_name" : "x",
+                                "margin" : {
+                                  "bottom" : 0,
+                                  "leading" : 0,
+                                  "top" : 0,
+                                  "trailing" : 0
+                                },
+                                "padding" : {
+                                  "bottom" : 4,
+                                  "leading" : 4,
+                                  "top" : 4,
+                                  "trailing" : 4
+                                },
+                                "size" : {
+                                  "height" : {
+                                    "type" : "fixed",
+                                    "value" : 24
+                                  },
+                                  "width" : {
+                                    "type" : "fixed",
+                                    "value" : 24
+                                  }
+                                },
+                                "type" : "icon"
+                              }
+                            ],
+                            "dimension" : {
+                              "alignment" : "leading",
+                              "distribution" : "space_between",
+                              "type" : "vertical"
+                            },
+                            "margin" : {
+                              "bottom" : 0,
+                              "leading" : 0,
+                              "top" : 0,
+                              "trailing" : 0
+                            },
+                            "padding" : {
+                              "bottom" : 4,
+                              "leading" : 4,
+                              "top" : 4,
+                              "trailing" : 4
+                            },
+                            "size" : {
+                              "height" : {
+                                "type" : "fit"
+                              },
+                              "width" : {
+                                "type" : "fit"
+                              }
+                            },
+                            "spacing" : 0,
+                            "type" : "stack"
+                          },
+                          "transition" : null,
+                          "type" : "button"
+                        }
+                      ],
+                      "dimension" : {
+                        "alignment" : "trailing",
+                        "type" : "zlayer"
+                      },
+                      "margin" : {
+                        "bottom" : 0,
+                        "leading" : 24,
+                        "top" : 24,
+                        "trailing" : 24
+                      },
+                      "padding" : {
+                        "bottom" : 0,
+                        "leading" : 0,
+                        "top" : 0,
+                        "trailing" : 0
+                      },
+                      "shape" : {
+                        "corners" : {
+                          "bottom_leading" : 0,
+                          "bottom_trailing" : 0,
+                          "top_leading" : 0,
+                          "top_trailing" : 0
+                        },
+                        "type" : "rectangle"
+                      },
+                      "size" : {
+                        "height" : {
+                          "type" : "fit"
+                        },
+                        "width" : {
+                          "type" : "fill"
+                        }
+                      },
+                      "spacing" : 0,
+                      "type" : "stack"
+                    }
+                  ],
+                  "dimension" : {
+                    "alignment" : "center",
+                    "type" : "zlayer"
+                  },
+                  "margin" : {
+                    "bottom" : 0,
+                    "leading" : 0,
+                    "top" : 8,
+                    "trailing" : 0
+                  },
+                  "padding" : {
+                    "bottom" : 0,
+                    "leading" : 0,
+                    "top" : 0,
+                    "trailing" : 0
+                  },
+                  "shape" : {
+                    "corners" : {
+                      "bottom_leading" : 0,
+                      "bottom_trailing" : 0,
+                      "top_leading" : 0,
+                      "top_trailing" : 0
+                    },
+                    "type" : "rectangle"
+                  },
+                  "size" : {
+                    "height" : {
+                      "type" : "fit"
+                    },
+                    "width" : {
+                      "type" : "fill"
+                    }
+                  },
+                  "spacing" : 0,
+                  "type" : "stack"
+                }
+              ],
+              "dimension" : {
+                "alignment" : "center",
+                "distribution" : "start",
+                "type" : "vertical"
+              },
+              "margin" : {
+                "bottom" : 0,
+                "leading" : 0,
+                "top" : 0,
+                "trailing" : 0
+              },
+              "padding" : {
+                "bottom" : 0,
+                "leading" : 0,
+                "top" : 0,
+                "trailing" : 0
+              },
+              "shape" : {
+                "corners" : {
+                  "bottom_leading" : 0,
+                  "bottom_trailing" : 0,
+                  "top_leading" : 0,
+                  "top_trailing" : 0
+                },
+                "type" : "rectangle"
+              },
+              "size" : {
+                "height" : {
+                  "type" : "fit"
+                },
+                "width" : {
+                  "type" : "fill"
+                }
+              },
+              "spacing" : 0,
+              "type" : "stack"
+            },
+            "sticky_footer" : {
+              "stack" : {
+                "background" : {
+                  "type" : "color",
+                  "value" : {
+                    "light" : {
+                      "type" : "hex",
+                      "value" : "#ffffffff"
+                    }
+                  }
+                },
+                "components" : [
+                  {
+                    "components" : [
+                      {
+                        "components" : [
+                          {
+                            "is_selected_by_default" : true,
+                            "package_id" : "$rc_lifetime",
+                            "stack" : {
+                              "background" : {
+                                "type" : "color",
+                                "value" : {
+                                  "light" : {
+                                    "type" : "hex",
+                                    "value" : "#FFFFFFFF"
+                                  }
+                                }
+                              },
+                              "badge" : {
+                                "alignment" : "top_trailing",
+                                "stack" : {
+                                  "background" : {
+                                    "type" : "color",
+                                    "value" : {
+                                      "light" : {
+                                        "type" : "hex",
+                                        "value" : "#2eca92ff"
+                                      }
+                                    }
+                                  },
+                                  "background_color" : {
+                                    "light" : {
+                                      "type" : "hex",
+                                      "value" : "#2eca92ff"
+                                    }
+                                  },
+                                  "components" : [
+                                    {
+                                      "color" : {
+                                        "light" : {
+                                          "type" : "hex",
+                                          "value" : "#ffffffFF"
+                                        }
+                                      },
+                                      "font_size" : 11,
+                                      "font_weight" : "semibold",
+                                      "horizontal_alignment" : "center",
+                                      "margin" : {
+                                        "bottom" : 0,
+                                        "leading" : 0,
+                                        "top" : 0,
+                                        "trailing" : 0
+                                      },
+                                      "padding" : {
+                                        "bottom" : 0,
+                                        "leading" : 0,
+                                        "top" : 0,
+                                        "trailing" : 0
+                                      },
+                                      "size" : {
+                                        "height" : {
+                                          "type" : "fit"
+                                        },
+                                        "width" : {
+                                          "type" : "fit"
+                                        }
+                                      },
+                                      "text_lid" : "MZhIz_vGEP",
+                                      "type" : "text"
+                                    }
+                                  ],
+                                  "dimension" : {
+                                    "alignment" : "center",
+                                    "distribution" : "center",
+                                    "type" : "vertical"
+                                  },
+                                  "margin" : {
+                                    "bottom" : 0,
+                                    "leading" : 12,
+                                    "top" : 0,
+                                    "trailing" : 12
+                                  },
+                                  "padding" : {
+                                    "bottom" : 4,
+                                    "leading" : 8,
+                                    "top" : 4,
+                                    "trailing" : 8
+                                  },
+                                  "shape" : {
+                                    "corners" : {
+                                      "bottom_leading" : 6,
+                                      "bottom_trailing" : 6,
+                                      "top_leading" : 6,
+                                      "top_trailing" : 6
+                                    },
+                                    "type" : "rectangle"
+                                  },
+                                  "size" : {
+                                    "height" : {
+                                      "type" : "fit"
+                                    },
+                                    "width" : {
+                                      "type" : "fit"
+                                    }
+                                  },
+                                  "spacing" : 0,
+                                  "type" : "stack"
+                                },
+                                "style" : "overlay"
+                              },
+                              "border" : {
+                                "color" : {
+                                  "light" : {
+                                    "type" : "hex",
+                                    "value" : "#dededeff"
+                                  }
+                                },
+                                "width" : 2
+                              },
+                              "components" : [
+                                {
+                                  "components" : [
+                                    {
+                                      "components" : [
+                                        {
+                                          "base_url" : "https://icons.pawwalls.com/icons",
+                                          "color" : {
+                                            "light" : {
+                                              "type" : "hex",
+                                              "value" : "#dededeFF"
+                                            }
+                                          },
+                                          "formats" : {
+                                            "heic" : "circle.heic",
+                                            "png" : "circle.png",
+                                            "svg" : "circle.svg",
+                                            "webp" : "circle.webp"
+                                          },
+                                          "icon_name" : "circle",
+                                          "margin" : {
+                                            "bottom" : 0,
+                                            "leading" : 0,
+                                            "top" : 0,
+                                            "trailing" : 0
+                                          },
+                                          "overrides" : [
+                                            {
+                                              "conditions" : [
+                                                {
+                                                  "type" : "selected"
+                                                }
+                                              ],
+                                              "properties" : {
+                                                "color" : {
+                                                  "light" : {
+                                                    "type" : "hex",
+                                                    "value" : "#2eca92ff"
+                                                  }
+                                                },
+                                                "formats" : {
+                                                  "heic" : "filled-circle-check.heic",
+                                                  "png" : "filled-circle-check.png",
+                                                  "svg" : "filled-circle-check.svg",
+                                                  "webp" : "filled-circle-check.webp"
+                                                },
+                                                "icon_name" : "filled-circle-check"
+                                              }
+                                            }
+                                          ],
+                                          "padding" : {
+                                            "bottom" : 0,
+                                            "leading" : 0,
+                                            "top" : 0,
+                                            "trailing" : 0
+                                          },
+                                          "size" : {
+                                            "height" : {
+                                              "type" : "fixed",
+                                              "value" : 20
+                                            },
+                                            "width" : {
+                                              "type" : "fixed",
+                                              "value" : 20
+                                            }
+                                          },
+                                          "type" : "icon"
+                                        },
+                                        {
+                                          "color" : {
+                                            "light" : {
+                                              "type" : "hex",
+                                              "value" : "#0e0e0fff"
+                                            }
+                                          },
+                                          "font_size" : 16,
+                                          "font_weight" : "bold",
+                                          "font_weight_int" : 700,
+                                          "horizontal_alignment" : "leading",
+                                          "margin" : {
+                                            "bottom" : 0,
+                                            "leading" : 0,
+                                            "top" : 0,
+                                            "trailing" : 0
+                                          },
+                                          "padding" : {
+                                            "bottom" : 0,
+                                            "leading" : 0,
+                                            "top" : 0,
+                                            "trailing" : 0
+                                          },
+                                          "size" : {
+                                            "height" : {
+                                              "type" : "fit"
+                                            },
+                                            "width" : {
+                                              "type" : "fit"
+                                            }
+                                          },
+                                          "text_lid" : "5eKOCJdp9X",
+                                          "type" : "text"
+                                        }
+                                      ],
+                                      "dimension" : {
+                                        "alignment" : "center",
+                                        "distribution" : "start",
+                                        "type" : "horizontal"
+                                      },
+                                      "margin" : {
+                                        "bottom" : 0,
+                                        "leading" : 0,
+                                        "top" : 0,
+                                        "trailing" : 0
+                                      },
+                                      "padding" : {
+                                        "bottom" : 0,
+                                        "leading" : 0,
+                                        "top" : 0,
+                                        "trailing" : 0
+                                      },
+                                      "shape" : {
+                                        "corners" : {
+                                          "bottom_leading" : 0,
+                                          "bottom_trailing" : 0,
+                                          "top_leading" : 0,
+                                          "top_trailing" : 0
+                                        },
+                                        "type" : "rectangle"
+                                      },
+                                      "size" : {
+                                        "height" : {
+                                          "type" : "fit"
+                                        },
+                                        "width" : {
+                                          "type" : "fit"
+                                        }
+                                      },
+                                      "spacing" : 8,
+                                      "type" : "stack"
+                                    },
+                                    {
+                                      "color" : {
+                                        "light" : {
+                                          "type" : "hex",
+                                          "value" : "#0e0e0fcc"
+                                        }
+                                      },
+                                      "font_size" : 14,
+                                      "font_weight" : "regular",
+                                      "font_weight_int" : 400,
+                                      "horizontal_alignment" : "leading",
+                                      "margin" : {
+                                        "bottom" : 0,
+                                        "leading" : 0,
+                                        "top" : 0,
+                                        "trailing" : 0
+                                      },
+                                      "padding" : {
+                                        "bottom" : 0,
+                                        "leading" : 0,
+                                        "top" : 0,
+                                        "trailing" : 0
+                                      },
+                                      "size" : {
+                                        "height" : {
+                                          "type" : "fit"
+                                        },
+                                        "width" : {
+                                          "type" : "fit"
+                                        }
+                                      },
+                                      "text_lid" : "IWEN6BIZ3b",
+                                      "type" : "text"
+                                    }
+                                  ],
+                                  "dimension" : {
+                                    "alignment" : "leading",
+                                    "distribution" : "center",
+                                    "type" : "vertical"
+                                  },
+                                  "margin" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "padding" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "shape" : {
+                                    "corners" : {
+                                      "bottom_leading" : 0,
+                                      "bottom_trailing" : 0,
+                                      "top_leading" : 0,
+                                      "top_trailing" : 0
+                                    },
+                                    "type" : "rectangle"
+                                  },
+                                  "size" : {
+                                    "height" : {
+                                      "type" : "fit"
+                                    },
+                                    "width" : {
+                                      "type" : "fit"
+                                    }
+                                  },
+                                  "spacing" : 6,
+                                  "type" : "stack"
+                                },
+                                {
+                                  "color" : {
+                                    "light" : {
+                                      "type" : "hex",
+                                      "value" : "#0e0e0fff"
+                                    }
+                                  },
+                                  "font_size" : 16,
+                                  "font_weight" : "regular",
+                                  "font_weight_int" : 400,
+                                  "horizontal_alignment" : "leading",
+                                  "margin" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "padding" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "size" : {
+                                    "height" : {
+                                      "type" : "fit"
+                                    },
+                                    "width" : {
+                                      "type" : "fit"
+                                    }
+                                  },
+                                  "text_lid" : "JAHqsrKu8T",
+                                  "type" : "text"
+                                }
+                              ],
+                              "dimension" : {
+                                "alignment" : "center",
+                                "distribution" : "space_between",
+                                "type" : "horizontal"
+                              },
+                              "margin" : {
+                                "bottom" : 0,
+                                "leading" : 0,
+                                "top" : 0,
+                                "trailing" : 0
+                              },
+                              "overrides" : [
+                                {
+                                  "conditions" : [
+                                    {
+                                      "type" : "selected"
+                                    }
+                                  ],
+                                  "properties" : {
+                                    "border" : {
+                                      "color" : {
+                                        "light" : {
+                                          "type" : "hex",
+                                          "value" : "#2eca92ff"
+                                        }
+                                      },
+                                      "width" : 2
+                                    },
+                                    "shadow" : {
+                                      "color" : {
+                                        "light" : {
+                                          "type" : "hex",
+                                          "value" : "#53ba8b1a"
+                                        }
+                                      },
+                                      "radius" : 8,
+                                      "x" : 0,
+                                      "y" : 4
+                                    }
+                                  }
+                                }
+                              ],
+                              "padding" : {
+                                "bottom" : 10,
+                                "leading" : 12,
+                                "top" : 10,
+                                "trailing" : 12
+                              },
+                              "shape" : {
+                                "corners" : {
+                                  "bottom_leading" : 12,
+                                  "bottom_trailing" : 12,
+                                  "top_leading" : 12,
+                                  "top_trailing" : 12
+                                },
+                                "type" : "rectangle"
+                              },
+                              "size" : {
+                                "height" : {
+                                  "type" : "fit"
+                                },
+                                "width" : {
+                                  "type" : "fill"
+                                }
+                              },
+                              "spacing" : 0,
+                              "type" : "stack"
+                            },
+                            "type" : "package"
+                          },
+                          {
+                            "is_selected_by_default" : false,
+                            "package_id" : "$rc_monthly",
+                            "stack" : {
+                              "background" : {
+                                "type" : "color",
+                                "value" : {
+                                  "light" : {
+                                    "type" : "hex",
+                                    "value" : "#ffffffff"
+                                  }
+                                }
+                              },
+                              "border" : {
+                                "color" : {
+                                  "light" : {
+                                    "type" : "hex",
+                                    "value" : "#dededeff"
+                                  }
+                                },
+                                "width" : 2
+                              },
+                              "components" : [
+                                {
+                                  "components" : [
+                                    {
+                                      "components" : [
+                                        {
+                                          "base_url" : "https://icons.pawwalls.com/icons",
+                                          "color" : {
+                                            "light" : {
+                                              "type" : "hex",
+                                              "value" : "#dededeff"
+                                            }
+                                          },
+                                          "formats" : {
+                                            "heic" : "circle.heic",
+                                            "png" : "circle.png",
+                                            "svg" : "circle.svg",
+                                            "webp" : "circle.webp"
+                                          },
+                                          "icon_name" : "circle",
+                                          "margin" : {
+                                            "bottom" : 0,
+                                            "leading" : 0,
+                                            "top" : 0,
+                                            "trailing" : 0
+                                          },
+                                          "overrides" : [
+                                            {
+                                              "conditions" : [
+                                                {
+                                                  "type" : "selected"
+                                                }
+                                              ],
+                                              "properties" : {
+                                                "color" : {
+                                                  "light" : {
+                                                    "type" : "hex",
+                                                    "value" : "#2eca92ff"
+                                                  }
+                                                },
+                                                "formats" : {
+                                                  "heic" : "filled-circle-check.heic",
+                                                  "png" : "filled-circle-check.png",
+                                                  "svg" : "filled-circle-check.svg",
+                                                  "webp" : "filled-circle-check.webp"
+                                                },
+                                                "icon_name" : "filled-circle-check"
+                                              }
+                                            }
+                                          ],
+                                          "padding" : {
+                                            "bottom" : 0,
+                                            "leading" : 0,
+                                            "top" : 0,
+                                            "trailing" : 0
+                                          },
+                                          "size" : {
+                                            "height" : {
+                                              "type" : "fixed",
+                                              "value" : 20
+                                            },
+                                            "width" : {
+                                              "type" : "fixed",
+                                              "value" : 20
+                                            }
+                                          },
+                                          "type" : "icon"
+                                        },
+                                        {
+                                          "color" : {
+                                            "light" : {
+                                              "type" : "hex",
+                                              "value" : "#0e0e0fff"
+                                            }
+                                          },
+                                          "font_size" : 16,
+                                          "font_weight" : "bold",
+                                          "horizontal_alignment" : "leading",
+                                          "margin" : {
+                                            "bottom" : 0,
+                                            "leading" : 0,
+                                            "top" : 0,
+                                            "trailing" : 0
+                                          },
+                                          "padding" : {
+                                            "bottom" : 0,
+                                            "leading" : 0,
+                                            "top" : 0,
+                                            "trailing" : 0
+                                          },
+                                          "size" : {
+                                            "height" : {
+                                              "type" : "fit"
+                                            },
+                                            "width" : {
+                                              "type" : "fit"
+                                            }
+                                          },
+                                          "text_lid" : "eRyaJRHifR",
+                                          "type" : "text"
+                                        }
+                                      ],
+                                      "dimension" : {
+                                        "alignment" : "center",
+                                        "distribution" : "start",
+                                        "type" : "horizontal"
+                                      },
+                                      "margin" : {
+                                        "bottom" : 0,
+                                        "leading" : 0,
+                                        "top" : 0,
+                                        "trailing" : 0
+                                      },
+                                      "padding" : {
+                                        "bottom" : 0,
+                                        "leading" : 0,
+                                        "top" : 0,
+                                        "trailing" : 0
+                                      },
+                                      "shape" : {
+                                        "corners" : {
+                                          "bottom_leading" : 0,
+                                          "bottom_trailing" : 0,
+                                          "top_leading" : 0,
+                                          "top_trailing" : 0
+                                        },
+                                        "type" : "rectangle"
+                                      },
+                                      "size" : {
+                                        "height" : {
+                                          "type" : "fit"
+                                        },
+                                        "width" : {
+                                          "type" : "fit"
+                                        }
+                                      },
+                                      "spacing" : 8,
+                                      "type" : "stack"
+                                    },
+                                    {
+                                      "color" : {
+                                        "light" : {
+                                          "type" : "hex",
+                                          "value" : "#0e0e0fcc"
+                                        }
+                                      },
+                                      "font_size" : 14,
+                                      "font_weight" : "regular",
+                                      "horizontal_alignment" : "leading",
+                                      "margin" : {
+                                        "bottom" : 0,
+                                        "leading" : 0,
+                                        "top" : 0,
+                                        "trailing" : 0
+                                      },
+                                      "padding" : {
+                                        "bottom" : 0,
+                                        "leading" : 0,
+                                        "top" : 0,
+                                        "trailing" : 0
+                                      },
+                                      "size" : {
+                                        "height" : {
+                                          "type" : "fit"
+                                        },
+                                        "width" : {
+                                          "type" : "fit"
+                                        }
+                                      },
+                                      "text_lid" : "U5TvMLb1cK",
+                                      "type" : "text"
+                                    }
+                                  ],
+                                  "dimension" : {
+                                    "alignment" : "leading",
+                                    "distribution" : "center",
+                                    "type" : "vertical"
+                                  },
+                                  "margin" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "padding" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "shape" : {
+                                    "corners" : {
+                                      "bottom_leading" : 0,
+                                      "bottom_trailing" : 0,
+                                      "top_leading" : 0,
+                                      "top_trailing" : 0
+                                    },
+                                    "type" : "rectangle"
+                                  },
+                                  "size" : {
+                                    "height" : {
+                                      "type" : "fit"
+                                    },
+                                    "width" : {
+                                      "type" : "fit"
+                                    }
+                                  },
+                                  "spacing" : 6,
+                                  "type" : "stack"
+                                },
+                                {
+                                  "color" : {
+                                    "light" : {
+                                      "type" : "hex",
+                                      "value" : "#0e0e0fff"
+                                    }
+                                  },
+                                  "font_size" : 16,
+                                  "font_weight" : "regular",
+                                  "horizontal_alignment" : "leading",
+                                  "margin" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "padding" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "size" : {
+                                    "height" : {
+                                      "type" : "fit"
+                                    },
+                                    "width" : {
+                                      "type" : "fit"
+                                    }
+                                  },
+                                  "text_lid" : "zGa_rSME8E",
+                                  "type" : "text"
+                                }
+                              ],
+                              "dimension" : {
+                                "alignment" : "center",
+                                "distribution" : "space_between",
+                                "type" : "horizontal"
+                              },
+                              "margin" : {
+                                "bottom" : 0,
+                                "leading" : 0,
+                                "top" : 0,
+                                "trailing" : 0
+                              },
+                              "overrides" : [
+                                {
+                                  "conditions" : [
+                                    {
+                                      "type" : "selected"
+                                    }
+                                  ],
+                                  "properties" : {
+                                    "border" : {
+                                      "color" : {
+                                        "light" : {
+                                          "type" : "hex",
+                                          "value" : "#2eca92ff"
+                                        }
+                                      },
+                                      "width" : 2
+                                    },
+                                    "shadow" : {
+                                      "color" : {
+                                        "light" : {
+                                          "type" : "hex",
+                                          "value" : "#53ba8b1a"
+                                        }
+                                      },
+                                      "radius" : 8,
+                                      "x" : 0,
+                                      "y" : 4
+                                    }
+                                  }
+                                }
+                              ],
+                              "padding" : {
+                                "bottom" : 10,
+                                "leading" : 12,
+                                "top" : 10,
+                                "trailing" : 12
+                              },
+                              "shape" : {
+                                "corners" : {
+                                  "bottom_leading" : 12,
+                                  "bottom_trailing" : 12,
+                                  "top_leading" : 12,
+                                  "top_trailing" : 12
+                                },
+                                "type" : "rectangle"
+                              },
+                              "size" : {
+                                "height" : {
+                                  "type" : "fit"
+                                },
+                                "width" : {
+                                  "type" : "fill"
+                                }
+                              },
+                              "spacing" : 0,
+                              "type" : "stack"
+                            },
+                            "type" : "package"
+                          }
+                        ],
+                        "dimension" : {
+                          "alignment" : "leading",
+                          "distribution" : "start",
+                          "type" : "vertical"
+                        },
+                        "margin" : {
+                          "bottom" : 0,
+                          "leading" : 0,
+                          "top" : 0,
+                          "trailing" : 0
+                        },
+                        "padding" : {
+                          "bottom" : 0,
+                          "leading" : 0,
+                          "top" : 0,
+                          "trailing" : 0
+                        },
+                        "shape" : {
+                          "corners" : {
+                            "bottom_leading" : 0,
+                            "bottom_trailing" : 0,
+                            "top_leading" : 0,
+                            "top_trailing" : 0
+                          },
+                          "type" : "rectangle"
+                        },
+                        "size" : {
+                          "height" : {
+                            "type" : "fit"
+                          },
+                          "width" : {
+                            "type" : "fill"
+                          }
+                        },
+                        "spacing" : 16,
+                        "type" : "stack"
+                      },
+                      {
+                        "components" : [
+                          {
+                            "stack" : {
+                              "background" : {
+                                "type" : "color",
+                                "value" : {
+                                  "light" : {
+                                    "type" : "hex",
+                                    "value" : "#2eca92FF"
+                                  }
+                                }
+                              },
+                              "components" : [
+                                {
+                                  "color" : {
+                                    "light" : {
+                                      "type" : "hex",
+                                      "value" : "#ffffff"
+                                    }
+                                  },
+                                  "font_size" : 16,
+                                  "font_weight" : "semibold",
+                                  "horizontal_alignment" : "center",
+                                  "margin" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "padding" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "size" : {
+                                    "height" : {
+                                      "type" : "fit"
+                                    },
+                                    "width" : {
+                                      "type" : "fit"
+                                    }
+                                  },
+                                  "text_lid" : "myPbQ8U2SY",
+                                  "type" : "text"
+                                }
+                              ],
+                              "dimension" : {
+                                "alignment" : "center",
+                                "distribution" : "start",
+                                "type" : "vertical"
+                              },
+                              "margin" : {
+                                "bottom" : 0,
+                                "leading" : 0,
+                                "top" : 0,
+                                "trailing" : 0
+                              },
+                              "padding" : {
+                                "bottom" : 14,
+                                "leading" : 8,
+                                "top" : 14,
+                                "trailing" : 8
+                              },
+                              "shape" : {
+                                "corners" : {
+                                  "bottom_leading" : 8,
+                                  "bottom_trailing" : 8,
+                                  "top_leading" : 8,
+                                  "top_trailing" : 8
+                                },
+                                "type" : "rectangle"
+                              },
+                              "size" : {
+                                "height" : {
+                                  "type" : "fit"
+                                },
+                                "width" : {
+                                  "type" : "fill"
+                                }
+                              },
+                              "spacing" : 0,
+                              "type" : "stack"
+                            },
+                            "type" : "purchase_button"
+                          },
+                          {
+                            "action" : {
+                              "type" : "restore_purchases"
+                            },
+                            "stack" : {
+                              "components" : [
+                                {
+                                  "color" : {
+                                    "light" : {
+                                      "type" : "hex",
+                                      "value" : "#2e8760cc"
+                                    }
+                                  },
+                                  "font_size" : 14,
+                                  "font_weight" : "semibold",
+                                  "horizontal_alignment" : "center",
+                                  "margin" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "padding" : {
+                                    "bottom" : 0,
+                                    "leading" : 0,
+                                    "top" : 0,
+                                    "trailing" : 0
+                                  },
+                                  "size" : {
+                                    "height" : {
+                                      "type" : "fit"
+                                    },
+                                    "width" : {
+                                      "type" : "fit"
+                                    }
+                                  },
+                                  "text_lid" : "ynMUOHsUhc",
+                                  "type" : "text"
+                                }
+                              ],
+                              "dimension" : {
+                                "alignment" : "center",
+                                "distribution" : "start",
+                                "type" : "vertical"
+                              },
+                              "margin" : {
+                                "bottom" : 0,
+                                "leading" : 0,
+                                "top" : 0,
+                                "trailing" : 0
+                              },
+                              "padding" : {
+                                "bottom" : 0,
+                                "leading" : 0,
+                                "top" : 0,
+                                "trailing" : 0
+                              },
+                              "shape" : {
+                                "corners" : {
+                                  "bottom_leading" : 0,
+                                  "bottom_trailing" : 0,
+                                  "top_leading" : 0,
+                                  "top_trailing" : 0
+                                },
+                                "type" : "rectangle"
+                              },
+                              "size" : {
+                                "height" : {
+                                  "type" : "fit"
+                                },
+                                "width" : {
+                                  "type" : "fit"
+                                }
+                              },
+                              "spacing" : 0,
+                              "type" : "stack"
+                            },
+                            "transition" : null,
+                            "type" : "button"
+                          }
+                        ],
+                        "dimension" : {
+                          "alignment" : "center",
+                          "distribution" : "center",
+                          "type" : "vertical"
+                        },
+                        "margin" : {
+                          "bottom" : 0,
+                          "leading" : 0,
+                          "top" : 0,
+                          "trailing" : 0
+                        },
+                        "padding" : {
+                          "bottom" : 0,
+                          "leading" : 0,
+                          "top" : 0,
+                          "trailing" : 0
+                        },
+                        "shape" : {
+                          "corners" : {
+                            "bottom_leading" : 0,
+                            "bottom_trailing" : 0,
+                            "top_leading" : 0,
+                            "top_trailing" : 0
+                          },
+                          "type" : "rectangle"
+                        },
+                        "size" : {
+                          "height" : {
+                            "type" : "fit"
+                          },
+                          "width" : {
+                            "type" : "fill"
+                          }
+                        },
+                        "spacing" : 12,
+                        "type" : "stack"
+                      }
+                    ],
+                    "dimension" : {
+                      "alignment" : "center",
+                      "distribution" : "start",
+                      "type" : "vertical"
+                    },
+                    "margin" : {
+                      "bottom" : 0,
+                      "leading" : 0,
+                      "top" : 0,
+                      "trailing" : 0
+                    },
+                    "padding" : {
+                      "bottom" : 0,
+                      "leading" : 0,
+                      "top" : 0,
+                      "trailing" : 0
+                    },
+                    "shape" : {
+                      "corners" : {
+                        "bottom_leading" : 0,
+                        "bottom_trailing" : 0,
+                        "top_leading" : 0,
+                        "top_trailing" : 0
+                      },
+                      "type" : "rectangle"
+                    },
+                    "size" : {
+                      "height" : {
+                        "type" : "fit"
+                      },
+                      "width" : {
+                        "type" : "fill"
+                      }
+                    },
+                    "spacing" : 16,
+                    "type" : "stack"
+                  }
+                ],
+                "dimension" : {
+                  "alignment" : "leading",
+                  "distribution" : "start",
+                  "type" : "vertical"
+                },
+                "margin" : {
+                  "bottom" : 0,
+                  "leading" : 0,
+                  "top" : 0,
+                  "trailing" : 0
+                },
+                "padding" : {
+                  "bottom" : 0,
+                  "leading" : 16,
+                  "top" : 20,
+                  "trailing" : 16
+                },
+                "shadow" : {
+                  "color" : {
+                    "light" : {
+                      "type" : "hex",
+                      "value" : "#0000001a"
+                    }
+                  },
+                  "radius" : 16,
+                  "x" : 0,
+                  "y" : 4
+                },
+                "shape" : {
+                  "corners" : {
+                    "bottom_leading" : 0,
+                    "bottom_trailing" : 0,
+                    "top_leading" : 28,
+                    "top_trailing" : 28
+                  },
+                  "type" : "rectangle"
+                },
+                "size" : {
+                  "height" : {
+                    "type" : "fit"
+                  },
+                  "width" : {
+                    "type" : "fill"
+                  }
+                },
+                "spacing" : 0,
+                "type" : "stack"
+              }
+            }
+          }
+        },
+        "components_localizations" : {
+          "en_US" : {
+            "5eKOCJdp9X" : "Lifetime",
+            "IWEN6BIZ3b" : "{{ product.price }}",
+            "JAHqsrKu8T" : "{{ product.price_per_month }}",
+            "LpG-1OsWhB" : "Test load shedder",
+            "MZhIz_vGEP" : "{{ product.relative_discount }} OFF",
+            "U5TvMLb1cK" : "1 mo • {{ product.price }}",
+            "eRyaJRHifR" : "Monthly",
+            "myPbQ8U2SY" : "Continue",
+            "ynMUOHsUhc" : "Restore purchases",
+            "zGa_rSME8E" : "{{ product.price_per_period_abbreviated }}"
+          }
+        },
+        "default_locale" : "en_US",
+        "exit_offers" : {
+
+        },
+        "revision" : 2,
+        "template_name" : "components",
+        "zero_decimal_place_countries" : {
+          "apple" : [
+            "TWN",
+            "KAZ",
+            "MEX",
+            "PHL",
+            "THA",
+            "IND"
+          ]
+        }
+      }
+    },
+    {
+      "description" : "an alternative offering",
+      "identifier" : "alternative offering",
+      "metadata" : {
+
+      },
+      "packages" : [
+        {
+          "identifier" : "$rc_monthly",
+          "platform_product_identifier" : "com.revenuecat.loadShedder.monthly"
+        }
+      ],
+      "paywall" : {
+        "asset_base_url" : "https://assets.pawwalls.com",
+        "config" : {
+          "blurred_background_image" : false,
+          "colors" : {
+            "dark" : {
+              "background" : "#000000",
+              "call_to_action_background" : "#45c186",
+              "call_to_action_foreground" : "#ffffff",
+              "text1" : "#ffffff"
+            },
+            "light" : {
+              "background" : "#ffffff",
+              "call_to_action_background" : "#45c186",
+              "call_to_action_foreground" : "#ffffff",
+              "text1" : "#000000"
+            }
+          },
+          "colors_by_tier" : {
+
+          },
+          "display_restore_purchases" : true,
+          "images" : {
+            "background" : null,
+            "header" : null,
+            "icon" : null
+          },
+          "images_by_tier" : {
+
+          },
+          "images_heic" : {
+            "background" : null,
+            "header" : null,
+            "icon" : null
+          },
+          "packages" : [
+            "$rc_monthly"
+          ],
+          "privacy_url" : "https://revenuecat.com/privacy",
+          "tiers" : [
+
+          ],
+          "tos_url" : "https://revenuecat.com/tos"
+        },
+        "default_locale" : "en_US",
+        "localized_strings" : {
+          "en_US" : {
+            "call_to_action" : "Continue",
+            "call_to_action_with_intro_offer" : null,
+            "features" : [
+
+            ],
+            "offer_details" : "Total price per period: {{ price_per_period }}",
+            "offer_details_with_intro_offer" : null,
+            "offer_name" : null,
+            "offer_overrides" : {
+
+            },
+            "subtitle" : "Test Load shedder subtitle",
+            "tier_name" : null,
+            "title" : "Test load shedder alternate offering"
+          }
+        },
+        "localized_strings_by_tier" : {
+
+        },
+        "revision" : 1,
+        "template_name" : "1",
+        "zero_decimal_place_countries" : {
+          "apple" : [
+            "TWN",
+            "KAZ",
+            "MEX",
+            "PHL",
+            "THA",
+            "IND"
+          ]
+        }
+      }
+    },
+    {
+      "description" : "Consumables",
+      "identifier" : "coins",
+      "metadata" : {
+
+      },
+      "packages" : [
+        {
+          "identifier" : "10.coins",
+          "platform_product_identifier" : "consumable.10_coins"
+        }
+      ],
+      "paywall" : null
+    }
+  ],
+  "ui_config" : {
+    "app" : {
+      "colors" : {
+
+      },
+      "fonts" : {
+
+      }
+    },
+    "localizations" : {
+      "ar_SA" : {
+        "annual" : "سنوي",
+        "annual_short" : "سنة",
+        "annually" : "سنويا",
+        "daily" : "يوميا",
+        "day" : "يوم",
+        "day_short" : "يوم",
+        "free_price" : "مجاني",
+        "month" : "شهر",
+        "month_short" : "شهر",
+        "monthly" : "شهريا",
+        "num_day_few" : "%d أيام",
+        "num_day_many" : "%d أيام",
+        "num_day_one" : "يوم %d",
+        "num_day_other" : "%d أيام",
+        "num_day_two" : "%d أيام",
+        "num_day_zero" : "يوم %d",
+        "num_days_short" : "%dي",
+        "num_month_few" : "%d أشهر",
+        "num_month_many" : "%d أشهر",
+        "num_month_one" : "شهر %d",
+        "num_month_other" : "%d أشهر",
+        "num_month_two" : "%d أشهر",
+        "num_month_zero" : "شهر %d",
+        "num_months_short" : "%dش",
+        "num_week_few" : "%d أسابيع",
+        "num_week_many" : "%d أسابيع",
+        "num_week_one" : "أسبوع %d",
+        "num_week_other" : "%d أسابيع",
+        "num_week_two" : "%d أسابيع",
+        "num_week_zero" : "أسبوع %d",
+        "num_weeks_short" : "%dأ",
+        "num_year_few" : "%d سنوات",
+        "num_year_many" : "%d سنوات",
+        "num_year_one" : "سنة %d",
+        "num_year_other" : "%d سنوات",
+        "num_year_two" : "%d سنوات",
+        "num_year_zero" : "سنة %d",
+        "num_years_short" : "%dس",
+        "percent" : "%d%%",
+        "week" : "أسبوع",
+        "week_short" : "أسب",
+        "weekly" : "أسبوعيا",
+        "year" : "سنة",
+        "year_short" : "سنة",
+        "yearly" : "سنويا"
+      },
+      "az_AZ" : {
+        "annual" : "illik",
+        "annual_short" : "il",
+        "annually" : "illik olaraq",
+        "daily" : "gündəlik",
+        "day" : "gün",
+        "day_short" : "gün",
+        "free_price" : "pulsuz",
+        "month" : "ay",
+        "month_short" : "ay",
+        "monthly" : "aylıq",
+        "num_day_few" : "%d gün",
+        "num_day_many" : "%d gün",
+        "num_day_one" : "%d gün",
+        "num_day_other" : "%d gün",
+        "num_day_two" : "%d gün",
+        "num_day_zero" : "%d gün",
+        "num_days_short" : "%dg",
+        "num_month_few" : "%d ay",
+        "num_month_many" : "%d ay",
+        "num_month_one" : "%d ay",
+        "num_month_other" : "%d ay",
+        "num_month_two" : "%d ay",
+        "num_month_zero" : "%d ay",
+        "num_months_short" : "%da",
+        "num_week_few" : "%d həftə",
+        "num_week_many" : "%d həftə",
+        "num_week_one" : "%d həftə",
+        "num_week_other" : "%d həftə",
+        "num_week_two" : "%d həftə",
+        "num_week_zero" : "%d həftə",
+        "num_weeks_short" : "%dh",
+        "num_year_few" : "%d il",
+        "num_year_many" : "%d il",
+        "num_year_one" : "%d il",
+        "num_year_other" : "%d il",
+        "num_year_two" : "%d il",
+        "num_year_zero" : "%d il",
+        "num_years_short" : "%di",
+        "percent" : "%d%%",
+        "week" : "həftə",
+        "week_short" : "həf",
+        "weekly" : "həftəlik",
+        "year" : "il",
+        "year_short" : "il",
+        "yearly" : "illik"
+      },
+      "bg" : {
+        "annual" : "годишен",
+        "annual_short" : "год",
+        "annually" : "годишно",
+        "daily" : "дневно",
+        "day" : "ден",
+        "day_short" : "ден",
+        "free_price" : "безплатно",
+        "month" : "месец",
+        "month_short" : "мес",
+        "monthly" : "месечно",
+        "num_day_few" : "%d дни",
+        "num_day_many" : "%d дни",
+        "num_day_one" : "%d ден",
+        "num_day_other" : "%d дни",
+        "num_day_two" : "%d дни",
+        "num_day_zero" : "%d ден",
+        "num_days_short" : "%dд",
+        "num_month_few" : "%d месеца",
+        "num_month_many" : "%d месеца",
+        "num_month_one" : "%d месец",
+        "num_month_other" : "%d месеца",
+        "num_month_two" : "%d месеца",
+        "num_month_zero" : "%d месец",
+        "num_months_short" : "%dм",
+        "num_week_few" : "%d седмици",
+        "num_week_many" : "%d седмици",
+        "num_week_one" : "%d седмица",
+        "num_week_other" : "%d седмици",
+        "num_week_two" : "%d седмици",
+        "num_week_zero" : "%d седмица",
+        "num_weeks_short" : "%dс",
+        "num_year_few" : "%d години",
+        "num_year_many" : "%d години",
+        "num_year_one" : "%d година",
+        "num_year_other" : "%d години",
+        "num_year_two" : "%d години",
+        "num_year_zero" : "%d година",
+        "num_years_short" : "%dг",
+        "percent" : "%d%%",
+        "week" : "седмица",
+        "week_short" : "сед",
+        "weekly" : "седмично",
+        "year" : "година",
+        "year_short" : "год",
+        "yearly" : "годишно"
+      },
+      "ca" : {
+        "annual" : "anual",
+        "annual_short" : "any",
+        "annually" : "anualment",
+        "daily" : "diari",
+        "day" : "dia",
+        "day_short" : "dia",
+        "free_price" : "gratuït",
+        "month" : "mes",
+        "month_short" : "mes",
+        "monthly" : "mensual",
+        "num_day_few" : "%d dies",
+        "num_day_many" : "%d dies",
+        "num_day_one" : "%d dia",
+        "num_day_other" : "%d dies",
+        "num_day_two" : "%d dies",
+        "num_day_zero" : "%d dia",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d mesos",
+        "num_month_many" : "%d mesos",
+        "num_month_one" : "%d mes",
+        "num_month_other" : "%d mesos",
+        "num_month_two" : "%d mesos",
+        "num_month_zero" : "%d mes",
+        "num_months_short" : "%dm",
+        "num_week_few" : "%d setmanes",
+        "num_week_many" : "%d setmanes",
+        "num_week_one" : "%d setmana",
+        "num_week_other" : "%d setmanes",
+        "num_week_two" : "%d setmanes",
+        "num_week_zero" : "%d setmana",
+        "num_weeks_short" : "%dset",
+        "num_year_few" : "%d anys",
+        "num_year_many" : "%d anys",
+        "num_year_one" : "%d any",
+        "num_year_other" : "%d anys",
+        "num_year_two" : "%d anys",
+        "num_year_zero" : "%d any",
+        "num_years_short" : "%da",
+        "percent" : "%d%%",
+        "week" : "setmana",
+        "week_short" : "set",
+        "weekly" : "setmanal",
+        "year" : "any",
+        "year_short" : "any",
+        "yearly" : "anual"
+      },
+      "cs" : {
+        "annual" : "roční",
+        "annual_short" : "rok",
+        "annually" : "ročně",
+        "daily" : "denně",
+        "day" : "den",
+        "day_short" : "den",
+        "free_price" : "zdarma",
+        "month" : "měsíc",
+        "month_short" : "měs",
+        "monthly" : "měsíčně",
+        "num_day_few" : "%d dny",
+        "num_day_many" : "%d dní",
+        "num_day_one" : "%d den",
+        "num_day_other" : "%d dní",
+        "num_day_two" : "%d dny",
+        "num_day_zero" : "%d den",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d měsíce",
+        "num_month_many" : "%d měsíců",
+        "num_month_one" : "%d měsíc",
+        "num_month_other" : "%d měsíců",
+        "num_month_two" : "%d měsíce",
+        "num_month_zero" : "%d měsíc",
+        "num_months_short" : "%dměs",
+        "num_week_few" : "%d týdny",
+        "num_week_many" : "%d týdnů",
+        "num_week_one" : "%d týden",
+        "num_week_other" : "%d týdnů",
+        "num_week_two" : "%d týdny",
+        "num_week_zero" : "%d týden",
+        "num_weeks_short" : "%dtýd",
+        "num_year_few" : "%d roky",
+        "num_year_many" : "%d let",
+        "num_year_one" : "%d rok",
+        "num_year_other" : "%d let",
+        "num_year_two" : "%d roky",
+        "num_year_zero" : "%d rok",
+        "num_years_short" : "%dr",
+        "percent" : "%d%%",
+        "week" : "týden",
+        "week_short" : "týd",
+        "weekly" : "týdně",
+        "year" : "rok",
+        "year_short" : "rok",
+        "yearly" : "ročně"
+      },
+      "da" : {
+        "annual" : "årlig",
+        "annual_short" : "år",
+        "annually" : "årligt",
+        "daily" : "dagligt",
+        "day" : "dag",
+        "day_short" : "dag",
+        "free_price" : "gratis",
+        "month" : "måned",
+        "month_short" : "md",
+        "monthly" : "månedligt",
+        "num_day_few" : "%d dage",
+        "num_day_many" : "%d dage",
+        "num_day_one" : "%d dag",
+        "num_day_other" : "%d dage",
+        "num_day_two" : "%d dage",
+        "num_day_zero" : "%d dag",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d måneder",
+        "num_month_many" : "%d måneder",
+        "num_month_one" : "%d måned",
+        "num_month_other" : "%d måneder",
+        "num_month_two" : "%d måneder",
+        "num_month_zero" : "%d måned",
+        "num_months_short" : "%dm",
+        "num_week_few" : "%d uger",
+        "num_week_many" : "%d uger",
+        "num_week_one" : "%d uge",
+        "num_week_other" : "%d uger",
+        "num_week_two" : "%d uger",
+        "num_week_zero" : "%d uge",
+        "num_weeks_short" : "%du",
+        "num_year_few" : "%d år",
+        "num_year_many" : "%d år",
+        "num_year_one" : "%d år",
+        "num_year_other" : "%d år",
+        "num_year_two" : "%d år",
+        "num_year_zero" : "%d år",
+        "num_years_short" : "%då",
+        "percent" : "%d%%",
+        "week" : "uge",
+        "week_short" : "uge",
+        "weekly" : "ugentligt",
+        "year" : "år",
+        "year_short" : "år",
+        "yearly" : "årligt"
+      },
+      "de" : {
+        "annual" : "jährlich",
+        "annual_short" : "J",
+        "annually" : "jährlich",
+        "daily" : "täglich",
+        "day" : "Tag",
+        "day_short" : "Tag",
+        "free_price" : "kostenlos",
+        "month" : "Monat",
+        "month_short" : "Mo",
+        "monthly" : "monatlich",
+        "num_day_few" : "%d Tage",
+        "num_day_many" : "%d Tage",
+        "num_day_one" : "%d Tag",
+        "num_day_other" : "%d Tage",
+        "num_day_two" : "%d Tage",
+        "num_day_zero" : "%d Tag",
+        "num_days_short" : "%dt",
+        "num_month_few" : "%d Monate",
+        "num_month_many" : "%d Monate",
+        "num_month_one" : "%d Monat",
+        "num_month_other" : "%d Monate",
+        "num_month_two" : "%d Monate",
+        "num_month_zero" : "%d Monat",
+        "num_months_short" : "%dm",
+        "num_week_few" : "%d Wochen",
+        "num_week_many" : "%d Wochen",
+        "num_week_one" : "%d Woche",
+        "num_week_other" : "%d Wochen",
+        "num_week_two" : "%d Wochen",
+        "num_week_zero" : "%d Woche",
+        "num_weeks_short" : "%dw",
+        "num_year_few" : "%d Jahre",
+        "num_year_many" : "%d Jahre",
+        "num_year_one" : "%d Jahr",
+        "num_year_other" : "%d Jahre",
+        "num_year_two" : "%d Jahre",
+        "num_year_zero" : "%d Jahr",
+        "num_years_short" : "%dj",
+        "percent" : "%d%%",
+        "week" : "Woche",
+        "week_short" : "Wo",
+        "weekly" : "wöchentlich",
+        "year" : "Jahr",
+        "year_short" : "J",
+        "yearly" : "jährlich"
+      },
+      "el" : {
+        "annual" : "ετήσιο",
+        "annual_short" : "έτος",
+        "annually" : "ετήσια",
+        "daily" : "καθημερινά",
+        "day" : "ημέρα",
+        "day_short" : "ημέρα",
+        "free_price" : "δωρεάν",
+        "month" : "μήνας",
+        "month_short" : "μήν",
+        "monthly" : "μηνιαία",
+        "num_day_few" : "%d ημέρες",
+        "num_day_many" : "%d ημέρες",
+        "num_day_one" : "%d ημέρα",
+        "num_day_other" : "%d ημέρες",
+        "num_day_two" : "%d ημέρες",
+        "num_day_zero" : "%d ημέρα",
+        "num_days_short" : "%dη",
+        "num_month_few" : "%d μήνες",
+        "num_month_many" : "%d μήνες",
+        "num_month_one" : "%d μήνας",
+        "num_month_other" : "%d μήνες",
+        "num_month_two" : "%d μήνες",
+        "num_month_zero" : "%d μήνας",
+        "num_months_short" : "%dμ",
+        "num_week_few" : "%d εβδομάδες",
+        "num_week_many" : "%d εβδομάδες",
+        "num_week_one" : "%d εβδομάδα",
+        "num_week_other" : "%d εβδομάδες",
+        "num_week_two" : "%d εβδομάδες",
+        "num_week_zero" : "%d εβδομάδα",
+        "num_weeks_short" : "%dε",
+        "num_year_few" : "%d έτη",
+        "num_year_many" : "%d έτη",
+        "num_year_one" : "%d έτος",
+        "num_year_other" : "%d έτη",
+        "num_year_two" : "%d έτη",
+        "num_year_zero" : "%d έτος",
+        "num_years_short" : "%dε",
+        "percent" : "%d%%",
+        "week" : "εβδομάδα",
+        "week_short" : "εβδ",
+        "weekly" : "εβδομαδιαία",
+        "year" : "έτος",
+        "year_short" : "έτος",
+        "yearly" : "ετήσια"
+      },
+      "en" : {
+        "annual" : "annual",
+        "annual_short" : "yr",
+        "annually" : "annually",
+        "daily" : "daily",
+        "day" : "day",
+        "day_short" : "day",
+        "free_price" : "free",
+        "month" : "month",
+        "month_short" : "mo",
+        "monthly" : "monthly",
+        "num_day_few" : "%d days",
+        "num_day_many" : "%d days",
+        "num_day_one" : "%d day",
+        "num_day_other" : "%d days",
+        "num_day_two" : "%d days",
+        "num_day_zero" : "%d day",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d months",
+        "num_month_many" : "%d months",
+        "num_month_one" : "%d month",
+        "num_month_other" : "%d months",
+        "num_month_two" : "%d months",
+        "num_month_zero" : "%d month",
+        "num_months_short" : "%dmo",
+        "num_week_few" : "%d weeks",
+        "num_week_many" : "%d weeks",
+        "num_week_one" : "%d week",
+        "num_week_other" : "%d weeks",
+        "num_week_two" : "%d weeks",
+        "num_week_zero" : "%d week",
+        "num_weeks_short" : "%dwk",
+        "num_year_few" : "%d years",
+        "num_year_many" : "%d years",
+        "num_year_one" : "%d year",
+        "num_year_other" : "%d years",
+        "num_year_two" : "%d years",
+        "num_year_zero" : "%d year",
+        "num_years_short" : "%dyr",
+        "percent" : "%d%%",
+        "week" : "week",
+        "week_short" : "wk",
+        "weekly" : "weekly",
+        "year" : "year",
+        "year_short" : "yr",
+        "yearly" : "yearly"
+      },
+      "en_AU" : {
+        "annual" : "annual",
+        "annual_short" : "yr",
+        "annually" : "annually",
+        "daily" : "daily",
+        "day" : "day",
+        "day_short" : "day",
+        "free_price" : "free",
+        "month" : "month",
+        "month_short" : "mo",
+        "monthly" : "monthly",
+        "num_day_few" : "%d days",
+        "num_day_many" : "%d days",
+        "num_day_one" : "%d day",
+        "num_day_other" : "%d days",
+        "num_day_two" : "%d days",
+        "num_day_zero" : "%d day",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d months",
+        "num_month_many" : "%d months",
+        "num_month_one" : "%d month",
+        "num_month_other" : "%d months",
+        "num_month_two" : "%d months",
+        "num_month_zero" : "%d month",
+        "num_months_short" : "%dmo",
+        "num_week_few" : "%d weeks",
+        "num_week_many" : "%d weeks",
+        "num_week_one" : "%d week",
+        "num_week_other" : "%d weeks",
+        "num_week_two" : "%d weeks",
+        "num_week_zero" : "%d week",
+        "num_weeks_short" : "%dwk",
+        "num_year_few" : "%d years",
+        "num_year_many" : "%d years",
+        "num_year_one" : "%d year",
+        "num_year_other" : "%d years",
+        "num_year_two" : "%d years",
+        "num_year_zero" : "%d year",
+        "num_years_short" : "%dyr",
+        "percent" : "%d%%",
+        "week" : "week",
+        "week_short" : "wk",
+        "weekly" : "weekly",
+        "year" : "year",
+        "year_short" : "yr",
+        "yearly" : "yearly"
+      },
+      "en_CA" : {
+        "annual" : "annual",
+        "annual_short" : "yr",
+        "annually" : "annually",
+        "daily" : "daily",
+        "day" : "day",
+        "day_short" : "day",
+        "free_price" : "free",
+        "month" : "month",
+        "month_short" : "mo",
+        "monthly" : "monthly",
+        "num_day_few" : "%d days",
+        "num_day_many" : "%d days",
+        "num_day_one" : "%d day",
+        "num_day_other" : "%d days",
+        "num_day_two" : "%d days",
+        "num_day_zero" : "%d day",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d months",
+        "num_month_many" : "%d months",
+        "num_month_one" : "%d month",
+        "num_month_other" : "%d months",
+        "num_month_two" : "%d months",
+        "num_month_zero" : "%d month",
+        "num_months_short" : "%dmo",
+        "num_week_few" : "%d weeks",
+        "num_week_many" : "%d weeks",
+        "num_week_one" : "%d week",
+        "num_week_other" : "%d weeks",
+        "num_week_two" : "%d weeks",
+        "num_week_zero" : "%d week",
+        "num_weeks_short" : "%dwk",
+        "num_year_few" : "%d years",
+        "num_year_many" : "%d years",
+        "num_year_one" : "%d year",
+        "num_year_other" : "%d years",
+        "num_year_two" : "%d years",
+        "num_year_zero" : "%d year",
+        "num_years_short" : "%dyr",
+        "percent" : "%d%%",
+        "week" : "week",
+        "week_short" : "wk",
+        "weekly" : "weekly",
+        "year" : "year",
+        "year_short" : "yr",
+        "yearly" : "yearly"
+      },
+      "en_GB" : {
+        "annual" : "annual",
+        "annual_short" : "yr",
+        "annually" : "annually",
+        "daily" : "daily",
+        "day" : "day",
+        "day_short" : "day",
+        "free_price" : "free",
+        "month" : "month",
+        "month_short" : "mo",
+        "monthly" : "monthly",
+        "num_day_few" : "%d days",
+        "num_day_many" : "%d days",
+        "num_day_one" : "%d day",
+        "num_day_other" : "%d days",
+        "num_day_two" : "%d days",
+        "num_day_zero" : "%d day",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d months",
+        "num_month_many" : "%d months",
+        "num_month_one" : "%d month",
+        "num_month_other" : "%d months",
+        "num_month_two" : "%d months",
+        "num_month_zero" : "%d month",
+        "num_months_short" : "%dmo",
+        "num_week_few" : "%d weeks",
+        "num_week_many" : "%d weeks",
+        "num_week_one" : "%d week",
+        "num_week_other" : "%d weeks",
+        "num_week_two" : "%d weeks",
+        "num_week_zero" : "%d week",
+        "num_weeks_short" : "%dwk",
+        "num_year_few" : "%d years",
+        "num_year_many" : "%d years",
+        "num_year_one" : "%d year",
+        "num_year_other" : "%d years",
+        "num_year_two" : "%d years",
+        "num_year_zero" : "%d year",
+        "num_years_short" : "%dyr",
+        "percent" : "%d%%",
+        "week" : "week",
+        "week_short" : "wk",
+        "weekly" : "weekly",
+        "year" : "year",
+        "year_short" : "yr",
+        "yearly" : "yearly"
+      },
+      "en_US" : {
+        "annual" : "annual",
+        "annual_short" : "yr",
+        "annually" : "annually",
+        "daily" : "daily",
+        "day" : "day",
+        "day_short" : "day",
+        "free_price" : "free",
+        "month" : "month",
+        "month_short" : "mo",
+        "monthly" : "monthly",
+        "num_day_few" : "%d days",
+        "num_day_many" : "%d days",
+        "num_day_one" : "%d day",
+        "num_day_other" : "%d days",
+        "num_day_two" : "%d days",
+        "num_day_zero" : "%d day",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d months",
+        "num_month_many" : "%d months",
+        "num_month_one" : "%d month",
+        "num_month_other" : "%d months",
+        "num_month_two" : "%d months",
+        "num_month_zero" : "%d month",
+        "num_months_short" : "%dmo",
+        "num_week_few" : "%d weeks",
+        "num_week_many" : "%d weeks",
+        "num_week_one" : "%d week",
+        "num_week_other" : "%d weeks",
+        "num_week_two" : "%d weeks",
+        "num_week_zero" : "%d week",
+        "num_weeks_short" : "%dwk",
+        "num_year_few" : "%d years",
+        "num_year_many" : "%d years",
+        "num_year_one" : "%d year",
+        "num_year_other" : "%d years",
+        "num_year_two" : "%d years",
+        "num_year_zero" : "%d year",
+        "num_years_short" : "%dyr",
+        "percent" : "%d%%",
+        "week" : "week",
+        "week_short" : "wk",
+        "weekly" : "weekly",
+        "year" : "year",
+        "year_short" : "yr",
+        "yearly" : "yearly"
+      },
+      "es_419" : {
+        "annual" : "anual",
+        "annual_short" : "año",
+        "annually" : "anualmente",
+        "daily" : "diario",
+        "day" : "día",
+        "day_short" : "día",
+        "free_price" : "gratis",
+        "month" : "mes",
+        "month_short" : "mes",
+        "monthly" : "mensual",
+        "num_day_few" : "%d días",
+        "num_day_many" : "%d días",
+        "num_day_one" : "%d día",
+        "num_day_other" : "%d días",
+        "num_day_two" : "%d días",
+        "num_day_zero" : "%d día",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d meses",
+        "num_month_many" : "%d meses",
+        "num_month_one" : "%d mes",
+        "num_month_other" : "%d meses",
+        "num_month_two" : "%d meses",
+        "num_month_zero" : "%d mes",
+        "num_months_short" : "%dm",
+        "num_week_few" : "%d semanas",
+        "num_week_many" : "%d semanas",
+        "num_week_one" : "%d semana",
+        "num_week_other" : "%d semanas",
+        "num_week_two" : "%d semanas",
+        "num_week_zero" : "%d semana",
+        "num_weeks_short" : "%dsem",
+        "num_year_few" : "%d años",
+        "num_year_many" : "%d años",
+        "num_year_one" : "%d año",
+        "num_year_other" : "%d años",
+        "num_year_two" : "%d años",
+        "num_year_zero" : "%d año",
+        "num_years_short" : "%da",
+        "percent" : "%d%%",
+        "week" : "semana",
+        "week_short" : "sem",
+        "weekly" : "semanal",
+        "year" : "año",
+        "year_short" : "año",
+        "yearly" : "anual"
+      },
+      "es_ES" : {
+        "annual" : "anual",
+        "annual_short" : "año",
+        "annually" : "anualmente",
+        "daily" : "diario",
+        "day" : "día",
+        "day_short" : "día",
+        "free_price" : "gratis",
+        "month" : "mes",
+        "month_short" : "mes",
+        "monthly" : "mensual",
+        "num_day_few" : "%d días",
+        "num_day_many" : "%d días",
+        "num_day_one" : "%d día",
+        "num_day_other" : "%d días",
+        "num_day_two" : "%d días",
+        "num_day_zero" : "%d día",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d meses",
+        "num_month_many" : "%d meses",
+        "num_month_one" : "%d mes",
+        "num_month_other" : "%d meses",
+        "num_month_two" : "%d meses",
+        "num_month_zero" : "%d mes",
+        "num_months_short" : "%dm",
+        "num_week_few" : "%d semanas",
+        "num_week_many" : "%d semanas",
+        "num_week_one" : "%d semana",
+        "num_week_other" : "%d semanas",
+        "num_week_two" : "%d semanas",
+        "num_week_zero" : "%d semana",
+        "num_weeks_short" : "%dsem",
+        "num_year_few" : "%d años",
+        "num_year_many" : "%d años",
+        "num_year_one" : "%d año",
+        "num_year_other" : "%d años",
+        "num_year_two" : "%d años",
+        "num_year_zero" : "%d año",
+        "num_years_short" : "%da",
+        "percent" : "%d%%",
+        "week" : "semana",
+        "week_short" : "sem",
+        "weekly" : "semanal",
+        "year" : "año",
+        "year_short" : "año",
+        "yearly" : "anual"
+      },
+      "eu" : {
+        "annual" : "urteko",
+        "annual_short" : "urt",
+        "annually" : "urtero",
+        "daily" : "egunero",
+        "day" : "egun",
+        "day_short" : "eg",
+        "free_price" : "doan",
+        "month" : "hilabete",
+        "month_short" : "hil",
+        "monthly" : "hilabetero",
+        "num_day_few" : "%d egun",
+        "num_day_many" : "%d egun",
+        "num_day_one" : "%d egun",
+        "num_day_other" : "%d egun",
+        "num_day_two" : "%d egun",
+        "num_day_zero" : "%d egun",
+        "num_days_short" : "%deg",
+        "num_month_few" : "%d hilabete",
+        "num_month_many" : "%d hilabete",
+        "num_month_one" : "%d hilabete",
+        "num_month_other" : "%d hilabete",
+        "num_month_two" : "%d hilabete",
+        "num_month_zero" : "%d hilabete",
+        "num_months_short" : "%dhil",
+        "num_week_few" : "%d aste",
+        "num_week_many" : "%d aste",
+        "num_week_one" : "%d aste",
+        "num_week_other" : "%d aste",
+        "num_week_two" : "%d aste",
+        "num_week_zero" : "%d aste",
+        "num_weeks_short" : "%dast",
+        "num_year_few" : "%d urte",
+        "num_year_many" : "%d urte",
+        "num_year_one" : "%d urte",
+        "num_year_other" : "%d urte",
+        "num_year_two" : "%d urte",
+        "num_year_zero" : "%d urte",
+        "num_years_short" : "%durt",
+        "percent" : "%%%d",
+        "week" : "aste",
+        "week_short" : "ast",
+        "weekly" : "astero",
+        "year" : "urte",
+        "year_short" : "urt",
+        "yearly" : "urtero"
+      },
+      "fi" : {
+        "annual" : "vuosittainen",
+        "annual_short" : "v",
+        "annually" : "vuosittain",
+        "daily" : "päivittäin",
+        "day" : "päivä",
+        "day_short" : "pv",
+        "free_price" : "ilmainen",
+        "month" : "kuukausi",
+        "month_short" : "kk",
+        "monthly" : "kuukausittain",
+        "num_day_few" : "%d päivää",
+        "num_day_many" : "%d päivää",
+        "num_day_one" : "%d päivä",
+        "num_day_other" : "%d päivää",
+        "num_day_two" : "%d päivää",
+        "num_day_zero" : "%d päivä",
+        "num_days_short" : "%dpv",
+        "num_month_few" : "%d kuukautta",
+        "num_month_many" : "%d kuukautta",
+        "num_month_one" : "%d kuukausi",
+        "num_month_other" : "%d kuukautta",
+        "num_month_two" : "%d kuukautta",
+        "num_month_zero" : "%d kuukausi",
+        "num_months_short" : "%dkk",
+        "num_week_few" : "%d viikkoa",
+        "num_week_many" : "%d viikkoa",
+        "num_week_one" : "%d viikko",
+        "num_week_other" : "%d viikkoa",
+        "num_week_two" : "%d viikkoa",
+        "num_week_zero" : "%d viikko",
+        "num_weeks_short" : "%dvk",
+        "num_year_few" : "%d vuotta",
+        "num_year_many" : "%d vuotta",
+        "num_year_one" : "%d vuosi",
+        "num_year_other" : "%d vuotta",
+        "num_year_two" : "%d vuotta",
+        "num_year_zero" : "%d vuosi",
+        "num_years_short" : "%dv",
+        "percent" : "%d%%",
+        "week" : "viikko",
+        "week_short" : "vk",
+        "weekly" : "viikoittain",
+        "year" : "vuosi",
+        "year_short" : "v",
+        "yearly" : "vuosittain"
+      },
+      "fr_CA" : {
+        "annual" : "annuel",
+        "annual_short" : "an",
+        "annually" : "annuellement",
+        "daily" : "quotidien",
+        "day" : "jour",
+        "day_short" : "j",
+        "free_price" : "gratuit",
+        "month" : "mois",
+        "month_short" : "m",
+        "monthly" : "mensuel",
+        "num_day_few" : "%d jours",
+        "num_day_many" : "%d jours",
+        "num_day_one" : "%d jour",
+        "num_day_other" : "%d jours",
+        "num_day_two" : "%d jours",
+        "num_day_zero" : "%d jour",
+        "num_days_short" : "%dj",
+        "num_month_few" : "%d mois",
+        "num_month_many" : "%d mois",
+        "num_month_one" : "%d mois",
+        "num_month_other" : "%d mois",
+        "num_month_two" : "%d mois",
+        "num_month_zero" : "%d mois",
+        "num_months_short" : "%dm",
+        "num_week_few" : "%d semaines",
+        "num_week_many" : "%d semaines",
+        "num_week_one" : "%d semaine",
+        "num_week_other" : "%d semaines",
+        "num_week_two" : "%d semaines",
+        "num_week_zero" : "%d semaine",
+        "num_weeks_short" : "%dsem",
+        "num_year_few" : "%d années",
+        "num_year_many" : "%d années",
+        "num_year_one" : "%d année",
+        "num_year_other" : "%d années",
+        "num_year_two" : "%d années",
+        "num_year_zero" : "%d année",
+        "num_years_short" : "%dan",
+        "percent" : "%d%%",
+        "week" : "semaine",
+        "week_short" : "sem",
+        "weekly" : "hebdomadaire",
+        "year" : "année",
+        "year_short" : "an",
+        "yearly" : "annuel"
+      },
+      "fr_FR" : {
+        "annual" : "annuel",
+        "annual_short" : "an",
+        "annually" : "annuellement",
+        "daily" : "quotidien",
+        "day" : "jour",
+        "day_short" : "j",
+        "free_price" : "gratuit",
+        "month" : "mois",
+        "month_short" : "m",
+        "monthly" : "mensuel",
+        "num_day_few" : "%d jours",
+        "num_day_many" : "%d jours",
+        "num_day_one" : "%d jour",
+        "num_day_other" : "%d jours",
+        "num_day_two" : "%d jours",
+        "num_day_zero" : "%d jour",
+        "num_days_short" : "%dj",
+        "num_month_few" : "%d mois",
+        "num_month_many" : "%d mois",
+        "num_month_one" : "%d mois",
+        "num_month_other" : "%d mois",
+        "num_month_two" : "%d mois",
+        "num_month_zero" : "%d mois",
+        "num_months_short" : "%dm",
+        "num_week_few" : "%d semaines",
+        "num_week_many" : "%d semaines",
+        "num_week_one" : "%d semaine",
+        "num_week_other" : "%d semaines",
+        "num_week_two" : "%d semaines",
+        "num_week_zero" : "%d semaine",
+        "num_weeks_short" : "%dsem",
+        "num_year_few" : "%d années",
+        "num_year_many" : "%d années",
+        "num_year_one" : "%d année",
+        "num_year_other" : "%d années",
+        "num_year_two" : "%d années",
+        "num_year_zero" : "%d année",
+        "num_years_short" : "%dan",
+        "percent" : "%d%%",
+        "week" : "semaine",
+        "week_short" : "sem",
+        "weekly" : "hebdomadaire",
+        "year" : "année",
+        "year_short" : "an",
+        "yearly" : "annuel"
+      },
+      "he" : {
+        "annual" : "שנתי",
+        "annual_short" : "שנ",
+        "annually" : "שנתי",
+        "daily" : "יומי",
+        "day" : "יום",
+        "day_short" : "יום",
+        "free_price" : "חינם",
+        "month" : "חודש",
+        "month_short" : "חו",
+        "monthly" : "חודשי",
+        "num_day_few" : "%d ימים",
+        "num_day_many" : "%d ימים",
+        "num_day_one" : "%d יום",
+        "num_day_other" : "%d ימים",
+        "num_day_two" : "%d ימים",
+        "num_day_zero" : "%d יום",
+        "num_days_short" : "%dי",
+        "num_month_few" : "%d חודשים",
+        "num_month_many" : "%d חודשים",
+        "num_month_one" : "%d חודש",
+        "num_month_other" : "%d חודשים",
+        "num_month_two" : "%d חודשים",
+        "num_month_zero" : "%d חודש",
+        "num_months_short" : "%dח",
+        "num_week_few" : "%d שבועות",
+        "num_week_many" : "%d שבועות",
+        "num_week_one" : "%d שבוע",
+        "num_week_other" : "%d שבועות",
+        "num_week_two" : "%d שבועות",
+        "num_week_zero" : "%d שבוע",
+        "num_weeks_short" : "%dש",
+        "num_year_few" : "%d שנים",
+        "num_year_many" : "%d שנים",
+        "num_year_one" : "%d שנה",
+        "num_year_other" : "%d שנים",
+        "num_year_two" : "%d שנים",
+        "num_year_zero" : "%d שנה",
+        "num_years_short" : "%dש",
+        "percent" : "%d%%",
+        "week" : "שבוע",
+        "week_short" : "שב",
+        "weekly" : "שבועי",
+        "year" : "שנה",
+        "year_short" : "שנ",
+        "yearly" : "שנתי"
+      },
+      "hi" : {
+        "annual" : "वार्षिक",
+        "annual_short" : "वर्ष",
+        "annually" : "वार्षिक",
+        "daily" : "दैनिक",
+        "day" : "दिन",
+        "day_short" : "दिन",
+        "free_price" : "मुफ्त",
+        "month" : "महीना",
+        "month_short" : "माह",
+        "monthly" : "मासिक",
+        "num_day_few" : "%d दिन",
+        "num_day_many" : "%d दिन",
+        "num_day_one" : "%d दिन",
+        "num_day_other" : "%d दिन",
+        "num_day_two" : "%d दिन",
+        "num_day_zero" : "%d दिन",
+        "num_days_short" : "%dदि",
+        "num_month_few" : "%d महीने",
+        "num_month_many" : "%d महीने",
+        "num_month_one" : "%d महीना",
+        "num_month_other" : "%d महीने",
+        "num_month_two" : "%d महीने",
+        "num_month_zero" : "%d महीना",
+        "num_months_short" : "%dमा",
+        "num_week_few" : "%d सप्ताह",
+        "num_week_many" : "%d सप्ताह",
+        "num_week_one" : "%d सप्ताह",
+        "num_week_other" : "%d सप्ताह",
+        "num_week_two" : "%d सप्ताह",
+        "num_week_zero" : "%d सप्ताह",
+        "num_weeks_short" : "%dस",
+        "num_year_few" : "%d वर्ष",
+        "num_year_many" : "%d वर्ष",
+        "num_year_one" : "%d वर्ष",
+        "num_year_other" : "%d वर्ष",
+        "num_year_two" : "%d वर्ष",
+        "num_year_zero" : "%d वर्ष",
+        "num_years_short" : "%dव",
+        "percent" : "%d%%",
+        "week" : "सप्ताह",
+        "week_short" : "सप्ता",
+        "weekly" : "साप्ताहिक",
+        "year" : "वर्ष",
+        "year_short" : "वर्ष",
+        "yearly" : "वार्षिक"
+      },
+      "hr" : {
+        "annual" : "godišnji",
+        "annual_short" : "god",
+        "annually" : "godišnje",
+        "daily" : "dnevno",
+        "day" : "dan",
+        "day_short" : "dan",
+        "free_price" : "besplatno",
+        "month" : "mjesec",
+        "month_short" : "mj",
+        "monthly" : "mjesečno",
+        "num_day_few" : "%d days",
+        "num_day_many" : "%d days",
+        "num_day_one" : "%d day",
+        "num_day_other" : "%d days",
+        "num_day_two" : "%d days",
+        "num_day_zero" : "%d day",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d months",
+        "num_month_many" : "%d months",
+        "num_month_one" : "%d month",
+        "num_month_other" : "%d months",
+        "num_month_two" : "%d months",
+        "num_month_zero" : "%d month",
+        "num_months_short" : "%dmj",
+        "num_week_few" : "%d weeks",
+        "num_week_many" : "%d weeks",
+        "num_week_one" : "%d week",
+        "num_week_other" : "%d weeks",
+        "num_week_two" : "%d weeks",
+        "num_week_zero" : "%d week",
+        "num_weeks_short" : "%dtj",
+        "num_year_few" : "%d years",
+        "num_year_many" : "%d years",
+        "num_year_one" : "%d year",
+        "num_year_other" : "%d years",
+        "num_year_two" : "%d years",
+        "num_year_zero" : "%d year",
+        "num_years_short" : "%dg",
+        "percent" : "%d%%",
+        "week" : "tjedan",
+        "week_short" : "tj",
+        "weekly" : "tjedno",
+        "year" : "godina",
+        "year_short" : "god",
+        "yearly" : "godišnje"
+      },
+      "hu" : {
+        "annual" : "éves",
+        "annual_short" : "év",
+        "annually" : "évente",
+        "daily" : "napi",
+        "day" : "nap",
+        "day_short" : "nap",
+        "free_price" : "ingyenes",
+        "month" : "hónap",
+        "month_short" : "hó",
+        "monthly" : "havi",
+        "num_day_few" : "%d nap",
+        "num_day_many" : "%d nap",
+        "num_day_one" : "%d nap",
+        "num_day_other" : "%d nap",
+        "num_day_two" : "%d nap",
+        "num_day_zero" : "%d nap",
+        "num_days_short" : "%dn",
+        "num_month_few" : "%d hónap",
+        "num_month_many" : "%d hónap",
+        "num_month_one" : "%d hónap",
+        "num_month_other" : "%d hónap",
+        "num_month_two" : "%d hónap",
+        "num_month_zero" : "%d hónap",
+        "num_months_short" : "%dhó",
+        "num_week_few" : "%d hét",
+        "num_week_many" : "%d hét",
+        "num_week_one" : "%d hét",
+        "num_week_other" : "%d hét",
+        "num_week_two" : "%d hét",
+        "num_week_zero" : "%d hét",
+        "num_weeks_short" : "%dh",
+        "num_year_few" : "%d év",
+        "num_year_many" : "%d év",
+        "num_year_one" : "%d év",
+        "num_year_other" : "%d év",
+        "num_year_two" : "%d év",
+        "num_year_zero" : "%d év",
+        "num_years_short" : "%dé",
+        "percent" : "%d%%",
+        "week" : "hét",
+        "week_short" : "hét",
+        "weekly" : "heti",
+        "year" : "év",
+        "year_short" : "év",
+        "yearly" : "éves"
+      },
+      "id" : {
+        "annual" : "tahunan",
+        "annual_short" : "thn",
+        "annually" : "tahunan",
+        "daily" : "harian",
+        "day" : "hari",
+        "day_short" : "hari",
+        "free_price" : "gratis",
+        "month" : "bulan",
+        "month_short" : "bln",
+        "monthly" : "bulanan",
+        "num_day_few" : "%d hari",
+        "num_day_many" : "%d hari",
+        "num_day_one" : "%d hari",
+        "num_day_other" : "%d hari",
+        "num_day_two" : "%d hari",
+        "num_day_zero" : "%d hari",
+        "num_days_short" : "%dh",
+        "num_month_few" : "%d bulan",
+        "num_month_many" : "%d bulan",
+        "num_month_one" : "%d bulan",
+        "num_month_other" : "%d bulan",
+        "num_month_two" : "%d bulan",
+        "num_month_zero" : "%d bulan",
+        "num_months_short" : "%dbln",
+        "num_week_few" : "%d minggu",
+        "num_week_many" : "%d minggu",
+        "num_week_one" : "%d minggu",
+        "num_week_other" : "%d minggu",
+        "num_week_two" : "%d minggu",
+        "num_week_zero" : "%d minggu",
+        "num_weeks_short" : "%dmgg",
+        "num_year_few" : "%d tahun",
+        "num_year_many" : "%d tahun",
+        "num_year_one" : "%d tahun",
+        "num_year_other" : "%d tahun",
+        "num_year_two" : "%d tahun",
+        "num_year_zero" : "%d tahun",
+        "num_years_short" : "%dthn",
+        "percent" : "%d%%",
+        "week" : "minggu",
+        "week_short" : "mgg",
+        "weekly" : "mingguan",
+        "year" : "tahun",
+        "year_short" : "thn",
+        "yearly" : "tahunan"
+      },
+      "it" : {
+        "annual" : "annuale",
+        "annual_short" : "anno",
+        "annually" : "annualmente",
+        "daily" : "giornaliero",
+        "day" : "giorno",
+        "day_short" : "g",
+        "free_price" : "gratis",
+        "month" : "mese",
+        "month_short" : "mese",
+        "monthly" : "mensile",
+        "num_day_few" : "%d giorni",
+        "num_day_many" : "%d giorni",
+        "num_day_one" : "%d giorno",
+        "num_day_other" : "%d giorni",
+        "num_day_two" : "%d giorni",
+        "num_day_zero" : "%d giorno",
+        "num_days_short" : "%dg",
+        "num_month_few" : "%d mesi",
+        "num_month_many" : "%d mesi",
+        "num_month_one" : "%d mese",
+        "num_month_other" : "%d mesi",
+        "num_month_two" : "%d mesi",
+        "num_month_zero" : "%d mese",
+        "num_months_short" : "%dm",
+        "num_week_few" : "%d settimane",
+        "num_week_many" : "%d settimane",
+        "num_week_one" : "%d settimana",
+        "num_week_other" : "%d settimane",
+        "num_week_two" : "%d settimane",
+        "num_week_zero" : "%d settimana",
+        "num_weeks_short" : "%dsett",
+        "num_year_few" : "%d anni",
+        "num_year_many" : "%d anni",
+        "num_year_one" : "%d anno",
+        "num_year_other" : "%d anni",
+        "num_year_two" : "%d anni",
+        "num_year_zero" : "%d anno",
+        "num_years_short" : "%da",
+        "percent" : "%d%%",
+        "week" : "settimana",
+        "week_short" : "sett",
+        "weekly" : "settimanale",
+        "year" : "anno",
+        "year_short" : "anno",
+        "yearly" : "annuale"
+      },
+      "ja" : {
+        "annual" : "年間",
+        "annual_short" : "年",
+        "annually" : "年毎",
+        "daily" : "毎日",
+        "day" : "日",
+        "day_short" : "日",
+        "free_price" : "無料",
+        "month" : "月",
+        "month_short" : "月",
+        "monthly" : "毎月",
+        "num_day_few" : "%d日",
+        "num_day_many" : "%d日",
+        "num_day_one" : "%d日",
+        "num_day_other" : "%d日",
+        "num_day_two" : "%d日",
+        "num_day_zero" : "%d日",
+        "num_days_short" : "%d日",
+        "num_month_few" : "%d月",
+        "num_month_many" : "%d月",
+        "num_month_one" : "%d月",
+        "num_month_other" : "%d月",
+        "num_month_two" : "%d月",
+        "num_month_zero" : "%d月",
+        "num_months_short" : "%d月",
+        "num_week_few" : "%d週間",
+        "num_week_many" : "%d週間",
+        "num_week_one" : "%d週間",
+        "num_week_other" : "%d週間",
+        "num_week_two" : "%d週間",
+        "num_week_zero" : "%d週間",
+        "num_weeks_short" : "%d週",
+        "num_year_few" : "%d年",
+        "num_year_many" : "%d年",
+        "num_year_one" : "%d年",
+        "num_year_other" : "%d年",
+        "num_year_two" : "%d年",
+        "num_year_zero" : "%d年",
+        "num_years_short" : "%d年",
+        "percent" : "%d%%",
+        "week" : "週間",
+        "week_short" : "週",
+        "weekly" : "毎週",
+        "year" : "年",
+        "year_short" : "年",
+        "yearly" : "毎年"
+      },
+      "kk" : {
+        "annual" : "жылдық",
+        "annual_short" : "жыл",
+        "annually" : "жыл сайын",
+        "daily" : "күнделікті",
+        "day" : "күн",
+        "day_short" : "күн",
+        "free_price" : "тегін",
+        "month" : "ай",
+        "month_short" : "ай",
+        "monthly" : "ай сайын",
+        "num_day_few" : "%d күн",
+        "num_day_many" : "%d күн",
+        "num_day_one" : "%d күн",
+        "num_day_other" : "%d күн",
+        "num_day_two" : "%d күн",
+        "num_day_zero" : "%d күн",
+        "num_days_short" : "%dк",
+        "num_month_few" : "%d ай",
+        "num_month_many" : "%d ай",
+        "num_month_one" : "%d ай",
+        "num_month_other" : "%d ай",
+        "num_month_two" : "%d ай",
+        "num_month_zero" : "%d ай",
+        "num_months_short" : "%dай",
+        "num_week_few" : "%d апта",
+        "num_week_many" : "%d апта",
+        "num_week_one" : "%d апта",
+        "num_week_other" : "%d апта",
+        "num_week_two" : "%d апта",
+        "num_week_zero" : "%d апта",
+        "num_weeks_short" : "%dа",
+        "num_year_few" : "%d жыл",
+        "num_year_many" : "%d жыл",
+        "num_year_one" : "%d жыл",
+        "num_year_other" : "%d жыл",
+        "num_year_two" : "%d жыл",
+        "num_year_zero" : "%d жыл",
+        "num_years_short" : "%dж",
+        "percent" : "%d%%",
+        "week" : "апта",
+        "week_short" : "апта",
+        "weekly" : "апта сайын",
+        "year" : "жыл",
+        "year_short" : "жыл",
+        "yearly" : "жылдық"
+      },
+      "ko" : {
+        "annual" : "연간",
+        "annual_short" : "년",
+        "annually" : "매년",
+        "daily" : "매일",
+        "day" : "일",
+        "day_short" : "일",
+        "free_price" : "무료",
+        "month" : "월",
+        "month_short" : "월",
+        "monthly" : "매월",
+        "num_day_few" : "%d일",
+        "num_day_many" : "%d일",
+        "num_day_one" : "%d일",
+        "num_day_other" : "%d일",
+        "num_day_two" : "%d일",
+        "num_day_zero" : "%d일",
+        "num_days_short" : "%d일",
+        "num_month_few" : "%d월",
+        "num_month_many" : "%d월",
+        "num_month_one" : "%d월",
+        "num_month_other" : "%d월",
+        "num_month_two" : "%d월",
+        "num_month_zero" : "%d월",
+        "num_months_short" : "%d월",
+        "num_week_few" : "%d주",
+        "num_week_many" : "%d주",
+        "num_week_one" : "%d주",
+        "num_week_other" : "%d주",
+        "num_week_two" : "%d주",
+        "num_week_zero" : "%d주",
+        "num_weeks_short" : "%d주",
+        "num_year_few" : "%d년",
+        "num_year_many" : "%d년",
+        "num_year_one" : "%d년",
+        "num_year_other" : "%d년",
+        "num_year_two" : "%d년",
+        "num_year_zero" : "%d년",
+        "num_years_short" : "%d년",
+        "percent" : "%d%%",
+        "week" : "주",
+        "week_short" : "주",
+        "weekly" : "매주",
+        "year" : "년",
+        "year_short" : "년",
+        "yearly" : "매년"
+      },
+      "ms" : {
+        "annual" : "tahunan",
+        "annual_short" : "thn",
+        "annually" : "tahunan",
+        "daily" : "harian",
+        "day" : "hari",
+        "day_short" : "hari",
+        "free_price" : "percuma",
+        "month" : "bulan",
+        "month_short" : "bln",
+        "monthly" : "bulanan",
+        "num_day_few" : "%d hari",
+        "num_day_many" : "%d hari",
+        "num_day_one" : "%d hari",
+        "num_day_other" : "%d hari",
+        "num_day_two" : "%d hari",
+        "num_day_zero" : "%d hari",
+        "num_days_short" : "%dh",
+        "num_month_few" : "%d bulan",
+        "num_month_many" : "%d bulan",
+        "num_month_one" : "%d bulan",
+        "num_month_other" : "%d bulan",
+        "num_month_two" : "%d bulan",
+        "num_month_zero" : "%d bulan",
+        "num_months_short" : "%dbln",
+        "num_week_few" : "%d minggu",
+        "num_week_many" : "%d minggu",
+        "num_week_one" : "%d minggu",
+        "num_week_other" : "%d minggu",
+        "num_week_two" : "%d minggu",
+        "num_week_zero" : "%d minggu",
+        "num_weeks_short" : "%dmgg",
+        "num_year_few" : "%d tahun",
+        "num_year_many" : "%d tahun",
+        "num_year_one" : "%d tahun",
+        "num_year_other" : "%d tahun",
+        "num_year_two" : "%d tahun",
+        "num_year_zero" : "%d tahun",
+        "num_years_short" : "%dthn",
+        "percent" : "%d%%",
+        "week" : "minggu",
+        "week_short" : "mgg",
+        "weekly" : "mingguan",
+        "year" : "tahun",
+        "year_short" : "thn",
+        "yearly" : "tahunan"
+      },
+      "nb_NO" : {
+        "annual" : "årlig",
+        "annual_short" : "år",
+        "annually" : "årlig",
+        "daily" : "daglig",
+        "day" : "dag",
+        "day_short" : "dag",
+        "free_price" : "gratis",
+        "month" : "måned",
+        "month_short" : "mnd",
+        "monthly" : "månedlig",
+        "num_day_few" : "%d dager",
+        "num_day_many" : "%d dager",
+        "num_day_one" : "%d dag",
+        "num_day_other" : "%d dager",
+        "num_day_two" : "%d dager",
+        "num_day_zero" : "%d dag",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d måneder",
+        "num_month_many" : "%d måneder",
+        "num_month_one" : "%d måned",
+        "num_month_other" : "%d måneder",
+        "num_month_two" : "%d måneder",
+        "num_month_zero" : "%d måned",
+        "num_months_short" : "%dmnd",
+        "num_week_few" : "%d uker",
+        "num_week_many" : "%d uker",
+        "num_week_one" : "%d uke",
+        "num_week_other" : "%d uker",
+        "num_week_two" : "%d uker",
+        "num_week_zero" : "%d uke",
+        "num_weeks_short" : "%du",
+        "num_year_few" : "%d år",
+        "num_year_many" : "%d år",
+        "num_year_one" : "%d år",
+        "num_year_other" : "%d år",
+        "num_year_two" : "%d år",
+        "num_year_zero" : "%d år",
+        "num_years_short" : "%då",
+        "percent" : "%d%%",
+        "week" : "uke",
+        "week_short" : "u",
+        "weekly" : "ukentlig",
+        "year" : "år",
+        "year_short" : "år",
+        "yearly" : "årlig"
+      },
+      "nl" : {
+        "annual" : "jaarlijks",
+        "annual_short" : "jr",
+        "annually" : "jaarlijks",
+        "daily" : "dagelijks",
+        "day" : "dag",
+        "day_short" : "dag",
+        "free_price" : "gratis",
+        "month" : "maand",
+        "month_short" : "mnd",
+        "monthly" : "maandelijks",
+        "num_day_few" : "%d dagen",
+        "num_day_many" : "%d dagen",
+        "num_day_one" : "%d dag",
+        "num_day_other" : "%d dagen",
+        "num_day_two" : "%d dagen",
+        "num_day_zero" : "%d dagen",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d maanden",
+        "num_month_many" : "%d maanden",
+        "num_month_one" : "%d maand",
+        "num_month_other" : "%d maanden",
+        "num_month_two" : "%d maanden",
+        "num_month_zero" : "%d maand",
+        "num_months_short" : "%dmnd",
+        "num_week_few" : "%d weken",
+        "num_week_many" : "%d weken",
+        "num_week_one" : "%d week",
+        "num_week_other" : "%d weken",
+        "num_week_two" : "%d weken",
+        "num_week_zero" : "%d week",
+        "num_weeks_short" : "%dwk",
+        "num_year_few" : "%d jaar",
+        "num_year_many" : "%d jaar",
+        "num_year_one" : "%d jaar",
+        "num_year_other" : "%d jaar",
+        "num_year_two" : "%d jaar",
+        "num_year_zero" : "%d jaar",
+        "num_years_short" : "%djr",
+        "percent" : "%d%%",
+        "week" : "week",
+        "week_short" : "wk",
+        "weekly" : "wekelijks",
+        "year" : "jaar",
+        "year_short" : "jr",
+        "yearly" : "jaarlijks"
+      },
+      "nn_NO" : {
+        "annual" : "årlig",
+        "annual_short" : "år",
+        "annually" : "årlig",
+        "daily" : "dagleg",
+        "day" : "dag",
+        "day_short" : "dag",
+        "free_price" : "gratis",
+        "month" : "måned",
+        "month_short" : "mnd",
+        "monthly" : "månedlig",
+        "num_day_few" : "%d dagar",
+        "num_day_many" : "%d dagar",
+        "num_day_one" : "%d dag",
+        "num_day_other" : "%d dagar",
+        "num_day_two" : "%d dagar",
+        "num_day_zero" : "%d dag",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d måneder",
+        "num_month_many" : "%d måneder",
+        "num_month_one" : "%d måned",
+        "num_month_other" : "%d måneder",
+        "num_month_two" : "%d måneder",
+        "num_month_zero" : "%d måned",
+        "num_months_short" : "%dmnd",
+        "num_week_few" : "%d uker",
+        "num_week_many" : "%d uker",
+        "num_week_one" : "%d uke",
+        "num_week_other" : "%d uker",
+        "num_week_two" : "%d uker",
+        "num_week_zero" : "%d uke",
+        "num_weeks_short" : "%du",
+        "num_year_few" : "%d år",
+        "num_year_many" : "%d år",
+        "num_year_one" : "%d år",
+        "num_year_other" : "%d år",
+        "num_year_two" : "%d år",
+        "num_year_zero" : "%d år",
+        "num_years_short" : "%då",
+        "percent" : "%d%%",
+        "week" : "uke",
+        "week_short" : "u",
+        "weekly" : "ukentlig",
+        "year" : "år",
+        "year_short" : "år",
+        "yearly" : "årlig"
+      },
+      "no" : {
+        "annual" : "årlig",
+        "annual_short" : "år",
+        "annually" : "årlig",
+        "daily" : "daglig",
+        "day" : "dag",
+        "day_short" : "dag",
+        "free_price" : "gratis",
+        "month" : "måned",
+        "month_short" : "mnd",
+        "monthly" : "månedlig",
+        "num_day_few" : "%d dager",
+        "num_day_many" : "%d dager",
+        "num_day_one" : "%d dag",
+        "num_day_other" : "%d dager",
+        "num_day_two" : "%d dager",
+        "num_day_zero" : "%d dag",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d måneder",
+        "num_month_many" : "%d måneder",
+        "num_month_one" : "%d måned",
+        "num_month_other" : "%d måneder",
+        "num_month_two" : "%d måneder",
+        "num_month_zero" : "%d måned",
+        "num_months_short" : "%dmnd",
+        "num_week_few" : "%d uker",
+        "num_week_many" : "%d uker",
+        "num_week_one" : "%d uke",
+        "num_week_other" : "%d uker",
+        "num_week_two" : "%d uker",
+        "num_week_zero" : "%d uke",
+        "num_weeks_short" : "%du",
+        "num_year_few" : "%d år",
+        "num_year_many" : "%d år",
+        "num_year_one" : "%d år",
+        "num_year_other" : "%d år",
+        "num_year_two" : "%d år",
+        "num_year_zero" : "%d år",
+        "num_years_short" : "%då",
+        "percent" : "%d%%",
+        "week" : "uke",
+        "week_short" : "u",
+        "weekly" : "ukentlig",
+        "year" : "år",
+        "year_short" : "år",
+        "yearly" : "årlig"
+      },
+      "pl" : {
+        "annual" : "roczny",
+        "annual_short" : "r",
+        "annually" : "rocznie",
+        "daily" : "codziennie",
+        "day" : "dzień",
+        "day_short" : "dz",
+        "free_price" : "za darmo",
+        "month" : "miesiąc",
+        "month_short" : "mies",
+        "monthly" : "miesięcznie",
+        "num_day_few" : "%d dni",
+        "num_day_many" : "%d dni",
+        "num_day_one" : "%d dzień",
+        "num_day_other" : "%d dni",
+        "num_day_two" : "%d dni",
+        "num_day_zero" : "%d dzień",
+        "num_days_short" : "%ddz",
+        "num_month_few" : "%d miesiące",
+        "num_month_many" : "%d miesięcy",
+        "num_month_one" : "%d miesiąc",
+        "num_month_other" : "%d miesięcy",
+        "num_month_two" : "%d miesiące",
+        "num_month_zero" : "%d miesiąc",
+        "num_months_short" : "%dmies",
+        "num_week_few" : "%d tygodnie",
+        "num_week_many" : "%d tygodni",
+        "num_week_one" : "%d tydzień",
+        "num_week_other" : "%d tygodni",
+        "num_week_two" : "%d tygodnie",
+        "num_week_zero" : "%d tydzień",
+        "num_weeks_short" : "%dtyg",
+        "num_year_few" : "%d lata",
+        "num_year_many" : "%d lat",
+        "num_year_one" : "%d rok",
+        "num_year_other" : "%d lat",
+        "num_year_two" : "%d lata",
+        "num_year_zero" : "%d rok",
+        "num_years_short" : "%dr",
+        "percent" : "%d%%",
+        "week" : "tydzień",
+        "week_short" : "tyg",
+        "weekly" : "tygodniowo",
+        "year" : "rok",
+        "year_short" : "r",
+        "yearly" : "rocznie"
+      },
+      "pt_BR" : {
+        "annual" : "anual",
+        "annual_short" : "ano",
+        "annually" : "anualmente",
+        "daily" : "diário",
+        "day" : "dia",
+        "day_short" : "dia",
+        "free_price" : "grátis",
+        "month" : "mês",
+        "month_short" : "mês",
+        "monthly" : "mensal",
+        "num_day_few" : "%d dias",
+        "num_day_many" : "%d dias",
+        "num_day_one" : "%d dia",
+        "num_day_other" : "%d dias",
+        "num_day_two" : "%d dias",
+        "num_day_zero" : "%d dia",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d meses",
+        "num_month_many" : "%d meses",
+        "num_month_one" : "%d mês",
+        "num_month_other" : "%d meses",
+        "num_month_two" : "%d meses",
+        "num_month_zero" : "%d mês",
+        "num_months_short" : "%dm",
+        "num_week_few" : "%d semanas",
+        "num_week_many" : "%d semanas",
+        "num_week_one" : "%d semana",
+        "num_week_other" : "%d semanas",
+        "num_week_two" : "%d semanas",
+        "num_week_zero" : "%d semana",
+        "num_weeks_short" : "%dsem",
+        "num_year_few" : "%d anos",
+        "num_year_many" : "%d anos",
+        "num_year_one" : "%d ano",
+        "num_year_other" : "%d anos",
+        "num_year_two" : "%d anos",
+        "num_year_zero" : "%d ano",
+        "num_years_short" : "%da",
+        "percent" : "%d%%",
+        "week" : "semana",
+        "week_short" : "sem",
+        "weekly" : "semanal",
+        "year" : "ano",
+        "year_short" : "ano",
+        "yearly" : "anual"
+      },
+      "pt_PT" : {
+        "annual" : "anual",
+        "annual_short" : "ano",
+        "annually" : "anualmente",
+        "daily" : "diário",
+        "day" : "dia",
+        "day_short" : "dia",
+        "free_price" : "grátis",
+        "month" : "mês",
+        "month_short" : "mês",
+        "monthly" : "mensal",
+        "num_day_few" : "%d dias",
+        "num_day_many" : "%d dias",
+        "num_day_one" : "%d dia",
+        "num_day_other" : "%d dias",
+        "num_day_two" : "%d dias",
+        "num_day_zero" : "%d dia",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d meses",
+        "num_month_many" : "%d meses",
+        "num_month_one" : "%d mês",
+        "num_month_other" : "%d meses",
+        "num_month_two" : "%d meses",
+        "num_month_zero" : "%d mês",
+        "num_months_short" : "%dm",
+        "num_week_few" : "%d semanas",
+        "num_week_many" : "%d semanas",
+        "num_week_one" : "%d semana",
+        "num_week_other" : "%d semanas",
+        "num_week_two" : "%d semanas",
+        "num_week_zero" : "%d semana",
+        "num_weeks_short" : "%dsem",
+        "num_year_few" : "%d anos",
+        "num_year_many" : "%d anos",
+        "num_year_one" : "%d ano",
+        "num_year_other" : "%d anos",
+        "num_year_two" : "%d anos",
+        "num_year_zero" : "%d ano",
+        "num_years_short" : "%da",
+        "percent" : "%d%%",
+        "week" : "semana",
+        "week_short" : "sem",
+        "weekly" : "semanal",
+        "year" : "ano",
+        "year_short" : "ano",
+        "yearly" : "anual"
+      },
+      "ro" : {
+        "annual" : "anual",
+        "annual_short" : "an",
+        "annually" : "anual",
+        "daily" : "zilnic",
+        "day" : "zi",
+        "day_short" : "zi",
+        "free_price" : "gratuit",
+        "month" : "lună",
+        "month_short" : "lună",
+        "monthly" : "lunar",
+        "num_day_few" : "%d zile",
+        "num_day_many" : "%d zile",
+        "num_day_one" : "%d zi",
+        "num_day_other" : "%d zile",
+        "num_day_two" : "%d zile",
+        "num_day_zero" : "%d zi",
+        "num_days_short" : "%dz",
+        "num_month_few" : "%d luni",
+        "num_month_many" : "%d luni",
+        "num_month_one" : "%d lună",
+        "num_month_other" : "%d luni",
+        "num_month_two" : "%d luni",
+        "num_month_zero" : "%d lună",
+        "num_months_short" : "%dl",
+        "num_week_few" : "%d săptămâni",
+        "num_week_many" : "%d săptămâni",
+        "num_week_one" : "%d săptămână",
+        "num_week_other" : "%d săptămâni",
+        "num_week_two" : "%d săptămâni",
+        "num_week_zero" : "%d săptămână",
+        "num_weeks_short" : "%ds",
+        "num_year_few" : "%d ani",
+        "num_year_many" : "%d ani",
+        "num_year_one" : "%d an",
+        "num_year_other" : "%d ani",
+        "num_year_two" : "%d ani",
+        "num_year_zero" : "%d an",
+        "num_years_short" : "%da",
+        "percent" : "%d%%",
+        "week" : "săptămână",
+        "week_short" : "săpt",
+        "weekly" : "săptămânal",
+        "year" : "an",
+        "year_short" : "an",
+        "yearly" : "anual"
+      },
+      "ru" : {
+        "annual" : "ежегодный",
+        "annual_short" : "г",
+        "annually" : "ежегодно",
+        "daily" : "ежедневно",
+        "day" : "день",
+        "day_short" : "д",
+        "free_price" : "бесплатно",
+        "month" : "месяц",
+        "month_short" : "мес",
+        "monthly" : "ежемесячно",
+        "num_day_few" : "%d дня",
+        "num_day_many" : "%d дней",
+        "num_day_one" : "%d день",
+        "num_day_other" : "%d дней",
+        "num_day_two" : "%d дня",
+        "num_day_zero" : "%d день",
+        "num_days_short" : "%dд",
+        "num_month_few" : "%d месяца",
+        "num_month_many" : "%d месяцев",
+        "num_month_one" : "%d месяц",
+        "num_month_other" : "%d месяцев",
+        "num_month_two" : "%d месяца",
+        "num_month_zero" : "%d месяц",
+        "num_months_short" : "%dмес",
+        "num_week_few" : "%d недели",
+        "num_week_many" : "%d недель",
+        "num_week_one" : "%d неделя",
+        "num_week_other" : "%d недель",
+        "num_week_two" : "%d недели",
+        "num_week_zero" : "%d неделя",
+        "num_weeks_short" : "%dнед",
+        "num_year_few" : "%d года",
+        "num_year_many" : "%d лет",
+        "num_year_one" : "%d год",
+        "num_year_other" : "%d лет",
+        "num_year_two" : "%d года",
+        "num_year_zero" : "%d год",
+        "num_years_short" : "%dг",
+        "percent" : "%d%%",
+        "week" : "неделя",
+        "week_short" : "нед",
+        "weekly" : "еженедельно",
+        "year" : "год",
+        "year_short" : "г",
+        "yearly" : "ежегодно"
+      },
+      "sk" : {
+        "annual" : "ročný",
+        "annual_short" : "r",
+        "annually" : "ročne",
+        "daily" : "denne",
+        "day" : "deň",
+        "day_short" : "d",
+        "free_price" : "zadarmo",
+        "month" : "mesiac",
+        "month_short" : "mes",
+        "monthly" : "mesačne",
+        "num_day_few" : "%d dni",
+        "num_day_many" : "%d dní",
+        "num_day_one" : "%d deň",
+        "num_day_other" : "%d dní",
+        "num_day_two" : "%d dni",
+        "num_day_zero" : "%d deň",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d mesiace",
+        "num_month_many" : "%d mesiacov",
+        "num_month_one" : "%d mesiac",
+        "num_month_other" : "%d mesiacov",
+        "num_month_two" : "%d mesiace",
+        "num_month_zero" : "%d mesiac",
+        "num_months_short" : "%dmes",
+        "num_week_few" : "%d týždne",
+        "num_week_many" : "%d týždňov",
+        "num_week_one" : "%d týždeň",
+        "num_week_other" : "%d týždňov",
+        "num_week_two" : "%d týždne",
+        "num_week_zero" : "%d týždeň",
+        "num_weeks_short" : "%dtýž",
+        "num_year_few" : "%d roky",
+        "num_year_many" : "%d rokov",
+        "num_year_one" : "%d rok",
+        "num_year_other" : "%d rokov",
+        "num_year_two" : "%d roky",
+        "num_year_zero" : "%d rok",
+        "num_years_short" : "%dr",
+        "percent" : "%d%%",
+        "week" : "týždeň",
+        "week_short" : "týž",
+        "weekly" : "týždenne",
+        "year" : "rok",
+        "year_short" : "r",
+        "yearly" : "ročne"
+      },
+      "sr_Cyrl" : {
+        "annual" : "годишњи",
+        "annual_short" : "год",
+        "annually" : "годишње",
+        "daily" : "дневно",
+        "day" : "дан",
+        "day_short" : "дан",
+        "free_price" : "бесплатно",
+        "month" : "месец",
+        "month_short" : "мес",
+        "monthly" : "месечно",
+        "num_day_few" : "%d дана",
+        "num_day_many" : "%d дана",
+        "num_day_one" : "%d дан",
+        "num_day_other" : "%d дана",
+        "num_day_two" : "%d дана",
+        "num_day_zero" : "%d дан",
+        "num_days_short" : "%dд",
+        "num_month_few" : "%d месеца",
+        "num_month_many" : "%d месеци",
+        "num_month_one" : "%d месец",
+        "num_month_other" : "%d месеци",
+        "num_month_two" : "%d месеца",
+        "num_month_zero" : "%d месец",
+        "num_months_short" : "%dмес",
+        "num_week_few" : "%d недеље",
+        "num_week_many" : "%d недеља",
+        "num_week_one" : "%d недеља",
+        "num_week_other" : "%d недеља",
+        "num_week_two" : "%d недеље",
+        "num_week_zero" : "%d недеља",
+        "num_weeks_short" : "%dнед",
+        "num_year_few" : "%d године",
+        "num_year_many" : "%d година",
+        "num_year_one" : "%d година",
+        "num_year_other" : "%d година",
+        "num_year_two" : "%d године",
+        "num_year_zero" : "%d година",
+        "num_years_short" : "%dгод",
+        "percent" : "%d%%",
+        "week" : "недеља",
+        "week_short" : "нед",
+        "weekly" : "недељно",
+        "year" : "година",
+        "year_short" : "год",
+        "yearly" : "годишње"
+      },
+      "sr_Latn" : {
+        "annual" : "godišnji",
+        "annual_short" : "god",
+        "annually" : "godišnje",
+        "daily" : "dnevno",
+        "day" : "dan",
+        "day_short" : "dan",
+        "free_price" : "besplatno",
+        "month" : "mesec",
+        "month_short" : "mes",
+        "monthly" : "mesečno",
+        "num_day_few" : "%d dana",
+        "num_day_many" : "%d dana",
+        "num_day_one" : "%d dan",
+        "num_day_other" : "%d dana",
+        "num_day_two" : "%d dana",
+        "num_day_zero" : "%d dan",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d meseca",
+        "num_month_many" : "%d meseci",
+        "num_month_one" : "%d mesec",
+        "num_month_other" : "%d meseci",
+        "num_month_two" : "%d meseca",
+        "num_month_zero" : "%d mesec",
+        "num_months_short" : "%dmes",
+        "num_week_few" : "%d nedelje",
+        "num_week_many" : "%d nedelja",
+        "num_week_one" : "%d nedelja",
+        "num_week_other" : "%d nedelja",
+        "num_week_two" : "%d nedelje",
+        "num_week_zero" : "%d nedelja",
+        "num_weeks_short" : "%dned",
+        "num_year_few" : "%d godine",
+        "num_year_many" : "%d godina",
+        "num_year_one" : "%d godina",
+        "num_year_other" : "%d godina",
+        "num_year_two" : "%d godine",
+        "num_year_zero" : "%d godina",
+        "num_years_short" : "%dgod",
+        "percent" : "%d%%",
+        "week" : "nedelja",
+        "week_short" : "ned",
+        "weekly" : "nedeljno",
+        "year" : "godina",
+        "year_short" : "god",
+        "yearly" : "godišnje"
+      },
+      "sv" : {
+        "annual" : "årlig",
+        "annual_short" : "år",
+        "annually" : "årligen",
+        "daily" : "dagligen",
+        "day" : "dag",
+        "day_short" : "dag",
+        "free_price" : "gratis",
+        "month" : "månad",
+        "month_short" : "mån",
+        "monthly" : "månadsvis",
+        "num_day_few" : "%d days",
+        "num_day_many" : "%d days",
+        "num_day_one" : "%d day",
+        "num_day_other" : "%d days",
+        "num_day_two" : "%d days",
+        "num_day_zero" : "%d day",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d months",
+        "num_month_many" : "%d months",
+        "num_month_one" : "%d month",
+        "num_month_other" : "%d months",
+        "num_month_two" : "%d months",
+        "num_month_zero" : "%d month",
+        "num_months_short" : "%dmån",
+        "num_week_few" : "%d weeks",
+        "num_week_many" : "%d weeks",
+        "num_week_one" : "%d week",
+        "num_week_other" : "%d weeks",
+        "num_week_two" : "%d weeks",
+        "num_week_zero" : "%d week",
+        "num_weeks_short" : "%dv",
+        "num_year_few" : "%d years",
+        "num_year_many" : "%d years",
+        "num_year_one" : "%d year",
+        "num_year_other" : "%d years",
+        "num_year_two" : "%d years",
+        "num_year_zero" : "%d year",
+        "num_years_short" : "%dår",
+        "percent" : "%d%%",
+        "week" : "vecka",
+        "week_short" : "v",
+        "weekly" : "veckovis",
+        "year" : "år",
+        "year_short" : "år",
+        "yearly" : "årligen"
+      },
+      "th" : {
+        "annual" : "ประจำปี",
+        "annual_short" : "ปี",
+        "annually" : "รายปี",
+        "daily" : "รายวัน",
+        "day" : "วัน",
+        "day_short" : "วัน",
+        "free_price" : "ฟรี",
+        "month" : "เดือน",
+        "month_short" : "ด.",
+        "monthly" : "รายเดือน",
+        "num_day_few" : "%d วัน",
+        "num_day_many" : "%d วัน",
+        "num_day_one" : "%d วัน",
+        "num_day_other" : "%d วัน",
+        "num_day_two" : "%d วัน",
+        "num_day_zero" : "%d วัน",
+        "num_days_short" : "%dว.",
+        "num_month_few" : "%d เดือน",
+        "num_month_many" : "%d เดือน",
+        "num_month_one" : "%d เดือน",
+        "num_month_other" : "%d เดือน",
+        "num_month_two" : "%d เดือน",
+        "num_month_zero" : "%d เดือน",
+        "num_months_short" : "%dด.",
+        "num_week_few" : "%d สัปดาห์",
+        "num_week_many" : "%d สัปดาห์",
+        "num_week_one" : "%d สัปดาห์",
+        "num_week_other" : "%d สัปดาห์",
+        "num_week_two" : "%d สัปดาห์",
+        "num_week_zero" : "%d สัปดาห์",
+        "num_weeks_short" : "%dสป.",
+        "num_year_few" : "%d ปี",
+        "num_year_many" : "%d ปี",
+        "num_year_one" : "%d ปี",
+        "num_year_other" : "%d ปี",
+        "num_year_two" : "%d ปี",
+        "num_year_zero" : "%d ปี",
+        "num_years_short" : "%dปี",
+        "percent" : "%d%%",
+        "week" : "สัปดาห์",
+        "week_short" : "สป.",
+        "weekly" : "รายสัปดาห์",
+        "year" : "ปี",
+        "year_short" : "ปี",
+        "yearly" : "รายปี"
+      },
+      "tr" : {
+        "annual" : "yıllık",
+        "annual_short" : "yıl",
+        "annually" : "yıllık",
+        "daily" : "günlük",
+        "day" : "gün",
+        "day_short" : "gün",
+        "free_price" : "ücretsiz",
+        "month" : "ay",
+        "month_short" : "ay",
+        "monthly" : "aylık",
+        "num_day_few" : "%d gün",
+        "num_day_many" : "%d gün",
+        "num_day_one" : "%d gün",
+        "num_day_other" : "%d gün",
+        "num_day_two" : "%d gün",
+        "num_day_zero" : "%d gün",
+        "num_days_short" : "%dg",
+        "num_month_few" : "%d ay",
+        "num_month_many" : "%d ay",
+        "num_month_one" : "%d ay",
+        "num_month_other" : "%d ay",
+        "num_month_two" : "%d ay",
+        "num_month_zero" : "%d ay",
+        "num_months_short" : "%day",
+        "num_week_few" : "%d hafta",
+        "num_week_many" : "%d hafta",
+        "num_week_one" : "%d hafta",
+        "num_week_other" : "%d hafta",
+        "num_week_two" : "%d hafta",
+        "num_week_zero" : "%d hafta",
+        "num_weeks_short" : "%dhft",
+        "num_year_few" : "%d yıl",
+        "num_year_many" : "%d yıl",
+        "num_year_one" : "%d yıl",
+        "num_year_other" : "%d yıl",
+        "num_year_two" : "%d yıl",
+        "num_year_zero" : "%d yıl",
+        "num_years_short" : "%dyıl",
+        "percent" : "%d%%",
+        "week" : "hafta",
+        "week_short" : "hft",
+        "weekly" : "haftalık",
+        "year" : "yıl",
+        "year_short" : "yıl",
+        "yearly" : "yıllık"
+      },
+      "uk" : {
+        "annual" : "річний",
+        "annual_short" : "р",
+        "annually" : "щорічно",
+        "daily" : "щодня",
+        "day" : "день",
+        "day_short" : "д",
+        "free_price" : "безплатно",
+        "month" : "місяць",
+        "month_short" : "міс",
+        "monthly" : "щомісяця",
+        "num_day_few" : "%d дні",
+        "num_day_many" : "%d днів",
+        "num_day_one" : "%d день",
+        "num_day_other" : "%d днів",
+        "num_day_two" : "%d дні",
+        "num_day_zero" : "%d день",
+        "num_days_short" : "%dд",
+        "num_month_few" : "%d місяці",
+        "num_month_many" : "%d місяців",
+        "num_month_one" : "%d місяць",
+        "num_month_other" : "%d місяців",
+        "num_month_two" : "%d місяці",
+        "num_month_zero" : "%d місяць",
+        "num_months_short" : "%dміс",
+        "num_week_few" : "%d тижні",
+        "num_week_many" : "%d тижнів",
+        "num_week_one" : "%d тиждень",
+        "num_week_other" : "%d тижнів",
+        "num_week_two" : "%d тижні",
+        "num_week_zero" : "%d тиждень",
+        "num_weeks_short" : "%dтиж",
+        "num_year_few" : "%d роки",
+        "num_year_many" : "%d років",
+        "num_year_one" : "%d рік",
+        "num_year_other" : "%d років",
+        "num_year_two" : "%d роки",
+        "num_year_zero" : "%d рік",
+        "num_years_short" : "%dр",
+        "percent" : "%d%%",
+        "week" : "тиждень",
+        "week_short" : "тиж",
+        "weekly" : "щотижня",
+        "year" : "рік",
+        "year_short" : "р",
+        "yearly" : "щорічно"
+      },
+      "vi" : {
+        "annual" : "hàng năm",
+        "annual_short" : "năm",
+        "annually" : "hàng năm",
+        "daily" : "hàng ngày",
+        "day" : "ngày",
+        "day_short" : "ngày",
+        "free_price" : "miễn phí",
+        "month" : "tháng",
+        "month_short" : "th",
+        "monthly" : "hàng tháng",
+        "num_day_few" : "%d ngày",
+        "num_day_many" : "%d ngày",
+        "num_day_one" : "%d ngày",
+        "num_day_other" : "%d ngày",
+        "num_day_two" : "%d ngày",
+        "num_day_zero" : "%d ngày",
+        "num_days_short" : "%dn",
+        "num_month_few" : "%d tháng",
+        "num_month_many" : "%d tháng",
+        "num_month_one" : "%d tháng",
+        "num_month_other" : "%d tháng",
+        "num_month_two" : "%d tháng",
+        "num_month_zero" : "%d tháng",
+        "num_months_short" : "%dth",
+        "num_week_few" : "%d tuần",
+        "num_week_many" : "%d tuần",
+        "num_week_one" : "%d tuần",
+        "num_week_other" : "%d tuần",
+        "num_week_two" : "%d tuần",
+        "num_week_zero" : "%d tuần",
+        "num_weeks_short" : "%dt",
+        "num_year_few" : "%d năm",
+        "num_year_many" : "%d năm",
+        "num_year_one" : "%d năm",
+        "num_year_other" : "%d năm",
+        "num_year_two" : "%d năm",
+        "num_year_zero" : "%d năm",
+        "num_years_short" : "%dn",
+        "percent" : "%d%%",
+        "week" : "tuần",
+        "week_short" : "tuần",
+        "weekly" : "hàng tuần",
+        "year" : "năm",
+        "year_short" : "năm",
+        "yearly" : "hàng năm"
+      },
+      "zh_Hans" : {
+        "annual" : "每年",
+        "annual_short" : "年",
+        "annually" : "每年",
+        "daily" : "每天",
+        "day" : "天",
+        "day_short" : "天",
+        "free_price" : "免费",
+        "month" : "月",
+        "month_short" : "月",
+        "monthly" : "每月",
+        "num_day_few" : "%d天",
+        "num_day_many" : "%d天",
+        "num_day_one" : "%d天",
+        "num_day_other" : "%d天",
+        "num_day_two" : "%d天",
+        "num_day_zero" : "%d天",
+        "num_days_short" : "%d天",
+        "num_month_few" : "%d月",
+        "num_month_many" : "%d月",
+        "num_month_one" : "%d月",
+        "num_month_other" : "%d月",
+        "num_month_two" : "%d月",
+        "num_month_zero" : "%d月",
+        "num_months_short" : "%d月",
+        "num_week_few" : "%d周",
+        "num_week_many" : "%d周",
+        "num_week_one" : "%d周",
+        "num_week_other" : "%d周",
+        "num_week_two" : "%d周",
+        "num_week_zero" : "%d周",
+        "num_weeks_short" : "%d周",
+        "num_year_few" : "%d年",
+        "num_year_many" : "%d年",
+        "num_year_one" : "%d年",
+        "num_year_other" : "%d年",
+        "num_year_two" : "%d年",
+        "num_year_zero" : "%d年",
+        "num_years_short" : "%d年",
+        "percent" : "%d%%",
+        "week" : "周",
+        "week_short" : "周",
+        "weekly" : "每周",
+        "year" : "年",
+        "year_short" : "年",
+        "yearly" : "每年"
+      },
+      "zh_Hant" : {
+        "annual" : "每年",
+        "annual_short" : "年",
+        "annually" : "每年",
+        "daily" : "每天",
+        "day" : "天",
+        "day_short" : "天",
+        "free_price" : "免費",
+        "month" : "月",
+        "month_short" : "月",
+        "monthly" : "每月",
+        "num_day_few" : "%d days",
+        "num_day_many" : "%d days",
+        "num_day_one" : "%d day",
+        "num_day_other" : "%d days",
+        "num_day_two" : "%d days",
+        "num_day_zero" : "%d day",
+        "num_days_short" : "%d天",
+        "num_month_few" : "%d months",
+        "num_month_many" : "%d months",
+        "num_month_one" : "%d month",
+        "num_month_other" : "%d months",
+        "num_month_two" : "%d months",
+        "num_month_zero" : "%d month",
+        "num_months_short" : "%d月",
+        "num_week_few" : "%d weeks",
+        "num_week_many" : "%d weeks",
+        "num_week_one" : "%d week",
+        "num_week_other" : "%d weeks",
+        "num_week_two" : "%d weeks",
+        "num_week_zero" : "%d week",
+        "num_weeks_short" : "%d週",
+        "num_year_few" : "%d years",
+        "num_year_many" : "%d years",
+        "num_year_one" : "%d year",
+        "num_year_other" : "%d years",
+        "num_year_two" : "%d years",
+        "num_year_zero" : "%d year",
+        "num_years_short" : "%d年",
+        "percent" : "%d%%",
+        "week" : "週",
+        "week_short" : "週",
+        "weekly" : "每週",
+        "year" : "年",
+        "year_short" : "年",
+        "yearly" : "每年"
+      }
+    },
+    "variable_config" : {
+      "function_compatibility_map" : {
+
+      },
+      "variable_compatibility_map" : {
+
+      }
+    }
+  }
+}

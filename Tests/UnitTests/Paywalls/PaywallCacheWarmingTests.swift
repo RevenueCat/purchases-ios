@@ -175,7 +175,7 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(self.imageFetcher.imageDownloadRequestCount.value) == 3
     }
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
     func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
         let font = DownloadableFont(
@@ -362,7 +362,9 @@ private extension PaywallCacheWarmingTests {
             currentOfferingID: Self.offeringIdentifier,
             placements: nil,
             targeting: nil,
-            response: offeringsResponse
+            contents: Offerings.Contents(response: offeringsResponse,
+                                         httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
         )
     }
 

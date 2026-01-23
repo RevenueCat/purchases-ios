@@ -178,6 +178,18 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetCleverTapIDParametersList.append((cleverTapID, appUserID))
     }
 
+    var invokedSetAirbridgeDeviceID = false
+    var invokedSetAirbridgeDeviceIDCount = 0
+    var invokedSetAirbridgeDeviceIDParameters: (AirbridgeDeviceID: String?, appUserID: String?)?
+    var invokedSetAirbridgeDeviceIDParametersList = [(AirbridgeDeviceID: String?, appUserID: String?)]()
+
+    override func setAirbridgeDeviceID(_ airbridgeDeviceID: String?, appUserID: String) {
+        invokedSetAirbridgeDeviceID = true
+        invokedSetAirbridgeDeviceIDCount += 1
+        invokedSetAirbridgeDeviceIDParameters = (airbridgeDeviceID, appUserID)
+        invokedSetAirbridgeDeviceIDParametersList.append((airbridgeDeviceID, appUserID))
+    }
+
     var invokedSetKochavaDeviceID = false
     var invokedSetKochavaDeviceIDCount = 0
     var invokedSetKochavaDeviceIDParameters: (KochavaDeviceID: String?, appUserID: String?)?
@@ -188,6 +200,42 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetKochavaDeviceIDCount += 1
         invokedSetKochavaDeviceIDParameters = (kochavaDeviceID, appUserID)
         invokedSetKochavaDeviceIDParametersList.append((kochavaDeviceID, appUserID))
+    }
+
+    var invokedSetSolarEngineDistinctId = false
+    var invokedSetSolarEngineDistinctIdCount = 0
+    var invokedSetSolarEngineDistinctIdParameters: (solarEngineDistinctId: String?, appUserID: String?)?
+    var invokedSetSolarEngineDistinctIdParametersList = [(solarEngineDistinctId: String?, appUserID: String?)]()
+
+    override func setSolarEngineDistinctId(_ solarEngineDistinctId: String?, appUserID: String) {
+        invokedSetSolarEngineDistinctId = true
+        invokedSetSolarEngineDistinctIdCount += 1
+        invokedSetSolarEngineDistinctIdParameters = (solarEngineDistinctId, appUserID)
+        invokedSetSolarEngineDistinctIdParametersList.append((solarEngineDistinctId, appUserID))
+    }
+
+    var invokedSetSolarEngineAccountId = false
+    var invokedSetSolarEngineAccountIdCount = 0
+    var invokedSetSolarEngineAccountIdParameters: (solarEngineAccountId: String?, appUserID: String?)?
+    var invokedSetSolarEngineAccountIdParametersList = [(solarEngineAccountId: String?, appUserID: String?)]()
+
+    override func setSolarEngineAccountId(_ solarEngineAccountId: String?, appUserID: String) {
+        invokedSetSolarEngineAccountId = true
+        invokedSetSolarEngineAccountIdCount += 1
+        invokedSetSolarEngineAccountIdParameters = (solarEngineAccountId, appUserID)
+        invokedSetSolarEngineAccountIdParametersList.append((solarEngineAccountId, appUserID))
+    }
+
+    var invokedSetSolarEngineVisitorId = false
+    var invokedSetSolarEngineVisitorIdCount = 0
+    var invokedSetSolarEngineVisitorIdParameters: (solarEngineVisitorId: String?, appUserID: String?)?
+    var invokedSetSolarEngineVisitorIdParametersList = [(solarEngineVisitorId: String?, appUserID: String?)]()
+
+    override func setSolarEngineVisitorId(_ solarEngineVisitorId: String?, appUserID: String) {
+        invokedSetSolarEngineVisitorId = true
+        invokedSetSolarEngineVisitorIdCount += 1
+        invokedSetSolarEngineVisitorIdParameters = (solarEngineVisitorId, appUserID)
+        invokedSetSolarEngineVisitorIdParametersList.append((solarEngineVisitorId, appUserID))
     }
 
     var invokedSetMixpanelDistinctID = false

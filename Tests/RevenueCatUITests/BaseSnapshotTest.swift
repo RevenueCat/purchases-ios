@@ -18,7 +18,7 @@ import SnapshotTesting
 import SwiftUI
 import XCTest
 
-#if !os(watchOS) && !os(macOS)
+#if !os(watchOS)
 
 /// Base class for Snapshot tests
 ///
@@ -112,6 +112,8 @@ extension BaseSnapshotTest {
 
 }
 
+#if canImport(UIKit)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
@@ -164,6 +166,9 @@ extension View {
 
         window.makeKeyAndVisible()
 
+        // Wait for views to render
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
         return {
             controller.beginAppearanceTransition(false, animated: false)
             controller.view.removeFromSuperview()
@@ -171,9 +176,12 @@ extension View {
             controller.endAppearanceTransition()
             window.rootViewController = nil
             window.resignKey()
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
         }
     }
 
 }
+
+#endif
 
 #endif

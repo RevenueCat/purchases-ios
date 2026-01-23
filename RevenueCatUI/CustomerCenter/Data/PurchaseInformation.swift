@@ -228,7 +228,10 @@ struct PurchaseInformation {
             && transaction.store != .promotional
         self.productType = subscribedProduct?.productType
 
-        self.isLifetime = subscribedProduct?.productType == .nonConsumable
+        self.isLifetime = Self.determineIsLifetime(
+            subscribedProduct: subscribedProduct,
+            transaction: transaction
+        )
 
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
@@ -290,7 +293,7 @@ struct PurchaseInformation {
         } else if let renewalPrice {
             self.renewalPrice = renewalPrice
         } else {
-            self.renewalPrice = transaction.determineRenewalPrice(numberFormatter: numberFormatter)
+            self.renewalPrice = nil
         }
 
         self.pricePaid = transaction.paidPrice(numberFormatter: numberFormatter)
@@ -427,37 +430,6 @@ extension PurchaseInformation {
 
 private extension Transaction {
 
-    func determineRenewalPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.RenewalPrice? {
-        if store == .promotional {
-            return nil
-        }
-
-        guard self.store == .rcBilling else {
-            // RCBilling does not support product price changes yet
-            // So it's the only store we can infer the renewal price from
-            // latest price paid
-            return nil
-        }
-
-        if unableToInferRenewalPrice {
-            return nil
-        }
-
-        guard let price = self.price else {
-            return nil
-        }
-
-        if price.amount.isZero {
-            return .free
-        }
-
-        numberFormatter.currencyCode = price.currency
-
-        guard let formattedPrice = numberFormatter.string(from: price.amount as NSNumber) else { return nil }
-
-        return .nonFree(formattedPrice)
-    }
-
     func paidPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.PricePaid {
         if self.store == .promotional || self.price?.amount.isZero == true {
             return .free
@@ -543,6 +515,27 @@ extension PurchaseInformation {
 
 extension PurchaseInformation {
 
+    private static func determineIsLifetime(
+        subscribedProduct: StoreProduct?,
+        transaction: Transaction
+    ) -> Bool {
+        guard !transaction.isSubscription,
+              let product = subscribedProduct,
+              product.productCategory == .nonSubscription else {
+            // If it's a subscription it's not a lifetime product
+            return false
+        }
+
+        // If it's a SK2 product, we need to check if it's a non-consumable product
+        if product.sk1Product == nil {
+            return product.productType == .nonConsumable
+        }
+
+        // In SK1 products, productType is always .nonConsumable
+        // we don't know if it's a lifetime product or not so we default to false
+        return false
+    }
+
     private static func determineTitle(
         subscribedProduct: StoreProduct?,
         isSubscription: Bool,
@@ -557,7 +550,22 @@ extension PurchaseInformation {
     }
 
     var isAppStoreRenewableSubscription: Bool {
-        return productType == .autoRenewableSubscription && store == .appStore
+        guard store == .appStore else { return false }
+
+        if productType == .autoRenewableSubscription {
+            return true
+        }
+
+        if productType == .nonRenewableSubscription {
+            return false
+        }
+
+        // For SK1 products, productType always reports .nonConsumable regardless of actual type,
+        // so we cannot rely on it to distinguish auto-renewable subscriptions from other products.
+        // We fall back to isSubscription (from the backend), which correctly identifies subscriptions.
+        // This ensures SK1 auto-renewable subscriptions show proper management options like
+        // "Cancel subscription" and "Change plans" in the Customer Center.
+        return isSubscription
     }
 
     var storeLocalizationKey: CCLocalizedString {
@@ -569,10 +577,7 @@ extension PurchaseInformation {
         case .amazon: return .storeAmazon
         case .unknownStore: return .storeUnknownStore
         case .paddle, .stripe, .rcBilling, .external: return .storeWeb
-
-        #if TEST_STORE
         case .testStore: return .testStore
-        #endif
         }
     }
 }

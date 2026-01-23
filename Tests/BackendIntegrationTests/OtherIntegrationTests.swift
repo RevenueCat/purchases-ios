@@ -20,9 +20,15 @@ import XCTest
 
 class OtherIntegrationTests: BaseBackendIntegrationTests {
 
+    private var testSession: SKTestSession!
+
     override func setUp() async throws {
         // Some tests need to introspect logs during initialization.
         super.initializeLogger()
+
+        if self.testSession == nil {
+            try await self.configureTestSession()
+        }
 
         try await super.setUp()
     }
@@ -33,18 +39,47 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try await super.tearDown()
     }
 
+    func configureTestSession() async throws {
+        assert(self.testSession == nil, "SKTestSession already configured")
+
+        self.testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
+        self.testSession.resetToDefaultState()
+        self.testSession.disableDialogs = true
+        self.testSession.clearTransactions()
+        if #available(iOS 15.2, *) {
+            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
+        } else {
+            self.testSession.timeRate = .oneSecondIsOneDay
+        }
+
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            // Despite calling `SKTestSession.clearTransactions` tests sometimes
+            // begin with leftover transactions. This ensures that we remove them
+            // to always start with a clean state.
+            await self.deleteAllTransactions(session: self.testSession)
+        }
+    }
+
     func testGetCustomerInfo() async throws {
         let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.all).to(beEmpty())
+        expect(info.isLoadedFromCache) == false
+        expect(info.originalSource) == .main
         expect(info.isComputedOffline) == false
     }
 
     func testGetCustomerInfoCaching() async throws {
-        _ = try await self.purchases.customerInfo()
+        let info1 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(info1.isLoadedFromCache) == false
+        expect(info1.originalSource) == .main
+        expect(info1.isComputedOffline) == false
 
         self.logger.clearMessages()
 
-        _ = try await self.purchases.customerInfo()
+        let info2 = try await self.purchases.customerInfo()
+        expect(info2.isLoadedFromCache) == true
+        expect(info2.originalSource) == .main
+        expect(info2.isComputedOffline) == false
 
         self.logger.verifyMessageWasLogged(Strings.customerInfo.vending_cache, level: .debug)
         self.logger.verifyMessageWasNotLogged("API request started")
@@ -124,7 +159,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 2. Re-fetch user
-        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        let info2 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         let expectedRequest = HTTPRequest(method: .get,
                                           path: .getCustomerInfo(appUserID: try self.purchases.appUserID))
@@ -133,6 +168,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(expectedRequest, httpCode: .notModified, metadata: nil)
         )
+
+        expect(info2.isLoadedFromCache) == false
     }
 
     func testGetCustomerInfoAfterLogInReturnsNotModified() async throws {
@@ -143,7 +180,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 3. Re-fetch user
-        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        let info3 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         let expectedRequest = HTTPRequest(method: .get,
                                           path: .getCustomerInfo(appUserID: try self.purchases.appUserID))
@@ -152,6 +189,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(expectedRequest, httpCode: .notModified, metadata: nil)
         )
+
+        expect(info3.isLoadedFromCache) == false
     }
 
     func testOfferingsAreOnlyFetchedOnceOnSDKInitialization() async throws {
@@ -201,8 +240,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         )
     }
 
-    func testRequestPaywallImages() async throws {
-        let offering = try await XCTAsyncUnwrap(try await self.purchases.offerings().current)
+    func testRequestV1PaywallImages() async throws {
+        let offering = try await XCTAsyncUnwrap(try await self.purchases.offerings().all["alternate_offering"])
         let paywall = try XCTUnwrap(offering.paywall)
         let images = paywall.allImageURLs
 
@@ -224,7 +263,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
                 )
             expect(urlResponse.value(forHTTPHeaderField: "Content-Type"))
                 .to(
-                    equal("image/jpeg"),
+                    equal("image/heic"),
                     description: "Unexpected content type for image: \(imageURL)"
                 )
         }

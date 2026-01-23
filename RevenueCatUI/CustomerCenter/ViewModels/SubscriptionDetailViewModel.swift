@@ -37,13 +37,38 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         purchaseInformation?.store != .appStore
     }
 
+    var hasActiveSubscription: Bool {
+        !customerInfoViewModel.subscriptionsSection.isEmpty
+    }
+
+    func shouldShowCreateTicketButton(
+        supportTickets: CustomerCenterConfigData.Support.SupportTickets?
+    ) -> Bool {
+        guard let supportTickets = supportTickets,
+              supportTickets.allowCreation else {
+            return false
+        }
+
+        switch supportTickets.customerType {
+        case .all:
+            return true
+        case .active:
+            return hasActiveSubscription
+        case .notActive:
+            return !hasActiveSubscription
+        case .none:
+            return false
+        }
+    }
+
     override var allowMissingPurchase: Bool {
         allowsMissingPurchaseAction
     }
 
     private var allowsMissingPurchaseAction: Bool = true
 
-    private var cancellable: AnyCancellable?
+    private var refreshingCancellable: AnyCancellable?
+    private var cancellables: Set<AnyCancellable> = []
     private let customerInfoViewModel: CustomerCenterViewModel
 
     init(
@@ -72,8 +97,24 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         )
     }
 
+    func didAppear() {
+        cancellables.removeAll()
+
+        actionWrapper.promotionalOfferSuccessPublisher
+            .sink { [weak self] in self?.refreshPurchase() }
+            .store(in: &cancellables)
+
+        actionWrapper.showingManageSubscriptionsPublisher
+            .sink { [weak self] in self?.customerInfoViewModel.manageSubscriptionsSheet = true }
+            .store(in: &cancellables)
+
+        actionWrapper.showingChangePlansPublisher
+            .sink { [weak self] _ in self?.customerInfoViewModel.changePlansSheet = true }
+            .store(in: &cancellables)
+    }
+
     func refreshPurchase() {
-        cancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
+        refreshingCancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
             .dropFirst() // skip current value
             .sink(receiveValue: { @MainActor [weak self] in
                 self?.purchaseInformation = $0

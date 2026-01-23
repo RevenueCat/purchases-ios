@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
@@ -292,8 +292,6 @@ private enum ButtonWithSheetPreview {
                                 shape: .rectangle(nil),
                                 overflow: .default
                              ),
-                             // Sheet background
-                             background: .color(.init(light: .hex("#2b43bf"))),
                              backgroundBlur: true,
                              size: .init(width: .fill, height: .fit)
                             )
@@ -510,7 +508,8 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
-            failedToLoadFont: { _ in }
+            failedToLoadFont: { _ in },
+            colorScheme: .light
         )
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))

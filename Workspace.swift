@@ -8,9 +8,10 @@ var projects: [Path] = [
     "./Examples/MagicWeatherSwiftUI/",
     "./Examples/testCustomEntitlementsComputation/",
     "./Examples/PurchaseTester/",
-    "./Projects/PaywallTester",
+    "./Projects/PaywallsTester",
     "./Projects/APITesters",
-    "./Projects/PaywallValidationTester"
+    "./Projects/PaywallValidationTester",
+    "./Projects/BinarySizeTest"
 ]
 
 if Environment.local {
@@ -27,12 +28,14 @@ var additionalFiles: [FileElement] = [
     .glob(pattern: "Tests/TestPlans/**/*.xctestplan"),
     .glob(pattern: "Tests/RevenueCatUITests/TestPlans/**/*.xctestplan")
 ]
-if FileManager.default.fileExists(atPath: "Local.xcconfig") {
+if FileManager.default.fileExists(atPath: "CI.xcconfig") {
+    additionalFiles.append(.glob(pattern: "CI.xcconfig"))
+} else if FileManager.default.fileExists(atPath: "Local.xcconfig") {
     additionalFiles.append(.glob(pattern: "Local.xcconfig"))
 }
 
 let workspace = Workspace(
-    name: "RevenueCat-Workspace",
+    name: "RevenueCat-Tuist",
     projects: projects,
     additionalFiles: additionalFiles
 )

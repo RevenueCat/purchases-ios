@@ -53,12 +53,9 @@ func checkEntitlementInfoEnums() {
          .rcBilling,
          .unknownStore,
          .external,
-         .paddle:
+         .paddle,
+         .testStore:
         print(store!)
-    #if TEST_STORE
-    case .testStore:
-        print(store!)
-    #endif
     @unknown default:
         fatalError()
     }
@@ -72,4 +69,35 @@ func checkEntitlementInfoEnums() {
     @unknown default:
         fatalError()
     }
+}
+
+func checkCanCreateEntitlementInfo() {
+    _ = EntitlementInfo(
+        identifier: "entitlement_id",
+        isActive: true,
+        willRenew: true,
+        periodType: .intro,
+        store: .appStore,
+        productIdentifier: "com.revenuecat.test",
+        isSandbox: false,
+        ownershipType: .purchased
+    )
+
+    _ = EntitlementInfo(
+        identifier: "entitlement_id",
+        isActive: true,
+        willRenew: true,
+        periodType: .trial,
+        latestPurchaseDate: Date(),
+        originalPurchaseDate: Date(),
+        expirationDate: Date(),
+        store: .appStore,
+        productIdentifier: "com.revenuecat.test",
+        productPlanIdentifier: "plan_id",
+        isSandbox: true,
+        unsubscribeDetectedAt: Date(),
+        billingIssueDetectedAt: Date(),
+        ownershipType: .purchased,
+        verification: .verified
+    )
 }

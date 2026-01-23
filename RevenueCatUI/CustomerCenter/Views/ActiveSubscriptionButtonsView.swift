@@ -31,7 +31,6 @@ struct ActiveSubscriptionButtonsView: View {
 
     @ObservedObject
     var viewModel: BaseManageSubscriptionViewModel
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
@@ -41,11 +40,23 @@ struct ActiveSubscriptionButtonsView: View {
                         withActiveProductId: viewModel.purchaseInformation?.productIdentifier)
                 }, label: {
                     if self.viewModel.loadingPath?.id == path.id {
-                        TintedProgressView()
+                        if #available(iOS 26.0, *) {
+                            TintedProgressView()
+                                .padding()
+                        } else {
+                            TintedProgressView()
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                        }
                     } else {
-                        CompatibilityLabeledContent(path.title)
-                            .padding(.horizontal)
-                            .padding(.vertical, 12)
+                        if #available(iOS 26.0, *) {
+                            CompatibilityLabeledContent(path.title)
+                                .padding()
+                        } else {
+                            CompatibilityLabeledContent(path.title)
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                        }
                     }
                 })
                 .disabled(self.viewModel.loadingPath != nil)
@@ -56,15 +67,13 @@ struct ActiveSubscriptionButtonsView: View {
                 }
             }
         }
-        .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
+        .applyIfLet(appearance.tintColor(colorScheme: colorScheme), apply: { $0.tint($1)})
+        #if compiler(>=5.9)
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
-                          : UIColor.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-
-    private var tintColor: Color? {
-        Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
+                          : UIColor.secondarySystemBackground),
+                    in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+        #endif
     }
 }
 

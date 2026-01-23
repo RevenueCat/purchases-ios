@@ -240,6 +240,7 @@ final class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         expect(support.email) == "support@revenuecat.com"
         expect(support.displayPurchaseHistoryLink) == true
         expect(support.shouldWarnCustomerToUpdate) == false
+        expect(support.displayUserDetailsSection) == true
         expect(support.displayVirtualCurrencies) == true
     }
 
@@ -413,6 +414,7 @@ private extension BackendGetCustomerCenterConfigTests {
                 "email": "support@revenuecat.com",
                 "should_warn_customer_to_update": false,
                 "display_purchase_history_link": true,
+                "display_user_details_section": true,
                 "display_virtual_currencies": true
             ] as [String: Any],
             "change_plans": [

@@ -41,33 +41,49 @@ struct APIKeyDashboardList: View {
     @State
     private var offeringToPresent: Offering?
 
+    @State
+    private var presentPaywallOffering: Offering?
+    
+    @State
+    private var isLoadingPaywall: Bool = false
+
     var body: some View {
-        NavigationView {
-            self.content
-                .navigationTitle("Live Paywalls")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .automatic) {
-                        Button {
-                            Task {
-                                await fetchOfferings()
+        ZStack {
+            NavigationView {
+                self.content
+                    .navigationTitle("Live Paywalls")
+                    #if !os(macOS)
+                    .navigationBarTitleDisplayMode(.inline)
+                    #endif
+                    .toolbar {
+                        ToolbarItem(placement: .automatic) {
+                            Button {
+                                Task {
+                                    await fetchOfferings()
+                                }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
                             }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
+                            #if !os(watchOS)
+                            .keyboardShortcut("r", modifiers: .shift)
+                            #endif
                         }
-                        #if !os(watchOS)
-                        .keyboardShortcut("r", modifiers: .shift)
-                        #endif
                     }
-                }
-        }
-        .task {
-            await fetchOfferings()
-        }
-        // We keep this here for testing that the PaywallView is correctly
-        // disabling this refreshable action that is inherited by default
-        .refreshable {
-            await fetchOfferings()
+            }
+            .task {
+                await fetchOfferings()
+            }
+            .refreshable {
+                await fetchOfferings()
+            }
+            
+            if isLoadingPaywall {
+                Color.black.opacity(0.3)
+                    .edgesIgnoringSafeArea(.all)
+                SwiftUI.ProgressView()
+                    .scaleEffect(1.5)
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+            }
         }
     }
 
@@ -163,6 +179,7 @@ struct APIKeyDashboardList: View {
                             }
                             #else
                             OfferButton(offering: offering) {
+                                self.isLoadingPaywall = true
                                 self.presentedPaywall = .init(offering: offering, mode: .default)
                             }
                                 #if !os(watchOS)
@@ -187,23 +204,38 @@ struct APIKeyDashboardList: View {
                     self.presentedPaywall = nil
                 }
                 .onAppear {
+                    self.isLoadingPaywall = false
                     if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
                         print("Paywall V2 Error:", errorInfo.debugDescription)
                     }
                 }
         }
+        #if !os(macOS)
         .fullScreenCover(item: self.$presentedPaywallCover) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
                 .onAppear {
+                    self.isLoadingPaywall = false
                     if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
                         print("Paywall V2 Error:", errorInfo.debugDescription)
                     }
                 }
         }
-        .presentPaywallIfNeededModifier(offering: $offeringToPresent)
+        #endif
+                .presentPaywallIfNeededModifier(offering: $offeringToPresent)
+                .presentPaywall(offering: $presentPaywallOffering, onDismiss: { })
+                .onChange(of: offeringToPresent) { offering in
+                    if offering != nil {
+                        self.isLoadingPaywall = false
+                    }
+                }
+                .onChange(of: presentPaywallOffering) { offering in
+                    if offering != nil {
+                        self.isLoadingPaywall = false
+                    }
+                }
     }
 
     #if !os(watchOS)
@@ -218,6 +250,7 @@ struct APIKeyDashboardList: View {
     @ViewBuilder
     private func button(for selectedMode: PaywallTesterViewMode, offering: Offering) -> some View {
         Button {
+            self.isLoadingPaywall = true
             switch selectedMode {
             case .fullScreen:
                 self.presentedPaywallCover = .init(offering: offering, mode: selectedMode)
@@ -225,6 +258,8 @@ struct APIKeyDashboardList: View {
                 self.presentedPaywall = .init(offering: offering, mode: selectedMode)
             case .presentIfNeeded:
                 self.offeringToPresent = offering
+            case .presentPaywall:
+                self.presentPaywallOffering = offering
             }
         } label: {
             Text(selectedMode.name)
@@ -246,9 +281,10 @@ struct APIKeyDashboardList: View {
                             .foregroundStyle(Color.red)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .contentShape(Rectangle())
         }
     }
 

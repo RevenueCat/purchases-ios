@@ -173,6 +173,16 @@ public typealias ProductIdentifier = String
             """
     }
 
+    /// Represents the original source of the ``CustomerInfo`` object.
+    internal var originalSource: OriginalSource {
+        return self.data.originalSource
+    }
+
+    /// Whether the `CustomerInfo` instance was loaded from the device cache.
+    internal var isLoadedFromCache: Bool {
+        return self.data.loadedFromCache
+    }
+
     // MARK: -
 
     private let data: Contents
@@ -180,11 +190,60 @@ public typealias ProductIdentifier = String
     /// Initializes a `CustomerInfo` with the underlying data in the current schema version
     convenience init(response: CustomerInfoResponse,
                      entitlementVerification: VerificationResult,
-                     sandboxEnvironmentDetector: SandboxEnvironmentDetector) {
+                     sandboxEnvironmentDetector: SandboxEnvironmentDetector,
+                     httpResponseOriginalSource: HTTPResponseOriginalSource?) {
+        let originalSource = OriginalSource(entitlementVerification: entitlementVerification,
+                                            httpResponseOriginalSource: httpResponseOriginalSource)
         self.init(data: .init(response: response,
                               entitlementVerification: entitlementVerification,
-                              schemaVersion: Self.currentSchemaVersion),
+                              schemaVersion: Self.currentSchemaVersion,
+                              originalSource: originalSource ?? .main),
                   sandboxEnvironmentDetector: sandboxEnvironmentDetector)
+    }
+
+    /// Initializes a ``CustomerInfo`` instance.
+    /// Useful for Unit testing purposes, since the other (internal) initializers require a backend response
+    public convenience init(
+        entitlements: EntitlementInfos,
+        expirationDatesByProductId: [String: Date] = [:],
+        purchaseDatesByProductId: [String: Date] = [:],
+        allPurchasedProductIds: Set<String> = [],
+        requestDate: Date,
+        firstSeen: Date,
+        originalAppUserId: String,
+        originalPurchaseDate: Date? = nil,
+        managementURL: URL? = nil
+    ) {
+        let response = CustomerInfoResponse(
+            subscriber: .init(
+                originalAppUserId: originalAppUserId,
+                firstSeen: firstSeen
+            ),
+            requestDate: requestDate,
+            rawData: [:]
+        )
+        let data = Contents(
+            response: response,
+            entitlementVerification: entitlements.verification,
+            schemaVersion: nil,
+            originalSource: .main
+        )
+
+        self.init(
+            data: data,
+            entitlements: entitlements,
+            nonSubscriptions: [],
+            requestDate: requestDate,
+            firstSeen: firstSeen,
+            originalAppUserId: originalAppUserId,
+            originalPurchaseDate: originalPurchaseDate,
+            originalApplicationVersion: nil,
+            managementURL: managementURL,
+            expirationDatesByProductId: expirationDatesByProductId,
+            purchaseDatesByProductId: purchaseDatesByProductId,
+            allPurchasedProductIdentifiers: allPurchasedProductIds,
+            subscriptionsByProductIdentifier: [:]
+        )
     }
 
     /// Initializes a `CustomerInfo` creating a copy.
@@ -193,37 +252,24 @@ public typealias ProductIdentifier = String
         self.init(data: customerInfo.data, sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
-    fileprivate init(
+    // swiftlint:disable:next function_body_length
+    fileprivate convenience init(
         data: Contents,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
     ) {
         let response = data.response
         let subscriber = response.subscriber
 
-        self.data = data
-        self.entitlements = EntitlementInfos(
-            entitlements: subscriber.entitlements,
-            purchases: subscriber.allPurchasesByProductId,
-            requestDate: response.requestDate,
-            sandboxEnvironmentDetector: sandboxEnvironmentDetector,
-            verification: data.entitlementVerification
-        )
-        self.nonSubscriptions = TransactionsFactory.nonSubscriptionTransactions(
+        let nonSubscriptions = TransactionsFactory.nonSubscriptionTransactions(
             withSubscriptionsData: subscriber.nonSubscriptions
         )
-        self.requestDate = response.requestDate
-        self.firstSeen = subscriber.firstSeen
-        self.originalAppUserId = subscriber.originalAppUserId
-        self.originalPurchaseDate = subscriber.originalPurchaseDate
-        self.originalApplicationVersion = subscriber.originalApplicationVersion
-        self.managementURL = subscriber.managementUrl
+        let expirationDatesByProductId = Self.extractExpirationDates(subscriber)
+        let purchaseDatesByProductId = Self.extractPurchaseDates(subscriber)
 
-        self.expirationDatesByProductId = Self.extractExpirationDates(subscriber)
-        self.purchaseDatesByProductId = Self.extractPurchaseDates(subscriber)
-        self.allPurchasedProductIdentifiers = Set(self.expirationDatesByProductId.keys)
-            .union(self.nonSubscriptions.map { $0.productIdentifier })
+        let allPurchasedProductIdentifiers = Set(expirationDatesByProductId.keys)
+            .union(nonSubscriptions.map { $0.productIdentifier })
 
-        self.subscriptionsByProductIdentifier =
+        let subscriptionsByProductIdentifier =
         Dictionary(uniqueKeysWithValues: subscriber.subscriptions.map { (key, subscriptionData) in
             (key, SubscriptionInfo(
                 productIdentifier: key,
@@ -241,9 +287,62 @@ public typealias ProductIdentifier = String
                 storeTransactionId: subscriptionData.storeTransactionId,
                 requestDate: response.requestDate,
                 price: subscriptionData.price.map { ProductPaidPrice(currency: $0.currency, amount: $0.amount) },
-                managementURL: subscriptionData.managementUrl
+                managementURL: subscriptionData.managementUrl,
+                displayName: subscriptionData.displayName
             ))
         })
+
+        self.init(
+            data: data,
+            entitlements: EntitlementInfos(
+                entitlements: subscriber.entitlements,
+                purchases: subscriber.allPurchasesByProductId,
+                requestDate: response.requestDate,
+                sandboxEnvironmentDetector: sandboxEnvironmentDetector,
+                verification: data.entitlementVerification
+            ),
+            nonSubscriptions: nonSubscriptions,
+            requestDate: response.requestDate,
+            firstSeen: subscriber.firstSeen,
+            originalAppUserId: subscriber.originalAppUserId,
+            originalPurchaseDate: subscriber.originalPurchaseDate,
+            originalApplicationVersion: subscriber.originalApplicationVersion,
+            managementURL: subscriber.managementUrl,
+            expirationDatesByProductId: expirationDatesByProductId,
+            purchaseDatesByProductId: purchaseDatesByProductId,
+            allPurchasedProductIdentifiers: allPurchasedProductIdentifiers,
+            subscriptionsByProductIdentifier: subscriptionsByProductIdentifier
+        )
+    }
+
+    fileprivate init(
+        data: Contents,
+        entitlements: EntitlementInfos,
+        nonSubscriptions: [NonSubscriptionTransaction],
+        requestDate: Date,
+        firstSeen: Date,
+        originalAppUserId: String,
+        originalPurchaseDate: Date?,
+        originalApplicationVersion: String?,
+        managementURL: URL?,
+        expirationDatesByProductId: [String: Date?],
+        purchaseDatesByProductId: [String: Date?],
+        allPurchasedProductIdentifiers: Set<String>,
+        subscriptionsByProductIdentifier: [String: SubscriptionInfo]
+    ) {
+        self.data = data
+        self.entitlements = entitlements
+        self.nonSubscriptions = nonSubscriptions
+        self.requestDate = requestDate
+        self.firstSeen = firstSeen
+        self.originalAppUserId = originalAppUserId
+        self.originalPurchaseDate = originalPurchaseDate
+        self.originalApplicationVersion = originalApplicationVersion
+        self.managementURL = managementURL
+        self.expirationDatesByProductId = expirationDatesByProductId
+        self.purchaseDatesByProductId = purchaseDatesByProductId
+        self.allPurchasedProductIdentifiers = allPurchasedProductIdentifiers
+        self.subscriptionsByProductIdentifier = subscriptionsByProductIdentifier
     }
 
     private let expirationDatesByProductId: [String: Date?]
@@ -280,12 +379,29 @@ extension CustomerInfo {
 
 extension CustomerInfo {
 
-    /// Creates a copy of this ``CustomerInfo`` modifying only the ``VerificationResult``.
-    func copy(with entitlementVerification: VerificationResult) -> Self {
-        guard entitlementVerification != self.data.entitlementVerification else { return self }
+    /// Creates a copy of this ``CustomerInfo`` modifying only the ``VerificationResult`` and the ``OriginalSource``.
+    func copy(
+        with entitlementVerification: VerificationResult,
+        httpResponseOriginalSource: HTTPResponseOriginalSource?
+    ) -> Self {
+        let originalSource = OriginalSource(entitlementVerification: entitlementVerification,
+                                            httpResponseOriginalSource: httpResponseOriginalSource)
+        guard entitlementVerification != self.data.entitlementVerification ||
+                originalSource != self.data.originalSource
+        else { return self }
 
         var copy = self.data
         copy.entitlementVerification = entitlementVerification
+        copy.originalSource = originalSource ?? .main
+        return .init(data: copy)
+    }
+
+    /// Creates a copy of this ``CustomerInfo`` setting the `isLoadedFromCache` flag  to `true`.
+    func loadedFromCache() -> Self {
+        guard !self.isLoadedFromCache else { return self }
+
+        var copy = self.data
+        copy.loadedFromCache = true
         return .init(data: copy)
     }
 
@@ -351,26 +467,30 @@ extension CustomerInfo: Identifiable {
 
 private extension CustomerInfo {
 
-    /// The actual contents of a ``CustomerInfo``: the response with the associated version.
+    /// The actual contents of a ``CustomerInfo``: the response with the associated version and other metadata.
     struct Contents {
 
         var response: CustomerInfoResponse
         var entitlementVerification: VerificationResult
         var schemaVersion: String?
+        var originalSource: CustomerInfo.OriginalSource
+        var loadedFromCache: Bool = false
 
         init(response: CustomerInfoResponse,
              entitlementVerification: VerificationResult,
-             schemaVersion: String?) {
+             schemaVersion: String?,
+             originalSource: CustomerInfo.OriginalSource) {
             self.response = response
             self.entitlementVerification = entitlementVerification
             self.schemaVersion = schemaVersion
+            self.originalSource = originalSource
         }
 
     }
 
 }
 
-/// `Codable` implementation that puts the content of`response` and `schemaVersion`
+/// `Codable` implementation that puts the content of`response`, `schemaVersion` and `originalSource`
 /// at the same level instead of nested.
 extension CustomerInfo.Contents: Codable {
 
@@ -379,6 +499,7 @@ extension CustomerInfo.Contents: Codable {
         case response
         case entitlementVerification
         case schemaVersion
+        case originalSource
 
     }
 
@@ -389,6 +510,7 @@ extension CustomerInfo.Contents: Codable {
         try container.encode(self.entitlementVerification, forKey: .entitlementVerification)
         // Always use current schema version when encoding
         try container.encode(CustomerInfo.currentSchemaVersion, forKey: .schemaVersion)
+        try container.encode(self.originalSource, forKey: .originalSource)
     }
 
     init(from decoder: Decoder) throws {
@@ -400,6 +522,41 @@ extension CustomerInfo.Contents: Codable {
             forKey: .entitlementVerification
         ) ?? .notRequested
         self.schemaVersion = try container.decodeIfPresent(String.self, forKey: .schemaVersion)
+        self.originalSource = try container.decodeIfPresent(CustomerInfo.OriginalSource.self,
+                                                            forKey: .originalSource) ?? .main
+    }
+
+}
+
+extension CustomerInfo {
+
+    /// Internal enum representing the original source of the ``CustomerInfo`` object.
+    enum OriginalSource: String, Codable {
+        /// Main server
+        case main
+
+        /// Load shedder server
+        case loadShedder = "load_shedder"
+
+        /// Computed on device from offline entitlements
+        case offlineEntitlements = "offline_entitlements"
+
+        init?(entitlementVerification: VerificationResult, httpResponseOriginalSource: HTTPResponseOriginalSource?) {
+            if entitlementVerification == .verifiedOnDevice {
+                self = .offlineEntitlements
+            } else {
+                switch httpResponseOriginalSource {
+                case .mainServer:
+                    self = .main
+                case .loadShedder:
+                    self = .loadShedder
+                case .fallbackUrl:
+                    return nil // CustomerInfo not supported from fallback URL
+                case .none:
+                    return nil
+                }
+            }
+        }
     }
 
 }

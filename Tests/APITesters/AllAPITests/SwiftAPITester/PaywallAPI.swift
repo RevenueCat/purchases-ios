@@ -204,6 +204,15 @@ func checkPaywallEvent(_ event: PaywallEvent) {
     case let .close(creationData, data):
         checkPaywallEventCreationData(creationData)
         checkPaywallEventData(data)
+    case let .exitOffer(creationData, data, _):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
+    case let .purchaseInitiated(creationData, data):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
+    case let .purchaseError(creationData, data):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
     @unknown default: break
     }
 
@@ -252,4 +261,12 @@ func checkPaywallEventData(_ data: PaywallEvent.Data) {
             darkMode: darkMode
         )
     }
+}
+
+func checkPaywallComponentsData(_ data: PaywallComponentsData) {
+    let _: String = data.templateName
+    let _: URL = data.assetBaseURL
+    let _: Int = data.revision
+    let _: [String] = data.zeroDecimalPlaceCountries
+    let _: String = data.defaultLocale
 }

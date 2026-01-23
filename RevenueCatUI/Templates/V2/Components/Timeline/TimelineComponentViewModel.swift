@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 typealias PresentedTimelinePartial = PaywallComponent.PartialTimelineComponent
 
@@ -35,12 +35,12 @@ class TimelineComponentViewModel {
         component: PaywallComponent.TimelineComponent,
         items: [TimelineItemViewModel],
         uiConfigProvider: UIConfigProvider
-    ) throws {
+    ) {
         self.component = component
         self.items = items
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
     }
 
     @ViewBuilder
@@ -90,12 +90,12 @@ class TimelineItemViewModel {
     init(component: PaywallComponent.TimelineComponent.Item,
          title: TextComponentViewModel,
          description: TextComponentViewModel?,
-         icon: IconComponentViewModel) throws {
+         icon: IconComponentViewModel) {
         self.component = component
         self.title = title
         self.description = description
         self.icon = icon
-        self.presentedOverrides = try component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = component.overrides?.toPresentedOverrides { $0 }
     }
 
     @ViewBuilder

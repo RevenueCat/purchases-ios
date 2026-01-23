@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TimelineComponentView: View {
@@ -395,7 +395,7 @@ fileprivate extension TimelineComponentViewModel {
                     component: descriptionComponent
                 )
             }
-            return try TimelineItemViewModel(
+            return TimelineItemViewModel(
                 component: item,
                 title: try TextComponentViewModel(
                     localizationProvider: localizationProvider,
@@ -403,7 +403,7 @@ fileprivate extension TimelineComponentViewModel {
                     component: item.title
                 ),
                 description: description,
-                icon: try IconComponentViewModel(
+                icon: IconComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: item.icon
@@ -411,7 +411,7 @@ fileprivate extension TimelineComponentViewModel {
             )
         }
 
-        try self.init(
+        self.init(
             component: component,
             items: models,
             uiConfigProvider: uiConfigProvider

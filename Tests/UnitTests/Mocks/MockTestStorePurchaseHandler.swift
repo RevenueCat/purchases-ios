@@ -7,16 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  MockTestStorePurchaseHandler.swift
+//  MockSimulatedStorePurchaseHandler.swift
 //
 //  Created by Antonio Pallares on 21/7/25.
 
 import Foundation
 @testable import RevenueCat
 
-actor MockTestStorePurchaseHandler: TestStorePurchaseHandlerType {
-
-    #if TEST_STORE
+actor MockSimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
 
     let stubbedPurchaseResult: Atomic<TestPurchaseResult> = .init(.cancel)
     let invokedPurchase: Atomic<Bool> = .init(false)
@@ -29,5 +27,4 @@ actor MockTestStorePurchaseHandler: TestStorePurchaseHandlerType {
         return self.stubbedPurchaseResult.value
     }
 
-    #endif // TEST_STORE
 }

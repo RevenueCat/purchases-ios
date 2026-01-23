@@ -23,7 +23,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockProductsManager: MockProductsManager!
     let mockBackend = MockBackend()
     let mockStoreKit1Wrapper = MockStoreKit1Wrapper()
-    let mockTestStorePurchaseHandler = MockTestStorePurchaseHandler()
+    let mockSimulatedStorePurchaseHandler = MockSimulatedStorePurchaseHandler()
     let mockNotificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
     let mockOfferingsFactory = MockOfferingsFactory()
@@ -136,7 +136,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             backend: self.mockBackend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
-            operationDispatcher: self.mockOperationDispatcher
+            operationDispatcher: self.mockOperationDispatcher,
+            localTransactionMetadataStore: MockLocalTransactionMetadataStore()
         )
 
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
@@ -183,7 +184,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         let purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
-            testStorePurchaseHandler: self.mockTestStorePurchaseHandler,
+            simulatedStorePurchaseHandler: self.mockSimulatedStorePurchaseHandler,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.mockOperationDispatcher,
@@ -202,7 +203,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsTracker: nil,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
-            paywallEventsManager: nil,
+            eventsManager: nil,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: systemInfo,
@@ -235,7 +236,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               subscriberAttributes: attribution,
                               operationDispatcher: mockOperationDispatcher,
                               customerInfoManager: customerInfoManager,
-                              paywallEventsManager: nil,
+                              eventsManager: nil,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
@@ -465,6 +466,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
             .to(equal((nil, purchases.appUserID)))
     }
 
+    func testSetAndClearAirbridgeDeviceID() {
+        setupPurchases()
+        purchases.attribution.setAirbridgeDeviceID("airbridge")
+        purchases.attribution.setAirbridgeDeviceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAirbridgeDeviceIDParametersList[0])
+            .to(equal(("airbridge", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetAirbridgeDeviceIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetAndClearKochavaDeviceID() {
         setupPurchases()
         purchases.attribution.setKochavaDeviceID("kochava")
@@ -472,6 +483,36 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetKochavaDeviceIDParametersList[0])
             .to(equal(("kochava", purchases.appUserID)))
         expect(self.mockSubscriberAttributesManager.invokedSetKochavaDeviceIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearSolarEngineDistinctId() {
+        setupPurchases()
+        purchases.attribution.setSolarEngineDistinctId("solarDistinct")
+        purchases.attribution.setSolarEngineDistinctId(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineDistinctIdParametersList[0])
+            .to(equal(("solarDistinct", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineDistinctIdParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearSolarEngineAccountId() {
+        setupPurchases()
+        purchases.attribution.setSolarEngineAccountId("solarAccount")
+        purchases.attribution.setSolarEngineAccountId(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineAccountIdParametersList[0])
+            .to(equal(("solarAccount", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineAccountIdParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearSolarEngineVisitorId() {
+        setupPurchases()
+        purchases.attribution.setSolarEngineVisitorId("solarVisitor")
+        purchases.attribution.setSolarEngineVisitorId(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineVisitorIdParametersList[0])
+            .to(equal(("solarVisitor", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineVisitorIdParametersList[1])
             .to(equal((nil, purchases.appUserID)))
     }
 

@@ -91,4 +91,43 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(draftComponents.componentsConfig.base.stack.dimension) == .vertical(.leading, .end)
         expect(draftComponents.componentsConfig.base.stack.components).to(haveCount(1))
     }
+
+    func testDecodesPaywallComponentsWithExitOffers() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 3])
+
+        expect(offering.identifier) == "paywall_components_with_exit_offers"
+        expect(offering.description) == "Offering with paywall components and exit offers"
+        expect(offering.packages).to(haveCount(1))
+
+        let components = try XCTUnwrap(offering.paywallComponents)
+        expect(components.templateName) == "componentsTEST"
+
+        let exitOffers = try XCTUnwrap(components.exitOffers)
+        let dismissExitOffer = try XCTUnwrap(exitOffers.dismiss)
+        expect(dismissExitOffer.offeringId) == "exit_offer_offering_id"
+    }
+
+    func testDecodesPaywallComponentsWithoutExitOffers() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 0])
+
+        let components = try XCTUnwrap(offering.paywallComponents)
+        expect(components.exitOffers).to(beNil())
+    }
+
+    func testDecodesPaywallComponentsWithZeroDecimalPlaceCountries() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 4])
+
+        expect(offering.identifier) == "paywall_components_with_zero_decimal_countries"
+        expect(offering.description) == "Offering with paywall components and zero decimal place countries"
+
+        let components = try XCTUnwrap(offering.paywallComponents)
+        expect(components.zeroDecimalPlaceCountries) == ["TWN", "KAZ", "MEX", "PHL", "THA", "IND"]
+    }
+
+    func testDecodesPaywallComponentsWithoutZeroDecimalPlaceCountries() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 0])
+
+        let components = try XCTUnwrap(offering.paywallComponents)
+        expect(components.zeroDecimalPlaceCountries).to(beEmpty())
+    }
 }

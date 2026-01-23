@@ -35,11 +35,23 @@ protocol PurchasesOrchestratorTests {
 
     func testPurchaseWithPurchaseParamsReturnsCorrectValues() async throws
 
+    func testPurchaseWithQuantitySucceeds() async throws
+
+    func testPurchaseWithoutQuantityDefaultsToQuantityOne() async throws
+
+    func testPurchaseWithInvalidQuantityReturnsError() async throws
+
     // MARK: - Paywalls
 
     func testPurchaseWithPresentedPaywall() async throws
 
-    func testPurchaseFailureRemembersPresentedPaywall() async throws
+    func testPurchaseFailureClearsPresentedPaywall() async throws
+
+    func testCancelEventClearsPresentedPaywall() async throws
+
+    func testPurchaseWithDifferentProductDoesNotIncludePaywallData() async throws
+
+    func testPurchaseBeforePaywallEventDoesNotIncludePaywallData() async throws
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSyncsPaywallEvents() async throws

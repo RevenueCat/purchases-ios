@@ -23,7 +23,7 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
     private static let nonSubscriptionID = "com.revenuecat.product.tip"
     private static let subscriptionID = "com.revenuecat.monthly_4.99.1_week_intro"
 
-    private var customerInfo: CustomerInfo!
+    fileprivate var customerInfo: CustomerInfo!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -115,7 +115,7 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
     }
 
     func testRawDataIsNotEncoded() throws {
-        expect(try self.customerInfo.asDictionary().keys).toNot(contain("raw_data"))
+        expect(try self.customerInfo.asJSONDictionary().keys).toNot(contain("raw_data"))
     }
 
     func testRawDataIncludesUnparsedKeys() throws {
@@ -139,20 +139,19 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
         expect(try CustomerInfo.decode("[]")).to(throwError(ErrorCode.customerInfoError))
     }
 
-    func testEncoding() {
-        assertSnapshot(matching: self.customerInfo, as: .backwardsCompatibleFormattedJson)
+}
+
+class CustomerInfoNoOriginalSourceDecodeTests: CustomerInfoDecodingTests {
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.customerInfo = try Self.decodeFixture("CustomerInfoWithoutOriginalSource")
     }
 
-    func testEncodingWithVerifiedResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .verified),
-                       as: .backwardsCompatibleFormattedJson)
+    func testOriginalSourceDefaultsToMain() {
+        expect(self.customerInfo.originalSource) == .main
     }
-
-    func testEncodingWithFailedVerificationResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .failed),
-                       as: .backwardsCompatibleFormattedJson)
-    }
-
 }
 
 class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
@@ -227,13 +226,15 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
     }
 
     func testVerificationIsEncoded() throws {
-        let reencoded = try self.customerInfo.copy(with: .verified).encodeAndDecode()
+        let reencoded = try self.customerInfo.copy(with: .verified,
+                                                   httpResponseOriginalSource: .mainServer).encodeAndDecode()
 
         expect(reencoded.entitlements.verification) == .verified
     }
 
     func testFailedVerificationIsEncoded() throws {
-        let reencoded = try self.customerInfo.copy(with: .failed).encodeAndDecode()
+        let reencoded = try self.customerInfo.copy(with: .failed,
+                                                   httpResponseOriginalSource: .mainServer).encodeAndDecode()
 
         expect(reencoded.entitlements.verification) == .failed
     }
@@ -247,6 +248,40 @@ class CustomerInfoInvalidDataDecodingTests: BaseHTTPResponseTest {
             let _: CustomerInfo = try Self.decodeFixture("CustomerInfoWithInvalidSubscription")
         }
         .to(throwError(ErrorCode.customerInfoError))
+    }
+
+}
+
+class CustomerInfoEncodingTests: BaseHTTPResponseTest {
+
+    fileprivate var customerInfo: CustomerInfo!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.customerInfo = try Self.decodeFixture("CustomerInfo")
+    }
+
+    func testEncoding() {
+        assertSnapshot(matching: self.customerInfo, as: .backwardsCompatibleFormattedJson)
+    }
+
+    func testEncodingWithVerifiedResponse() {
+        assertSnapshot(matching: self.customerInfo.copy(with: .verified,
+                                                        httpResponseOriginalSource: .mainServer),
+                       as: .backwardsCompatibleFormattedJson)
+    }
+
+    func testEncodingWithFailedVerificationResponse() {
+        assertSnapshot(matching: self.customerInfo.copy(with: .failed,
+                                                        httpResponseOriginalSource: .mainServer),
+                       as: .backwardsCompatibleFormattedJson)
+    }
+
+    func testEncodingLoadShedderResponse() throws {
+        assertSnapshot(matching: self.customerInfo.copy(with: .failed,
+                                                        httpResponseOriginalSource: .loadShedder),
+                       as: .backwardsCompatibleFormattedJson)
     }
 
 }

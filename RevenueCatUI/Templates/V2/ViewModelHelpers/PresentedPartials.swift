@@ -15,7 +15,7 @@
 import Foundation
 import RevenueCat
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 /// Protocol defining how partial components can be combined
 protocol PresentedPartial {
@@ -133,7 +133,7 @@ extension Array {
         P: PresentedPartial
     >(
         convert: (T) throws -> P
-    ) throws -> PresentedOverrides<P>
+    ) rethrows -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
         return try self.compactMap { partial in
             let presentedPartial = try convert(partial.properties)
