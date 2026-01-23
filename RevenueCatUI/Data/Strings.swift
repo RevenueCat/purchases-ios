@@ -67,6 +67,7 @@ enum Strings {
     case successfully_opened_url_deep_link(String)
     case no_selected_package_found
     case no_web_checkout_url_found
+    case variable_requires_package(variableName: String)
 
     // Customer Center
     case could_not_find_subscription_information
@@ -293,6 +294,9 @@ extension Strings: CustomStringConvertible {
 
         case .no_web_checkout_url_found:
             return "No web checkout url found."
+
+        case let .variable_requires_package(variableName):
+            return "Paywall variable '\(variableName)' requires a package but none was provided."
 
         case .localizationNotFound(let identifier):
             return "Could not find localizations for '\(identifier)'"
