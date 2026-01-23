@@ -276,7 +276,8 @@ class LocalTransactionMetadataStoreTests: TestCase {
         return LocalTransactionMetadata(
             productData: productData,
             transactionData: transactionData,
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
     }
 
@@ -311,7 +312,8 @@ class LocalTransactionMetadataStoreTests: TestCase {
         return LocalTransactionMetadata(
             productData: productData,
             transactionData: transactionData,
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
     }
 

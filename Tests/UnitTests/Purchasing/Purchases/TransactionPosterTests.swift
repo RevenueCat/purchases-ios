@@ -68,10 +68,13 @@ class TransactionPosterTests: TestCase {
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
         ) == self.mockTransaction.transactionIdentifier
+
+        // sdkOriginated is false because it comes from .queue and no stored metadata existed for that transaction
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
         expect(self.mockTransaction.finishInvoked) == true
     }
 
-    func testHandlePurchasedTransactionFromPurchaseInitiationSourceSendsTransactionId() throws {
+    func testHandlePurchasedTransactionFromPurchaseInitiationSourceSendsTransactionIdAndSdkOriginated() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData()
 
@@ -93,6 +96,10 @@ class TransactionPosterTests: TestCase {
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
         ) == self.mockTransaction.transactionIdentifier
+
+        // sdkOriginated is true because initiationSource is .purchase
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
+
         expect(self.mockTransaction.finishInvoked) == true
     }
 
@@ -146,6 +153,9 @@ class TransactionPosterTests: TestCase {
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
         ) == self.mockTransaction.transactionIdentifier
+
+        // sdkOriginated is false because it comes from .queue and no stored metadata existed for that transaction
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
         expect(self.mockTransaction.finishInvoked) == true
     }
 
@@ -191,6 +201,9 @@ class TransactionPosterTests: TestCase {
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
         ) == self.mockTransaction.transactionIdentifier
+
+        // sdkOriginated is false because it comes from .queue and no stored metadata existed for that transaction
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
         expect(self.mockTransaction.finishInvoked) == true
     }
 
@@ -397,6 +410,9 @@ class TransactionPosterTests: TestCase {
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
         ) == self.mockTransaction.transactionIdentifier
 
+        // sdkOriginated is false because it comes from .queue and no stored metadata existed for that transaction
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
+
         expect(self.receiptFetcher.receiptDataCalled) == false
         expect(self.transactionFetcher.appTransactionJWSCalled.value) == false
     }
@@ -482,10 +498,13 @@ class TransactionPosterTests: TestCase {
                 targetingContext: nil
             )
         )
+        // sdkOriginated is false because this represents a non-SDK purchase
+        // (e.g., a paywall purchase with purchasesAreCompletedBy: .myApp)
         let storedMetadata = LocalTransactionMetadata(
             productData: storedProductData,
             transactionData: storedTransactionData,
-            originalPurchasesAreCompletedBy: .myApp
+            originalPurchasesAreCompletedBy: .myApp,
+            sdkOriginated: false
         )
 
         // Pre-store metadata
@@ -523,6 +542,9 @@ class TransactionPosterTests: TestCase {
         expect(
             self.backend.invokedPostReceiptDataParameters?.associatedTransactionId
         ) == self.mockTransaction.transactionIdentifier
+
+        // sdkOriginated is false because the stored metadata had sdkOriginated = false
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
     }
 
     func testPostReceiptFromSyncedSK2TransactionClearsMetadataOnSuccess() throws {
@@ -542,7 +564,8 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata
@@ -755,7 +778,8 @@ class TransactionPosterTests: TestCase {
         let storedMetadata = LocalTransactionMetadata(
             productData: storedProductData,
             transactionData: storedTransactionData,
-            originalPurchasesAreCompletedBy: .myApp
+            originalPurchasesAreCompletedBy: .myApp,
+            sdkOriginated: false
         )
 
         // Pre-store metadata
@@ -866,7 +890,8 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata
@@ -907,7 +932,8 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata
@@ -948,7 +974,8 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata (simulating it was stored from a previous purchase attempt)
@@ -991,7 +1018,8 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata (simulating it was stored from a previous purchase attempt)
@@ -1071,7 +1099,8 @@ class TransactionPosterTests: TestCase {
             transactionData: PurchasedTransactionData(
                 presentedOfferingContext: .init(offeringIdentifier: "stored_offering")
             ),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         // Pre-store metadata (simulating it was stored from a previous offline purchase attempt)

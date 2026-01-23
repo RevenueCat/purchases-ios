@@ -143,6 +143,7 @@ class Backend {
               originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
               appTransaction: String? = nil,
               associatedTransactionId: String? = nil,
+              sdkOriginated: Bool = false,
               appUserID: String,
               containsAttributionData: Bool = false,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
@@ -154,6 +155,7 @@ class Backend {
                            originalPurchaseCompletedBy: originalPurchaseCompletedBy,
                            appTransaction: appTransaction,
                            associatedTransactionId: associatedTransactionId,
+                           sdkOriginated: sdkOriginated,
                            appUserID: appUserID,
                            containsAttributionData: containsAttributionData,
                            completion: completion)

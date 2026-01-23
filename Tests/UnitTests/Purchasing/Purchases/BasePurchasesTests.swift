@@ -518,6 +518,7 @@ extension BasePurchasesTests {
                            originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                            appTransaction: String? = nil,
                            associatedTransactionId: String? = nil,
+                           sdkOriginated: Bool = false,
                            appUserID: String,
                            containsAttributionData: Bool = false,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
