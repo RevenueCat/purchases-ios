@@ -327,7 +327,7 @@ extension TransactionPoster {
             purchasedTransactionData.presentedPaywall != nil
         )
 
-        let shouldClearMetadataOnSuccess = storedTransactionMetadata != nil || shouldStoreMetadata
+        let containsAttributionData = storedTransactionMetadata != nil || shouldStoreMetadata
 
         let effectiveProductData = storedTransactionMetadata?.productData ?? product.map {
             ProductRequestData(with: $0, storeCountry: purchasedTransactionData.storeCountry)
@@ -353,8 +353,10 @@ extension TransactionPoster {
                           observerMode: self.observerMode,
                           originalPurchaseCompletedBy: effectivePurchasesAreCompletedBy,
                           appTransaction: appTransaction,
-                          appUserID: currentUserID) { result in
-            if shouldClearMetadataOnSuccess {
+                          associatedTransactionId: transaction.transactionIdentifier,
+                          appUserID: currentUserID,
+                          containsAttributionData: containsAttributionData) { result in
+            if containsAttributionData {
                 switch result {
                 case let .success(customerInfo) where !customerInfo.isComputedOffline:
                     // Offline-computed CustomerInfo means server is down, so it didn't process the transaction yet

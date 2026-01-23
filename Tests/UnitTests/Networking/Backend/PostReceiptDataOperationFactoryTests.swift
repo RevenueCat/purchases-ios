@@ -79,7 +79,9 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             observerMode: false,
             purchaseCompletedBy: .revenueCat,
             testReceiptIdentifier: nil,
-            appTransaction: nil
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
         )
 
         let postData2 = PostReceiptDataOperation.PostData(
@@ -95,7 +97,9 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             observerMode: false,
             purchaseCompletedBy: .revenueCat,
             testReceiptIdentifier: nil,
-            appTransaction: nil
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
         )
 
         let factory1 = PostReceiptDataOperation.createFactory(
@@ -150,7 +154,9 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             observerMode: false,
             purchaseCompletedBy: .revenueCat,
             testReceiptIdentifier: nil,
-            appTransaction: nil
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
         )
 
         let postData2 = PostReceiptDataOperation.PostData(
@@ -166,7 +172,9 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             observerMode: false,
             purchaseCompletedBy: .revenueCat,
             testReceiptIdentifier: nil,
-            appTransaction: nil
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
         )
 
         let factory1 = PostReceiptDataOperation.createFactory(
@@ -185,6 +193,248 @@ class PostReceiptDataOperationFactoryTests: TestCase {
 
         // Cache keys should be different when timestamps differ and ignoreTimeInCacheIdentity is false
         expect(factory1.cacheKey) != factory2.cacheKey
+    }
+
+    func testCacheKeyDifferenceWhenTransactionIdChangesAndContainsAttributionData() {
+        let config = self.createConfig()
+
+        let purchaseCompletedBy: PurchasesAreCompletedBy = .revenueCat
+        let observerMode = purchaseCompletedBy.observerMode
+
+        let postData1 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: "transaction_id_1",
+            containsAttributionData: true
+        )
+
+        let postData2 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: "transaction_id_2",
+            containsAttributionData: true
+        )
+
+        let factory1 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData1,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        let factory2 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData2,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        // Cache keys should be different when transaction IDs differ and containsAttributionData is true
+        expect(factory1.cacheKey) != factory2.cacheKey
+    }
+
+    func testCacheKeySameWhenTransactionIdChangesButDoesNotContainAttributionData() {
+        let config = self.createConfig()
+
+        let purchaseCompletedBy: PurchasesAreCompletedBy = .revenueCat
+        let observerMode = purchaseCompletedBy.observerMode
+
+        let postData1 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: "transaction_id_1",
+            containsAttributionData: false
+        )
+
+        let postData2 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: "transaction_id_2",
+            containsAttributionData: false
+        )
+
+        let factory1 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData1,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        let factory2 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData2,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        // Cache keys should be the same when containsAttributionData is false, regardless of transaction ID
+        expect(factory1.cacheKey) == factory2.cacheKey
+    }
+
+    func testCacheKeyDifferenceForSameTransactionIdWhenContainsAttributionDataDiffers() {
+        let config = self.createConfig()
+
+        let purchaseCompletedBy: PurchasesAreCompletedBy = .revenueCat
+        let observerMode = purchaseCompletedBy.observerMode
+        let transactionId = "same_transaction_id"
+
+        let postData1 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: transactionId,
+            containsAttributionData: true
+        )
+
+        let postData2 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: transactionId,
+            containsAttributionData: false
+        )
+
+        let factory1 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData1,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        let factory2 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData2,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        // Cache keys should be different when containsAttributionData differs for the same transaction ID
+        // This ensures purchases (with attribution data) are not deduplicated with renewals (without attribution data)
+        expect(factory1.cacheKey) != factory2.cacheKey
+    }
+
+    func testCacheKeySameWhenTransactionIdIsNil() {
+        let config = self.createConfig()
+
+        let purchaseCompletedBy: PurchasesAreCompletedBy = .revenueCat
+        let observerMode = purchaseCompletedBy.observerMode
+
+        let postData1 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let postData2 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let factory1 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData1,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        let factory2 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData2,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        // Cache keys should be the same when both transaction IDs are nil
+        expect(factory1.cacheKey) == factory2.cacheKey
     }
 
 }

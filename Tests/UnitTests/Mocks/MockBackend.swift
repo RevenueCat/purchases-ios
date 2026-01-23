@@ -16,7 +16,9 @@ class MockBackend: Backend {
                                        observerMode: Bool,
                                        originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                                        appTransaction: String?,
+                                       associatedTransactionId: String?,
                                        appUserID: String,
+                                       containsAttributionData: Bool,
                                        completion: CustomerAPI.CustomerInfoResponseHandler?)
 
     var invokedPostReceiptData = false
@@ -64,7 +66,9 @@ class MockBackend: Backend {
                        observerMode: Bool,
                        originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                        appTransaction: String? = nil,
+                       associatedTransactionId: String? = nil,
                        appUserID: String,
+                       containsAttributionData: Bool = false,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
@@ -75,7 +79,9 @@ class MockBackend: Backend {
                                             observerMode,
                                             originalPurchaseCompletedBy,
                                             appTransaction,
+                                            associatedTransactionId,
                                             appUserID,
+                                            containsAttributionData,
                                             completion)
         invokedPostReceiptDataParametersList.append((receipt,
                                                      productData,
@@ -84,7 +90,9 @@ class MockBackend: Backend {
                                                      observerMode,
                                                      originalPurchaseCompletedBy,
                                                      appTransaction,
+                                                     associatedTransactionId,
                                                      appUserID,
+                                                     containsAttributionData,
                                                      completion))
 
         self.onPostReceipt?()
