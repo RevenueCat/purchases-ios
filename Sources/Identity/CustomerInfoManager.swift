@@ -434,7 +434,6 @@ private extension CustomerInfoManager {
                     )
 
                     let transactionData = PurchasedTransactionData(
-                        appUserID: appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: [:],
                         storeCountry: await Storefront.currentStorefront?.countryCode,
@@ -445,7 +444,11 @@ private extension CustomerInfoManager {
                     // in parallel so they can be de-duped
                     let otherTransactionsToPostInParalel = Array(transactions.dropFirst())
                     Task.detached(priority: .background) {
-                        await self.postTransactions(otherTransactionsToPostInParalel, transactionData)
+                        await self.postTransactions(
+                            otherTransactionsToPostInParalel,
+                            transactionData,
+                            appUserID: appUserID
+                        )
                     }
 
                     // Return the result of posting the first transaction.
@@ -453,7 +456,8 @@ private extension CustomerInfoManager {
                     // so we don't need to wait for those.
                     let result = await self.transactionPoster.handlePurchasedTransaction(
                         transactionToPost,
-                        data: transactionData
+                        data: transactionData,
+                        currentUserID: appUserID
                     )
                     completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
                 } else {
@@ -539,14 +543,16 @@ private extension CustomerInfoManager {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     private func postTransactions(
         _ transactions: [StoreTransaction],
-        _ data: PurchasedTransactionData
+        _ data: PurchasedTransactionData,
+        appUserID: String
     ) async {
         await withTaskGroup(of: Void.self) { group in
             for transaction in transactions {
                 group.addTask {
                     _ = await self.transactionPoster.handlePurchasedTransaction(
                         transaction,
-                        data: data
+                        data: data,
+                        currentUserID: appUserID
                     )
                 }
             }
