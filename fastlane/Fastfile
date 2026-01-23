@@ -10,6 +10,8 @@
 #     https://docs.fastlane.tools/plugins/available-plugins
 #
 
+require_relative 'api_diff_helper'
+
 default_platform(:ios)
 
 def current_version_number
@@ -1384,333 +1386,70 @@ platform :ios do
   desc "Generate Swift interface files for API change detection"
   lane :generate_swiftinterface do
     require 'tmpdir'
-    
+
     Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
-      UI.message("Using temporary directory: #{temp_dir}")
+      ApiDiffHelper::PLATFORMS.each do |platform_config|
+        UI.message("Building RevenueCat for #{platform_config[:platform]}...")
 
-      # Clean temp directory to make sure it's not polluted
-      UI.message("Cleaning temporary directory...")
-      sh("rm", "-rf", "#{temp_dir}/*") if Dir.exist?(temp_dir)
-
-    platforms = [
-      {
-        sdk: "iphonesimulator",
-        platform: "iOS",
-        suffix: "-ios-simulator",
-        destination: "generic/platform=iOS Simulator"
-      },
-      {
-        sdk: "iphoneos",
-        platform: "iOS",
-        suffix: "-ios",
-        destination: "generic/platform=iOS"
-      },
-      {
-        sdk: "macosx",
-        platform: "macOS",
-        suffix: "-macos",
-        destination: "generic/platform=macOS"
-      },
-      {
-        sdk: "watchsimulator",
-        platform: "watchOS",
-        suffix: "-watchos-simulator",
-        destination: "generic/platform=watchOS Simulator"
-      },
-      {
-        sdk: "watchos",
-        platform: "watchOS",
-        suffix: "-watchos",
-        destination: "generic/platform=watchOS"
-      }
-    ]
-
-    platforms.each do |platform_config|
-      UI.message("Building RevenueCat framework for #{platform_config[:platform]}...")
-
-      begin
-        # Get SDK path
         sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
-        
-        # Run xcodebuild from the project root directory (clean build for each platform)
+
         Dir.chdir("..") do
           sh("xcodebuild", "clean", "build",
              "-scheme", "RevenueCat",
              "-derivedDataPath", ".build",
-             "-configuration", "Release", 
+             "-configuration", "Release",
              "-sdk", sdk_path,
              "-destination", platform_config[:destination],
              "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
         end
 
-        UI.message("Looking for .swiftinterface file for #{platform_config[:platform]}...")
-        derived_data_dir = "../.build"
-
-        # Find the RevenueCat.swiftinterface file for this specific platform build
-        # Look in the build intermediates directory where xcodebuild generates them
-        platform_pattern = case platform_config[:sdk]
-        when "iphonesimulator"
-          "**/Release-iphonesimulator/**/Objects-normal/**/RevenueCat.swiftinterface"
-        when "iphoneos" 
-          "**/Release-iphoneos/**/Objects-normal/**/RevenueCat.swiftinterface"
-        when "macosx"
-          "**/Release/**/Objects-normal/**/RevenueCat.swiftinterface"
-        when "watchsimulator"
-          "**/Release-watchsimulator/**/Objects-normal/**/RevenueCat.swiftinterface"
-        when "watchos"
-          "**/Release-watchos/**/Objects-normal/**/RevenueCat.swiftinterface"
-        else
-          "**/RevenueCat.swiftinterface"
-        end
-        
-        swiftinterface_files = Dir.glob("#{derived_data_dir}/#{platform_pattern}")
-          .reject { |path| path.include?("private") }
+        swiftinterface_files = ApiDiffHelper.find_swiftinterface_file("../.build", platform_config[:sdk])
 
         if swiftinterface_files.empty?
-          UI.message("Contents of derived data directory:")
-          Dir.chdir("..") do
-            sh("find", ".build", "-type", "f", "-name", "*.swiftinterface", "-o", "-name", "RevenueCat*")
-          end
-          UI.user_error!("Could not find RevenueCat.swiftinterface file for #{platform_config[:platform]}")
+          UI.user_error!("Could not find RevenueCat.swiftinterface for #{platform_config[:platform]}")
         end
 
-        swiftinterface_path = swiftinterface_files.first
         output_path = "#{temp_dir}/RevenueCat#{platform_config[:suffix]}.swiftinterface"
-
-        UI.message("Found swiftinterface at: #{swiftinterface_path}")
-        FileUtils.cp(swiftinterface_path, output_path)
-        UI.success("Generated .swiftinterface file has been copied to #{output_path}")
-
-      rescue => e
-        UI.user_error!("Failed to build or find Swift interface for #{platform_config[:platform]}: #{e.message}")
+        FileUtils.cp(swiftinterface_files.first, output_path)
+        UI.success("Generated #{platform_config[:platform]} swiftinterface")
       end
-    end
 
-      UI.success("All Swift interface files generated successfully in #{temp_dir}")
-      
-      # Copy files to the expected location for Circle CI
-      expected_dir = "/tmp/pr-swiftinterface"
-      sh("mkdir", "-p", expected_dir)
-      sh("cp", "-r", "#{temp_dir}/.", expected_dir)
-      UI.success("Swift interface files copied to #{expected_dir} for Circle CI")
+      # Copy to expected location for CI artifacts
+      sh("mkdir", "-p", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
+      sh("cp", "-r", "#{temp_dir}/.", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
+      UI.success("Swift interface files copied to #{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}")
     end
   end
 
   desc "Check API changes and report results"
   lane :check_api_changes do
-    UI.message("Checking for API changes across all platforms...")
-    
-    # Ensure the API diff tool is available
     api_diff_tool = File.expand_path("~/bin/public-api-diff")
+
     unless File.exist?(api_diff_tool)
       UI.error("API diff tool not found at #{api_diff_tool}")
-      UI.important("To install the API diff tool locally, run:")
-      UI.important("git clone https://github.com/Adyen/adyen-swift-public-api-diff.git ~/tools/adyen-swift-public-api-diff")
-      UI.important("cd ~/tools/adyen-swift-public-api-diff")
-      UI.important("swift build -c release")
-      UI.important("mkdir -p ~/bin")
-      UI.important("cp .build/release/public-api-diff ~/bin/")
-      UI.message("Skipping API diff check (tool not available locally - this will work in CI)")
+      UI.important("To install locally, run:")
+      UI.important("  git clone https://github.com/Adyen/adyen-swift-public-api-diff.git ~/tools/adyen-swift-public-api-diff")
+      UI.important("  cd ~/tools/adyen-swift-public-api-diff && swift build -c release")
+      UI.important("  mkdir -p ~/bin && cp .build/release/public-api-diff ~/bin/")
+      UI.message("Skipping API diff check (tool not available locally)")
       return
     end
-    
-    platforms = [
-      { suffix: "-ios-simulator", name: "iOS Simulator" },
-      { suffix: "-ios", name: "iOS" },
-      { suffix: "-macos", name: "macOS" },
-      { suffix: "-watchos-simulator", name: "watchOS Simulator" },
-      { suffix: "-watchos", name: "watchOS" }
-    ]
-    
-    # Create directory for diff results
-    diff_dir = "/tmp/api-diffs"
-    sh("mkdir", "-p", diff_dir)
-    
-    overall_result = true
-    diff_results = []
-    
-    platforms.each do |platform|
-      UI.message("Checking API changes for #{platform[:name]}...")
-      
+
+    failed_platforms = []
+
+    ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
       old_file = "../revenuecat-api#{platform[:suffix]}.swiftinterface"
-      new_file = "/tmp/pr-swiftinterface/RevenueCat#{platform[:suffix]}.swiftinterface"
-      diff_file = "#{diff_dir}/diff#{platform[:suffix]}.txt"
-      
-      # Check if files exist
-      unless File.exist?(old_file)
-        UI.error("Baseline interface file not found: #{old_file}")
-        overall_result = false
-        diff_results << { platform: platform[:name], result: "❌ Baseline file missing", diff: "Baseline interface file not found: #{old_file}" }
-        next
-      end
-      
-      unless File.exist?(new_file)
-        UI.error("New interface file not found: #{new_file}")
-        overall_result = false  
-        diff_results << { platform: platform[:name], result: "❌ New file missing", diff: "New interface file not found: #{new_file}" }
-        next
-      end
-      
-      # Run the API diff
-      begin
-        output = sh(api_diff_tool, "swift-interface", "--old", old_file, "--new", new_file)
-        # Tool succeeded (exit code 0), check if there are actually no changes
-        UI.message("API diff tool succeeded for #{platform[:name]}")
-        UI.message("Success output for #{platform[:name]}: #{output}")
-        
-        # Check if the output indicates no changes
-        no_changes = output.include?("# ✅ No changes detected") || output.empty?
-        
-        if no_changes
-          UI.success("✅ No API changes detected for #{platform[:name]}")
-          diff_results << { 
-            platform: platform[:name], 
-            result: "✅ No changes", 
-            diff: output,
-            no_changes: true
-          }
-        else
-          # There are changes, fail the build
-          UI.error("❌ API changes detected for #{platform[:name]}!")
-          overall_result = false
-          diff_results << { 
-            platform: platform[:name], 
-            result: "❌ Changes detected", 
-            diff: output,
-            no_changes: false
-          }
-        end
-      rescue => e
-        # Tool failed (non-zero exit code), indicating breaking changes
-        UI.error("❌ Breaking API changes detected for #{platform[:name]}!")
-        overall_result = false
-        
-        # Try to capture the diff output
-        diff_output = ""
-        begin
-          diff_output = sh(api_diff_tool, "swift-interface", "--old", old_file, "--new", new_file, error_callback: ->(result) { result })
-        rescue => diff_e
-          diff_output = diff_e.message
-        end
-        
-        # Log the raw diff output for debugging
-        UI.message("Raw diff output for #{platform[:name]}:")
-        UI.message("--- START DIFF ---")
-        puts diff_output
-        UI.message("--- END DIFF ---")
-        UI.message("Diff output length: #{diff_output.length} characters")
-        
-        # Clean up any problematic characters that could cause encoding issues
-        diff_output = diff_output.encode('UTF-8', invalid: :replace, undef: :replace) if diff_output
-        
-        UI.message("Cleaned diff output length: #{diff_output.length} characters")
-        
-        diff_results << { platform: platform[:name], result: "❌ Breaking changes detected", diff: diff_output, no_changes: false }
-        File.write(diff_file, diff_output)
-      end
+      new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
+
+      result = ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, platform[:name])
+      failed_platforms << result unless result[:success]
     end
-    
-    # Generate report
-    UI.message("Generating report with #{diff_results.length} platform results...")
-    diff_results.each_with_index do |result, index|
-      UI.message("Result #{index + 1}: #{result[:platform]} - #{result[:result]} (#{result[:diff].length} chars)")
-    end
-    
-    report = generate_api_diff_report(diff_results)
-    UI.message("Generated report length: #{report.length} characters")
-    
-    # Check if we're in CI (Circle CI) and this is a PR
-    is_ci = !ENV["CIRCLECI"].nil?
-    is_pr = !ENV["CIRCLE_PULL_REQUEST"].nil? && !ENV["CIRCLE_PULL_REQUEST"].empty?
-    UI.message("Environment check - CI: #{is_ci}, PR: #{is_pr}")
-    
-    if is_ci && is_pr
-      # In CI + PR: Post comment to GitHub
-      UI.message("Running in CI for a PR, posting comment...")
-      post_api_diff_comment(report)
+
+    if failed_platforms.any?
+      ApiDiffHelper.print_failure_summary(failed_platforms)
+      UI.user_error!("API changes detected! Update baseline files if changes are intentional.")
     else
-      # Local or non-PR: Print to terminal
-      UI.important("API Diff Results:")
-      puts "\n" + report + "\n"
-    end
-    
-    # Fail the lane if there were any API changes
-    if !overall_result
-      UI.user_error!("❌ BUILD FAILED: API changes detected! This job fails when ANY API modifications are found (breaking or non-breaking). Check the diff output above and update the baseline files if these changes are intentional.")
-    else
-      UI.success("✅ BUILD PASSED: No API changes detected - CI passing!")
-    end
-  end
-  
-  def generate_api_diff_report(diff_results)
-    # Always start with the unique header for easy identification
-    report = "## 👁️‍🗨️ API DIFF\n\n"
-    
-    # Check if any platform has actual changes (not just "no changes detected" output)
-    platforms_with_changes = diff_results.select { |result| !result[:no_changes] }
-    
-    if platforms_with_changes.empty?
-      # No changes detected across all platforms
-      platform_names = diff_results.map { |result| result[:platform] }.join(", ")
-      report << "✅ No changes detected for #{platform_names}\n"
-    else
-      # Show details for platforms with changes
-      platforms_with_changes.each do |result|
-        report << "### #{result[:platform]}\n\n"
-        report << "**Status:** #{result[:result]}\n\n"
-        report << "#{result[:diff]}\n\n"
-      end
-    end
-    
-    report
-  end
-  
-  def post_api_diff_comment(report)
-    pr_url = ENV["CIRCLE_PULL_REQUEST"]
-    
-    # Extract PR number from URL
-    pr_number = pr_url.match(/\/pull\/(\d+)/)[1] rescue nil
-    if pr_number.nil?
-      UI.error("Could not extract PR number from: #{pr_url}")
-      return
-    end
-    
-    begin
-      # Look for existing API Changes Report comment
-      existing_comments = github_api(
-        api_token: ENV["GITHUB_TOKEN"],
-        path: "/repos/RevenueCat/purchases-ios/issues/#{pr_number}/comments"
-      )
-      
-      # Look for existing API diff comment by the unique header
-      api_diff_comment = existing_comments[:json].find do |comment|
-        comment["body"] && comment["body"].include?("## 👁️‍🗨️ API DIFF")
-      end
-      
-      if api_diff_comment
-        # Update existing comment
-        github_api(
-          api_token: ENV["GITHUB_TOKEN"],
-          path: "/repos/RevenueCat/purchases-ios/issues/comments/#{api_diff_comment["id"]}",
-          http_method: "PATCH",
-          body: { body: report }
-        )
-        UI.success("Updated existing API diff comment on PR ##{pr_number}")
-      else
-        # Create new comment
-        github_api(
-          api_token: ENV["GITHUB_TOKEN"],
-          path: "/repos/RevenueCat/purchases-ios/issues/#{pr_number}/comments",
-          http_method: "POST",
-          body: { body: report }
-        )
-        UI.success("Posted new API diff comment to PR ##{pr_number}")
-      end
-    rescue => e
-      UI.error("Failed to post/update comment: #{e.message}")
-      # Still show the results locally as fallback
-      UI.important("API Diff Results (failed to post to PR):")
-      puts "\n" + report + "\n"
+      UI.success("✅ No API changes detected")
     end
   end
 
