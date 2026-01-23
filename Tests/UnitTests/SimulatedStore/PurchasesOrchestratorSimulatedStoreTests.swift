@@ -355,7 +355,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         XCTAssertEqual(self.backend.invokedPostReceiptDataCount, 1)
         let transactionData = try XCTUnwrap(self.backend.invokedPostReceiptDataParameters?.transactionData)
         XCTAssertEqual(transactionData.appUserID, "appUserID")
-        XCTAssertEqual(transactionData.storefront?.countryCode, Self.mockStorefront.countryCode)
+        XCTAssertEqual(transactionData.storeCountry, Self.mockStorefront.countryCode)
     }
 
     func testSuccessfulPurchaseOfTestStoreWithFailedPostReceiptReturnsFailure() async throws {

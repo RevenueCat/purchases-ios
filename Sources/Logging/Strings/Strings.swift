@@ -36,6 +36,7 @@ enum Strings {
     static let signing = SigningStrings.self
     static let storeKit = StoreKitStrings.self
     static let virtualCurrencies = VirtualCurrencyStrings.self
+    static let transactionMetadata = TransactionMetadataStrings.self
 
 }
 

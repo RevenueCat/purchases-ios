@@ -145,7 +145,7 @@ extension SynchronizedLargeItemCache {
             removeInvocations.append(cacheURL(from: url))
         }
 
-        func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
+        func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
             workingCacheDirectory = cacheDirectoryURL(basePath: basePath)
             return workingCacheDirectory
         }

@@ -35,7 +35,16 @@ protocol LargeItemCacheType {
     func cacheDirectoryURL(basePath: String) -> URL?
 
     /// Creates a directory in the cache from a base path
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL?
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL?
+}
+
+extension LargeItemCacheType {
+    /// Defaults `inAppSpecificDirectory` to true
+    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
+        createCacheDirectoryIfNeeded(basePath: basePath, inAppSpecificDirectory: true)
+    }
 }
 
 extension FileManager: LargeItemCacheType {
@@ -121,29 +130,28 @@ extension FileManager: LargeItemCacheType {
         }
     }
 
-    /// Returns the cache directory URL for the given base path
-    func cacheDirectoryURL(basePath: String) -> URL? {
-        DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent(basePath)
-    }
-
     /// Creates a directory in the cache from a base path
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
-        guard let cacheDirectoryURL = cacheDirectoryURL(basePath: basePath) else {
-            return nil
-        }
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
+        guard let cacheDirectoryBaseURL = DirectoryHelper.baseUrl(
+            for: .cache,
+            inAppSpecificDirectory: inAppSpecificDirectory
+        ) else { return nil }
 
+        let directoryURL = cacheDirectoryBaseURL.appendingPathComponent(basePath)
         do {
             try createDirectory(
-                at: cacheDirectoryURL,
+                at: directoryURL,
                 withIntermediateDirectories: true,
                 attributes: nil
             )
         } catch {
-            let message = Strings.fileRepository.failedToCreateCacheDirectory(cacheDirectoryURL)
+            let message = Strings.fileRepository.failedToCreateCacheDirectory(directoryURL)
             Logger.error(message)
         }
 
-        return cacheDirectoryURL
+        return directoryURL
     }
 
     /// Load data from url

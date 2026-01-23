@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKit
 import XCTest
 
@@ -298,6 +298,13 @@ extension BasePurchasesOrchestratorTests {
         date: .init(timeIntervalSince1970: 1694029328)
     )
 
+    /// A paywall event creation data with a date far in the future (year 2050)
+    /// Used to test that transactions purchased BEFORE the paywall event are not attributed
+    static let paywallEventCreationDataInFuture: PaywallEvent.CreationData = .init(
+        id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+        date: .init(timeIntervalSince1970: 2524608000) // January 1, 2050
+    )
+
     static let paywallEvent: PaywallEvent.Data = .init(
         offeringIdentifier: "offering",
         paywallRevision: 5,
@@ -306,5 +313,38 @@ extension BasePurchasesOrchestratorTests {
         localeIdentifier: "en_US",
         darkMode: true
     )
+
+    static let testPackageId = "test_package"
+    static let testProductId = StoreKitConfigTestCase.productID
+    static let testDifferentProductId = "different_product_id"
+    static let testErrorCode = 12
+    static let testErrorMessage = "Test error message"
+
+    static var paywallEventWithPurchaseInfo: PaywallEvent.Data {
+        return paywallEvent.withPurchaseInfo(
+            packageId: testPackageId,
+            productId: testProductId,
+            errorCode: nil,
+            errorMessage: nil
+        )
+    }
+
+    static var paywallEventForPurchaseError: PaywallEvent.Data {
+        return paywallEvent.withPurchaseInfo(
+            packageId: testPackageId,
+            productId: testProductId,
+            errorCode: testErrorCode,
+            errorMessage: testErrorMessage
+        )
+    }
+
+    static var paywallEventWithDifferentProductId: PaywallEvent.Data {
+        return paywallEvent.withPurchaseInfo(
+            packageId: testPackageId,
+            productId: testDifferentProductId,
+            errorCode: nil,
+            errorMessage: nil
+        )
+    }
 
 }

@@ -355,7 +355,7 @@ class ETagManagerTests: TestCase {
             let responseObject: [String: AnyEncodable]
 
             var asData: Data? {
-                return try? JSONSerialization.data(withJSONObject: self.asDictionary(),
+                return try? JSONSerialization.data(withJSONObject: self.asJSONDictionary(),
                                                    options: .prettyPrinted)
             }
 
@@ -1118,7 +1118,7 @@ class ETagManagerTests: TestCase {
 
         // Verify new directory is created in cache location
         let newETagDirectory = try XCTUnwrap(
-            fileManager.cacheDirectoryURL(basePath: ETagManager.cacheBasePath)
+            DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent(ETagManager.cacheBasePath)
         )
 
         XCTAssertTrue(fileManager.fileExists(atPath: newETagDirectory.path))
