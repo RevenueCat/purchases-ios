@@ -408,7 +408,8 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
             ),
             transactionData: PurchasedTransactionData(),
             encodedAppleReceipt: .receipt("test_receipt_\(transactionId)".asData),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
     }
 

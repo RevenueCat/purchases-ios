@@ -1097,15 +1097,24 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptDoesNotClearPreexistingMetadataWhenCustomerInfoIsComputedOffline() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
                 currencyCode: "EUR",
                 storeCountry: "DE",
                 price: 19.99,
-transactionData: PurchasedTransactionData(
+                normalDuration: nil,
+                introDuration: nil,
+                introDurationType: nil,
+                introPrice: nil,
+                subscriptionGroup: nil,
+                discounts: nil
+            ),
+            transactionData: PurchasedTransactionData(
                 presentedOfferingContext: .init(offeringIdentifier: "stored_offering")
             ),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat,
             sdkOriginated: true
         )
@@ -1380,7 +1389,8 @@ transactionData: PurchasedTransactionData(
             ),
             transactionData: PurchasedTransactionData(),
             encodedAppleReceipt: .receipt(receiptData),
-            originalPurchasesAreCompletedBy: .myApp
+            originalPurchasesAreCompletedBy: .myApp,
+            sdkOriginated: true
         )
 
         self.localTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
@@ -1421,7 +1431,8 @@ transactionData: PurchasedTransactionData(
             ),
             transactionData: transactionData,
             encodedAppleReceipt: .receipt("test_receipt".asData),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
 
         self.localTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
@@ -1549,7 +1560,8 @@ private extension TransactionPosterTests {
             ),
             transactionData: PurchasedTransactionData(),
             encodedAppleReceipt: .receipt("test_receipt_\(transactionId)".asData),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
     }
 
