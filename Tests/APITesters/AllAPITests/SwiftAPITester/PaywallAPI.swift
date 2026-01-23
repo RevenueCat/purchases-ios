@@ -204,10 +204,22 @@ func checkPaywallEvent(_ event: PaywallEvent) {
     case let .close(creationData, data):
         checkPaywallEventCreationData(creationData)
         checkPaywallEventData(data)
+    case let .exitOffer(creationData, data, exitOfferData):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
+        checkExitOfferData(exitOfferData)
+    case let .purchaseInitiated(creationData, data):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
+    case let .purchaseError(creationData, data):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
     @unknown default: break
     }
 
+    let _: PaywallEvent.CreationData = event.creationData
     let _: PaywallEvent.Data = event.data
+    let _: PaywallEvent.ExitOfferData? = event.exitOfferData
 }
 
 func checkPaywallEventCreationData(_ creationData: PaywallEvent.CreationData) {
@@ -260,4 +272,36 @@ func checkPaywallComponentsData(_ data: PaywallComponentsData) {
     let _: Int = data.revision
     let _: [String] = data.zeroDecimalPlaceCountries
     let _: String = data.defaultLocale
+}
+
+func checkExitOffer(_ exitOffer: ExitOffer) {
+    let offeringId: String = exitOffer.offeringId
+
+    let _: ExitOffer = ExitOffer(offeringId: offeringId)
+}
+
+func checkExitOffers(_ exitOffers: ExitOffers) {
+    let dismiss: ExitOffer? = exitOffers.dismiss
+
+    let _: ExitOffers = ExitOffers()
+    let _: ExitOffers = ExitOffers(dismiss: dismiss)
+}
+
+func checkExitOfferType(_ type: ExitOfferType) {
+    switch type {
+    case .dismiss:
+        break
+    @unknown default:
+        break
+    }
+}
+
+func checkExitOfferData(_ data: PaywallEvent.ExitOfferData) {
+    let exitOfferType: ExitOfferType = data.exitOfferType
+    let exitOfferingIdentifier: String = data.exitOfferingIdentifier
+
+    let _: PaywallEvent.ExitOfferData = PaywallEvent.ExitOfferData(
+        exitOfferType: exitOfferType,
+        exitOfferingIdentifier: exitOfferingIdentifier
+    )
 }

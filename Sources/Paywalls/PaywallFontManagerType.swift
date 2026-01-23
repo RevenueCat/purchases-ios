@@ -59,6 +59,7 @@ struct DefaultFontFileManager: FontsFileManaging {
     }
 
     func cachesDirectory() throws -> URL {
+        // swiftlint:disable:next avoid_using_directory_apis_directly
         guard let url = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             throw CocoaError(.fileNoSuchFile)
         }

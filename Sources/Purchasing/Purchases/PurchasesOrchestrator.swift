@@ -43,7 +43,7 @@ final class PurchasesOrchestrator {
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let presentedOfferingContextsByProductID: Atomic<[String: PresentedOfferingContext]> = .init([:])
-    private let presentedPaywall: Atomic<PaywallEvent?> = nil
+    private let purchaseInitiatedPaywall: Atomic<PaywallEvent?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -681,7 +681,7 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
     func purchase(sk2Product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
@@ -767,11 +767,22 @@ final class PurchasesOrchestrator {
 
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
             // This detects if `Product.PurchaseResult.userCancelled` is true.
-            let (userCancelled, transaction) = try await self.storeKit2TransactionListener
+            let handleResult = try await self.storeKit2TransactionListener
                 .handle(purchaseResult: result, fromTransactionUpdate: false)
 
-            if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
-                throw ErrorUtils.purchaseCancelledError()
+            let transaction: StoreTransaction?
+            let userCancelled: Bool
+
+            switch handleResult {
+            case .userCancelled:
+                userCancelled = true
+                transaction = nil
+                if self.systemInfo.dangerousSettings.customEntitlementComputation {
+                    throw ErrorUtils.purchaseCancelledError()
+                }
+            case let .successfulVerifiedTransaction(verifiedTransaction):
+                userCancelled = false
+                transaction = verifiedTransaction
             }
 
             let customerInfo: CustomerInfo
@@ -892,13 +903,13 @@ final class PurchasesOrchestrator {
 
     func track(paywallEvent: PaywallEvent) {
         switch paywallEvent {
-        case .impression:
-            self.cachePresentedPaywall(paywallEvent)
+        case .purchaseInitiated:
+            self.cachePurchaseInitiatedPaywall(paywallEvent)
 
-        case .close:
-            self.clearPresentedPaywall()
+        case .cancel, .purchaseError:
+            self.clearPurchaseInitiatedPaywall()
 
-        case .cancel, .exitOffer:
+        case .impression, .close, .exitOffer:
             break
         }
     }
@@ -1377,8 +1388,8 @@ private extension PurchasesOrchestrator {
     private func purchaseSource(
         for productIdentifier: String,
         restored: Bool
-    ) -> PurchaseSource {
-        let initiationSource: ProductRequestData.InitiationSource = {
+    ) -> PostReceiptSource {
+        let initiationSource: PostReceiptSource.InitiationSource = {
             // Having a purchase completed callback implies that the transation comes from an explicit call
             // to `purchase()` instead of a StoreKit transaction notification.
             let hasPurchaseCallback = self.purchaseCompleteCallbacksByProductID.value.keys.contains(productIdentifier)
@@ -1410,26 +1421,27 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let subscriberAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
-            appUserID: self.appUserID,
             presentedOfferingContext: nil,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
-            storefront: storefront,
-            source: .init(
-                isRestore: self.allowSharingAppStoreAccount,
-                initiationSource: .queue
-            )
+            storeCountry: storefront?.countryCode
+        )
+        let purchaseSource: PostReceiptSource = .init(
+            isRestore: self.allowSharingAppStoreAccount,
+            initiationSource: .queue
         )
 
         let transaction = StoreTransaction.from(transaction: transaction)
-        let result: Result<CustomerInfo, BackendError> = await Async.call { completed in
-            self.transactionPoster.handlePurchasedTransaction(transaction, data: transactionData ) { result in
-                if case let .success(customerInfo) = result {
-                    let purchaseData = PurchaseResultData(transaction, customerInfo, false)
-                    self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
-                }
-                completed(result)
-            }
+        let result: Result<CustomerInfo, BackendError> = await self.transactionPoster.handlePurchasedTransaction(
+            transaction,
+            data: transactionData,
+            postReceiptSource: purchaseSource,
+            currentUserID: self.appUserID
+        )
+
+        if case let .success(customerInfo) = result {
+            let purchaseData = PurchaseResultData(transaction, customerInfo, false)
+            self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
         }
 
         self.handlePostReceiptResult(result,
@@ -1614,7 +1626,7 @@ private extension PurchasesOrchestrator {
 
     private func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                                isRestore: Bool,
-                               initiationSource: ProductRequestData.InitiationSource,
+                               initiationSource: PostReceiptSource.InitiationSource,
                                completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         self.trackSyncOrRestorePurchasesStartedIfNeeded(receiptRefreshPolicy)
         let startTime = self.dateProvider.now()
@@ -1646,7 +1658,7 @@ private extension PurchasesOrchestrator {
 
     func syncPurchasesSK1(receiptRefreshPolicy: ReceiptRefreshPolicy,
                           isRestore: Bool,
-                          initiationSource: ProductRequestData.InitiationSource,
+                          initiationSource: PostReceiptSource.InitiationSource,
                           completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.unsyncedAttributes
@@ -1654,8 +1666,7 @@ private extension PurchasesOrchestrator {
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
         // https://rev.cat/apple-restoring-purchased-products
         self.receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData, receiptURL in
-            guard let receiptData = receiptData,
-                  !receiptData.isEmpty else {
+            guard let receiptData = receiptData, !receiptData.isEmpty else {
                 if self.systemInfo.isSandbox {
                     Logger.appleWarning(Strings.receipt.no_sandbox_receipt_restore)
                 }
@@ -1685,18 +1696,19 @@ private extension PurchasesOrchestrator {
                 }
 
                 self.createProductRequestData(with: receiptData) { productRequestData in
-                    let transactionData: PurchasedTransactionData = .init(
-                        appUserID: currentAppUserID,
-                        presentedOfferingContext: nil,
-                        unsyncedAttributes: unsyncedAttributes,
-                        storefront: productRequestData?.storefront,
-                        source: .init(isRestore: isRestore, initiationSource: initiationSource)
-                    )
+                    let transactionData = PurchasedTransactionData(presentedOfferingContext: nil,
+                                                                   unsyncedAttributes: unsyncedAttributes,
+                                                                   storeCountry: productRequestData?.storeCountry)
 
-                    self.backend.post(receipt: .receipt(receiptData),
-                                      productData: productRequestData,
-                                      transactionData: transactionData,
-                                      observerMode: self.observerMode) { result in
+                    self.backend.post(
+                        receipt: .receipt(receiptData),
+                        productData: productRequestData,
+                        transactionData: transactionData,
+                        postReceiptSource: .init(isRestore: isRestore, initiationSource: initiationSource),
+                        observerMode: self.observerMode,
+                        originalPurchaseCompletedBy: nil,
+                        appUserID: currentAppUserID
+                    ) { result in
                         self.handleReceiptPost(result: result,
                                                transactionData: transactionData,
                                                subscriberAttributes: unsyncedAttributes,
@@ -1711,7 +1723,7 @@ private extension PurchasesOrchestrator {
     // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private func syncPurchasesSK2(isRestore: Bool,
-                                  initiationSource: ProductRequestData.InitiationSource,
+                                  initiationSource: PostReceiptSource.InitiationSource,
                                   completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.unsyncedAttributes
@@ -1769,20 +1781,22 @@ private extension PurchasesOrchestrator {
                 }
 
                 let transactionData: PurchasedTransactionData = .init(
-                    appUserID: currentAppUserID,
                     presentedOfferingContext: nil,
-                    unsyncedAttributes: unsyncedAttributes,
-                    source: .init(
-                        isRestore: isRestore,
-                        initiationSource: initiationSource
-                    )
+                    unsyncedAttributes: unsyncedAttributes
+                )
+                let purchaseSource: PostReceiptSource = .init(
+                    isRestore: isRestore,
+                    initiationSource: initiationSource
                 )
 
                 self.backend.post(receipt: .empty,
                                   productData: nil,
                                   transactionData: transactionData,
+                                  postReceiptSource: purchaseSource,
                                   observerMode: self.observerMode,
-                                  appTransaction: appTransactionJWS) { result in
+                                  originalPurchaseCompletedBy: nil,
+                                  appTransaction: appTransactionJWS,
+                                  appUserID: currentAppUserID) { result in
 
                     self.handleReceiptPost(result: result,
                                            transactionData: transactionData,
@@ -1793,28 +1807,28 @@ private extension PurchasesOrchestrator {
                 return
             }
 
+            let transactionData: PurchasedTransactionData = .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: unsyncedAttributes,
+                storeCountry: transaction.storefront?.countryCode
+            )
+            let purchaseSource: PostReceiptSource = .init(isRestore: isRestore, initiationSource: initiationSource)
+
             let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
 
-            self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
-                let transactionData: PurchasedTransactionData = .init(
-                    appUserID: currentAppUserID,
-                    presentedOfferingContext: nil,
-                    unsyncedAttributes: unsyncedAttributes,
-                    storefront: transaction.storefront,
-                    source: .init(isRestore: isRestore, initiationSource: initiationSource)
-                )
-
-                self.backend.post(receipt: receipt,
-                                  productData: productRequestData,
-                                  transactionData: transactionData,
-                                  observerMode: self.observerMode,
-                                  appTransaction: appTransactionJWS) { result in
-                    self.handleReceiptPost(result: result,
-                                           transactionData: transactionData,
-                                           subscriberAttributes: unsyncedAttributes,
-                                           adServicesToken: nil,
-                                           completion: completion)
-                }
+            self.transactionPoster.postReceiptFromSyncedSK2Transaction(
+                transaction,
+                data: transactionData,
+                receipt: receipt,
+                postReceiptSource: purchaseSource,
+                appTransactionJWS: appTransactionJWS,
+                currentUserID: currentAppUserID
+            ) { result in
+                self.handleReceiptPost(result: result,
+                                       transactionData: transactionData,
+                                       subscriberAttributes: unsyncedAttributes,
+                                       adServicesToken: nil,
+                                       completion: completion)
             }
         }
     }
@@ -1847,10 +1861,7 @@ private extension PurchasesOrchestrator {
             self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
 
         case .failure:
-            // Cache paywall again in case purchase is retried.
-            if let paywall = transactionData?.presentedPaywall {
-                self.cachePresentedPaywall(paywall)
-            }
+            break
         }
 
         self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
@@ -1861,24 +1872,26 @@ private extension PurchasesOrchestrator {
     func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
                                     storefront: StorefrontType?,
                                     restored: Bool) {
-        let offeringContext = self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
-        let paywall = self.getAndRemovePresentedPaywall()
+        // Don't attribute offering context or paywall data for restored transactions
+        let offeringContext = restored ? nil : self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
+        let paywall = restored ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: purchasedTransaction)
         let unsyncedAttributes = self.unsyncedAttributes
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
-                appUserID: self.appUserID,
                 presentedOfferingContext: offeringContext,
                 presentedPaywall: paywall,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
-                storefront: storefront,
-                source: self.purchaseSource(for: purchasedTransaction.productIdentifier,
-                                            restored: restored)
+                storeCountry: storefront?.countryCode
             )
+            let purchaseSource = self.purchaseSource(for: purchasedTransaction.productIdentifier,
+                                                     restored: restored)
 
             self.transactionPoster.handlePurchasedTransaction(
                 purchasedTransaction,
-                data: transactionData
+                data: transactionData,
+                postReceiptSource: purchaseSource,
+                currentUserID: self.appUserID
             ) { result in
 
                 self.handlePostReceiptResult(result,
@@ -1925,14 +1938,14 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func cachePresentedPaywall(_ paywall: PaywallEvent) {
-        Logger.verbose(Strings.paywalls.caching_presented_paywall)
-        self.presentedPaywall.value = paywall
+    func cachePurchaseInitiatedPaywall(_ paywall: PaywallEvent) {
+        Logger.verbose(Strings.paywalls.caching_purchase_initiated_paywall)
+        self.purchaseInitiatedPaywall.value = paywall
     }
 
-    func clearPresentedPaywall() {
-        Logger.verbose(Strings.paywalls.clearing_presented_paywall)
-        self.presentedPaywall.value = nil
+    func clearPurchaseInitiatedPaywall() {
+        Logger.verbose(Strings.paywalls.clearing_purchase_initiated_paywall)
+        self.purchaseInitiatedPaywall.value = nil
     }
 
     func getAndRemovePresentedOfferingContext(for productIdentifier: String) -> PresentedOfferingContext? {
@@ -1945,8 +1958,22 @@ private extension PurchasesOrchestrator {
         return self.getAndRemovePresentedOfferingContext(for: transaction.productIdentifier)
     }
 
-    func getAndRemovePresentedPaywall() -> PaywallEvent? {
-        return self.presentedPaywall.getAndSet(nil)
+    func getAndRemovePurchaseInitiatedPaywall(for transaction: StoreTransaction) -> PaywallEvent? {
+        return self.purchaseInitiatedPaywall.modify { cachedPaywall in
+            guard let paywall = cachedPaywall else {
+                return nil
+            }
+
+            let shouldAttributePaywallToPurchase = paywall.data.productId == transaction.productIdentifier
+            && paywall.creationData.date <= transaction.purchaseDate
+
+            guard shouldAttributePaywallToPurchase else {
+                return nil
+            }
+
+            cachedPaywall = nil
+            return paywall
+        }
     }
 
     /// Computes a `ProductRequestData` for an active subscription found in the receipt,
@@ -1970,7 +1997,7 @@ private extension PurchasesOrchestrator {
     ) {
         self.productsManager.products(withIdentifiers: [productIdentifier]) { products in
             let result = products.value?.first.map {
-                ProductRequestData(with: $0, storefront: self.systemInfo.storefront)
+                ProductRequestData(with: $0, storeCountry: self.systemInfo.storefront?.countryCode)
             }
 
             completion(result)
@@ -2142,34 +2169,74 @@ private extension PurchasesOrchestrator {
 
 }
 
+// MARK: - Record Purchase (Observer Mode SK2)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchasesOrchestrator {
+
+    /// Handles a purchase result from `recordPurchase` API for observer mode with SK2.
+    /// - Parameter purchaseResult: The `Product.PurchaseResult` from the developer's StoreKit 2 purchase
+    /// - Returns: The `StoreTransaction` if the purchase was successful, `nil` if cancelled or pending
+    func handleRecordPurchase(
+        _ purchaseResult: StoreKit.Product.PurchaseResult
+    ) async throws -> StoreTransaction? {
+        guard self.systemInfo.observerMode else {
+            throw ErrorUtils.configurationError(
+                message: Strings.configure.record_purchase_requires_purchases_made_by_my_app.description
+            )
+        }
+        guard self.systemInfo.storeKitVersion == .storeKit2 else {
+            throw ErrorUtils.configurationError(
+                message: Strings.configure.sk2_required.description
+            )
+        }
+
+        let handleResult = try await self.storeKit2TransactionListener.handle(
+            purchaseResult: purchaseResult,
+            fromTransactionUpdate: false
+        )
+
+        switch handleResult {
+        case .userCancelled:
+            return nil
+        case let .successfulVerifiedTransaction(transaction):
+            // Using .queue initiation source since this is an externally-initiated purchase recorded by the developer
+            _ = try await self.handlePurchasedTransaction(transaction, .queue, nil)
+            return transaction
+        }
+    }
+
+}
+
 // MARK: - Async extensions
 
 extension PurchasesOrchestrator {
 
     private func handlePurchasedTransaction(
         _ transaction: StoreTransaction,
-        _ initiationSource: ProductRequestData.InitiationSource,
+        _ initiationSource: PostReceiptSource.InitiationSource,
         _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
-        let paywall = self.getAndRemovePresentedPaywall()
+        let paywall = self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
-            appUserID: self.appUserID,
             presentedOfferingContext: offeringContext,
             presentedPaywall: paywall,
             unsyncedAttributes: unsyncedAttributes,
             metadata: metadata,
             aadAttributionToken: adServicesToken,
-            storefront: transaction.storefront,
-            source: .init(isRestore: self.allowSharingAppStoreAccount,
-                          initiationSource: initiationSource)
+            storeCountry: transaction.storefront?.countryCode
         )
+        let purchaseSource: PostReceiptSource = .init(isRestore: self.allowSharingAppStoreAccount,
+                                                      initiationSource: initiationSource)
 
         let result = await self.transactionPoster.handlePurchasedTransaction(
             transaction,
-            data: transactionData
+            data: transactionData,
+            postReceiptSource: purchaseSource,
+            currentUserID: self.appUserID
         )
 
         self.handlePostReceiptResult(result,
@@ -2186,7 +2253,7 @@ extension PurchasesOrchestrator {
     // This method is only intended to be used from unit tests.
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
-                       initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {
+                       initiationSource: PostReceiptSource.InitiationSource) async throws -> CustomerInfo {
         return try await Async.call { completion in
             self.syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy,
                                isRestore: isRestore,
