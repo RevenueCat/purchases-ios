@@ -32,7 +32,19 @@ module ApiDiffHelper
       platform: "watchOS",
       suffix: "-watchos",
       destination: "generic/platform=watchOS"
-    }
+    },
+    {
+      sdk: "appletvsimulator",
+      platform: "tvOS",
+      suffix: "-tvos-simulator",
+      destination: "generic/platform=tvOS Simulator"
+    },
+    {
+      sdk: "appletvos",
+      platform: "tvOS",
+      suffix: "-tvos",
+      destination: "generic/platform=tvOS"
+    },
   ].freeze
 
   PLATFORM_CHECKS = [
@@ -40,7 +52,9 @@ module ApiDiffHelper
     { suffix: "-ios", name: "iOS" },
     { suffix: "-macos", name: "macOS" },
     { suffix: "-watchos-simulator", name: "watchOS Simulator" },
-    { suffix: "-watchos", name: "watchOS" }
+    { suffix: "-watchos", name: "watchOS" },
+    { suffix: "-tvos-simulator", name: "tvOS Simulator" },
+    { suffix: "-tvos", name: "tvOS" }
   ].freeze
 
   PR_SWIFTINTERFACE_DIR = "/tmp/pr-swiftinterface".freeze
@@ -60,6 +74,10 @@ module ApiDiffHelper
       "**/Release-watchsimulator/**/Objects-normal/**/RevenueCat.swiftinterface"
     when "watchos"
       "**/Release-watchos/**/Objects-normal/**/RevenueCat.swiftinterface"
+    when "appletvsimulator"
+      "**/Release-appletvsimulator/**/Objects-normal/**/RevenueCat.swiftinterface"
+    when "appletvos"
+      "**/Release-appletvos/**/Objects-normal/**/RevenueCat.swiftinterface"
     else
       "**/RevenueCat.swiftinterface"
     end

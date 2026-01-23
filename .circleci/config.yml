@@ -1655,6 +1655,12 @@ jobs:
       - store_artifacts:
           path: /tmp/pr-swiftinterface/RevenueCat-watchos.swiftinterface
           destination: revenuecat-api-watchos.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCat-tvos-simulator.swiftinterface
+          destination: revenuecat-api-tvos-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCat-tvos.swiftinterface
+          destination: revenuecat-api-tvos.swiftinterface
       - slack-notify-on-fail
 
   deploy-to-spm:
