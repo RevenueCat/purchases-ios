@@ -129,6 +129,7 @@ extension AdEventStore {
     // See https://nemecek.be/blog/57/making-files-from-your-app-available-in-the-ios-files-app
     // We don't want to store events in the documents directory in case app makes their documents
     // accessible via the Files app.
+    // swiftlint:disable avoid_using_directory_apis_directly
     private static var applicationSupportDirectory: URL {
         get throws {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
@@ -143,6 +144,7 @@ extension AdEventStore {
             }
         }
     }
+    // swiftlint:enable avoid_using_directory_apis_directly
 
     private static let fileManager: FileManager = .default
 
