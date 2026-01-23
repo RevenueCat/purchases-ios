@@ -144,6 +144,7 @@ class Backend {
               appTransaction: String? = nil,
               associatedTransactionId: String? = nil,
               appUserID: String,
+              containsAttributionData: Bool = false,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customer.post(receipt: receipt,
                            productData: productData,
@@ -154,6 +155,7 @@ class Backend {
                            appTransaction: appTransaction,
                            associatedTransactionId: associatedTransactionId,
                            appUserID: appUserID,
+                           containsAttributionData: containsAttributionData,
                            completion: completion)
     }
 
