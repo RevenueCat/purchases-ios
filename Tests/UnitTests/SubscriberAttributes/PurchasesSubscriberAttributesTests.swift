@@ -67,6 +67,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
+    var storeKit2ProductPurchaser: StoreKit2ProductPurchaser!
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
 
     var purchases: Purchases!
@@ -163,6 +164,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
         self.mockStoreMessagesHelper = .init()
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
+        self.storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: systemInfo)
         self.webPurchaseRedemptionHelper = .init(backend: self.mockBackend,
                                                  identityManager: self.mockIdentityManager,
                                                  customerInfoManager: self.customerInfoManager)
@@ -204,6 +206,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
             diagnosticsTracker: nil,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             eventsManager: nil,
+            storeKit2ProductPurchaser: self.storeKit2ProductPurchaser,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: systemInfo,

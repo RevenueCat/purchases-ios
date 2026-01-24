@@ -108,6 +108,8 @@ final class PurchasesOrchestrator {
         return self._storeKit2StorefrontListener! as! StoreKit2StorefrontListener
     }
 
+    var storeKit2ProductPurchaser: StoreKit2ProductPurchaserType
+
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var diagnosticsSynchronizer: DiagnosticsSynchronizerType? {
         return self._diagnosticsSynchronizer as? DiagnosticsSynchronizerType
@@ -124,6 +126,7 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    // swiftlint:disable:next function_body_length
     convenience init(productsManager: ProductsManagerType,
                      paymentQueueWrapper: EitherPaymentQueueWrapper,
                      simulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType,
@@ -145,6 +148,7 @@ final class PurchasesOrchestrator {
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
                      storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType,
+                     storeKit2ProductPurchaser: StoreKit2ProductPurchaserType,
                      storeMessagesHelper: StoreMessagesHelperType?,
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
                      diagnosticsTracker: DiagnosticsTrackerType?,
@@ -177,6 +181,7 @@ final class PurchasesOrchestrator {
             diagnosticsTracker: diagnosticsTracker,
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
             eventsManager: eventsManager,
+            storeKit2ProductPurchaser: storeKit2ProductPurchaser,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
             dateProvider: dateProvider,
             notificationCenter: notificationCenter
@@ -236,6 +241,7 @@ final class PurchasesOrchestrator {
          diagnosticsTracker: DiagnosticsTrackerType?,
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          eventsManager: EventsManagerType?,
+         storeKit2ProductPurchaser: StoreKit2ProductPurchaserType,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
          dateProvider: DateProvider = DateProvider(),
          notificationCenter: NotificationCenter = .default
@@ -262,6 +268,7 @@ final class PurchasesOrchestrator {
         self._diagnosticsTracker = diagnosticsTracker
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
         self.eventsManager = eventsManager
+        self.storeKit2ProductPurchaser = storeKit2ProductPurchaser
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
         self.dateProvider = dateProvider
         self.notificationCenter = notificationCenter
@@ -470,6 +477,7 @@ final class PurchasesOrchestrator {
                  winBackOffer: winBackOffer,
                  introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
                  promotionalOfferOptions: promotionalOfferOptions,
+                 storeKit2ConfirmInOptions: params.storeKit2ConfirmInOptions,
                  metadata: metadata,
                  quantity: params.quantity,
                  trackDiagnostics: trackDiagnostics,
@@ -482,6 +490,7 @@ final class PurchasesOrchestrator {
                   winBackOffer: WinBackOffer? = nil,
                   introductoryOfferEligibilityJWS: String? = nil,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions? = nil,
+                  storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil,
                   metadata: [String: String]? = nil,
                   quantity: Int? = nil,
                   trackDiagnostics: Bool,
@@ -521,6 +530,7 @@ final class PurchasesOrchestrator {
                           winBackOffer: winBackOffer,
                           introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
                           promotionalOfferOptions: promotionalOfferOptions,
+                          storeKit2ConfirmInOptions: storeKit2ConfirmInOptions,
                           metadata: metadata,
                           quantity: quantity,
                           completion: completionWithTracking)
@@ -549,6 +559,7 @@ final class PurchasesOrchestrator {
                       completion: completion)
     }
 
+    // swiftlint:disable function_body_length
     func purchase(sk1Product: SK1Product,
                   payment: SKMutablePayment,
                   package: Package?,
@@ -636,6 +647,7 @@ final class PurchasesOrchestrator {
                   winBackOffer: WinBackOffer?,
                   introductoryOfferEligibilityJWS: String?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
+                  storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?,
                   metadata: [String: String]? = nil,
                   quantity: Int? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
@@ -649,7 +661,8 @@ final class PurchasesOrchestrator {
                     introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
                     promotionalOfferOptions: promotionalOfferOptions,
                     metadata: metadata,
-                    quantity: quantity
+                    quantity: quantity,
+                    storeKit2ConfirmInOptions: storeKit2ConfirmInOptions
                 )
 
                 if !result.userCancelled {
@@ -689,7 +702,8 @@ final class PurchasesOrchestrator {
                   introductoryOfferEligibilityJWS: String?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
-                  quantity: Int? = nil) async throws -> PurchaseResultData {
+                  quantity: Int? = nil,
+                  storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
         var options: Set<Product.PurchaseOption> = [.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)]
 
@@ -763,7 +777,11 @@ final class PurchasesOrchestrator {
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
 
-            result = try await self.purchase(sk2Product, options)
+            result = try await self.storeKit2ProductPurchaser.purchase(
+                product: sk2Product,
+                options: options,
+                storeKit2ConfirmInOptions: storeKit2ConfirmInOptions
+            )
 
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
             // This detects if `Product.PurchaseResult.userCancelled` is true.
@@ -870,19 +888,6 @@ final class PurchasesOrchestrator {
 
             throw purchasesError
         }
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func purchase(
-        _ product: SK2Product,
-        _ options: Set<Product.PurchaseOption>
-    ) async throws -> Product.PurchaseResult {
-        #if VISION_OS
-        return try await product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
-                                          options: options)
-        #else
-        return try await product.purchase(options: options)
-        #endif
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

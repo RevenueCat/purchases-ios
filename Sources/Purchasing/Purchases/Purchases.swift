@@ -543,6 +543,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             winBackOfferEligibilityCalculator = nil
         }
 
+        let storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: systemInfo)
+
         let notificationCenter: NotificationCenter = .default
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -592,6 +594,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                                diagnosticsTracker: diagnosticsTracker),
                     storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
                     storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+                    storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
                     diagnosticsTracker: diagnosticsTracker,
@@ -625,6 +628,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     diagnosticsTracker: diagnosticsTracker,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
                     eventsManager: eventsManager,
+                    storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
                                                                              customerInfoManager: customerInfoManager)

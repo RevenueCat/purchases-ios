@@ -14,6 +14,10 @@
 import Nimble
 import XCTest
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 @testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -192,4 +196,56 @@ class PurchaseParamsTests: TestCase {
     }
 
     #endif
+
+    #if canImport(UIKit) && !os(watchOS)
+    @available(iOS 17.0, macCatalyst 15.0, tvOS 17.0, visionOS 1.0, *)
+    func testPurchaseParamsBuilderWithConfirmInScene() throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        guard let uiScene: UIScene = UIScene.mock() else {
+            fail("UIScene not mocked")
+            return
+        }
+        let package = buildMockPackage()
+
+        let purchaseParams: PurchaseParams = PurchaseParams.Builder(package: package)
+            .with(confirmInScene: uiScene)
+            .build()
+
+        expect(purchaseParams.storeKit2ConfirmInOptions).toNot(beNil())
+        expect(purchaseParams.storeKit2ConfirmInOptions?.confirmInScene).to(equal(uiScene))
+    }
+    #endif
+
+    #if canImport(AppKit)
+    @available(macOS 15.2, *)
+    func testPurchaseParamsBuilderWithConfirmInWindow() throws {
+        try AvailabilityChecks.macOS15_2APIAvailableOrSkipTest()
+
+        guard let nsWindow: NSWindow = NSWindow.mock() else {
+            fail("NSWindow not mocked")
+            return
+        }
+        let package = buildMockPackage()
+
+        let purchaseParams: PurchaseParams = PurchaseParams.Builder(package: package)
+            .with(confirmInWindow: nsWindow)
+            .build()
+
+        expect(purchaseParams.storeKit2ConfirmInOptions).toNot(beNil())
+        expect(purchaseParams.storeKit2ConfirmInOptions?.confirmInWindow).to(equal(nsWindow))
+    }
+    #endif
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension PurchaseParamsTests {
+    private func buildMockPackage() -> Package {
+        let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
+        return Package(identifier: "package",
+                       packageType: .monthly,
+                       storeProduct: StoreProduct(sk1Product: product),
+                       offeringIdentifier: "offering",
+                       webCheckoutUrl: nil)
+    }
 }

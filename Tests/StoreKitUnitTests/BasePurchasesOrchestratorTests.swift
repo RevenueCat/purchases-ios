@@ -46,6 +46,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
     private var eventsManager: EventsManagerType!
+    var storeKit2ProductPurchaser: StoreKit2ProductPurchaser!
     var webPurchaseRedemptionHelper: MockWebPurchaseRedemptionHelper!
     var mockDiagnosticsTracker: DiagnosticsTrackerType!
     var mockLocalTransactionMetadataStore: MockLocalTransactionMetadataStore!
@@ -130,6 +131,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                                          currentUserProvider: self.currentUserProvider)
         self.mockStoreMessagesHelper = .init()
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
+        self.storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: systemInfo)
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
         self.notificationCenter = MockNotificationCenter()
         let identityManager = MockIdentityManager(mockAppUserID: "test-user-id",
@@ -210,6 +212,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             diagnosticsTracker: self.mockDiagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             eventsManager: self.eventsManager,
+            storeKit2ProductPurchaser: self.storeKit2ProductPurchaser,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
@@ -219,6 +222,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         storeKit2TransactionListener: StoreKit2TransactionListenerType,
         storeKit2StorefrontListener: StoreKit2StorefrontListener,
         storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType,
+        storeKit2ProductPurchaser: StoreKit2ProductPurchaserType,
         diagnosticsSynchronizer: DiagnosticsSynchronizerType? = nil,
         diagnosticsTracker: DiagnosticsTrackerType? = nil
     ) {
@@ -244,6 +248,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             storeKit2TransactionListener: storeKit2TransactionListener,
             storeKit2StorefrontListener: storeKit2StorefrontListener,
             storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            storeKit2ProductPurchaser: storeKit2ProductPurchaser,
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsSynchronizer: diagnosticsSynchronizer,
             diagnosticsTracker: diagnosticsTracker,

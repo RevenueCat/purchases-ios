@@ -11,6 +11,7 @@
 //
 // Created by Andrés Boedo on 7/16/21.
 //
+// swiftlint:disable file_length
 
 import Foundation
 import StoreKit
@@ -21,6 +22,47 @@ public typealias SK1Product = SKProduct
 /// TypeAlias to StoreKit 2's Product type, called `StoreKit.Product`
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public typealias SK2Product = StoreKit.Product
+
+/// Protocol describing an object with StoreKit.Product's purchase() functions. Helpful
+/// for writing test mocks.
+///
+/// Matches the product.purchase functions in StoreKit 2.
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+internal protocol PurchasableSK2Product: Sendable {
+
+    #if !os(visionOS) && compiler(>=5.5.0) // Can't use @unavailable since the protocol isn't @objc
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @MainActor func purchase(options: Set<Product.PurchaseOption>) async throws -> StoreKit.Product.PurchaseResult
+    #endif
+
+    #if canImport(UIKit) && compiler(>=5.9.0) && !os(watchOS)
+    // product.purchase(confirmIn:options:) was introduced in iOS 17.0/Swift 5.9.0
+    @available(iOS 17.0, tvOS 17.0, visionOS 1.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @MainActor func purchase(
+        confirmIn scene: some UIScene,
+        options: Set<StoreKit.Product.PurchaseOption>
+    ) async throws -> StoreKit.Product.PurchaseResult
+    #endif
+
+    #if canImport(AppKit) && compiler(>=6.0.2) && os(macOS)
+    // product.purchase(confirmIn:options:) was introduced in macOS 15.2/Swift 6.0.2
+    @available(macOS 15.2, *)
+    @available(iOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(macCatalyst, unavailable)
+    @available(visionOS, unavailable)
+    @available(watchOS, unavailable)
+    func purchase(
+        confirmIn window: NSWindow,
+        options: Set<StoreKit.Product.PurchaseOption>
+    ) async throws -> StoreKit.Product.PurchaseResult
+    #endif
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension SK2Product: PurchasableSK2Product {}
 
 // It's an @objc wrapper of a `StoreProductType`. Swift-only code can use the protocol directly.
 /// Type that provides access to all of `StoreKit`'s product type's properties.
