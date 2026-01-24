@@ -51,7 +51,9 @@ var dependencies: [Package.Dependency] = [
     .package(
         url: "https://github.com/pointfreeco/swift-snapshot-testing",
         revision: "26ed3a2b4a2df47917ca9b790a57f91285b923fb"
-    )
+    ),
+    // Rust core library
+    .package(url: "https://github.com/RevenueCat/purchases-core", branch: "rust")
 ]
 if shouldIncludeDocCPlugin {
     // Versions 1.4.0 and 1.4.1 are failing to compile, so we are pinning it to 1.3.0 for now
@@ -89,6 +91,9 @@ let package = Package(
     dependencies: dependencies,
     targets: [
         .target(name: "RevenueCat",
+                dependencies: [
+                    .product(name: "PurchasesCore", package: "purchases-core")
+                ],
                 path: "Sources",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
                 resources: [
