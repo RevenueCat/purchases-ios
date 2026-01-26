@@ -149,7 +149,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
 private extension DiagnosticsFileHandler {
 
     static var diagnosticsFileURL: URL? {
-        guard let baseURL = DirectoryHelper.baseUrl(for: .persistence) else {
+        guard let baseURL = DirectoryHelper.baseUrl(for: .applicationSupport()) else {
             return nil
         }
         return baseURL
