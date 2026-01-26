@@ -372,9 +372,15 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         // Call syncRemainingCachedTransactionMetadataIfNeeded multiple times rapidly
-        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
-        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
-        self.orchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
+        Task {
+            await self.orchestrator.performCachedTransactionMetadataSync()
+        }
+        Task {
+            await self.orchestrator.performCachedTransactionMetadataSync()
+        }
+        Task {
+            await self.orchestrator.performCachedTransactionMetadataSync()
+        }
 
         // Wait for the backend to be invoked
         await expect(self.backend.invokedPostReceiptData).toEventually(beTrue())

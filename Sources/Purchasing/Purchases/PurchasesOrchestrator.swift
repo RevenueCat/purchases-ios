@@ -956,6 +956,33 @@ final class PurchasesOrchestrator {
         }
     }
 
+    func performCachedTransactionMetadataSync() async {
+        guard self.isSyncingCachedTransactionMetadata.getAndSet(true) == false else {
+            Logger.debug(Strings.purchase.cached_transaction_metadata_sync_already_in_progress)
+            return
+        }
+        defer { self.isSyncingCachedTransactionMetadata.value = false }
+
+        let currentAppUserID = self.appUserID
+        let isRestore = self.allowSharingAppStoreAccount
+
+        let resultsStream = self.transactionPoster.postRemainingCachedTransactionMetadata(
+            appUserID: currentAppUserID,
+            isRestore: isRestore
+        )
+
+        for await (transactionData, result) in resultsStream {
+            if let customerInfo = try? result.get() {
+                self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: currentAppUserID)
+            }
+            self.markSyncedIfNeeded(
+                subscriberAttributes: transactionData.unsyncedAttributes,
+                adServicesToken: transactionData.aadAttributionToken,
+                error: result.error
+            )
+        }
+    }
+
 #if os(iOS) || os(macOS) || VISION_OS
 
     @available(watchOS, unavailable)
@@ -1634,33 +1661,6 @@ private extension PurchasesOrchestrator {
         self.attribution.markAttributesAsSynced(subscriberAttributes, appUserID: self.appUserID)
         if let adServicesToken = adServicesToken {
             self.attribution.markAdServicesTokenAsSynced(adServicesToken, appUserID: self.appUserID)
-        }
-    }
-
-    func performCachedTransactionMetadataSync() async {
-        guard self.isSyncingCachedTransactionMetadata.getAndSet(true) == false else {
-            Logger.debug(Strings.purchase.cached_transaction_metadata_sync_already_in_progress)
-            return
-        }
-        defer { self.isSyncingCachedTransactionMetadata.value = false }
-
-        let currentAppUserID = self.appUserID
-        let isRestore = self.allowSharingAppStoreAccount
-
-        let resultsStream = self.transactionPoster.postRemainingCachedTransactionMetadata(
-            appUserID: currentAppUserID,
-            isRestore: isRestore
-        )
-
-        for await (transactionData, result) in resultsStream {
-            if let customerInfo = try? result.get() {
-                self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: currentAppUserID)
-            }
-            self.markSyncedIfNeeded(
-                subscriberAttributes: transactionData.unsyncedAttributes,
-                adServicesToken: transactionData.aadAttributionToken,
-                error: result.error
-            )
         }
     }
 
