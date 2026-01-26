@@ -301,4 +301,165 @@ class CodableIdempotencyTests: TestCase {
         expect(json["payment_mode"] as? Int) == StoreProductDiscount.PaymentMode.freeTrial.rawValue
     }
 
+    // MARK: - EncodedAppleReceipt Tests
+
+    func testEncodedAppleReceiptJWSDecodingAndIdempotency() throws {
+        // Swift's default Codable uses the case name as key and "_0" for the associated value
+        let json = """
+        {
+            "jws": {
+                "_0": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.test_payload.signature"
+            }
+        }
+        """
+
+        // Decode from JSON
+        let decoded = try JSONDecoder.default.decode(
+            EncodedAppleReceipt.self,
+            from: json.data(using: .utf8)!
+        )
+
+        // Verify decoded value
+        guard case .jws(let jwsString) = decoded else {
+            fail("Expected .jws case")
+            return
+        }
+        expect(jwsString) == "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.test_payload.signature"
+
+        // Encode and decode again to verify idempotency
+        let encoded = try JSONEncoder.default.encode(decoded)
+        let reDecoded = try JSONDecoder.default.decode(EncodedAppleReceipt.self, from: encoded)
+
+        // Verify values after round-trip
+        guard case .jws(let reDecodedJwsString) = reDecoded else {
+            fail("Expected .jws case after round-trip")
+            return
+        }
+        expect(reDecodedJwsString) == "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.test_payload.signature"
+
+        // Verify full equality
+        expect(reDecoded) == decoded
+    }
+
+    func testEncodedAppleReceiptReceiptDataDecodingAndIdempotency() throws {
+        let base64Data = "SGVsbG8gV29ybGQh" // "Hello World!" in base64
+        let json = """
+        {
+            "receipt": {
+                "_0": "\(base64Data)"
+            }
+        }
+        """
+
+        // Decode from JSON
+        let decoded = try JSONDecoder.default.decode(
+            EncodedAppleReceipt.self,
+            from: json.data(using: .utf8)!
+        )
+
+        // Verify decoded value
+        guard case .receipt(let data) = decoded else {
+            fail("Expected .receipt case")
+            return
+        }
+        expect(String(data: data, encoding: .utf8)) == "Hello World!"
+
+        // Encode and decode again to verify idempotency
+        let encoded = try JSONEncoder.default.encode(decoded)
+        let reDecoded = try JSONDecoder.default.decode(EncodedAppleReceipt.self, from: encoded)
+
+        // Verify values after round-trip
+        guard case .receipt(let reDecodedData) = reDecoded else {
+            fail("Expected .receipt case after round-trip")
+            return
+        }
+        expect(String(data: reDecodedData, encoding: .utf8)) == "Hello World!"
+
+        // Verify full equality
+        expect(reDecoded) == decoded
+    }
+
+    func testEncodedAppleReceiptSK2ReceiptDecodingAndIdempotency() throws {
+        let json = """
+        {
+            "sk2receipt": {
+                "_0": {
+                    "environment": "production",
+                    "subscription_status": {},
+                    "transactions": ["tx_123"],
+                    "bundle_id": "com.test.app",
+                    "original_application_version": "1.0.0",
+                    "original_purchase_date": "2023-06-15T10:30:00Z"
+                }
+            }
+        }
+        """
+
+        // Decode from JSON
+        let decoded = try JSONDecoder.default.decode(
+            EncodedAppleReceipt.self,
+            from: json.data(using: .utf8)!
+        )
+
+        // Verify decoded value
+        guard case .sk2receipt(let receipt) = decoded else {
+            fail("Expected .sk2receipt case")
+            return
+        }
+        expect(receipt.environment) == .production
+        expect(receipt.bundleId) == "com.test.app"
+        expect(receipt.originalApplicationVersion) == "1.0.0"
+        expect(receipt.transactions) == ["tx_123"]
+
+        // Encode and decode again to verify idempotency
+        let encoded = try JSONEncoder.default.encode(decoded)
+        let reDecoded = try JSONDecoder.default.decode(EncodedAppleReceipt.self, from: encoded)
+
+        // Verify values after round-trip
+        guard case .sk2receipt(let reDecodedReceipt) = reDecoded else {
+            fail("Expected .sk2receipt case after round-trip")
+            return
+        }
+        expect(reDecodedReceipt.environment) == .production
+        expect(reDecodedReceipt.bundleId) == "com.test.app"
+        expect(reDecodedReceipt.originalApplicationVersion) == "1.0.0"
+        expect(reDecodedReceipt.transactions) == ["tx_123"]
+
+        // Verify full equality
+        expect(reDecoded) == decoded
+    }
+
+    func testEncodedAppleReceiptEmptyDecodingAndIdempotency() throws {
+        let json = """
+        {
+            "empty": {}
+        }
+        """
+
+        // Decode from JSON
+        let decoded = try JSONDecoder.default.decode(
+            EncodedAppleReceipt.self,
+            from: json.data(using: .utf8)!
+        )
+
+        // Verify decoded value
+        guard case .empty = decoded else {
+            fail("Expected .empty case")
+            return
+        }
+
+        // Encode and decode again to verify idempotency
+        let encoded = try JSONEncoder.default.encode(decoded)
+        let reDecoded = try JSONDecoder.default.decode(EncodedAppleReceipt.self, from: encoded)
+
+        // Verify values after round-trip
+        guard case .empty = reDecoded else {
+            fail("Expected .empty case after round-trip")
+            return
+        }
+
+        // Verify full equality
+        expect(reDecoded) == decoded
+    }
+
 }
