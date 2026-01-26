@@ -71,7 +71,7 @@ class DeviceCache {
         }
 
         // Try to get from new cache location first
-        if let value: Value = self.largeItemCache.value(forKey: key.rawValue) {
+        if let value: Value = try? self.largeItemCache.value(forKey: key.rawValue) {
             return value
         }
 
@@ -840,7 +840,7 @@ private extension DeviceCache {
             let oldFileURL = oldDirectoryURL.appendingPathComponent(key)
 
             // Check if file already exists in new location (it may have been migrated before the lock was released)
-            if let value: Value = self.largeItemCache.value(forKey: key) {
+            if let value: Value = try? self.largeItemCache.value(forKey: key) {
                 // File already migrated, clean up old file if it still exists
                 if fileManager.fileExists(atPath: oldFileURL.path) {
                     try? fileManager.removeItem(at: oldFileURL)

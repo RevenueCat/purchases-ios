@@ -465,6 +465,7 @@ class DeviceCacheTests: TestCase {
         let offerings = try Self.createSampleOfferings()
 
         self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubCachedContentExists(with: true)
         self.mockFileCache.stubLoadFile(with: .success(try offerings.contents.jsonEncodedData))
 
         // Cache the offerings
@@ -563,6 +564,7 @@ class DeviceCacheTests: TestCase {
     func testCacheEmptyProductEntitlementMapping() throws {
         let data = ProductEntitlementMapping(entitlementsByProduct: [:])
         self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubCachedContentExists(with: true)
         self.mockFileCache.stubLoadFile(with: .success(try data.jsonEncodedData))
         self.deviceCache.store(productEntitlementMapping: data)
         expect(self.deviceCache.cachedProductEntitlementMapping) == data
@@ -575,6 +577,7 @@ class DeviceCacheTests: TestCase {
             "3": ["pro_1", "pro_2"]
         ])
         self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubCachedContentExists(with: true)
         self.mockFileCache.stubLoadFile(with: .success(try data.jsonEncodedData))
         self.deviceCache.store(productEntitlementMapping: data)
         expect(self.deviceCache.cachedProductEntitlementMapping) == data

@@ -334,6 +334,7 @@ extension BaseStoreKitIntegrationTests {
         return "Finishing transaction '\\d+' for product '\(productIdentifier)'"
     }
 
+    static let finishedPostingCachedMetadataLog = "Finished syncing all cached transaction metadata"
 }
 
 // MARK: - Extensions

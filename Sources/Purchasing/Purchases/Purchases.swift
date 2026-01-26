@@ -420,7 +420,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                           requestTimeout: storeKitTimeout)
         )
 
-        let localTransactionMetadataStore = LocalTransactionMetadataStore(apiKey: apiKey)
+        let localTransactionMetadataStore = LocalTransactionMetadataStore(
+            apiKey: apiKey,
+            applicationSupportDirectory: applicationSupportDirectory
+        )
         let transactionPoster = TransactionPoster(
             productsManager: productsManager,
             receiptFetcher: receiptFetcher,
@@ -2149,6 +2152,7 @@ private extension Purchases {
         // of purchases due to pop-ups stealing focus from the app.
         self.updateAllCachesIfNeeded(isAppBackgrounded: false)
         self.dispatchSyncSubscriberAttributes()
+        self.purchasesOrchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 

@@ -128,4 +128,29 @@ final class MockTransactionPoster: TransactionPosterType {
         }
     }
 
+    var stubbedPostRemainingCachedTransactionMetadataResults: [CachedTransactionMetadataPostResult] = []
+
+    let invokedPostRemainingCachedTransactionMetadata: Atomic<Bool> = false
+    let invokedPostRemainingCachedTransactionMetadataCount: Atomic<Int> = .init(0)
+    let invokedPostRemainingCachedTransactionMetadataAppUserID: Atomic<String?> = nil
+    let invokedPostRemainingCachedTransactionMetadataIsRestore: Atomic<Bool?> = nil
+
+    func postRemainingCachedTransactionMetadata(
+        appUserID: String,
+        isRestore: Bool
+    ) -> AsyncStream<CachedTransactionMetadataPostResult> {
+        self.invokedPostRemainingCachedTransactionMetadata.value = true
+        self.invokedPostRemainingCachedTransactionMetadataCount.modify { $0 += 1 }
+        self.invokedPostRemainingCachedTransactionMetadataAppUserID.value = appUserID
+        self.invokedPostRemainingCachedTransactionMetadataIsRestore.value = isRestore
+
+        let results = self.stubbedPostRemainingCachedTransactionMetadataResults
+        return AsyncStream { continuation in
+            for result in results {
+                continuation.yield(result)
+            }
+            continuation.finish()
+        }
+    }
+
 }
