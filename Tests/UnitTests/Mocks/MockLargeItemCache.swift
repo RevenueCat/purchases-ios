@@ -26,7 +26,8 @@ final class MockLargeItemCache: LargeItemCacheType {
     var cachedContentExistsInvocations: [URL] = []
     var loadFileInvocations: [URL] = []
     var removeInvocations: [URL] = []
-    var createCacheDirectoryInvocations: [(basePath: String, inAppSpecificDirectory: Bool)] = []
+    var createDirectoryInvocations: [(basePath: String, directoryType: DirectoryHelper.DirectoryType,
+                                      inAppSpecificDirectory: Bool)] = []
     var contentsOfDirectoryInvocations: [URL] = []
 
     func saveData(_ data: Data, to url: URL) throws {
@@ -73,12 +74,17 @@ final class MockLargeItemCache: LargeItemCacheType {
         storage.removeValue(forKey: url)
     }
 
-    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
+    func createDirectoryIfNeeded(
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType,
+        inAppSpecificDirectory: Bool
+    ) -> URL? {
         lock.lock()
         defer { lock.unlock() }
 
-        createCacheDirectoryInvocations.append((basePath: basePath, inAppSpecificDirectory: inAppSpecificDirectory))
-        return URL(string: "file:///mock/cache/\(basePath)")
+        createDirectoryInvocations.append((basePath: basePath, directoryType: directoryType,
+                                           inAppSpecificDirectory: inAppSpecificDirectory))
+        return URL(string: "file:///mock/\(directoryType)/\(basePath)")
     }
 
     func contentsOfDirectory(at url: URL) throws -> [URL] {
