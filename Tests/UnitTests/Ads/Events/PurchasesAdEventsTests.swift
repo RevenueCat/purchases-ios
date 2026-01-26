@@ -39,6 +39,8 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         self.purchases.adTracker.trackAdFailedToLoad(failedData)
 
+        await self.yield() // Wait for async Task to complete
+
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
@@ -65,6 +67,8 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         )
 
         self.purchases.adTracker.trackAdLoaded(loadedData)
+
+        await self.yield() // Wait for async Task to complete
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
@@ -93,6 +97,8 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         self.purchases.adTracker.trackAdDisplayed(displayedData)
 
+        await self.yield() // Wait for async Task to complete
+
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
         expect(trackedEvents).to(haveCount(1))
@@ -119,6 +125,8 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         )
 
         self.purchases.adTracker.trackAdOpened(openedData)
+
+        await self.yield() // Wait for async Task to complete
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
@@ -149,6 +157,8 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         )
 
         self.purchases.adTracker.trackAdRevenue(revenueData)
+
+        await self.yield() // Wait for async Task to complete
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
