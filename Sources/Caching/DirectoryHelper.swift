@@ -18,7 +18,7 @@ enum DirectoryHelper {
 
     enum DirectoryType {
         case cache
-        case persistence
+        case applicationSupport(overrideURL: URL? = nil)
     }
 
     static func baseUrl(for type: DirectoryType, inAppSpecificDirectory: Bool = true) -> URL? {
@@ -48,7 +48,11 @@ fileprivate extension DirectoryHelper.DirectoryType {
                     in: .userDomainMask
                 ).first
             }
-        case .persistence:
+        case .applicationSupport(let overrideURL):
+            if let overrideURL {
+                return overrideURL
+            }
+
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 return URL.applicationSupportDirectory
             } else {

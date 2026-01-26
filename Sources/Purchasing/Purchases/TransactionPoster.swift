@@ -211,6 +211,7 @@ final class TransactionPoster: TransactionPosterType {
             let metadataToSync = self.localTransactionMetadataStore.getAllStoredMetadata()
 
             guard !metadataToSync.isEmpty else {
+                Logger.verbose(Strings.purchase.no_cached_transaction_metadata_to_post)
                 continuation.finish()
                 return
             }
@@ -487,7 +488,6 @@ private extension TransactionPoster {
 
         func postNext() {
             guard !remainingMetadata.isEmpty else {
-                // All done
                 continuation.finish()
                 return
             }

@@ -37,11 +37,15 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
 
     private let cache: SynchronizedLargeItemCache
 
-    init(apiKey: String, fileManager: LargeItemCacheType = FileManager.default) {
+    init(
+        apiKey: String,
+        fileManager: LargeItemCacheType = FileManager.default,
+        applicationSupportDirectory: URL? = nil
+    ) {
         self.cache = SynchronizedLargeItemCache(
             cache: fileManager,
-            basePath: "revenuecat.localTransactionMetadata.\(apiKey)",
-            directoryType: .persistence
+            basePath: "local-transaction-metadata-\(apiKey)",
+            directoryType: .applicationSupport(overrideURL: applicationSupportDirectory)
         )
     }
 

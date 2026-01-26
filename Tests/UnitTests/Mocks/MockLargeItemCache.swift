@@ -84,7 +84,14 @@ final class MockLargeItemCache: LargeItemCacheType {
 
         createDirectoryInvocations.append((basePath: basePath, directoryType: directoryType,
                                            inAppSpecificDirectory: inAppSpecificDirectory))
-        return URL(string: "file:///mock/\(directoryType)/\(basePath)")
+        let directoryName: String
+        switch directoryType {
+        case .cache:
+            directoryName = "cache"
+        case .applicationSupport:
+            directoryName = "applicationSupport"
+        }
+        return URL(string: "file:///mock/\(directoryName)/\(basePath)")
     }
 
     func contentsOfDirectory(at url: URL) throws -> [URL] {
