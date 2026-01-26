@@ -47,7 +47,12 @@ final class TransactionMetadataSyncHelper {
     /// This handles edge cases where a transaction is not returned by the store anymore but we still have
     /// metadata cached for it.
     func syncIfNeeded(allowSharingAppStoreAccount: Bool) {
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .default) {
+        #if DEBUG
+        let delay: JitterableDelay = ProcessInfo.isRunningRevenueCatTests ? .none : .default
+        #else
+        let delay: JitterableDelay = .default
+        #endif
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
             Task {
                 await self.performSync(allowSharingAppStoreAccount: allowSharingAppStoreAccount)
             }

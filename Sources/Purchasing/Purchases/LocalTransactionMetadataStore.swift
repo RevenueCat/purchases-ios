@@ -40,7 +40,7 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
     init(apiKey: String, fileManager: LargeItemCacheType = FileManager.default) {
         self.cache = SynchronizedLargeItemCache(
             cache: fileManager,
-            basePath: "revenuecat.localTransactionMetadata.\(apiKey)",
+            basePath: "local-transaction-metadata-\(apiKey)",
             directoryType: .persistence
         )
     }
