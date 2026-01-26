@@ -19,6 +19,9 @@ import Foundation
  */
 internal struct LocalTransactionMetadata: Codable, Sendable {
 
+    /// The identifier of the transaction this metadata is associated with.
+    let transactionId: String
+
     private let productDataWrapper: ProductRequestDataEncodedWrapper?
 
     /// Product request data (product info, pricing, discounts, etc.).
@@ -32,6 +35,8 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
     var transactionData: PurchasedTransactionData {
         return self.purchasedTransactionDataWrapper.purchasedTransactionData
     }
+    /// The receipt at the time of the transaction.
+    let encodedAppleReceipt: EncodedAppleReceipt
 
     /// The value of ``Purchases.purchasesAreCompletedBy`` at the time of the transaction.
     let originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
@@ -42,15 +47,19 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
     let sdkOriginated: Bool
 
     init(
+        transactionId: String,
         productData: ProductRequestData?,
         transactionData: PurchasedTransactionData,
+        encodedAppleReceipt: EncodedAppleReceipt,
         originalPurchasesAreCompletedBy: PurchasesAreCompletedBy,
         sdkOriginated: Bool
     ) {
+        self.transactionId = transactionId
         self.productDataWrapper = productData.map(ProductRequestDataEncodedWrapper.init)
         self.purchasedTransactionDataWrapper = PurchasedTransactionDataEncodedWrapper(
             purchasedTransactionData: transactionData
         )
+        self.encodedAppleReceipt = encodedAppleReceipt
         self.originalPurchasesAreCompletedBy = originalPurchasesAreCompletedBy
         self.sdkOriginated = sdkOriginated
     }

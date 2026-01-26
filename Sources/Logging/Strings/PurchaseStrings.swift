@@ -94,6 +94,11 @@ enum PurchaseStrings {
     case sync_purchases_simulated_store
     case restore_purchases_simulated_store
     case simulating_purchase_success
+
+    // Cached metadata
+    case posting_remaining_cached_metadata(count: Int)
+    case posting_cached_metadata(transactionId: String)
+    case cached_transaction_metadata_sync_already_in_progress
 }
 
 extension PurchaseStrings: LogMessage {
@@ -362,6 +367,15 @@ extension PurchaseStrings: LogMessage {
 
         case .simulating_purchase_success:
             return "[Test Store] Performing test purchase. This purchase won't appear in production."
+
+        case let .posting_remaining_cached_metadata(count):
+            return "Posting \(count) remaining cached transaction metadata entries"
+
+        case let .posting_cached_metadata(transactionId):
+            return "Posting cached metadata for transaction '\(transactionId)'"
+
+        case .cached_transaction_metadata_sync_already_in_progress:
+            return "Cached transaction metadata sync already in progress, skipping"
         }
     }
 

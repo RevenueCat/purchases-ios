@@ -590,7 +590,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil,
                                                                                diagnosticsTracker: diagnosticsTracker),
-                    storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                    storeKit2StorefrontListener: StoreKit2StorefrontListener(
+                        delegate: nil,
+                        userDefaults: userDefaults
+                    ),
                     storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
@@ -2146,6 +2149,7 @@ private extension Purchases {
         // of purchases due to pop-ups stealing focus from the app.
         self.updateAllCachesIfNeeded(isAppBackgrounded: false)
         self.dispatchSyncSubscriberAttributes()
+        self.purchasesOrchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 

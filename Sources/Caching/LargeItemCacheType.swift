@@ -31,16 +31,37 @@ protocol LargeItemCacheType {
     /// delete data at url
     func remove(_ url: URL) throws
 
-    /// Creates a directory in the cache from a base path
+    /// Creates a directory from a base path in the specified directory type
     /// The `inAppSpecificDirectory` should be set to false only for components
     /// that haven't migrated to the new app specific directory structure yet
-    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL?
+    func createDirectoryIfNeeded(
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType,
+        inAppSpecificDirectory: Bool
+    ) -> URL?
+
+    /// List all file URLs in a directory
+    func contentsOfDirectory(at url: URL) throws -> [URL]
 }
 
 extension LargeItemCacheType {
-    /// Defaults `inAppSpecificDirectory` to true
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
-        createCacheDirectoryIfNeeded(basePath: basePath, inAppSpecificDirectory: true)
+    /// Creates a directory in the cache from a base path. Defaults `inAppSpecificDirectory` to true.
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool = true) -> URL? {
+        createDirectoryIfNeeded(
+            basePath: basePath,
+            directoryType: .cache,
+            inAppSpecificDirectory: inAppSpecificDirectory
+        )
+    }
+
+    /// Creates a directory in the persistence (applicationSupport) directory from a base path.
+    /// Defaults `inAppSpecificDirectory` to true.
+    func createPersistenceDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool = true) -> URL? {
+        createDirectoryIfNeeded(
+            basePath: basePath,
+            directoryType: .persistence,
+            inAppSpecificDirectory: inAppSpecificDirectory
+        )
     }
 }
 
@@ -127,16 +148,20 @@ extension FileManager: LargeItemCacheType {
         }
     }
 
-    /// Creates a directory in the cache from a base path
+    /// Creates a directory from a base path in the specified directory type
     /// The `inAppSpecificDirectory` should be set to false only for components
     /// that haven't migrated to the new app specific directory structure yet
-    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
-        guard let cacheDirectoryBaseURL = DirectoryHelper.baseUrl(
-            for: .cache,
+    func createDirectoryIfNeeded(
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType,
+        inAppSpecificDirectory: Bool
+    ) -> URL? {
+        guard let baseDirectoryURL = DirectoryHelper.baseUrl(
+            for: directoryType,
             inAppSpecificDirectory: inAppSpecificDirectory
         ) else { return nil }
 
-        let directoryURL = cacheDirectoryBaseURL.appendingPathComponent(basePath)
+        let directoryURL = baseDirectoryURL.appendingPathComponent(basePath)
         do {
             try createDirectory(
                 at: directoryURL,
@@ -158,5 +183,9 @@ extension FileManager: LargeItemCacheType {
 
     func remove(_ url: URL) throws {
         try self.removeItem(at: url)
+    }
+
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        return try self.contentsOfDirectory(at: url, includingPropertiesForKeys: nil, options: [])
     }
 }

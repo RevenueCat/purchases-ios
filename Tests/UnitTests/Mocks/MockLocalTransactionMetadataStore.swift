@@ -40,6 +40,11 @@ final class MockLocalTransactionMetadataStore: LocalTransactionMetadataStoreType
     let invokedRemoveMetadataTransactionId: Atomic<String?> = nil
     let invokedRemoveMetadataTransactionIdList: Atomic<[String]> = .init([])
 
+    // MARK: - getAllStoredMetadata
+
+    let invokedGetAllStoredMetadata: Atomic<Bool> = false
+    let invokedGetAllStoredMetadataCount: Atomic<Int> = .init(0)
+
     // MARK: - Storage
 
     private let storedMetadata: Atomic<[String: LocalTransactionMetadata]> = .init([:])
@@ -81,6 +86,13 @@ final class MockLocalTransactionMetadataStore: LocalTransactionMetadataStoreType
         self.storedMetadata.modify {
             $0.removeValue(forKey: transactionId)
         }
+    }
+
+    func getAllStoredMetadata() -> [LocalTransactionMetadata] {
+        self.invokedGetAllStoredMetadata.value = true
+        self.invokedGetAllStoredMetadataCount.modify { $0 += 1 }
+
+        return Array(self.storedMetadata.value.values)
     }
 
 }

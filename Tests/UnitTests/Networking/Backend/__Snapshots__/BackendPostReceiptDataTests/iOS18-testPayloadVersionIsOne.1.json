@@ -31,13 +31,11 @@
         }
       },
       "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
-      "initiation_source" : "queue",
-      "is_restore" : true,
+      "initiation_source" : "purchase",
+      "is_restore" : false,
       "observer_mode" : false,
       "payload_version" : 1,
-      "presented_offering_identifier" : "offering_a",
-      "purchase_completed_by" : "revenuecat",
-      "sdk_originated" : true
+      "purchase_completed_by" : "revenuecat"
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

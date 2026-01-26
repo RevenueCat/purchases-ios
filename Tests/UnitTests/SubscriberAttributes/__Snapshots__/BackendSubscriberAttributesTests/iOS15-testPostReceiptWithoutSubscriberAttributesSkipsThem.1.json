@@ -35,6 +35,7 @@
       "initiation_source" : "purchase",
       "is_restore" : false,
       "observer_mode" : false,
+      "payload_version" : 1,
       "purchase_completed_by" : "revenuecat",
       "sdk_originated" : false
     },
