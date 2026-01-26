@@ -1444,9 +1444,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
         }
 
-        self.handlePostReceiptResult(result,
-                                     transactionData: transactionData,
-                                     adServicesToken: adServicesToken)
+        self.handlePostReceiptResult(result, transactionData: transactionData)
 
         if let error = result.error {
             throw error
@@ -1602,19 +1600,6 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func markSyncedIfNeeded(
-        subscriberAttributes: SubscriberAttribute.Dictionary?,
-        adServicesToken: String?,
-        error: BackendError?
-    ) {
-        self.attribution.markSyncedIfNeeded(
-            subscriberAttributes: subscriberAttributes,
-            adServicesToken: adServicesToken,
-            appUserID: self.appUserID,
-            error: error
-        )
-    }
-
     private func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                                isRestore: Bool,
                                initiationSource: PostReceiptSource.InitiationSource,
@@ -1702,7 +1687,6 @@ private extension PurchasesOrchestrator {
                     ) { result in
                         self.handleReceiptPost(result: result,
                                                transactionData: transactionData,
-                                               adServicesToken: nil,
                                                completion: completion)
                     }
                 }
@@ -1790,7 +1774,6 @@ private extension PurchasesOrchestrator {
 
                     self.handleReceiptPost(result: result,
                                            transactionData: transactionData,
-                                           adServicesToken: nil,
                                            completion: completion)
                 }
                 return
@@ -1815,7 +1798,6 @@ private extension PurchasesOrchestrator {
             ) { result in
                 self.handleReceiptPost(result: result,
                                        transactionData: transactionData,
-                                       adServicesToken: nil,
                                        completion: completion)
             }
         }
@@ -1823,13 +1805,8 @@ private extension PurchasesOrchestrator {
 
     func handleReceiptPost(result: Result<CustomerInfo, BackendError>,
                            transactionData: PurchasedTransactionData,
-                           adServicesToken: String?,
                            completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
-        self.handlePostReceiptResult(
-            result,
-            transactionData: transactionData,
-            adServicesToken: adServicesToken
-        )
+        self.handlePostReceiptResult(result, transactionData: transactionData)
 
         if let completion = completion {
             self.operationDispatcher.dispatchOnMainThread {
@@ -1839,8 +1816,7 @@ private extension PurchasesOrchestrator {
     }
 
     func handlePostReceiptResult(_ result: Result<CustomerInfo, BackendError>,
-                                 transactionData: PurchasedTransactionData?,
-                                 adServicesToken: String?) {
+                                 transactionData: PurchasedTransactionData?) {
         switch result {
         case let .success(customerInfo):
             self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
@@ -1849,9 +1825,12 @@ private extension PurchasesOrchestrator {
             break
         }
 
-        self.markSyncedIfNeeded(subscriberAttributes: transactionData?.unsyncedAttributes,
-                                adServicesToken: adServicesToken,
-                                error: result.error)
+        self.attribution.markSyncedIfNeeded(
+            subscriberAttributes: transactionData?.unsyncedAttributes,
+            adServicesToken: transactionData?.aadAttributionToken,
+            appUserID: self.appUserID,
+            error: result.error
+        )
     }
 
     func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
@@ -1879,9 +1858,7 @@ private extension PurchasesOrchestrator {
                 currentUserID: self.appUserID
             ) { result in
 
-                self.handlePostReceiptResult(result,
-                                             transactionData: transactionData,
-                                             adServicesToken: adServicesToken)
+                self.handlePostReceiptResult(result, transactionData: transactionData)
 
                 if let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: purchasedTransaction) {
                     self.operationDispatcher.dispatchOnMainActor {
@@ -2223,9 +2200,7 @@ extension PurchasesOrchestrator {
             currentUserID: self.appUserID
         )
 
-        self.handlePostReceiptResult(result,
-                                     transactionData: transactionData,
-                                     adServicesToken: adServicesToken)
+        self.handlePostReceiptResult(result, transactionData: transactionData)
 
         return try result
             .mapError(\.asPurchasesError)
