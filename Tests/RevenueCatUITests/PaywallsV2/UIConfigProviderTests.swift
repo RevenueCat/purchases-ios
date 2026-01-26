@@ -228,10 +228,212 @@ final class UIConfigProviderTests: TestCase {
         )
     }
 
+    // MARK: - Custom Variables
+
+    func testDefaultCustomVariablesReturnsEmptyWhenNoCustomVariables() throws {
+        let uiConfigProvider = try createUIConfigProvider()
+
+        XCTAssertTrue(uiConfigProvider.defaultCustomVariables.isEmpty)
+    }
+
+    func testDefaultCustomVariablesParseStringType() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "player_name": UIConfig.CustomVariableDefinition(type: "string", defaultValue: "Player")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["player_name"], .string("Player"))
+    }
+
+    func testDefaultCustomVariablesParseNumberType() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "max_health": UIConfig.CustomVariableDefinition(type: "number", defaultValue: "100")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["max_health"], .number(100.0))
+    }
+
+    func testDefaultCustomVariablesParseNumberTypeWithDecimals() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "multiplier": UIConfig.CustomVariableDefinition(type: "number", defaultValue: "1.5")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["multiplier"], .number(1.5))
+    }
+
+    func testDefaultCustomVariablesParseIntegerTypeAsNumber() throws {
+        // Backend sends "number" but we also support "integer" for compatibility
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "level": UIConfig.CustomVariableDefinition(type: "integer", defaultValue: "42")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["level"], .number(42.0))
+    }
+
+    func testDefaultCustomVariablesParseBooleanTypeTrue() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "is_premium": UIConfig.CustomVariableDefinition(type: "boolean", defaultValue: "true")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["is_premium"], .bool(true))
+    }
+
+    func testDefaultCustomVariablesParseBooleanTypeFalse() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "is_premium": UIConfig.CustomVariableDefinition(type: "boolean", defaultValue: "false")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["is_premium"], .bool(false))
+    }
+
+    func testDefaultCustomVariablesParseMultipleTypes() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "player_name": UIConfig.CustomVariableDefinition(type: "string", defaultValue: "Player"),
+            "max_health": UIConfig.CustomVariableDefinition(type: "number", defaultValue: "100"),
+            "is_premium": UIConfig.CustomVariableDefinition(type: "boolean", defaultValue: "true")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["player_name"], .string("Player"))
+        XCTAssertEqual(customVars["max_health"], .number(100.0))
+        XCTAssertEqual(customVars["is_premium"], .bool(true))
+    }
+
+    func testDefaultCustomVariablesInvalidNumberFallsBackToString() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "bad_number": UIConfig.CustomVariableDefinition(type: "number", defaultValue: "not_a_number")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["bad_number"], .string("not_a_number"))
+
+        self.logger.verifyMessageWasLogged(
+            "Custom variable default value 'not_a_number' could not be parsed as a number"
+        )
+    }
+
+    func testDefaultCustomVariablesUnknownTypeFallsBackToString() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "unknown": UIConfig.CustomVariableDefinition(type: "unknown_type", defaultValue: "some_value")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["unknown"], .string("some_value"))
+
+        self.logger.verifyMessageWasLogged(
+            "Unknown custom variable type 'unknown_type'"
+        )
+    }
+
+    func testDefaultCustomVariablesEmptyStringValue() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "empty_string": UIConfig.CustomVariableDefinition(type: "string", defaultValue: "")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["empty_string"], .string(""))
+    }
+
+    func testDefaultCustomVariablesEmptyNumberFallsBackToString() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "empty_number": UIConfig.CustomVariableDefinition(type: "number", defaultValue: "")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        // Empty string can't be parsed as number, falls back to string
+        XCTAssertEqual(customVars["empty_number"], .string(""))
+
+        self.logger.verifyMessageWasLogged(
+            "Custom variable default value '' could not be parsed as a number"
+        )
+    }
+
+    func testDefaultCustomVariablesBooleanWithNonStandardValue() throws {
+        // Backend enforces "true"/"false" but our parser is lenient
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "bool_yes": UIConfig.CustomVariableDefinition(type: "boolean", defaultValue: "yes"),
+            "bool_1": UIConfig.CustomVariableDefinition(type: "boolean", defaultValue: "1"),
+            "bool_random": UIConfig.CustomVariableDefinition(type: "boolean", defaultValue: "random")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["bool_yes"], .bool(true))
+        XCTAssertEqual(customVars["bool_1"], .bool(true))
+        XCTAssertEqual(customVars["bool_random"], .bool(false)) // Non-truthy string = false
+    }
+
+    func testDefaultCustomVariablesTypeIsCaseInsensitive() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "upper_string": UIConfig.CustomVariableDefinition(type: "STRING", defaultValue: "test"),
+            "upper_number": UIConfig.CustomVariableDefinition(type: "NUMBER", defaultValue: "42"),
+            "upper_bool": UIConfig.CustomVariableDefinition(type: "BOOLEAN", defaultValue: "true")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        XCTAssertEqual(customVars["upper_string"], .string("test"))
+        XCTAssertEqual(customVars["upper_number"], .number(42.0))
+        XCTAssertEqual(customVars["upper_bool"], .bool(true))
+    }
+
+    func testDefaultCustomVariablesArrayTypeIsUnsupported() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "array_var": UIConfig.CustomVariableDefinition(type: "array", defaultValue: "[1,2,3]")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        // Unsupported type falls back to string
+        XCTAssertEqual(customVars["array_var"], .string("[1,2,3]"))
+
+        self.logger.verifyMessageWasLogged(
+            "Unknown custom variable type 'array'"
+        )
+    }
+
+    func testDefaultCustomVariablesObjectTypeIsUnsupported() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "object_var": UIConfig.CustomVariableDefinition(type: "object", defaultValue: "{\"key\":\"value\"}")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        // Unsupported type falls back to string
+        XCTAssertEqual(customVars["object_var"], .string("{\"key\":\"value\"}"))
+
+        self.logger.verifyMessageWasLogged(
+            "Unknown custom variable type 'object'"
+        )
+    }
+
+    func testDefaultCustomVariablesNullTypeIsUnsupported() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "null_var": UIConfig.CustomVariableDefinition(type: "null", defaultValue: "null")
+        ])
+
+        let customVars = uiConfigProvider.defaultCustomVariables
+        // Unsupported type falls back to string
+        XCTAssertEqual(customVars["null_var"], .string("null"))
+
+        self.logger.verifyMessageWasLogged(
+            "Unknown custom variable type 'null'"
+        )
+    }
+
     // MARK: - Utils
 
     private func createUIConfigProvider() throws -> UIConfigProvider {
         return try UIConfigProvider(uiConfig: Self.mockUIConfig)
+    }
+
+    private func createUIConfigProviderWithCustomVariables(
+        _ customVariables: [String: UIConfig.CustomVariableDefinition]
+    ) throws -> UIConfigProvider {
+        var uiConfig = try Self.mockUIConfig
+        uiConfig.customVariables = customVariables
+        return UIConfigProvider(uiConfig: uiConfig)
     }
 
     private let googleFontName = "google_fonts"

@@ -93,6 +93,8 @@ enum Strings {
 
     // Custom Variables
     case paywall_custom_variable_not_found(variableName: String)
+    case paywall_custom_variable_invalid_number(value: String)
+    case paywall_custom_variable_unknown_type(type: String)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -309,6 +311,12 @@ extension Strings: CustomStringConvertible {
         case .paywall_custom_variable_not_found(let variableName):
             return "Custom variable '\(variableName)' was not found. " +
             "Make sure to provide a value using .customPaywallVariables() or set a default in the dashboard."
+
+        case .paywall_custom_variable_invalid_number(let value):
+            return "Custom variable default value '\(value)' could not be parsed as a number. Using as string."
+
+        case .paywall_custom_variable_unknown_type(let type):
+            return "Unknown custom variable type '\(type)'. Using as string."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"

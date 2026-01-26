@@ -56,7 +56,7 @@ class TextComponentViewModel {
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?,
         countdownTime: CountdownTime? = nil,
-        customVariables: [String: String] = [:],
+        customVariables: [String: CustomVariableValue] = [:],
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
@@ -106,8 +106,8 @@ class TextComponentViewModel {
         localizations: [String: String],
         promoOffer: PromotionalOffer? = nil,
         countdownTime: CountdownTime? = nil,
-        customVariables: [String: String] = [:],
-        defaultCustomVariables: [String: String] = [:]
+        customVariables: [String: CustomVariableValue] = [:],
+        defaultCustomVariables: [String: CustomVariableValue] = [:]
     ) -> String {
 
         let processedWithV2 = Self.processTextV2(
@@ -139,8 +139,8 @@ class TextComponentViewModel {
         localizations: [String: String],
         promoOffer: PromotionalOffer? = nil,
         countdownTime: CountdownTime? = nil,
-        customVariables: [String: String] = [:],
-        defaultCustomVariables: [String: String] = [:]
+        customVariables: [String: CustomVariableValue] = [:],
+        defaultCustomVariables: [String: CustomVariableValue] = [:]
     ) -> String {
         guard let package = packageContext.package else {
             return text

@@ -64,7 +64,7 @@ struct TextComponentView: View {
             ),
             promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package),
             countdownTime: countdownTime,
-            customVariables: self.customVariables.asStringDictionary
+            customVariables: self.customVariables
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(

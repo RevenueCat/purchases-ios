@@ -863,8 +863,8 @@ class CustomVariablesV2Tests: TestCase {
             functionCompatibilityMap: [:],
             discountRelativeToMostExpensivePerMonth: nil,
             showZeroDecimalPlacePrices: false,
-            customVariables: ["player_name": "John"],
-            defaultCustomVariables: ["player_name": "Player"]
+            customVariables: ["player_name": .string("John")],
+            defaultCustomVariables: ["player_name": .string("Player")]
         )
 
         let result = variableHandler.processVariables(
@@ -883,7 +883,7 @@ class CustomVariablesV2Tests: TestCase {
             discountRelativeToMostExpensivePerMonth: nil,
             showZeroDecimalPlacePrices: false,
             customVariables: [:],
-            defaultCustomVariables: ["player_name": "Player"]
+            defaultCustomVariables: ["player_name": .string("Player")]
         )
 
         let result = variableHandler.processVariables(
@@ -920,7 +920,7 @@ class CustomVariablesV2Tests: TestCase {
             functionCompatibilityMap: [:],
             discountRelativeToMostExpensivePerMonth: nil,
             showZeroDecimalPlacePrices: false,
-            customVariables: ["player_name": "john"],
+            customVariables: ["player_name": .string("john")],
             defaultCustomVariables: [:]
         )
 
@@ -939,7 +939,7 @@ class CustomVariablesV2Tests: TestCase {
             functionCompatibilityMap: [:],
             discountRelativeToMostExpensivePerMonth: nil,
             showZeroDecimalPlacePrices: false,
-            customVariables: ["max_health": "100"],
+            customVariables: ["max_health": .number(100)],
             defaultCustomVariables: [:]
         )
 
@@ -958,7 +958,7 @@ class CustomVariablesV2Tests: TestCase {
             functionCompatibilityMap: [:],
             discountRelativeToMostExpensivePerMonth: nil,
             showZeroDecimalPlacePrices: false,
-            customVariables: ["is_premium": "true"],
+            customVariables: ["is_premium": .bool(true)],
             defaultCustomVariables: [:]
         )
 
@@ -978,11 +978,11 @@ class CustomVariablesV2Tests: TestCase {
             discountRelativeToMostExpensivePerMonth: nil,
             showZeroDecimalPlacePrices: false,
             customVariables: [
-                "player_name": "John",
-                "level": "42"
+                "player_name": .string("John"),
+                "level": .number(42)
             ],
             defaultCustomVariables: [
-                "max_health": "100"
+                "max_health": .number(100)
             ]
         )
 
@@ -1001,7 +1001,7 @@ class CustomVariablesV2Tests: TestCase {
             functionCompatibilityMap: [:],
             discountRelativeToMostExpensivePerMonth: nil,
             showZeroDecimalPlacePrices: false,
-            customVariables: ["player_name": "John"],
+            customVariables: ["player_name": .string("John")],
             defaultCustomVariables: [:]
         )
 
@@ -1020,8 +1020,8 @@ class CustomVariablesV2Tests: TestCase {
             functionCompatibilityMap: [:],
             discountRelativeToMostExpensivePerMonth: nil,
             showZeroDecimalPlacePrices: false,
-            customVariables: ["setting": "override"],
-            defaultCustomVariables: ["setting": "default"]
+            customVariables: ["setting": .string("override")],
+            defaultCustomVariables: ["setting": .string("default")]
         )
 
         let result = variableHandler.processVariables(
@@ -1031,6 +1031,122 @@ class CustomVariablesV2Tests: TestCase {
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("Setting: override"))
+    }
+
+    func testCustomVariableWithDecimalNumber() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["price": .number(9.99)],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Price: {{ custom.price }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Price: 9.99"))
+    }
+
+    func testCustomVariableWithNegativeNumber() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["offset": .number(-10)],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Offset: {{ custom.offset }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Offset: -10"))
+    }
+
+    func testCustomVariableWithBooleanFalse() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["enabled": .bool(false)],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Enabled: {{ custom.enabled }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Enabled: false"))
+    }
+
+    func testCustomVariableNumberWithFunction() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["level": .number(42)],
+            defaultCustomVariables: [:]
+        )
+
+        // Functions like uppercase on a number just return the number as string
+        let result = variableHandler.processVariables(
+            in: "Level: {{ custom.level | uppercase }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Level: 42"))
+    }
+
+    func testCustomVariableBoolWithFunction() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["enabled": .bool(true)],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Status: {{ custom.enabled | uppercase }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Status: TRUE"))
+    }
+
+    func testDefaultCustomVariableWithDifferentTypeThanSDKProvided() {
+        // SDK provides a number, default is a string - SDK value should win
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["value": .number(100)],
+            defaultCustomVariables: ["value": .string("default")]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Value: {{ custom.value }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Value: 100"))
     }
 
 }

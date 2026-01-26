@@ -30,17 +30,17 @@ struct VariableHandlerV2 {
     private let dateProvider: () -> Date
 
     /// Custom variables provided by the SDK at runtime.
-    private let customVariables: [String: String]
+    private let customVariables: [String: CustomVariableValue]
     /// Default custom variables defined in the dashboard.
-    private let defaultCustomVariables: [String: String]
+    private let defaultCustomVariables: [String: CustomVariableValue]
 
     init(
         variableCompatibilityMap: [String: String],
         functionCompatibilityMap: [String: String],
         discountRelativeToMostExpensivePerMonth: Double?,
         showZeroDecimalPlacePrices: Bool,
-        customVariables: [String: String] = [:],
-        defaultCustomVariables: [String: String] = [:],
+        customVariables: [String: CustomVariableValue] = [:],
+        defaultCustomVariables: [String: CustomVariableValue] = [:],
         dateProvider: @escaping () -> Date = { Date() }
     ) {
         self.variableCompatibilityMap = variableCompatibilityMap
@@ -95,12 +95,12 @@ struct VariableHandlerV2 {
 
         // First, check SDK-provided custom variables
         if let value = customVariables[key] {
-            return value
+            return value.stringValue
         }
 
         // Then, check default values from the dashboard
         if let defaultValue = defaultCustomVariables[key] {
-            return defaultValue
+            return defaultValue.stringValue
         }
 
         // Variable not found - log warning and return empty string
