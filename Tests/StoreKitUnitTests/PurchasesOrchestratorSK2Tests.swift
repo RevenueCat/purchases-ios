@@ -31,7 +31,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     // MARK: - StoreFront Changes
 
     func testClearCachedProductsAndOfferingsAfterStorefrontChanges() async throws {
-        self.orchestrator.storefrontDidUpdate(with: MockStorefront(countryCode: "ESP"))
+        self.orchestrator.storefrontValuesUpdated(with: MockStorefront(countryCode: "ESP"))
 
         expect(self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount) == 1
         expect(self.productsManager.invokedClearCacheCount) == 1
@@ -1099,9 +1099,11 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let transactionListener = MockStoreKit2TransactionListener()
         let storeKit2ObserverModePurchasesDetector = MockStoreKit2ObserverModePurchaseDetector()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchasesDetector)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchasesDetector
+        )
 
         expect(transactionListener.invokedDelegateSetter).toEventually(beTrue())
         expect(transactionListener.invokedListenForTransactions) == true
@@ -1504,11 +1506,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
         let diagnosticsTracker = MockDiagnosticsTracker()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: diagnosticsSynchronizer,
-                               diagnosticsTracker: diagnosticsTracker)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer,
+            diagnosticsTracker: diagnosticsTracker
+        )
 
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
         systemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
@@ -1556,11 +1560,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
         let diagnosticsTracker = MockDiagnosticsTracker()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: diagnosticsSynchronizer,
-                               diagnosticsTracker: diagnosticsTracker)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer,
+            diagnosticsTracker: diagnosticsTracker
+        )
 
         let product = try await self.fetchSk2Product()
         let offerId = "identifier \(Int.random(in: 0..<1000))"
@@ -1619,11 +1625,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
         let diagnosticsTracker = MockDiagnosticsTracker()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: diagnosticsSynchronizer,
-                               diagnosticsTracker: diagnosticsTracker)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer,
+            diagnosticsTracker: diagnosticsTracker
+        )
 
         let product = try await self.fetchSk2Product()
 
@@ -1673,11 +1681,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             finishTransactions: true,
             storeKitVersion: .storeKit1
         )
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: diagnosticsSynchronizer,
-                               diagnosticsTracker: diagnosticsTracker)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer,
+            diagnosticsTracker: diagnosticsTracker
+        )
 
         let purchaseIntentListener = MockStoreKit2PurchaseIntentListener()
 
@@ -1694,11 +1704,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
         let diagnosticsTracker = MockDiagnosticsTracker()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: diagnosticsSynchronizer,
-                               diagnosticsTracker: diagnosticsTracker)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer,
+            diagnosticsTracker: diagnosticsTracker
+        )
 
         let purchaseIntentListener = MockStoreKit2PurchaseIntentListener()
 
