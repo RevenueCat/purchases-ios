@@ -252,9 +252,9 @@ extension StoreProductDiscount: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
-        case offerIdentifier = "offer_identifier"
-        case price = "price"
-        case paymentMode = "payment_mode"
+        case offerIdentifier
+        case price
+        case paymentMode
 
     }
 
