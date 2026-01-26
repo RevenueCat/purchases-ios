@@ -45,25 +45,9 @@ struct BottomSheetOverlayModifier: ViewModifier {
     @Binding var sheetViewModel: SheetViewModel?
     let safeAreaInsets: EdgeInsets
 
-    @State private var parentHeight: CGFloat?
-
-    var sheetHeight: CGFloat? {
-        guard let size = self.sheetViewModel?.sheet.size else {
-            return nil
-        }
-
-        switch size.height {
-        case .fit, .fill:
-            return nil
-        case .fixed(let height):
-            return CGFloat(height)
-        case .relative(let percent):
-            guard let parentHeight = self.parentHeight else {
-                return nil
-            }
-            return parentHeight * percent
-        }
-    }
+    /// The maximum height for `.fit` sheets as a percentage of parent height.
+    /// This allows content to scroll when it exceeds this limit.
+    private static let fitMaxHeightPercent: CGFloat = 0.9
 
     func body(content: Content) -> some View {
         ZStack {
@@ -71,45 +55,64 @@ struct BottomSheetOverlayModifier: ViewModifier {
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
 
-            // Invisible tap area that covers the screen
-            if sheetViewModel != nil {
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        sheetViewModel = nil
-                    }
-            }
-
             // Sheet content
-            VStack {
-                Spacer()
-                if let sheetViewModel {
-                    StackComponentView(
-                        viewModel: sheetViewModel.sheetStackViewModel,
-                        onDismiss: {
-                            self.sheetViewModel = nil
-                        },
-                        additionalPadding: EdgeInsets(
-                            top: 0,
-                            leading: 0,
-                            bottom: safeAreaInsets.bottom,
-                            trailing: 0
-                        )
-                    )
-                    .applyIfLet(self.sheetHeight, apply: { view, height in
-                        view.frame(height: height)
-                    })
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            GeometryReader { geometry in
+                ZStack {
+                    // Tap-to-dismiss area (only the area OUTSIDE the sheet)
+                    if sheetViewModel != nil {
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                sheetViewModel = nil
+                            }
+                    }
+
+                    VStack {
+                        Spacer()
+                        if let sheetViewModel {
+                            // Calculate height based on sheet size config
+                            let calculatedHeight: CGFloat? = {
+                                guard let size = sheetViewModel.sheet.size else { return nil }
+                                switch size.height {
+                                case .fit:
+                                    return nil
+                                case .fill:
+                                    return geometry.size.height
+                                case .fixed(let value):
+                                    return CGFloat(value)
+                                case .relative(let percent):
+                                    return geometry.size.height * percent
+                                @unknown default:
+                                    return nil
+                                }
+                            }()
+
+                            let maxHeight: CGFloat = calculatedHeight
+                                ?? (geometry.size.height * Self.fitMaxHeightPercent)
+
+                        ScrollView(.vertical, showsIndicators: true) {
+                            StackComponentView(
+                                viewModel: sheetViewModel.sheetStackViewModel,
+                                isScrollableByDefault: false,
+                                onDismiss: {
+                                    self.sheetViewModel = nil
+                                },
+                                additionalPadding: EdgeInsets(
+                                    top: 0,
+                                    leading: 0,
+                                    bottom: safeAreaInsets.bottom,
+                                    trailing: 0
+                                )
+                            )
+                            .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .frame(maxHeight: maxHeight)
+                        .contentShape(Rectangle())
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
+                    }
                 }
             }
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear {
-                            self.parentHeight = proxy.size.height
-                        }
-                }
-            )
             .animation(.spring(response: 0.35, dampingFraction: 1), value: sheetViewModel)
         }
     }
