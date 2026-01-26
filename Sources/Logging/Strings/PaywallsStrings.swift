@@ -168,6 +168,7 @@ extension PaywallsStrings: LogMessage {
             return "Background task failed to start: \(taskName)"
         case .background_task_unavailable:
             return "Background tasks unavailable (app extension or no UIApplication access)"
+
         }
     }
 

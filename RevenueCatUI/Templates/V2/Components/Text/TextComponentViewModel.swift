@@ -109,7 +109,6 @@ class TextComponentViewModel {
         customVariables: [String: CustomVariableValue] = [:],
         defaultCustomVariables: [String: CustomVariableValue] = [:]
     ) -> String {
-
         let processedWithV2 = Self.processTextV2(
             text,
             packageContext: packageContext,
@@ -121,6 +120,7 @@ class TextComponentViewModel {
             customVariables: customVariables,
             defaultCustomVariables: defaultCustomVariables
         )
+
         // Note: This is temporary while in closed beta and shortly after
         let processedWithV2AndV1 = Self.processTextV1(
             processedWithV2,
@@ -142,14 +142,14 @@ class TextComponentViewModel {
         customVariables: [String: CustomVariableValue] = [:],
         defaultCustomVariables: [String: CustomVariableValue] = [:]
     ) -> String {
-        guard let package = packageContext.package else {
-            return text
-        }
+        let pkg = packageContext.package
 
-        let discount = Self.discount(
-            from: package.storeProduct.pricePerMonth?.doubleValue,
-            relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
-        )
+        let discount = pkg.flatMap { package in
+            Self.discount(
+                from: package.storeProduct.pricePerMonth?.doubleValue,
+                relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
+            )
+        }
 
         let handler = VariableHandlerV2(
             variableCompatibilityMap: variableConfig.variableCompatibilityMap,
@@ -162,7 +162,7 @@ class TextComponentViewModel {
 
         return handler.processVariables(
             in: text,
-            with: package,
+            with: pkg,
             locale: locale,
             localizations: localizations,
             promoOffer: promoOffer,
