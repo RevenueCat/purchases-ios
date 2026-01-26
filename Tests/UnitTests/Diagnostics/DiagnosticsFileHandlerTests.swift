@@ -320,7 +320,8 @@ class DiagnosticsFileOldFileDeletionTests: TestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         // Remove any stored data used in migration tests
-        if let url = DirectoryHelper.baseUrl(for: .applicationSupport()), FileManager.default.fileExists(atPath: url.path) {
+        if let url = DirectoryHelper.baseUrl(for: .applicationSupport()),
+           FileManager.default.fileExists(atPath: url.path) {
             try FileManager.default.removeItem(at: url)
         }
     }

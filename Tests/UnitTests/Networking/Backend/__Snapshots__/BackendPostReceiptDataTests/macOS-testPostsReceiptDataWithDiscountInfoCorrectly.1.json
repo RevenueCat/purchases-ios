@@ -41,6 +41,7 @@
           "price" : "12.1"
         }
       ],
+      "payload_version" : 1,
       "price" : "15.99",
       "product_id" : "a_great_product",
       "purchase_completed_by" : "revenuecat",
