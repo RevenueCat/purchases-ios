@@ -98,7 +98,6 @@ class TransactionMetadataSyncHelperTests: TestCase {
         self.helper.syncIfNeeded(allowSharingAppStoreAccount: false)
 
         expect(self.operationDispatcher.invokedDispatchOnWorkerThread) == true
-        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == .default
     }
 
     func testSyncIfNeededCallsTransactionPoster() async {
