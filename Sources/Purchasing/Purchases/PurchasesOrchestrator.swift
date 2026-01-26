@@ -1734,9 +1734,9 @@ private extension PurchasesOrchestrator {
                         originalPurchaseCompletedBy: nil,
                         appUserID: currentAppUserID
                     ) { result in
-                        self.handleReceiptPost(result: result,
-                                               transactionData: transactionData,
-                                               completion: completion)
+                        self.handlePostReceiptResult(result,
+                                                     transactionData: transactionData,
+                                                     completion: completion)
                     }
                 }
             }
@@ -1821,9 +1821,9 @@ private extension PurchasesOrchestrator {
                                   appTransaction: appTransactionJWS,
                                   appUserID: currentAppUserID) { result in
 
-                    self.handleReceiptPost(result: result,
-                                           transactionData: transactionData,
-                                           completion: completion)
+                    self.handlePostReceiptResult(result,
+                                                 transactionData: transactionData,
+                                                 completion: completion)
                 }
                 return
             }
@@ -1845,33 +1845,20 @@ private extension PurchasesOrchestrator {
                 appTransactionJWS: appTransactionJWS,
                 currentUserID: currentAppUserID
             ) { result in
-                self.handleReceiptPost(result: result,
-                                       transactionData: transactionData,
-                                       completion: completion)
+                self.handlePostReceiptResult(result,
+                                             transactionData: transactionData,
+                                             completion: completion)
             }
         }
     }
 
-    func handleReceiptPost(result: Result<CustomerInfo, BackendError>,
-                           transactionData: PurchasedTransactionData,
-                           completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
-        self.handlePostReceiptResult(result, transactionData: transactionData)
-
-        if let completion = completion {
-            self.operationDispatcher.dispatchOnMainThread {
-                completion(result.mapError { $0.asPurchasesError })
-            }
-        }
-    }
-
-    func handlePostReceiptResult(_ result: Result<CustomerInfo, BackendError>,
-                                 transactionData: PurchasedTransactionData?) {
-        switch result {
-        case let .success(customerInfo):
+    func handlePostReceiptResult(
+        _ result: Result<CustomerInfo, BackendError>,
+        transactionData: PurchasedTransactionData?,
+        completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil
+    ) {
+        if let customerInfo = try? result.get() {
             self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
-
-        case .failure:
-            break
         }
 
         self.attribution.markSyncedIfNeeded(
@@ -1880,6 +1867,12 @@ private extension PurchasesOrchestrator {
             appUserID: self.appUserID,
             error: result.error
         )
+
+        if let completion = completion {
+            self.operationDispatcher.dispatchOnMainThread {
+                completion(result.mapError { $0.asPurchasesError })
+            }
+        }
     }
 
     func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
