@@ -59,7 +59,7 @@ extension LargeItemCacheType {
     func createPersistenceDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool = true) -> URL? {
         createDirectoryIfNeeded(
             basePath: basePath,
-            directoryType: .persistence,
+            directoryType: .applicationSupport(),
             inAppSpecificDirectory: inAppSpecificDirectory
         )
     }

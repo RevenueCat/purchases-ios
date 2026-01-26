@@ -268,18 +268,4 @@ extension BaseStoreKitIntegrationTests {
     }
     #endif
 
-    func waitForCachedTransactionMetadataSyncsToFinish(
-        timeout: NimbleTimeInterval = .seconds(5),
-        expectedCount: Int? = 2, // 2 syncs happen (1 at configure time, 1 at applicationWillEnterForeground)
-        pollInterval: NimbleTimeInterval = .milliseconds(100),
-        file: FileString = #file,
-        line: UInt = #line
-    ) async throws {
-        try await self.logger.verifyMessageIsEventuallyLogged(Self.finishedPostingCachedMetadataLog,
-                                                              level: .verbose,
-                                                              expectedCount: expectedCount,
-                                                              timeout: timeout,
-                                                              pollInterval: pollInterval)
-    }
-
 }
