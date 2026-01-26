@@ -129,6 +129,8 @@ final class MockTransactionPoster: TransactionPosterType {
     }
 
     var stubbedPostRemainingCachedTransactionMetadataResults: [CachedTransactionMetadataPostResult] = []
+    /// Delay in nanoseconds before returning results (used for concurrency testing)
+    var postRemainingCachedTransactionMetadataDelayNanoseconds: UInt64 = 0
 
     let invokedPostRemainingCachedTransactionMetadata: Atomic<Bool> = false
     let invokedPostRemainingCachedTransactionMetadataCount: Atomic<Int> = .init(0)
@@ -145,11 +147,17 @@ final class MockTransactionPoster: TransactionPosterType {
         self.invokedPostRemainingCachedTransactionMetadataIsRestore.value = isRestore
 
         let results = self.stubbedPostRemainingCachedTransactionMetadataResults
-        return AsyncStream { continuation in
-            for result in results {
-                continuation.yield(result)
+        let delayNanoseconds = self.postRemainingCachedTransactionMetadataDelayNanoseconds
+        return AsyncStream { streamContinuation in
+            Task {
+                if delayNanoseconds > 0 {
+                    try? await Task.sleep(nanoseconds: delayNanoseconds)
+                }
+                for result in results {
+                    streamContinuation.yield(result)
+                }
+                streamContinuation.finish()
             }
-            continuation.finish()
         }
     }
 

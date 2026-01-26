@@ -45,7 +45,6 @@ final class PurchasesOrchestrator {
     private let presentedOfferingContextsByProductID: Atomic<[String: PresentedOfferingContext]> = .init([:])
     private let purchaseInitiatedPaywall: Atomic<PaywallEvent?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
-    private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttribute.Dictionary {
@@ -213,8 +212,6 @@ final class PurchasesOrchestrator {
         Task {
             await syncDiagnosticsIfNeeded()
         }
-
-        self.syncRemainingCachedTransactionMetadataIfNeeded()
     }
 
     init(productsManager: ProductsManagerType,
@@ -945,46 +942,6 @@ final class PurchasesOrchestrator {
         }
     }
 
-    /// Posts any remaining cached transaction metadata that wasn't synced during normal transaction processing.
-    /// This handles edge cases where a transaction is not returned by the store anymore but we still have
-    /// metadata cached for it.
-    func syncRemainingCachedTransactionMetadataIfNeeded() {
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .default) {
-            Task {
-                await self.performCachedTransactionMetadataSync()
-            }
-        }
-    }
-
-    func performCachedTransactionMetadataSync() async {
-        guard self.isSyncingCachedTransactionMetadata.getAndSet(true) == false else {
-            Logger.debug(Strings.purchase.cached_transaction_metadata_sync_already_in_progress)
-            return
-        }
-        defer { self.isSyncingCachedTransactionMetadata.value = false }
-
-        let currentAppUserID = self.appUserID
-        let isRestore = self.allowSharingAppStoreAccount
-
-        let resultsStream = self.transactionPoster.postRemainingCachedTransactionMetadata(
-            appUserID: currentAppUserID,
-            isRestore: isRestore
-        )
-
-        for await (transactionData, result) in resultsStream {
-            if let customerInfo = try? result.get() {
-                self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: currentAppUserID)
-            }
-            self.markSyncedIfNeeded(
-                subscriberAttributes: transactionData.unsyncedAttributes,
-                adServicesToken: transactionData.aadAttributionToken,
-                error: result.error
-            )
-        }
-
-        Logger.debug(Strings.purchase.finished_posting_cached_metadata)
-    }
-
 #if os(iOS) || os(macOS) || VISION_OS
 
     @available(watchOS, unavailable)
@@ -1650,20 +1607,12 @@ private extension PurchasesOrchestrator {
         adServicesToken: String?,
         error: BackendError?
     ) {
-        if let error = error {
-            guard error.successfullySynced else { return }
-
-            if let attributeErrors = (error as NSError).subscriberAttributesErrors, !attributeErrors.isEmpty {
-                Logger.error(Strings.attribution.subscriber_attributes_error(
-                    errors: attributeErrors
-                ))
-            }
-        }
-
-        self.attribution.markAttributesAsSynced(subscriberAttributes, appUserID: self.appUserID)
-        if let adServicesToken = adServicesToken {
-            self.attribution.markAdServicesTokenAsSynced(adServicesToken, appUserID: self.appUserID)
-        }
+        self.attribution.markSyncedIfNeeded(
+            subscriberAttributes: subscriberAttributes,
+            adServicesToken: adServicesToken,
+            appUserID: self.appUserID,
+            error: error
+        )
     }
 
     private func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
