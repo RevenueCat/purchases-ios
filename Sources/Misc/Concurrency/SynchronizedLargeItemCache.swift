@@ -25,12 +25,17 @@ internal final class SynchronizedLargeItemCache {
 
     init(
         cache: LargeItemCacheType,
-        basePath: String
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType = .cache
     ) {
         self.cache = cache
         self.lock = Lock(.nonRecursive)
 
-        self.cacheURL = cache.createCacheDirectoryIfNeeded(basePath: basePath)
+        self.cacheURL = cache.createDirectoryIfNeeded(
+            basePath: basePath,
+            directoryType: directoryType,
+            inAppSpecificDirectory: true
+        )
     }
 
     @inline(__always)

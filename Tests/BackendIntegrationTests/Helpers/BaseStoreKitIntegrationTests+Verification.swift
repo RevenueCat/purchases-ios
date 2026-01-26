@@ -119,7 +119,10 @@ extension BaseStoreKitIntegrationTests {
         line: UInt = #line
     ) {
         self.verifySpecificTransactionWasFinished(transactionId: storeTransaction.transactionIdentifier,
-                                                  productId: storeTransaction.productIdentifier)
+                                                  productId: storeTransaction.productIdentifier,
+                                                  count: count,
+                                                  file: file,
+                                                  line: line)
     }
 
     func verifySpecificTransactionWasFinished(

@@ -35,7 +35,8 @@
       "initiation_source" : "restore",
       "is_restore" : false,
       "observer_mode" : false,
-      "payload_version" : 1
+      "payload_version" : 1,
+      "sdk_originated" : false
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

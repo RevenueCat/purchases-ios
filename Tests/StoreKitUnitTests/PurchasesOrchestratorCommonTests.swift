@@ -220,10 +220,12 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         let transactionListener = MockStoreKit2TransactionListener()
         let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: mockDiagnosticsSynchronizer)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: mockDiagnosticsSynchronizer
+        )
         expect(self.orchestrator.diagnosticsSynchronizer).toNot(beNil())
         expect(mockDiagnosticsSynchronizer.invokedSyncDiagnosticsIfNeeded).toEventually(beTrue())
     }
@@ -408,7 +410,8 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
             ),
             transactionData: PurchasedTransactionData(),
             encodedAppleReceipt: .receipt("test_receipt_\(transactionId)".asData),
-            originalPurchasesAreCompletedBy: .revenueCat
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
         )
     }
 

@@ -36,7 +36,8 @@
       "observer_mode" : true,
       "payload_version" : 1,
       "presented_offering_identifier" : "offering_a",
-      "purchase_completed_by" : "my_app"
+      "purchase_completed_by" : "my_app",
+      "sdk_originated" : false
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

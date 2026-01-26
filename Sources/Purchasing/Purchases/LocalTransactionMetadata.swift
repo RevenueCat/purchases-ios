@@ -41,12 +41,18 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
     /// The value of ``Purchases.purchasesAreCompletedBy`` at the time of the transaction.
     let originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
 
+    /// Indicates whether this purchase was initiated by the SDK.
+    /// - `true` when the purchase was initiated via any of the SDK's `purchase()` methods.
+    /// - `false` when the purchase was detected in the SK1/SK2 queue but was triggered outside the SDK.
+    let sdkOriginated: Bool
+
     init(
         transactionId: String,
         productData: ProductRequestData?,
         transactionData: PurchasedTransactionData,
         encodedAppleReceipt: EncodedAppleReceipt,
-        originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
+        originalPurchasesAreCompletedBy: PurchasesAreCompletedBy,
+        sdkOriginated: Bool
     ) {
         self.transactionId = transactionId
         self.productDataWrapper = productData.map(ProductRequestDataEncodedWrapper.init)
@@ -55,6 +61,7 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
         )
         self.encodedAppleReceipt = encodedAppleReceipt
         self.originalPurchasesAreCompletedBy = originalPurchasesAreCompletedBy
+        self.sdkOriginated = sdkOriginated
     }
 
 }

@@ -54,6 +54,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `presentedOfferingIdentifier`
         /// - `observerMode`
         /// - `subscriberAttributesByKey`
+		/// - `sdkOriginated`
         /// - `transactionId` (only if there is attribution data, to always post receipts with attribution data)
         let cacheKey =
         """
@@ -61,6 +62,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
+        -\(postData.sdkOriginated)
         -\(postData.containsAttributionData ? (postData.transactionId ?? "") : "")
         """
 
@@ -154,6 +156,9 @@ extension PostReceiptDataOperation {
         /// retrieved from StoreKit 2.
         let appTransaction: String?
         let transactionId: String?
+
+        /// Indicates whether this purchase was initiated via the SDK's `purchase()` methods.
+        let sdkOriginated: Bool
         let metadata: [String: String]?
         let containsAttributionData: Bool
     }
@@ -190,7 +195,8 @@ extension PostReceiptDataOperation.PostData {
         appTransaction: String?,
         transactionId: String?,
         /// Whether it contains attribution data for `transactionId`. This field is not included in the request
-        containsAttributionData: Bool
+        containsAttributionData: Bool,
+        sdkOriginated: Bool = false
     ) {
         self.init(
             appUserID: appUserID,
@@ -211,6 +217,7 @@ extension PostReceiptDataOperation.PostData {
             testReceiptIdentifier: testReceiptIdentifier,
             appTransaction: appTransaction,
             transactionId: transactionId,
+            sdkOriginated: sdkOriginated,
             metadata: data.metadata,
             containsAttributionData: containsAttributionData
         )
@@ -295,6 +302,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case testReceiptIdentifier = "test_receipt_identifier"
         case appTransaction = "app_transaction"
         case transactionId = "transaction_id"
+        case sdkOriginated = "sdk_originated"
         case metadata
 
     }
@@ -315,6 +323,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.fetchToken, forKey: .fetchToken)
         try container.encodeIfPresent(self.appTransaction, forKey: .appTransaction)
         try container.encodeIfPresent(self.transactionId, forKey: .transactionId)
+        try container.encode(self.sdkOriginated, forKey: .sdkOriginated)
         try container.encodeIfPresent(self.metadata, forKey: .metadata)
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)

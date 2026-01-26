@@ -17,6 +17,7 @@ class MockBackend: Backend {
                                        originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                                        appTransaction: String?,
                                        associatedTransactionId: String?,
+                                       sdkOriginated: Bool,
                                        appUserID: String,
                                        containsAttributionData: Bool,
                                        completion: CustomerAPI.CustomerInfoResponseHandler?)
@@ -67,6 +68,7 @@ class MockBackend: Backend {
                        originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                        appTransaction: String? = nil,
                        associatedTransactionId: String? = nil,
+                       sdkOriginated: Bool = false,
                        appUserID: String,
                        containsAttributionData: Bool = false,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
@@ -80,6 +82,7 @@ class MockBackend: Backend {
                                             originalPurchaseCompletedBy,
                                             appTransaction,
                                             associatedTransactionId,
+                                            sdkOriginated,
                                             appUserID,
                                             containsAttributionData,
                                             completion)
@@ -91,6 +94,7 @@ class MockBackend: Backend {
                                                      originalPurchaseCompletedBy,
                                                      appTransaction,
                                                      associatedTransactionId,
+                                                     sdkOriginated,
                                                      appUserID,
                                                      containsAttributionData,
                                                      completion))
