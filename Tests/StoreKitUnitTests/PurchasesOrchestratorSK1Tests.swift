@@ -873,10 +873,15 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
         let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: diagnosticsSynchronizer)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(
+                delegate: nil,
+                userDefaults: nil
+            ),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer
+        )
 
         expect(transactionListener.invokedDelegateSetter).toEventually(beTrue())
         expect(transactionListener.invokedListenForTransactions) == false
@@ -994,11 +999,13 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
         let diagnosticsTracker = MockDiagnosticsTracker()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: diagnosticsSynchronizer,
-                               diagnosticsTracker: diagnosticsTracker)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer,
+            diagnosticsTracker: diagnosticsTracker
+        )
 
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
         systemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
@@ -1048,11 +1055,16 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
         let diagnosticsTracker = MockDiagnosticsTracker()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: diagnosticsSynchronizer,
-                               diagnosticsTracker: diagnosticsTracker)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(
+                delegate: nil,
+                userDefaults: nil
+            ),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer,
+            diagnosticsTracker: diagnosticsTracker
+        )
 
         storeKit1Wrapper.mockAddPaymentTransactionState = .failed
         storeKit1Wrapper.mockTransactionError = NSError(domain: SKErrorDomain,
