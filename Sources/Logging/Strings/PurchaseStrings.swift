@@ -99,6 +99,8 @@ enum PurchaseStrings {
     case posting_remaining_cached_metadata(count: Int)
     case posting_cached_metadata(transactionId: String)
     case cached_transaction_metadata_sync_already_in_progress
+    case no_cached_transaction_metadata_to_post
+    case finished_posting_cached_metadata
 }
 
 extension PurchaseStrings: LogMessage {
@@ -376,6 +378,12 @@ extension PurchaseStrings: LogMessage {
 
         case .cached_transaction_metadata_sync_already_in_progress:
             return "Cached transaction metadata sync already in progress, skipping"
+
+        case .no_cached_transaction_metadata_to_post:
+            return "No cached transaction metadata to sync"
+
+        case .finished_posting_cached_metadata:
+            return "Finished syncing all cached transaction metadata"
         }
     }
 

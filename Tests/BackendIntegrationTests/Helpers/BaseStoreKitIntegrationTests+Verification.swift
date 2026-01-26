@@ -268,4 +268,26 @@ extension BaseStoreKitIntegrationTests {
     }
     #endif
 
+    func waitForCachedTransactionMetadataSyncToFinish(
+        timeout: NimbleTimeInterval = .seconds(5),
+        pollInterval: NimbleTimeInterval = .milliseconds(100),
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        let expectedEntry = Self.finishedPostingCachedMetadataLog
+        try await asyncWait(
+            description: "Neither '\(Self.noCachedTransactionMetadataToPostLog)' " +
+                         "nor '\(Self.finishedPostingCachedMetadataLog)' was logged. " +
+                         "Logged messages: \(self.logger.messages)",
+            timeout: timeout,
+            pollInterval: pollInterval,
+            file: file,
+            line: line
+        ) {
+            self.logger.messages.contains { entry in
+                entry.message.contains(expectedEntry)
+            }
+        }
+    }
+
 }

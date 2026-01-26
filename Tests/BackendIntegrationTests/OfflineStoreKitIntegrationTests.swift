@@ -256,6 +256,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.serverDown()
 
         let result = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        expect(result.customerInfo.isComputedOffline).to(beTrue())
+
         let transaction = try XCTUnwrap(result.transaction)
 
         // Add 1s delay to ensure the renewal transaction has a later purchase date than the original one

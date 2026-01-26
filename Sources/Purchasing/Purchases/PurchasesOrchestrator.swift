@@ -981,6 +981,8 @@ final class PurchasesOrchestrator {
                 error: result.error
             )
         }
+
+        Logger.debug(Strings.purchase.finished_posting_cached_metadata)
     }
 
 #if os(iOS) || os(macOS) || VISION_OS
