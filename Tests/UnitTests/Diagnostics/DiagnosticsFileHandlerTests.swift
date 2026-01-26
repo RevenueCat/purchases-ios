@@ -320,7 +320,7 @@ class DiagnosticsFileOldFileDeletionTests: TestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         // Remove any stored data used in migration tests
-        if let url = DirectoryHelper.baseUrl(for: .persistence), FileManager.default.fileExists(atPath: url.path) {
+        if let url = DirectoryHelper.baseUrl(for: .applicationSupport()), FileManager.default.fileExists(atPath: url.path) {
             try FileManager.default.removeItem(at: url)
         }
     }
@@ -355,7 +355,7 @@ class DiagnosticsFileOldFileDeletionTests: TestCase {
         expect(FileManager.default.fileExists(atPath: comRevenueCatFolder.path)).to(beFalse())
 
         // Verify new file is created
-        let persistenceDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .persistence))
+        let persistenceDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .applicationSupport()))
 
         let newDiagnosticsFileURL = persistenceDirectoryURL
             .appendingPathComponent("diagnostics", isDirectory: true)
@@ -380,7 +380,7 @@ class DiagnosticsFileOldFileDeletionTests: TestCase {
         )
 
         // Verify new file is created
-        let persistenceDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .persistence))
+        let persistenceDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .applicationSupport()))
 
         let newDiagnosticsFileURL = persistenceDirectoryURL
             .appendingPathComponent("diagnostics", isDirectory: true)
