@@ -192,19 +192,12 @@ public final class AdTracker: NSObject {
 
      Call this method from your ad SDK's failure callback to report load failures to RevenueCat.
      Include the optional `mediatorErrorCode` if provided by the mediation SDK.
-     This is the completion handler version for Objective-C compatibility.
 
-     - Parameters:
-       - data: The failed to load ad event data
-       - completion: Called when the tracking is complete
+     - Parameter data: The failed to load ad event data
      */
-    @_spi(Experimental) @objc public func trackAdFailedToLoad(
-        _ data: AdFailedToLoad,
-        completion: @escaping () -> Void
-    ) {
+    @_spi(Experimental) @objc public func trackAdFailedToLoad(_ data: AdFailedToLoad) {
         Task {
             await self.trackAdFailedToLoad(data)
-            completion()
         }
     }
 
@@ -212,16 +205,12 @@ public final class AdTracker: NSObject {
      Tracks when an ad successfully loads (Objective-C compatible).
 
      Call this method from your ad SDK's load callback to report successful ad loads to RevenueCat.
-     This is the completion handler version for Objective-C compatibility.
 
-     - Parameters:
-       - data: The loaded ad event data
-       - completion: Called when the tracking is complete
+     - Parameter data: The loaded ad event data
      */
-    @_spi(Experimental) @objc public func trackAdLoaded(_ data: AdLoaded, completion: @escaping () -> Void) {
+    @_spi(Experimental) @objc public func trackAdLoaded(_ data: AdLoaded) {
         Task {
             await self.trackAdLoaded(data)
-            completion()
         }
     }
 
@@ -229,16 +218,12 @@ public final class AdTracker: NSObject {
      Tracks when an ad impression is displayed (Objective-C compatible).
 
      Call this method from your ad SDK's impression callback to report ad displays to RevenueCat.
-     This is the completion handler version for Objective-C compatibility.
 
-     - Parameters:
-       - data: The displayed ad event data
-       - completion: Called when the tracking is complete
+     - Parameter data: The displayed ad event data
      */
-    @_spi(Experimental) @objc public func trackAdDisplayed(_ data: AdDisplayed, completion: @escaping () -> Void) {
+    @_spi(Experimental) @objc public func trackAdDisplayed(_ data: AdDisplayed) {
         Task {
             await self.trackAdDisplayed(data)
-            completion()
         }
     }
 
@@ -246,16 +231,12 @@ public final class AdTracker: NSObject {
      Tracks when an ad is opened or clicked (Objective-C compatible).
 
      Call this method from your ad SDK's click callback to report ad interactions to RevenueCat.
-     This is the completion handler version for Objective-C compatibility.
 
-     - Parameters:
-       - data: The opened/clicked ad event data
-       - completion: Called when the tracking is complete
+     - Parameter data: The opened/clicked ad event data
      */
-    @_spi(Experimental) @objc public func trackAdOpened(_ data: AdOpened, completion: @escaping () -> Void) {
+    @_spi(Experimental) @objc public func trackAdOpened(_ data: AdOpened) {
         Task {
             await self.trackAdOpened(data)
-            completion()
         }
     }
 
@@ -263,16 +244,12 @@ public final class AdTracker: NSObject {
      Tracks ad revenue from an impression (Objective-C compatible).
 
      Call this method from your ad SDK's revenue callback to report ad revenue to RevenueCat.
-     This is the completion handler version for Objective-C compatibility.
 
-     - Parameters:
-       - data: The ad revenue data including amount, currency, and precision
-       - completion: Called when the tracking is complete
+     - Parameter data: The ad revenue data including amount, currency, and precision
      */
-    @_spi(Experimental) @objc public func trackAdRevenue(_ data: AdRevenue, completion: @escaping () -> Void) {
+    @_spi(Experimental) @objc public func trackAdRevenue(_ data: AdRevenue) {
         Task {
             await self.trackAdRevenue(data)
-            completion()
         }
     }
 
