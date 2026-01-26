@@ -1552,7 +1552,7 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
 
-    func storefrontIdentifierOrCountryDidChange(with storefront: StorefrontType) {
+    func storefrontValuesUpdated(with storefront: StorefrontType) {
         self.handleStorefrontChange()
     }
 

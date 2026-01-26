@@ -233,7 +233,7 @@ private final class MockStoreKit2StorefrontListenerDelegate: StoreKit2Storefront
 
     let invokedStorefrontChangesStorefronts: Atomic<[RevenueCat.Storefront]> = .init([])
 
-    func storefrontIdentifierOrCountryDidChange(with storefront: StorefrontType) {
+    func storefrontValuesUpdated(with storefront: StorefrontType) {
         self.invokedStorefrontChangesStorefronts.value.append(.from(storefront: storefront))
     }
 

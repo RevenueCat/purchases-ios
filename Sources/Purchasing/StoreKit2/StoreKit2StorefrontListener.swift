@@ -16,7 +16,7 @@ import StoreKit
 
 protocol StoreKit2StorefrontListenerDelegate: AnyObject, Sendable {
 
-    func storefrontIdentifierOrCountryDidChange(with storefront: StorefrontType)
+    func storefrontValuesUpdated(with storefront: StorefrontType)
 
 }
 
@@ -69,7 +69,7 @@ class StoreKit2StorefrontListener {
                     self?.updateLastKnownStorefront(storefront)
 
                     OperationDispatcher.dispatchOnMainActor {
-                        delegate.storefrontIdentifierOrCountryDidChange(with: storefront)
+                        delegate.storefrontValuesUpdated(with: storefront)
                     }
                 }
             }
