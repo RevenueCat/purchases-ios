@@ -258,6 +258,7 @@ extension PaywallEvent.Data {
         errorMessage: String?
     ) -> PaywallEvent.Data {
         return PaywallEvent.Data(
+            paywallIdentifier: self.paywallIdentifier,
             offeringIdentifier: self.offeringIdentifier,
             paywallRevision: self.paywallRevision,
             sessionID: self.sessionIdentifier,
