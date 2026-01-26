@@ -1080,6 +1080,7 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
+      - macos/install-rosetta
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
