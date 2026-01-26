@@ -484,8 +484,12 @@ extension VariablesV2 {
         showZeroDecimalPlacePrices: Bool
     ) -> String {
         let price = package.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
-        let period = self.productPeriod(package: package, localizations: localizations)
 
+        guard package.storeProduct.subscriptionPeriod != nil else {
+            return price
+        }
+
+        let period = self.productPeriod(package: package, localizations: localizations)
         return "\(price)/\(period)"
     }
 
@@ -495,8 +499,12 @@ extension VariablesV2 {
         showZeroDecimalPlacePrices: Bool
     ) -> String {
         let price = package.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
-        let periodAbbreviated = self.productPeriodAbbreviated(package: package, localizations: localizations)
 
+        guard package.storeProduct.subscriptionPeriod != nil else {
+            return price
+        }
+
+        let periodAbbreviated = self.productPeriodAbbreviated(package: package, localizations: localizations)
         return "\(price)/\(periodAbbreviated)"
     }
 
