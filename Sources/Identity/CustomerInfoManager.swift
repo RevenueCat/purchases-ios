@@ -437,7 +437,7 @@ private extension CustomerInfoManager {
                         appUserID: appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: [:],
-                        storefront: await Storefront.currentStorefront,
+                        storeCountry: await Storefront.currentStorefront?.countryCode,
                         source: Self.sourceForUnfinishedTransaction
                     )
 

@@ -22,7 +22,7 @@ extension ProductRequestData {
         ProductRequestData(productIdentifier: productIdentifier,
                            paymentMode: paymentMode,
                            currencyCode: currencyCode,
-                           storefront: MockStorefront(countryCode: storefrontCountryCode),
+                           storeCountry: storefrontCountryCode,
                            price: price,
                            normalDuration: normalDuration,
                            introDuration: introDuration,

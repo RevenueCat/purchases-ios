@@ -99,7 +99,7 @@ class BackendSubscriberAttributesTests: TestCase {
                         appUserID: self.appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: subscriberAttributesByKey,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: false, initiationSource: .restore)
                      ),
                      observerMode: false) { _ in }
@@ -118,7 +118,7 @@ class BackendSubscriberAttributesTests: TestCase {
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: [:],
                                  aadAttributionToken: token,
-                                 storefront: nil,
+                                 storeCountry: nil,
                                  source: .init(isRestore: false, initiationSource: .restore)
                               ),
                               observerMode: false) { _ in
@@ -145,7 +145,7 @@ class BackendSubscriberAttributesTests: TestCase {
                         appUserID: self.appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: subscriberAttributesByKey,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: false, initiationSource: .queue)
                      ),
                      observerMode: false) {
@@ -169,7 +169,7 @@ class BackendSubscriberAttributesTests: TestCase {
                         appUserID: self.appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
+                        storeCountry: nil,
                         source: .init(isRestore: false, initiationSource: .purchase)
                      ),
                      observerMode: false) { _ in }
@@ -212,7 +212,7 @@ class BackendSubscriberAttributesTests: TestCase {
                     appUserID: self.appUserID,
                     presentedOfferingContext: nil,
                     unsyncedAttributes: subscriberAttributesByKey,
-                    storefront: nil,
+                    storeCountry: nil,
                     source: .init(isRestore: false, initiationSource: .queue)
                 ),
                 observerMode: false
@@ -266,7 +266,7 @@ class BackendSubscriberAttributesTests: TestCase {
                     appUserID: self.appUserID,
                     presentedOfferingContext: nil,
                     unsyncedAttributes: subscriberAttributesByKey,
-                    storefront: nil,
+                    storeCountry: nil,
                     source: .init(isRestore: false, initiationSource: .restore)
                 ),
                 observerMode: false
@@ -454,7 +454,7 @@ class BackendSubscriberAttributesTests: TestCase {
                                 appUserID: self.appUserID,
                                 presentedOfferingContext: nil,
                                 unsyncedAttributes: subscriberAttributesByKey,
-                                storefront: nil,
+                                storeCountry: nil,
                                 source: .init(isRestore: false, initiationSource: .purchase)
                              ),
                              observerMode: false) { _ in
@@ -518,7 +518,7 @@ class BackendSubscriberAttributesTests: TestCase {
                                 appUserID: self.appUserID,
                                 presentedOfferingContext: nil,
                                 unsyncedAttributes: emptySubscriberAttributes,
-                                storefront: nil,
+                                storeCountry: nil,
                                 source: .init(isRestore: false, initiationSource: .restore)
                              ),
                              observerMode: false) { _ in
@@ -598,7 +598,7 @@ class BackendSubscriberAttributesTests: TestCase {
                                     appUserID: self.appUserID,
                                     presentedOfferingContext: nil,
                                     unsyncedAttributes: subscriberAttributesOrderedAMZ,
-                                    storefront: nil,
+                                    storeCountry: nil,
                                     source: .init(isRestore: false, initiationSource: .restore)
                                  ),
                                  observerMode: false) { _ in
@@ -615,7 +615,7 @@ class BackendSubscriberAttributesTests: TestCase {
                                     appUserID: self.appUserID,
                                     presentedOfferingContext: nil,
                                     unsyncedAttributes: subscriberAttributesOrderedZMA,
-                                    storefront: nil,
+                                    storeCountry: nil,
                                     source: .init(isRestore: false, initiationSource: .restore)
                                  ),
                                  observerMode: false) { _ in

@@ -18,39 +18,40 @@ internal final class SynchronizedLargeItemCache {
 
     private let cache: LargeItemCacheType
     private let lock: Lock
-    private let documentURL: URL?
+    private let cacheURL: URL?
 
-    init(cache: LargeItemCacheType, basePath: String) {
+    init(
+        cache: LargeItemCacheType,
+        basePath: String
+    ) {
         self.cache = cache
         self.lock = Lock(.nonRecursive)
-        self.documentURL = cache.createDocumentDirectoryIfNeeded(basePath: basePath)
+
+        self.cacheURL = cache.createCacheDirectoryIfNeeded(basePath: basePath)
     }
 
-    private func read<T>(_ action: (LargeItemCacheType, URL?) throws -> T) rethrows -> T {
+    @inline(__always)
+    private func withLock<T>(
+        _ action: (_ cache: LargeItemCacheType, _ documentURL: URL?) throws -> T
+    ) rethrows -> T {
         return try self.lock.perform {
-            return try action(self.cache, self.documentURL)
-        }
-    }
-
-    private func write(_ action: (LargeItemCacheType, URL?) throws -> Void) rethrows {
-        return try self.lock.perform {
-            try action(self.cache, self.documentURL)
+            return try action(self.cache, self.cacheURL)
         }
     }
 
     /// Get the file URL for a specific cache key
     private func getFileURL(for key: String) -> URL? {
-        guard let documentURL = self.documentURL else {
+        guard let cacheURL = self.cacheURL else {
             return nil
         }
-        return documentURL.appendingPathComponent(key)
+        return cacheURL.appendingPathComponent(key)
     }
 
     /// Save a codable value to the cache
     @discardableResult
     func set<T: Encodable>(codable value: T, forKey key: String) -> Bool {
         guard let fileURL = self.getFileURL(for: key) else {
-            Logger.error("Cache URL is not available")
+            Logger.error(Strings.cache.cache_url_not_available)
             return false
         }
 
@@ -59,12 +60,12 @@ internal final class SynchronizedLargeItemCache {
         }
 
         do {
-            try self.write { cache, _ in
+            try self.withLock { cache, _ in
                 try cache.saveData(data, to: fileURL)
             }
             return true
         } catch {
-            Logger.error("Failed to save codable to cache: \(error)")
+            Logger.error(Strings.cache.failed_to_save_codable_to_cache(error))
             return false
         }
     }
@@ -75,12 +76,12 @@ internal final class SynchronizedLargeItemCache {
             return nil
         }
 
-        return self.read { cache, _ in
-            guard let data = try? cache.loadFile(at: fileURL) else {
-                return nil
+        return self.withLock { cache, _ in
+            if let data = try? cache.loadFile(at: fileURL) {
+                return try? JSONDecoder.default.decode(jsonData: data, logErrors: true)
             }
 
-            return try? JSONDecoder.default.decode(jsonData: data, logErrors: true)
+            return nil
         }
     }
 
@@ -90,17 +91,18 @@ internal final class SynchronizedLargeItemCache {
             return
         }
 
-        self.write { _, _ in
-            try? self.cache.remove(fileURL)
+        self.withLock { cache, _ in
+            try? cache.remove(fileURL)
         }
     }
 
     func clear() {
-        guard let documentURL = self.documentURL else {
-            return
+        self.withLock { cache, cacheURL in
+            // Clear the cache directory
+            if let cacheURL = cacheURL {
+                try? cache.remove(cacheURL)
+            }
         }
-
-        try? self.cache.remove(documentURL)
     }
 }
 
