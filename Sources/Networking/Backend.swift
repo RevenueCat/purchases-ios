@@ -142,7 +142,10 @@ class Backend {
               // Value at the time of the purchase (which might come from the `LocalTransactionMetadataStore`)
               originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
               appTransaction: String? = nil,
+              associatedTransactionId: String? = nil,
+              sdkOriginated: Bool = false,
               appUserID: String,
+              containsAttributionData: Bool = false,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customer.post(receipt: receipt,
                            productData: productData,
@@ -151,7 +154,10 @@ class Backend {
                            observerMode: observerMode,
                            originalPurchaseCompletedBy: originalPurchaseCompletedBy,
                            appTransaction: appTransaction,
+                           associatedTransactionId: associatedTransactionId,
+                           sdkOriginated: sdkOriginated,
                            appUserID: appUserID,
+                           containsAttributionData: containsAttributionData,
                            completion: completion)
     }
 

@@ -309,7 +309,7 @@ extension TransactionPoster {
         }
     }
 
-    // swiftlint:disable function_parameter_count
+    // swiftlint:disable function_parameter_count function_body_length
     private func postReceipt(transaction: StoreTransactionType,
                              purchasedTransactionData: PurchasedTransactionData,
                              postReceiptSource: PostReceiptSource,
@@ -327,7 +327,7 @@ extension TransactionPoster {
             purchasedTransactionData.presentedPaywall != nil
         )
 
-        let shouldClearMetadataOnSuccess = storedTransactionMetadata != nil || shouldStoreMetadata
+        let containsAttributionData = storedTransactionMetadata != nil || shouldStoreMetadata
 
         let effectiveProductData = storedTransactionMetadata?.productData ?? product.map {
             ProductRequestData(with: $0, storeCountry: purchasedTransactionData.storeCountry)
@@ -336,11 +336,18 @@ extension TransactionPoster {
         let effectivePurchasesAreCompletedBy = storedTransactionMetadata?.originalPurchasesAreCompletedBy ??
         self.purchasesAreCompletedBy
 
+        // sdkOriginated indicates whether this purchase was initiated by the SDK (stored metadata takes precedence):
+        // - true when the purchase was initiated via SDK's purchase() methods (initiationSource == .purchase)
+        // - false when the purchase was detected in the queue but triggered outside the SDK
+        let sdkOriginated = storedTransactionMetadata?.sdkOriginated ??
+            (postReceiptSource.initiationSource == .purchase)
+
         if shouldStoreMetadata {
             let metadataToStore = LocalTransactionMetadata(
                 productData: effectiveProductData,
                 transactionData: effectiveTransactionData,
-                originalPurchasesAreCompletedBy: effectivePurchasesAreCompletedBy
+                originalPurchasesAreCompletedBy: effectivePurchasesAreCompletedBy,
+                sdkOriginated: sdkOriginated
             )
             self.localTransactionMetadataStore.storeMetadata(metadataToStore,
                                                              forTransactionId: transaction.transactionIdentifier)
@@ -353,17 +360,20 @@ extension TransactionPoster {
                           observerMode: self.observerMode,
                           originalPurchaseCompletedBy: effectivePurchasesAreCompletedBy,
                           appTransaction: appTransaction,
-                          appUserID: currentUserID) { result in
-            if shouldClearMetadataOnSuccess {
+                          associatedTransactionId: transaction.transactionIdentifier,
+                          sdkOriginated: sdkOriginated,
+                          appUserID: currentUserID,
+                          containsAttributionData: containsAttributionData) { result in
+            if containsAttributionData {
                 switch result {
-                case .success:
+                case let .success(customerInfo) where !customerInfo.isComputedOffline:
+                    // Offline-computed CustomerInfo means server is down, so it didn't process the transaction yet
                     self.localTransactionMetadataStore
                         .removeMetadata(forTransactionId: transaction.transactionIdentifier)
                 case let .failure(error) where error.finishable:
                     self.localTransactionMetadataStore
                         .removeMetadata(forTransactionId: transaction.transactionIdentifier)
-                default:
-                    break
+                default: break
                 }
             }
             completion(result)

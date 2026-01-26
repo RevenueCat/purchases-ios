@@ -165,6 +165,42 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testPostsReceiptDataWithTransactionIdCorrectly() throws {
+        let path: HTTPRequest.Path = .postReceiptData
+
+        httpClient.mock(
+            requestPath: path,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let isRestore = false
+        let purchaseCompletedBy: PurchasesAreCompletedBy = .myApp
+        let observerMode = purchaseCompletedBy.observerMode
+        let associatedTransactionId = "test_transaction_id_12345"
+        let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
+
+        waitUntil { completed in
+            self.backend.post(receipt: Self.receipt,
+                              productData: productData,
+                              transactionData: .init(
+                                 presentedOfferingContext: nil,
+                                 unsyncedAttributes: nil,
+                                 storeCountry: nil
+                              ),
+                              postReceiptSource: .init(isRestore: isRestore, initiationSource: .purchase),
+                              observerMode: observerMode,
+                              originalPurchaseCompletedBy: purchaseCompletedBy,
+                              associatedTransactionId: associatedTransactionId,
+                              sdkOriginated: true,
+                              appUserID: Self.userID,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
     func testPostsReceiptDataWithTestReceiptIdentifier() throws {
         let identifier = try XCTUnwrap(UUID(uuidString: "12345678-1234-1234-1234-C2C35AE34D09")).uuidString
 
@@ -407,6 +443,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      postReceiptSource: .init(isRestore: isRestore, initiationSource: .queue),
                      observerMode: observerMode,
                      originalPurchaseCompletedBy: purchaseCompletedBy,
+                     sdkOriginated: true,
                      appUserID: Self.userID,
                      completion: { _ in
             completionCalled.value += 1
@@ -422,6 +459,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      postReceiptSource: .init(isRestore: isRestore, initiationSource: .queue),
                      observerMode: observerMode,
                      originalPurchaseCompletedBy: purchaseCompletedBy,
+                     sdkOriginated: true,
                      appUserID: Self.userID,
                      completion: { _ in
             completionCalled.value += 1
@@ -463,6 +501,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
                               observerMode: false,
                               originalPurchaseCompletedBy: .revenueCat,
+                              sdkOriginated: true,
                               appUserID: Self.userID,
                               completion: { _ in
                 completed()
@@ -510,6 +549,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
                               observerMode: false,
                               originalPurchaseCompletedBy: .revenueCat,
+                              sdkOriginated: true,
                               appUserID: Self.userID,
                               completion: { _ in
                 completed()
@@ -563,6 +603,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
                               observerMode: false,
                               originalPurchaseCompletedBy: .revenueCat,
+                              sdkOriginated: true,
                               appUserID: Self.userID,
                               completion: { _ in
                 completed()

@@ -54,12 +54,16 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `presentedOfferingIdentifier`
         /// - `observerMode`
         /// - `subscriberAttributesByKey`
+		/// - `sdkOriginated`
+        /// - `transactionId` (only if there is attribution data, to always post receipts with attribution data)
         let cacheKey =
         """
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.hash)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
+        -\(postData.sdkOriginated)
+        -\(postData.containsAttributionData ? (postData.transactionId ?? "") : "")
         """
 
         return .init({ cacheKey in
@@ -115,7 +119,6 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
             completion()
         }
     }
-
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
@@ -148,7 +151,12 @@ extension PostReceiptDataOperation {
         /// The [AppTransaction](https://developer.apple.com/documentation/storekit/apptransaction) JWS token
         /// retrieved from StoreKit 2.
         let appTransaction: String?
+        let transactionId: String?
+
+        /// Indicates whether this purchase was initiated via the SDK's `purchase()` methods.
+        let sdkOriginated: Bool
         let metadata: [String: String]?
+        let containsAttributionData: Bool
     }
 
     struct Paywall {
@@ -167,7 +175,6 @@ extension PostReceiptDataOperation {
         var ruleId: String
 
     }
-
 }
 
 extension PostReceiptDataOperation.PostData {
@@ -181,7 +188,11 @@ extension PostReceiptDataOperation.PostData {
         observerMode: Bool,
         purchaseCompletedBy: PurchasesAreCompletedBy?,
         testReceiptIdentifier: String?,
-        appTransaction: String?
+        appTransaction: String?,
+        transactionId: String?,
+        /// Whether it contains attribution data for `transactionId`. This field is not included in the request
+        containsAttributionData: Bool,
+        sdkOriginated: Bool = false
     ) {
         self.init(
             appUserID: appUserID,
@@ -201,10 +212,12 @@ extension PostReceiptDataOperation.PostData {
             aadAttributionToken: data.aadAttributionToken,
             testReceiptIdentifier: testReceiptIdentifier,
             appTransaction: appTransaction,
-            metadata: data.metadata
+            transactionId: transactionId,
+            sdkOriginated: sdkOriginated,
+            metadata: data.metadata,
+            containsAttributionData: containsAttributionData
         )
     }
-
 }
 
 private extension PurchasedTransactionData {
@@ -218,7 +231,6 @@ private extension PurchasedTransactionData {
                      darkMode: paywall.data.darkMode,
                      localeIdentifier: paywall.data.localeIdentifier)
     }
-
 }
 
 // MARK: - Private
@@ -262,7 +274,6 @@ private extension PostReceiptDataOperation {
             return
         }
     }
-
 }
 
 // MARK: - Codable
@@ -285,6 +296,8 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case paywall
         case testReceiptIdentifier = "test_receipt_identifier"
         case appTransaction = "app_transaction"
+        case transactionId = "transaction_id"
+        case sdkOriginated = "sdk_originated"
         case metadata
 
     }
@@ -303,6 +316,8 @@ extension PostReceiptDataOperation.PostData: Encodable {
 
         try container.encodeIfPresent(self.fetchToken, forKey: .fetchToken)
         try container.encodeIfPresent(self.appTransaction, forKey: .appTransaction)
+        try container.encodeIfPresent(self.transactionId, forKey: .transactionId)
+        try container.encode(self.sdkOriginated, forKey: .sdkOriginated)
         try container.encodeIfPresent(self.metadata, forKey: .metadata)
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
@@ -322,7 +337,6 @@ extension PostReceiptDataOperation.PostData: Encodable {
     }
 
     var fetchToken: String? { return self.receipt.serialized() }
-
 }
 
 extension PostReceiptDataOperation.Paywall: Codable {
@@ -336,7 +350,6 @@ extension PostReceiptDataOperation.Paywall: Codable {
         case localeIdentifier = "locale"
 
     }
-
 }
 
 extension PostReceiptDataOperation.AppliedTargetingRule: Codable {
@@ -347,7 +360,6 @@ extension PostReceiptDataOperation.AppliedTargetingRule: Codable {
         case ruleId
 
     }
-
 }
 
 // MARK: - HTTPRequestBody
@@ -361,7 +373,6 @@ extension PostReceiptDataOperation.PostData: HTTPRequestBody {
             (Self.CodingKeys.appTransaction.stringValue, self.appTransaction)
         ]
     }
-
 }
 
 // MARK: - InitiationSource
@@ -385,7 +396,6 @@ extension PostReceiptSource.InitiationSource: Codable, RawRepresentable {
     private static let codes: [String: PostReceiptSource.InitiationSource] = Self
         .allCases
         .dictionaryWithKeys { $0.rawValue }
-
 }
 
 // MARK: - EncodedAppleReceipt
@@ -409,7 +419,6 @@ private extension EncodedAppleReceipt {
             return "empty"
         }
     }
-
 }
 
 private extension PurchasesAreCompletedBy {

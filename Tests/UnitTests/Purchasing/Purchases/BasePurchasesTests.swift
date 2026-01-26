@@ -517,7 +517,10 @@ extension BasePurchasesTests {
                            observerMode: Bool,
                            originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                            appTransaction: String? = nil,
+                           associatedTransactionId: String? = nil,
+                           sdkOriginated: Bool = false,
                            appUserID: String,
+                           containsAttributionData: Bool = false,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.postReceiptDataCalled = true
             self.postedReceiptData = receipt
