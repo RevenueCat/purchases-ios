@@ -263,16 +263,6 @@ final class UIConfigProviderTests: TestCase {
         XCTAssertEqual(customVars["multiplier"], .number(1.5))
     }
 
-    func testDefaultCustomVariablesParseIntegerTypeAsNumber() throws {
-        // Backend sends "number" but we also support "integer" for compatibility
-        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
-            "level": UIConfig.CustomVariableDefinition(type: "integer", defaultValue: "42")
-        ])
-
-        let customVars = uiConfigProvider.defaultCustomVariables
-        XCTAssertEqual(customVars["level"], .number(42.0))
-    }
-
     func testDefaultCustomVariablesParseBooleanTypeTrue() throws {
         let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
             "is_premium": UIConfig.CustomVariableDefinition(type: "boolean", defaultValue: "true")
@@ -351,33 +341,6 @@ final class UIConfigProviderTests: TestCase {
         self.logger.verifyMessageWasLogged(
             "Custom variable default value '' could not be parsed as a number"
         )
-    }
-
-    func testDefaultCustomVariablesBooleanWithNonStandardValue() throws {
-        // Backend enforces "true"/"false" but our parser is lenient
-        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
-            "bool_yes": UIConfig.CustomVariableDefinition(type: "boolean", defaultValue: "yes"),
-            "bool_1": UIConfig.CustomVariableDefinition(type: "boolean", defaultValue: "1"),
-            "bool_random": UIConfig.CustomVariableDefinition(type: "boolean", defaultValue: "random")
-        ])
-
-        let customVars = uiConfigProvider.defaultCustomVariables
-        XCTAssertEqual(customVars["bool_yes"], .bool(true))
-        XCTAssertEqual(customVars["bool_1"], .bool(true))
-        XCTAssertEqual(customVars["bool_random"], .bool(false)) // Non-truthy string = false
-    }
-
-    func testDefaultCustomVariablesTypeIsCaseInsensitive() throws {
-        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
-            "upper_string": UIConfig.CustomVariableDefinition(type: "STRING", defaultValue: "test"),
-            "upper_number": UIConfig.CustomVariableDefinition(type: "NUMBER", defaultValue: "42"),
-            "upper_bool": UIConfig.CustomVariableDefinition(type: "BOOLEAN", defaultValue: "true")
-        ])
-
-        let customVars = uiConfigProvider.defaultCustomVariables
-        XCTAssertEqual(customVars["upper_string"], .string("test"))
-        XCTAssertEqual(customVars["upper_number"], .number(42.0))
-        XCTAssertEqual(customVars["upper_bool"], .bool(true))
     }
 
     func testDefaultCustomVariablesArrayTypeIsUnsupported() throws {

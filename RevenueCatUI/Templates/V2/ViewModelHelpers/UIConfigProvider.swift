@@ -43,20 +43,20 @@ final class UIConfigProvider {
     }
 
     /// Parses a custom variable definition into a typed `CustomVariableValue`.
+    /// The backend sends types: "string", "number", "boolean" with validated default values.
     private static func parseCustomVariableValue(type: String, defaultValue: String) -> CustomVariableValue? {
-        switch type.lowercased() {
+        switch type {
         case "string":
             return .string(defaultValue)
-        case "number", "integer":
+        case "number":
             guard let doubleValue = Double(defaultValue) else {
                 Logger.warning(Strings.paywall_custom_variable_invalid_number(value: defaultValue))
                 return .string(defaultValue)
             }
             return .number(doubleValue)
         case "boolean":
-            let lowercased = defaultValue.lowercased()
-            let boolValue = lowercased == "true" || lowercased == "1" || lowercased == "yes"
-            return .bool(boolValue)
+            // Backend validates that defaultValue is exactly "true" or "false"
+            return .bool(defaultValue == "true")
         default:
             Logger.warning(Strings.paywall_custom_variable_unknown_type(type: type))
             return .string(defaultValue)
