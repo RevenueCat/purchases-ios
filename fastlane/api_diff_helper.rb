@@ -172,7 +172,7 @@ module ApiDiffHelper
     Fastlane::UI.error("=" * 60)
     Fastlane::UI.error("To fix: Update the baseline files if these changes are intentional.")
     Fastlane::UI.error("Run: bundle exec fastlane ios generate_swiftinterface")
-    Fastlane::UI.error("Then copy files from /tmp/pr-swiftinterface/ to the repo root.")
+    Fastlane::UI.error("Then copy files from /tmp/pr-swiftinterface/ to the api/ directory.")
     Fastlane::UI.error("=" * 60)
   end
 end

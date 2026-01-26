@@ -1835,7 +1835,7 @@ platform :ios do
     failed_platforms = []
 
     ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
-      old_file = "../revenuecat-api#{platform[:suffix]}.swiftinterface"
+      old_file = "../api/revenuecat-api#{platform[:suffix]}.swiftinterface"
       new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
 
       result = ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, platform[:name])
