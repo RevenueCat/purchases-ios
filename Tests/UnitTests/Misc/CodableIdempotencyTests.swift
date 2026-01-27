@@ -699,7 +699,7 @@ class CodableIdempotencyTests: TestCase {
                     {
                         "offer_identifier": "discount_offer",
                         "currency_code": "EUR",
-                        "price": 1.99,
+                        "price_string": "1.99",
                         "localized_price_string": "€1.99",
                         "payment_mode": 0,
                         "subscription_period": {
