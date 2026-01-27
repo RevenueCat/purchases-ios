@@ -1978,6 +1978,7 @@ extension RevenueCat.AppleReceipt.InAppPurchase : Swift.CustomDebugStringConvert
   @objc(RCExternal) case external = 8
   @objc(RCPaddle) case paddle = 9
   @objc(RCTestStore) case testStore = 10
+  @objc(RCGalaxy) case galaxy = 11
   #if compiler(>=5.3) && $NonescapableTypes
   public init?(rawValue: Swift.Int)
   #endif
