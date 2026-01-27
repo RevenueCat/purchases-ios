@@ -51,8 +51,10 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         }
 
         avPlayer.isMuted = muteAudio
+        #if !os(visionOS)
         avPlayer.preventsDisplaySleepDuringVideoPlayback = false
         avPlayer.allowsExternalPlayback = false
+        #endif
 
         self.player = avPlayer
 
