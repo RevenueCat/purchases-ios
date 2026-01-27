@@ -1034,7 +1034,7 @@ jobs:
   run-test-ios-14:
     executor:
       name: macos-executor-for-macos-12_6
-      # Using Xcode 14.3.1 to support iOS 13/14 simulators
+      # Using Xcode 14.3.1 to support iOS 14 simulators
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
       xcode_version: "14.3.1"
 
@@ -1045,8 +1045,6 @@ jobs:
           install_mint: true
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 13.7
       - install-runtime:
           runtime-name: iOS 14.5
       - run:
@@ -1062,44 +1060,6 @@ jobs:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-14"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-      - slack-notify-on-fail
-
-  run-test-ios-13:
-    executor:
-      name: macos-executor-for-macos-12_6
-      # Using Xcode 14.3.1 to support iOS 13/14 simulators
-      xcode_version: "14.3.1"
-
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-          install_mint: true
-      - macos/install-rosetta
-      - install-xcbeautify-for-xcode14
-      - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 13.7
-      - install-runtime:
-          runtime-name: iOS 14.5
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 11 (13.7)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-13"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -1670,7 +1630,6 @@ workflows:
       - run-test-ios-16
       - run-test-ios-15
       - run-test-ios-14
-      - run-test-ios-13
       - run-test-macos
       - run-test-watchos
 
