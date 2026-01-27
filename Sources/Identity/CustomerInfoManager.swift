@@ -458,6 +458,7 @@ private extension CustomerInfoManager {
                         transactionToPost,
                         data: transactionData,
                         postReceiptSource: Self.sourceForUnfinishedTransaction,
+                        purchaseIntentDate: nil,
                         currentUserID: appUserID
                     )
                     completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
@@ -555,6 +556,7 @@ private extension CustomerInfoManager {
                         transaction,
                         data: data,
                         postReceiptSource: postReceiptSource,
+                        purchaseIntentDate: nil,
                         currentUserID: appUserID
                     )
                 }
