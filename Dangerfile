@@ -97,6 +97,7 @@ def check_for_public_enums
     .select { |file| File.exist?(file) }
 
   public_enum_pattern = /^\+\s*public\s+enum\s+/
+  spi_public_enum_pattern = /@_spi\([^)]*\)\s*public\s+enum/
 
   files_with_public_enums = []
 
@@ -105,7 +106,7 @@ def check_for_public_enums
     next unless diff
 
     diff.patch.each_line do |line|
-      if line.match?(public_enum_pattern)
+      if line.match?(public_enum_pattern) && !line.match?(spi_public_enum_pattern)
         files_with_public_enums << file
         break
       end
