@@ -192,17 +192,24 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
 private struct StoreProductDiscountEncodedWrapper: StoreProductDiscountType, Codable {
     let offerIdentifier: String?
     let currencyCode: String?
-    let price: Decimal
     let localizedPriceString: String
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
     let numberOfPeriods: Int
     let type: StoreProductDiscount.DiscountType
 
+    // Note: price is encoded as `String` (using `NSDecimalNumber.description`)
+    // to preserve precision and avoid values like "1.89999999"
+    private let priceString: String
+
+    var price: Decimal {
+        return Self.decodeDecimal(from: self.priceString) ?? 0
+    }
+
     init(discount: StoreProductDiscount) {
         self.offerIdentifier = discount.offerIdentifier
         self.currencyCode = discount.currencyCode
-        self.price = discount.price
+        self.priceString = Self.encodeDecimal(discount.price)
         self.localizedPriceString = discount.localizedPriceString
         self.paymentMode = discount.paymentMode
         self.subscriptionPeriod = discount.subscriptionPeriod
@@ -212,5 +219,13 @@ private struct StoreProductDiscountEncodedWrapper: StoreProductDiscountType, Cod
 
     var discount: StoreProductDiscount {
         return StoreProductDiscount(self)
+    }
+
+    private static func encodeDecimal(_ decimal: Decimal) -> String {
+        return (decimal as NSDecimalNumber).description
+    }
+
+    private static func decodeDecimal(from string: String) -> Decimal? {
+        return Decimal(string: string)
     }
 }
