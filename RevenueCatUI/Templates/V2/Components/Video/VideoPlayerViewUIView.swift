@@ -12,6 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/18/25.
 
 import AVKit
+import Combine
 import SwiftUI
 
 #if canImport(UIKit) && !os(watchOS)
@@ -80,41 +81,31 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         Coordinator(player: player)
     }
 
-    class Coordinator: NSObject {
+    class Coordinator {
         let player: AVPlayer
         private var wasPlayingBeforeBackground: Bool = false
+        private var cancellables = Set<AnyCancellable>()
 
         init(player: AVPlayer) {
             self.player = player
-            super.init()
 
-            NotificationCenter.default.addObserver(
-                self,
-                selector: #selector(appWillResignActive),
-                name: UIApplication.willResignActiveNotification,
-                object: nil
-            )
+            NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)
+                .sink { [weak self] _ in self?.appWillResignActive() }
+                .store(in: &cancellables)
 
-            NotificationCenter.default.addObserver(
-                self,
-                selector: #selector(appDidBecomeActive),
-                name: UIApplication.didBecomeActiveNotification,
-                object: nil
-            )
+            NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
+                .sink { [weak self] _ in self?.appDidBecomeActive() }
+                .store(in: &cancellables)
         }
 
-        @objc private func appWillResignActive() {
+        private func appWillResignActive() {
             wasPlayingBeforeBackground = player.timeControlStatus == .playing
         }
 
-        @objc private func appDidBecomeActive() {
+        private func appDidBecomeActive() {
             if wasPlayingBeforeBackground {
                 player.play()
             }
-        }
-
-        deinit {
-            NotificationCenter.default.removeObserver(self)
         }
     }
 }
