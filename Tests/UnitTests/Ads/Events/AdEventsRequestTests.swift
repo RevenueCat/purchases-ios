@@ -19,10 +19,6 @@ import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class AdFeatureEventsRequestTests: TestCase {
-//    override func setUp() async throws {
-//        isRecording = true
-//    }
-
     override func setUpWithError() throws {
         try super.setUpWithError()
 
