@@ -1161,8 +1161,9 @@ private extension ETagManagerTests {
             isFallbackUrlResponse: false
         )
 
-        mockCache
-            .stubLoadFile(at: request.url.unsafelyUnwrapped, with: .success(try XCTUnwrap(etagAndResponse.asData())))
+        let url = request.url.unsafelyUnwrapped
+        mockCache.stubCachedContentExists(at: url, with: true)
+        mockCache.stubLoadFile(at: url, with: .success(try XCTUnwrap(etagAndResponse.asData())))
 
         return data
     }

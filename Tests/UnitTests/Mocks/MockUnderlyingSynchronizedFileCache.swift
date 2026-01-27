@@ -113,7 +113,12 @@ extension SynchronizedLargeItemCache {
 
         func stubLoadFile(at url: URL, with result: Result<Data, Error>) {
             lock.withLock {
-                loadFileResponsesByURL[cacheURL(from: url)] = result
+                let cacheKey = cacheURL(from: url)
+                loadFileResponsesByURL[cacheKey] = result
+
+                if case .success = result {
+                    cachedContentExistsByURL[cacheKey] = true
+                }
             }
         }
 
@@ -145,13 +150,21 @@ extension SynchronizedLargeItemCache {
             removeInvocations.append(cacheURL(from: url))
         }
 
-        func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
+        func createDirectoryIfNeeded(
+            basePath: String,
+            directoryType: DirectoryHelper.DirectoryType,
+            inAppSpecificDirectory: Bool
+        ) -> URL? {
             workingCacheDirectory = cacheDirectoryURL(basePath: basePath)
             return workingCacheDirectory
         }
 
         func cacheDirectoryURL(basePath: String) -> URL? {
             cacheDirectory?.appendingPathComponent(basePath)
+        }
+
+        func contentsOfDirectory(at url: URL) throws -> [URL] {
+            return []
         }
 
         private func cacheURL(from url: URL) -> URL {

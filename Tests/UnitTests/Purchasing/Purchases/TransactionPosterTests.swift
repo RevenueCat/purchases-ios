@@ -501,8 +501,10 @@ class TransactionPosterTests: TestCase {
         // sdkOriginated is false because this represents a non-SDK purchase
         // (e.g., a paywall purchase with purchasesAreCompletedBy: .myApp)
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: storedProductData,
             transactionData: storedTransactionData,
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .myApp,
             sdkOriginated: false
         )
@@ -550,6 +552,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptFromSyncedSK2TransactionClearsMetadataOnSuccess() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -564,6 +567,7 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat,
             sdkOriginated: true
         )
@@ -713,6 +717,7 @@ class TransactionPosterTests: TestCase {
             date: Date()
         )
         let paywallEventData = PaywallEvent.Data(
+            paywallIdentifier: "test_paywall_id",
             offeringIdentifier: "test_offering",
             paywallRevision: 1,
             sessionID: UUID(),
@@ -776,8 +781,10 @@ class TransactionPosterTests: TestCase {
             )
         )
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: storedProductData,
             transactionData: storedTransactionData,
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .myApp,
             sdkOriginated: false
         )
@@ -876,6 +883,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptClearsExistingMetadataOnSuccess() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -890,6 +898,7 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat,
             sdkOriginated: true
         )
@@ -918,6 +927,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptDoesNotStoreMetadataWhenMetadataAlreadyExists() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -932,6 +942,7 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat,
             sdkOriginated: true
         )
@@ -960,6 +971,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptFromQueueClearsExistingMetadataWhenMetadataOnSuccessWhenMetadataAlreadyExists() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -974,6 +986,7 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat,
             sdkOriginated: true
         )
@@ -1004,6 +1017,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptFromQueueClearsExistingMetadataWhenMetadataOnFinishableErrorWhenMetadataAlreadyExists() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -1018,6 +1032,7 @@ class TransactionPosterTests: TestCase {
                 discounts: nil
             ),
             transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat,
             sdkOriginated: true
         )
@@ -1083,6 +1098,7 @@ class TransactionPosterTests: TestCase {
     func testPostReceiptDoesNotClearPreexistingMetadataWhenCustomerInfoIsComputedOffline() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: self.mockTransaction.transactionIdentifier,
             productData: ProductRequestData(
                 productIdentifier: "stored_product",
                 paymentMode: nil,
@@ -1099,6 +1115,7 @@ class TransactionPosterTests: TestCase {
             transactionData: PurchasedTransactionData(
                 presentedOfferingContext: .init(offeringIdentifier: "stored_offering")
             ),
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .revenueCat,
             sdkOriginated: true
         )
@@ -1135,6 +1152,308 @@ class TransactionPosterTests: TestCase {
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
         ) == "stored_offering"
         expect(self.backend.invokedPostReceiptDataParameters?.productData?.currencyCode) == "EUR"
+    }
+
+    // MARK: - postRemainingCachedTransactionMetadata tests
+
+    func testPostRemainingCachedTransactionMetadataReturnsEmptyStreamWhenNoCachedMetadata() async {
+        // No metadata stored
+        expect(self.localTransactionMetadataStore.getAllStoredMetadata()).to(beEmpty())
+
+        let stream = self.poster.postRemainingCachedTransactionMetadata(
+            appUserID: "user",
+            isRestore: false
+        )
+
+        var results: [CachedTransactionMetadataPostResult] = []
+        for await result in stream {
+            results.append(result)
+        }
+
+        expect(results).to(beEmpty())
+        expect(self.backend.invokedPostReceiptData) == false
+    }
+
+    func testPostRemainingCachedTransactionMetadataPostsSingleMetadataEntry() async {
+        let transactionId = "test_transaction_1"
+        let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
+
+        self.localTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let stream = self.poster.postRemainingCachedTransactionMetadata(
+            appUserID: "user",
+            isRestore: false
+        )
+
+        var results: [CachedTransactionMetadataPostResult] = []
+        for await result in stream {
+            results.append(result)
+        }
+
+        expect(results).to(haveCount(1))
+        expect(results.first?.result).to(beSuccess())
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier) == "product_1"
+        expect(self.backend.invokedPostReceiptDataParameters?.associatedTransactionId) == transactionId
+    }
+
+    func testPostRemainingCachedTransactionMetadataPostsMultipleMetadataEntriesSequentially() async {
+        let transactionId1 = "test_transaction_1"
+        let transactionId2 = "test_transaction_2"
+        let transactionId3 = "test_transaction_3"
+
+        let metadata1 = self.createCachedMetadata(transactionId: transactionId1, productIdentifier: "product_1")
+        let metadata2 = self.createCachedMetadata(transactionId: transactionId2, productIdentifier: "product_2")
+        let metadata3 = self.createCachedMetadata(transactionId: transactionId3, productIdentifier: "product_3")
+
+        self.localTransactionMetadataStore.storeMetadata(metadata1, forTransactionId: transactionId1)
+        self.localTransactionMetadataStore.storeMetadata(metadata2, forTransactionId: transactionId2)
+        self.localTransactionMetadataStore.storeMetadata(metadata3, forTransactionId: transactionId3)
+
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let stream = self.poster.postRemainingCachedTransactionMetadata(
+            appUserID: "user",
+            isRestore: false
+        )
+
+        var results: [CachedTransactionMetadataPostResult] = []
+        for await result in stream {
+            results.append(result)
+        }
+
+        expect(results).to(haveCount(3))
+        expect(results.filter { $0.result.error == nil }).to(haveCount(3))
+        expect(self.backend.invokedPostReceiptDataCount) == 3
+    }
+
+    func testPostRemainingCachedTransactionMetadataRemovesMetadataOnSuccess() async {
+        let transactionId = "test_transaction_1"
+        let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
+
+        self.localTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let stream = self.poster.postRemainingCachedTransactionMetadata(
+            appUserID: "user",
+            isRestore: false
+        )
+
+        for await _ in stream { }
+
+        expect(self.localTransactionMetadataStore.invokedRemoveMetadata.value) == true
+        expect(self.localTransactionMetadataStore.invokedRemoveMetadataTransactionId.value) == transactionId
+    }
+
+    func testPostRemainingCachedTransactionMetadataRemovesMetadataOnFinishableError() async {
+        let transactionId = "test_transaction_1"
+        let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
+
+        self.localTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
+
+        // Create a finishable error (4xx client error)
+        let error: NetworkError = .errorResponse(
+            ErrorResponse(
+                code: .badRequest,
+                originalCode: .init()
+            ),
+            .invalidRequest
+        )
+        let finishableError = BackendError.networkError(error)
+        expect(finishableError.finishable) == true
+        self.backend.stubbedPostReceiptResult = .failure(finishableError)
+
+        let stream = self.poster.postRemainingCachedTransactionMetadata(
+            appUserID: "user",
+            isRestore: false
+        )
+
+        var results: [CachedTransactionMetadataPostResult] = []
+        for await result in stream {
+            results.append(result)
+        }
+
+        expect(results).to(haveCount(1))
+        expect(results.first?.result).to(beFailure())
+        expect(self.localTransactionMetadataStore.invokedRemoveMetadata.value) == true
+        expect(self.localTransactionMetadataStore.invokedRemoveMetadataTransactionId.value) == transactionId
+    }
+
+    func testPostRemainingCachedTransactionMetadataDoesNotRemoveMetadataOnNonFinishableError() async {
+        let transactionId = "test_transaction_1"
+        let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
+
+        self.localTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
+
+        // Create a non-finishable error (network error)
+        let networkError = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
+        let nonFinishableError = BackendError.networkError(.networkError(networkError))
+        expect(nonFinishableError.finishable) == false
+        self.backend.stubbedPostReceiptResult = .failure(nonFinishableError)
+
+        let stream = self.poster.postRemainingCachedTransactionMetadata(
+            appUserID: "user",
+            isRestore: false
+        )
+
+        var results: [CachedTransactionMetadataPostResult] = []
+        for await result in stream {
+            results.append(result)
+        }
+
+        expect(results).to(haveCount(1))
+        expect(results.first?.result).to(beFailure())
+        expect(self.localTransactionMetadataStore.invokedRemoveMetadata.value) == false
+    }
+
+    func testPostRemainingCachedTransactionMetadataContinuesAfterFailure() async {
+        let transactionId1 = "test_transaction_1"
+        let transactionId2 = "test_transaction_2"
+
+        let metadata1 = self.createCachedMetadata(transactionId: transactionId1, productIdentifier: "product_1")
+        let metadata2 = self.createCachedMetadata(transactionId: transactionId2, productIdentifier: "product_2")
+
+        self.localTransactionMetadataStore.storeMetadata(metadata1, forTransactionId: transactionId1)
+        self.localTransactionMetadataStore.storeMetadata(metadata2, forTransactionId: transactionId2)
+
+        // Stub a non-finishable error - this simulates a network failure
+        let networkError = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
+        let nonFinishableError = BackendError.networkError(.networkError(networkError))
+        self.backend.stubbedPostReceiptResult = .failure(nonFinishableError)
+
+        let stream = self.poster.postRemainingCachedTransactionMetadata(
+            appUserID: "user",
+            isRestore: false
+        )
+
+        var results: [CachedTransactionMetadataPostResult] = []
+        for await result in stream {
+            results.append(result)
+        }
+
+        // Both transactions should have been attempted despite failures
+        expect(results).to(haveCount(2))
+        expect(self.backend.invokedPostReceiptDataCount) == 2
+
+        // Both results should be failures
+        expect(results[0].result).to(beFailure())
+        expect(results[1].result).to(beFailure())
+
+        // Verify both distinct transactions were posted (proves continuation after first failure)
+        let postedTransactionIds = self.backend.invokedPostReceiptDataParametersList.map {
+            $0.associatedTransactionId
+        }
+        expect(postedTransactionIds).to(contain(transactionId1))
+        expect(postedTransactionIds).to(contain(transactionId2))
+
+        // Non-finishable errors should NOT remove metadata (will retry later)
+        expect(self.localTransactionMetadataStore.invokedRemoveMetadataCount.value) == 0
+    }
+
+    func testPostRemainingCachedTransactionMetadataUsesCorrectPostReceiptSource() async {
+        let transactionId = "test_transaction_1"
+        let metadata = self.createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
+
+        self.localTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let stream = self.poster.postRemainingCachedTransactionMetadata(
+            appUserID: "test_user",
+            isRestore: true
+        )
+
+        for await _ in stream { }
+
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.isRestore) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
+        expect(self.backend.invokedPostReceiptDataParameters?.appUserID) == "test_user"
+    }
+
+    func testPostRemainingCachedTransactionMetadataUsesStoredReceipt() async {
+        let transactionId = "test_transaction_1"
+        let receiptData = "stored_receipt_data".asData
+        let metadata = LocalTransactionMetadata(
+            transactionId: transactionId,
+            productData: ProductRequestData(
+                productIdentifier: "product_1",
+                paymentMode: nil,
+                currencyCode: "USD",
+                storeCountry: "US",
+                price: 9.99,
+                normalDuration: nil,
+                introDuration: nil,
+                introDurationType: nil,
+                introPrice: nil,
+                subscriptionGroup: nil,
+                discounts: nil
+            ),
+            transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt(receiptData),
+            originalPurchasesAreCompletedBy: .myApp,
+            sdkOriginated: true
+        )
+
+        self.localTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let stream = self.poster.postRemainingCachedTransactionMetadata(
+            appUserID: "user",
+            isRestore: false
+        )
+
+        for await _ in stream { }
+
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .receipt(receiptData)
+        expect(self.backend.invokedPostReceiptDataParameters?.originalPurchaseCompletedBy) == .myApp
+    }
+
+    func testPostRemainingCachedTransactionMetadataReturnsTransactionDataInResults() async {
+        let transactionId = "test_transaction_1"
+        let transactionData = PurchasedTransactionData(
+            presentedOfferingContext: .init(offeringIdentifier: "test_offering"),
+            unsyncedAttributes: ["$email": SubscriberAttribute(withKey: "$email", value: "test@test.com")],
+            aadAttributionToken: "test_token"
+        )
+        let metadata = LocalTransactionMetadata(
+            transactionId: transactionId,
+            productData: ProductRequestData(
+                productIdentifier: "product_1",
+                paymentMode: nil,
+                currencyCode: "USD",
+                storeCountry: "US",
+                price: 9.99,
+                normalDuration: nil,
+                introDuration: nil,
+                introDurationType: nil,
+                introPrice: nil,
+                subscriptionGroup: nil,
+                discounts: nil
+            ),
+            transactionData: transactionData,
+            encodedAppleReceipt: .receipt("test_receipt".asData),
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
+        )
+
+        self.localTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let stream = self.poster.postRemainingCachedTransactionMetadata(
+            appUserID: "user",
+            isRestore: false
+        )
+
+        var results: [CachedTransactionMetadataPostResult] = []
+        for await result in stream {
+            results.append(result)
+        }
+
+        expect(results).to(haveCount(1))
+        let resultTransactionData = results.first?.transactionData
+        expect(resultTransactionData?.presentedOfferingContext?.offeringIdentifier) == "test_offering"
+        expect(resultTransactionData?.unsyncedAttributes).toNot(beNil())
+        expect(resultTransactionData?.aadAttributionToken) == "test_token"
     }
 
 }
@@ -1219,6 +1538,32 @@ private extension TransactionPosterTests {
                      productType: productType,
                      localizedDescription: "Description",
                      locale: .init(identifier: "en_US"))
+    }
+
+    func createCachedMetadata(
+        transactionId: String,
+        productIdentifier: String
+    ) -> LocalTransactionMetadata {
+        return LocalTransactionMetadata(
+            transactionId: transactionId,
+            productData: ProductRequestData(
+                productIdentifier: productIdentifier,
+                paymentMode: nil,
+                currencyCode: "USD",
+                storeCountry: "US",
+                price: 9.99,
+                normalDuration: nil,
+                introDuration: nil,
+                introDurationType: nil,
+                introPrice: nil,
+                subscriptionGroup: nil,
+                discounts: nil
+            ),
+            transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt_\(transactionId)".asData),
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
+        )
     }
 
     func createCustomerInfo(nonSubscriptionProductID: String?) -> CustomerInfo {

@@ -1205,8 +1205,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             )
         )
         let storedMetadata = LocalTransactionMetadata(
+            transactionId: transaction.transactionIdentifier,
             productData: storedProductData,
             transactionData: storedTransactionData,
+            encodedAppleReceipt: .receipt("test_receipt".asData),
             originalPurchasesAreCompletedBy: .myApp,
             sdkOriginated: true
         )

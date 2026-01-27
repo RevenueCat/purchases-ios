@@ -123,13 +123,21 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
         removeInvocations.append(url)
     }
 
-    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
+    func createDirectoryIfNeeded(
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType,
+        inAppSpecificDirectory: Bool
+    ) -> URL? {
         workingCacheDirectory = cacheDirectoryURL(basePath: basePath)
         return workingCacheDirectory
     }
 
     func cacheDirectoryURL(basePath: String) -> URL? {
         cacheDirectory?.appendingPathComponent(basePath)
+    }
+
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        return []
     }
 
     struct SaveData: Equatable {
