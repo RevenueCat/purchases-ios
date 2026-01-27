@@ -33,10 +33,3 @@ final class WeakBox<T: AnyObject> {
 }
 
 extension Box: Sendable where T: Sendable {}
-
-// MARK: - Test enum for Danger check (remove after testing)
-// swiftlint:disable:next missing_docs
-public enum TestPublicEnum {
-    // swiftlint:disable:next missing_docs
-    case test
-}
