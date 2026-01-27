@@ -302,8 +302,6 @@ class PackageVariablesTests: TestCase {
         expect(TestData.lifetimePackage.normalizedSubscriptionDuration(Self.spanish)) == "Toda la vida"
     }
 
-    // MARK: - Price Rounding
-
     func testPriceRounding() {
 
         // test rounding on
