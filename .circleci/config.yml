@@ -1682,7 +1682,6 @@ workflows:
       - run-revenuecat-ui-ios-26
       - emerge_purchases_ui_snapshot_tests
       - emerge_binary_size_analysis
-      - run-test-ios-14
 
   create-tag:
     when:
