@@ -57,6 +57,7 @@ class PaywallFeatureEventsRequestTests: TestCase {
             date: .init(timeIntervalSince1970: 1694029328)
         )
         let paywallEventData: PaywallEvent.Data = .init(
+            paywallIdentifier: "test_paywall_id",
             offeringIdentifier: "offeringIdentifier",
             paywallRevision: 0,
             sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
@@ -102,6 +103,7 @@ private extension PaywallFeatureEventsRequestTests {
     )
 
     static let eventData: PaywallEvent.Data = .init(
+        paywallIdentifier: "test_paywall_id",
         offeringIdentifier: "offering",
         paywallRevision: 0,
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
