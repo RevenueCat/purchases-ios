@@ -187,20 +187,6 @@ import Foundation
 
     #endif
 
-    func publisher(for purchase: PurchaseInformation?) -> AnyPublisher<PurchaseInformation, Never>? {
-        guard let productIdentifier = purchase?.productIdentifier else {
-            return nil
-        }
-
-        return $subscriptionsSection.combineLatest($nonSubscriptionsSection)
-            .throttle(for: .seconds(0.3), scheduler: DispatchQueue.main, latest: true)
-            .compactMap {
-                $0.first(where: { $0.productIdentifier == productIdentifier })
-                ?? $1.first(where: { $0.productIdentifier == productIdentifier })
-            }
-            .eraseToAnyPublisher()
-    }
-
     func loadScreen(shouldSync: Bool = false) async {
         do {
             let customerInfo = shouldSync ?
