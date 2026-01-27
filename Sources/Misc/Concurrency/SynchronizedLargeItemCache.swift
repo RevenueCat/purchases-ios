@@ -14,43 +14,54 @@
 import Foundation
 
 /// A thread-safe wrapper around `LargeItemCacheType` for synchronized file-based caching operations.
+///
+/// - Important: Cache keys must not contain path separators (`/`). Keys are used directly as file names,
+///   so including path separators would create nested directories and break key retrieval via `allKeys()`.
 internal final class SynchronizedLargeItemCache {
 
     private let cache: LargeItemCacheType
     private let lock: Lock
-    private let documentURL: URL?
+    private let cacheURL: URL?
 
-    init(cache: LargeItemCacheType, basePath: String) {
+    init(
+        cache: LargeItemCacheType,
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType = .cache
+    ) {
         self.cache = cache
         self.lock = Lock(.nonRecursive)
-        self.documentURL = cache.createDocumentDirectoryIfNeeded(basePath: basePath)
+
+        self.cacheURL = cache.createDirectoryIfNeeded(
+            basePath: basePath,
+            directoryType: directoryType,
+            inAppSpecificDirectory: true
+        )
     }
 
-    private func read<T>(_ action: (LargeItemCacheType, URL?) throws -> T) rethrows -> T {
+    @inline(__always)
+    private func withLock<T>(
+        _ action: (_ cache: LargeItemCacheType, _ documentURL: URL?) throws -> T
+    ) rethrows -> T {
         return try self.lock.perform {
-            return try action(self.cache, self.documentURL)
-        }
-    }
-
-    private func write(_ action: (LargeItemCacheType, URL?) throws -> Void) rethrows {
-        return try self.lock.perform {
-            try action(self.cache, self.documentURL)
+            return try action(self.cache, self.cacheURL)
         }
     }
 
     /// Get the file URL for a specific cache key
     private func getFileURL(for key: String) -> URL? {
-        guard let documentURL = self.documentURL else {
+        assert(!key.contains("/"), "Cache key must not contain path separators: \(key)")
+
+        guard let cacheURL = self.cacheURL else {
             return nil
         }
-        return documentURL.appendingPathComponent(key)
+        return cacheURL.appendingPathComponent(key)
     }
 
     /// Save a codable value to the cache
     @discardableResult
     func set<T: Encodable>(codable value: T, forKey key: String) -> Bool {
         guard let fileURL = self.getFileURL(for: key) else {
-            Logger.error("Cache URL is not available")
+            Logger.error(Strings.cache.cache_url_not_available)
             return false
         }
 
@@ -59,28 +70,30 @@ internal final class SynchronizedLargeItemCache {
         }
 
         do {
-            try self.write { cache, _ in
+            try self.withLock { cache, _ in
                 try cache.saveData(data, to: fileURL)
             }
             return true
         } catch {
-            Logger.error("Failed to save codable to cache: \(error)")
+            Logger.error(Strings.cache.failed_to_save_codable_to_cache(error))
             return false
         }
     }
 
     /// Load a codable value from the cache
-    func value<T: Decodable>(forKey key: String) -> T? {
+    /// - Throws: If the file cannot be loaded or decoded
+    func value<T: Decodable>(forKey key: String) throws -> T? {
         guard let fileURL = self.getFileURL(for: key) else {
             return nil
         }
 
-        return self.read { cache, _ in
-            guard let data = try? cache.loadFile(at: fileURL) else {
+        return try self.withLock { cache, _ in
+            guard cache.cachedContentExists(at: fileURL) else {
                 return nil
             }
 
-            return try? JSONDecoder.default.decode(jsonData: data, logErrors: true)
+            let data = try cache.loadFile(at: fileURL)
+            return try JSONDecoder.default.decode(jsonData: data, logErrors: true)
         }
     }
 
@@ -90,17 +103,35 @@ internal final class SynchronizedLargeItemCache {
             return
         }
 
-        self.write { _, _ in
-            try? self.cache.remove(fileURL)
+        self.withLock { cache, _ in
+            try? cache.remove(fileURL)
+        }
+    }
+
+    /// Get all keys in the cache
+    func allKeys() -> [String] {
+        guard let cacheURL = self.cacheURL else {
+            return []
+        }
+
+        return self.withLock { cache, _ in
+            do {
+                let fileURLs = try cache.contentsOfDirectory(at: cacheURL)
+                return fileURLs.map { $0.lastPathComponent }
+            } catch {
+                Logger.error("Failed to read cache contents: \(error)")
+                return []
+            }
         }
     }
 
     func clear() {
-        guard let documentURL = self.documentURL else {
-            return
+        self.withLock { cache, cacheURL in
+            // Clear the cache directory
+            if let cacheURL = cacheURL {
+                try? cache.remove(cacheURL)
+            }
         }
-
-        try? self.cache.remove(documentURL)
     }
 }
 

@@ -136,7 +136,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             backend: self.mockBackend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
-            operationDispatcher: self.mockOperationDispatcher
+            operationDispatcher: self.mockOperationDispatcher,
+            localTransactionMetadataStore: MockLocalTransactionMetadataStore()
         )
 
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
@@ -218,6 +219,13 @@ class PurchasesSubscriberAttributesTests: TestCase {
             backend: self.mockBackend,
             identityManager: self.mockIdentityManager
         )
+        let transactionMetadataSyncHelper = TransactionMetadataSyncHelper(
+            customerInfoManager: customerInfoManager,
+            attribution: attribution,
+            currentUserProvider: mockIdentityManager,
+            operationDispatcher: mockOperationDispatcher,
+            transactionPoster: self.transactionPoster
+        )
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,
@@ -247,7 +255,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               storeMessagesHelper: self.mockStoreMessagesHelper,
                               diagnosticsTracker: nil,
                               virtualCurrencyManager: self.mockVirtualCurrencyManager,
-                              healthManager: healthManager)
+                              healthManager: healthManager,
+                              transactionMetadataSyncHelper: transactionMetadataSyncHelper)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)

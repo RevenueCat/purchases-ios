@@ -350,6 +350,40 @@ class DecoderExtensionsNonEmptyDictionaryTests: TestCase {
 
 }
 
+class DecoderExtensionsISO8601DateTests: TestCase {
+
+    private struct DataWithDate: Codable, Equatable {
+        let date: Date
+    }
+
+    func testDecodesISO8601DateWithFractionalSeconds() throws {
+        let json = "{\"date\": \"2024-01-21T12:30:45.123Z\"}"
+        let data = try DataWithDate.decode(json)
+
+        // Known timestamp for 2024-01-21T12:30:45.123Z
+        let expectedTimestamp: TimeInterval = 1705840245.123
+        expect(data.date.timeIntervalSince1970).to(beCloseTo(expectedTimestamp, within: 0.001))
+    }
+
+    func testDecodesISO8601DateWithoutFractionalSeconds() throws {
+        let json = "{\"date\": \"2024-01-21T12:30:45Z\"}"
+        let data = try DataWithDate.decode(json)
+
+        // Known timestamp for 2024-01-21T12:30:45Z
+        let expectedTimestamp: TimeInterval = 1705840245.0
+        expect(data.date.timeIntervalSince1970).to(beCloseTo(expectedTimestamp, within: 0.001))
+    }
+
+    func testThrowsForInvalidISO8601Date() throws {
+        let json = "{\"date\": \"not-a-date\"}"
+
+        expect {
+            try DataWithDate.decode(json)
+        }.to(throwError(errorType: DecodingError.self))
+    }
+
+}
+
 // MARK: - Extensions
 
 extension Decodable where Self: Encodable {
