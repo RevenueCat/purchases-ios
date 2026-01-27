@@ -10,6 +10,8 @@
 #     https://docs.fastlane.tools/plugins/available-plugins
 #
 
+require_relative 'api_diff_helper'
+
 default_platform(:ios)
 
 def current_version_number
@@ -1775,6 +1777,76 @@ platform :ios do
         sh "git", "fetch", "origin"
         sh "git", "checkout", commit
       end
+    end
+  end
+
+  desc "Generate Swift interface files for API change detection"
+  lane :generate_swiftinterface do
+    require 'tmpdir'
+
+    Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
+      ApiDiffHelper::PLATFORMS.each do |platform_config|
+        UI.message("Building RevenueCat for #{platform_config[:platform]}...")
+
+        sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
+
+        Dir.chdir("..") do
+          sh("xcodebuild", "clean", "build",
+             "-scheme", "RevenueCat",
+             "-derivedDataPath", ".build",
+             "-configuration", "Release",
+             "-sdk", sdk_path,
+             "-destination", platform_config[:destination],
+             "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
+        end
+
+        swiftinterface_files = ApiDiffHelper.find_swiftinterface_file("../.build", platform_config[:sdk])
+
+        if swiftinterface_files.empty?
+          UI.user_error!("Could not find RevenueCat.swiftinterface for #{platform_config[:platform]}")
+        end
+
+        output_path = "#{temp_dir}/RevenueCat#{platform_config[:suffix]}.swiftinterface"
+        FileUtils.cp(swiftinterface_files.first, output_path)
+        UI.success("Generated #{platform_config[:platform]} swiftinterface")
+      end
+
+      # Copy to expected location for CI artifacts
+      sh("mkdir", "-p", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
+      sh("cp", "-r", "#{temp_dir}/.", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
+      UI.success("Swift interface files copied to #{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}")
+    end
+  end
+
+  desc "Check API changes and report results"
+  lane :check_api_changes do
+    api_diff_tool = File.expand_path("~/bin/public-api-diff")
+
+    unless File.exist?(api_diff_tool)
+      UI.error("API diff tool not found at #{api_diff_tool}")
+      UI.important("To install locally, run:")
+      UI.important("  git clone https://github.com/Adyen/adyen-swift-public-api-diff.git ~/tools/adyen-swift-public-api-diff")
+      UI.important("  cd ~/tools/adyen-swift-public-api-diff && swift build -c release")
+      UI.important("  mkdir -p ~/bin && cp .build/release/public-api-diff ~/bin/")
+      UI.message("Skipping API diff check (tool not available locally)")
+      return
+    end
+
+    failed_platforms = []
+
+    ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
+      old_file = "../api/revenuecat-api#{platform[:suffix]}.swiftinterface"
+      new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
+
+      result = ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, platform[:name])
+      failed_platforms << result unless result[:success]
+    end
+
+    if failed_platforms.any?
+      ApiDiffHelper.print_failure_summary(failed_platforms)
+      UI.user_error!("API changes detected! Update baseline files if changes are intentional.")
+    else
+      UI.success("✅ No API changes detected")
     end
   end
 
