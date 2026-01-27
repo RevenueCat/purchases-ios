@@ -62,6 +62,7 @@ protocol TransactionPosterType: AnyObject, Sendable {
     /// Starts a `PostReceiptDataOperation` for the transaction.
     /// - Parameter purchaseIntentDate: The date when the SDK's `purchase()` method was called.
     ///   Used to determine if a transaction was actually initiated by this purchase call.
+    // swiftlint:disable:next function_parameter_count
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,

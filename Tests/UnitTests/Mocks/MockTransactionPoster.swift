@@ -25,6 +25,8 @@ final class MockTransactionPoster: TransactionPosterType {
 
     let invokedHandlePurchasedTransaction: Atomic<Bool> = false
     let invokedHandlePurchasedTransactionCount: Atomic<Int> = .init(0)
+
+    // swiftlint:disable:next large_tuple
     let invokedHandlePurchasedTransactionParameters: Atomic<(transaction: StoreTransactionType,
                                                              data: PurchasedTransactionData,
                                                              postReceiptSource: PostReceiptSource,
@@ -44,6 +46,7 @@ final class MockTransactionPoster: TransactionPosterType {
         )
     }
 
+    // swiftlint:disable:next function_parameter_count
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,

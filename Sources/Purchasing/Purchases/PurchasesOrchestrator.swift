@@ -1396,6 +1396,29 @@ private extension PurchasesOrchestrator {
     }
 
     #endif
+
+    /// - Parameter restored: whether the transaction state was `.restored` instead of `.purchased`.
+    private func purchaseSource(
+        for productIdentifier: String,
+        restored: Bool
+    ) -> PostReceiptSource {
+        let initiationSource: PostReceiptSource.InitiationSource = {
+            // Having a purchase completed callback implies that the transaction comes from an explicit call
+            // to `purchase()` instead of a StoreKit transaction notification.
+            let hasPurchaseCallback = self.purchaseCallbackDataByProductID.value.keys.contains(productIdentifier)
+
+            switch (hasPurchaseCallback, restored) {
+            case (true, false): return .purchase
+                // Note that restores initiated through the SDK with `restorePurchases`
+                // won't use this method since those set the initiation source explicitly.
+            case (true, true): return .restore
+            case (false, _): return .queue
+            }
+        }()
+
+        return .init(isRestore: self.allowSharingAppStoreAccount,
+                     initiationSource: initiationSource)
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -1821,27 +1844,18 @@ private extension PurchasesOrchestrator {
     }
 
     func handleSK1PurchasedTransaction(_ purchasedTransaction: StoreTransaction,
-                                    storefront: StorefrontType?,
-                                    restored: Bool) {
+                                       storefront: StorefrontType?,
+                                       restored: Bool) {
         // Don't attribute offering context or paywall data for restored transactions
         let offeringContext = restored ? nil : self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
         let paywall = restored ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: purchasedTransaction)
         let unsyncedAttributes = self.unsyncedAttributes
-
-        let callbackData = self.getAndRemovePurchaseCallbackData(forTransaction: purchasedTransaction)
-
-        // Determine initiation source based on whether we had a callback
-        let initiationSource: PostReceiptSource.InitiationSource = {
-            switch (callbackData != nil, restored) {
-            case (true, false): return .purchase
-                // Note that restores initiated through the SDK with `restorePurchases`
-                // won't use this method since those set the initiation source explicitly.
-            case (true, true): return .restore
-            case (false, _): return .queue
-            }
-        }()
-        let purchaseSource = PostReceiptSource(isRestore: self.allowSharingAppStoreAccount,
-                                               initiationSource: initiationSource)
+        let purchaseSource = self.purchaseSource(for: purchasedTransaction.productIdentifier,
+                                                 restored: restored)
+        // Get purchaseIntentDate without removing the callback - we'll remove it in the completion handler
+        let purchaseIntentDate = self.purchaseCallbackDataByProductID.value[
+            purchasedTransaction.productIdentifier
+        ]?.purchaseIntentDate
 
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
@@ -1856,13 +1870,15 @@ private extension PurchasesOrchestrator {
                 purchasedTransaction,
                 data: transactionData,
                 postReceiptSource: purchaseSource,
-                purchaseIntentDate: callbackData?.purchaseIntentDate,
+                purchaseIntentDate: purchaseIntentDate,
                 currentUserID: self.appUserID
             ) { result in
 
                 self.handlePostReceiptResult(result, transactionData: transactionData)
 
-                if let completion = callbackData?.callback {
+                if let completion = self.getAndRemovePurchaseCallbackData(
+                    forTransaction: purchasedTransaction
+                )?.callback {
                     self.operationDispatcher.dispatchOnMainActor {
                         completion(purchasedTransaction,
                                    result.value,
