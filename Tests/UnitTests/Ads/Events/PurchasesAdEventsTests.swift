@@ -38,7 +38,9 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             mediatorErrorCode: 3
         )
 
-        await self.purchases.adTracker.trackAdFailedToLoad(failedData)
+        self.purchases.adTracker.trackAdFailedToLoad(failedData)
+
+        await self.yield() // Wait for async Task to complete
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
@@ -67,7 +69,9 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             impressionId: "impression-123"
         )
 
-        await self.purchases.adTracker.trackAdLoaded(loadedData)
+        self.purchases.adTracker.trackAdLoaded(loadedData)
+
+        await self.yield() // Wait for async Task to complete
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
@@ -96,7 +100,9 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             impressionId: "impression-123"
         )
 
-        await self.purchases.adTracker.trackAdDisplayed(displayedData)
+        self.purchases.adTracker.trackAdDisplayed(displayedData)
+
+        await self.yield() // Wait for async Task to complete
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
@@ -125,7 +131,9 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             impressionId: "impression-123"
         )
 
-        await self.purchases.adTracker.trackAdOpened(openedData)
+        self.purchases.adTracker.trackAdOpened(openedData)
+
+        await self.yield() // Wait for async Task to complete
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
@@ -157,7 +165,9 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             precision: .exact
         )
 
-        await self.purchases.adTracker.trackAdRevenue(revenueData)
+        self.purchases.adTracker.trackAdRevenue(revenueData)
+
+        await self.yield() // Wait for async Task to complete
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
 
