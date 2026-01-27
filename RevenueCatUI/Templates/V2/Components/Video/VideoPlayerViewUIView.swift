@@ -87,7 +87,9 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         controller.player = player
         controller.view.backgroundColor = .clear
         controller.showsPlaybackControls = showControls
-        controller.allowsPictureInPicturePlayback = false
+        if #available(tvOS 14.0, *) {
+            controller.allowsPictureInPicturePlayback = false
+        }
         DispatchQueue.main.async {
             switch contentMode {
             case .fit:
