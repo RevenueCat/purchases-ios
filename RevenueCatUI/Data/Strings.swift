@@ -92,6 +92,9 @@ enum Strings {
     case customFontFailedToLoad(fontName: String)
     case googleFontsNotSupported
 
+    // Video
+    case video_failed_to_set_audio_session_category(Error)
+
     // Exit Offers
     case errorFetchingOfferings(Error)
     case exitOfferNotFound(String)
@@ -306,6 +309,9 @@ extension Strings: CustomStringConvertible {
             return "Custom font '\(fontName)' could not be loaded. Falling back to system font."
         case .googleFontsNotSupported:
             return "Google Fonts are not supported on this platform"
+
+        case .video_failed_to_set_audio_session_category(let error):
+            return "Failed to set audio session category: \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
