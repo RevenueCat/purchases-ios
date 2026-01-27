@@ -91,9 +91,11 @@ end
 check_swift_files_in_project
 
 # Check for new public enums in Swift files
+# Only applies to RevenueCat (Sources/) and RevenueCatUI (RevenueCatUI/) targets
 def check_for_public_enums
   swift_files = (git.added_files + git.modified_files)
     .select { |file| file.end_with?('.swift') }
+    .select { |file| file.start_with?('Sources/') || file.start_with?('RevenueCatUI/') }
     .select { |file| File.exist?(file) }
 
   public_enum_pattern = /^\+\s*public\s+enum\s+/
