@@ -198,7 +198,7 @@ private struct StoreProductDiscountEncodedWrapper: StoreProductDiscountType, Cod
     let numberOfPeriods: Int
     let type: StoreProductDiscount.DiscountType
 
-    // Note: price is encoded price as `String` (using `NSDecimalNumber.description`)
+    // Note: price is encoded as `String` (using `NSDecimalNumber.description`)
     // to preserve precision and avoid values like "1.89999999"
     private let priceString: String
 
