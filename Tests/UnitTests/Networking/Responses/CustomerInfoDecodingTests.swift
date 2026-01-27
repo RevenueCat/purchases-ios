@@ -115,7 +115,7 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
     }
 
     func testRawDataIsNotEncoded() throws {
-        expect(try self.customerInfo.asDictionary().keys).toNot(contain("raw_data"))
+        expect(try self.customerInfo.asJSONDictionary().keys).toNot(contain("raw_data"))
     }
 
     func testRawDataIncludesUnparsedKeys() throws {

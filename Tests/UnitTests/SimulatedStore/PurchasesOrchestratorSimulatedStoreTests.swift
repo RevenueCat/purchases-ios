@@ -94,7 +94,8 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
             backend: self.backend,
             paymentQueueWrapper: .right(self.paymentQueueWrapper),
             systemInfo: self.systemInfo,
-            operationDispatcher: self.operationDispatcher
+            operationDispatcher: self.operationDispatcher,
+            localTransactionMetadataStore: MockLocalTransactionMetadataStore()
         )
         self.transactionsManager = MockTransactionsManager(receiptParser: self.receiptParser)
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -354,8 +355,9 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         XCTAssertTrue(self.backend.invokedPostReceiptData)
         XCTAssertEqual(self.backend.invokedPostReceiptDataCount, 1)
         let transactionData = try XCTUnwrap(self.backend.invokedPostReceiptDataParameters?.transactionData)
-        XCTAssertEqual(transactionData.appUserID, "appUserID")
-        XCTAssertEqual(transactionData.storefront?.countryCode, Self.mockStorefront.countryCode)
+        let appUserID = try XCTUnwrap(self.backend.invokedPostReceiptDataParameters?.appUserID)
+        XCTAssertEqual(appUserID, "appUserID")
+        XCTAssertEqual(transactionData.storeCountry, Self.mockStorefront.countryCode)
     }
 
     func testSuccessfulPurchaseOfTestStoreWithFailedPostReceiptReturnsFailure() async throws {

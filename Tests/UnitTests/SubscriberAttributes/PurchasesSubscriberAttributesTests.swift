@@ -136,7 +136,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             backend: self.mockBackend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
-            operationDispatcher: self.mockOperationDispatcher
+            operationDispatcher: self.mockOperationDispatcher,
+            localTransactionMetadataStore: MockLocalTransactionMetadataStore()
         )
 
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
@@ -482,6 +483,36 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetKochavaDeviceIDParametersList[0])
             .to(equal(("kochava", purchases.appUserID)))
         expect(self.mockSubscriberAttributesManager.invokedSetKochavaDeviceIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearSolarEngineDistinctId() {
+        setupPurchases()
+        purchases.attribution.setSolarEngineDistinctId("solarDistinct")
+        purchases.attribution.setSolarEngineDistinctId(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineDistinctIdParametersList[0])
+            .to(equal(("solarDistinct", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineDistinctIdParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearSolarEngineAccountId() {
+        setupPurchases()
+        purchases.attribution.setSolarEngineAccountId("solarAccount")
+        purchases.attribution.setSolarEngineAccountId(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineAccountIdParametersList[0])
+            .to(equal(("solarAccount", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineAccountIdParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearSolarEngineVisitorId() {
+        setupPurchases()
+        purchases.attribution.setSolarEngineVisitorId("solarVisitor")
+        purchases.attribution.setSolarEngineVisitorId(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineVisitorIdParametersList[0])
+            .to(equal(("solarVisitor", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineVisitorIdParametersList[1])
             .to(equal((nil, purchases.appUserID)))
     }
 

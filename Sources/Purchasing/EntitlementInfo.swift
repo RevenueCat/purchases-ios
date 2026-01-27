@@ -14,6 +14,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 /**
  Enum of supported stores
  */
@@ -51,6 +53,9 @@ import Foundation
 
     /// For entitlements granted via the Test Store.
     @objc(RCTestStore) case testStore = 10
+
+    /// For entitlements granted via the Galaxy Store.
+    @objc(RCGalaxy) case galaxy = 11
 
 }
 
@@ -271,6 +276,46 @@ extension PeriodType: DefaultValueProvider {
         self.rawData = entitlement.rawData
     }
 
+    /// Initializes an ``EntitlementInfo`` instance.
+    /// Useful for Unit testing purposes, since the other (internal) initializers require a backend response
+    public init(
+        identifier: String,
+        isActive: Bool,
+        willRenew: Bool,
+        periodType: PeriodType,
+        latestPurchaseDate: Date? = nil,
+        originalPurchaseDate: Date? = nil,
+        expirationDate: Date? = nil,
+        store: Store,
+        productIdentifier: String,
+        productPlanIdentifier: String? = nil,
+        isSandbox: Bool,
+        unsubscribeDetectedAt: Date? = nil,
+        billingIssueDetectedAt: Date? = nil,
+        ownershipType: PurchaseOwnershipType,
+        verification: VerificationResult = .notRequested
+    ) {
+        self.contents = .init(
+            identifier: identifier,
+            isActive: isActive,
+            willRenew: willRenew,
+            periodType: periodType,
+            latestPurchaseDate: latestPurchaseDate,
+            originalPurchaseDate: originalPurchaseDate,
+            expirationDate: expirationDate,
+            store: store,
+            productIdentifier: productIdentifier,
+            productPlanIdentifier: productPlanIdentifier,
+            isSandbox: isSandbox,
+            unsubscribeDetectedAt: unsubscribeDetectedAt,
+            billingIssueDetectedAt: billingIssueDetectedAt,
+            ownershipType: ownershipType,
+            verification: verification
+        )
+        self.rawData = [:]
+        self.sandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
+    }
+
     // MARK: -
 
     private let contents: Contents
@@ -336,9 +381,7 @@ extension EntitlementInfo: Identifiable {
 }
 
 private extension EntitlementInfo {
-
     struct Contents: Equatable, Hashable {
-
         let identifier: String
         let isActive: Bool
         let willRenew: Bool
@@ -354,9 +397,7 @@ private extension EntitlementInfo {
         let billingIssueDetectedAt: Date?
         let ownershipType: PurchaseOwnershipType
         let verification: VerificationResult
-
     }
-
 }
 
 extension EntitlementInfo.Contents: Sendable {}

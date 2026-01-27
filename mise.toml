@@ -1,5 +1,6 @@
 [tools]
 tuist = "4.48.2"
+swiftlint = "0.62.2"
 
 [hooks]
 postinstall = "mise run install"

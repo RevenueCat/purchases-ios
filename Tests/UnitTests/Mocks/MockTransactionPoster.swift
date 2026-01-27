@@ -26,9 +26,12 @@ final class MockTransactionPoster: TransactionPosterType {
     let invokedHandlePurchasedTransaction: Atomic<Bool> = false
     let invokedHandlePurchasedTransactionCount: Atomic<Int> = .init(0)
     let invokedHandlePurchasedTransactionParameters: Atomic<(transaction: StoreTransactionType,
-                                                             data: PurchasedTransactionData)?> = nil
+                                                             data: PurchasedTransactionData,
+                                                             postReceiptSource: PostReceiptSource,
+                                                             currentUserID: String)?> = nil
     let invokedHandlePurchasedTransactionParameterList: Atomic<[(transaction: StoreTransactionType,
-                                                                 data: PurchasedTransactionData)]> = .init([])
+                                                                 data: PurchasedTransactionData,
+                                                                 postReceiptSource: PostReceiptSource)]> = .init([])
 
     var allHandledTransactions: Set<StoreTransaction> {
         return Set(
@@ -42,6 +45,8 @@ final class MockTransactionPoster: TransactionPosterType {
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
+        postReceiptSource: PostReceiptSource,
+        currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
         // Returns either the first of `stubbedHandlePurchasedTransactionResults`
@@ -53,9 +58,9 @@ final class MockTransactionPoster: TransactionPosterType {
 
         self.invokedHandlePurchasedTransaction.value = true
         self.invokedHandlePurchasedTransactionCount.modify { $0 += 1 }
-        self.invokedHandlePurchasedTransactionParameters.value = (transaction, data)
+        self.invokedHandlePurchasedTransactionParameters.value = (transaction, data, postReceiptSource, currentUserID)
         self.invokedHandlePurchasedTransactionParameterList.modify {
-            $0.append((transaction, data))
+            $0.append((transaction, data, postReceiptSource))
         }
 
         self.operationDispatcher.dispatchOnMainActor { [result = result()] in
@@ -77,6 +82,74 @@ final class MockTransactionPoster: TransactionPosterType {
 
         self.operationDispatcher.dispatchOnMainActor {
             completion()
+        }
+    }
+
+    let stubbedPostReceiptFromSyncedSK2TransactionResult: Atomic<Result<CustomerInfo, BackendError>> = .init(
+        .failure(.missingCachedCustomerInfo())
+    )
+
+    let invokedPostReceiptFromSyncedSK2Transaction: Atomic<Bool> = false
+    let invokedPostReceiptFromSyncedSK2TransactionCount: Atomic<Int> = .init(0)
+
+    // swiftlint:disable large_tuple
+    let invokedPostReceiptFromSyncedSK2TransactionParameters: Atomic<(
+        transaction: StoreTransactionType,
+        data: PurchasedTransactionData,
+        receipt: EncodedAppleReceipt,
+        postReceiptSource: PostReceiptSource,
+        appTransactionJWS: String?,
+        currentUserID: String
+    )?> = nil
+
+    // swiftlint:disable function_parameter_count
+    func postReceiptFromSyncedSK2Transaction(
+        _ transaction: StoreTransactionType,
+        data: PurchasedTransactionData,
+        receipt: EncodedAppleReceipt,
+        postReceiptSource: PostReceiptSource,
+        appTransactionJWS: String?,
+        currentUserID: String,
+        completion: @escaping CustomerAPI.CustomerInfoResponseHandler
+    ) {
+        self.invokedPostReceiptFromSyncedSK2Transaction.value = true
+        self.invokedPostReceiptFromSyncedSK2TransactionCount.modify { $0 += 1 }
+        self.invokedPostReceiptFromSyncedSK2TransactionParameters.value = (
+            transaction,
+            data,
+            receipt,
+            postReceiptSource,
+            appTransactionJWS,
+            currentUserID
+        )
+
+        self.operationDispatcher.dispatchOnMainActor {
+            completion(self.stubbedPostReceiptFromSyncedSK2TransactionResult.value)
+        }
+    }
+
+    var stubbedPostRemainingCachedTransactionMetadataResults: [CachedTransactionMetadataPostResult] = []
+
+    let invokedPostRemainingCachedTransactionMetadata: Atomic<Bool> = false
+    let invokedPostRemainingCachedTransactionMetadataCount: Atomic<Int> = .init(0)
+    let invokedPostRemainingCachedTransactionMetadataAppUserID: Atomic<String?> = nil
+    let invokedPostRemainingCachedTransactionMetadataIsRestore: Atomic<Bool?> = nil
+
+    func postRemainingCachedTransactionMetadata(
+        appUserID: String,
+        isRestore: Bool
+    ) -> AsyncStream<CachedTransactionMetadataPostResult> {
+        self.invokedPostRemainingCachedTransactionMetadata.value = true
+        self.invokedPostRemainingCachedTransactionMetadataCount.modify { $0 += 1 }
+        self.invokedPostRemainingCachedTransactionMetadataAppUserID.value = appUserID
+        self.invokedPostRemainingCachedTransactionMetadataIsRestore.value = isRestore
+
+        let results = self.stubbedPostRemainingCachedTransactionMetadataResults
+        return AsyncStream { continuation in
+            for result in results {
+                continuation.yield(result)
+            }
+            continuation.finish()
         }
     }
 

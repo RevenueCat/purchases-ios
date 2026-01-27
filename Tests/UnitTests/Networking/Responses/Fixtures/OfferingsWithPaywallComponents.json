@@ -11,6 +11,7 @@
                 }
             ],
             "paywall_components": {
+                "id": "pw_test_1",
                 "default_locale": "en_US",
                 "revision": 3,
                 "template_name": "componentsTEST",
@@ -61,6 +62,7 @@
                 }
             ],
             "paywall_components": {
+                "id": "pw_test_2",
                 "default_locale": "en_US",
                 "revision": 3,
                 "template_name": "componentsTEST",
@@ -125,6 +127,7 @@
                 }
             },
             "draft_paywall_components": {
+                "id": "pw_test_2_draft",
                 "default_locale": "en_US",
                 "revision": 4,
                 "template_name": "newComponentsTEST",
@@ -199,6 +202,7 @@
                 }
             ],
             "draft_paywall_components": {
+                "id": "pw_test_3_draft",
                 "default_locale": "en_US",
                 "revision": 4,
                 "template_name": "newComponentsTEST",
@@ -273,6 +277,7 @@
                 }
             ],
             "paywall_components": {
+                "id": "pw_test_4",
                 "default_locale": "en_US",
                 "revision": 3,
                 "template_name": "componentsTEST",
@@ -315,6 +320,60 @@
                     "dismiss": {
                         "offering_id": "exit_offer_offering_id"
                     }
+                }
+            }
+        },
+        {
+            "description": "Offering with paywall components and zero decimal place countries",
+            "identifier": "paywall_components_with_zero_decimal_countries",
+            "packages": [
+                {
+                    "identifier": "$rc_monthly",
+                    "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+                }
+            ],
+            "paywall_components": {
+                "id": "pw_test_5",
+                "default_locale": "en_US",
+                "revision": 3,
+                "template_name": "componentsTEST",
+                "asset_base_url": "https://assets.pawwalls.com",
+                "components_localizations": [],
+                "components_config": {
+                    "base": {
+                        "background": {
+                            "type": "color",
+                            "value": {
+                                "light": {
+                                    "type": "hex",
+                                    "value": "#220000ff"
+                                }
+                            }
+                        },
+                        "stack": {
+                            "type": "stack",
+                            "components": [],
+                            "margin": {},
+                            "padding": {},
+                            "size": {
+                                "width": {
+                                    "type": "fill"
+                                },
+                                "height": {
+                                    "type": "fill"
+                                }
+                            },
+                            "dimension": {
+                                "type": "vertical",
+                                "alignment": "center",
+                                "distribution": "center"
+                            },
+                            "spacing": 16
+                        }
+                    }
+                },
+                "zeroDecimalPlaceCountries": {
+                    "apple": ["TWN", "KAZ", "MEX", "PHL", "THA", "IND"]
                 }
             }
         }

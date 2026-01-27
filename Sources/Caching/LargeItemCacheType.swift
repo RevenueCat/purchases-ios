@@ -31,26 +31,46 @@ protocol LargeItemCacheType {
     /// delete data at url
     func remove(_ url: URL) throws
 
-    /// Creates a directory in the cache from a base path
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL?
+    /// Creates a directory from a base path in the specified directory type
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createDirectoryIfNeeded(
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType,
+        inAppSpecificDirectory: Bool
+    ) -> URL?
 
-    /// Creates a directory in the documents directory from a base path
-    func createDocumentDirectoryIfNeeded(basePath: String) -> URL?
+    /// List all file URLs in a directory
+    func contentsOfDirectory(at url: URL) throws -> [URL]
+}
+
+extension LargeItemCacheType {
+    /// Creates a directory in the cache from a base path. Defaults `inAppSpecificDirectory` to true.
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool = true) -> URL? {
+        createDirectoryIfNeeded(
+            basePath: basePath,
+            directoryType: .cache,
+            inAppSpecificDirectory: inAppSpecificDirectory
+        )
+    }
+
+    /// Creates a directory in the persistence (applicationSupport) directory from a base path.
+    /// Defaults `inAppSpecificDirectory` to true.
+    func createPersistenceDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool = true) -> URL? {
+        createDirectoryIfNeeded(
+            basePath: basePath,
+            directoryType: .applicationSupport(),
+            inAppSpecificDirectory: inAppSpecificDirectory
+        )
+    }
 }
 
 extension FileManager: LargeItemCacheType {
-    /// A URL for a cache directory if one is present
-    private var cacheDirectory: URL? {
-        return urls(for: .cachesDirectory, in: .userDomainMask).first
-    }
-
-    ///// A URL for a document directory if one is present
-    private var documentDirectory: URL? {
-        return urls(for: .documentDirectory, in: .userDomainMask).first
-    }
 
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws {
+        let directoryURL = url.deletingLastPathComponent()
+        try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         try data.write(to: url)
     }
 
@@ -111,6 +131,8 @@ extension FileManager: LargeItemCacheType {
 
         // If all succeeds, move the temporary file to the more permanant storage location
         // effectively a "save" operation
+        let directoryURL = url.deletingLastPathComponent()
+        try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         try moveItem(at: tempFileURL, to: url)
     }
 
@@ -126,46 +148,32 @@ extension FileManager: LargeItemCacheType {
         }
     }
 
-    /// Creates a directory in the cache from a base path
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
-        guard let cacheDirectory else {
-            return nil
-        }
+    /// Creates a directory from a base path in the specified directory type
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createDirectoryIfNeeded(
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType,
+        inAppSpecificDirectory: Bool
+    ) -> URL? {
+        guard let baseDirectoryURL = DirectoryHelper.baseUrl(
+            for: directoryType,
+            inAppSpecificDirectory: inAppSpecificDirectory
+        ) else { return nil }
 
-        let path = cacheDirectory.appendingPathComponent(basePath)
+        let directoryURL = baseDirectoryURL.appendingPathComponent(basePath)
         do {
             try createDirectory(
-                at: path,
+                at: directoryURL,
                 withIntermediateDirectories: true,
                 attributes: nil
             )
         } catch {
-            let message = Strings.fileRepository.failedToCreateCacheDirectory(path)
+            let message = Strings.fileRepository.failedToCreateCacheDirectory(directoryURL)
             Logger.error(message)
         }
 
-        return path
-    }
-
-    /// Creates a directory in the documents directory from a base path
-    func createDocumentDirectoryIfNeeded(basePath: String) -> URL? {
-        guard let documentDirectory else {
-            return nil
-        }
-
-        let path = documentDirectory.appendingPathComponent(basePath)
-        do {
-            try createDirectory(
-                at: path,
-                withIntermediateDirectories: true,
-                attributes: nil
-            )
-        } catch {
-            let message = Strings.fileRepository.failedToCreateDocumentDirectory(path)
-            Logger.error(message)
-        }
-
-        return path
+        return directoryURL
     }
 
     /// Load data from url
@@ -175,5 +183,9 @@ extension FileManager: LargeItemCacheType {
 
     func remove(_ url: URL) throws {
         try self.removeItem(at: url)
+    }
+
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        return try self.contentsOfDirectory(at: url, includingPropertiesForKeys: nil, options: [])
     }
 }

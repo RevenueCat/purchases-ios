@@ -82,6 +82,7 @@ private extension BackendPaywallEventTests {
     )
 
     static let eventData1: PaywallEvent.Data = .init(
+        paywallIdentifier: "test_paywall_id_1",
         offeringIdentifier: "offering_1",
         paywallRevision: 5,
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
@@ -91,6 +92,7 @@ private extension BackendPaywallEventTests {
     )
 
     static let eventData2: PaywallEvent.Data = .init(
+        paywallIdentifier: "test_paywall_id_2",
         offeringIdentifier: "offering_2",
         paywallRevision: 3,
         sessionID: .init(uuidString: "10CC0F1D-7665-4093-9624-1D7308FFF4DB")!,

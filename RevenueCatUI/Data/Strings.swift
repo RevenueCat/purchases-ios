@@ -34,6 +34,7 @@ enum Strings {
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
+    case image_failed_to_load(URL, Error)
 
     case restoring_purchases
     case restored_purchases
@@ -66,6 +67,7 @@ enum Strings {
     case successfully_opened_url_deep_link(String)
     case no_selected_package_found
     case no_web_checkout_url_found
+    case variable_requires_package(variableName: String)
 
     // Customer Center
     case could_not_find_subscription_information
@@ -145,6 +147,9 @@ extension Strings: CustomStringConvertible {
             case let .failure(error):
                 return "Failed loading image: \(error)"
             }
+
+        case let .image_failed_to_load(url, error):
+            return "Failed to load image from '\(url)': \(error)"
 
         case .restoring_purchases:
             return "Restoring purchases"
@@ -289,6 +294,9 @@ extension Strings: CustomStringConvertible {
 
         case .no_web_checkout_url_found:
             return "No web checkout url found."
+
+        case let .variable_requires_package(variableName):
+            return "Paywall variable '\(variableName)' requires a package but none was provided."
 
         case .localizationNotFound(let identifier):
             return "Could not find localizations for '\(identifier)'"

@@ -12,8 +12,14 @@ class MockBackend: Backend {
     typealias PostReceiptParameters = (data: EncodedAppleReceipt?,
                                        productData: ProductRequestData?,
                                        transactionData: PurchasedTransactionData,
+                                       postReceiptSource: PostReceiptSource,
                                        observerMode: Bool,
+                                       originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                                        appTransaction: String?,
+                                       associatedTransactionId: String?,
+                                       sdkOriginated: Bool,
+                                       appUserID: String,
+                                       containsAttributionData: Bool,
                                        completion: CustomerAPI.CustomerInfoResponseHandler?)
 
     var invokedPostReceiptData = false
@@ -57,22 +63,40 @@ class MockBackend: Backend {
     override func post(receipt: EncodedAppleReceipt,
                        productData: ProductRequestData?,
                        transactionData: PurchasedTransactionData,
+                       postReceiptSource: PostReceiptSource,
                        observerMode: Bool,
+                       originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                        appTransaction: String? = nil,
+                       associatedTransactionId: String? = nil,
+                       sdkOriginated: Bool = false,
+                       appUserID: String,
+                       containsAttributionData: Bool = false,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
         invokedPostReceiptDataParameters = (receipt,
                                             productData,
                                             transactionData,
+                                            postReceiptSource,
                                             observerMode,
+                                            originalPurchaseCompletedBy,
                                             appTransaction,
+                                            associatedTransactionId,
+                                            sdkOriginated,
+                                            appUserID,
+                                            containsAttributionData,
                                             completion)
         invokedPostReceiptDataParametersList.append((receipt,
                                                      productData,
                                                      transactionData,
+                                                     postReceiptSource,
                                                      observerMode,
+                                                     originalPurchaseCompletedBy,
                                                      appTransaction,
+                                                     associatedTransactionId,
+                                                     sdkOriginated,
+                                                     appUserID,
+                                                     containsAttributionData,
                                                      completion))
 
         self.onPostReceipt?()

@@ -105,6 +105,7 @@ class BasePurchasesTests: TestCase {
                                        attributionPoster: self.attributionPoster,
                                        systemInfo: self.systemInfo)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
+        self.mockLocalTransactionMetadataStore = MockLocalTransactionMetadataStore()
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                                        operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.deviceCache,
@@ -199,6 +200,7 @@ class BasePurchasesTests: TestCase {
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
     var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
+    var mockLocalTransactionMetadataStore: MockLocalTransactionMetadataStore!
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var mockDiagnosticsTracker: MockDiagnosticsTracker {
@@ -227,7 +229,8 @@ class BasePurchasesTests: TestCase {
             backend: self.backend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
-            operationDispatcher: self.mockOperationDispatcher
+            operationDispatcher: self.mockOperationDispatcher,
+            localTransactionMetadataStore: self.mockLocalTransactionMetadataStore
         )
     }
 
@@ -495,6 +498,7 @@ extension BasePurchasesTests {
         }
 
         var postReceiptDataCalled = false
+        var postReceiptDataCallCount = 0
         var postedReceiptData: EncodedAppleReceipt?
         var postedIsRestore: Bool?
         var postedProductID: String?
@@ -506,18 +510,27 @@ extension BasePurchasesTests {
         var postedDiscounts: [StoreProductDiscount]?
         var postedOfferingIdentifier: String?
         var postedObserverMode: Bool?
-        var postedInitiationSource: ProductRequestData.InitiationSource?
+        var postedInitiationSource: PostReceiptSource.InitiationSource?
         var postReceiptResult: Result<CustomerInfo, BackendError>?
+        var postedAssociatedTransactionIds: [String?] = []
 
         override func post(receipt: EncodedAppleReceipt,
                            productData: ProductRequestData?,
                            transactionData: PurchasedTransactionData,
+                           postReceiptSource: PostReceiptSource,
                            observerMode: Bool,
+                           originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                            appTransaction: String? = nil,
+                           associatedTransactionId: String? = nil,
+                           sdkOriginated: Bool = false,
+                           appUserID: String,
+                           containsAttributionData: Bool = false,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.postReceiptDataCalled = true
+            self.postReceiptDataCallCount += 1
             self.postedReceiptData = receipt
-            self.postedIsRestore = transactionData.source.isRestore
+            self.postedIsRestore = postReceiptSource.isRestore
+            self.postedAssociatedTransactionIds.append(associatedTransactionId)
 
             if let productData = productData {
                 self.postedProductID = productData.productIdentifier
@@ -533,7 +546,7 @@ extension BasePurchasesTests {
 
             self.postedOfferingIdentifier = transactionData.presentedOfferingContext?.offeringIdentifier
             self.postedObserverMode = observerMode
-            self.postedInitiationSource = transactionData.source.initiationSource
+            self.postedInitiationSource = postReceiptSource.initiationSource
 
             completion(self.postReceiptResult ?? .failure(.missingAppUserID()))
         }

@@ -71,6 +71,11 @@ actor EventsManager: EventsManagerType {
     }
 
     func track(featureEvent: FeatureEvent) async {
+        // Some events are only used locally for attribution and should not be sent to the server.
+        guard featureEvent.shouldStoreEvent else {
+            return
+        }
+
         guard let event: StoredFeatureEvent = .init(event: featureEvent,
                                                     userID: self.userProvider.currentAppUserID,
                                                     feature: featureEvent.feature,
