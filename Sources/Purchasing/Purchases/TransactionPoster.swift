@@ -426,7 +426,7 @@ extension TransactionPoster {
                     transactionData: purchasedTransactionData.removingAttributionData(),
                     encodedAppleReceipt: receipt,
                     originalPurchasesAreCompletedBy: self.purchasesAreCompletedBy,
-                    sdkOriginated: false
+                    sdkOriginated: false // It was not originated from this SDK purchase() call
                 )
             } else {
                 // Normal flow - use current purchase context
