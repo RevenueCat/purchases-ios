@@ -55,6 +55,94 @@ Or view our iOS sample apps:
 - [MagicWeather](Examples/MagicWeather)
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
 
+## IAM (Identity and Access Management) Authentication
+
+> [!IMPORTANT]
+> IAM authentication is an **experimental feature** currently in development. Only enable this if instructed by RevenueCat support.
+
+RevenueCat now supports IAM-based authentication using JWT tokens as an alternative to API key authentication. When enabled, the SDK:
+- Authenticates users via JWT tokens instead of API keys
+- Automatically refreshes tokens on expiration
+- Stores tokens securely in iOS Keychain
+- Uses backend-issued user IDs instead of SDK-generated anonymous IDs
+
+### Enabling IAM Authentication
+
+IAM authentication is **opt-in** and disabled by default. To enable it, configure the SDK using `DangerousSettings`:
+
+```swift
+import RevenueCat
+
+// Configure SDK with IAM authentication enabled
+let dangerousSettings = DangerousSettings(
+    autoSyncPurchases: true,
+    iamAuthenticationEnabled: true  // Enable IAM
+)
+
+let configuration = Configuration.Builder(withAPIKey: "your_api_key")
+    .with(dangerousSettings: dangerousSettings)
+    .build()
+
+Purchases.configure(with: configuration)
+```
+
+### Anonymous Login
+
+When IAM is enabled, the SDK automatically performs anonymous login during initialization. The backend returns a JWT token and assigns a unique `app_user_id`:
+
+```swift
+// SDK automatically performs anonymous login
+// No additional code needed - tokens are managed transparently
+```
+
+### Manual Token Refresh
+
+While the SDK automatically refreshes tokens when they expire, you can manually refresh them:
+
+```swift
+Purchases.shared.refreshIAMTokens { error in
+    if let error = error {
+        print("Token refresh failed: \(error)")
+    } else {
+        print("Token refresh successful")
+    }
+}
+```
+
+### Checking IAM Status
+
+You can check if IAM is enabled and if valid tokens are available:
+
+```swift
+// Check if IAM is enabled
+if Purchases.shared.isIAMEnabled {
+    print("IAM authentication is active")
+}
+
+// Check if valid tokens are present
+if Purchases.shared.hasValidIAMTokens {
+    print("Valid tokens available")
+}
+```
+
+### Behavior Changes with IAM
+
+When IAM is enabled:
+- **Authentication**: API requests use JWT tokens (access_token) instead of API keys
+- **User IDs**: The backend assigns anonymous user IDs instead of SDK generation (`$RCAnonymousID:...`)
+- **Token Storage**: Tokens are securely stored in iOS Keychain
+- **Auto-refresh**: Tokens automatically refresh on 401 responses
+- **Backward Compatible**: When IAM is disabled (default), everything works exactly as before
+
+### Future Support
+
+IAM authentication currently supports anonymous users only. Future releases will add:
+- Named user login (email, social authentication)
+- JWT token expiry management
+- Multi-user support
+
+For detailed information about IAM authentication, please contact [RevenueCat support](https://revenuecat.com/support).
+
 ## Requirements
 - Xcode 15.0+
 

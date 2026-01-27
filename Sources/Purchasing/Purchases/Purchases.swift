@@ -394,7 +394,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 tracker: diagnosticsTracker,
                 observerMode: observerMode
             ),
-            diagnosticsTracker: diagnosticsTracker
+            diagnosticsTracker: diagnosticsTracker,
+            deviceCache: deviceCache
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable

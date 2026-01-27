@@ -61,7 +61,7 @@ extension HTTPRequestPath {
 
     var url: URL? { return self.url(proxyURL: nil) }
 
-    func url(proxyURL: URL? = nil, fallbackUrlIndex: Int? = nil) -> URL? {
+    func url(proxyURL: URL? = nil, fallbackUrlIndex: Int? = nil, iamEnabled: Bool = false) -> URL? {
         let baseURL: URL
         if let proxyURL {
             // When a Proxy URL is set, we don't support fallback URLs
@@ -76,7 +76,7 @@ extension HTTPRequestPath {
         } else {
             baseURL = Self.serverHostURL
         }
-        return URL(string: self.relativePath, relativeTo: baseURL)
+        return URL(string: self.relativePath(iamEnabled: iamEnabled), relativeTo: baseURL)
     }
 }
 
@@ -103,6 +103,8 @@ extension HTTPRequest {
         case getVirtualCurrencies(appUserID: String)
         case postRedeemWebPurchase
         case postCreateTicket
+        case iamLogin
+        case iamToken
 
     }
 
@@ -187,7 +189,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
                 .appHealthReport,
-                .postCreateTicket:
+                .postCreateTicket,
+                .iamLogin,
+                .iamToken:
             return true
 
         case .health,
@@ -215,7 +219,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postCreateTicket:
             return true
         case .health,
-             .appHealthReportAvailability:
+             .appHealthReportAvailability,
+             .iamLogin,
+             .iamToken:
             return false
         }
     }
@@ -230,7 +236,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
                 .appHealthReport,
-                .appHealthReportAvailability:
+                .appHealthReportAvailability,
+                .iamLogin,
+                .iamToken:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -251,7 +259,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postReceiptData,
                 .getVirtualCurrencies,
                 .health,
-                .appHealthReportAvailability:
+                .appHealthReportAvailability,
+                .iamLogin,
+                .iamToken:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -269,33 +279,57 @@ extension HTTPRequest.Path: HTTPRequestPath {
     }
 
     var relativePath: String {
-        return "/v1/\(self.pathComponent)"
+        return self.relativePath(iamEnabled: false)
+    }
+
+    func relativePath(iamEnabled: Bool) -> String {
+        switch self {
+        case .iamLogin, .iamToken:
+            // IAM endpoints use /auth base path instead of /v1
+            return "/auth/\(self.pathComponent(iamEnabled: iamEnabled))"
+        default:
+            return "/v1/\(self.pathComponent(iamEnabled: iamEnabled))"
+        }
     }
 
     var pathComponent: String {
+        return self.pathComponent(iamEnabled: false)
+    }
+
+    func pathComponent(iamEnabled: Bool) -> String {
         switch self {
         case let .getCustomerInfo(appUserID):
-            return "subscribers/\(Self.escape(appUserID))"
+            // IAM: /v1/customer (no app_user_id in path)
+            // Legacy: /v1/subscribers/{app_user_id}
+            return iamEnabled ? "customer" : "subscribers/\(Self.escape(appUserID))"
 
         case let .getOfferings(appUserID):
+            // This endpoint doesn't change with IAM
             return "subscribers/\(Self.escape(appUserID))/offerings"
 
         case let .getIntroEligibility(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/intro_eligibility"
+            // IAM: /v1/customer/intro_eligibility
+            // Legacy: /v1/subscribers/{app_user_id}/intro_eligibility
+            return iamEnabled ? "customer/intro_eligibility" : "subscribers/\(Self.escape(appUserID))/intro_eligibility"
 
         case let .appHealthReport(appUserID):
+            // This endpoint doesn't change with IAM
             return "subscribers/\(Self.escape(appUserID))/health_report"
 
         case let .appHealthReportAvailability(appUserID):
+            // This endpoint doesn't change with IAM
             return "subscribers/\(Self.escape(appUserID))/health_report_availability"
 
         case .logIn:
+            // This endpoint doesn't change with IAM
             return "subscribers/identify"
 
         case let .postAttributionData(appUserID):
+            // This endpoint doesn't change with IAM
             return "subscribers/\(Self.escape(appUserID))/attribution"
 
         case let .postAdServicesToken(appUserID):
+            // This endpoint doesn't change with IAM
             return "subscribers/\(Self.escape(appUserID))/adservices_attribution"
 
         case .postOfferForSigning:
@@ -305,7 +339,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "receipts"
 
         case let .postSubscriberAttributes(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/attributes"
+            // IAM: /v1/customer/attributes
+            // Legacy: /v1/subscribers/{app_user_id}/attributes
+            return iamEnabled ? "customer/attributes" : "subscribers/\(Self.escape(appUserID))/attributes"
 
         case .health:
             return "health"
@@ -314,16 +350,29 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "product_entitlement_mapping"
 
         case let .getCustomerCenterConfig(appUserID):
-            return "customercenter/\(Self.escape(appUserID))"
+            // IAM: /v1/customer/customercenter
+            // Legacy: /v1/customercenter/{app_user_id}
+            return iamEnabled ? "customer/customercenter" : "customercenter/\(Self.escape(appUserID))"
 
         case .postRedeemWebPurchase:
-            return "subscribers/redeem_purchase"
+            // IAM: /v1/customer/redeem_web_purchase
+            // Legacy: /v1/subscribers/redeem_purchase
+            return iamEnabled ? "customer/redeem_web_purchase" : "subscribers/redeem_purchase"
 
         case let .getVirtualCurrencies(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
+            // IAM: /v1/customer/virtual_currencies
+            // Legacy: /v1/subscribers/{app_user_id}/virtual_currencies
+            return iamEnabled ? "customer/virtual_currencies" : "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
         case .postCreateTicket:
+            // This endpoint doesn't change with IAM
             return "customercenter/support/create-ticket"
+
+        case .iamLogin:
+            return "login"
+
+        case .iamToken:
+            return "token"
         }
     }
 
@@ -379,6 +428,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postCreateTicket:
             return "post_create_ticket"
+
+        case .iamLogin:
+            return "iam_login"
+
+        case .iamToken:
+            return "iam_token"
 
         }
     }

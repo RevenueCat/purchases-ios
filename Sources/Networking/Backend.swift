@@ -24,6 +24,8 @@ class Backend {
     let customerCenterConfig: CustomerCenterConfigAPI
     let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
     let virtualCurrenciesAPI: VirtualCurrenciesAPI
+    let iam: IAMAPI?
+    let iamManager: IAMManager?
 
     private let config: BackendConfiguration
 
@@ -36,15 +38,58 @@ class Backend {
         attributionFetcher: AttributionFetcher,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
         diagnosticsTracker: DiagnosticsTrackerType?,
+        deviceCache: DeviceCache?,
         dateProvider: DateProvider = DateProvider()
     ) {
+        // Create IAM components if IAM is enabled
+        let iamManager: IAMManager?
+        let iamAPI: IAMAPI?
+
+        if systemInfo.dangerousSettings.iamAuthenticationEnabled {
+            // Create token store and IAM API first
+            let tokenStore = IAMTokenStore()
+
+            // Create a temporary BackendConfiguration for IAMAPI
+            // We'll create the final one below with the IAMManager
+            let tempHttpClient = HTTPClient(apiKey: apiKey,
+                                           systemInfo: systemInfo,
+                                           eTagManager: eTagManager,
+                                           signing: Signing(apiKey: apiKey, clock: systemInfo.clock),
+                                           diagnosticsTracker: diagnosticsTracker,
+                                           requestTimeout: httpClientTimeout,
+                                           operationDispatcher: OperationDispatcher.default,
+                                           iamManager: nil)
+            let tempConfig = BackendConfiguration(httpClient: tempHttpClient,
+                                                 operationDispatcher: operationDispatcher,
+                                                 operationQueue: QueueProvider.createBackendQueue(),
+                                                 diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
+                                                 systemInfo: systemInfo,
+                                                 offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+                                                 dateProvider: dateProvider)
+
+            iamAPI = IAMAPI(backendConfig: tempConfig)
+
+            // Create IAM Manager
+            iamManager = IAMManager(
+                tokenStore: tokenStore,
+                iamAPI: iamAPI!,
+                deviceCache: deviceCache ?? DeviceCache(systemInfo: systemInfo,
+                                                       userDefaults: UserDefaults.computeDefault())
+            )
+        } else {
+            iamManager = nil
+            iamAPI = nil
+        }
+
+        // Create HTTPClient with IAMManager
         let httpClient = HTTPClient(apiKey: apiKey,
                                     systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     signing: Signing(apiKey: apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
                                     requestTimeout: httpClientTimeout,
-                                    operationDispatcher: OperationDispatcher.default)
+                                    operationDispatcher: OperationDispatcher.default,
+                                    iamManager: iamManager)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
@@ -52,10 +97,13 @@ class Backend {
                                           systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
-        self.init(backendConfig: config, attributionFetcher: attributionFetcher)
+        self.init(backendConfig: config, attributionFetcher: attributionFetcher, iamAPI: iamAPI, iamManager: iamManager)
     }
 
-    convenience init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
+    convenience init(backendConfig: BackendConfiguration,
+                     attributionFetcher: AttributionFetcher,
+                     iamAPI: IAMAPI? = nil,
+                     iamManager: IAMManager? = nil) {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
@@ -75,7 +123,9 @@ class Backend {
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
-                  virtualCurrenciesAPI: virtualCurrenciesAPI)
+                  virtualCurrenciesAPI: virtualCurrenciesAPI,
+                  iamAPI: iamAPI,
+                  iamManager: iamManager)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -87,7 +137,9 @@ class Backend {
                   internalAPI: InternalAPI,
                   customerCenterConfig: CustomerCenterConfigAPI,
                   redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
-                  virtualCurrenciesAPI: VirtualCurrenciesAPI) {
+                  virtualCurrenciesAPI: VirtualCurrenciesAPI,
+                  iamAPI: IAMAPI? = nil,
+                  iamManager: IAMManager? = nil) {
         self.config = backendConfig
 
         self.customer = customerAPI
@@ -99,6 +151,8 @@ class Backend {
         self.customerCenterConfig = customerCenterConfig
         self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
         self.virtualCurrenciesAPI = virtualCurrenciesAPI
+        self.iam = iamAPI
+        self.iamManager = iamManager
     }
 
     func clearHTTPClientCaches() {

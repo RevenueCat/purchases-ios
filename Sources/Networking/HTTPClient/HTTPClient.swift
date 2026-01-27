@@ -24,7 +24,7 @@ class HTTPClient {
     let systemInfo: SystemInfo
     let timeout: TimeInterval
     let apiKey: String
-    let authHeaders: RequestHeaders
+    private let apiKeyAuthHeaders: RequestHeaders
 
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
@@ -36,6 +36,7 @@ class HTTPClient {
     private let retriableStatusCodes: Set<HTTPStatusCode>
     private let operationDispatcher: OperationDispatcher
     private let requestTimeoutManager: HTTPRequestTimeoutManagerType
+    private let iamManager: IAMManager?
 
     private let retryBackoffIntervals: [TimeInterval] = [
         TimeInterval(0),
@@ -53,7 +54,8 @@ class HTTPClient {
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher,
-         timeoutManager: HTTPRequestTimeoutManagerType? = nil
+         timeoutManager: HTTPRequestTimeoutManagerType? = nil,
+         iamManager: IAMManager? = nil
     ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
@@ -71,13 +73,26 @@ class HTTPClient {
         self.retriableStatusCodes = retriableStatusCodes
         self.timeout = requestTimeout
         self.apiKey = apiKey
-        self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
+        self.apiKeyAuthHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
         self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(
             defaultTimeout: timeout,
             dateProvider: dateProvider
         )
+        self.iamManager = iamManager
+    }
+
+    /// Computed auth headers that use IAM tokens when available, otherwise API key
+    private var authHeaders: RequestHeaders {
+        // Check if IAM is enabled and has a valid access token
+        if let iamManager = self.iamManager,
+           let accessToken = iamManager.currentAccessToken {
+            return [RequestHeader.authorization.rawValue: "Bearer \(accessToken)"]
+        }
+
+        // Fall back to API key authentication
+        return self.apiKeyAuthHeaders
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
@@ -86,11 +101,13 @@ class HTTPClient {
         with verificationMode: Signing.ResponseVerificationMode? = nil,
         completionHandler: Completion<Value>?
     ) {
+        let isIAMEnabled = self.iamManager?.hasValidTokens ?? false
         self.perform(request: .init(httpRequest: request,
                                     authHeaders: self.authHeaders,
                                     defaultHeaders: self.defaultHeaders,
                                     verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
                                     internalSettings: self.systemInfo.dangerousSettings.internalSettings,
+                                    iamEnabled: isIAMEnabled,
                                     completionHandler: completionHandler))
     }
 
@@ -236,6 +253,7 @@ internal extension HTTPClient {
         var verificationMode: Signing.ResponseVerificationMode
         var completionHandler: HTTPClient.Completion<Data>?
         private(set) var fallbackUrlIndex: Int?
+        let iamEnabled: Bool
 
         /// Whether the request has been retried.
         var retried: Bool {
@@ -255,6 +273,7 @@ internal extension HTTPClient {
                                       defaultHeaders: HTTPClient.RequestHeaders,
                                       verificationMode: Signing.ResponseVerificationMode,
                                       internalSettings: InternalDangerousSettingsType,
+                                      iamEnabled: Bool,
                                       completionHandler: HTTPClient.Completion<Value>?) {
             self.httpRequest = httpRequest.requestAddingNonceIfRequired(with: verificationMode)
             self.headers = self.httpRequest.headers(
@@ -264,6 +283,7 @@ internal extension HTTPClient {
                 internalSettings: internalSettings
             )
             self.verificationMode = verificationMode
+            self.iamEnabled = iamEnabled
 
             if let completionHandler = completionHandler {
                 self.completionHandler = { result in
@@ -275,12 +295,13 @@ internal extension HTTPClient {
         }
 
         var method: HTTPRequest.Method { self.httpRequest.method }
-        var path: String { self.httpRequest.path.relativePath }
+        var path: String { self.httpRequest.path.relativePath(iamEnabled: iamEnabled) }
 
         func getCurrentRequestURL(proxyURL: URL?) -> URL? {
             return self.httpRequest.path.url(
                 proxyURL: proxyURL,
-                fallbackUrlIndex: self.fallbackUrlIndex
+                fallbackUrlIndex: self.fallbackUrlIndex,
+                iamEnabled: self.iamEnabled
             )
         }
 

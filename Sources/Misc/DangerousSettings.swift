@@ -78,6 +78,18 @@ import Foundation
      */
     @objc public let customEntitlementComputation: Bool
 
+    /**
+     * Enable IAM (Identity and Access Management) authentication mode.
+     * When enabled, the SDK will:
+     *   - Authenticate users via JWT tokens instead of API keys
+     *   - Perform automatic token refresh on 401 responses
+     *   - Store tokens securely in Keychain
+     *   - Use backend-issued app_user_id instead of SDK-generated anonymous IDs
+     *
+     * - Important: This is an experimental feature. Only enable if instructed by RevenueCat support.
+     */
+    @objc public let iamAuthenticationEnabled: Bool
+
     internal let internalSettings: InternalDangerousSettingsType
 
     @objc public override convenience init() {
@@ -93,7 +105,22 @@ import Foundation
      */
     @objc public convenience init(autoSyncPurchases: Bool = true) {
         self.init(autoSyncPurchases: autoSyncPurchases,
-                  customEntitlementComputation: false)
+                  customEntitlementComputation: false,
+                  iamAuthenticationEnabled: false)
+
+    }
+
+    /**
+     * Only use a Dangerous Setting if suggested by RevenueCat support team.
+     *
+     * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
+     * - Parameter iamAuthenticationEnabled: Enable IAM authentication mode using JWT tokens.
+     */
+    @objc public convenience init(autoSyncPurchases: Bool = true,
+                                  iamAuthenticationEnabled: Bool = false) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  customEntitlementComputation: false,
+                  iamAuthenticationEnabled: iamAuthenticationEnabled)
 
     }
 
@@ -103,6 +130,18 @@ import Foundation
                                     customEntitlementComputation: Bool) {
         self.init(autoSyncPurchases: autoSyncPurchases,
                   customEntitlementComputation: customEntitlementComputation,
+                  iamAuthenticationEnabled: false,
+                  internalSettings: Internal.default)
+
+    }
+
+    /// Internal convenience initializer with IAM support
+    @objc internal convenience init(autoSyncPurchases: Bool = true,
+                                    customEntitlementComputation: Bool,
+                                    iamAuthenticationEnabled: Bool) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  customEntitlementComputation: customEntitlementComputation,
+                  iamAuthenticationEnabled: iamAuthenticationEnabled,
                   internalSettings: Internal.default)
 
     }
@@ -114,17 +153,23 @@ import Foundation
      * of the products obtained from StoreKit. This is useful for testing or preview purposes.
      */
     @_spi(Internal) public convenience init(uiPreviewMode: Bool) {
-        self.init(autoSyncPurchases: false, internalSettings: Internal.default, uiPreviewMode: uiPreviewMode)
+        self.init(autoSyncPurchases: false,
+                  customEntitlementComputation: false,
+                  iamAuthenticationEnabled: false,
+                  internalSettings: Internal.default,
+                  uiPreviewMode: uiPreviewMode)
     }
 
     /// Designated initializer
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
+                  iamAuthenticationEnabled: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
                   uiPreviewMode: Bool = false) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
         self.customEntitlementComputation = customEntitlementComputation
+        self.iamAuthenticationEnabled = iamAuthenticationEnabled
         self.uiPreviewMode = uiPreviewMode
     }
 
