@@ -12,6 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/18/25.
 
 import AVKit
+import Combine
 import SwiftUI
 
 #if canImport(UIKit) && !os(watchOS)
@@ -75,5 +76,37 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) { }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(player: player)
+    }
+
+    class Coordinator {
+        let player: AVPlayer
+        private var wasPlayingBeforeBackground: Bool = false
+        private var cancellables = Set<AnyCancellable>()
+
+        init(player: AVPlayer) {
+            self.player = player
+
+            NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)
+                .sink { [weak self] _ in self?.appWillResignActive() }
+                .store(in: &cancellables)
+
+            NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
+                .sink { [weak self] _ in self?.appDidBecomeActive() }
+                .store(in: &cancellables)
+        }
+
+        private func appWillResignActive() {
+            wasPlayingBeforeBackground = player.timeControlStatus == .playing
+        }
+
+        private func appDidBecomeActive() {
+            if wasPlayingBeforeBackground {
+                player.play()
+            }
+        }
+    }
 }
 #endif
