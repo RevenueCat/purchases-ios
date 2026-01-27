@@ -26,7 +26,9 @@ final class MockLargeItemCache: LargeItemCacheType {
     var cachedContentExistsInvocations: [URL] = []
     var loadFileInvocations: [URL] = []
     var removeInvocations: [URL] = []
-    var createCacheDirectoryInvocations: [(basePath: String, inAppSpecificDirectory: Bool)] = []
+    var createDirectoryInvocations: [(basePath: String, directoryType: DirectoryHelper.DirectoryType,
+                                      inAppSpecificDirectory: Bool)] = []
+    var contentsOfDirectoryInvocations: [URL] = []
 
     func saveData(_ data: Data, to url: URL) throws {
         lock.lock()
@@ -72,12 +74,35 @@ final class MockLargeItemCache: LargeItemCacheType {
         storage.removeValue(forKey: url)
     }
 
-    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool) -> URL? {
+    func createDirectoryIfNeeded(
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType,
+        inAppSpecificDirectory: Bool
+    ) -> URL? {
         lock.lock()
         defer { lock.unlock() }
 
-        createCacheDirectoryInvocations.append((basePath: basePath, inAppSpecificDirectory: inAppSpecificDirectory))
-        return URL(string: "file:///mock/cache/\(basePath)")
+        createDirectoryInvocations.append((basePath: basePath, directoryType: directoryType,
+                                           inAppSpecificDirectory: inAppSpecificDirectory))
+        let directoryName: String
+        switch directoryType {
+        case .cache:
+            directoryName = "cache"
+        case .applicationSupport:
+            directoryName = "applicationSupport"
+        }
+        return URL(string: "file:///mock/\(directoryName)/\(basePath)")
+    }
+
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        lock.lock()
+        defer { lock.unlock() }
+
+        contentsOfDirectoryInvocations.append(url)
+        // Return all URLs in storage that are within the given directory
+        return storage.keys.filter { storedURL in
+            storedURL.absoluteString.hasPrefix(url.absoluteString)
+        }
     }
 
 }

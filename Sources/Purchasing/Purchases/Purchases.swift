@@ -294,6 +294,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
     private let purchasedProductsFetcher: PurchasedProductsFetcherType?
     private let purchasesOrchestrator: PurchasesOrchestrator
+    private let transactionMetadataSyncHelper: TransactionMetadataSyncHelper
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
@@ -420,7 +421,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                           requestTimeout: storeKitTimeout)
         )
 
-        let localTransactionMetadataStore = LocalTransactionMetadataStore(apiKey: apiKey)
+        let localTransactionMetadataStore = LocalTransactionMetadataStore(
+            apiKey: apiKey,
+            applicationSupportDirectory: applicationSupportDirectory
+        )
         let transactionPoster = TransactionPoster(
             productsManager: productsManager,
             receiptFetcher: receiptFetcher,
@@ -590,7 +594,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil,
                                                                                diagnosticsTracker: diagnosticsTracker),
-                    storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                    storeKit2StorefrontListener: StoreKit2StorefrontListener(
+                        delegate: nil,
+                        userDefaults: userDefaults
+                    ),
                     storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
@@ -661,6 +668,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         )
         let healthManager = SDKHealthManager(backend: backend, identityManager: identityManager)
 
+        let transactionMetadataSyncHelper = TransactionMetadataSyncHelper(
+            customerInfoManager: customerInfoManager,
+            attribution: subscriberAttributes,
+            currentUserProvider: identityManager,
+            operationDispatcher: operationDispatcher,
+            transactionPoster: transactionPoster
+        )
+
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
                   receiptFetcher: receiptFetcher,
@@ -688,7 +703,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   storeMessagesHelper: storeMessagesHelper,
                   diagnosticsTracker: diagnosticsTracker,
                   virtualCurrencyManager: virtualCurrencyManager,
-                  healthManager: healthManager
+                  healthManager: healthManager,
+                  transactionMetadataSyncHelper: transactionMetadataSyncHelper
         )
     }
 
@@ -720,7 +736,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          storeMessagesHelper: StoreMessagesHelperType?,
          diagnosticsTracker: DiagnosticsTrackerType?,
          virtualCurrencyManager: VirtualCurrencyManagerType,
-         healthManager: SDKHealthManager
+         healthManager: SDKHealthManager,
+         transactionMetadataSyncHelper: TransactionMetadataSyncHelper
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -771,6 +788,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.diagnosticsTracker = diagnosticsTracker
         self.virtualCurrencyManager = virtualCurrencyManager
         self.healthManager = healthManager
+        self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
 
         super.init()
 
@@ -810,6 +828,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             guard let self = self else { return }
             self.handleCustomerInfoChanged(from: old, to: new)
         }
+
+        self.transactionMetadataSyncHelper.syncIfNeeded(
+            allowSharingAppStoreAccount: purchasesOrchestrator.allowSharingAppStoreAccount
+        )
     }
 
     deinit {
@@ -2146,6 +2168,9 @@ private extension Purchases {
         // of purchases due to pop-ups stealing focus from the app.
         self.updateAllCachesIfNeeded(isAppBackgrounded: false)
         self.dispatchSyncSubscriberAttributes()
+        self.transactionMetadataSyncHelper.syncIfNeeded(
+            allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
+        )
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 

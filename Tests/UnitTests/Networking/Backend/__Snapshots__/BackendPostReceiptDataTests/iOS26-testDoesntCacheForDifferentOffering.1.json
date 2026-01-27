@@ -34,8 +34,10 @@
       "initiation_source" : "queue",
       "is_restore" : true,
       "observer_mode" : false,
+      "payload_version" : 1,
       "presented_offering_identifier" : "offering_a",
-      "purchase_completed_by" : "revenuecat"
+      "purchase_completed_by" : "revenuecat",
+      "sdk_originated" : true
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

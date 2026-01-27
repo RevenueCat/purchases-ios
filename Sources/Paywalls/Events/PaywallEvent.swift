@@ -101,6 +101,8 @@ extension PaywallEvent {
     public struct Data {
 
         // swiftlint:disable missing_docs
+
+        public var paywallIdentifier: String?
         public var offeringIdentifier: String
         public var paywallRevision: Int
         public var sessionIdentifier: SessionID
@@ -123,6 +125,7 @@ extension PaywallEvent {
             darkMode: Bool
         ) {
             self.init(
+                paywallIdentifier: paywallComponentsData.id,
                 offeringIdentifier: offering.identifier,
                 paywallRevision: paywallComponentsData.revision,
                 sessionID: sessionID,
@@ -143,6 +146,7 @@ extension PaywallEvent {
             darkMode: Bool
         ) {
             self.init(
+                paywallIdentifier: paywall.id,
                 offeringIdentifier: offering.identifier,
                 paywallRevision: paywall.revision,
                 sessionID: sessionID,
@@ -154,6 +158,7 @@ extension PaywallEvent {
         // swiftlint:enable missing_docs
 
         init(
+            paywallIdentifier: String?,
             offeringIdentifier: String,
             paywallRevision: Int,
             sessionID: SessionID,
@@ -165,6 +170,7 @@ extension PaywallEvent {
             errorCode: Int? = nil,
             errorMessage: String? = nil
         ) {
+            self.paywallIdentifier = paywallIdentifier
             self.offeringIdentifier = offeringIdentifier
             self.paywallRevision = paywallRevision
             self.sessionIdentifier = sessionID
@@ -252,6 +258,7 @@ extension PaywallEvent.Data {
         errorMessage: String?
     ) -> PaywallEvent.Data {
         return PaywallEvent.Data(
+            paywallIdentifier: self.paywallIdentifier,
             offeringIdentifier: self.offeringIdentifier,
             paywallRevision: self.paywallRevision,
             sessionID: self.sessionIdentifier,

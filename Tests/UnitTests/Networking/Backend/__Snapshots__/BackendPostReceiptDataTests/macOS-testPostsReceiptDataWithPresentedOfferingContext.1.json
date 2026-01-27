@@ -38,11 +38,13 @@
       "initiation_source" : "purchase",
       "is_restore" : false,
       "observer_mode" : false,
+      "payload_version" : 1,
       "presented_offering_identifier" : "a_offering",
       "presented_placement_identifier" : "a_placement",
       "price" : "10.98",
       "product_id" : "a_great_product",
       "purchase_completed_by" : "revenuecat",
+      "sdk_originated" : true,
       "store_country" : "ESP",
       "subscription_group_id" : "sub_group"
     },

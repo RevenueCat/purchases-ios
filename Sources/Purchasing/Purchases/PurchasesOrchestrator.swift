@@ -45,6 +45,7 @@ final class PurchasesOrchestrator {
     private let presentedOfferingContextsByProductID: Atomic<[String: PresentedOfferingContext]> = .init([:])
     private let purchaseInitiatedPaywall: Atomic<PaywallEvent?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
+    private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttribute.Dictionary {
@@ -1444,10 +1445,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
         }
 
-        self.handlePostReceiptResult(result,
-                                     transactionData: transactionData,
-                                     subscriberAttributes: subscriberAttributes,
-                                     adServicesToken: adServicesToken)
+        self.handlePostReceiptResult(result, transactionData: transactionData)
 
         if let error = result.error {
             throw error
@@ -1552,7 +1550,7 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
 
-    func storefrontDidUpdate(with storefront: StorefrontType) {
+    func storefrontValuesUpdated(with storefront: StorefrontType) {
         self.handleStorefrontChange()
     }
 
@@ -1600,27 +1598,6 @@ private extension PurchasesOrchestrator {
     ) -> PurchaseCompletedBlock? {
         return self.purchaseCompleteCallbacksByProductID.modify {
             return $0.removeValue(forKey: transaction.productIdentifier)
-        }
-    }
-
-    func markSyncedIfNeeded(
-        subscriberAttributes: SubscriberAttribute.Dictionary?,
-        adServicesToken: String?,
-        error: BackendError?
-    ) {
-        if let error = error {
-            guard error.successfullySynced else { return }
-
-            if let attributeErrors = (error as NSError).subscriberAttributesErrors, !attributeErrors.isEmpty {
-                Logger.error(Strings.attribution.subscriber_attributes_error(
-                    errors: attributeErrors
-                ))
-            }
-        }
-
-        self.attribution.markAttributesAsSynced(subscriberAttributes, appUserID: self.appUserID)
-        if let adServicesToken = adServicesToken {
-            self.attribution.markAdServicesTokenAsSynced(adServicesToken, appUserID: self.appUserID)
         }
     }
 
@@ -1709,11 +1686,9 @@ private extension PurchasesOrchestrator {
                         originalPurchaseCompletedBy: nil,
                         appUserID: currentAppUserID
                     ) { result in
-                        self.handleReceiptPost(result: result,
-                                               transactionData: transactionData,
-                                               subscriberAttributes: unsyncedAttributes,
-                                               adServicesToken: nil,
-                                               completion: completion)
+                        self.handlePostReceiptResult(result,
+                                                     transactionData: transactionData,
+                                                     completion: completion)
                     }
                 }
             }
@@ -1798,11 +1773,9 @@ private extension PurchasesOrchestrator {
                                   appTransaction: appTransactionJWS,
                                   appUserID: currentAppUserID) { result in
 
-                    self.handleReceiptPost(result: result,
-                                           transactionData: transactionData,
-                                           subscriberAttributes: unsyncedAttributes,
-                                           adServicesToken: nil,
-                                           completion: completion)
+                    self.handlePostReceiptResult(result,
+                                                 transactionData: transactionData,
+                                                 completion: completion)
                 }
                 return
             }
@@ -1824,25 +1797,27 @@ private extension PurchasesOrchestrator {
                 appTransactionJWS: appTransactionJWS,
                 currentUserID: currentAppUserID
             ) { result in
-                self.handleReceiptPost(result: result,
-                                       transactionData: transactionData,
-                                       subscriberAttributes: unsyncedAttributes,
-                                       adServicesToken: nil,
-                                       completion: completion)
+                self.handlePostReceiptResult(result,
+                                             transactionData: transactionData,
+                                             completion: completion)
             }
         }
     }
 
-    func handleReceiptPost(result: Result<CustomerInfo, BackendError>,
-                           transactionData: PurchasedTransactionData?,
-                           subscriberAttributes: SubscriberAttribute.Dictionary,
-                           adServicesToken: String?,
-                           completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
-        self.handlePostReceiptResult(
-            result,
-            transactionData: transactionData,
-            subscriberAttributes: subscriberAttributes,
-            adServicesToken: adServicesToken
+    func handlePostReceiptResult(
+        _ result: Result<CustomerInfo, BackendError>,
+        transactionData: PurchasedTransactionData?,
+        completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil
+    ) {
+        if let customerInfo = try? result.get() {
+            self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
+        }
+
+        self.attribution.markSyncedIfNeeded(
+            subscriberAttributes: transactionData?.unsyncedAttributes,
+            adServicesToken: transactionData?.aadAttributionToken,
+            appUserID: self.appUserID,
+            error: result.error
         )
 
         if let completion = completion {
@@ -1850,23 +1825,6 @@ private extension PurchasesOrchestrator {
                 completion(result.mapError { $0.asPurchasesError })
             }
         }
-    }
-
-    func handlePostReceiptResult(_ result: Result<CustomerInfo, BackendError>,
-                                 transactionData: PurchasedTransactionData?,
-                                 subscriberAttributes: SubscriberAttribute.Dictionary,
-                                 adServicesToken: String?) {
-        switch result {
-        case let .success(customerInfo):
-            self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
-
-        case .failure:
-            break
-        }
-
-        self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
-                                adServicesToken: adServicesToken,
-                                error: result.error)
     }
 
     func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
@@ -1894,10 +1852,7 @@ private extension PurchasesOrchestrator {
                 currentUserID: self.appUserID
             ) { result in
 
-                self.handlePostReceiptResult(result,
-                                             transactionData: transactionData,
-                                             subscriberAttributes: unsyncedAttributes,
-                                             adServicesToken: adServicesToken)
+                self.handlePostReceiptResult(result, transactionData: transactionData)
 
                 if let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: purchasedTransaction) {
                     self.operationDispatcher.dispatchOnMainActor {
@@ -2239,10 +2194,7 @@ extension PurchasesOrchestrator {
             currentUserID: self.appUserID
         )
 
-        self.handlePostReceiptResult(result,
-                                     transactionData: transactionData,
-                                     subscriberAttributes: unsyncedAttributes,
-                                     adServicesToken: adServicesToken)
+        self.handlePostReceiptResult(result, transactionData: transactionData)
 
         return try result
             .mapError(\.asPurchasesError)
@@ -2315,7 +2267,6 @@ extension PurchasesOrchestrator {
 // MARK: - Application Lifecycle
 extension PurchasesOrchestrator {
     func handleApplicationDidBecomeActive() {
-
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
            self.observerMode && self.systemInfo.storeKitVersion == .storeKit2 {
             Task(priority: .utility) {

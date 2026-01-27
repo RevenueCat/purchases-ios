@@ -19,6 +19,9 @@ import Foundation
  */
 internal struct LocalTransactionMetadata: Codable, Sendable {
 
+    /// The identifier of the transaction this metadata is associated with.
+    let transactionId: String
+
     private let productDataWrapper: ProductRequestDataEncodedWrapper?
 
     /// Product request data (product info, pricing, discounts, etc.).
@@ -32,20 +35,33 @@ internal struct LocalTransactionMetadata: Codable, Sendable {
     var transactionData: PurchasedTransactionData {
         return self.purchasedTransactionDataWrapper.purchasedTransactionData
     }
+    /// The receipt at the time of the transaction.
+    let encodedAppleReceipt: EncodedAppleReceipt
 
     /// The value of ``Purchases.purchasesAreCompletedBy`` at the time of the transaction.
     let originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
 
+    /// Indicates whether this purchase was initiated by the SDK.
+    /// - `true` when the purchase was initiated via any of the SDK's `purchase()` methods.
+    /// - `false` when the purchase was detected in the SK1/SK2 queue but was triggered outside the SDK.
+    let sdkOriginated: Bool
+
     init(
+        transactionId: String,
         productData: ProductRequestData?,
         transactionData: PurchasedTransactionData,
-        originalPurchasesAreCompletedBy: PurchasesAreCompletedBy
+        encodedAppleReceipt: EncodedAppleReceipt,
+        originalPurchasesAreCompletedBy: PurchasesAreCompletedBy,
+        sdkOriginated: Bool
     ) {
+        self.transactionId = transactionId
         self.productDataWrapper = productData.map(ProductRequestDataEncodedWrapper.init)
         self.purchasedTransactionDataWrapper = PurchasedTransactionDataEncodedWrapper(
             purchasedTransactionData: transactionData
         )
+        self.encodedAppleReceipt = encodedAppleReceipt
         self.originalPurchasesAreCompletedBy = originalPurchasesAreCompletedBy
+        self.sdkOriginated = sdkOriginated
     }
 
 }
@@ -176,17 +192,24 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
 private struct StoreProductDiscountEncodedWrapper: StoreProductDiscountType, Codable {
     let offerIdentifier: String?
     let currencyCode: String?
-    let price: Decimal
     let localizedPriceString: String
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
     let numberOfPeriods: Int
     let type: StoreProductDiscount.DiscountType
 
+    // Note: price is encoded as `String` (using `NSDecimalNumber.description`)
+    // to preserve precision and avoid values like "1.89999999"
+    private let priceString: String
+
+    var price: Decimal {
+        return Self.decodeDecimal(from: self.priceString) ?? 0
+    }
+
     init(discount: StoreProductDiscount) {
         self.offerIdentifier = discount.offerIdentifier
         self.currencyCode = discount.currencyCode
-        self.price = discount.price
+        self.priceString = Self.encodeDecimal(discount.price)
         self.localizedPriceString = discount.localizedPriceString
         self.paymentMode = discount.paymentMode
         self.subscriptionPeriod = discount.subscriptionPeriod
@@ -196,5 +219,13 @@ private struct StoreProductDiscountEncodedWrapper: StoreProductDiscountType, Cod
 
     var discount: StoreProductDiscount {
         return StoreProductDiscount(self)
+    }
+
+    private static func encodeDecimal(_ decimal: Decimal) -> String {
+        return (decimal as NSDecimalNumber).description
+    }
+
+    private static func decodeDecimal(from string: String) -> Decimal? {
+        return Decimal(string: string)
     }
 }

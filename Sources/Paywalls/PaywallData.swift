@@ -22,6 +22,9 @@ import Foundation
 /// [Documentation](https://rev.cat/paywalls)
 public struct PaywallData {
 
+    /// The unique identifier for this paywall.
+    public var id: String?
+
     /// The type of template used to display this paywall.
     public var templateName: String
 
@@ -244,7 +247,7 @@ extension PaywallData.LocalizedConfiguration {
 
 extension PaywallData.LocalizedConfiguration {
 
-    /// Custom displayable overrides for a package 
+    /// Custom displayable overrides for a package
     public struct OfferOverride {
 
         /// Description for the offer to be purchased.
@@ -625,6 +628,7 @@ extension PaywallData {
 
 extension PaywallData {
     init(
+        id: String?,
         templateName: String,
         config: Configuration,
         localization: [String: LocalizedConfiguration],
@@ -634,6 +638,7 @@ extension PaywallData {
         zeroDecimalPlaceCountries: [String] = [],
         exitOffers: ExitOffers? = nil
     ) {
+        self.id = id
         self.templateName = templateName
         self.config = config
         self.localization = localization
@@ -646,6 +651,7 @@ extension PaywallData {
 
     /// Creates a test ``PaywallData`` with one localization.
     public init(
+        id: String? = nil,
         templateName: String,
         config: Configuration,
         localization: LocalizedConfiguration,
@@ -655,6 +661,7 @@ extension PaywallData {
         zeroDecimalPlaceCountries: [String] = []
     ) {
         self.init(
+            id: id,
             templateName: templateName,
             config: config,
             localization: [locale.identifier: localization],
@@ -667,6 +674,7 @@ extension PaywallData {
 
     /// Creates a test multi-tier ``PaywallData`` with a single localization.
     public init(
+        id: String? = nil,
         templateName: String,
         config: Configuration,
         localizationByTier: [String: LocalizedConfiguration],
@@ -676,6 +684,7 @@ extension PaywallData {
         zeroDecimalPlaceCountries: [String] = []
     ) {
         self.init(
+            id: id,
             templateName: templateName,
             config: config,
             localization: [:],
@@ -777,6 +786,7 @@ extension PaywallData: Codable {
 
     // Note: these are camel case but converted by the decoder
     private enum CodingKeys: String, CodingKey {
+        case id
         case templateName
         case config
         case localization = "localizedStrings"

@@ -49,6 +49,13 @@ struct PurchasedTransactionData {
 
 }
 
+/// Result of posting a single cached transaction metadata entry.
+/// Contains the transaction data (for syncing attributes) and the result of the receipt post.
+typealias CachedTransactionMetadataPostResult = (
+    transactionData: PurchasedTransactionData,
+    result: Result<CustomerInfo, BackendError>
+)
+
 /// A type that can post receipts as a result of a purchased transaction.
 protocol TransactionPosterType: AnyObject, Sendable {
 
@@ -79,6 +86,20 @@ protocol TransactionPosterType: AnyObject, Sendable {
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     )
+
+    /// Posts any remaining cached transaction metadata that wasn't synced during normal transaction processing.
+    /// This handles edge cases where a transaction was cached but never successfully posted
+    /// (e.g., due to app crashes or network issues).
+    /// - Parameters:
+    ///   - appUserID: The current app user ID to post the receipts for
+    ///   - isRestore: Whether this is a restore operation
+    /// - Returns: An `AsyncStream` that yields a result for each cached metadata entry as it's processed.
+    ///           Each element contains the transaction data and the result of posting.
+    ///           The stream completes after all entries have been processed.
+    func postRemainingCachedTransactionMetadata(
+        appUserID: String,
+        isRestore: Bool
+    ) -> AsyncStream<CachedTransactionMetadataPostResult>
 
 }
 
@@ -179,6 +200,33 @@ final class TransactionPoster: TransactionPosterType {
                              appTransaction: appTransactionJWS,
                              currentUserID: currentUserID,
                              completion: completion)
+        }
+    }
+
+    func postRemainingCachedTransactionMetadata(
+        appUserID: String,
+        isRestore: Bool
+    ) -> AsyncStream<CachedTransactionMetadataPostResult> {
+        return AsyncStream { continuation in
+            let metadataToSync = self.localTransactionMetadataStore.getAllStoredMetadata()
+
+            guard !metadataToSync.isEmpty else {
+                Logger.verbose(Strings.purchase.no_cached_transaction_metadata_to_post)
+                continuation.finish()
+                return
+            }
+
+            Logger.debug(Strings.purchase.posting_remaining_cached_metadata(count: metadataToSync.count))
+
+            self.getAppTransactionJWSIfNeeded { appTransaction in
+                self.postCachedMetadataSequentially(
+                    metadataToSync: metadataToSync,
+                    appUserID: appUserID,
+                    isRestore: isRestore,
+                    appTransaction: appTransaction,
+                    continuation: continuation
+                )
+            }
         }
     }
 
@@ -309,7 +357,7 @@ extension TransactionPoster {
         }
     }
 
-    // swiftlint:disable function_parameter_count
+    // swiftlint:disable function_parameter_count function_body_length
     private func postReceipt(transaction: StoreTransactionType,
                              purchasedTransactionData: PurchasedTransactionData,
                              postReceiptSource: PostReceiptSource,
@@ -327,7 +375,7 @@ extension TransactionPoster {
             purchasedTransactionData.presentedPaywall != nil
         )
 
-        let shouldClearMetadataOnSuccess = storedTransactionMetadata != nil || shouldStoreMetadata
+        let containsAttributionData = storedTransactionMetadata != nil || shouldStoreMetadata
 
         let effectiveProductData = storedTransactionMetadata?.productData ?? product.map {
             ProductRequestData(with: $0, storeCountry: purchasedTransactionData.storeCountry)
@@ -336,11 +384,20 @@ extension TransactionPoster {
         let effectivePurchasesAreCompletedBy = storedTransactionMetadata?.originalPurchasesAreCompletedBy ??
         self.purchasesAreCompletedBy
 
+        // sdkOriginated indicates whether this purchase was initiated by the SDK (stored metadata takes precedence):
+        // - true when the purchase was initiated via SDK's purchase() methods (initiationSource == .purchase)
+        // - false when the purchase was detected in the queue but triggered outside the SDK
+        let sdkOriginated = storedTransactionMetadata?.sdkOriginated ??
+            (postReceiptSource.initiationSource == .purchase)
+
         if shouldStoreMetadata {
             let metadataToStore = LocalTransactionMetadata(
+                transactionId: transaction.transactionIdentifier,
                 productData: effectiveProductData,
                 transactionData: effectiveTransactionData,
-                originalPurchasesAreCompletedBy: effectivePurchasesAreCompletedBy
+                encodedAppleReceipt: receipt,
+                originalPurchasesAreCompletedBy: effectivePurchasesAreCompletedBy,
+                sdkOriginated: sdkOriginated
             )
             self.localTransactionMetadataStore.storeMetadata(metadataToStore,
                                                              forTransactionId: transaction.transactionIdentifier)
@@ -353,17 +410,20 @@ extension TransactionPoster {
                           observerMode: self.observerMode,
                           originalPurchaseCompletedBy: effectivePurchasesAreCompletedBy,
                           appTransaction: appTransaction,
-                          appUserID: currentUserID) { result in
-            if shouldClearMetadataOnSuccess {
+                          associatedTransactionId: transaction.transactionIdentifier,
+                          sdkOriginated: sdkOriginated,
+                          appUserID: currentUserID,
+                          containsAttributionData: containsAttributionData) { result in
+            if containsAttributionData {
                 switch result {
-                case .success:
+                case let .success(customerInfo) where !customerInfo.isComputedOffline:
+                    // Offline-computed CustomerInfo means server is down, so it didn't process the transaction yet
                     self.localTransactionMetadataStore
                         .removeMetadata(forTransactionId: transaction.transactionIdentifier)
                 case let .failure(error) where error.finishable:
                     self.localTransactionMetadataStore
                         .removeMetadata(forTransactionId: transaction.transactionIdentifier)
-                default:
-                    break
+                default: break
                 }
             }
             completion(result)
@@ -407,6 +467,88 @@ extension TransactionPoster {
             completion(nil)
         } else {
             self.transactionFetcher.appTransactionJWS(completion)
+        }
+    }
+
+}
+
+// MARK: - Cached Metadata Posting
+
+private extension TransactionPoster {
+
+    /// Posts cached metadata entries sequentially, yielding each result to the continuation.
+    func postCachedMetadataSequentially(
+        metadataToSync: [LocalTransactionMetadata],
+        appUserID: String,
+        isRestore: Bool,
+        appTransaction: String?,
+        continuation: AsyncStream<CachedTransactionMetadataPostResult>.Continuation
+    ) {
+        var remainingMetadata = metadataToSync
+
+        func postNext() {
+            guard !remainingMetadata.isEmpty else {
+                continuation.finish()
+                return
+            }
+
+            let metadata = remainingMetadata.removeFirst()
+
+            self.postCachedMetadata(
+                metadata: metadata,
+                receipt: metadata.encodedAppleReceipt,
+                appUserID: appUserID,
+                isRestore: isRestore,
+                appTransaction: appTransaction
+            ) { transactionData, result in
+                continuation.yield((transactionData, result))
+                // Continue posting regardless of success or failure
+                postNext()
+            }
+        }
+
+        postNext()
+    }
+
+    /// Posts a single cached metadata entry.
+    func postCachedMetadata(
+        metadata: LocalTransactionMetadata,
+        receipt: EncodedAppleReceipt,
+        appUserID: String,
+        isRestore: Bool,
+        appTransaction: String?,
+        completion: @escaping (PurchasedTransactionData, Result<CustomerInfo, BackendError>) -> Void
+    ) {
+        Logger.debug(Strings.purchase.posting_cached_metadata(transactionId: metadata.transactionId))
+
+        let transactionData = metadata.transactionData
+        // Set the source to indicate this is from unsynced purchases
+        let postReceiptSource = PostReceiptSource(
+            isRestore: isRestore,
+            initiationSource: .queue
+        )
+
+        self.backend.post(
+            receipt: receipt,
+            productData: metadata.productData,
+            transactionData: transactionData,
+            postReceiptSource: postReceiptSource,
+            observerMode: self.observerMode,
+            originalPurchaseCompletedBy: metadata.originalPurchasesAreCompletedBy,
+            appTransaction: appTransaction,
+            associatedTransactionId: metadata.transactionId,
+            appUserID: appUserID
+        ) { result in
+            // Clear metadata on success or finishable error
+            switch result {
+            case .success:
+                self.localTransactionMetadataStore.removeMetadata(forTransactionId: metadata.transactionId)
+            case let .failure(error) where error.finishable:
+                self.localTransactionMetadataStore.removeMetadata(forTransactionId: metadata.transactionId)
+            default:
+                break
+            }
+            completion(transactionData, result)
         }
     }
 

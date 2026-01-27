@@ -33,7 +33,9 @@
       "initiation_source" : "queue",
       "is_restore" : false,
       "observer_mode" : true,
-      "purchase_completed_by" : "my_app"
+      "payload_version" : 1,
+      "purchase_completed_by" : "my_app",
+      "sdk_originated" : false
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

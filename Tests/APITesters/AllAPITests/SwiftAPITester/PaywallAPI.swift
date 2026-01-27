@@ -13,6 +13,7 @@ import SwiftUI
 #endif
 
 func checkPaywallData(_ data: PaywallData) {
+    let id: String? = data.id
     let templateName: String = data.templateName
     let config: PaywallData.Configuration = data.config
     let _: PaywallData.LocalizedConfiguration? = data.config(for: Locale.current)
@@ -24,6 +25,12 @@ func checkPaywallData(_ data: PaywallData) {
     let _: [String] = data.zeroDecimalPlaceCountries
 
     let _: PaywallData = .init(templateName: templateName,
+                               config: config,
+                               localization: localization!,
+                               assetBaseURL: assetBaseURL,
+                               revision: revision)
+    let _: PaywallData = .init(id: id,
+                               templateName: templateName,
                                config: config,
                                localization: localization!,
                                assetBaseURL: assetBaseURL,
@@ -239,6 +246,7 @@ func checkPaywallEventCreationData(_ creationData: PaywallEvent.CreationData) {
 }
 
 func checkPaywallEventData(_ data: PaywallEvent.Data) {
+    let _: String? = data.paywallIdentifier
     let _: String = data.offeringIdentifier
     let _: Int = data.paywallRevision
     let _: PaywallEvent.SessionID = data.sessionIdentifier
@@ -267,11 +275,26 @@ func checkPaywallEventData(_ data: PaywallEvent.Data) {
 }
 
 func checkPaywallComponentsData(_ data: PaywallComponentsData) {
-    let _: String = data.templateName
-    let _: URL = data.assetBaseURL
-    let _: Int = data.revision
-    let _: [String] = data.zeroDecimalPlaceCountries
-    let _: String = data.defaultLocale
+    let id: String? = data.id
+    let templateName: String = data.templateName
+    let assetBaseURL: URL = data.assetBaseURL
+    let revision: Int = data.revision
+    let zeroDecimalPlaceCountries: [String] = data.zeroDecimalPlaceCountries
+    let defaultLocale: String = data.defaultLocale
+    let componentsConfig: PaywallComponentsData.ComponentsConfig = data.componentsConfig
+    let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] =
+        data.componentsLocalizations
+
+    let _: PaywallComponentsData = .init(
+        id: id,
+        templateName: templateName,
+        assetBaseURL: assetBaseURL,
+        componentsConfig: componentsConfig,
+        componentsLocalizations: componentsLocalizations,
+        revision: revision,
+        defaultLocaleIdentifier: defaultLocale,
+        zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
+    )
 }
 
 func checkExitOffer(_ exitOffer: ExitOffer) {
