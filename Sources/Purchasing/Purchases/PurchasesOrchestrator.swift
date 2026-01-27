@@ -1852,10 +1852,9 @@ private extension PurchasesOrchestrator {
         let unsyncedAttributes = self.unsyncedAttributes
         let purchaseSource = self.purchaseSource(for: purchasedTransaction.productIdentifier,
                                                  restored: restored)
-        // Get purchaseIntentDate without removing the callback - we'll remove it in the completion handler
-        let purchaseIntentDate = self.purchaseCallbackDataByProductID.value[
-            purchasedTransaction.productIdentifier
-        ]?.purchaseIntentDate
+        let callbackData = self.getAndRemovePurchaseCallbackData(
+            forTransaction: purchasedTransaction
+        )
 
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
@@ -1870,15 +1869,13 @@ private extension PurchasesOrchestrator {
                 purchasedTransaction,
                 data: transactionData,
                 postReceiptSource: purchaseSource,
-                purchaseIntentDate: purchaseIntentDate,
+                purchaseIntentDate: callbackData?.purchaseIntentDate,
                 currentUserID: self.appUserID
             ) { result in
 
                 self.handlePostReceiptResult(result, transactionData: transactionData)
 
-                if let completion = self.getAndRemovePurchaseCallbackData(
-                    forTransaction: purchasedTransaction
-                )?.callback {
+                if let completion = callbackData?.callback {
                     self.operationDispatcher.dispatchOnMainActor {
                         completion(purchasedTransaction,
                                    result.value,
