@@ -302,16 +302,6 @@ class PackageVariablesTests: TestCase {
         expect(TestData.lifetimePackage.normalizedSubscriptionDuration(Self.spanish)) == "Toda la vida"
     }
 
-    // MARK: - Consumable Tests
-
-    func testLocalizedPricePerPeriodForConsumable() {
-        expect(Self.consumablePackage.localizedPricePerPeriod(Self.english)) == "$4.99"
-    }
-
-    func testLocalizedPricePerPeriodFullForConsumable() {
-        expect(Self.consumablePackage.localizedPricePerPeriodFull(Self.english)) == "$4.99"
-    }
-
     // MARK: - Price Rounding
 
     func testPriceRounding() {
@@ -380,25 +370,6 @@ private extension PackageVariablesTests {
     static let english: Locale = .init(identifier: "en_US")
     static let spanish: Locale = .init(identifier: "es_ES")
     static let arabic: Locale = .init(identifier: "ar_AE")
-
-    static let consumableProduct = TestStoreProduct(
-        localizedTitle: "Coins",
-        price: 4.99,
-        currencyCode: "USD",
-        localizedPriceString: "$4.99",
-        productIdentifier: "com.revenuecat.consumable_coins",
-        productType: .consumable,
-        localizedDescription: "100 Coins",
-        locale: Locale(identifier: "en_US")
-    )
-
-    static let consumablePackage = Package(
-        identifier: "consumable",
-        packageType: .custom,
-        storeProduct: consumableProduct.toStoreProduct(),
-        offeringIdentifier: "offering",
-        webCheckoutUrl: nil
-    )
 
 }
 

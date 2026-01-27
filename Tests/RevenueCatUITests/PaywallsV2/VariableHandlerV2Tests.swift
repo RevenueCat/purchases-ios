@@ -707,7 +707,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPricePerPeriodForConsumable() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_period }}",
-            with: Self.consumablePackage,
+            with: TestData.consumablePackage,
             locale: locale,
             localizations: localizations["en_US"]!
         )
@@ -718,34 +718,13 @@ class VariableHandlerV2Test: TestCase {
     func testProductPricePerPeriodAbbreviatedForConsumable() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_period_abbreviated }}",
-            with: Self.consumablePackage,
+            with: TestData.consumablePackage,
             locale: locale,
             localizations: localizations["en_US"]!
         )
         // Consumable products should not have a period suffix (no slash)
         expect(result).to(equal("$4.99"))
     }
-
-    // MARK: - Test Data
-
-    private static let consumableProduct = TestStoreProduct(
-        localizedTitle: "Coins",
-        price: 4.99,
-        currencyCode: "USD",
-        localizedPriceString: "$4.99",
-        productIdentifier: "com.revenuecat.consumable_coins",
-        productType: .consumable,
-        localizedDescription: "100 Coins",
-        locale: Locale(identifier: "en_US")
-    )
-
-    private static let consumablePackage = Package(
-        identifier: "consumable",
-        packageType: .custom,
-        storeProduct: consumableProduct.toStoreProduct(),
-        offeringIdentifier: "offering",
-        webCheckoutUrl: nil
-    )
 
 }
 
