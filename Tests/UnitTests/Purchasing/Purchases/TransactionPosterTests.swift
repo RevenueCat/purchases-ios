@@ -103,131 +103,6 @@ class TransactionPosterTests: TestCase {
         expect(self.mockTransaction.finishInvoked) == true
     }
 
-    // MARK: - purchaseIntentDate tests
-
-    func testPurchaseWithTransactionOlderThanPurchaseIntentDateSetsSDKOriginatedFalse() throws {
-        // Simulate a scenario where user tries to purchase a product they already own.
-        // StoreKit returns the existing transaction (with an older purchaseDate).
-        let oldPurchaseDate = Date().addingTimeInterval(-3600) // 1 hour ago
-        self.mockTransaction = MockStoreTransaction(purchaseDate: oldPurchaseDate)
-
-        let product = MockSK1Product(mockProductIdentifier: "product")
-        let purchaseIntentDate = Date() // Now
-        let transactionData = PurchasedTransactionData()
-
-        self.receiptFetcher.shouldReturnReceipt = true
-        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
-        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
-
-        let result = try self.handleTransaction(
-            transactionData,
-            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
-            purchaseIntentDate: purchaseIntentDate
-        )
-        expect(result).to(beSuccess())
-
-        // sdkOriginated should be false because transaction predates purchase intent
-        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
-        expect(self.mockTransaction.finishInvoked) == true
-    }
-
-    func testPurchaseWithTransactionNewerThanPurchaseIntentDateSetsSDKOriginatedTrue() throws {
-        // Normal purchase flow: transaction is created after purchase intent
-        let purchaseIntentDate = Date().addingTimeInterval(-60) // 1 minute ago
-        let transactionPurchaseDate = Date() // Now
-        self.mockTransaction = MockStoreTransaction(purchaseDate: transactionPurchaseDate)
-
-        let product = MockSK1Product(mockProductIdentifier: "product")
-        let transactionData = PurchasedTransactionData()
-
-        self.receiptFetcher.shouldReturnReceipt = true
-        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
-        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
-
-        let result = try self.handleTransaction(
-            transactionData,
-            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
-            purchaseIntentDate: purchaseIntentDate
-        )
-        expect(result).to(beSuccess())
-
-        // sdkOriginated should be true because transaction is newer than purchase intent
-        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
-        expect(self.mockTransaction.finishInvoked) == true
-    }
-
-    func testPurchaseWithOlderTransactionClearsAttributionData() throws {
-        // When transaction predates purchase intent, attribution data (offering context, paywall)
-        // should be cleared to prevent misattribution.
-        let oldPurchaseDate = Date().addingTimeInterval(-3600) // 1 hour ago
-        self.mockTransaction = MockStoreTransaction(purchaseDate: oldPurchaseDate)
-
-        let product = MockSK1Product(mockProductIdentifier: "product")
-        let purchaseIntentDate = Date() // Now
-        let paywallEventCreationData = PaywallEvent.CreationData(
-            id: UUID(),
-            date: Date()
-        )
-        let paywallEventData = PaywallEvent.Data(
-            paywallIdentifier: "test_paywall_id",
-            offeringIdentifier: "test_offering",
-            paywallRevision: 1,
-            sessionID: UUID(),
-            displayMode: .fullScreen,
-            localeIdentifier: "en_US",
-            darkMode: false
-        )
-        let transactionData = PurchasedTransactionData(
-            presentedOfferingContext: .init(offeringIdentifier: "test_offering"),
-            presentedPaywall: .impression(paywallEventCreationData, paywallEventData)
-        )
-
-        self.receiptFetcher.shouldReturnReceipt = true
-        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
-        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
-
-        let result = try self.handleTransaction(
-            transactionData,
-            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
-            purchaseIntentDate: purchaseIntentDate
-        )
-        expect(result).to(beSuccess())
-
-        // Attribution data should be cleared
-        expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
-        ).to(beNil())
-        expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
-        ).to(beNil())
-    }
-
-    func testPurchaseWithOlderTransactionDoesNotStoreMetadata() throws {
-        // When transaction predates purchase intent, we should NOT store metadata
-        // (nothing to attribute to this purchase context)
-        let oldPurchaseDate = Date().addingTimeInterval(-3600) // 1 hour ago
-        self.mockTransaction = MockStoreTransaction(purchaseDate: oldPurchaseDate)
-
-        let product = MockSK1Product(mockProductIdentifier: "product")
-        let purchaseIntentDate = Date() // Now
-        let transactionData = PurchasedTransactionData(
-            presentedOfferingContext: .init(offeringIdentifier: "test_offering")
-        )
-
-        self.receiptFetcher.shouldReturnReceipt = true
-        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
-        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
-
-        _ = try self.handleTransaction(
-            transactionData,
-            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
-            purchaseIntentDate: purchaseIntentDate
-        )
-
-        // Metadata should NOT be stored
-        expect(self.localTransactionMetadataStore.invokedStoreMetadata.value) == false
-    }
-
     func testHandlePurchasedTransactionSendsReceiptIfStoreKit2EnabledButJWSTokenIsMissing() throws {
         self.setUp(observerMode: false, storeKitVersion: .storeKit2)
 
@@ -1616,15 +1491,13 @@ private extension TransactionPosterTests {
 
     func handleTransaction(
         _ data: PurchasedTransactionData,
-        postReceiptSource: PostReceiptSource = .init(isRestore: false, initiationSource: .queue),
-        purchaseIntentDate: Date? = nil
+        postReceiptSource: PostReceiptSource = .init(isRestore: false, initiationSource: .queue)
     ) throws -> Result<CustomerInfo, BackendError> {
         let result = waitUntilValue { completion in
             self.poster.handlePurchasedTransaction(
                 self.mockTransaction,
                 data: data,
                 postReceiptSource: postReceiptSource,
-                purchaseIntentDate: purchaseIntentDate,
                 currentUserID: "user"
             ) {
                 completion($0)
