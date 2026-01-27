@@ -680,7 +680,7 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("Monthly"))
     }
 
-    // MARK: - Non-Subscription (Lifetime) Tests
+    // MARK: - Non-Subscription Tests
 
     func testProductPricePerPeriodForLifetime() {
         let result = variableHandler.processVariables(
@@ -703,6 +703,47 @@ class VariableHandlerV2Test: TestCase {
         // Lifetime products should not have a period suffix (no slash)
         expect(result).to(equal("$119.49"))
     }
+
+    func testProductPricePerPeriodForConsumable() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: Self.consumablePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        // Consumable products should not have a period suffix (no slash)
+        expect(result).to(equal("$4.99"))
+    }
+
+    func testProductPricePerPeriodAbbreviatedForConsumable() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period_abbreviated }}",
+            with: Self.consumablePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        // Consumable products should not have a period suffix (no slash)
+        expect(result).to(equal("$4.99"))
+    }
+
+    // MARK: - Test Data
+
+    private static let consumableProduct = TestStoreProduct(
+        localizedTitle: "Coins",
+        price: 4.99,
+        localizedPriceString: "$4.99",
+        productIdentifier: "com.revenuecat.consumable_coins",
+        productType: .consumable,
+        localizedDescription: "100 Coins"
+    )
+
+    private static let consumablePackage = Package(
+        identifier: "consumable",
+        packageType: .custom,
+        storeProduct: consumableProduct.toStoreProduct(),
+        offeringIdentifier: "offering",
+        webCheckoutUrl: nil
+    )
 
 }
 
