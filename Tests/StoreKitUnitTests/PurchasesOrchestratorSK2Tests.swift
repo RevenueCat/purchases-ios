@@ -42,15 +42,25 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     func testPurchasePostsReceipt() async throws {
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let transaction = try await createTransaction(finished: true)
         let product = try await self.fetchSk2Product()
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: StoreProduct(sk2Product: product),
                               offeringIdentifier: "offering",
                               webCheckoutUrl: nil)
-        mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
-        mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
+
+        var capturedJWS: String?
+        mockStoreKit2TransactionListener?.mockTransactionHandler = { purchaseResult in
+            guard let verificationResult = purchaseResult.verificationResult else {
+                throw StoreKitError.unknown
+            }
+            capturedJWS = verificationResult.jwsRepresentation
+            return StoreTransaction(
+                sk2Transaction: verificationResult.underlyingTransaction,
+                jwsRepresentation: verificationResult.jwsRepresentation,
+                environmentOverride: .sandbox
+            )
+        }
 
         _ = try await orchestrator.purchase(sk2Product: product,
                                             package: package,
@@ -59,9 +69,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                             introductoryOfferEligibilityJWS: nil,
                                             promotionalOfferOptions: nil)
 
+        let jws = try XCTUnwrap(capturedJWS)
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptData).to(beTrue())
-        expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(jws)
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
@@ -297,15 +308,25 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     func testPurchaseWithPurchaseParamsPostsReceipt() async throws {
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let transaction = try await createTransaction(finished: true)
         let product = try await self.fetchSk2Product()
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: StoreProduct(sk2Product: product),
                               offeringIdentifier: "offering",
                               webCheckoutUrl: nil)
-        mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
-        mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
+
+        var capturedJWS: String?
+        mockStoreKit2TransactionListener?.mockTransactionHandler = { purchaseResult in
+            guard let verificationResult = purchaseResult.verificationResult else {
+                throw StoreKitError.unknown
+            }
+            capturedJWS = verificationResult.jwsRepresentation
+            return StoreTransaction(
+                sk2Transaction: verificationResult.underlyingTransaction,
+                jwsRepresentation: verificationResult.jwsRepresentation,
+                environmentOverride: .sandbox
+            )
+        }
 
         let metadata = ["key": "value"]
         let params = PurchaseParams.Builder(package: package)
@@ -321,9 +342,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
+        let jws = try XCTUnwrap(capturedJWS)
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptData).to(beTrue())
-        expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(jws)
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
 
         #if ENABLE_TRANSACTION_METADATA
@@ -468,7 +490,16 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let mockListener = try XCTUnwrap(
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
         )
-        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+        mockListener.mockTransactionHandler = { purchaseResult in
+            guard let verificationResult = purchaseResult.verificationResult else {
+                throw StoreKitError.unknown
+            }
+            return StoreTransaction(
+                sk2Transaction: verificationResult.underlyingTransaction,
+                jwsRepresentation: verificationResult.jwsRepresentation,
+                environmentOverride: .sandbox
+            )
+        }
 
         let product = try await self.fetchSk2Product()
 

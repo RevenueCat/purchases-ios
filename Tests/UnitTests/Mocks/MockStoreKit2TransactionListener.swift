@@ -33,6 +33,11 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
     var mockJWSToken: String = ""
     var mockEnvironment: StoreEnvironment = .sandbox
 
+    /// Closure that returns a custom `StoreTransaction` when handling a purchase result.
+    /// If set, this takes priority over `mockTransaction` and `mockResult`.
+    /// The closure receives the `purchaseResult` parameter from the `handle` call.
+    var mockTransactionHandler: ((StoreKit.Product.PurchaseResult) async throws -> StoreTransaction)?
+
     func set(delegate: StoreKit2TransactionListenerDelegate) {
         self.invokedDelegateSetter = true
         self.invokedDelegateSetterCount += 1
@@ -70,7 +75,10 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
 
         var transaction: StoreTransaction?
 
-        if let mockTransaction = self.mockTransaction.value {
+        // Use the handler closure if provided (takes priority)
+        if let handler = self.mockTransactionHandler {
+            transaction = try await handler(purchaseResult)
+        } else if let mockTransaction = self.mockTransaction.value {
             transaction = StoreTransaction(sk2Transaction: mockTransaction,
                                            jwsRepresentation: self.mockJWSToken,
                                            environmentOverride: self.mockEnvironment)
