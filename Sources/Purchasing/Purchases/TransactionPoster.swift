@@ -47,6 +47,19 @@ struct PurchasedTransactionData {
     var aadAttributionToken: String?
     var storeCountry: String?
 
+    /// Returns a copy of this instance with attribution data (`presentedOfferingContext` and `presentedPaywall`)
+    /// removed, while preserving all other properties.
+    func removingAttributionData() -> PurchasedTransactionData {
+        return PurchasedTransactionData(
+            presentedOfferingContext: nil,
+            presentedPaywall: nil,
+            unsyncedAttributes: self.unsyncedAttributes,
+            metadata: self.metadata,
+            aadAttributionToken: self.aadAttributionToken,
+            storeCountry: self.storeCountry
+        )
+    }
+
 }
 
 /// Result of posting a single cached transaction metadata entry.
@@ -410,12 +423,7 @@ extension TransactionPoster {
                 metadataToSend = LocalTransactionMetadata(
                     transactionId: transaction.transactionIdentifier,
                     productData: productData,
-                    transactionData: PurchasedTransactionData(
-                        unsyncedAttributes: purchasedTransactionData.unsyncedAttributes,
-                        metadata: purchasedTransactionData.metadata,
-                        aadAttributionToken: purchasedTransactionData.aadAttributionToken,
-                        storeCountry: purchasedTransactionData.storeCountry
-                    ),
+                    transactionData: purchasedTransactionData.removingAttributionData(),
                     encodedAppleReceipt: receipt,
                     originalPurchasesAreCompletedBy: self.purchasesAreCompletedBy,
                     sdkOriginated: false
