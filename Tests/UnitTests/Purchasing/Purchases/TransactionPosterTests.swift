@@ -717,6 +717,7 @@ class TransactionPosterTests: TestCase {
             date: Date()
         )
         let paywallEventData = PaywallEvent.Data(
+            paywallIdentifier: "test_paywall_id",
             offeringIdentifier: "test_offering",
             paywallRevision: 1,
             sessionID: UUID(),
