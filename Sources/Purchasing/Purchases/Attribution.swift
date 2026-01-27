@@ -582,6 +582,28 @@ extension Attribution {
         self.attributionPoster.markAdServicesToken(token, asSyncedFor: appUserID)
     }
 
+    func markSyncedIfNeeded(
+        subscriberAttributes: SubscriberAttribute.Dictionary?,
+        adServicesToken: String?,
+        appUserID: String,
+        error: BackendError?
+    ) {
+        if let error = error {
+            guard error.successfullySynced else { return }
+
+            if let attributeErrors = (error as NSError).subscriberAttributesErrors, !attributeErrors.isEmpty {
+                Logger.error(Strings.attribution.subscriber_attributes_error(
+                    errors: attributeErrors
+                ))
+            }
+        }
+
+        self.markAttributesAsSynced(subscriberAttributes, appUserID: appUserID)
+        if let adServicesToken = adServicesToken {
+            self.markAdServicesTokenAsSynced(adServicesToken, appUserID: appUserID)
+        }
+    }
+
 }
 
 protocol AttributionDelegate: AnyObject, Sendable {
