@@ -731,10 +731,12 @@ class VariableHandlerV2Test: TestCase {
     private static let consumableProduct = TestStoreProduct(
         localizedTitle: "Coins",
         price: 4.99,
+        currencyCode: "USD",
         localizedPriceString: "$4.99",
         productIdentifier: "com.revenuecat.consumable_coins",
         productType: .consumable,
-        localizedDescription: "100 Coins"
+        localizedDescription: "100 Coins",
+        locale: Locale(identifier: "en_US")
     )
 
     private static let consumablePackage = Package(
