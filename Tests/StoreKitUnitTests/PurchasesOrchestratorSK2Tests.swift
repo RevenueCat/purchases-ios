@@ -489,9 +489,11 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     func testPurchaseFailureClearsPresentedPaywall() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+        #if swift(>=5.9)
         if #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) {
             try await self.testSession.setSimulatedError(.generic(.unknown), forAPI: .purchase)
         }
+        #endif
 
         let product = try await self.fetchSk2Product()
 
@@ -517,9 +519,11 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             Self.paywallEventForPurchaseError
         ))
 
+        #if swift(>=5.9)
         if #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) {
             try await self.testSession.setSimulatedError(nil, forAPI: .purchase)
         }
+        #endif
         self.testSession.resetToDefaultState()
         self.testSession.disableDialogs = true
 //        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
