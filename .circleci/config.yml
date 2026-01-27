@@ -213,9 +213,6 @@ commands:
       install_mint:
         type: boolean
         default: false
-      install_mint_0_17_5:
-        type: boolean
-        default: false
       install_xcodes:
         type: boolean
         default: false
@@ -227,7 +224,6 @@ commands:
           command: |
             echo "xcbeautify:<< parameters.install_xcbeautify >>" > .homebrew-deps
             echo "mint:<< parameters.install_mint >>" >> .homebrew-deps
-            echo "mint_0_17_5:<< parameters.install_mint_0_17_5 >>" >> .homebrew-deps
             echo "xcodes:<< parameters.install_xcodes >>" >> .homebrew-deps
       - restore_cache:
           keys:
@@ -242,10 +238,6 @@ commands:
           steps:
             - install-brew-dependency:
                 dependency_name: "mint"
-      - when:
-          condition: << parameters.install_mint_0_17_5 >>
-          steps:
-            - install-mint-0_17_5
       - when:
           condition: << parameters.install_xcodes >>
           steps:
@@ -276,16 +268,6 @@ commands:
             brew install << parameters.dependency_name >>
           environment:
             HOMEBREW_NO_INSTALL_CLEANUP: 1
-
-  install-mint-0_17_5:
-    steps:
-      - run:
-          name: Install Mint 0.17.5
-          command: |
-            git clone https://github.com/yonaskolb/Mint.git
-            cd Mint
-            git checkout 0.17.5
-            make
 
   install-xcbeautify-for-xcode14:
     description: "Installs xcbeautify 1.6.0 using Mint"
