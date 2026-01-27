@@ -1672,10 +1672,6 @@ workflows:
           context:
             - slack-secrets-ios
       - validate-package-swift:
-          name: validate-package-swift-5.7
-          xcode_version: "14.0.1"
-          mac_os_executor_name: macos-executor
-      - validate-package-swift:
           name: validate-package-swift-5.8
           xcode_version: "14.3.1"
           mac_os_executor_name: macos-executor
