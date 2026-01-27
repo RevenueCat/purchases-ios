@@ -57,20 +57,6 @@ executors:
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
-  macos-executor-for-macos-12_6:
-    parameters:
-      xcode_version:
-        type: string
-        default: "16.4"
-    macos:
-      # circleci-lint: disable=unknown-xcode-version
-      xcode: << parameters.xcode_version >>
-    resource_class: m4pro.medium
-    environment:
-      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
-      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
   macos-executor-large:
     parameters:
       xcode_version:
@@ -1015,7 +1001,7 @@ jobs:
 
   run-test-ios-14:
     executor:
-      name: macos-executor-for-macos-12_6
+      name: macos-executor
       # Using Xcode 14.3.1 to support iOS 14 simulators
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
       xcode_version: "14.3.1"
