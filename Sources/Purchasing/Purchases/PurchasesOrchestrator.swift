@@ -27,6 +27,13 @@ import StoreKit
 
 }
 
+/// Holds StoreKit 1 purchase completion callback and the date when the purchase was initiated.
+/// Used to track when a purchase was started to validate transaction dates.
+struct SK1PurchaseCallbackData {
+    let callback: PurchaseCompletedBlock
+    let purchaseIntentDate: Date
+}
+
 // swiftlint:disable file_length type_body_length function_body_length
 final class PurchasesOrchestrator {
 
@@ -44,7 +51,7 @@ final class PurchasesOrchestrator {
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let presentedOfferingContextsByProductID: Atomic<[String: PresentedOfferingContext]> = .init([:])
     private let purchaseInitiatedPaywall: Atomic<PaywallEvent?> = nil
-    private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
+    private let purchaseCallbackDataByProductID: Atomic<[String: SK1PurchaseCallbackData]> = .init([:])
     private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -594,6 +601,7 @@ final class PurchasesOrchestrator {
 
         let addPayment: Bool = self.addPurchaseCompletedCallback(
             productIdentifier: productIdentifier,
+            purchaseIntentDate: startTime,
             completion: { [weak self] transaction, customerInfo, error, cancelled in
                 guard let self = self else { return }
 
@@ -789,7 +797,10 @@ final class PurchasesOrchestrator {
             let customerInfo: CustomerInfo
 
             if let transaction = transaction {
-                customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
+                customerInfo = try await self.handlePurchasedTransaction(transaction,
+                                                                         .purchase,
+                                                                         metadata,
+                                                                         purchaseIntentDate: startTime)
                 self.postFeatureEventsIfNeeded()
             } else {
                 // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
@@ -1042,13 +1053,13 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
         // For observer mode. Should only come from calls to `restoreCompletedTransactions`,
         // which the SDK does not currently use.
         case .restored:
-            self.handlePurchasedTransaction(storeTransaction,
-                                            storefront: storeKit1Wrapper.currentStorefront,
-                                            restored: true)
+            self.handleSK1PurchasedTransaction(storeTransaction,
+                                               storefront: storeKit1Wrapper.currentStorefront,
+                                               restored: true)
         case .purchased:
-            self.handlePurchasedTransaction(storeTransaction,
-                                            storefront: storeKit1Wrapper.currentStorefront,
-                                            restored: false)
+            self.handleSK1PurchasedTransaction(storeTransaction,
+                                               storefront: storeKit1Wrapper.currentStorefront,
+                                               restored: false)
         case .purchasing:
             break
         case .failed:
@@ -1079,6 +1090,7 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
         delegate.readyForPromotedProduct(storeProduct) { completion in
             let addPayment = self.addPurchaseCompletedCallback(
                 productIdentifier: productIdentifier,
+                purchaseIntentDate: self.dateProvider.now(),
                 completion: completion
             )
             if addPayment {
@@ -1196,7 +1208,7 @@ private extension PurchasesOrchestrator {
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
 
         if let error = transaction.error,
-           let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) {
+           let completion = self.getAndRemovePurchaseCallbackData(forTransaction: storeTransaction)?.callback {
             let purchasesError = ErrorUtils.purchasesError(withSKError: error)
 
             let isCancelled = purchasesError.isCancelledError
@@ -1237,7 +1249,7 @@ private extension PurchasesOrchestrator {
         let userCancelled = transaction.error?.isCancelledError ?? false
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
 
-        guard let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) else {
+        guard let completion = self.getAndRemovePurchaseCallbackData(forTransaction: storeTransaction)?.callback else {
             return
         }
 
@@ -1391,9 +1403,9 @@ private extension PurchasesOrchestrator {
         restored: Bool
     ) -> PostReceiptSource {
         let initiationSource: PostReceiptSource.InitiationSource = {
-            // Having a purchase completed callback implies that the transation comes from an explicit call
+            // Having a purchase completed callback implies that the transaction comes from an explicit call
             // to `purchase()` instead of a StoreKit transaction notification.
-            let hasPurchaseCallback = self.purchaseCompleteCallbacksByProductID.value.keys.contains(productIdentifier)
+            let hasPurchaseCallback = self.purchaseCallbackDataByProductID.value.keys.contains(productIdentifier)
 
             switch (hasPurchaseCallback, restored) {
             case (true, false): return .purchase
@@ -1407,7 +1419,6 @@ private extension PurchasesOrchestrator {
         return .init(isRestore: self.allowSharingAppStoreAccount,
                      initiationSource: initiationSource)
     }
-
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -1437,6 +1448,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             transaction,
             data: transactionData,
             postReceiptSource: purchaseSource,
+            purchaseIntentDate: nil,
             currentUserID: self.appUserID
         )
 
@@ -1564,6 +1576,7 @@ private extension PurchasesOrchestrator {
     @discardableResult
     func addPurchaseCompletedCallback(
         productIdentifier: String,
+        purchaseIntentDate: Date,
         completion: @escaping PurchaseCompletedBlock
     ) -> Bool {
         guard !productIdentifier.trimmingWhitespacesAndNewLines.isEmpty else {
@@ -1580,7 +1593,7 @@ private extension PurchasesOrchestrator {
             return false
         }
 
-        return self.purchaseCompleteCallbacksByProductID.modify { callbacks in
+        return self.purchaseCallbackDataByProductID.modify { callbacks in
             guard callbacks[productIdentifier] == nil else {
                 self.operationDispatcher.dispatchOnMainActor {
                     completion(nil, nil, ErrorUtils.operationAlreadyInProgressError().asPublicError, false)
@@ -1588,15 +1601,18 @@ private extension PurchasesOrchestrator {
                 return false
             }
 
-            callbacks[productIdentifier] = completion
+            callbacks[productIdentifier] = SK1PurchaseCallbackData(
+                callback: completion,
+                purchaseIntentDate: purchaseIntentDate
+            )
             return true
         }
     }
 
-    func getAndRemovePurchaseCompletedCallback(
+    func getAndRemovePurchaseCallbackData(
         forTransaction transaction: StoreTransaction
-    ) -> PurchaseCompletedBlock? {
-        return self.purchaseCompleteCallbacksByProductID.modify {
+    ) -> SK1PurchaseCallbackData? {
+        return self.purchaseCallbackDataByProductID.modify {
             return $0.removeValue(forKey: transaction.productIdentifier)
         }
     }
@@ -1827,13 +1843,20 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
-                                    storefront: StorefrontType?,
-                                    restored: Bool) {
+    func handleSK1PurchasedTransaction(_ purchasedTransaction: StoreTransaction,
+                                       storefront: StorefrontType?,
+                                       restored: Bool) {
         // Don't attribute offering context or paywall data for restored transactions
         let offeringContext = restored ? nil : self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
         let paywall = restored ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: purchasedTransaction)
         let unsyncedAttributes = self.unsyncedAttributes
+        let purchaseSource = self.purchaseSource(for: purchasedTransaction.productIdentifier,
+                                                 restored: restored)
+        // Get purchaseIntentDate without removing the callback - we'll remove it in the completion handler
+        let purchaseIntentDate = self.purchaseCallbackDataByProductID.value[
+            purchasedTransaction.productIdentifier
+        ]?.purchaseIntentDate
+
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
                 presentedOfferingContext: offeringContext,
@@ -1842,19 +1865,20 @@ private extension PurchasesOrchestrator {
                 aadAttributionToken: adServicesToken,
                 storeCountry: storefront?.countryCode
             )
-            let purchaseSource = self.purchaseSource(for: purchasedTransaction.productIdentifier,
-                                                     restored: restored)
 
             self.transactionPoster.handlePurchasedTransaction(
                 purchasedTransaction,
                 data: transactionData,
                 postReceiptSource: purchaseSource,
+                purchaseIntentDate: purchaseIntentDate,
                 currentUserID: self.appUserID
             ) { result in
 
                 self.handlePostReceiptResult(result, transactionData: transactionData)
 
-                if let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: purchasedTransaction) {
+                if let completion = self.getAndRemovePurchaseCallbackData(
+                    forTransaction: purchasedTransaction
+                )?.callback {
                     self.operationDispatcher.dispatchOnMainActor {
                         completion(purchasedTransaction,
                                    result.value,
@@ -2070,6 +2094,7 @@ private extension PurchasesOrchestrator {
                           metadata: [String: String]?,
                           completion: @escaping PurchaseCompletedBlock) {
         Task {
+            let purchaseIntentDate = self.dateProvider.now()
             let result = await self.simulatedStorePurchaseHandler.purchase(product: simulatedStoreProduct)
             switch result {
             case .cancel:
@@ -2080,7 +2105,10 @@ private extension PurchasesOrchestrator {
                 await completion(nil, nil, purchasesError.asPublicError, false)
             case .success(let transaction):
                 do {
-                    let customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
+                    let customerInfo = try await self.handlePurchasedTransaction(transaction,
+                                                                                 .purchase,
+                                                                                 metadata,
+                                                                                 purchaseIntentDate: purchaseIntentDate)
                     await completion(transaction, customerInfo, nil, false)
                 } catch {
                     let purchasesError = ErrorUtils.purchasesError(withUntypedError: error)
@@ -2156,7 +2184,7 @@ extension PurchasesOrchestrator {
             return nil
         case let .successfulVerifiedTransaction(transaction):
             // Using .queue initiation source since this is an externally-initiated purchase recorded by the developer
-            _ = try await self.handlePurchasedTransaction(transaction, .queue, nil)
+            _ = try await self.handlePurchasedTransaction(transaction, .queue, nil, purchaseIntentDate: nil)
             return transaction
         }
     }
@@ -2170,7 +2198,8 @@ extension PurchasesOrchestrator {
     private func handlePurchasedTransaction(
         _ transaction: StoreTransaction,
         _ initiationSource: PostReceiptSource.InitiationSource,
-        _ metadata: [String: String]?
+        _ metadata: [String: String]?,
+        purchaseIntentDate: Date?
     ) async throws -> CustomerInfo {
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
         let paywall = self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
@@ -2191,6 +2220,7 @@ extension PurchasesOrchestrator {
             transaction,
             data: transactionData,
             postReceiptSource: purchaseSource,
+            purchaseIntentDate: purchaseIntentDate,
             currentUserID: self.appUserID
         )
 

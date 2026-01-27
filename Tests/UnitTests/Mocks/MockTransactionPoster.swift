@@ -25,13 +25,17 @@ final class MockTransactionPoster: TransactionPosterType {
 
     let invokedHandlePurchasedTransaction: Atomic<Bool> = false
     let invokedHandlePurchasedTransactionCount: Atomic<Int> = .init(0)
+
+    // swiftlint:disable:next large_tuple
     let invokedHandlePurchasedTransactionParameters: Atomic<(transaction: StoreTransactionType,
                                                              data: PurchasedTransactionData,
                                                              postReceiptSource: PostReceiptSource,
+                                                             purchaseIntentDate: Date?,
                                                              currentUserID: String)?> = nil
     let invokedHandlePurchasedTransactionParameterList: Atomic<[(transaction: StoreTransactionType,
                                                                  data: PurchasedTransactionData,
-                                                                 postReceiptSource: PostReceiptSource)]> = .init([])
+                                                                 postReceiptSource: PostReceiptSource,
+                                                                 purchaseIntentDate: Date?)]> = .init([])
 
     var allHandledTransactions: Set<StoreTransaction> {
         return Set(
@@ -42,10 +46,12 @@ final class MockTransactionPoster: TransactionPosterType {
         )
     }
 
+    // swiftlint:disable:next function_parameter_count
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
         postReceiptSource: PostReceiptSource,
+        purchaseIntentDate: Date?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
@@ -58,9 +64,11 @@ final class MockTransactionPoster: TransactionPosterType {
 
         self.invokedHandlePurchasedTransaction.value = true
         self.invokedHandlePurchasedTransactionCount.modify { $0 += 1 }
-        self.invokedHandlePurchasedTransactionParameters.value = (transaction, data, postReceiptSource, currentUserID)
+        self.invokedHandlePurchasedTransactionParameters.value = (
+            transaction, data, postReceiptSource, purchaseIntentDate, currentUserID
+        )
         self.invokedHandlePurchasedTransactionParameterList.modify {
-            $0.append((transaction, data, postReceiptSource))
+            $0.append((transaction, data, postReceiptSource, purchaseIntentDate))
         }
 
         self.operationDispatcher.dispatchOnMainActor { [result = result()] in

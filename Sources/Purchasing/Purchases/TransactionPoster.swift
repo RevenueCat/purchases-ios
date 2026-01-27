@@ -47,6 +47,19 @@ struct PurchasedTransactionData {
     var aadAttributionToken: String?
     var storeCountry: String?
 
+    /// Returns a copy of this instance with attribution data (`presentedOfferingContext` and `presentedPaywall`)
+    /// removed, while preserving all other properties.
+    func removingAttributionData() -> PurchasedTransactionData {
+        return PurchasedTransactionData(
+            presentedOfferingContext: nil,
+            presentedPaywall: nil,
+            unsyncedAttributes: self.unsyncedAttributes,
+            metadata: self.metadata,
+            aadAttributionToken: self.aadAttributionToken,
+            storeCountry: self.storeCountry
+        )
+    }
+
 }
 
 /// Result of posting a single cached transaction metadata entry.
@@ -60,10 +73,14 @@ typealias CachedTransactionMetadataPostResult = (
 protocol TransactionPosterType: AnyObject, Sendable {
 
     /// Starts a `PostReceiptDataOperation` for the transaction.
+    /// - Parameter purchaseIntentDate: The date when the SDK's `purchase()` method was called.
+    ///   Used to determine if a transaction was actually initiated by this purchase call.
+    // swiftlint:disable:next function_parameter_count
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
         postReceiptSource: PostReceiptSource,
+        purchaseIntentDate: Date?,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     )
@@ -137,6 +154,7 @@ final class TransactionPoster: TransactionPosterType {
     func handlePurchasedTransaction(_ transaction: StoreTransactionType,
                                     data: PurchasedTransactionData,
                                     postReceiptSource: PostReceiptSource,
+                                    purchaseIntentDate: Date?,
                                     currentUserID: String,
                                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         Logger.debug(Strings.purchase.transaction_poster_handling_transaction(
@@ -163,6 +181,7 @@ final class TransactionPoster: TransactionPosterType {
                         self.postReceipt(transaction: transaction,
                                          purchasedTransactionData: data,
                                          postReceiptSource: postReceiptSource,
+                                         purchaseIntentDate: purchaseIntentDate,
                                          receipt: encodedReceipt,
                                          product: product,
                                          appTransaction: appTransaction,
@@ -195,6 +214,7 @@ final class TransactionPoster: TransactionPosterType {
             self.postReceipt(transaction: transaction,
                              purchasedTransactionData: data,
                              postReceiptSource: postReceiptSource,
+                             purchaseIntentDate: nil,
                              receipt: receipt,
                              product: product,
                              appTransaction: appTransactionJWS,
@@ -295,6 +315,7 @@ extension TransactionPosterType {
         _ transaction: StoreTransaction,
         data: PurchasedTransactionData,
         postReceiptSource: PostReceiptSource,
+        purchaseIntentDate: Date?,
         currentUserID: String
     ) async -> Result<CustomerInfo, BackendError> {
         await Async.call { completion in
@@ -302,6 +323,7 @@ extension TransactionPosterType {
                 transaction,
                 data: data,
                 postReceiptSource: postReceiptSource,
+                purchaseIntentDate: purchaseIntentDate,
                 currentUserID: currentUserID,
                 completion: completion
             )
@@ -361,57 +383,82 @@ extension TransactionPoster {
     private func postReceipt(transaction: StoreTransactionType,
                              purchasedTransactionData: PurchasedTransactionData,
                              postReceiptSource: PostReceiptSource,
+                             purchaseIntentDate: Date?,
                              receipt: EncodedAppleReceipt,
                              product: StoreProduct?,
                              appTransaction: String?,
                              currentUserID: String,
                              completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        let storedTransactionMetadata = self.localTransactionMetadataStore.getMetadata(
+        let shouldStoreMetadata: Bool
+        let containsAttributionData: Bool
+        let metadataToSend: LocalTransactionMetadata
+
+        if let storedMetadata = self.localTransactionMetadataStore.getMetadata(
             forTransactionId: transaction.transactionIdentifier
-        )
-        let shouldStoreMetadata = storedTransactionMetadata == nil && (
-            postReceiptSource.initiationSource == .purchase ||
-            purchasedTransactionData.presentedOfferingContext != nil ||
-            purchasedTransactionData.presentedPaywall != nil
-        )
+        ) {
+            shouldStoreMetadata = false // Is already stored
+            containsAttributionData = true // Stored metadata always contains attribution data
+            metadataToSend = storedMetadata
+        } else {
+            // Check if this transaction predates our purchase intent.
+            // This handles the edge case where a user tries to purchase a product they already own,
+            // and StoreKit returns the existing transaction (with an older purchaseDate).
+            // In this case, we should NOT attribute the transaction to the current purchase context.
+            let transactionPredatesPurchaseIntent: Bool = {
+                guard postReceiptSource.initiationSource == .purchase,
+                      let purchaseIntentDate = purchaseIntentDate else {
+                    return false
+                }
+                return transaction.purchaseDate < purchaseIntentDate
+            }()
 
-        let containsAttributionData = storedTransactionMetadata != nil || shouldStoreMetadata
+            let productData = product.map {
+                ProductRequestData(with: $0, storeCountry: purchasedTransactionData.storeCountry)
+            }
 
-        let effectiveProductData = storedTransactionMetadata?.productData ?? product.map {
-            ProductRequestData(with: $0, storeCountry: purchasedTransactionData.storeCountry)
+            if transactionPredatesPurchaseIntent {
+                // The transaction predates the purchase intent - Use PurchasedTransactionData without attribution data
+                shouldStoreMetadata = false
+                containsAttributionData = false
+                metadataToSend = LocalTransactionMetadata(
+                    transactionId: transaction.transactionIdentifier,
+                    productData: productData,
+                    transactionData: purchasedTransactionData.removingAttributionData(),
+                    encodedAppleReceipt: receipt,
+                    originalPurchasesAreCompletedBy: self.purchasesAreCompletedBy,
+                    sdkOriginated: false // It was not originated from this SDK purchase() call
+                )
+            } else {
+                // Normal flow - use current purchase context
+                shouldStoreMetadata = postReceiptSource.initiationSource == .purchase ||
+                    purchasedTransactionData.presentedOfferingContext != nil ||
+                    purchasedTransactionData.presentedPaywall != nil
+                containsAttributionData = shouldStoreMetadata
+                metadataToSend = LocalTransactionMetadata(
+                    transactionId: transaction.transactionIdentifier,
+                    productData: productData,
+                    transactionData: purchasedTransactionData,
+                    encodedAppleReceipt: receipt,
+                    originalPurchasesAreCompletedBy: self.purchasesAreCompletedBy,
+                    sdkOriginated: postReceiptSource.initiationSource == .purchase
+                )
+            }
         }
-        let effectiveTransactionData = storedTransactionMetadata?.transactionData ?? purchasedTransactionData
-        let effectivePurchasesAreCompletedBy = storedTransactionMetadata?.originalPurchasesAreCompletedBy ??
-        self.purchasesAreCompletedBy
-
-        // sdkOriginated indicates whether this purchase was initiated by the SDK (stored metadata takes precedence):
-        // - true when the purchase was initiated via SDK's purchase() methods (initiationSource == .purchase)
-        // - false when the purchase was detected in the queue but triggered outside the SDK
-        let sdkOriginated = storedTransactionMetadata?.sdkOriginated ??
-            (postReceiptSource.initiationSource == .purchase)
 
         if shouldStoreMetadata {
-            let metadataToStore = LocalTransactionMetadata(
-                transactionId: transaction.transactionIdentifier,
-                productData: effectiveProductData,
-                transactionData: effectiveTransactionData,
-                encodedAppleReceipt: receipt,
-                originalPurchasesAreCompletedBy: effectivePurchasesAreCompletedBy,
-                sdkOriginated: sdkOriginated
-            )
-            self.localTransactionMetadataStore.storeMetadata(metadataToStore,
+            self.localTransactionMetadataStore.storeMetadata(metadataToSend,
                                                              forTransactionId: transaction.transactionIdentifier)
         }
 
-        self.backend.post(receipt: receipt,
-                          productData: effectiveProductData,
-                          transactionData: effectiveTransactionData,
+        self.backend.post(receipt: metadataToSend.encodedAppleReceipt,
+                          productData: metadataToSend.productData,
+                          transactionData: metadataToSend.transactionData,
                           postReceiptSource: postReceiptSource,
                           observerMode: self.observerMode,
-                          originalPurchaseCompletedBy: effectivePurchasesAreCompletedBy,
+                          originalPurchaseCompletedBy: metadataToSend.originalPurchasesAreCompletedBy,
                           appTransaction: appTransaction,
                           associatedTransactionId: transaction.transactionIdentifier,
-                          sdkOriginated: sdkOriginated,
+                          sdkOriginated: metadataToSend.sdkOriginated,
                           appUserID: currentUserID,
                           containsAttributionData: containsAttributionData) { result in
             if containsAttributionData {
