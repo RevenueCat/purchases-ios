@@ -33,20 +33,38 @@ import SwiftUI
 /// Hello {{ custom.player_name }}!
 /// ```
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public enum CustomVariableValue: Sendable, Equatable, Hashable {
+public struct CustomVariableValue: Sendable, Equatable, Hashable {
 
-    /// A string value.
-    case string(String)
+    private enum Storage: Sendable, Equatable, Hashable {
+        case string(String)
+        case number(Double)
+        case bool(Bool)
+    }
 
-    /// A numeric value.
-    case number(Double)
+    private let storage: Storage
 
-    /// A boolean value.
-    case bool(Bool)
+    private init(_ storage: Storage) {
+        self.storage = storage
+    }
+
+    /// Creates a string value.
+    public static func string(_ value: String) -> CustomVariableValue {
+        CustomVariableValue(.string(value))
+    }
+
+    /// Creates a numeric value.
+    public static func number(_ value: Double) -> CustomVariableValue {
+        CustomVariableValue(.number(value))
+    }
+
+    /// Creates a boolean value.
+    public static func bool(_ value: Bool) -> CustomVariableValue {
+        CustomVariableValue(.bool(value))
+    }
 
     /// The string representation of this value for use in paywall text replacement.
     public var stringValue: String {
-        switch self {
+        switch self.storage {
         case .string(let value):
             return value
         case .number(let value):
@@ -65,7 +83,7 @@ public enum CustomVariableValue: Sendable, Equatable, Hashable {
     /// Returns the underlying value for `.number`, attempts conversion for `.string`,
     /// and returns `1.0` for `true` or `0.0` for `false` in `.bool` cases.
     public var doubleValue: Double {
-        switch self {
+        switch self.storage {
         case .string(let value):
             return Double(value) ?? 0
         case .number(let value):
@@ -79,7 +97,7 @@ public enum CustomVariableValue: Sendable, Equatable, Hashable {
     /// Returns the underlying value for `.bool`, `true` for non-zero `.number`,
     /// and `true` for non-empty `.string` (case-insensitive "true", "1", "yes").
     public var boolValue: Bool {
-        switch self {
+        switch self.storage {
         case .string(let value):
             let lowercased = value.lowercased()
             return lowercased == "true" || lowercased == "1" || lowercased == "yes"
