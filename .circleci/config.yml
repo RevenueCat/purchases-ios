@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        run-maestro-tests
       ]
     default: default
   generate_snapshots:
@@ -1796,6 +1797,17 @@ workflows:
       equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - release-train
+
+  # Temporary workflow to test consolidated Maestro E2E tests
+  # To trigger: Set parameter action=run-maestro-tests in CircleCI UI
+  manual-trigger-maestro-tests:
+    when:
+      equal: [run-maestro-tests, << pipeline.parameters.action >>]
+    jobs:
+      - run-all-maestro-e2e-tests:
+          context:
+            - e2e-tests
+            - slack-secrets
 
   record-and-push-paywall-template-screenshots:
     when:
