@@ -912,6 +912,8 @@ platform :ios do
   lane :run_maestro_e2e_tests do |options|
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
+    output_dir = options[:output_dir] || "test_output/maestro"
+    skip_slack_notification = options.fetch(:skip_slack_notification, true)
     base_path = "#{Dir.pwd}/.."
 
     UI.message("Running Maestro E2E tests for backend environment: #{backend_environment}")
@@ -952,6 +954,7 @@ platform :ios do
     end
 
     # Set environment variables for Maestro
+    environment_name = "#{backend_environment}_#{store}"
     ENV["MAESTRO_EXPECTED_VERIFICATION_RESULT"] = entitlement_verification_result
     ENV["MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE"] = customer_info_source
     ENV["MAESTRO_STORE"] = store
@@ -1014,17 +1017,31 @@ platform :ios do
 
       UI.message("Using flow directory: #{flow_dir}")
 
-      sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
+      sh("maestro", "test", "--format", "junit", "--output", "#{output_dir}/report.xml", "--test-output-dir", output_dir, flow_dir)
 
       success = true
     rescue => e
       raise e
     ensure
-      slack_backend_integration_test_results(
-        environment: backend_environment,
-        success: success,
-        message_binary_solo_on_failure: false
-      )
+      # Post-process JUnit XML to include environment name in testcase names
+      junit_file = "#{output_dir}/report.xml"
+      if File.exist?(junit_file)
+        UI.message("Adding environment name (#{environment_name}) to test names in JUnit report...")
+        content = File.read(junit_file)
+        modified_content = content.gsub(/<testcase([^>]*)name="([^"]+)"/) do |match|
+          prefix = $1
+          test_name = $2
+          "<testcase#{prefix}name=\"#{test_name} (#{environment_name})\""
+        end
+        File.write(junit_file, modified_content)
+      end
+      unless skip_slack_notification
+        slack_backend_integration_test_results(
+          environment: backend_environment,
+          success: success,
+          message_binary_solo_on_failure: false
+        )
+      end
       ping_heartbeat_monitor(url: heartbeat_monitor_ping_url)
 
       if store == "app_store"
