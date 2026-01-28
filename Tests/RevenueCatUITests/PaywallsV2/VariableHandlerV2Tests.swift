@@ -975,7 +975,7 @@ class CustomVariablesV2Tests: TestCase {
         expect(result).to(equal("Hello Player!"))
     }
 
-    func testCustomVariableReturnsEmptyWhenNotFound() {
+    func testCustomVariableKeepsTemplateWhenNotFound() {
         let variableHandler = VariableHandlerV2(
             variableCompatibilityMap: [:],
             functionCompatibilityMap: [:],
@@ -991,7 +991,7 @@ class CustomVariablesV2Tests: TestCase {
             locale: locale,
             localizations: localizations["en_US"]!
         )
-        expect(result).to(equal("Hello !"))
+        expect(result).to(equal("Hello {{ custom.unknown_var }}!"))
     }
 
     func testCustomVariableWithFunction() {
