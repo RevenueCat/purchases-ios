@@ -31,10 +31,8 @@ extension StoreKitError: PurchasesErrorConvertible {
         case .notAvailableInStorefront:
             return ErrorUtils.productNotAvailableForPurchaseError(error: self)
 
-#if swift(>=5.6)
         case .notEntitled:
             return ErrorUtils.storeProblemError(error: self)
-#endif
 
         #if compiler(>=6.1)
         // StoreKitError.unsupported was introduced in iOS 18.4, which shipped with Xcode 16.3 beta 1 / Swift 6.1

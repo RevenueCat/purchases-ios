@@ -91,8 +91,6 @@ private struct NonLocalizedMarkdownText: View {
     let fontWeight: Font.Weight
 
     var markdownText: AttributedString? {
-        #if swift(>=5.7)
-
         /*
          The intended behavior is:
          * If the font weight of the text is <= Bold, Markdown bold should be Bold
@@ -126,14 +124,9 @@ private struct NonLocalizedMarkdownText: View {
         }
 
         return attrString
-
-        #else
-        return nil
-        #endif
     }
 
     var body: some View {
-        #if swift(>=5.7)
         Group {
             if let markdownText = self.markdownText {
                 // Use markdown if we can successfully parse it
@@ -145,12 +138,6 @@ private struct NonLocalizedMarkdownText: View {
                     .fontWeight(self.fontWeight)
             }
         }
-        #else
-        // Display text as is because markdown is priority
-        Text(self.text)
-            .font(self.font)
-            .fontWeight(self.fontWeight)
-        #endif
     }
 }
 
