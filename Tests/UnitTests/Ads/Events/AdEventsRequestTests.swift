@@ -19,6 +19,10 @@ import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class AdFeatureEventsRequestTests: TestCase {
+    // Uncomment these lines to manually record snapshots:
+//    override func setUp() async throws {
+//        isRecording = true
+//    }
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -75,6 +79,7 @@ class AdFeatureEventsRequestTests: TestCase {
         let adEventData = AdDisplayed(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .banner,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123456789",
             impressionId: "impression-123"
@@ -115,6 +120,7 @@ private extension AdFeatureEventsRequestTests {
     static let failedToLoadData: AdFailedToLoad = .init(
         networkName: "AdMob",
         mediatorName: .appLovin,
+        adFormat: .banner,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         mediatorErrorCode: 3
@@ -123,6 +129,7 @@ private extension AdFeatureEventsRequestTests {
     static let loadedData: AdLoaded = .init(
         networkName: "AdMob",
         mediatorName: .appLovin,
+        adFormat: .interstitial,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123"
@@ -131,6 +138,7 @@ private extension AdFeatureEventsRequestTests {
     static let eventData: AdDisplayed = .init(
         networkName: "AdMob",
         mediatorName: .appLovin,
+        adFormat: .rewarded,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123"
@@ -139,6 +147,7 @@ private extension AdFeatureEventsRequestTests {
     static let openedData: AdOpened = .init(
         networkName: "AdMob",
         mediatorName: .appLovin,
+        adFormat: .native,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123"
@@ -147,6 +156,7 @@ private extension AdFeatureEventsRequestTests {
     static let revenueData: AdRevenue = .init(
         networkName: "AdMob",
         mediatorName: .appLovin,
+        adFormat: .mrec,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123",

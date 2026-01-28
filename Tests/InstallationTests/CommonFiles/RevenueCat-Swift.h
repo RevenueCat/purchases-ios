@@ -453,47 +453,88 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdRevenueP
 /// \endcode
 SWIFT_CLASS_NAMED("AdTracker") SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(macos,introduced=12.0) SWIFT_AVAILABILITY(tvos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=15.0)
 @interface RCAdTracker : NSObject
-/// Tracks when an ad fails to load (Objective-C compatible).
+/// Tracks when an ad fails to load.
 /// Call this method from your ad SDK’s failure callback to report load failures to RevenueCat.
-/// Include the optional <code>mediatorErrorCode</code> if provided by the mediation SDK.
-/// This is the completion handler version for Objective-C compatibility.
-/// \param data The failed to load ad event data
+/// Include the optional <code>mediatorErrorCode</code> if provided by the mediation SDK to aid debugging.
+/// <h2>Example:</h2>
+/// \code
+/// Purchases.shared.adTracker.trackAdFailedToLoad(.init(
+///     networkName: "AdMob",
+///     mediatorName: .appLovin,
+///     placement: "home_screen",
+///     adUnitId: "ca-app-pub-123",
+///     mediatorErrorCode: 3
+/// ))
 ///
-/// \param completion Called when the tracking is complete
+/// \endcode\param data The failed to load ad event data, including optional <code>mediatorErrorCode</code>
 ///
-- (void)trackAdFailedToLoad:(RCAdFailedToLoad * _Nonnull)data completion:(void (^ _Nonnull)(void))completion;
-/// Tracks when an ad successfully loads (Objective-C compatible).
+- (void)trackAdFailedToLoad:(RCAdFailedToLoad * _Nonnull)data;
+/// Tracks when an ad successfully loads.
 /// Call this method from your ad SDK’s load callback to report successful ad loads to RevenueCat.
-/// This is the completion handler version for Objective-C compatibility.
-/// \param data The loaded ad event data
+/// Tracking load events helps correlate mediation performance with revenue and impressions.
+/// <h2>Example:</h2>
+/// \code
+/// Purchases.shared.adTracker.trackAdLoaded(.init(
+///     networkName: "AdMob",
+///     mediatorName: .appLovin,
+///     placement: "home_screen",
+///     adUnitId: "ca-app-pub-123",
+///     impressionId: "impression-456"
+/// ))
 ///
-/// \param completion Called when the tracking is complete
+/// \endcode\param data The loaded ad event data
 ///
-- (void)trackAdLoaded:(RCAdLoaded * _Nonnull)data completion:(void (^ _Nonnull)(void))completion;
-/// Tracks when an ad impression is displayed (Objective-C compatible).
+- (void)trackAdLoaded:(RCAdLoaded * _Nonnull)data;
+/// Tracks when an ad impression is displayed.
 /// Call this method from your ad SDK’s impression callback to report ad displays to RevenueCat.
-/// This is the completion handler version for Objective-C compatibility.
-/// \param data The displayed ad event data
+/// This enables RevenueCat to track ad impressions alongside your subscription revenue.
+/// <h2>Example:</h2>
+/// \code
+/// Purchases.shared.adTracker.trackAdDisplayed(.init(
+///     networkName: "AdMob",
+///     mediatorName: .appLovin,
+///     placement: "home_screen",
+///     adUnitId: "ca-app-pub-123",
+///     impressionId: "impression-456"
+/// ))
 ///
-/// \param completion Called when the tracking is complete
+/// \endcode\param data The displayed ad event data
 ///
-- (void)trackAdDisplayed:(RCAdDisplayed * _Nonnull)data completion:(void (^ _Nonnull)(void))completion;
-/// Tracks when an ad is opened or clicked (Objective-C compatible).
+- (void)trackAdDisplayed:(RCAdDisplayed * _Nonnull)data;
+/// Tracks when an ad is opened or clicked.
 /// Call this method from your ad SDK’s click callback to report ad interactions to RevenueCat.
-/// This is the completion handler version for Objective-C compatibility.
-/// \param data The opened/clicked ad event data
+/// <h2>Example:</h2>
+/// \code
+/// Purchases.shared.adTracker.trackAdOpened(.init(
+///     networkName: "AdMob",
+///     mediatorName: .appLovin,
+///     placement: "home_screen",
+///     adUnitId: "ca-app-pub-123",
+///     impressionId: "impression-456"
+/// ))
 ///
-/// \param completion Called when the tracking is complete
+/// \endcode\param data The opened/clicked ad event data
 ///
-- (void)trackAdOpened:(RCAdOpened * _Nonnull)data completion:(void (^ _Nonnull)(void))completion;
-/// Tracks ad revenue from an impression (Objective-C compatible).
+- (void)trackAdOpened:(RCAdOpened * _Nonnull)data;
+/// Tracks ad revenue from an impression.
 /// Call this method from your ad SDK’s revenue callback to report ad revenue to RevenueCat.
-/// This is the completion handler version for Objective-C compatibility.
-/// \param data The ad revenue data including amount, currency, and precision
+/// This enables comprehensive LTV tracking across subscriptions and ad monetization.
+/// <h2>Example:</h2>
+/// \code
+/// Purchases.shared.adTracker.trackAdRevenue(.init(
+///     networkName: "AdMob",
+///     mediatorName: .appLovin,
+///     placement: "home_screen",
+///     adUnitId: "ca-app-pub-123",
+///     impressionId: "impression-456",
+///     revenueMicros: 1500000,  // $1.50
+///     currency: "USD",
+///     precision: .exact
+/// ))
 ///
-/// \param completion Called when the tracking is complete
+/// \endcode\param data The ad revenue data including amount, currency, and precision
 ///
-- (void)trackAdRevenue:(RCAdRevenue * _Nonnull)data completion:(void (^ _Nonnull)(void))completion;
+- (void)trackAdRevenue:(RCAdRevenue * _Nonnull)data;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -3732,6 +3773,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCPaddle SWIFT_COMPILE_NAME("paddle") = 9,
 /// For entitlements granted via the Test Store.
   RCTestStore SWIFT_COMPILE_NAME("testStore") = 10,
+/// For entitlements granted via the Galaxy Store.
+  RCGalaxy SWIFT_COMPILE_NAME("galaxy") = 11,
 };
 
 SWIFT_CLASS("_TtC10RevenueCat16StoreKit1Wrapper")
@@ -4228,12 +4271,12 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 };
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat20TrackingManagerProxy")
