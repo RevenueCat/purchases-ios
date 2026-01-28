@@ -49,8 +49,10 @@ public class PaywallViewController: UIViewController {
 
     /// Custom variables to be used in paywall text replacement.
     ///
-    /// Set this property before presenting the view controller to provide custom variable values.
     /// Variables are defined in the RevenueCat dashboard using the `{{ custom.key }}` syntax.
+    ///
+    /// - Important: Set this property before presenting the view controller.
+    ///   Changes made after presentation will not be reflected in the paywall.
     ///
     /// ### Example
     /// ```swift
@@ -62,14 +64,7 @@ public class PaywallViewController: UIViewController {
     /// ]
     /// present(vc, animated: true)
     /// ```
-    public var customVariables: [String: CustomVariableValue] = [:] {
-        didSet {
-            // Re-create the hosting controller when custom variables change
-            if self.hostingController != nil {
-                self.hostingController = self.createHostingController()
-            }
-        }
-    }
+    public var customVariables: [String: CustomVariableValue] = [:]
 
     // MARK: - Objective-C Custom Variable Methods
 

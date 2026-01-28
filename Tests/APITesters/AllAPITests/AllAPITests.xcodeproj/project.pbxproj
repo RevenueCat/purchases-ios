@@ -137,6 +137,7 @@
 		FDE57B082DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE57B072DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift */; };
 		FDE57B0A2DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = FDE57B092DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h */; };
 		FDE57B0C2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = FDE57B0B2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m */; };
+		CC2A3B4C2E2012AB00AABBCC /* RCPaywallViewControllerAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = CC2A3B4B2E2012AB00AABBCC /* RCPaywallViewControllerAPI.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -375,6 +376,8 @@
 		FDE57B072DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesAPI.swift; sourceTree = "<group>"; };
 		FDE57B092DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCVirtualCurrenciesAPI.h; sourceTree = "<group>"; };
 		FDE57B0B2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCVirtualCurrenciesAPI.m; sourceTree = "<group>"; };
+		CC2A3B4A2E2012AB00AABBCC /* RCPaywallViewControllerAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPaywallViewControllerAPI.h; sourceTree = "<group>"; };
+		CC2A3B4B2E2012AB00AABBCC /* RCPaywallViewControllerAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPaywallViewControllerAPI.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -551,6 +554,8 @@
 				FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */,
 				FDE57B092DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h */,
 				FDE57B0B2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m */,
+				CC2A3B4A2E2012AB00AABBCC /* RCPaywallViewControllerAPI.h */,
+				CC2A3B4B2E2012AB00AABBCC /* RCPaywallViewControllerAPI.m */,
 			);
 			path = ObjcAPITester;
 			sourceTree = "<group>";
@@ -1019,6 +1024,7 @@
 				2D4C61922C5AD31A00A29FD2 /* RCSubscriptionPeriodAPI.m in Sources */,
 				2D4C61802C5AD31A00A29FD2 /* RCStoreProductAPI.m in Sources */,
 				FDE57B0C2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m in Sources */,
+				CC2A3B4C2E2012AB00AABBCC /* RCPaywallViewControllerAPI.m in Sources */,
 				2D4C61792C5AD31A00A29FD2 /* RCRefundRequestStatusAPI.m in Sources */,
 				2D4C618B2C5AD31A00A29FD2 /* RCCustomerInfoAPI.m in Sources */,
 				2D4C617A2C5AD31A00A29FD2 /* RCOfferingsAPI.m in Sources */,

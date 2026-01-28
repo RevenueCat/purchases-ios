@@ -1762,6 +1762,7 @@
 		2DD5006F2C519EB4009C19B7 /* AppList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppList.swift; sourceTree = "<group>"; };
 		2DD500702C519EB4009C19B7 /* CustomPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywall.swift; sourceTree = "<group>"; };
 		2DD500712C519EB4009C19B7 /* CustomPaywallContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywallContent.swift; sourceTree = "<group>"; };
+		CC1A2B3C2E1234AB00AABBCC /* CustomVariablesEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariablesEditorView.swift; sourceTree = "<group>"; };
 		2DD500722C519EB4009C19B7 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		2DD500732C519EB4009C19B7 /* PaywallForID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallForID.swift; sourceTree = "<group>"; };
 		2DD500742C519EB4009C19B7 /* PaywallPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPresenter.swift; sourceTree = "<group>"; };
@@ -3682,6 +3683,7 @@
 				2DD5006F2C519EB4009C19B7 /* AppList.swift */,
 				2DD500702C519EB4009C19B7 /* CustomPaywall.swift */,
 				2DD500712C519EB4009C19B7 /* CustomPaywallContent.swift */,
+				CC1A2B3C2E1234AB00AABBCC /* CustomVariablesEditorView.swift */,
 				FD33CD5F2D03500C000D13A4 /* CustomerCenterUIKitView.swift */,
 				2DD500722C519EB4009C19B7 /* DebugView.swift */,
 				2DD500732C519EB4009C19B7 /* PaywallForID.swift */,
