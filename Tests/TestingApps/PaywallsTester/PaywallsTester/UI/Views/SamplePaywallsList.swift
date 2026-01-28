@@ -121,6 +121,14 @@ struct SamplePaywallsList: View {
             CustomerCenterUIKitView(
                 customerCenterActionHandler: self.handleCustomerCenterAction
             )
+
+        #if DEBUG
+        case .uiKitCondensedFooter(let template):
+            PaywallCondensedFooterUIKitView(
+                offering: Self.loader.offering(for: template)
+            )
+            .ignoresSafeArea(edges: .bottom)
+        #endif
         #else
         default:
             EmptyView()
@@ -165,6 +173,15 @@ struct SamplePaywallsList: View {
                     TemplateLabel(name: "Custom + condensed footer",
                                   icon: PaywallTesterViewMode.condensedFooter.icon)
                 }
+
+                #if os(iOS)
+                Button {
+                    self.display = .uiKitCondensedFooter(.template1)
+                } label: {
+                    TemplateLabel(name: "UIKit + condensed footer",
+                                  icon: PaywallTesterViewMode.condensedFooter.icon)
+                }
+                #endif
                 #endif
 
                 Button {
@@ -342,6 +359,11 @@ private extension SamplePaywallsList {
         case customerCenterNavigationView
         @available(watchOS, unavailable)
         case uiKitCustomerCenter
+
+        #if DEBUG
+        @available(watchOS, unavailable)
+        case uiKitCondensedFooter(PaywallTemplate)
+        #endif
     }
 
 }
@@ -381,6 +403,11 @@ extension SamplePaywallsList.Display: Identifiable {
 
         case .uiKitCustomerCenter:
             return "customer-center-uikit"
+
+        #if DEBUG
+        case let .uiKitCondensedFooter(template):
+            return "paywall-uikit-condensed-footer-\(template.rawValue)"
+        #endif
         }
     }
 
