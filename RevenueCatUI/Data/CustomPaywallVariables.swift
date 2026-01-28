@@ -22,9 +22,7 @@ import SwiftUI
 /// ```swift
 /// PaywallView()
 ///     .customPaywallVariables([
-///         "player_name": .string("John"),
-///         "max_health": .number(100),
-///         "is_premium": .bool(true)
+///         "player_name": .string("John")
 ///     ])
 /// ```
 ///
@@ -53,11 +51,13 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
     }
 
     /// Creates a numeric value.
+    @_spi(Internal)
     public static func number(_ value: Double) -> CustomVariableValue {
         CustomVariableValue(.number(value))
     }
 
     /// Creates a boolean value.
+    @_spi(Internal)
     public static func bool(_ value: Bool) -> CustomVariableValue {
         CustomVariableValue(.bool(value))
     }
@@ -82,6 +82,7 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
     /// The numeric representation of this value.
     /// Returns the underlying value for `.number`, attempts conversion for `.string`,
     /// and returns `1.0` for `true` or `0.0` for `false` in `.bool` cases.
+    @_spi(Internal)
     public var doubleValue: Double {
         switch self.storage {
         case .string(let value):
@@ -96,6 +97,7 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
     /// The boolean representation of this value.
     /// Returns the underlying value for `.bool`, `true` for non-zero `.number`,
     /// and `true` for non-empty `.string` (case-insensitive "true", "1", "yes").
+    @_spi(Internal)
     public var boolValue: Bool {
         switch self.storage {
         case .string(let value):
@@ -128,6 +130,7 @@ extension CustomVariableValue: ExpressibleByStringLiteral {
 extension CustomVariableValue: ExpressibleByIntegerLiteral {
 
     /// Creates a custom variable value from an integer literal.
+    @_spi(Internal)
     public init(integerLiteral value: Int) {
         self = .number(Double(value))
     }
@@ -140,6 +143,7 @@ extension CustomVariableValue: ExpressibleByIntegerLiteral {
 extension CustomVariableValue: ExpressibleByFloatLiteral {
 
     /// Creates a custom variable value from a floating-point literal.
+    @_spi(Internal)
     public init(floatLiteral value: Double) {
         self = .number(value)
     }
@@ -152,6 +156,7 @@ extension CustomVariableValue: ExpressibleByFloatLiteral {
 extension CustomVariableValue: ExpressibleByBooleanLiteral {
 
     /// Creates a custom variable value from a boolean literal.
+    @_spi(Internal)
     public init(booleanLiteral value: Bool) {
         self = .bool(value)
     }
@@ -194,9 +199,7 @@ extension View {
     /// ```swift
     /// PaywallView()
     ///     .customPaywallVariables([
-    ///         "player_name": .string("John"),
-    ///         "max_health": .number(100),
-    ///         "is_premium": .bool(true)
+    ///         "player_name": .string("John")
     ///     ])
     /// ```
     ///
