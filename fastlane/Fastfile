@@ -913,6 +913,7 @@ platform :ios do
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
     output_dir = options[:output_dir] || "test_output/maestro"
+    skip_slack_notification = options[:skip_slack_notification] || true
     base_path = "#{Dir.pwd}/.."
 
     UI.message("Running Maestro E2E tests for backend environment: #{backend_environment}")
@@ -1021,11 +1022,13 @@ platform :ios do
     rescue => e
       raise e
     ensure
-      slack_backend_integration_test_results(
-        environment: backend_environment,
-        success: success,
-        message_binary_solo_on_failure: false
-      )
+      unless skip_slack_notification
+        slack_backend_integration_test_results(
+          environment: backend_environment,
+          success: success,
+          message_binary_solo_on_failure: false
+        )
+      end
       ping_heartbeat_monitor(url: heartbeat_monitor_ping_url)
 
       if store == "app_store"
