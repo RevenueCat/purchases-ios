@@ -7,8 +7,6 @@
 
 appId: com.revenuecat.maestro.ios
 name: Subscribe to product through V2 Paywall for default offering
-properties:
-  environment: ${MAESTRO_ENVIRONMENT_NAME}
 
 ---
 - clearState

@@ -958,12 +958,10 @@ platform :ios do
     ENV["MAESTRO_EXPECTED_VERIFICATION_RESULT"] = entitlement_verification_result
     ENV["MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE"] = customer_info_source
     ENV["MAESTRO_STORE"] = store
-    ENV["MAESTRO_ENVIRONMENT_NAME"] = environment_name
 
     UI.message("Setting Maestro environment variables:")
     UI.message("  MAESTRO_EXPECTED_VERIFICATION_RESULT: #{entitlement_verification_result}")
     UI.message("  MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE: #{customer_info_source}")
-    UI.message("  MAESTRO_ENVIRONMENT_NAME: #{environment_name}")
 
     # Setup XCConfig with the appropriate configuration
     setup_xcconfig(
@@ -1025,6 +1023,18 @@ platform :ios do
     rescue => e
       raise e
     ensure
+      # Post-process JUnit XML to include environment name in testcase names
+      junit_file = "#{output_dir}/report.xml"
+      if File.exist?(junit_file)
+        UI.message("Adding environment name (#{environment_name}) to test names in JUnit report...")
+        content = File.read(junit_file)
+        modified_content = content.gsub(/<testcase([^>]*)name="([^"]+)"/) do |match|
+          prefix = $1
+          test_name = $2
+          "<testcase#{prefix}name=\"#{test_name} (#{environment_name})\""
+        end
+        File.write(junit_file, modified_content)
+      end
       unless skip_slack_notification
         slack_backend_integration_test_results(
           environment: backend_environment,
