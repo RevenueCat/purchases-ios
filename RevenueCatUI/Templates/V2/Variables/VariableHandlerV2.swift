@@ -63,10 +63,7 @@ struct VariableHandlerV2 {
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
             // Check for custom variable first (uses custom. prefix)
             if variableRaw.hasPrefix(Self.customVariablePrefix) {
-                guard let processedValue = self.processCustomVariable(variableRaw) else {
-                    // Variable not found - return nil to keep original template syntax
-                    return nil
-                }
+                let processedValue = self.processCustomVariable(variableRaw)
                 let function = functionRaw.flatMap { self.findFunction($0) }
                 return function?.process(processedValue) ?? processedValue
             }
@@ -92,8 +89,8 @@ struct VariableHandlerV2 {
     }
 
     /// Process a custom variable, returning the resolved value.
-    /// Resolution order: SDK-provided value -> default value from dashboard -> nil (keeps original template)
-    private func processCustomVariable(_ variableRaw: String) -> String? {
+    /// Resolution order: SDK-provided value -> default value from dashboard -> empty string (with warning)
+    private func processCustomVariable(_ variableRaw: String) -> String {
         let key = String(variableRaw.dropFirst(Self.customVariablePrefix.count))
 
         // First, check SDK-provided custom variables
@@ -106,9 +103,9 @@ struct VariableHandlerV2 {
             return defaultValue.stringValue
         }
 
-        // Variable not found - log warning and return nil to keep original template
+        // Variable not found - log warning and return empty string
         Logger.warning(Strings.paywall_custom_variable_not_found(variableName: key))
-        return nil
+        return ""
     }
 
     private func findVariable(_ variableRaw: String) -> VariablesV2? {
