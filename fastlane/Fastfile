@@ -913,7 +913,7 @@ platform :ios do
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
     output_dir = options[:output_dir] || "test_output/maestro"
-    skip_slack_notification = options[:skip_slack_notification] || true
+    skip_slack_notification = options.fetch(:skip_slack_notification, true)
     base_path = "#{Dir.pwd}/.."
 
     UI.message("Running Maestro E2E tests for backend environment: #{backend_environment}")
