@@ -551,13 +551,13 @@ private struct PresentingPaywallModifier: ViewModifier {
                         // in a modal that is "roughly iPhone sized", and if you want to customize further you
                         // can use PaywallView.
                         // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls
-                        #if targetEnvironment(macCatalyst) || os(macOS)
+                        #if targetEnvironment(macCatalyst)
                             .frame(height: 667)
                         #endif
                     }
                     .sheet(item: self.$presentedExitOffer, onDismiss: self.handleExitOfferDismiss) { offering in
                         self.exitOfferPaywallView(for: offering)
-                        #if targetEnvironment(macCatalyst) || os(macOS)
+                        #if targetEnvironment(macCatalyst)
                         // this should be minHeight, but for consistency with the first paywall it will be
                         // like this for now
                             .frame(height: 667)
@@ -853,13 +853,13 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 content
                     .sheet(item: self.$offering, onDismiss: self.handleMainPaywallDismiss) { offering in
                         self.paywallView(for: offering)
-                        #if targetEnvironment(macCatalyst) || os(macOS)
+                        #if targetEnvironment(macCatalyst)
                             .frame(minHeight: 667)
                         #endif
                     }
                     .sheet(item: self.$presentedExitOffer, onDismiss: self.handleExitOfferDismiss) { exitOffering in
                         self.exitOfferPaywallView(for: exitOffering)
-                        #if targetEnvironment(macCatalyst) || os(macOS)
+                        #if targetEnvironment(macCatalyst)
                             .frame(minHeight: 667)
                         #endif
                     }
