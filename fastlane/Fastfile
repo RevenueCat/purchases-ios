@@ -912,6 +912,7 @@ platform :ios do
   lane :run_maestro_e2e_tests do |options|
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
+    output_dir = options[:output_dir] || "test_output/maestro"
     base_path = "#{Dir.pwd}/.."
 
     UI.message("Running Maestro E2E tests for backend environment: #{backend_environment}")
@@ -1014,7 +1015,7 @@ platform :ios do
 
       UI.message("Using flow directory: #{flow_dir}")
 
-      sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
+      sh("maestro", "test", "--format", "junit", "--output", "#{output_dir}/report.xml", "--test-output-dir", output_dir, flow_dir)
 
       success = true
     rescue => e

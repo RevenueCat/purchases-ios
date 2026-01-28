@@ -1111,19 +1111,19 @@ jobs:
             echo 'export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}"' >> $BASH_ENV
       - run:
           name: Run e2e tests (production, app_store)
-          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:production store:app_store
+          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:production store:app_store output_dir:test_output/production_app_store
           no_output_timeout: 15m
       - run:
           name: Run e2e tests (load_shedder_us_east_1, app_store)
-          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:load_shedder_us_east_1 store:app_store
+          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:load_shedder_us_east_1 store:app_store output_dir:test_output/load_shedder_us_east_1_app_store
           no_output_timeout: 15m
       - run:
           name: Run e2e tests (load_shedder_us_east_2, app_store)
-          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:load_shedder_us_east_2 store:app_store
+          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:load_shedder_us_east_2 store:app_store output_dir:test_output/load_shedder_us_east_2_app_store
           no_output_timeout: 15m
       - run:
           name: Run e2e tests (fallback, app_store)
-          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:fallback store:app_store
+          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:fallback store:app_store output_dir:test_output/fallback_app_store
           no_output_timeout: 15m
       # Run test_store test (production only)
       - run:
@@ -1132,7 +1132,7 @@ jobs:
             echo 'export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_TEST_STORE}"' >> $BASH_ENV
       - run:
           name: Run e2e tests (production, test_store)
-          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:production store:test_store
+          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:production store:test_store output_dir:test_output/production_test_store
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/test_output
