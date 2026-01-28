@@ -954,6 +954,7 @@ platform :ios do
     end
 
     # Set environment variables for Maestro
+    environment_name = "#{backend_environment}_#{store}"
     ENV["MAESTRO_EXPECTED_VERIFICATION_RESULT"] = entitlement_verification_result
     ENV["MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE"] = customer_info_source
     ENV["MAESTRO_STORE"] = store
@@ -961,6 +962,7 @@ platform :ios do
     UI.message("Setting Maestro environment variables:")
     UI.message("  MAESTRO_EXPECTED_VERIFICATION_RESULT: #{entitlement_verification_result}")
     UI.message("  MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE: #{customer_info_source}")
+    UI.message("  Test suite name: #{environment_name}")
 
     # Setup XCConfig with the appropriate configuration
     setup_xcconfig(
@@ -1016,7 +1018,7 @@ platform :ios do
 
       UI.message("Using flow directory: #{flow_dir}")
 
-      sh("maestro", "test", "--format", "junit", "--output", "#{output_dir}/report.xml", "--test-output-dir", output_dir, flow_dir)
+      sh("maestro", "test", "--format", "junit", "--output", "#{output_dir}/report.xml", "--test-output-dir", output_dir, "--test-suite-name", environment_name, flow_dir)
 
       success = true
     rescue => e
