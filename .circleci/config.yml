@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        check-api-changes
       ]
     default: default
   generate_snapshots:
@@ -1963,3 +1964,12 @@ workflows:
       equal: [tuist, << pipeline.parameters.action >>]
     jobs:
       - test-tuist-generate-workspace
+
+  # Temporary workflow to test check-api-changes job
+  manual-check-api-changes:
+    when:
+      equal: [check-api-changes, << pipeline.parameters.action >>]
+    jobs:
+      - check-api-changes:
+          context:
+            - slack-secrets-ios
