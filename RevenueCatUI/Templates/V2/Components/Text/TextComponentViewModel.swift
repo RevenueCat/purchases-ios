@@ -58,11 +58,12 @@ class TextComponentViewModel {
         countdownTime: CountdownTime? = nil,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
+        let isEligibleForPromoOffer = promoOffer != nil
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: promoOffer != nil,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
@@ -103,7 +104,6 @@ class TextComponentViewModel {
         promoOffer: PromotionalOffer? = nil,
         countdownTime: CountdownTime? = nil
     ) -> String {
-
         let processedWithV2 = Self.processTextV2(
             text,
             packageContext: packageContext,
@@ -113,6 +113,7 @@ class TextComponentViewModel {
             promoOffer: promoOffer,
             countdownTime: countdownTime
         )
+
         // Note: This is temporary while in closed beta and shortly after
         let processedWithV2AndV1 = Self.processTextV1(
             processedWithV2,
@@ -132,14 +133,14 @@ class TextComponentViewModel {
         promoOffer: PromotionalOffer? = nil,
         countdownTime: CountdownTime? = nil
     ) -> String {
-        guard let package = packageContext.package else {
-            return text
-        }
+        let pkg = packageContext.package
 
-        let discount = Self.discount(
-            from: package.storeProduct.pricePerMonth?.doubleValue,
-            relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
-        )
+        let discount = pkg.flatMap { package in
+            Self.discount(
+                from: package.storeProduct.pricePerMonth?.doubleValue,
+                relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
+            )
+        }
 
         let handler = VariableHandlerV2(
             variableCompatibilityMap: variableConfig.variableCompatibilityMap,
@@ -150,7 +151,7 @@ class TextComponentViewModel {
 
         return handler.processVariables(
             in: text,
-            with: package,
+            with: pkg,
             locale: locale,
             localizations: localizations,
             promoOffer: promoOffer,
@@ -292,8 +293,9 @@ enum GenericFont: String {
     func makeFont(fontSize: CGFloat, useDynamicType: Bool = true) -> Font {
         #if canImport(UIKit)
         if useDynamicType {
-            // Keep using `Font.system(...)` so downstream `.fontWeight(...)` / italic / markdown traits
-            // continue to work, while still respecting Dynamic Type via a scaled point size.
+            // Scale the font size using UIFontMetrics. The view should observe
+            // @Environment(\.dynamicTypeSize) to trigger rebuilds when Dynamic Type changes,
+            // which will cause this method to be called again with the new scaled size.
             let scaledSize = UIFontMetrics.default.scaledValue(for: fontSize)
             return self.makeStaticFont(fontSize: scaledSize)
         }
@@ -312,6 +314,32 @@ enum GenericFont: String {
             return Font.system(size: fontSize, weight: .regular, design: .monospaced)
         case .sansSerif:
             return Font.system(size: fontSize, weight: .regular, design: .default)
+        }
+    }
+
+    /// Maps a font size to an appropriate `Font.TextStyle` for Dynamic Type scaling.
+    ///
+    /// The mapping is arbitrary and used only for scaling purposes. The exact text style
+    /// doesn't need to match Apple's defaults precisely since it only determines
+    /// how the font scales relative to the user's Dynamic Type setting.
+    static func textStyle(for fontSize: CGFloat) -> Font.TextStyle {
+        switch fontSize {
+        case 34...:
+            return .largeTitle
+        case 28..<34:
+            return .title
+        case 24..<28:
+            return .title2
+        case 20..<24:
+            return .title3
+        case 17..<20:
+            return .headline
+        case 15..<17:
+            return .body
+        case 13..<15:
+            return .callout
+        default:
+            return .footnote
         }
     }
 

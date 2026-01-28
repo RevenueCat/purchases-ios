@@ -89,3 +89,37 @@ def check_swift_files_in_project
 end
 
 check_swift_files_in_project
+
+# Check for new public enums in Swift files
+def check_for_public_enums
+  swift_files = (git.added_files + git.modified_files)
+    .select { |file| file.end_with?('.swift') }
+    .select { |file| File.exist?(file) }
+
+  public_enum_pattern = /^\+\s*public\s+enum\s+/
+  spi_public_enum_pattern = /@_spi\([^)]*\)\s*public\s+enum/
+
+  files_with_public_enums = []
+
+  swift_files.each do |file|
+    diff = git.diff_for_file(file)
+    next unless diff
+
+    diff.patch.each_line do |line|
+      if line.match?(public_enum_pattern) && !line.match?(spi_public_enum_pattern)
+        files_with_public_enums << file
+        break
+      end
+    end
+  end
+
+  return if files_with_public_enums.empty?
+
+  message = "Public enums should not be added. Consider using a struct with static properties or an @objc enum instead.\n\n"
+  message += "The following files contain new public enums:\n"
+  files_with_public_enums.each { |file| message += "• #{file}\n" }
+
+  warn(message)
+end
+
+check_for_public_enums

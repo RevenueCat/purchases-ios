@@ -68,11 +68,11 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             precision: .exact
         )
 
-        await Purchases.shared.adTracker.trackAdFailedToLoad(failedToLoadData)
-        await Purchases.shared.adTracker.trackAdLoaded(loadedData)
-        await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
-        await Purchases.shared.adTracker.trackAdOpened(openedData)
-        await Purchases.shared.adTracker.trackAdRevenue(revenueData)
+        Purchases.shared.adTracker.trackAdFailedToLoad(failedToLoadData)
+        Purchases.shared.adTracker.trackAdLoaded(loadedData)
+        Purchases.shared.adTracker.trackAdDisplayed(displayedData)
+        Purchases.shared.adTracker.trackAdOpened(openedData)
+        Purchases.shared.adTracker.trackAdRevenue(revenueData)
 
         try await flushAndVerify(eventsCount: 5)
     }
@@ -102,9 +102,9 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             impressionId: "impression-123"
         )
 
-        await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
-        await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
-        await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
+        Purchases.shared.adTracker.trackAdDisplayed(displayedData)
+        Purchases.shared.adTracker.trackAdDisplayed(displayedData)
+        Purchases.shared.adTracker.trackAdDisplayed(displayedData)
 
         // Simulate app will resign active to trigger flush
         self.simulateAppWillResignActive()
@@ -144,8 +144,8 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             impressionId: "impression-456"
         )
 
-        await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
-        await Purchases.shared.adTracker.trackAdOpened(openedData)
+        Purchases.shared.adTracker.trackAdDisplayed(displayedData)
+        Purchases.shared.adTracker.trackAdOpened(openedData)
 
         await self.resetSingleton()
 

@@ -57,20 +57,6 @@ executors:
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
-  macos-executor-for-macos-12_6:
-    parameters:
-      xcode_version:
-        type: string
-        default: "16.4"
-    macos:
-      # circleci-lint: disable=unknown-xcode-version
-      xcode: << parameters.xcode_version >>
-    resource_class: macos.m1.medium.gen1
-    environment:
-      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
-      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
   macos-executor-large:
     parameters:
       xcode_version:
@@ -213,9 +199,6 @@ commands:
       install_mint:
         type: boolean
         default: false
-      install_mint_0_17_5:
-        type: boolean
-        default: false
       install_xcodes:
         type: boolean
         default: false
@@ -227,7 +210,6 @@ commands:
           command: |
             echo "xcbeautify:<< parameters.install_xcbeautify >>" > .homebrew-deps
             echo "mint:<< parameters.install_mint >>" >> .homebrew-deps
-            echo "mint_0_17_5:<< parameters.install_mint_0_17_5 >>" >> .homebrew-deps
             echo "xcodes:<< parameters.install_xcodes >>" >> .homebrew-deps
       - restore_cache:
           keys:
@@ -242,10 +224,6 @@ commands:
           steps:
             - install-brew-dependency:
                 dependency_name: "mint"
-      - when:
-          condition: << parameters.install_mint_0_17_5 >>
-          steps:
-            - install-mint-0_17_5
       - when:
           condition: << parameters.install_xcodes >>
           steps:
@@ -276,16 +254,6 @@ commands:
             brew install << parameters.dependency_name >>
           environment:
             HOMEBREW_NO_INSTALL_CLEANUP: 1
-
-  install-mint-0_17_5:
-    steps:
-      - run:
-          name: Install Mint 0.17.5
-          command: |
-            git clone https://github.com/yonaskolb/Mint.git
-            cd Mint
-            git checkout 0.17.5
-            make
 
   install-xcbeautify-for-xcode14:
     description: "Installs xcbeautify 1.6.0 using Mint"
@@ -747,7 +715,7 @@ jobs:
   run-revenuecat-ui-ios-26:
     executor:
       name: macos-executor
-      xcode_version: "26.0.1"
+      xcode_version: "26.2"
 
     steps:
       - checkout
@@ -765,7 +733,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            DEVICE: iPhone 17,OS=26.0
+            DEVICE: iPhone 17,OS=26.2
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -834,7 +802,7 @@ jobs:
   run-test-ios-26:
     executor:
       name: macos-executor
-      xcode_version: "26.0.1"
+      xcode_version: "26.2"
     steps:
       - checkout
       - install-dependencies
@@ -843,7 +811,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 17 (26.0)
+            SCAN_DEVICE: iPhone 17 (26.2)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -1033,17 +1001,16 @@ jobs:
 
   run-test-ios-14:
     executor:
-      name: macos-executor-for-macos-12_6
-      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
+      name: macos-executor
+      # Using Xcode 14.3.1 to support iOS 14 simulators
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      xcode_version: "14.2.0"
+      xcode_version: "14.3.1"
 
     steps:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
-          # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
-          install_mint_0_17_5: true
+          install_mint: true
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
@@ -1061,41 +1028,6 @@ jobs:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-14"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-      - slack-notify-on-fail
-
-  run-test-ios-13:
-    executor:
-      name: macos-executor-for-macos-12_6
-      xcode_version: "14.2.0"
-
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-          install_mint: true
-      - macos/install-rosetta
-      - install-xcbeautify-for-xcode14
-      - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 13.7
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 11 (13.7)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-13"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -1178,7 +1110,7 @@ jobs:
         default: "app_store"
     executor:
       name: macos-executor
-      xcode_version: "26.0.1"
+      xcode_version: "26.2"
     steps:
       - macos/preboot-simulator:
           version: "18.6"
@@ -1624,6 +1556,51 @@ jobs:
           name: Update paywall templates
           command: bundle exec fastlane ios update_paywall_preview_resources_commit
 
+  check-api-changes:
+    executor:
+      name: macos-executor
+      xcode_version: "16.3.0"
+    steps:
+      - checkout
+      - install-dependencies
+      - revenuecat/install-public-api-diff
+      - run:
+          name: Generate PR branch swiftinterface
+          command: |
+            bundle exec fastlane ios generate_swiftinterface
+      - run:
+          name: Check API changes
+          command: |
+            bundle exec fastlane ios check_api_changes
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCat-ios-simulator.swiftinterface
+          destination: revenuecat-api-ios-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCat-ios.swiftinterface
+          destination: revenuecat-api-ios.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCat-macos.swiftinterface
+          destination: revenuecat-api-macos.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCat-watchos-simulator.swiftinterface
+          destination: revenuecat-api-watchos-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCat-watchos.swiftinterface
+          destination: revenuecat-api-watchos.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCat-tvos-simulator.swiftinterface
+          destination: revenuecat-api-tvos-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCat-tvos.swiftinterface
+          destination: revenuecat-api-tvos.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCat-visionos-simulator.swiftinterface
+          destination: revenuecat-api-visionos-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCat-visionos.swiftinterface
+          destination: revenuecat-api-visionos.swiftinterface
+      - slack-notify-on-fail
+
   deploy-to-spm:
     docker:
       - image: cimg/base:stable
@@ -1666,7 +1643,6 @@ workflows:
       - run-test-ios-16
       - run-test-ios-15
       - run-test-ios-14
-      - run-test-ios-13
       - run-test-macos
       - run-test-watchos
 
@@ -1692,10 +1668,9 @@ workflows:
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - lint
-      - validate-package-swift:
-          name: validate-package-swift-5.7
-          xcode_version: "14.0.1"
-          mac_os_executor_name: macos-executor-for-macos-12_6
+      - check-api-changes:
+          context:
+            - slack-secrets-ios
       - validate-package-swift:
           name: validate-package-swift-5.8
           xcode_version: "14.3.1"
@@ -1874,6 +1849,9 @@ workflows:
           - equal:
               ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
     jobs:
+      - check-api-changes:
+          context:
+            - slack-secrets-ios
       - <<: *maestro-e2e-test-job
       - run-maestro-e2e-tests:
           name: run-maestro-e2e-tests-production-test-store

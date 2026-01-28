@@ -258,7 +258,7 @@ extension TestLogHandler {
     }
 
     private static func regexEntryCondition(pattern: String, level: LogLevel?) -> EntryCondition {
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) else {
             fail("Invalid regular expression: \(pattern)")
             return { _ in false }
         }

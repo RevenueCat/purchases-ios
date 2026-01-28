@@ -139,26 +139,12 @@
         // AdTracker API
         RCAdTracker *adTracker __unused = RCPurchases.sharedPurchases.adTracker;
 
-        // AdTracker methods with completion handlers
-        [adTracker trackAdFailedToLoad:failedWithPlacement completion:^{
-            // Completion handler
-        }];
-
-        [adTracker trackAdLoaded:loadedWithPlacement completion:^{
-            // Completion handler
-        }];
-
-        [adTracker trackAdDisplayed:displayedWithPlacement completion:^{
-            // Completion handler
-        }];
-
-        [adTracker trackAdOpened:openedWithPlacement completion:^{
-            // Completion handler
-        }];
-
-        [adTracker trackAdRevenue:revenueWithPlacement completion:^{
-            // Completion handler
-        }];
+        // AdTracker methods - fire and forget
+        [adTracker trackAdFailedToLoad:failedWithPlacement];
+        [adTracker trackAdLoaded:loadedWithPlacement];
+        [adTracker trackAdDisplayed:displayedWithPlacement];
+        [adTracker trackAdOpened:openedWithPlacement];
+        [adTracker trackAdRevenue:revenueWithPlacement];
     }
 }
 

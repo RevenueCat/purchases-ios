@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "RevenueCatUI"
-  s.version          = "5.54.0-SNAPSHOT"
+  s.version          = "5.57.0-SNAPSHOT"
   s.summary          = "UI library for RevenueCat paywalls."
 
   s.description      = <<-DESC
@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.documentation_url = "https://docs.revenuecat.com/"
 
   s.framework      = 'SwiftUI'
-  s.swift_version  = '5.7'
+  s.swift_version  = '5.8'
 
   # RevenueCatUI APIs are not available in all these platforms / versions, however retaining this support at the Pod level 
   # allows us to depend on it in the same platforms as RevenueCat.
