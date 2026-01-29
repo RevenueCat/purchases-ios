@@ -58,6 +58,7 @@
 		88DFC1932BCF490400273B6D /* OfferingsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1922BCF490400273B6D /* OfferingsResponse.swift */; };
 		88DFC1942BCF490400273B6D /* PaywallsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1912BCF490400273B6D /* PaywallsResponse.swift */; };
 		88DFC1972BCF4A5100273B6D /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1952BCF4A4300273B6D /* MockData.swift */; };
+		DF1A26D5115387F97D465BF3 /* CustomVariablesEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17CBE9A504CBA10F6A8A57C /* CustomVariablesEditorView.swift */; };
 		FD33CD622D0351BE000D13A4 /* CustomerCenterUIKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD33CD612D0351BE000D13A4 /* CustomerCenterUIKitView.swift */; };
 /* End PBXBuildFile section */
 
@@ -148,6 +149,7 @@
 		88DFC1912BCF490400273B6D /* PaywallsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsResponse.swift; sourceTree = "<group>"; };
 		88DFC1922BCF490400273B6D /* OfferingsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsResponse.swift; sourceTree = "<group>"; };
 		88DFC1952BCF4A4300273B6D /* MockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
+		B17CBE9A504CBA10F6A8A57C /* CustomVariablesEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariablesEditorView.swift; sourceTree = "<group>"; };
 		FA29FBA82CCAA79800DA1976 /* PaywallsTesterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaywallsTesterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD33CD612D0351BE000D13A4 /* CustomerCenterUIKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterUIKitView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -297,6 +299,7 @@
 				4F102E262A840ECC0059EED6 /* CustomPaywall.swift */,
 				4F71CDD12A992292001B9BEF /* CustomPaywallContent.swift */,
 				2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */,
+				B17CBE9A504CBA10F6A8A57C /* CustomVariablesEditorView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -455,8 +458,6 @@
 				"zh-Hans",
 			);
 			mainGroup = 4F6BED912A26A64200CD9322;
-			packageReferences = (
-			);
 			productRefGroup = 4F6BED9B2A26A64200CD9322 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -536,6 +537,7 @@
 				88DFC1402BC73D9D00273B6D /* HTTPStatusCode.swift in Sources */,
 				FD33CD622D0351BE000D13A4 /* CustomerCenterUIKitView.swift in Sources */,
 				4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */,
+				DF1A26D5115387F97D465BF3 /* CustomVariablesEditorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
