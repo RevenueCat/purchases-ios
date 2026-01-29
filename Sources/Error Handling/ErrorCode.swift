@@ -149,7 +149,7 @@ extension ErrorCode: DescribableError {
         case .configurationError:
             return """
                    There is an issue with your configuration. Check the underlying error for more details.
-                   More information: https://rev.cat/why-are-offerings-empty
+                   More information: https://rev.cat/sdk-troubleshooting
                    """
         case .unsupportedError:
             return """
