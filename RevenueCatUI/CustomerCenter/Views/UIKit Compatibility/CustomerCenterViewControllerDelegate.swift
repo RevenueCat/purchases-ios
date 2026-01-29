@@ -91,6 +91,8 @@ public protocol CustomerCenterViewControllerDelegate: NSObjectProtocol {
     optional func customerCenterViewControllerDidSucceedWithPromotionalOffer(_ controller: CustomerCenterViewController)
 
     /// Called when the Customer Center is dismissed.
+    /// Make sure to call dismiss(animated: ) on the CustomerCenterViewController to actually dismiss
+    /// the Customer Center.
     @objc(customerCenterViewControllerWasDismissed:)
     optional func customerCenterViewControllerWasDismissed(_ controller: CustomerCenterViewController)
 }
