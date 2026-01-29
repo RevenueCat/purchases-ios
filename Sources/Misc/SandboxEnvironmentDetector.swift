@@ -114,7 +114,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 private extension SandboxEnvironmentDetector {
 
     func prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: StoreKit2TransactionFetcherType) {
-        Task {
+        Task.detached {
             let environment = await transactionFetcher.appTransactionEnvironment
             self.cachedAppTransactionEnvironment.value = environment
         }
