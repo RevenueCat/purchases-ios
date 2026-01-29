@@ -69,6 +69,19 @@ let project = Project(
                 executable: "PaywallsTester"
             )
         ),
+        .scheme(
+            name: "PaywallsTester - LocalKhepri",
+            shared: true,
+            buildAction: .buildAction(targets: ["PaywallsTester"]),
+            runAction: .runAction(
+                configuration: "Debug",
+                executable: "PaywallsTester",
+                options: .options(
+                    storeKitConfigurationPath:
+                        "../../Tests/TestingApps/PaywallsTester/PaywallsTester/LocalKhepri.storekit"
+                )
+            )
+        ),
         // hack to avoid having `PaywallsTester` visible in the scheme list (hidden: true)
         .scheme(
             name: "PaywallsTester",

@@ -15,8 +15,6 @@
 
 import Foundation
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 // MARK: - Public Types
 
 // MARK: - Internal Protocol
@@ -25,6 +23,7 @@ import Foundation
 internal protocol AdEventData {
     var networkName: String { get }
     var mediatorName: MediatorName { get }
+    var adFormat: AdFormat { get }
     var placement: String? { get }
     var adUnitId: String { get }
 }
@@ -67,12 +66,68 @@ internal protocol AdImpressionEventData: AdEventData {
 
 }
 
+/// Type representing an ad format type.
+///
+/// Use the predefined static properties for common ad formats, or create custom values
+/// for other ad format types.
+@_spi(Experimental) @objc(RCAdFormat) public final class AdFormat: NSObject, Codable {
+
+    /// The raw string value of the ad format
+    @objc public let rawValue: String
+
+    /// Creates an ad format with the specified raw value
+    @objc public init(rawValue: String) {
+        self.rawValue = rawValue
+        super.init()
+    }
+
+    /// Ad format type not in our predefined list
+    @objc public static let other = AdFormat(rawValue: "other")
+
+    /// Standard banner ad format
+    @objc public static let banner = AdFormat(rawValue: "banner")
+
+    /// Full-screen interstitial ad format
+    @objc public static let interstitial = AdFormat(rawValue: "interstitial")
+
+    /// Rewarded video ad format
+    @objc public static let rewarded = AdFormat(rawValue: "rewarded")
+
+    /// Rewarded interstitial ad format
+    @objc public static let rewardedInterstitial = AdFormat(rawValue: "rewarded_interstitial")
+
+    /// Native ad format that matches app design
+    @objc public static let native = AdFormat(rawValue: "native")
+
+    /// App open ad format displayed at app launch
+    @objc public static let appOpen = AdFormat(rawValue: "app_open")
+
+    /// Medium rectangle ad format
+    @objc public static let mrec = AdFormat(rawValue: "mrec")
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdFormat else { return false }
+        return self.rawValue == other.rawValue
+    }
+
+    public override var hash: Int {
+        return self.rawValue.hash
+    }
+
+}
+
 /// Data for ad failed to load events.
-@_spi(Experimental) @objc(RCAdFailedToLoad) public final class AdFailedToLoad: NSObject, AdEventData {
+@_spi(Experimental) @objc(RCAdFailedToLoad) public final class AdFailedToLoad: NSObject,
+                                                                                AdEventData,
+                                                                                Codable,
+                                                                                @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String
     @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var adFormat: AdFormat
     @objc public private(set) var placement: String?
     @objc public private(set) var adUnitId: String
     private let mediatorErrorCodeRawValue: Int?
@@ -86,12 +141,14 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public init(
         networkName: String,
         mediatorName: MediatorName,
+        adFormat: AdFormat,
         placement: String?,
         adUnitId: String,
         mediatorErrorCode: NSNumber?
     ) {
         self.networkName = networkName
         self.mediatorName = mediatorName
+        self.adFormat = adFormat
         self.placement = placement
         self.adUnitId = adUnitId
         self.mediatorErrorCodeRawValue = mediatorErrorCode?.intValue
@@ -101,6 +158,7 @@ internal protocol AdImpressionEventData: AdEventData {
     public convenience init(
         networkName: String,
         mediatorName: MediatorName,
+        adFormat: AdFormat,
         placement: String?,
         adUnitId: String,
         mediatorErrorCode: Int?
@@ -108,6 +166,7 @@ internal protocol AdImpressionEventData: AdEventData {
         self.init(
             networkName: networkName,
             mediatorName: mediatorName,
+            adFormat: adFormat,
             placement: placement,
             adUnitId: adUnitId,
             mediatorErrorCode: mediatorErrorCode.map(NSNumber.init(value:))
@@ -117,12 +176,14 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public convenience init(
         networkName: String,
         mediatorName: MediatorName,
+        adFormat: AdFormat,
         adUnitId: String,
         mediatorErrorCode: NSNumber? = nil
     ) {
         self.init(
             networkName: networkName,
             mediatorName: mediatorName,
+            adFormat: adFormat,
             placement: nil,
             adUnitId: adUnitId,
             mediatorErrorCode: mediatorErrorCode
@@ -136,6 +197,7 @@ internal protocol AdImpressionEventData: AdEventData {
         guard let other = object as? AdFailedToLoad else { return false }
         return self.networkName == other.networkName &&
                self.mediatorName == other.mediatorName &&
+               self.adFormat == other.adFormat &&
                self.placement == other.placement &&
                self.adUnitId == other.adUnitId &&
                self.mediatorErrorCode == other.mediatorErrorCode
@@ -145,6 +207,7 @@ internal protocol AdImpressionEventData: AdEventData {
         var hasher = Hasher()
         hasher.combine(networkName)
         hasher.combine(mediatorName)
+        hasher.combine(adFormat)
         hasher.combine(placement)
         hasher.combine(adUnitId)
         hasher.combine(mediatorErrorCode)
@@ -154,6 +217,7 @@ internal protocol AdImpressionEventData: AdEventData {
     private enum CodingKeys: String, CodingKey {
         case networkName
         case mediatorName
+        case adFormat
         case placement
         case adUnitId
         case mediatorErrorCodeRawValue = "mediatorErrorCode"
@@ -162,11 +226,15 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad loaded events.
-@_spi(Experimental) @objc(RCAdLoaded) public final class AdLoaded: NSObject, AdImpressionEventData {
+@_spi(Experimental) @objc(RCAdLoaded) public final class AdLoaded: NSObject,
+                                                                    AdImpressionEventData,
+                                                                    Codable,
+                                                                    @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String
     @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var adFormat: AdFormat
     @objc public private(set) var placement: String?
     @objc public private(set) var adUnitId: String
     @objc public private(set) var impressionId: String
@@ -174,12 +242,14 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public init(
         networkName: String,
         mediatorName: MediatorName,
+        adFormat: AdFormat,
         placement: String?,
         adUnitId: String,
         impressionId: String
     ) {
         self.networkName = networkName
         self.mediatorName = mediatorName
+        self.adFormat = adFormat
         self.placement = placement
         self.adUnitId = adUnitId
         self.impressionId = impressionId
@@ -189,12 +259,14 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public convenience init(
         networkName: String,
         mediatorName: MediatorName,
+        adFormat: AdFormat,
         adUnitId: String,
         impressionId: String
     ) {
         self.init(
             networkName: networkName,
             mediatorName: mediatorName,
+            adFormat: adFormat,
             placement: nil,
             adUnitId: adUnitId,
             impressionId: impressionId
@@ -208,6 +280,7 @@ internal protocol AdImpressionEventData: AdEventData {
         guard let other = object as? AdLoaded else { return false }
         return self.networkName == other.networkName &&
                self.mediatorName == other.mediatorName &&
+               self.adFormat == other.adFormat &&
                self.placement == other.placement &&
                self.adUnitId == other.adUnitId &&
                self.impressionId == other.impressionId
@@ -217,6 +290,7 @@ internal protocol AdImpressionEventData: AdEventData {
         var hasher = Hasher()
         hasher.combine(networkName)
         hasher.combine(mediatorName)
+        hasher.combine(adFormat)
         hasher.combine(placement)
         hasher.combine(adUnitId)
         hasher.combine(impressionId)
@@ -226,11 +300,15 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad displayed events.
-@_spi(Experimental) @objc(RCAdDisplayed) public final class AdDisplayed: NSObject, AdImpressionEventData {
+@_spi(Experimental) @objc(RCAdDisplayed) public final class AdDisplayed: NSObject,
+                                                                          AdImpressionEventData,
+                                                                          Codable,
+                                                                          @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String
     @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var adFormat: AdFormat
     @objc public private(set) var placement: String?
     @objc public private(set) var adUnitId: String
     @objc public private(set) var impressionId: String
@@ -238,12 +316,14 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public init(
         networkName: String,
         mediatorName: MediatorName,
+        adFormat: AdFormat,
         placement: String?,
         adUnitId: String,
         impressionId: String
     ) {
         self.networkName = networkName
         self.mediatorName = mediatorName
+        self.adFormat = adFormat
         self.placement = placement
         self.adUnitId = adUnitId
         self.impressionId = impressionId
@@ -253,12 +333,14 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public convenience init(
         networkName: String,
         mediatorName: MediatorName,
+        adFormat: AdFormat,
         adUnitId: String,
         impressionId: String
     ) {
         self.init(
             networkName: networkName,
             mediatorName: mediatorName,
+            adFormat: adFormat,
             placement: nil,
             adUnitId: adUnitId,
             impressionId: impressionId
@@ -272,6 +354,7 @@ internal protocol AdImpressionEventData: AdEventData {
         guard let other = object as? AdDisplayed else { return false }
         return self.networkName == other.networkName &&
                self.mediatorName == other.mediatorName &&
+               self.adFormat == other.adFormat &&
                self.placement == other.placement &&
                self.adUnitId == other.adUnitId &&
                self.impressionId == other.impressionId
@@ -281,6 +364,7 @@ internal protocol AdImpressionEventData: AdEventData {
         var hasher = Hasher()
         hasher.combine(networkName)
         hasher.combine(mediatorName)
+        hasher.combine(adFormat)
         hasher.combine(placement)
         hasher.combine(adUnitId)
         hasher.combine(impressionId)
@@ -290,11 +374,15 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad opened/clicked events.
-@_spi(Experimental) @objc(RCAdOpened) public final class AdOpened: NSObject, AdImpressionEventData {
+@_spi(Experimental) @objc(RCAdOpened) public final class AdOpened: NSObject,
+                                                                    AdImpressionEventData,
+                                                                    Codable,
+                                                                    @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String
     @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var adFormat: AdFormat
     @objc public private(set) var placement: String?
     @objc public private(set) var adUnitId: String
     @objc public private(set) var impressionId: String
@@ -302,12 +390,14 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public init(
         networkName: String,
         mediatorName: MediatorName,
+        adFormat: AdFormat,
         placement: String?,
         adUnitId: String,
         impressionId: String
     ) {
         self.networkName = networkName
         self.mediatorName = mediatorName
+        self.adFormat = adFormat
         self.placement = placement
         self.adUnitId = adUnitId
         self.impressionId = impressionId
@@ -317,12 +407,14 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public convenience init(
         networkName: String,
         mediatorName: MediatorName,
+        adFormat: AdFormat,
         adUnitId: String,
         impressionId: String
     ) {
         self.init(
             networkName: networkName,
             mediatorName: mediatorName,
+            adFormat: adFormat,
             placement: nil,
             adUnitId: adUnitId,
             impressionId: impressionId
@@ -336,6 +428,7 @@ internal protocol AdImpressionEventData: AdEventData {
         guard let other = object as? AdOpened else { return false }
         return self.networkName == other.networkName &&
                self.mediatorName == other.mediatorName &&
+               self.adFormat == other.adFormat &&
                self.placement == other.placement &&
                self.adUnitId == other.adUnitId &&
                self.impressionId == other.impressionId
@@ -345,6 +438,7 @@ internal protocol AdImpressionEventData: AdEventData {
         var hasher = Hasher()
         hasher.combine(networkName)
         hasher.combine(mediatorName)
+        hasher.combine(adFormat)
         hasher.combine(placement)
         hasher.combine(adUnitId)
         hasher.combine(impressionId)
@@ -354,11 +448,15 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad revenue events.
-@_spi(Experimental) @objc(RCAdRevenue) public final class AdRevenue: NSObject, AdImpressionEventData {
+@_spi(Experimental) @objc(RCAdRevenue) public final class AdRevenue: NSObject,
+                                                                      AdImpressionEventData,
+                                                                      Codable,
+                                                                      @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String
     @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var adFormat: AdFormat
     @objc public private(set) var placement: String?
     @objc public private(set) var adUnitId: String
     @objc public private(set) var impressionId: String
@@ -369,6 +467,7 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public init(
         networkName: String,
         mediatorName: MediatorName,
+        adFormat: AdFormat,
         placement: String?,
         adUnitId: String,
         impressionId: String,
@@ -378,6 +477,7 @@ internal protocol AdImpressionEventData: AdEventData {
     ) {
         self.networkName = networkName
         self.mediatorName = mediatorName
+        self.adFormat = adFormat
         self.placement = placement
         self.adUnitId = adUnitId
         self.impressionId = impressionId
@@ -390,6 +490,7 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public convenience init(
         networkName: String,
         mediatorName: MediatorName,
+        adFormat: AdFormat,
         adUnitId: String,
         impressionId: String,
         revenueMicros: Int,
@@ -399,6 +500,7 @@ internal protocol AdImpressionEventData: AdEventData {
         self.init(
             networkName: networkName,
             mediatorName: mediatorName,
+            adFormat: adFormat,
             placement: nil,
             adUnitId: adUnitId,
             impressionId: impressionId,
@@ -415,6 +517,7 @@ internal protocol AdImpressionEventData: AdEventData {
         guard let other = object as? AdRevenue else { return false }
         return self.networkName == other.networkName &&
                self.mediatorName == other.mediatorName &&
+               self.adFormat == other.adFormat &&
                self.placement == other.placement &&
                self.adUnitId == other.adUnitId &&
                self.impressionId == other.impressionId &&
@@ -427,6 +530,7 @@ internal protocol AdImpressionEventData: AdEventData {
         var hasher = Hasher()
         hasher.combine(networkName)
         hasher.combine(mediatorName)
+        hasher.combine(adFormat)
         hasher.combine(placement)
         hasher.combine(adUnitId)
         hasher.combine(impressionId)
@@ -482,7 +586,7 @@ extension AdRevenue {
 // MARK: - Internal Event Enum
 
 /// Internal event enum for type-safe routing through the events system.
-internal enum AdEvent {
+internal enum AdEvent: Equatable, Codable, Sendable {
 
     // swiftlint:disable type_name
 
@@ -511,7 +615,7 @@ internal enum AdEvent {
 extension AdEvent {
 
     /// Internal creation metadata that is automatically generated by the SDK.
-    internal struct CreationData {
+    internal struct CreationData: Equatable, Codable, Sendable {
 
         internal var id: ID
         internal var date: Date
@@ -594,15 +698,3 @@ extension AdEvent {
     }
 
 }
-
-// MARK: - Protocol Conformances
-
-extension AdDisplayed: Codable {}
-extension AdOpened: Codable {}
-extension AdRevenue: Codable {}
-extension AdLoaded: Codable {}
-extension AdFailedToLoad: Codable {}
-extension AdEvent.CreationData: Equatable, Codable, Sendable {}
-extension AdEvent: Equatable, Codable, Sendable {}
-
-#endif

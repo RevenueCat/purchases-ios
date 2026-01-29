@@ -14,6 +14,7 @@ var projects: [Path] = [
     "./Projects/RevenueCatTests",
     "./Projects/RevenueCat",
     "./Projects/RevenueCatUI"
+    "./Projects/BinarySizeTest"
 ]
 
 var additionalFiles: [FileElement] = [

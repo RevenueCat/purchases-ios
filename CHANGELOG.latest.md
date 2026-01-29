@@ -1,10 +1,11 @@
 ## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix price_per_period for non-subscription products (PW-69) (#6136) via Drago Crnjac (@popcorn)
 ### Paywallv2
 #### 🐞 Bugfixes
-* Respect paywall distribution if content shorter than device (#5825) via Cesar de la Vega (@vegaro)
+* [EXTERNAL] fix: dont show video in now playing (control center/lock screen #6115 via @erenkulaksiz (#6139) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix compilation of RevenueCatUI in watchOS with Xcode 16 (#5923) via Antonio Pallares (@ajpallares)
-* Bump fastlane-plugin-revenuecat_internal from `efca663` to `76a3a08` (#5921) via dependabot[bot] (@dependabot[bot])
-* Remove the use of scan_with_flaky_test_retries and rely on the retry mechanism of xcodebuild through the regular scan action (#5914) via Rick (@rickvdl)
-* Fix flaky test (#5920) via Antonio Pallares (@ajpallares)
+* Consolidate Maestro E2E tests into a single CI job (#6147) via Antonio Pallares (@ajpallares)
+* Support for adFormat parameter in AdEvent (#6129) via Peter Porfy (@peterporfy)
+* Removed support for Swift 5.7 and removed related Swift version checks (#6142) via Rick (@rickvdl)

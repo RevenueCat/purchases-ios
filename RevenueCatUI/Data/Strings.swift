@@ -34,6 +34,7 @@ enum Strings {
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
+    case image_failed_to_load(URL, Error)
 
     case restoring_purchases
     case restored_purchases
@@ -66,6 +67,7 @@ enum Strings {
     case successfully_opened_url_deep_link(String)
     case no_selected_package_found
     case no_web_checkout_url_found
+    case variable_requires_package(variableName: String)
 
     // Customer Center
     case could_not_find_subscription_information
@@ -89,6 +91,17 @@ enum Strings {
     case fontMappingNotFound(name: String)
     case customFontFailedToLoad(fontName: String)
     case googleFontsNotSupported
+
+    // Video
+    case video_failed_to_set_audio_session_category(Error)
+
+    // Exit Offers
+    case errorFetchingOfferings(Error)
+    case exitOfferNotFound(String)
+    case exitOfferSameAsCurrent
+    case prefetchedExitOffer(String)
+    case presentingExitOffer(String)
+    case errorLoadingExitOffer(Error)
 }
 
 extension Strings: CustomStringConvertible {
@@ -137,6 +150,9 @@ extension Strings: CustomStringConvertible {
             case let .failure(error):
                 return "Failed loading image: \(error)"
             }
+
+        case let .image_failed_to_load(url, error):
+            return "Failed to load image from '\(url)': \(error)"
 
         case .restoring_purchases:
             return "Restoring purchases"
@@ -282,6 +298,9 @@ extension Strings: CustomStringConvertible {
         case .no_web_checkout_url_found:
             return "No web checkout url found."
 
+        case let .variable_requires_package(variableName):
+            return "Paywall variable '\(variableName)' requires a package but none was provided."
+
         case .localizationNotFound(let identifier):
             return "Could not find localizations for '\(identifier)'"
         case .fontMappingNotFound(let name):
@@ -290,6 +309,22 @@ extension Strings: CustomStringConvertible {
             return "Custom font '\(fontName)' could not be loaded. Falling back to system font."
         case .googleFontsNotSupported:
             return "Google Fonts are not supported on this platform"
+
+        case .video_failed_to_set_audio_session_category(let error):
+            return "Failed to set audio session category: \(error)"
+
+        case .errorFetchingOfferings(let error):
+            return "Error fetching offerings: \(error)"
+        case .exitOfferNotFound(let offeringId):
+            return "Exit offer offering '\(offeringId)' not found"
+        case .exitOfferSameAsCurrent:
+            return "Exit offer is the same as the current offering, skipping"
+        case .prefetchedExitOffer(let offeringId):
+            return "Prefetched exit offer offering '\(offeringId)'"
+        case .presentingExitOffer(let offeringId):
+            return "Presenting exit offer paywall for offering '\(offeringId)'"
+        case .errorLoadingExitOffer(let error):
+            return "Error loading exit offer: \(error)"
         }
     }
 

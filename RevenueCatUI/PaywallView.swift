@@ -291,11 +291,14 @@ public struct PaywallView: View {
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
-        let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
-            countries: offering.paywall?.zeroDecimalPlaceCountries
-        )
-
         if let paywallComponents = useDraftPaywall ? offering.draftPaywallComponents : offering.paywallComponents {
+            // For V2 paywalls, prefer zeroDecimalPlaceCountries from paywallComponents
+            let zeroDecimalPlaceCountries = paywallComponents.data.zeroDecimalPlaceCountries
+            let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
+                countries: zeroDecimalPlaceCountries.isEmpty
+                    ? offering.paywall?.zeroDecimalPlaceCountries
+                    : zeroDecimalPlaceCountries
+            )
 
             // For fallback view or footer
             let paywall: PaywallData = .createDefault(with: offering.availablePackages,
@@ -361,6 +364,11 @@ public struct PaywallView: View {
             #if os(macOS)
             DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
             #else
+            // For V1 paywalls, use zeroDecimalPlaceCountries from PaywallData
+            let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
+                countries: offering.paywall?.zeroDecimalPlaceCountries
+            )
+
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
                 locale: purchaseHandler.preferredLocaleOverride ?? .current
             )
@@ -576,8 +584,8 @@ struct LoadedOfferingPaywallView: View {
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
-            .onChangeOf(self.purchaseHandler.purchased) { purchased in
-                if purchased {
+            .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
+                if hasPurchased {
                     guard let onRequestedDismissal = self.onRequestedDismissal else {
                         if self.mode.isFullScreen {
                             Logger.debug(Strings.dismissing_paywall)

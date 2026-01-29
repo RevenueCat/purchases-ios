@@ -11,8 +11,6 @@
 //
 //  Created by RevenueCat on 1/21/25.
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 import Foundation
 import Nimble
 @_spi(Experimental) @testable import RevenueCat
@@ -262,6 +260,7 @@ extension AdDisplayed {
         return .init(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .banner,
             placement: "home_screen",
             adUnitId: "ca-app-pub-\(UUID().uuidString)",
             impressionId: "impression-\(UUID().uuidString)"
@@ -290,5 +289,3 @@ private extension StoredAdEvent {
     }
 
 }
-
-#endif

@@ -17,6 +17,7 @@ import Foundation
 class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
 
     var cacheDirectory: URL?
+    var workingCacheDirectory: URL?
     let lock = NSLock()
 
     var saveDataInvocations: [SaveData] = []
@@ -36,11 +37,14 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
 
     func saveData(_ data: Data, to url: URL) throws {
         saveDataInvocations.append(.init(data: data, url: url))
-        switch saveDataResponses[saveDataInvocations.count - 1] {
-        case .failure(let error):
-            throw error
-        default:
-            break
+
+        if saveDataResponses.indices.contains(saveDataInvocations.count - 1) {
+            switch saveDataResponses[saveDataInvocations.count - 1] {
+            case .failure(let error):
+                throw error
+            default:
+                break
+            }
         }
     }
 
@@ -69,9 +73,14 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
 
     func cachedContentExists(at url: URL) -> Bool {
         lock.withLock {
-            let count = cachedContentExistsInvocations.count
             cachedContentExistsInvocations.append(url)
-            return cachedContentExistsResponses[count]
+
+            let count = cachedContentExistsInvocations.count - 1
+            if cachedContentExistsResponses.indices.contains(count) {
+                return cachedContentExistsResponses[count]
+            }
+
+            return false
         }
     }
 
@@ -90,12 +99,17 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
     func loadFile(at url: URL) throws -> Data {
         try lock.withLock {
             loadFileInvocations.append(url)
-            switch loadFileResponses[loadFileInvocations.count - 1] {
-            case .success(let data):
-                return data
-            case .failure(let error):
-                throw error
+
+            if loadFileResponses.indices.contains(loadFileInvocations.count - 1) {
+                switch loadFileResponses[loadFileInvocations.count - 1] {
+                case .success(let data):
+                    return data
+                case .failure(let error):
+                    throw error
+                }
             }
+
+            throw MockSimpleCacheError.noStubConfigured(url: url)
         }
     }
 
@@ -109,16 +123,36 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
         removeInvocations.append(url)
     }
 
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
+    func createDirectoryIfNeeded(
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType,
+        inAppSpecificDirectory: Bool
+    ) -> URL? {
+        workingCacheDirectory = cacheDirectoryURL(basePath: basePath)
+        return workingCacheDirectory
+    }
+
+    func cacheDirectoryURL(basePath: String) -> URL? {
         cacheDirectory?.appendingPathComponent(basePath)
     }
 
-    func createDocumentDirectoryIfNeeded(basePath: String) -> URL? {
-        cacheDirectory?.appendingPathComponent("docs–" + basePath)
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        return []
     }
 
     struct SaveData: Equatable {
         var data: Data
         var url: URL
+    }
+}
+
+enum MockSimpleCacheError: Error, LocalizedError {
+    case noStubConfigured(url: URL)
+
+    var errorDescription: String? {
+        switch self {
+        case .noStubConfigured(let url):
+            return "MockSimpleCache: No stub configured for URL: \(url)"
+        }
     }
 }
