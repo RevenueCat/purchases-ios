@@ -1229,6 +1229,27 @@ class CustomVariablesV2Tests: TestCase {
         expect(result).to(equal("Value: 100"))
     }
 
+    func testVariableLookingLikeCustomButIncorrectSyntaxReturnsEmpty() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["player": .string("John")],
+            defaultCustomVariables: [:]
+        )
+
+        // Using "custom_player" instead of "custom.player" - should return empty
+        // and log a warning about incorrect syntax
+        let result = variableHandler.processVariables(
+            in: "Hello {{ custom_player }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Hello !"))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

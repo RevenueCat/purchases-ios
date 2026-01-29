@@ -324,9 +324,8 @@ extension Strings: CustomStringConvertible {
             return "Unknown custom variable type '\(type)'. Using as string."
 
         case .paywall_variable_looks_like_custom(let variableName):
-            return "Variable '\(variableName)' looks like a custom variable. " +
-            "Did you mean '{{ custom.\(variableName.dropFirst("custom".count)) }}'? " +
-            "Custom variables must use the 'custom.' prefix (with a dot)."
+            return "Variable '\(variableName)' looks like a custom variable but uses incorrect syntax. " +
+            "Custom variables must use the 'custom.' prefix with a dot, e.g., '{{ custom.variable_name }}'."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
