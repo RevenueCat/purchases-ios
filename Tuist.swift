@@ -9,3 +9,8 @@ let tuist = Tuist(
         )
     )
 )
+
+
+public enum ThisIsOneMoreTest {
+    case test
+}
