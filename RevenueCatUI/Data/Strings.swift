@@ -97,6 +97,7 @@ enum Strings {
     case paywall_custom_variable_invalid_number(value: String)
     case paywall_custom_variable_unknown_type(type: String)
     case paywall_variable_looks_like_custom(variableName: String)
+    case paywall_custom_variable_invalid_key(key: String)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -326,6 +327,10 @@ extension Strings: CustomStringConvertible {
         case .paywall_variable_looks_like_custom(let variableName):
             return "Variable '\(variableName)' looks like a custom variable but uses incorrect syntax. " +
             "Custom variables must use the 'custom.' prefix with a dot, e.g., '{{ custom.variable_name }}'."
+
+        case .paywall_custom_variable_invalid_key(let key):
+            return "Custom variable key '\(key)' is invalid. " +
+            "Keys must start with a letter and contain only letters, numbers, and underscores."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"

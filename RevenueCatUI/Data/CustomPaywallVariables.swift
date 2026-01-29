@@ -217,8 +217,29 @@ extension View {
     public func customPaywallVariables(
         _ variables: [String: CustomVariableValue]
     ) -> some View {
-        environment(\.customPaywallVariables, variables)
+        #if DEBUG
+        Self.validateCustomVariableKeys(variables)
+        #endif
+        return environment(\.customPaywallVariables, variables)
     }
+
+    #if DEBUG
+    private static func validateCustomVariableKeys(_ variables: [String: CustomVariableValue]) {
+        for key in variables.keys where !Self.isValidCustomVariableKey(key) {
+            Logger.warning(Strings.paywall_custom_variable_invalid_key(key: key))
+        }
+    }
+
+    private static func isValidCustomVariableKey(_ key: String) -> Bool {
+        guard !key.isEmpty else { return false }
+
+        // Must start with a letter
+        guard let first = key.first, first.isLetter else { return false }
+
+        // Can only contain letters, numbers, and underscores
+        return key.allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
+    }
+    #endif
 
 }
 
