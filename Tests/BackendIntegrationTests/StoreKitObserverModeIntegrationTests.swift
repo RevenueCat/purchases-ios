@@ -204,4 +204,18 @@ class StoreKit2NotEnabledObserverModeIntegrationTests: BaseStoreKitObserverModeI
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testObservingTransactionForProductIDThrowsIfStoreKit2NotEnabled() async throws {
+        let expectation = self.expectation(description: "Completion called")
+
+        Purchases.shared.recordPurchase(productID: "com.revenuecat.monthly_4.99.1_week_intro") { transaction, error in
+            expect(transaction).to(beNil())
+            expect(error).toNot(beNil())
+            expect(error).to(matchError(ErrorCode.configurationError))
+            expectation.fulfill()
+        }
+
+        await fulfillment(of: [expectation], timeout: 5.0)
+    }
+
 }

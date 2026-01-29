@@ -17,6 +17,11 @@ func checkCustomerCenterViewControllerAPI(
     let _ = CustomerCenterViewController()
     let _ = CustomerCenterViewController(customerCenterActionHandler: customerCenterActionHandler)
 
+    let delegate: CustomerCenterViewControllerDelegate? = nil
+    let vcWithDelegate = CustomerCenterViewController(delegate: delegate)
+    vcWithDelegate.delegate = delegate
+    let _: CustomerCenterViewControllerDelegate? = vcWithDelegate.delegate
+
     // Full initializer with individual handlers
     let _ = CustomerCenterViewController(
         restoreStarted: {},
@@ -31,5 +36,54 @@ func checkCustomerCenterViewControllerAPI(
         onCustomAction: { _, _ in },
         promotionalOfferSuccess: {}
     )
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private class MockCustomerCenterViewControllerDelegate: NSObject, CustomerCenterViewControllerDelegate {
+
+    func customerCenterViewControllerDidStartRestore(_ controller: CustomerCenterViewController) {}
+
+    func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didFinishRestoringWith customerInfo: CustomerInfo
+    ) {}
+
+    func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didFailRestoringWith error: NSError
+    ) {}
+
+    func customerCenterViewControllerDidShowManageSubscriptions(_ controller: CustomerCenterViewController) {}
+
+    func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didStartRefundRequestFor productId: String
+    ) {}
+
+    func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didCompleteRefundRequestFor productId: String,
+        with status: RefundRequestStatus
+    ) {}
+
+    func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didCompleteFeedbackSurveyWith optionId: String
+    ) {}
+
+    func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didSelectChangePlansWith optionId: String
+    ) {}
+
+    func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didSelectCustomActionWith actionIdentifier: String,
+        purchaseIdentifier: String?
+    ) {}
+
+    func customerCenterViewControllerDidSucceedWithPromotionalOffer(_ controller: CustomerCenterViewController) {}
+
+    func customerCenterViewControllerWasDismissed(_ controller: CustomerCenterViewController) {}
 }
 #endif
