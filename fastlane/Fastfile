@@ -1801,21 +1801,34 @@ platform :ios do
   lane :generate_swiftinterface do
     require 'tmpdir'
 
-    Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
-      ApiDiffHelper::PLATFORMS.each do |platform_config|
-        UI.message("Building RevenueCat for #{platform_config[:platform]}...")
+    # Create a temporary xcconfig to exclude DEBUG from compilation conditions
+    # This ensures the generated swiftinterface matches CI (release) builds
+    xcconfig_path = "../fastlane/tmp_no_debug.xcconfig"
+    File.write(xcconfig_path, <<~XCCONFIG)
+      // Temporary xcconfig for swiftinterface generation
+      // Excludes DEBUG to match CI release builds
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS =
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*] = VISION_OS
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*] = VISION_OS
+    XCCONFIG
 
-        sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
+    begin
+      Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
+        ApiDiffHelper::PLATFORMS.each do |platform_config|
+          UI.message("Building RevenueCat for #{platform_config[:platform]}...")
 
-        Dir.chdir("..") do
-          sh("xcodebuild", "clean", "build",
-             "-scheme", "RevenueCat",
-             "-derivedDataPath", ".build",
-             "-configuration", "Release",
-             "-sdk", sdk_path,
-             "-destination", platform_config[:destination],
-             "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
-        end
+          sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
+
+          Dir.chdir("..") do
+            sh("xcodebuild", "clean", "build",
+               "-scheme", "RevenueCat",
+               "-derivedDataPath", ".build",
+               "-configuration", "Release",
+               "-sdk", sdk_path,
+               "-destination", platform_config[:destination],
+               "-xcconfig", "fastlane/tmp_no_debug.xcconfig",
+               "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
+          end
 
         swiftinterface_files = ApiDiffHelper.find_swiftinterface_file("../.build", platform_config[:sdk])
 
@@ -1832,6 +1845,10 @@ platform :ios do
       sh("mkdir", "-p", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
       sh("cp", "-r", "#{temp_dir}/.", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
       UI.success("Swift interface files copied to #{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}")
+    end
+    ensure
+      # Clean up temporary xcconfig
+      FileUtils.rm_f(xcconfig_path)
     end
   end
 
