@@ -19,8 +19,6 @@ func checkCustomerCenterViewControllerAPI(
 
     let delegate: CustomerCenterViewControllerDelegate? = nil
     let vcWithDelegate = CustomerCenterViewController(delegate: delegate)
-    vcWithDelegate.delegate = delegate
-    let _: CustomerCenterViewControllerDelegate? = vcWithDelegate.delegate
 
     // Full initializer with individual handlers
     let _ = CustomerCenterViewController(
