@@ -260,6 +260,7 @@ extension AdDisplayed {
         return .init(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .banner,
             placement: "home_screen",
             adUnitId: "ca-app-pub-\(UUID().uuidString)",
             impressionId: "impression-\(UUID().uuidString)"

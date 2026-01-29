@@ -680,6 +680,52 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("Monthly"))
     }
 
+    // MARK: - Non-Subscription Tests
+
+    func testProductPricePerPeriodForLifetime() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        // Lifetime products should not have a period suffix (no slash)
+        expect(result).to(equal("$119.49"))
+    }
+
+    func testProductPricePerPeriodAbbreviatedForLifetime() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period_abbreviated }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        // Lifetime products should not have a period suffix (no slash)
+        expect(result).to(equal("$119.49"))
+    }
+
+    func testProductPricePerPeriodForConsumable() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: TestData.consumablePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        // Consumable products should not have a period suffix (no slash)
+        expect(result).to(equal("$4.99"))
+    }
+
+    func testProductPricePerPeriodAbbreviatedForConsumable() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period_abbreviated }}",
+            with: TestData.consumablePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        // Consumable products should not have a period suffix (no slash)
+        expect(result).to(equal("$4.99"))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

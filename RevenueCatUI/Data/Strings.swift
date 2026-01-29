@@ -99,6 +99,9 @@ enum Strings {
     case paywall_variable_looks_like_custom(variableName: String)
     case paywall_custom_variable_invalid_key(key: String)
 
+    // Video
+    case video_failed_to_set_audio_session_category(Error)
+
     // Exit Offers
     case errorFetchingOfferings(Error)
     case exitOfferNotFound(String)
@@ -331,6 +334,9 @@ extension Strings: CustomStringConvertible {
         case .paywall_custom_variable_invalid_key(let key):
             return "Custom variable key '\(key)' is invalid. " +
             "Keys must start with a letter and contain only letters, numbers, and underscores."
+
+        case .video_failed_to_set_audio_session_category(let error):
+            return "Failed to set audio session category: \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
