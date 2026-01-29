@@ -95,6 +95,7 @@ def check_for_public_enums
   swift_files = (git.added_files + git.modified_files)
     .select { |file| file.end_with?('.swift') }
     .select { |file| File.exist?(file) }
+    .select { |file| file.start_with?('Sources/') || file.start_with?('RevenueCatUI/') }
 
   public_enum_pattern = /^\+\s*public\s+enum\s+/
   spi_public_enum_pattern = /@_spi\([^)]*\)\s*public\s+enum/
