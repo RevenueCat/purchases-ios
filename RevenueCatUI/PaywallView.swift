@@ -14,10 +14,6 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-public enum ThisIsAnotherTest {
-    case test
-}
-
 #if !os(tvOS)
 
 /// A SwiftUI view for displaying the paywall for an `Offering`.

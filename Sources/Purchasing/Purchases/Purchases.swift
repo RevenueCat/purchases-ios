@@ -23,10 +23,6 @@ import StoreKit
 
 // MARK: Block definitions
 
-public enum ThisIsATest {
-    case test
-}
-
 /**
  Result for ``Purchases/purchase(product:)``.
  Counterpart of `PurchaseCompletedBlock` for `async` APIs.
