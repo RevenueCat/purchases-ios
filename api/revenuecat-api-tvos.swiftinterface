@@ -157,6 +157,7 @@ extension RevenueCat.PaywallEvent {
 }
 extension RevenueCat.PaywallEvent {
   public struct Data {
+    public var paywallIdentifier: Swift.String?
     public var offeringIdentifier: Swift.String
     public var paywallRevision: Swift.Int
     public var sessionIdentifier: RevenueCat.PaywallEvent.SessionID
@@ -952,6 +953,7 @@ extension RevenueCat.PromotionalOffer : Swift.Sendable {
 extension RevenueCat.PromotionalOffer.SignedData : Swift.Sendable {
 }
 public struct PaywallData {
+  public var id: Swift.String?
   public var templateName: Swift.String
   public var config: RevenueCat.PaywallData.Configuration
   public var assetBaseURL: Foundation.URL
@@ -1199,8 +1201,12 @@ extension RevenueCat.PaywallData {
   }
 }
 extension RevenueCat.PaywallData {
-  public init(templateName: Swift.String, config: RevenueCat.PaywallData.Configuration, localization: RevenueCat.PaywallData.LocalizedConfiguration, assetBaseURL: Foundation.URL, revision: Swift.Int = 0, locale: Foundation.Locale = .current, zeroDecimalPlaceCountries: [Swift.String] = [])
-  public init(templateName: Swift.String, config: RevenueCat.PaywallData.Configuration, localizationByTier: [Swift.String : RevenueCat.PaywallData.LocalizedConfiguration], assetBaseURL: Foundation.URL, revision: Swift.Int = 0, locale: Foundation.Locale = .current, zeroDecimalPlaceCountries: [Swift.String] = [])
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(id: Swift.String? = nil, templateName: Swift.String, config: RevenueCat.PaywallData.Configuration, localization: RevenueCat.PaywallData.LocalizedConfiguration, assetBaseURL: Foundation.URL, revision: Swift.Int = 0, locale: Foundation.Locale = .current, zeroDecimalPlaceCountries: [Swift.String] = [])
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(id: Swift.String? = nil, templateName: Swift.String, config: RevenueCat.PaywallData.Configuration, localizationByTier: [Swift.String : RevenueCat.PaywallData.LocalizedConfiguration], assetBaseURL: Foundation.URL, revision: Swift.Int = 0, locale: Foundation.Locale = .current, zeroDecimalPlaceCountries: [Swift.String] = [])
+  #endif
 }
 extension RevenueCat.PaywallData.LocalizedConfiguration.Feature : Swift.Codable {
   public func encode(to encoder: any Swift.Encoder) throws
@@ -4311,6 +4317,7 @@ public struct PaywallComponentsData : Swift.Codable, Swift.Equatable, Swift.Send
     public func encode(to encoder: any Swift.Encoder) throws
     public static func == (a: RevenueCat.PaywallComponentsData.LocalizationData, b: RevenueCat.PaywallComponentsData.LocalizationData) -> Swift.Bool
   }
+  public var id: Swift.String?
   public var templateName: Swift.String
   public var assetBaseURL: Foundation.URL
   public var revision: Swift.Int {
@@ -4326,7 +4333,7 @@ public struct PaywallComponentsData : Swift.Codable, Swift.Equatable, Swift.Send
   public var exitOffers: RevenueCat.ExitOffers?
   public var errorInfo: [Swift.String : RevenueCat.PaywallComponentsData.EquatableError]?
   #if compiler(>=5.3) && $NonescapableTypes
-  public init(templateName: Swift.String, assetBaseURL: Foundation.URL, componentsConfig: RevenueCat.PaywallComponentsData.ComponentsConfig, componentsLocalizations: [RevenueCat.PaywallComponent.LocaleID : RevenueCat.PaywallComponent.LocalizationDictionary], revision: Swift.Int, defaultLocaleIdentifier: Swift.String, zeroDecimalPlaceCountries: [Swift.String] = [], exitOffers: RevenueCat.ExitOffers? = nil)
+  public init(id: Swift.String? = nil, templateName: Swift.String, assetBaseURL: Foundation.URL, componentsConfig: RevenueCat.PaywallComponentsData.ComponentsConfig, componentsLocalizations: [RevenueCat.PaywallComponent.LocaleID : RevenueCat.PaywallComponent.LocalizationDictionary], revision: Swift.Int, defaultLocaleIdentifier: Swift.String, zeroDecimalPlaceCountries: [Swift.String] = [], exitOffers: RevenueCat.ExitOffers? = nil)
   #endif
   public static func == (a: RevenueCat.PaywallComponentsData, b: RevenueCat.PaywallComponentsData) -> Swift.Bool
 }
