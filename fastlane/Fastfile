@@ -1801,16 +1801,10 @@ platform :ios do
   lane :generate_swiftinterface do
     require 'tmpdir'
 
-    # Create a temporary xcconfig to exclude DEBUG from compilation conditions
+    # Create CI.xcconfig to exclude DEBUG from compilation conditions
     # This ensures the generated swiftinterface matches CI (release) builds
-    xcconfig_path = "../fastlane/tmp_no_debug.xcconfig"
-    File.write(xcconfig_path, <<~XCCONFIG)
-      // Temporary xcconfig for swiftinterface generation
-      // Excludes DEBUG to match CI release builds
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS =
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*] = VISION_OS
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*] = VISION_OS
-    XCCONFIG
+    # Using CI.xcconfig because the project automatically loads it instead of Local.xcconfig
+    setup_swiftinterface_xcconfig
 
     begin
       Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
@@ -1826,7 +1820,6 @@ platform :ios do
                "-configuration", "Release",
                "-sdk", sdk_path,
                "-destination", platform_config[:destination],
-               "-xcconfig", "fastlane/tmp_no_debug.xcconfig",
                "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
           end
 
@@ -1847,9 +1840,38 @@ platform :ios do
       UI.success("Swift interface files copied to #{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}")
     end
     ensure
-      # Clean up temporary xcconfig
-      FileUtils.rm_f(xcconfig_path)
+      # Clean up CI.xcconfig
+      cleanup_swiftinterface_xcconfig
     end
+  end
+
+  desc "Setup CI.xcconfig for swiftinterface generation (excludes DEBUG)"
+  private_lane :setup_swiftinterface_xcconfig do
+    base_path = "#{Dir.pwd}/.."
+    xcconfig_path = "#{base_path}/CI.xcconfig"
+
+    UI.message("Creating CI.xcconfig to exclude DEBUG compilation conditions")
+
+    content = [
+      "// Auto-generated for swiftinterface generation. Do not commit to VCS",
+      "// Generated on #{Time.now}",
+      "// Excludes DEBUG to match CI release builds",
+      "",
+      "SWIFT_ACTIVE_COMPILATION_CONDITIONS =",
+      "SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*] = VISION_OS",
+      "SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*] = VISION_OS"
+    ]
+
+    File.write(xcconfig_path, content.join("\n"))
+    UI.success("✅ Created CI.xcconfig")
+  end
+
+  private_lane :cleanup_swiftinterface_xcconfig do
+    base_path = "#{Dir.pwd}/.."
+    xcconfig_path = "#{base_path}/CI.xcconfig"
+
+    FileUtils.rm_f(xcconfig_path)
+    UI.message("Cleaned up CI.xcconfig")
   end
 
   desc "Check API changes and report results"
