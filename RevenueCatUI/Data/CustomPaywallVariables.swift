@@ -218,25 +218,42 @@ extension View {
         _ variables: [String: CustomVariableValue]
     ) -> some View {
         #if DEBUG
-        Self.validateCustomVariableKeys(variables)
+        CustomVariableKeyValidator.validate(variables)
         #endif
         return environment(\.customPaywallVariables, variables)
     }
 
-    #if DEBUG
-    private static func validateCustomVariableKeys(_ variables: [String: CustomVariableValue]) {
-        for key in variables.keys where !Self.isValidCustomVariableKey(key) {
+}
+
+// MARK: - Key Validator
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum CustomVariableKeyValidator {
+
+    /// Validates a single custom variable key and logs a warning if invalid.
+    /// Only performs validation in DEBUG builds.
+    static func validate(_ key: String) {
+        #if DEBUG
+        if !isValidKey(key) {
             Logger.warning(Strings.paywall_custom_variable_invalid_key(key: key))
         }
+        #endif
     }
 
-    private static func isValidCustomVariableKey(_ key: String) -> Bool {
+    /// Validates all keys in a custom variables dictionary and logs warnings for invalid keys.
+    /// Only performs validation in DEBUG builds.
+    static func validate(_ variables: [String: CustomVariableValue]) {
+        #if DEBUG
+        for key in variables.keys where !isValidKey(key) {
+            Logger.warning(Strings.paywall_custom_variable_invalid_key(key: key))
+        }
+        #endif
+    }
+
+    #if DEBUG
+    private static func isValidKey(_ key: String) -> Bool {
         guard !key.isEmpty else { return false }
-
-        // Must start with a letter
         guard let first = key.first, first.isLetter else { return false }
-
-        // Can only contain letters, numbers, and underscores
         return key.allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
     }
     #endif

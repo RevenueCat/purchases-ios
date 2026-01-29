@@ -71,7 +71,7 @@ public class PaywallViewController: UIViewController {
     ///   - value: The string value to set.
     ///   - key: The variable key (without the `custom.` prefix).
     @objc public func setCustomVariable(_ value: String, forKey key: String) {
-        Self.validateCustomVariableKey(key)
+        CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .string(value)
     }
 
@@ -81,7 +81,7 @@ public class PaywallViewController: UIViewController {
     ///   - key: The variable key (without the `custom.` prefix).
     @_spi(Internal)
     @objc public func setCustomVariableNumber(_ value: Double, forKey key: String) {
-        Self.validateCustomVariableKey(key)
+        CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .number(value)
     }
 
@@ -91,25 +91,9 @@ public class PaywallViewController: UIViewController {
     ///   - key: The variable key (without the `custom.` prefix).
     @_spi(Internal)
     @objc public func setCustomVariableBool(_ value: Bool, forKey key: String) {
-        Self.validateCustomVariableKey(key)
+        CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .bool(value)
     }
-
-    private static func validateCustomVariableKey(_ key: String) {
-        #if DEBUG
-        if !Self.isValidCustomVariableKey(key) {
-            Logger.warning(Strings.paywall_custom_variable_invalid_key(key: key))
-        }
-        #endif
-    }
-
-    #if DEBUG
-    private static func isValidCustomVariableKey(_ key: String) -> Bool {
-        guard !key.isEmpty else { return false }
-        guard let first = key.first, first.isLetter else { return false }
-        return key.allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
-    }
-    #endif
 
     private final var shouldBlockTouchEvents: Bool
     private final var dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
