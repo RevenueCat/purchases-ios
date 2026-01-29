@@ -102,16 +102,6 @@ aliases:
         ignore: /.*/
       branches:
         only: main
-  maestro-e2e-test-job: &maestro-e2e-test-job
-    run-maestro-e2e-tests:
-      name: run-maestro-e2e-tests-<< matrix.backend_environment >>
-      context:
-        - e2e-tests
-        - slack-secrets
-      matrix:
-        parameters:
-          backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
-
 commands:
   slack-notify-on-fail:
     steps:
@@ -1099,15 +1089,7 @@ jobs:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
       - slack-notify-on-fail
 
-  run-maestro-e2e-tests:
-    parameters:
-      backend_environment:
-        type: enum
-        enum: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
-      store:
-        type: enum
-        enum: ["app_store", "test_store"]
-        default: "app_store"
+  run-all-maestro-e2e-tests:
     executor:
       name: macos-executor
       xcode_version: "26.2"
@@ -1121,22 +1103,92 @@ jobs:
       - revenuecat/install-maestro
       - tuist-generate-workspace:
           query: "Maestro"
+      # Create directory to track test failures
       - run:
-          name: Set API key for e2e tests
+          name: Initialize test tracking
+          command: mkdir -p /tmp/test_exit_codes
+      # Run app_store tests for all backend environments
+      - run:
+          name: Set API key for app_store e2e tests
           command: |
-            if [ "<< parameters.store >>" == "test_store" ]; then
-              echo 'export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_TEST_STORE}"' >> $BASH_ENV
-            else
-              echo 'export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}"' >> $BASH_ENV
-            fi
+            echo 'export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}"' >> $BASH_ENV
       - run:
-          name: Run e2e tests (<< parameters.backend_environment >>)
-          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:<< parameters.backend_environment >> store:<< parameters.store >>
+          name: Run e2e tests (production, app_store)
+          command: |
+            bundle exec fastlane run_maestro_e2e_tests backend_environment:production store:app_store output_dir:test_output/production_app_store skip_slack_notification:true \
+              && echo "0" > /tmp/test_exit_codes/production_app_store \
+              || (echo "1" > /tmp/test_exit_codes/production_app_store && exit 1)
+          no_output_timeout: 15m
+      - run:
+          name: Run e2e tests (load_shedder_us_east_1, app_store)
+          when: always
+          command: |
+            bundle exec fastlane run_maestro_e2e_tests backend_environment:load_shedder_us_east_1 store:app_store output_dir:test_output/load_shedder_us_east_1_app_store skip_slack_notification:true \
+              && echo "0" > /tmp/test_exit_codes/load_shedder_us_east_1_app_store \
+              || (echo "1" > /tmp/test_exit_codes/load_shedder_us_east_1_app_store && exit 1)
+          no_output_timeout: 15m
+      - run:
+          name: Run e2e tests (load_shedder_us_east_2, app_store)
+          when: always
+          command: |
+            bundle exec fastlane run_maestro_e2e_tests backend_environment:load_shedder_us_east_2 store:app_store output_dir:test_output/load_shedder_us_east_2_app_store skip_slack_notification:true \
+              && echo "0" > /tmp/test_exit_codes/load_shedder_us_east_2_app_store \
+              || (echo "1" > /tmp/test_exit_codes/load_shedder_us_east_2_app_store && exit 1)
+          no_output_timeout: 15m
+      - run:
+          name: Run e2e tests (fallback, app_store)
+          when: always
+          command: |
+            bundle exec fastlane run_maestro_e2e_tests backend_environment:fallback store:app_store output_dir:test_output/fallback_app_store skip_slack_notification:true \
+              && echo "0" > /tmp/test_exit_codes/fallback_app_store \
+              || (echo "1" > /tmp/test_exit_codes/fallback_app_store && exit 1)
+          no_output_timeout: 15m
+      # Run test_store test (production only)
+      - run:
+          name: Set API key for test_store e2e tests
+          when: always
+          command: |
+            echo 'export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_TEST_STORE}"' >> $BASH_ENV
+      - run:
+          name: Run e2e tests (production, test_store)
+          when: always
+          command: |
+            bundle exec fastlane run_maestro_e2e_tests backend_environment:production store:test_store output_dir:test_output/production_test_store skip_slack_notification:true \
+              && echo "0" > /tmp/test_exit_codes/production_test_store \
+              || (echo "1" > /tmp/test_exit_codes/production_test_store && exit 1)
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output
+      # Send consolidated Slack notification
+      - run:
+          name: Send Slack notification
+          command: |
+            if grep -q "1" /tmp/test_exit_codes/*; then
+              FAILED_TESTS=$(grep -l "1" /tmp/test_exit_codes/* | xargs -I {} basename {} | tr '\n' ', ' | sed 's/,$//')
+              bundle exec fastlane run slack_backend_integration_test_results \
+                environment:"maestro_e2e (failed: $FAILED_TESTS)" \
+                success:false \
+                message_binary_solo_on_failure:false
+            else
+              bundle exec fastlane run slack_backend_integration_test_results \
+                environment:"maestro_e2e (all environments)" \
+                success:true \
+                message_binary_solo_on_failure:false
+            fi
+          when: always
+      # Check if any tests failed and fail the job if so
+      - run:
+          name: Check for test failures
+          command: |
+            if grep -q "1" /tmp/test_exit_codes/*; then
+              echo "One or more test suites failed:"
+              grep -l "1" /tmp/test_exit_codes/* | xargs -I {} basename {}
+              exit 1
+            fi
+            echo "All test suites passed!"
+          when: always
 
   release-checks:
     executor:
@@ -1786,11 +1838,7 @@ workflows:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - equal: ["maestro_e2e_tests", << pipeline.schedule.name >>]
     jobs:
-      - <<: *maestro-e2e-test-job
-      - run-maestro-e2e-tests:
-          name: run-maestro-e2e-tests-production-test-store
-          backend_environment: "production"
-          store: "test_store"
+      - run-all-maestro-e2e-tests:
           context:
             - e2e-tests
             - slack-secrets
@@ -1852,11 +1900,7 @@ workflows:
       - check-api-changes:
           context:
             - slack-secrets-ios
-      - <<: *maestro-e2e-test-job
-      - run-maestro-e2e-tests:
-          name: run-maestro-e2e-tests-production-test-store
-          backend_environment: "production"
-          store: "test_store"
+      - run-all-maestro-e2e-tests:
           context:
             - e2e-tests
             - slack-secrets

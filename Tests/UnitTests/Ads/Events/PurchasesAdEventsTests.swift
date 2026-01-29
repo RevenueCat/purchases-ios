@@ -32,6 +32,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         let failedData = AdFailedToLoad(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .banner,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             mediatorErrorCode: 3
@@ -52,6 +53,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         expect(eventData.networkName) == "AdMob"
         expect(eventData.mediatorName) == .appLovin
+        expect(eventData.adFormat) == .banner
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.mediatorErrorCode?.intValue) == 3
@@ -61,6 +63,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         let loadedData = AdLoaded(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .interstitial,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123"
@@ -81,6 +84,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         expect(eventData.networkName) == "AdMob"
         expect(eventData.mediatorName) == .appLovin
+        expect(eventData.adFormat) == .interstitial
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.impressionId) == "impression-123"
@@ -90,6 +94,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         let displayedData = AdDisplayed(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .rewarded,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123"
@@ -110,6 +115,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         expect(eventData.networkName) == "AdMob"
         expect(eventData.mediatorName) == .appLovin
+        expect(eventData.adFormat) == .rewarded
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.impressionId) == "impression-123"
@@ -119,6 +125,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         let openedData = AdOpened(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .native,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123"
@@ -139,6 +146,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         expect(eventData.networkName) == "AdMob"
         expect(eventData.mediatorName) == .appLovin
+        expect(eventData.adFormat) == .native
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.impressionId) == "impression-123"
@@ -148,6 +156,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         let revenueData = AdRevenue(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .mrec,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
@@ -171,6 +180,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         expect(eventData.networkName) == "AdMob"
         expect(eventData.mediatorName) == .appLovin
+        expect(eventData.adFormat) == .mrec
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.impressionId) == "impression-123"
