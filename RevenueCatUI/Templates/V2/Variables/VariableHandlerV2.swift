@@ -114,10 +114,17 @@ struct VariableHandlerV2 {
             let backSupportedVariableRaw = self.variableCompatibilityMap[variableRaw]
 
             guard let backSupportedVariableRaw else {
-                Logger.error(
-                    "Paywall variable '\(variableRaw)' is not supported " +
-                    "and no backward compatible replacement found."
-                )
+                // Check if this looks like a custom variable with incorrect syntax
+                // e.g., "custom_player" or "customPlayer" instead of "custom.player"
+                if variableRaw.lowercased().hasPrefix("custom") &&
+                    !variableRaw.hasPrefix(Self.customVariablePrefix) {
+                    Logger.warning(Strings.paywall_variable_looks_like_custom(variableName: variableRaw))
+                } else {
+                    Logger.error(
+                        "Paywall variable '\(variableRaw)' is not supported " +
+                        "and no backward compatible replacement found."
+                    )
+                }
                 return nil
             }
 

@@ -96,6 +96,7 @@ enum Strings {
     case paywall_custom_variable_not_found(variableName: String)
     case paywall_custom_variable_invalid_number(value: String)
     case paywall_custom_variable_unknown_type(type: String)
+    case paywall_variable_looks_like_custom(variableName: String)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -321,6 +322,11 @@ extension Strings: CustomStringConvertible {
 
         case .paywall_custom_variable_unknown_type(let type):
             return "Unknown custom variable type '\(type)'. Using as string."
+
+        case .paywall_variable_looks_like_custom(let variableName):
+            return "Variable '\(variableName)' looks like a custom variable. " +
+            "Did you mean '{{ custom.\(variableName.dropFirst("custom".count)) }}'? " +
+            "Custom variables must use the 'custom.' prefix (with a dot)."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
