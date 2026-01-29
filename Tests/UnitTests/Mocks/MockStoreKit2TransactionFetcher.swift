@@ -98,9 +98,27 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
 
     let appTransactionEnvironmentCalled = Atomic<Bool>(false)
 
+    /// When set to true, `appTransactionEnvironment` will stall until `resumeAppTransactionEnvironment()` is called.
+    let appTransactionEnvironmentShouldStall = Atomic<Bool>(false)
+
+    private let _appTransactionContinuation: Atomic<CheckedContinuation<Void, Never>?> = .init(nil)
+
+    /// Resumes the stalled `appTransactionEnvironment` getter.
+    func resumeAppTransactionEnvironment() {
+        self._appTransactionContinuation.value?.resume()
+        self._appTransactionContinuation.value = nil
+    }
+
     var appTransactionEnvironment: StoreEnvironment? {
         get async {
             self.appTransactionEnvironmentCalled.value = true
+
+            if self.appTransactionEnvironmentShouldStall.value {
+                await withCheckedContinuation { continuation in
+                    self._appTransactionContinuation.value = continuation
+                }
+            }
+
             return self.stubbedAppTransactionEnvironment
         }
     }
