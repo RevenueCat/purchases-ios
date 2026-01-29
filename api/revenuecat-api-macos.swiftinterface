@@ -159,6 +159,7 @@ extension RevenueCat.PaywallEvent {
 }
 extension RevenueCat.PaywallEvent {
   public struct Data {
+    public var paywallIdentifier: Swift.String?
     public var offeringIdentifier: Swift.String
     public var paywallRevision: Swift.Int
     public var sessionIdentifier: RevenueCat.PaywallEvent.SessionID
@@ -956,6 +957,7 @@ extension RevenueCat.PromotionalOffer : Swift.Sendable {
 extension RevenueCat.PromotionalOffer.SignedData : Swift.Sendable {
 }
 public struct PaywallData {
+  public var id: Swift.String?
   public var templateName: Swift.String
   public var config: RevenueCat.PaywallData.Configuration
   public var assetBaseURL: Foundation.URL
@@ -1203,8 +1205,12 @@ extension RevenueCat.PaywallData {
   }
 }
 extension RevenueCat.PaywallData {
-  public init(templateName: Swift.String, config: RevenueCat.PaywallData.Configuration, localization: RevenueCat.PaywallData.LocalizedConfiguration, assetBaseURL: Foundation.URL, revision: Swift.Int = 0, locale: Foundation.Locale = .current, zeroDecimalPlaceCountries: [Swift.String] = [])
-  public init(templateName: Swift.String, config: RevenueCat.PaywallData.Configuration, localizationByTier: [Swift.String : RevenueCat.PaywallData.LocalizedConfiguration], assetBaseURL: Foundation.URL, revision: Swift.Int = 0, locale: Foundation.Locale = .current, zeroDecimalPlaceCountries: [Swift.String] = [])
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(id: Swift.String? = nil, templateName: Swift.String, config: RevenueCat.PaywallData.Configuration, localization: RevenueCat.PaywallData.LocalizedConfiguration, assetBaseURL: Foundation.URL, revision: Swift.Int = 0, locale: Foundation.Locale = .current, zeroDecimalPlaceCountries: [Swift.String] = [])
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(id: Swift.String? = nil, templateName: Swift.String, config: RevenueCat.PaywallData.Configuration, localizationByTier: [Swift.String : RevenueCat.PaywallData.LocalizedConfiguration], assetBaseURL: Foundation.URL, revision: Swift.Int = 0, locale: Foundation.Locale = .current, zeroDecimalPlaceCountries: [Swift.String] = [])
+  #endif
 }
 extension RevenueCat.PaywallData.LocalizedConfiguration.Feature : Swift.Codable {
   public func encode(to encoder: any Swift.Encoder) throws
@@ -1331,75 +1337,6 @@ extension RevenueCat.PaywallData.Tier : Swift.Identifiable {
   @objc deinit
 }
 extension RevenueCat.PurchasesDiagnostics {
-  public enum ProductStatus : Swift.Sendable {
-    case valid
-    case couldNotCheck
-    case notFound
-    case actionInProgress
-    case needsAction
-    case unknown
-    public static func == (a: RevenueCat.PurchasesDiagnostics.ProductStatus, b: RevenueCat.PurchasesDiagnostics.ProductStatus) -> Swift.Bool
-    public func hash(into hasher: inout Swift.Hasher)
-    public var hashValue: Swift.Int {
-      get
-    }
-  }
-  public struct ProductDiagnosticsPayload : Swift.Sendable {
-    public let identifier: Swift.String
-    public let title: Swift.String?
-    public let status: RevenueCat.PurchasesDiagnostics.ProductStatus
-    public let description: Swift.String
-  }
-  public struct InvalidBundleIdErrorPayload : Swift.Equatable {
-    public let appBundleId: Swift.String
-    public let sdkBundleId: Swift.String
-    public static func == (a: RevenueCat.PurchasesDiagnostics.InvalidBundleIdErrorPayload, b: RevenueCat.PurchasesDiagnostics.InvalidBundleIdErrorPayload) -> Swift.Bool
-  }
-  public enum SDKHealthCheckStatus : Swift.Sendable {
-    case passed
-    case failed
-    case warning
-    public static func == (a: RevenueCat.PurchasesDiagnostics.SDKHealthCheckStatus, b: RevenueCat.PurchasesDiagnostics.SDKHealthCheckStatus) -> Swift.Bool
-    public func hash(into hasher: inout Swift.Hasher)
-    public var hashValue: Swift.Int {
-      get
-    }
-  }
-  public struct OfferingDiagnosticsPayload : Swift.Sendable {
-    public let identifier: Swift.String
-    public let packages: [RevenueCat.PurchasesDiagnostics.OfferingPackageDiagnosticsPayload]
-    public let status: RevenueCat.PurchasesDiagnostics.SDKHealthCheckStatus
-  }
-  public struct OfferingPackageDiagnosticsPayload : Swift.Sendable {
-    public let identifier: Swift.String
-    public let title: Swift.String?
-    public let status: RevenueCat.PurchasesDiagnostics.ProductStatus
-    public let description: Swift.String
-    public let productIdentifier: Swift.String
-    public let productTitle: Swift.String?
-  }
-  public enum SDKHealthError : Swift.Error {
-    case invalidAPIKey
-    case noOfferings
-    case offeringConfiguration([RevenueCat.PurchasesDiagnostics.OfferingDiagnosticsPayload])
-    case invalidBundleId(RevenueCat.PurchasesDiagnostics.InvalidBundleIdErrorPayload?)
-    case invalidProducts([RevenueCat.PurchasesDiagnostics.ProductDiagnosticsPayload])
-    case notAuthorizedToMakePayments
-    case unknown(any Swift.Error)
-  }
-  public struct SDKHealthReport : Swift.Sendable {
-    public let status: RevenueCat.PurchasesDiagnostics.SDKHealthStatus
-    public let projectId: Swift.String?
-    public let appId: Swift.String?
-    public let products: [RevenueCat.PurchasesDiagnostics.ProductDiagnosticsPayload]
-    public let offerings: [RevenueCat.PurchasesDiagnostics.OfferingDiagnosticsPayload]
-  }
-  public enum SDKHealthStatus : Swift.Sendable {
-    case healthy(warnings: [RevenueCat.PurchasesDiagnostics.SDKHealthError])
-    case unhealthy(RevenueCat.PurchasesDiagnostics.SDKHealthError)
-  }
-}
-extension RevenueCat.PurchasesDiagnostics {
   public enum Error : Swift.Error {
     case failedConnectingToAPI(any Swift.Error)
     case invalidAPIKey
@@ -1411,8 +1348,6 @@ extension RevenueCat.PurchasesDiagnostics {
 extension RevenueCat.PurchasesDiagnostics {
   @available(*, deprecated, message: "Use the `PurchasesDiagnostics.shared.checkSDKHealth()` method instead.")
   @objc(testSDKHealthWithCompletion:) final public func testSDKHealth() async throws
-  final public func checkSDKHealth() async throws
-  final public func healthReport() async -> RevenueCat.PurchasesDiagnostics.SDKHealthReport
 }
 extension RevenueCat.PurchasesDiagnostics.Error : Foundation.CustomNSError {
   public var errorUserInfo: [Swift.String : Any] {
@@ -3724,11 +3659,6 @@ extension RevenueCat.PaywallComponent {
     public init(from decoder: any Swift.Decoder) throws
   }
 }
-extension RevenueCat.PurchasesDiagnostics.SDKHealthError : Foundation.CustomNSError {
-  public var errorUserInfo: [Swift.String : Any] {
-    get
-  }
-}
 public struct PaywallColor {
   @frozen public enum ColorScheme : Swift.String {
     case light
@@ -4302,13 +4232,6 @@ extension RevenueCat.PaywallComponent {
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
-@available(iOS 16.0, macOS 13.0, *)
-extension SwiftUICore.View {
-  @_Concurrency.MainActor @preconcurrency public func debugRevenueCatOverlay() -> some SwiftUICore.View
-  
-  @_Concurrency.MainActor @preconcurrency public func debugRevenueCatOverlay(isPresented: SwiftUICore.Binding<Swift.Bool>) -> some SwiftUICore.View
-  
-}
 @objc(RCAttributionNetwork) public enum AttributionNetwork : Swift.Int {
   @available(*, deprecated, message: "use adServices")
   case appleSearchAds = 0
@@ -4355,6 +4278,7 @@ public struct PaywallComponentsData : Swift.Codable, Swift.Equatable, Swift.Send
     public func encode(to encoder: any Swift.Encoder) throws
     public static func == (a: RevenueCat.PaywallComponentsData.LocalizationData, b: RevenueCat.PaywallComponentsData.LocalizationData) -> Swift.Bool
   }
+  public var id: Swift.String?
   public var templateName: Swift.String
   public var assetBaseURL: Foundation.URL
   public var revision: Swift.Int {
@@ -4370,7 +4294,7 @@ public struct PaywallComponentsData : Swift.Codable, Swift.Equatable, Swift.Send
   public var exitOffers: RevenueCat.ExitOffers?
   public var errorInfo: [Swift.String : RevenueCat.PaywallComponentsData.EquatableError]?
   #if compiler(>=5.3) && $NonescapableTypes
-  public init(templateName: Swift.String, assetBaseURL: Foundation.URL, componentsConfig: RevenueCat.PaywallComponentsData.ComponentsConfig, componentsLocalizations: [RevenueCat.PaywallComponent.LocaleID : RevenueCat.PaywallComponent.LocalizationDictionary], revision: Swift.Int, defaultLocaleIdentifier: Swift.String, zeroDecimalPlaceCountries: [Swift.String] = [], exitOffers: RevenueCat.ExitOffers? = nil)
+  public init(id: Swift.String? = nil, templateName: Swift.String, assetBaseURL: Foundation.URL, componentsConfig: RevenueCat.PaywallComponentsData.ComponentsConfig, componentsLocalizations: [RevenueCat.PaywallComponent.LocaleID : RevenueCat.PaywallComponent.LocalizationDictionary], revision: Swift.Int, defaultLocaleIdentifier: Swift.String, zeroDecimalPlaceCountries: [Swift.String] = [], exitOffers: RevenueCat.ExitOffers? = nil)
   #endif
   public static func == (a: RevenueCat.PaywallComponentsData, b: RevenueCat.PaywallComponentsData) -> Swift.Bool
 }
@@ -5255,10 +5179,6 @@ extension RevenueCat.StoreTransaction : Swift.Sendable {}
 extension RevenueCat.StoreProductDiscount.PaymentMode : Swift.Equatable {}
 extension RevenueCat.StoreProductDiscount.PaymentMode : Swift.Hashable {}
 extension RevenueCat.StoreProductDiscount.PaymentMode : Swift.RawRepresentable {}
-extension RevenueCat.PurchasesDiagnostics.ProductStatus : Swift.Equatable {}
-extension RevenueCat.PurchasesDiagnostics.ProductStatus : Swift.Hashable {}
-extension RevenueCat.PurchasesDiagnostics.SDKHealthCheckStatus : Swift.Equatable {}
-extension RevenueCat.PurchasesDiagnostics.SDKHealthCheckStatus : Swift.Hashable {}
 extension RevenueCat.ErrorCode : Swift.Equatable {}
 extension RevenueCat.ErrorCode : Swift.Hashable {}
 extension RevenueCat.ErrorCode : Swift.RawRepresentable {}
