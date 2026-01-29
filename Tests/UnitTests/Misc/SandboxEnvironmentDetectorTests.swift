@@ -91,9 +91,34 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(detector.isSandbox) == true
     }
 
-    func testFallsBackToReceiptPathWhenNoAppTransactionEnvironment() async {
+    func testFallsBackToSandboxReceiptPathWhenNoAppTransactionEnvironment() async {
         let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .sandboxReceipt,
+            appTransactionEnvironment: nil
+        )
+        expect(detector.isSandbox) == true
+    }
+
+    func testFallsBackToAppStoreReceiptPathWhenNoAppTransactionEnvironment() async {
+        let detector = await SandboxEnvironmentDetector.with(
+            receiptURLResult: .appStoreReceipt,
+            appTransactionEnvironment: nil
+        )
+        expect(detector.isSandbox) == false
+    }
+
+    func testFallsBackToNilReceiptPathWhenNoAppTransactionEnvironment() async {
+        let detector = await SandboxEnvironmentDetector.with(
+            receiptURLResult: .nilURL,
+            appTransactionEnvironment: nil
+        )
+        expect(detector.isSandbox) == false
+    }
+
+    func testSimulatorTakesPrecedenceWhenNoAppTransactionEnvironment() async {
+        let detector = await SandboxEnvironmentDetector.with(
+            receiptURLResult: .appStoreReceipt,
+            inSimulator: true,
             appTransactionEnvironment: nil
         )
         expect(detector.isSandbox) == true
