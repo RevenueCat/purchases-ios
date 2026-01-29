@@ -87,6 +87,29 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         completion(self.stubbedAppTransactionJWS)
     }
 
+    // MARK: - AppTransaction Environment
+
+    private let _stubbedAppTransactionEnvironment: Atomic<StoreEnvironment?> = .init(nil)
+
+    var stubbedAppTransactionEnvironment: StoreEnvironment? {
+        get { return self._stubbedAppTransactionEnvironment.value }
+        set { self._stubbedAppTransactionEnvironment.value = newValue }
+    }
+
+    let appTransactionEnvironmentCalled = Atomic<Bool>(false)
+
+    var appTransactionEnvironment: StoreEnvironment? {
+        get async {
+            self.appTransactionEnvironmentCalled.value = true
+            return self.stubbedAppTransactionEnvironment
+        }
+    }
+
+    func appTransactionEnvironment(_ completion: @escaping (StoreEnvironment?) -> Void) {
+        self.appTransactionEnvironmentCalled.value = true
+        completion(self.stubbedAppTransactionEnvironment)
+    }
+
     // MARK: -
 
     var stubbedHasPendingConsumablePurchase: Bool {

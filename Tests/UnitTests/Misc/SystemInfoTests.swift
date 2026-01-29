@@ -182,7 +182,10 @@ private extension SystemInfo {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
-        let sandboxDetector = sandboxEnvironmentDetector ?? BundleSandboxEnvironmentDetector(bundle: bundle)
+        let sandboxDetector = sandboxEnvironmentDetector ?? BundleSandboxEnvironmentDetector(
+            bundle: bundle,
+            transactionFetcher: MockStoreKit2TransactionFetcher()
+        )
 
         return SystemInfo(platformInfo: nil,
                           finishTransactions: false,

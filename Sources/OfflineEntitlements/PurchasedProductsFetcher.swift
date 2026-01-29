@@ -35,7 +35,7 @@ final class PurchasedProductsFetcher: PurchasedProductsFetcherType {
 
     init(
         storeKit2TransactionFetcher: StoreKit2TransactionFetcherType,
-        sandboxDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
+        sandboxDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
     ) {
         self.sandboxDetector = sandboxDetector
         self.transactionFetcher = storeKit2TransactionFetcher

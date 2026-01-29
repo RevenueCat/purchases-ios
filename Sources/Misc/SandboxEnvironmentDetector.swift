@@ -21,31 +21,122 @@ protocol SandboxEnvironmentDetector: Sendable {
 }
 
 /// ``SandboxEnvironmentDetector`` that uses a `Bundle` to detect the environment
+///
+/// On iOS 16+, this attempts to use `AppTransaction.environment` for more reliable detection.
+/// On older OS versions (and in case of failure to retrieve), it falls back to checking the receipt file path.
 final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
-    private let bundle: Atomic<Bundle>
+    private let bundle: Bundle
     private let isRunningInSimulator: Bool
     private let receiptFetcher: LocalReceiptFetcherType
     private let macAppStoreDetector: MacAppStoreDetector?
 
+    /// Cached environment from `AppTransaction` (iOS 16+).
+    /// This is populated asynchronously and used for more reliable sandbox detection.
+    private let cachedAppTransactionEnvironment: Atomic<StoreEnvironment?>
+
+    /// Creates a new detector that uses `AppTransaction` for environment detection on iOS 16+.
+    ///
+    /// - Parameters:
+    ///   - bundle: The bundle to use for receipt URL detection.
+    ///   - isRunningInSimulator: Whether the app is running in a simulator.
+    ///   - receiptFetcher: The receipt fetcher for macOS receipt parsing.
+    ///   - macAppStoreDetector: Detector for macOS App Store detection.
+    ///   - transactionFetcher: The transaction fetcher used to get `AppTransaction` environment.
     init(
         bundle: Bundle = .main,
         isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator,
         receiptFetcher: LocalReceiptFetcherType = LocalReceiptFetcher(),
-        macAppStoreDetector: MacAppStoreDetector? = nil
+        macAppStoreDetector: MacAppStoreDetector? = nil,
+        transactionFetcher: StoreKit2TransactionFetcherType
     ) {
-        self.bundle = .init(bundle)
+        self.bundle = bundle
         self.isRunningInSimulator = isRunningInSimulator
         self.receiptFetcher = receiptFetcher
         self.macAppStoreDetector = macAppStoreDetector
+        self.cachedAppTransactionEnvironment = .init(nil)
+
+        // Start fetching the AppTransaction environment asynchronously.
+        // The result will be cached and used by `isSandbox` once available.
+        self.prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: transactionFetcher)
     }
+
+    private init() {
+        self.bundle = Bundle.main
+        self.isRunningInSimulator = SystemInfo.isRunningInSimulator
+        self.receiptFetcher = LocalReceiptFetcher()
+        self.macAppStoreDetector = nil
+        self.cachedAppTransactionEnvironment = .init(nil)
+    }
+
+    #if DEBUG
+    /// Initializer for testing that allows injecting a pre-cached environment.
+    init(
+        bundle: Bundle = .main,
+        isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator,
+        receiptFetcher: LocalReceiptFetcherType = LocalReceiptFetcher(),
+        macAppStoreDetector: MacAppStoreDetector? = nil,
+        cachedAppTransactionEnvironment: StoreEnvironment?
+    ) {
+        self.bundle = bundle
+        self.isRunningInSimulator = isRunningInSimulator
+        self.receiptFetcher = receiptFetcher
+        self.macAppStoreDetector = macAppStoreDetector
+        self.cachedAppTransactionEnvironment = .init(cachedAppTransactionEnvironment)
+    }
+    #endif
 
     var isSandbox: Bool {
         guard !self.isRunningInSimulator else {
             return true
         }
 
-        guard let path = self.bundle.value.appStoreReceiptURL?.path else {
+        // On iOS 16+, prefer the cached AppTransaction environment if available.
+        // This is more reliable than the receipt path-based detection.
+        if let cachedEnvironment = self.cachedAppTransactionEnvironment.value {
+            return cachedEnvironment != .production
+        }
+
+        // Fallback to the legacy path-based detection.
+        return self.isSandboxBasedOnReceiptPath
+    }
+
+    // MARK: - Default Instance
+
+    /// The default sandbox environment detector.
+    ///
+    /// By default, this uses the `FallbackSandboxEnvironmentDetector` which relies on
+    /// the legacy receipt path detection. When the SDK is initialized via `Purchases.configure()`,
+    /// this is replaced with a full `BundleSandboxEnvironmentDetector` that includes
+    /// `AppTransaction`-based detection on iOS 16+.
+    private static let _default: Atomic<SandboxEnvironmentDetector> = .init(BundleSandboxEnvironmentDetector())
+
+    static var `default`: SandboxEnvironmentDetector {
+        get { _default.value }
+        set { _default.value = newValue }
+    }
+
+}
+
+// MARK: - AppTransaction Environment Detection (iOS 16+)
+
+private extension BundleSandboxEnvironmentDetector {
+
+    func prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: StoreKit2TransactionFetcherType) {
+        Task {
+            let environment = await transactionFetcher.appTransactionEnvironment
+            self.cachedAppTransactionEnvironment.value = environment
+        }
+    }
+
+}
+
+// MARK: - Legacy Receipt Path-Based Detection
+
+private extension BundleSandboxEnvironmentDetector {
+
+    var isSandboxBasedOnReceiptPath: Bool {
+        guard let path = self.bundle.appStoreReceiptURL?.path else {
             return false
         }
 
@@ -62,13 +153,6 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
             return path.contains("sandboxReceipt")
         #endif
     }
-
-    #if DEBUG
-    // Mutable in tests so it can be overriden
-    static var `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
-    #else
-    static let `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
-    #endif
 
 }
 
