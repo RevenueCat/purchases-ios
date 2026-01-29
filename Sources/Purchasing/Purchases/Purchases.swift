@@ -901,7 +901,7 @@ public extension Purchases {
 
     /// Parses a deep link URL to verify it's a RevenueCat web purchase redemption link
     /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
-    @objc internal static func parseAsWebPurchaseRedemption(_ url: URL) -> WebPurchaseRedemption? {
+    @objc static func parseAsWebPurchaseRedemption(_ url: URL) -> WebPurchaseRedemption? {
         return DeepLinkParser.parseAsWebPurchaseRedemption(url)
     }
 
@@ -1375,6 +1375,38 @@ public extension Purchases {
             return try await self.purchasesOrchestrator.handleRecordPurchase(purchaseResult)
         } catch {
             throw NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @objc(recordPurchaseForProductID:completion:)
+    func recordPurchase(
+        productID: String,
+        completion: @escaping (StoreTransaction?, PublicError?) -> Void
+    ) {
+        Task {
+            let result = await StoreKit.Transaction.latest(for: productID)
+
+            guard let result = result else {
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(nil, NewErrorUtils.storeProblemError(
+                        withMessage: "No transaction found for product ID: \(productID)"
+                    ).asPublicError)
+                }
+                return
+            }
+
+            do {
+                let transaction = try await self.recordPurchase(.success(result))
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(transaction, nil)
+                }
+            } catch {
+                let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(nil, publicError)
+                }
+            }
         }
     }
 
