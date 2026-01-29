@@ -20,73 +20,81 @@ import XCTest
 
 class SandboxEnvironmentDetectorTests: TestCase {
 
-    func testIsSandboxIfReceiptURLIsSandbox() {
-        expect(SystemInfo.with(receiptURLResult: .sandboxReceipt).isSandbox) == true
+    func testIsSandboxIfReceiptURLIsSandbox() async {
+        let detector = await SandboxEnvironmentDetector.with(receiptURLResult: .sandboxReceipt)
+        expect(detector.isSandbox) == true
     }
 
-    func testIsNotSandboxIfReceiptURLIsAppStore() {
-        expect(SystemInfo.with(receiptURLResult: .appStoreReceipt).isSandbox) == false
+    func testIsNotSandboxIfReceiptURLIsAppStore() async {
+        let detector = await SandboxEnvironmentDetector.with(receiptURLResult: .appStoreReceipt)
+        expect(detector.isSandbox) == false
     }
 
-    func testIsNotSandboxIfNoReceiptURL() {
-        expect(SystemInfo.with(receiptURLResult: .nilURL).isSandbox) == false
+    func testIsNotSandboxIfNoReceiptURL() async {
+        let detector = await SandboxEnvironmentDetector.with(receiptURLResult: .nilURL)
+        expect(detector.isSandbox) == false
     }
 
-    func testIsAlwaysSandboxIfRunningInSimulator() {
-        expect(SystemInfo.with(receiptURLResult: .sandboxReceipt, inSimulator: true).isSandbox) == true
-        expect(SystemInfo.with(receiptURLResult: .appStoreReceipt, inSimulator: true).isSandbox) == true
-        expect(SystemInfo.with(receiptURLResult: .nilURL, inSimulator: true).isSandbox) == true
+    func testIsAlwaysSandboxIfRunningInSimulator() async {
+        var detector = await SandboxEnvironmentDetector.with(receiptURLResult: .sandboxReceipt, inSimulator: true)
+        expect(detector.isSandbox) == true
+
+        detector = await SandboxEnvironmentDetector.with(receiptURLResult: .appStoreReceipt, inSimulator: true)
+        expect(detector.isSandbox) == true
+
+        detector = await SandboxEnvironmentDetector.with(receiptURLResult: .nilURL, inSimulator: true)
+        expect(detector.isSandbox) == true
     }
 
     // MARK: - AppTransaction Environment Tests
 
-    func testIsSandboxWhenCachedAppTransactionEnvironmentIsSandbox() {
-        let detector = SystemInfo.with(
+    func testIsSandboxWhenAppTransactionEnvironmentIsSandbox() async {
+        let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .appStoreReceipt,
-            cachedAppTransactionEnvironment: .sandbox
+            appTransactionEnvironment: .sandbox
         )
         expect(detector.isSandbox) == true
     }
 
-    func testIsSandboxWhenCachedAppTransactionEnvironmentIsXcode() {
-        let detector = SystemInfo.with(
+    func testIsSandboxWhenAppTransactionEnvironmentIsXcode() async {
+        let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .appStoreReceipt,
-            cachedAppTransactionEnvironment: .xcode
+            appTransactionEnvironment: .xcode
         )
         expect(detector.isSandbox) == true
     }
 
-    func testIsNotSandboxWhenCachedAppTransactionEnvironmentIsProduction() {
-        let detector = SystemInfo.with(
+    func testIsNotSandboxWhenAppTransactionEnvironmentIsProduction() async {
+        let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .sandboxReceipt,
-            cachedAppTransactionEnvironment: .production
+            appTransactionEnvironment: .production
         )
         expect(detector.isSandbox) == false
     }
 
-    func testCachedAppTransactionEnvironmentTakesPrecedenceOverReceiptPath() {
+    func testAppTransactionEnvironmentTakesPrecedenceOverReceiptPath() async {
         // Receipt says sandbox, but AppTransaction says production
-        let detector = SystemInfo.with(
+        let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .sandboxReceipt,
-            cachedAppTransactionEnvironment: .production
+            appTransactionEnvironment: .production
         )
         expect(detector.isSandbox) == false
     }
 
-    func testSimulatorTakesPrecedenceOverCachedAppTransactionEnvironment() {
+    func testSimulatorTakesPrecedenceOverAppTransactionEnvironment() async {
         // AppTransaction says production, but we're in simulator
-        let detector = SystemInfo.with(
+        let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .appStoreReceipt,
             inSimulator: true,
-            cachedAppTransactionEnvironment: .production
+            appTransactionEnvironment: .production
         )
         expect(detector.isSandbox) == true
     }
 
-    func testFallsBackToReceiptPathWhenNoCachedAppTransactionEnvironment() {
-        let detector = SystemInfo.with(
+    func testFallsBackToReceiptPathWhenNoAppTransactionEnvironment() async {
+        let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .sandboxReceipt,
-            cachedAppTransactionEnvironment: nil
+            appTransactionEnvironment: nil
         )
         expect(detector.isSandbox) == true
     }
@@ -98,28 +106,26 @@ class SandboxEnvironmentDetectorTests: TestCase {
 // `macOS` sandbox detection does not rely on receipt path
 class SandboxEnvironmentDetectorTests: TestCase {
 
-    func testIsNotSandboxIfReceiptIsProduction() throws {
-        expect(
-            SystemInfo.with(
-                macAppStore: true,
-                receiptEnvironment: .production
-            ).isSandbox
-        ) == false
+    func testIsNotSandboxIfReceiptIsProduction() async {
+        let detector = await SandboxEnvironmentDetector.with(
+            macAppStore: true,
+            receiptEnvironment: .production
+        )
+        expect(detector.isSandbox) == false
     }
 
-    func testIsSandboxIfReceiptIsNotProduction() throws {
-        expect(
-            SystemInfo.with(
-                macAppStore: false,
-                receiptEnvironment: .sandbox
-            ).isSandbox
-        ) == true
+    func testIsSandboxIfReceiptIsNotProduction() async {
+        let detector = await SandboxEnvironmentDetector.with(
+            macAppStore: false,
+            receiptEnvironment: .sandbox
+        )
+        expect(detector.isSandbox) == true
     }
 
-    func testIsSandboxWhenReceiptEnvironmentIsUnknownDefaultToMacAppStoreDetector() throws {
+    func testIsSandboxWhenReceiptEnvironmentIsUnknownDefaultToMacAppStoreDetector() async {
         var isSandbox = false
         var macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: !isSandbox)
-        var detector = SystemInfo.with(
+        var detector = await SandboxEnvironmentDetector.with(
             macAppStore: !isSandbox,
             receiptEnvironment: .unknown,
             macAppStoreDetector: macAppStoreDetector
@@ -131,7 +137,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
         isSandbox = !isSandbox
 
         macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: !isSandbox)
-        detector = SystemInfo.with(
+        detector = await SandboxEnvironmentDetector.with(
             macAppStore: !isSandbox,
             receiptEnvironment: .unknown,
             macAppStoreDetector: macAppStoreDetector
@@ -140,10 +146,10 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(detector.isSandbox) == isSandbox
     }
 
-    func testIsSandboxWhenReceiptParsingFailsDefaultsToMacAppStoreDetector() throws {
+    func testIsSandboxWhenReceiptParsingFailsDefaultsToMacAppStoreDetector() async {
         var isSandbox = false
         var macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: !isSandbox)
-        var detector = SystemInfo.with(
+        var detector = await SandboxEnvironmentDetector.with(
             macAppStore: !isSandbox,
             failReceiptParsing: true,
             macAppStoreDetector: macAppStoreDetector
@@ -155,7 +161,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
         isSandbox = !isSandbox
 
         macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: !isSandbox)
-        detector = SystemInfo.with(
+        detector = await SandboxEnvironmentDetector.with(
             macAppStore: !isSandbox,
             failReceiptParsing: true,
             macAppStoreDetector: macAppStoreDetector
@@ -164,9 +170,9 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(detector.isSandbox) == isSandbox
     }
 
-    func testIsSandboxWhenReceiptIsProductionReturnsProductionAndDoesntHitMacAppStoreDetector() throws {
+    func testIsSandboxWhenReceiptIsProductionReturnsProductionAndDoesntHitMacAppStoreDetector() async {
         let macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: false)
-        let detector = SystemInfo.with(
+        let detector = await SandboxEnvironmentDetector.with(
             macAppStore: false,
             receiptEnvironment: .production,
             macAppStoreDetector: macAppStoreDetector
@@ -176,9 +182,9 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(macAppStoreDetector.isMacAppStoreCalled) == false
     }
 
-    func testIsSandboxWhenReceiptIsSandboxReturnsSandboxAndDoesntHitMacAppStoreDetector() throws {
+    func testIsSandboxWhenReceiptIsSandboxReturnsSandboxAndDoesntHitMacAppStoreDetector() async {
         let macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: false)
-        let detector = SystemInfo.with(
+        let detector = await SandboxEnvironmentDetector.with(
             macAppStore: false,
             receiptEnvironment: .sandbox,
             macAppStoreDetector: macAppStoreDetector
@@ -194,7 +200,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
 
 // MARK: - Private
 
-private extension SystemInfo {
+private extension SandboxEnvironmentDetector {
 
     static func with(
         receiptURLResult result: MockBundle.ReceiptURLResult = .appStoreReceipt,
@@ -203,8 +209,8 @@ private extension SystemInfo {
         receiptEnvironment: AppleReceipt.Environment = .production,
         failReceiptParsing: Bool = false,
         macAppStoreDetector: MockMacAppStoreDetector? = nil,
-        cachedAppTransactionEnvironment: StoreEnvironment? = nil
-    ) -> SandboxEnvironmentDetectorType {
+        appTransactionEnvironment: StoreEnvironment? = nil
+    ) async -> SandboxEnvironmentDetector {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
@@ -220,14 +226,22 @@ private extension SystemInfo {
             inAppPurchases: []
         )
 
-        return SandboxEnvironmentDetector(
+        let mockTransactionFetcher = MockStoreKit2TransactionFetcher()
+        mockTransactionFetcher.stubbedAppTransactionEnvironment = appTransactionEnvironment
+
+        let detector = SandboxEnvironmentDetector(
             bundle: bundle,
             isRunningInSimulator: inSimulator,
             receiptFetcher: MockLocalReceiptFetcher(mockReceipt: mockReceipt,
                                                     failReceiptParsing: failReceiptParsing),
             macAppStoreDetector: macAppStoreDetector ?? MockMacAppStoreDetector(isMacAppStore: macAppStore),
-            cachedAppTransactionEnvironment: cachedAppTransactionEnvironment
+            transactionFetcher: mockTransactionFetcher
         )
+
+        // Wait for the async prefetch to complete
+        await expect(mockTransactionFetcher.appTransactionEnvironmentCalled.value).toEventually(beTrue())
+
+        return detector
     }
 
 }

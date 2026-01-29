@@ -69,23 +69,6 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.cachedAppTransactionEnvironment = .init(nil)
     }
 
-    #if DEBUG
-    /// Initializer for testing that allows injecting a pre-cached environment.
-    init(
-        bundle: Bundle = .main,
-        isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator,
-        receiptFetcher: LocalReceiptFetcherType = LocalReceiptFetcher(),
-        macAppStoreDetector: MacAppStoreDetector? = nil,
-        cachedAppTransactionEnvironment: StoreEnvironment?
-    ) {
-        self.bundle = bundle
-        self.isRunningInSimulator = isRunningInSimulator
-        self.receiptFetcher = receiptFetcher
-        self.macAppStoreDetector = macAppStoreDetector
-        self.cachedAppTransactionEnvironment = .init(cachedAppTransactionEnvironment)
-    }
-    #endif
-
     var isSandbox: Bool {
         guard !self.isRunningInSimulator else {
             return true
