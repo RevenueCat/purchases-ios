@@ -14,17 +14,17 @@
 import Foundation
 
 /// A type that can determine if the current environment is sandbox.
-protocol SandboxEnvironmentDetector: Sendable {
+protocol SandboxEnvironmentDetectorType: Sendable {
 
     var isSandbox: Bool { get }
 
 }
 
-/// ``SandboxEnvironmentDetector`` that uses a `Bundle` to detect the environment
+/// Object used to detect the sandbox environment
 ///
 /// On iOS 16+, this attempts to use `AppTransaction.environment` for more reliable detection.
 /// On older OS versions (and in case of failure to retrieve), it falls back to checking the receipt file path.
-final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
+final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
     private let bundle: Bundle
     private let isRunningInSimulator: Bool
@@ -107,11 +107,11 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
     ///
     /// By default, this uses the `FallbackSandboxEnvironmentDetector` which relies on
     /// the legacy receipt path detection. When the SDK is initialized via `Purchases.configure()`,
-    /// this is replaced with a full `BundleSandboxEnvironmentDetector` that includes
+    /// this is replaced with a full `SandboxEnvironmentDetector` that includes
     /// `AppTransaction`-based detection on iOS 16+.
-    private static let _default: Atomic<SandboxEnvironmentDetector> = .init(BundleSandboxEnvironmentDetector())
+    private static let _default: Atomic<SandboxEnvironmentDetectorType> = .init(SandboxEnvironmentDetector())
 
-    static var `default`: SandboxEnvironmentDetector {
+    static var `default`: SandboxEnvironmentDetectorType {
         get { _default.value }
         set { _default.value = newValue }
     }
@@ -120,7 +120,7 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
 // MARK: - AppTransaction Environment Detection (iOS 16+)
 
-private extension BundleSandboxEnvironmentDetector {
+private extension SandboxEnvironmentDetector {
 
     func prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: StoreKit2TransactionFetcherType) {
         Task {
@@ -133,7 +133,7 @@ private extension BundleSandboxEnvironmentDetector {
 
 // MARK: - Legacy Receipt Path-Based Detection
 
-private extension BundleSandboxEnvironmentDetector {
+private extension SandboxEnvironmentDetector {
 
     var isSandboxBasedOnReceiptPath: Bool {
         guard let path = self.bundle.appStoreReceiptURL?.path else {
@@ -156,13 +156,13 @@ private extension BundleSandboxEnvironmentDetector {
 
 }
 
-extension BundleSandboxEnvironmentDetector: Sendable {}
+extension SandboxEnvironmentDetector: Sendable {}
 
 // MARK: -
 
 #if os(macOS) || targetEnvironment(macCatalyst)
 
-private extension BundleSandboxEnvironmentDetector {
+private extension SandboxEnvironmentDetector {
 
     var isProductionReceipt: Bool? {
         do {

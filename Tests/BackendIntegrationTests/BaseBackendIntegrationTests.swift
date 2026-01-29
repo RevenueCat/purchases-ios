@@ -51,7 +51,7 @@ class BaseBackendIntegrationTests: TestCase {
 
     static var isSandbox: Bool = true {
         didSet {
-            BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector(isSandbox: Self.isSandbox)
+            SandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector(isSandbox: Self.isSandbox)
         }
     }
 

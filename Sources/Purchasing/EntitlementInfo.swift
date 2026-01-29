@@ -246,7 +246,7 @@ extension PeriodType: DefaultValueProvider {
         identifier: String,
         entitlement: CustomerInfoResponse.Entitlement,
         subscription: CustomerInfoResponse.Subscription,
-        sandboxEnvironmentDetector: SandboxEnvironmentDetector,
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType,
         verification: VerificationResult,
         requestDate: Date
     ) {
@@ -313,13 +313,13 @@ extension PeriodType: DefaultValueProvider {
             verification: verification
         )
         self.rawData = [:]
-        self.sandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
+        self.sandboxEnvironmentDetector = SandboxEnvironmentDetector.default
     }
 
     // MARK: -
 
     private let contents: Contents
-    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    private let sandboxEnvironmentDetector: SandboxEnvironmentDetectorType
 
 }
 

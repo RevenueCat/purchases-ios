@@ -17,7 +17,7 @@
 @testable import RevenueCat
 #endif
 
-final class MockSandboxEnvironmentDetector: SandboxEnvironmentDetector {
+final class MockSandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
     init(isSandbox: Bool = true) {
         self.isSandbox = isSandbox

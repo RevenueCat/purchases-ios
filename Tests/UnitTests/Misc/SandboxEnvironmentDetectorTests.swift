@@ -204,7 +204,7 @@ private extension SystemInfo {
         failReceiptParsing: Bool = false,
         macAppStoreDetector: MockMacAppStoreDetector? = nil,
         cachedAppTransactionEnvironment: StoreEnvironment? = nil
-    ) -> SandboxEnvironmentDetector {
+    ) -> SandboxEnvironmentDetectorType {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
@@ -220,16 +220,12 @@ private extension SystemInfo {
             inAppPurchases: []
         )
 
-        let mockTransactionFetcher = MockStoreKit2TransactionFetcher()
-        mockTransactionFetcher.stubbedAppTransactionEnvironment = cachedAppTransactionEnvironment
-
-        return BundleSandboxEnvironmentDetector(
+        return SandboxEnvironmentDetector(
             bundle: bundle,
             isRunningInSimulator: inSimulator,
             receiptFetcher: MockLocalReceiptFetcher(mockReceipt: mockReceipt,
                                                     failReceiptParsing: failReceiptParsing),
             macAppStoreDetector: macAppStoreDetector ?? MockMacAppStoreDetector(isMacAppStore: macAppStore),
-            transactionFetcher: mockTransactionFetcher,
             cachedAppTransactionEnvironment: cachedAppTransactionEnvironment
         )
     }

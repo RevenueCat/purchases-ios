@@ -358,8 +358,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let transactionFetcher = StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
-        let sandboxEnvironmentDetector = BundleSandboxEnvironmentDetector(transactionFetcher: transactionFetcher)
-        BundleSandboxEnvironmentDetector.default = sandboxEnvironmentDetector
+        let sandboxEnvironmentDetector = SandboxEnvironmentDetector(transactionFetcher: transactionFetcher)
+        SandboxEnvironmentDetector.default = sandboxEnvironmentDetector
 
         let systemInfo = SystemInfo(
             platformInfo: platformInfo,

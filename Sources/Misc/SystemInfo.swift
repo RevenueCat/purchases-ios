@@ -68,7 +68,7 @@ class SystemInfo {
 
     var observerMode: Bool { return !self.finishTransactions }
 
-    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    private let sandboxEnvironmentDetector: SandboxEnvironmentDetectorType
     private let storefrontProvider: StorefrontProviderType
     private let _finishTransactions: Atomic<Bool>
     private let _isAppBackgroundedState: Atomic<Bool>
@@ -188,7 +188,7 @@ class SystemInfo {
          finishTransactions: Bool,
          operationDispatcher: OperationDispatcher = .default,
          bundle: Bundle = .main,
-         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
+         sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector.default,
          storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKitVersion: StoreKitVersion = .default,
          apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
@@ -314,7 +314,7 @@ extension SystemInfo {
 }
 #endif
 
-extension SystemInfo: SandboxEnvironmentDetector {}
+extension SystemInfo: SandboxEnvironmentDetectorType {}
 
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
