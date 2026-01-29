@@ -120,7 +120,7 @@ struct VariableHandlerV2 {
                     !variableRaw.hasPrefix(Self.customVariablePrefix) {
                     Logger.warning(Strings.paywall_variable_looks_like_custom(variableName: variableRaw))
                 } else {
-                    Logger.error(
+                    Logger.warning(
                         "Paywall variable '\(variableRaw)' is not supported " +
                         "and no backward compatible replacement found."
                     )
@@ -129,17 +129,13 @@ struct VariableHandlerV2 {
             }
 
             guard let backSupportedVariable = VariablesV2(rawValue: backSupportedVariableRaw) else {
-                Logger.error(
+                Logger.warning(
                     "Paywall variable '\(variableRaw)' is not supported " +
                     "and could not find backward compatible '\(backSupportedVariableRaw)'."
                 )
                 return nil
             }
 
-            Logger.warning(
-                "Paywall variable '\(variableRaw)' is not supported. " +
-                "Using backward compatible '\(backSupportedVariableRaw)' instead."
-            )
             return backSupportedVariable
         }
 
@@ -152,22 +148,19 @@ struct VariableHandlerV2 {
             let backSupportedFunctionRaw = self.functionCompatibilityMap[functionRaw]
 
             guard let backSupportedFunctionRaw else {
-                Logger.error(
+                Logger.warning(
                     "Paywall function '\(functionRaw)' is not supported " +
                     "and no backward compatible replacement found.")
                 return nil
             }
 
             guard let backSupportedFunction = FunctionsV2(rawValue: backSupportedFunctionRaw) else {
-                Logger.error(
-                    "Paywall variable '\(functionRaw)' is not supported " +
+                Logger.warning(
+                    "Paywall function '\(functionRaw)' is not supported " +
                     "and could not find backward compatible '\(backSupportedFunctionRaw)'.")
                 return nil
             }
 
-            Logger.warning(
-                "Paywall function '\(functionRaw)' is not supported. " +
-                "Using backward compatible '\(backSupportedFunction)' instead.")
             return backSupportedFunction
         }
 
