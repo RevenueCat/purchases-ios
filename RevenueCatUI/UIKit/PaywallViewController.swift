@@ -79,8 +79,7 @@ public class PaywallViewController: UIViewController {
     /// - Parameters:
     ///   - value: The numeric value to set.
     ///   - key: The variable key (without the `custom.` prefix).
-    @_spi(Internal)
-    @objc public func setCustomVariableNumber(_ value: Double, forKey key: String) {
+    @objc func setCustomVariableNumber(_ value: Double, forKey key: String) {
         CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .number(value)
     }
@@ -89,8 +88,7 @@ public class PaywallViewController: UIViewController {
     /// - Parameters:
     ///   - value: The boolean value to set.
     ///   - key: The variable key (without the `custom.` prefix).
-    @_spi(Internal)
-    @objc public func setCustomVariableBool(_ value: Bool, forKey key: String) {
+    @objc func setCustomVariableBool(_ value: Bool, forKey key: String) {
         CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .bool(value)
     }

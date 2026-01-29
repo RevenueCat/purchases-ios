@@ -17,8 +17,6 @@
 
         // Custom Variables ObjC API
         [controller setCustomVariable:@"John" forKey:@"player_name"];
-        [controller setCustomVariableNumber:100.0 forKey:@"max_health"];
-        [controller setCustomVariableBool:YES forKey:@"is_premium"];
     }
 }
 

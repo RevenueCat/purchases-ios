@@ -95,35 +95,22 @@ func paywallViewControllerAPI(_ delegate: Delegate,
 
     // Custom Variables API
     let customVars: [String: CustomVariableValue] = [
-        "player_name": .string("John"),
-        "max_health": .number(100),
-        "is_premium": .bool(true)
+        "player_name": .string("John")
     ]
     controller.customVariables = customVars
 
     // Objective-C compatible methods
     controller.setCustomVariable("Jane", forKey: "player_name")
-    controller.setCustomVariableNumber(200, forKey: "max_health")
-    controller.setCustomVariableBool(false, forKey: "is_premium")
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 func customVariableValueAPI() {
     // CustomVariableValue type and static constructors
     let _: CustomVariableValue = .string("test")
-    let _: CustomVariableValue = .number(42)
-    let _: CustomVariableValue = .number(3.14)
-    let _: CustomVariableValue = .bool(true)
 
     // Accessing underlying value
     let stringValue: CustomVariableValue = .string("hello")
     let _: String = stringValue.stringValue
-
-    let numberValue: CustomVariableValue = .number(100)
-    let _: Double = numberValue.doubleValue
-
-    let boolValue: CustomVariableValue = .bool(true)
-    let _: Bool = boolValue.boolValue
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)

@@ -51,14 +51,12 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
     }
 
     /// Creates a numeric value.
-    @_spi(Internal)
-    public static func number(_ value: Double) -> CustomVariableValue {
+    internal static func number(_ value: Double) -> CustomVariableValue {
         CustomVariableValue(.number(value))
     }
 
     /// Creates a boolean value.
-    @_spi(Internal)
-    public static func bool(_ value: Bool) -> CustomVariableValue {
+    internal static func bool(_ value: Bool) -> CustomVariableValue {
         CustomVariableValue(.bool(value))
     }
 
@@ -82,8 +80,7 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
     /// The numeric representation of this value.
     /// Returns the underlying value for `.number`, attempts conversion for `.string`,
     /// and returns `1.0` for `true` or `0.0` for `false` in `.bool` cases.
-    @_spi(Internal)
-    public var doubleValue: Double {
+    internal var doubleValue: Double {
         switch self.storage {
         case .string(let value):
             return Double(value) ?? 0
@@ -97,8 +94,7 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
     /// The boolean representation of this value.
     /// Returns the underlying value for `.bool`, `true` for non-zero `.number`,
     /// and `true` for `.string` values "true", "1", or "yes" (case-insensitive).
-    @_spi(Internal)
-    public var boolValue: Bool {
+    internal var boolValue: Bool {
         switch self.storage {
         case .string(let value):
             let lowercased = value.lowercased()
@@ -130,8 +126,7 @@ extension CustomVariableValue: ExpressibleByStringLiteral {
 extension CustomVariableValue: ExpressibleByIntegerLiteral {
 
     /// Creates a custom variable value from an integer literal.
-    @_spi(Internal)
-    public init(integerLiteral value: Int) {
+    internal init(integerLiteral value: Int) {
         self = .number(Double(value))
     }
 
@@ -143,8 +138,7 @@ extension CustomVariableValue: ExpressibleByIntegerLiteral {
 extension CustomVariableValue: ExpressibleByFloatLiteral {
 
     /// Creates a custom variable value from a floating-point literal.
-    @_spi(Internal)
-    public init(floatLiteral value: Double) {
+    internal init(floatLiteral value: Double) {
         self = .number(value)
     }
 
@@ -156,8 +150,7 @@ extension CustomVariableValue: ExpressibleByFloatLiteral {
 extension CustomVariableValue: ExpressibleByBooleanLiteral {
 
     /// Creates a custom variable value from a boolean literal.
-    @_spi(Internal)
-    public init(booleanLiteral value: Bool) {
+    internal init(booleanLiteral value: Bool) {
         self = .bool(value)
     }
 
