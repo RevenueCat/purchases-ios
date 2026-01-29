@@ -96,7 +96,7 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
 
     /// The boolean representation of this value.
     /// Returns the underlying value for `.bool`, `true` for non-zero `.number`,
-    /// and `true` for non-empty `.string` (case-insensitive "true", "1", "yes").
+    /// and `true` for `.string` values "true", "1", or "yes" (case-insensitive).
     @_spi(Internal)
     public var boolValue: Bool {
         switch self.storage {
