@@ -81,12 +81,8 @@ class SystemInfo {
     static let defaultApiBaseURL = URL(string: "https://api.revenuecat.com")!
     private static let _apiBaseURL: Atomic<URL> = .init(defaultApiBaseURL)
 
-    private lazy var _isSandbox: Bool = {
-        return self.sandboxEnvironmentDetector.isSandbox
-    }()
-
     var isSandbox: Bool {
-        return self._isSandbox
+        return self.sandboxEnvironmentDetector.isSandbox
     }
 
     var isDebugBuild: Bool {

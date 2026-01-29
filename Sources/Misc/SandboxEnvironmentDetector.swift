@@ -33,7 +33,10 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
     /// Cached environment from `AppTransaction` (iOS 16+).
     /// This is populated asynchronously and used for more reliable sandbox detection.
-    private let cachedAppTransactionEnvironment: Atomic<StoreEnvironment?>
+    private let cachedAppTransactionEnvironment: Atomic<StoreEnvironment?> = .init(nil)
+
+    /// Cached result of receipt path-based sandbox detection.
+    private let cachedIsSandboxBasedOnReceiptPath: Atomic<Bool?> = .init(nil)
 
     /// Creates a new detector that uses `AppTransaction` for environment detection on iOS 16+.
     ///
@@ -54,7 +57,6 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.isRunningInSimulator = isRunningInSimulator
         self.receiptFetcher = receiptFetcher
         self.macAppStoreDetector = macAppStoreDetector
-        self.cachedAppTransactionEnvironment = .init(nil)
 
         // Start fetching the AppTransaction environment asynchronously.
         // The result will be cached and used by `isSandbox` once available.
@@ -66,7 +68,6 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.isRunningInSimulator = SystemInfo.isRunningInSimulator
         self.receiptFetcher = LocalReceiptFetcher()
         self.macAppStoreDetector = nil
-        self.cachedAppTransactionEnvironment = .init(nil)
     }
 
     var isSandbox: Bool {
@@ -81,14 +82,21 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         }
 
         // Fallback to the legacy path-based detection.
-        return self.isSandboxBasedOnReceiptPath
+        if let cachedIsSandbox = self.cachedIsSandboxBasedOnReceiptPath.value {
+            return cachedIsSandbox
+        }
+
+        // Cache the result to avoid recomputing it
+        let isSandboxBasedOnReceiptPath = self.getIsSandboxBasedOnReceiptPath()
+        self.cachedIsSandboxBasedOnReceiptPath.value = isSandboxBasedOnReceiptPath
+        return isSandboxBasedOnReceiptPath
     }
 
     // MARK: - Default Instance
 
     /// The default sandbox environment detector.
     ///
-    /// By default, this uses the `FallbackSandboxEnvironmentDetector` which relies on
+    /// By default, this uses a simplified `SandboxEnvironmentDetector` that only relies on
     /// the legacy receipt path detection. When the SDK is initialized via `Purchases.configure()`,
     /// this is replaced with a full `SandboxEnvironmentDetector` that includes
     /// `AppTransaction`-based detection on iOS 16+.
@@ -118,7 +126,7 @@ private extension SandboxEnvironmentDetector {
 
 private extension SandboxEnvironmentDetector {
 
-    var isSandboxBasedOnReceiptPath: Bool {
+    func getIsSandboxBasedOnReceiptPath() -> Bool {
         guard let path = self.bundle.appStoreReceiptURL?.path else {
             return false
         }
