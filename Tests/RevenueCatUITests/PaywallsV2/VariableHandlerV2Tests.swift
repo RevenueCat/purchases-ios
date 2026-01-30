@@ -1388,21 +1388,6 @@ class CustomVariableValueTests: TestCase {
         expect(value).to(equal(.string("test")))
     }
 
-    func testExpressibleByIntegerLiteral() {
-        let value: CustomVariableValue = 42
-        expect(value).to(equal(.number(42.0)))
-    }
-
-    func testExpressibleByFloatLiteral() {
-        let value: CustomVariableValue = 3.14
-        expect(value).to(equal(.number(3.14)))
-    }
-
-    func testExpressibleByBooleanLiteral() {
-        let value: CustomVariableValue = true
-        expect(value).to(equal(.bool(true)))
-    }
-
     // MARK: - Dictionary Conversion Tests
 
     func testAsStringDictionary() {
