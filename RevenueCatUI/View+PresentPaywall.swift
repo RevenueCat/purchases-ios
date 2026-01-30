@@ -816,6 +816,9 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     @StateObject
     private var purchaseHandler: PurchaseHandler
 
+    @StateObject
+    private var introEligibility: TrialOrIntroEligibilityChecker
+
     init(
         offering: Binding<Offering?>,
         myAppPurchaseLogic: MyAppPurchaseLogic?,
@@ -844,6 +847,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self._purchaseHandler = .init(wrappedValue:
             PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                     performRestore: myAppPurchaseLogic?.performRestore))
+        self._introEligibility = .init(wrappedValue: .default())
     }
 
     func body(content: Content) -> some View {
@@ -886,6 +890,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 content: .offering(offering),
                 fonts: self.fontProvider,
                 displayCloseButton: true,
+                introEligibility: self.introEligibility,
                 purchaseHandler: self.purchaseHandler
             )
         )
@@ -929,6 +934,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 content: .offering(offering),
                 fonts: self.fontProvider,
                 displayCloseButton: true,
+                introEligibility: self.introEligibility,
                 purchaseHandler: self.purchaseHandler
             )
         )

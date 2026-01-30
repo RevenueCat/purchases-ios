@@ -94,7 +94,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.currency_code }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
 
         expect(result).to(equal("USD"))
@@ -105,7 +106,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.currency_symbol }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$"))
     }
@@ -115,7 +117,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.periodly }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("monthly"))
     }
@@ -125,7 +128,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.periodly }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("3 months"))
     }
@@ -135,7 +139,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$6.99"))
     }
@@ -145,7 +150,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$6.99/month"))
     }
@@ -155,7 +161,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$4.99/3 months"))
     }
@@ -165,7 +172,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period_abbreviated }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$6.99/mo"))
     }
@@ -175,7 +183,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period_abbreviated }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$4.99/3mo"))
     }
@@ -185,7 +194,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_day }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$0.23"))
     }
@@ -195,7 +205,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_week }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$1.60"))
     }
@@ -205,7 +216,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_month }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$6.99"))
     }
@@ -215,7 +227,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_year }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$83.88"))
     }
@@ -225,7 +238,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("month"))
     }
@@ -235,7 +249,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("3 months"))
     }
@@ -245,7 +260,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_abbreviated }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("mo"))
     }
@@ -255,7 +271,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_abbreviated }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("3mo"))
     }
@@ -265,7 +282,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_in_days }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("30"))
     }
@@ -275,7 +293,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_in_weeks }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("4"))
     }
@@ -285,7 +304,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_in_months }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("1"))
     }
@@ -295,7 +315,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_in_years }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("0"))
     }
@@ -305,7 +326,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_with_unit }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("1 month"))
     }
@@ -315,7 +337,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_with_unit }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("3 months"))
     }
@@ -325,7 +348,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("free"))
     }
@@ -335,7 +359,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_day }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("free"))
     }
@@ -345,7 +370,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_week }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("free"))
     }
@@ -355,7 +381,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_month }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -365,7 +392,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_year }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -375,7 +403,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price }}",
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$1.99"))
     }
@@ -385,7 +414,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_day }}",
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$0.28"))
     }
@@ -397,6 +427,7 @@ class VariableHandlerV2Test: TestCase {
             with: TestData.packageWithPromoOfferPayUpFront,
             locale: locale,
             localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
             promoOffer: .init(
                 discount: discount,
                 signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
@@ -413,6 +444,7 @@ class VariableHandlerV2Test: TestCase {
             with: TestData.packageWithPromoOfferPayUpFront,
             locale: locale,
             localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
             promoOffer: .init(
                 discount: discount,
                 signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
@@ -426,7 +458,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_week }}",
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$1.99"))
     }
@@ -436,7 +469,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_month }}",
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -446,7 +480,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_year }}",
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -456,7 +491,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("week"))
     }
@@ -466,7 +502,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_abbreviated }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("wk"))
     }
@@ -476,7 +513,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_in_days }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("7"))
     }
@@ -486,7 +524,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_in_weeks }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("1"))
     }
@@ -496,7 +535,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_in_months }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -506,7 +546,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_in_years }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -516,7 +557,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_with_unit }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("1 week"))
     }
@@ -526,7 +568,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_end_date }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("December 19, 2024"))
     }
@@ -536,7 +579,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.secondary_offer_price }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -546,7 +590,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.secondary_offer_period }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -556,9 +601,72 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.secondary_offer_period_abbreviated }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
+    }
+
+    // MARK: - Intro Offer Ineligibility Tests
+
+    func testOfferPriceReturnsEmptyWhenNotEligibleForIntroOffer() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testOfferPeriodReturnsEmptyWhenNotEligibleForIntroOffer() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testOfferPricePerWeekReturnsEmptyWhenNotEligibleForIntroOffer() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_week }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testOfferEndDateReturnsEmptyWhenNotEligibleForIntroOffer() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_end_date }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testPromoOfferShownEvenWhenNotEligibleForIntroOffer() {
+        let discount = TestData.packageWithPromoOfferPayUpFront.storeProduct.discounts.first!
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithPromoOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false,
+            promoOffer: .init(
+                discount: discount,
+                signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
+            )
+        )
+        expect(result).to(equal("$1.99"))
     }
 
     func testProductRelativeDiscount() {
@@ -573,7 +681,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.relative_discount }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("30%"))
     }
@@ -583,7 +692,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period | uppercase }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("MONTH"))
     }
@@ -593,7 +703,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period | lowercase }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("month"))
     }
@@ -603,7 +714,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period | capitalize }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Month"))
     }
@@ -622,7 +734,8 @@ class VariableHandlerV2Test: TestCase {
             in: "Name is {{ product_name }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Name is Monthly"))
     }
@@ -639,7 +752,8 @@ class VariableHandlerV2Test: TestCase {
             in: "Name is {{ product_name_that_does_not_exist }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Name is "))
     }
@@ -658,7 +772,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.store_product_name || loud }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("MONTHLY"))
     }
@@ -675,7 +790,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.store_product_name || loud }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Monthly"))
     }
@@ -687,7 +803,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period }}",
             with: TestData.lifetimePackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         // Lifetime products should not have a period suffix (no slash)
         expect(result).to(equal("$119.49"))
@@ -698,7 +815,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period_abbreviated }}",
             with: TestData.lifetimePackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         // Lifetime products should not have a period suffix (no slash)
         expect(result).to(equal("$119.49"))
@@ -709,7 +827,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period }}",
             with: TestData.consumablePackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         // Consumable products should not have a period suffix (no slash)
         expect(result).to(equal("$4.99"))
@@ -720,7 +839,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period_abbreviated }}",
             with: TestData.consumablePackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         // Consumable products should not have a period suffix (no slash)
         expect(result).to(equal("$4.99"))
@@ -815,7 +935,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithZeroDecimal).to(equal("$60"))
 
@@ -824,7 +945,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithoutZeroDecimal).to(equal("$60.00"))
     }
@@ -835,7 +957,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price_per_month }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithZeroDecimal).to(equal("$5"))
 
@@ -844,7 +967,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price_per_month }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithoutZeroDecimal).to(equal("$5.00"))
     }
@@ -855,7 +979,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price_per_period }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithZeroDecimal).to(equal("$60/year"))
 
@@ -864,7 +989,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price_per_period }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithoutZeroDecimal).to(equal("$60.00/year"))
     }
@@ -875,7 +1001,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithZeroDecimal).to(equal("$6.99"))
 
@@ -883,7 +1010,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithoutZeroDecimal).to(equal("$6.99"))
     }
@@ -895,7 +1023,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price }}",
             with: nil,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -905,7 +1034,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.currency_code }}",
             with: nil,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -915,7 +1045,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price_per_period }}",
             with: nil,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -925,7 +1056,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.period }}",
             with: nil,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -935,7 +1067,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.store_product_name }}",
             with: nil,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -946,7 +1079,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.currency_symbol }}",
             with: nil,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$"))
     }
@@ -963,7 +1097,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.relative_discount }}",
             with: nil,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("25%"))
     }
@@ -997,7 +1132,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Hello {{ custom.player_name }}!",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Hello John!"))
     }
@@ -1016,7 +1152,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Hello {{ custom.player_name }}!",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Hello Player!"))
     }
@@ -1035,7 +1172,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Hello {{ custom.unknown_var }}!",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Hello !"))
     }
@@ -1054,7 +1192,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Hello {{ custom.player_name | uppercase }}!",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Hello JOHN!"))
     }
@@ -1073,7 +1212,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Your max health is {{ custom.max_health }}.",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Your max health is 100."))
     }
@@ -1092,7 +1232,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Premium status: {{ custom.is_premium }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Premium status: true"))
     }
@@ -1116,7 +1257,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "{{ custom.player_name }} (Level {{ custom.level }}) - Max HP: {{ custom.max_health }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("John (Level 42) - Max HP: 100"))
     }
@@ -1135,7 +1277,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Hello {{ custom.player_name }}! Subscribe for {{ product.price }}/{{ product.period }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Hello John! Subscribe for $6.99/month"))
     }
@@ -1154,7 +1297,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Setting: {{ custom.setting }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Setting: override"))
     }
@@ -1173,7 +1317,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Price: {{ custom.price }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Price: 9.99"))
     }
@@ -1192,7 +1337,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Offset: {{ custom.offset }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Offset: -10"))
     }
@@ -1211,7 +1357,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Enabled: {{ custom.enabled }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Enabled: false"))
     }
@@ -1231,7 +1378,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Level: {{ custom.level | uppercase }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Level: 42"))
     }
@@ -1250,7 +1398,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Status: {{ custom.enabled | uppercase }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Status: TRUE"))
     }
@@ -1270,7 +1419,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Value: {{ custom.value }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Value: 100"))
     }
@@ -1291,7 +1441,8 @@ class CustomVariablesV2Tests: TestCase {
             in: "Hello {{ custom_player }}!",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Hello !"))
     }
