@@ -58,7 +58,6 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(detector.isSandbox) == true
     }
 
-
     func testIsSandboxWhenAppTransactionEnvironmentIsXcode() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
