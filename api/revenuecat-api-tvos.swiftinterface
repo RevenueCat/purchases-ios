@@ -2408,6 +2408,9 @@ public typealias StartPurchaseBlock = (@escaping RevenueCat.PurchaseCompletedBlo
   @objc deinit
 }
 extension RevenueCat.Purchases {
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc public static func parseAsWebPurchaseRedemption(_ url: Foundation.URL) -> RevenueCat.WebPurchaseRedemption?
+  #endif
   @objc final public var appUserID: Swift.String {
     @objc get
   }
@@ -2504,6 +2507,10 @@ extension RevenueCat.Purchases {
   #if compiler(>=5.3) && $NonescapableTypes
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   final public func recordPurchase(_ purchaseResult: StoreKit.Product.PurchaseResult) async throws -> RevenueCat.StoreTransaction?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @objc(recordPurchaseForProductID:completion:) final public func recordPurchase(productID: Swift.String, completion: @escaping (RevenueCat.StoreTransaction?, RevenueCat.PublicError?) -> Swift.Void)
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
   @objc final public func redeemWebPurchase(webPurchaseRedemption: RevenueCat.WebPurchaseRedemption, completion: @escaping (RevenueCat.CustomerInfo?, RevenueCat.PublicError?) -> Swift.Void)

@@ -93,6 +93,7 @@ check_swift_files_in_project
 # Check for new public enums in Swift files
 def check_for_public_enums
   swift_files = (git.added_files + git.modified_files)
+    .select { |file| file.start_with?('Sources/') || file.start_with?('RevenueCatUI/') }
     .select { |file| file.end_with?('.swift') }
     .select { |file| File.exist?(file) }
 
