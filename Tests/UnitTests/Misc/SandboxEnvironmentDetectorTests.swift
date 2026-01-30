@@ -153,6 +153,8 @@ class SandboxEnvironmentDetectorTests: TestCase {
     }
 
     func testUsesAppTransactionAfterPrefetchCompletes() async {
+        try AvailabilityChecks.iOS16APINotAvailableOrSkipTest()
+
         let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledAppTransactionEnvironment(
             receiptURLResult: .appStoreReceipt,
             appTransactionEnvironment: .sandbox
@@ -186,7 +188,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
             receiptURLResult: .sandboxReceipt,
             appTransactionEnvironment: .production
         )
-        expect(detectorThatShouldBeSandbox.isSandbox) == false
+        expect(detectorThatShouldBeSandbox.isSandbox) == true
 
         let detectorThatShouldBeProduction = await SandboxEnvironmentDetector.with(
             receiptURLResult: .appStoreReceipt,
@@ -198,7 +200,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
             receiptURLResult: .appStoreReceipt,
             appTransactionEnvironment: .xcode
         )
-        expect(detectorThatShouldBeProduction2.isSandbox) == true
+        expect(detectorThatShouldBeProduction2.isSandbox) == false
     }
 }
 
