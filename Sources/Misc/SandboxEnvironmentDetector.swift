@@ -118,6 +118,10 @@ private extension SandboxEnvironmentDetector {
             let environment = await transactionFetcher.appTransactionEnvironment
             self.cachedAppTransactionEnvironment.value = environment
         }
+//        Task.detached {
+//            let environment = await transactionFetcher.appTransactionEnvironment
+//            self.cachedAppTransactionEnvironment.value = environment
+//        }
     }
 
 }
