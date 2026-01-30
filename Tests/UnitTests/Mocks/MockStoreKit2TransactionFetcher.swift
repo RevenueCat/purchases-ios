@@ -139,7 +139,8 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
                 await withCheckedContinuation { continuation in
                     // Atomically decide whether to store the continuation or immediately resume it
                     // if a resume was already requested.
-                    let continuationToResume: CheckedContinuation<Void, Never>? = self._appTransactionStallState.modify { state in
+                    let continuationToResume: CheckedContinuation<Void, Never>? = self._appTransactionStallState
+                        .modify { state in
                         if state.resumeRequested {
                             state.resumeRequested = false
                             return continuation
