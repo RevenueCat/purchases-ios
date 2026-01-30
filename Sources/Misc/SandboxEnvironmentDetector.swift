@@ -34,7 +34,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
     /// Cached environment from `AppTransaction` (iOS 16+).
     /// This is populated asynchronously and used for more reliable sandbox detection.
-    private var cachedAppTransactionEnvironment: StoreEnvironment? = nil
+    private let cachedAppTransactionEnvironment: Atomic<StoreEnvironment?> = .init(nil)
 
     /// Cached result of receipt path-based sandbox detection.
     private let cachedIsSandboxBasedOnReceiptPath: Atomic<Bool?> = .init(nil)
@@ -78,7 +78,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
         // On iOS 16+, prefer the cached AppTransaction environment if available.
         // This is more reliable than the receipt path-based detection.
-        if let cachedEnvironment = self.cachedAppTransactionEnvironment {
+        if let cachedEnvironment = self.cachedAppTransactionEnvironment.value {
             return cachedEnvironment != .production
         }
 
@@ -118,7 +118,7 @@ private extension SandboxEnvironmentDetector {
         Task.detached {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 let environment = try? await AppTransaction.shared.verifiedAppTransaction?.environment
-                self.cachedAppTransactionEnvironment = .sandbox
+                self.cachedAppTransactionEnvironment.value = .sandbox
             }
         }
     }
