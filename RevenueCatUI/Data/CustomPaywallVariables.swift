@@ -120,42 +120,6 @@ extension CustomVariableValue: ExpressibleByStringLiteral {
 
 }
 
-// MARK: - ExpressibleByIntegerLiteral
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension CustomVariableValue: ExpressibleByIntegerLiteral {
-
-    /// Creates a custom variable value from an integer literal.
-    internal init(integerLiteral value: Int) {
-        self = .number(Double(value))
-    }
-
-}
-
-// MARK: - ExpressibleByFloatLiteral
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension CustomVariableValue: ExpressibleByFloatLiteral {
-
-    /// Creates a custom variable value from a floating-point literal.
-    internal init(floatLiteral value: Double) {
-        self = .number(value)
-    }
-
-}
-
-// MARK: - ExpressibleByBooleanLiteral
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension CustomVariableValue: ExpressibleByBooleanLiteral {
-
-    /// Creates a custom variable value from a boolean literal.
-    internal init(booleanLiteral value: Bool) {
-        self = .bool(value)
-    }
-
-}
-
 // MARK: - Environment Key
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

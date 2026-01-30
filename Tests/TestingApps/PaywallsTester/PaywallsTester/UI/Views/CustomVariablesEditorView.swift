@@ -198,7 +198,7 @@ struct CustomVariablesEditorView: View {
         case .string:
             return true
         case .number:
-            return Double(newVariableNumberValue) != nil || !newVariableNumberValue.isEmpty
+            return newVariableNumberValue.isEmpty || Double(newVariableNumberValue) != nil
         case .bool:
             return true
         }

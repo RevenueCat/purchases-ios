@@ -284,6 +284,16 @@ extension RevenueCat.Purchases {
   @available(watchOS, unavailable)
   @available(tvOS, unavailable)
   final public func showStoreMessages(for types: Swift.Set<RevenueCat.StoreMessageType> = Set(StoreMessageType.allCases), completion: @escaping () -> Swift.Void)
+  @available(iOS 16.0, *)
+  @available(macOS, unavailable)
+  @available(watchOS, unavailable)
+  @available(tvOS, unavailable)
+  @objc(showStoreMessagesWithCompletion:) final public func showStoreMessages(completion: @escaping () -> Swift.Void)
+  @available(iOS 16.0, *)
+  @available(macOS, unavailable)
+  @available(watchOS, unavailable)
+  @available(tvOS, unavailable)
+  @objc(showStoreMessagesForTypes:completion:) final public func showStoreMessages(forTypes types: Foundation.NSSet, completion: @escaping () -> Swift.Void)
 }
 @_hasMissingDesignatedInitializers @objc(RCStorefront) final public class Storefront : ObjectiveC.NSObject {
   @objc final public var countryCode: Swift.String {
@@ -1364,6 +1374,75 @@ extension RevenueCat.PaywallData.Tier : Swift.Identifiable {
   @objc deinit
 }
 extension RevenueCat.PurchasesDiagnostics {
+  public enum ProductStatus : Swift.Sendable {
+    case valid
+    case couldNotCheck
+    case notFound
+    case actionInProgress
+    case needsAction
+    case unknown
+    public static func == (a: RevenueCat.PurchasesDiagnostics.ProductStatus, b: RevenueCat.PurchasesDiagnostics.ProductStatus) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public struct ProductDiagnosticsPayload : Swift.Sendable {
+    public let identifier: Swift.String
+    public let title: Swift.String?
+    public let status: RevenueCat.PurchasesDiagnostics.ProductStatus
+    public let description: Swift.String
+  }
+  public struct InvalidBundleIdErrorPayload : Swift.Equatable {
+    public let appBundleId: Swift.String
+    public let sdkBundleId: Swift.String
+    public static func == (a: RevenueCat.PurchasesDiagnostics.InvalidBundleIdErrorPayload, b: RevenueCat.PurchasesDiagnostics.InvalidBundleIdErrorPayload) -> Swift.Bool
+  }
+  public enum SDKHealthCheckStatus : Swift.Sendable {
+    case passed
+    case failed
+    case warning
+    public static func == (a: RevenueCat.PurchasesDiagnostics.SDKHealthCheckStatus, b: RevenueCat.PurchasesDiagnostics.SDKHealthCheckStatus) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public struct OfferingDiagnosticsPayload : Swift.Sendable {
+    public let identifier: Swift.String
+    public let packages: [RevenueCat.PurchasesDiagnostics.OfferingPackageDiagnosticsPayload]
+    public let status: RevenueCat.PurchasesDiagnostics.SDKHealthCheckStatus
+  }
+  public struct OfferingPackageDiagnosticsPayload : Swift.Sendable {
+    public let identifier: Swift.String
+    public let title: Swift.String?
+    public let status: RevenueCat.PurchasesDiagnostics.ProductStatus
+    public let description: Swift.String
+    public let productIdentifier: Swift.String
+    public let productTitle: Swift.String?
+  }
+  public enum SDKHealthError : Swift.Error {
+    case invalidAPIKey
+    case noOfferings
+    case offeringConfiguration([RevenueCat.PurchasesDiagnostics.OfferingDiagnosticsPayload])
+    case invalidBundleId(RevenueCat.PurchasesDiagnostics.InvalidBundleIdErrorPayload?)
+    case invalidProducts([RevenueCat.PurchasesDiagnostics.ProductDiagnosticsPayload])
+    case notAuthorizedToMakePayments
+    case unknown(any Swift.Error)
+  }
+  public struct SDKHealthReport : Swift.Sendable {
+    public let status: RevenueCat.PurchasesDiagnostics.SDKHealthStatus
+    public let projectId: Swift.String?
+    public let appId: Swift.String?
+    public let products: [RevenueCat.PurchasesDiagnostics.ProductDiagnosticsPayload]
+    public let offerings: [RevenueCat.PurchasesDiagnostics.OfferingDiagnosticsPayload]
+  }
+  public enum SDKHealthStatus : Swift.Sendable {
+    case healthy(warnings: [RevenueCat.PurchasesDiagnostics.SDKHealthError])
+    case unhealthy(RevenueCat.PurchasesDiagnostics.SDKHealthError)
+  }
+}
+extension RevenueCat.PurchasesDiagnostics {
   public enum Error : Swift.Error {
     case failedConnectingToAPI(any Swift.Error)
     case invalidAPIKey
@@ -1375,6 +1454,8 @@ extension RevenueCat.PurchasesDiagnostics {
 extension RevenueCat.PurchasesDiagnostics {
   @available(*, deprecated, message: "Use the `PurchasesDiagnostics.shared.checkSDKHealth()` method instead.")
   @objc(testSDKHealthWithCompletion:) final public func testSDKHealth() async throws
+  final public func checkSDKHealth() async throws
+  final public func healthReport() async -> RevenueCat.PurchasesDiagnostics.SDKHealthReport
 }
 extension RevenueCat.PurchasesDiagnostics.Error : Foundation.CustomNSError {
   public var errorUserInfo: [Swift.String : Any] {
@@ -2439,6 +2520,9 @@ public typealias StartPurchaseBlock = (@escaping RevenueCat.PurchaseCompletedBlo
   @objc deinit
 }
 extension RevenueCat.Purchases {
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc public static func parseAsWebPurchaseRedemption(_ url: Foundation.URL) -> RevenueCat.WebPurchaseRedemption?
+  #endif
   @objc final public var appUserID: Swift.String {
     @objc get
   }
@@ -2573,6 +2657,10 @@ extension RevenueCat.Purchases {
   #if compiler(>=5.3) && $NonescapableTypes
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   final public func recordPurchase(_ purchaseResult: StoreKit.Product.PurchaseResult) async throws -> RevenueCat.StoreTransaction?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @objc(recordPurchaseForProductID:completion:) final public func recordPurchase(productID: Swift.String, completion: @escaping (RevenueCat.StoreTransaction?, RevenueCat.PublicError?) -> Swift.Void)
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
   @objc final public func redeemWebPurchase(webPurchaseRedemption: RevenueCat.WebPurchaseRedemption, completion: @escaping (RevenueCat.CustomerInfo?, RevenueCat.PublicError?) -> Swift.Void)
@@ -3723,6 +3811,11 @@ extension RevenueCat.PaywallComponent {
     public init(from decoder: any Swift.Decoder) throws
   }
 }
+extension RevenueCat.PurchasesDiagnostics.SDKHealthError : Foundation.CustomNSError {
+  public var errorUserInfo: [Swift.String : Any] {
+    get
+  }
+}
 public struct PaywallColor {
   @frozen public enum ColorScheme : Swift.String {
     case light
@@ -4297,6 +4390,13 @@ extension RevenueCat.PaywallComponent {
 extension RevenueCat.PaywallComponent {
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
+}
+@available(iOS 16.0, macOS 13.0, *)
+extension SwiftUICore.View {
+  @_Concurrency.MainActor @preconcurrency public func debugRevenueCatOverlay() -> some SwiftUICore.View
+  
+  @_Concurrency.MainActor @preconcurrency public func debugRevenueCatOverlay(isPresented: SwiftUICore.Binding<Swift.Bool>) -> some SwiftUICore.View
+  
 }
 @objc(RCAttributionNetwork) public enum AttributionNetwork : Swift.Int {
   @available(*, deprecated, message: "use adServices")
@@ -5288,6 +5388,10 @@ extension RevenueCat.StoreTransaction : Swift.Sendable {}
 extension RevenueCat.StoreProductDiscount.PaymentMode : Swift.Equatable {}
 extension RevenueCat.StoreProductDiscount.PaymentMode : Swift.Hashable {}
 extension RevenueCat.StoreProductDiscount.PaymentMode : Swift.RawRepresentable {}
+extension RevenueCat.PurchasesDiagnostics.ProductStatus : Swift.Equatable {}
+extension RevenueCat.PurchasesDiagnostics.ProductStatus : Swift.Hashable {}
+extension RevenueCat.PurchasesDiagnostics.SDKHealthCheckStatus : Swift.Equatable {}
+extension RevenueCat.PurchasesDiagnostics.SDKHealthCheckStatus : Swift.Hashable {}
 extension RevenueCat.ErrorCode : Swift.Equatable {}
 extension RevenueCat.ErrorCode : Swift.Hashable {}
 extension RevenueCat.ErrorCode : Swift.RawRepresentable {}
