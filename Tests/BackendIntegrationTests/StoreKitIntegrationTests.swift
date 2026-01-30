@@ -37,6 +37,9 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testRecordingPurchaseForProductIDThrowsIfPurchasesAreNotCompletedByMyApp() async throws {
+        let manager = ObserverModeManager()
+        _ = try await manager.purchaseProductFromStoreKit2()
+
         let expectation = self.expectation(description: "Completion called")
 
         Purchases.shared.recordPurchase(productID: Self.monthlyNoIntroProductID) { transaction, error in
