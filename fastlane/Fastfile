@@ -10,6 +10,8 @@
 #     https://docs.fastlane.tools/plugins/available-plugins
 #
 
+require_relative 'api_diff_helper'
+
 default_platform(:ios)
 
 def current_version_number
@@ -674,12 +676,13 @@ platform :ios do
 
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
+      # Note: We use xcodebuild instead of scan because this is an SPM package (workspace: '.')
+      # and scan doesn't properly detect schemes defined in Package.swift
       xcodebuild(
         workspace: '.',
         scheme: 'RevenueCatUI',
         destination: "platform=" + platform + ",name=" + destination,
         sdk: sdk,
-        output_style: :basic,
         result_bundle_path: 'fastlane/test_output/revenuecatui.xcresult',
         report_formats: [:junit],
         report_path: 'fastlane/test_output/revenuecatui/tests.xml',
@@ -909,6 +912,8 @@ platform :ios do
   lane :run_maestro_e2e_tests do |options|
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
+    output_dir = options[:output_dir] || "test_output/maestro"
+    skip_slack_notification = options.fetch(:skip_slack_notification, true)
     base_path = "#{Dir.pwd}/.."
 
     UI.message("Running Maestro E2E tests for backend environment: #{backend_environment}")
@@ -949,6 +954,7 @@ platform :ios do
     end
 
     # Set environment variables for Maestro
+    environment_name = "#{backend_environment}_#{store}"
     ENV["MAESTRO_EXPECTED_VERIFICATION_RESULT"] = entitlement_verification_result
     ENV["MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE"] = customer_info_source
     ENV["MAESTRO_STORE"] = store
@@ -1011,17 +1017,31 @@ platform :ios do
 
       UI.message("Using flow directory: #{flow_dir}")
 
-      sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
+      sh("maestro", "test", "--format", "junit", "--output", "#{output_dir}/report.xml", "--test-output-dir", output_dir, flow_dir)
 
       success = true
     rescue => e
       raise e
     ensure
-      slack_backend_integration_test_results(
-        environment: backend_environment,
-        success: success,
-        message_binary_solo_on_failure: false
-      )
+      # Post-process JUnit XML to include environment name in testcase names
+      junit_file = "#{output_dir}/report.xml"
+      if File.exist?(junit_file)
+        UI.message("Adding environment name (#{environment_name}) to test names in JUnit report...")
+        content = File.read(junit_file)
+        modified_content = content.gsub(/<testcase([^>]*)name="([^"]+)"/) do |match|
+          prefix = $1
+          test_name = $2
+          "<testcase#{prefix}name=\"#{test_name} (#{environment_name})\""
+        end
+        File.write(junit_file, modified_content)
+      end
+      unless skip_slack_notification
+        slack_backend_integration_test_results(
+          environment: backend_environment,
+          success: success,
+          message_binary_solo_on_failure: false
+        )
+      end
       ping_heartbeat_monitor(url: heartbeat_monitor_ping_url)
 
       if store == "app_store"
@@ -1117,6 +1137,46 @@ platform :ios do
   desc "Trigger bump"
   lane :trigger_bump do
     trigger_action_in_circle_ci(action: 'bump', repo_name: REPO_NAME)
+  end
+
+  desc "Trigger bump SDK in RC mobile app"
+  lane :trigger_bump_sdk_in_rc_mobile_app do
+    require 'rest-client'
+
+    version = current_version_number
+
+    circle_token = ENV["RC_APP_CIRCLE_CI_TOKEN"]
+    UI.user_error!("Please set the RC_APP_CIRCLE_CI_TOKEN environment variable") unless circle_token
+
+    definition_id = ENV["RC_APP_CIRCLE_CI_PIPELINE_DEFINITION_ID"]
+    UI.user_error!("Please set the RC_APP_CIRCLE_CI_PIPELINE_DEFINITION_ID environment variable") unless definition_id
+
+    project_slug = ENV["RC_APP_CIRCLE_CI_PROJECT_SLUG"]
+    UI.user_error!("Please set the RC_APP_CIRCLE_CI_PROJECT_SLUG environment variable") unless project_slug
+
+    # Make request
+    headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
+    data = {
+      definition_id: definition_id,
+      config: { branch: "main" },
+      checkout: { branch: "main" },
+      parameters: {
+        bump_sdk: true,
+        sdk_version: version
+      }
+    }
+    url = "https://circleci.com/api/v2/project/#{project_slug}/pipeline/run"
+
+    begin
+      RestClient.post url, data.to_json, headers
+      UI.success "RC App Pipeline triggered successfully"
+    rescue => e
+      UI.error "Failed to trigger RC App Pipeline: #{e.message}"
+      if e.respond_to?(:response) && e.response
+        UI.error "Response body: #{e.response.body}"
+      end
+      raise e
+    end
   end
 
   desc "Checks whether the RevenueCat-Swift.h is up to date"
@@ -1742,6 +1802,130 @@ platform :ios do
         sh "git", "fetch", "origin"
         sh "git", "checkout", commit
       end
+    end
+  end
+
+  desc "Generate Swift interface files for API change detection"
+  lane :generate_swiftinterface do
+    require 'tmpdir'
+
+    # Create CI.xcconfig to exclude DEBUG from compilation conditions
+    # This ensures the generated swiftinterface matches CI (release) builds
+    # Using CI.xcconfig because the project automatically loads it instead of Local.xcconfig
+    setup_swiftinterface_xcconfig
+
+    begin
+      Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
+        ApiDiffHelper::PLATFORMS.each do |platform_config|
+          UI.message("Building RevenueCat for #{platform_config[:platform]}...")
+
+          sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
+
+          Dir.chdir("..") do
+            sh("xcodebuild", "clean", "build",
+               "-scheme", "RevenueCat",
+               "-derivedDataPath", ".build",
+               "-configuration", "Release",
+               "-sdk", sdk_path,
+               "-destination", platform_config[:destination],
+               "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
+          end
+
+        swiftinterface_files = ApiDiffHelper.find_swiftinterface_file("../.build", platform_config[:sdk])
+
+        if swiftinterface_files.empty?
+          UI.user_error!("Could not find RevenueCat.swiftinterface for #{platform_config[:platform]}")
+        end
+
+        output_path = "#{temp_dir}/RevenueCat#{platform_config[:suffix]}.swiftinterface"
+        FileUtils.cp(swiftinterface_files.first, output_path)
+        UI.success("Generated #{platform_config[:platform]} swiftinterface")
+      end
+
+      # Copy to expected location for CI artifacts
+      sh("mkdir", "-p", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
+      sh("cp", "-r", "#{temp_dir}/.", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
+      UI.success("Swift interface files copied to #{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}")
+    end
+    ensure
+      # Clean up CI.xcconfig
+      cleanup_swiftinterface_xcconfig
+    end
+  end
+
+  desc "Setup CI.xcconfig for swiftinterface generation (excludes DEBUG)"
+  private_lane :setup_swiftinterface_xcconfig do
+    base_path = "#{Dir.pwd}/.."
+    xcconfig_path = "#{base_path}/CI.xcconfig"
+    local_xcconfig_path = "#{base_path}/Local.xcconfig"
+
+    # Temporarily move Local.xcconfig out of the way if it exists
+    # Local.xcconfig is loaded after CI.xcconfig and would override our settings
+    if File.exist?(local_xcconfig_path)
+      UI.message("Moving Local.xcconfig temporarily to prevent DEBUG override")
+      FileUtils.mv(local_xcconfig_path, "#{local_xcconfig_path}.bak")
+    end
+
+    UI.message("Creating CI.xcconfig to exclude DEBUG compilation conditions")
+
+    content = [
+      "// Auto-generated for swiftinterface generation. Do not commit to VCS",
+      "// Generated on #{Time.now}",
+      "// Excludes DEBUG to match CI release builds",
+      "",
+      "SWIFT_ACTIVE_COMPILATION_CONDITIONS =",
+      "SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*] = VISION_OS",
+      "SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*] = VISION_OS"
+    ]
+
+    File.write(xcconfig_path, content.join("\n"))
+    UI.success("✅ Created CI.xcconfig")
+  end
+
+  private_lane :cleanup_swiftinterface_xcconfig do
+    base_path = "#{Dir.pwd}/.."
+    xcconfig_path = "#{base_path}/CI.xcconfig"
+    local_xcconfig_path = "#{base_path}/Local.xcconfig"
+
+    FileUtils.rm_f(xcconfig_path)
+    UI.message("Cleaned up CI.xcconfig")
+
+    # Restore Local.xcconfig if it was moved
+    if File.exist?("#{local_xcconfig_path}.bak")
+      FileUtils.mv("#{local_xcconfig_path}.bak", local_xcconfig_path)
+      UI.message("Restored Local.xcconfig")
+    end
+  end
+
+  desc "Check API changes and report results"
+  lane :check_api_changes do
+    api_diff_tool = File.expand_path("~/bin/public-api-diff")
+
+    unless File.exist?(api_diff_tool)
+      UI.error("API diff tool not found at #{api_diff_tool}")
+      UI.important("To install locally, run:")
+      UI.important("  git clone https://github.com/Adyen/adyen-swift-public-api-diff.git ~/tools/adyen-swift-public-api-diff")
+      UI.important("  cd ~/tools/adyen-swift-public-api-diff && swift build -c release")
+      UI.important("  mkdir -p ~/bin && cp .build/release/public-api-diff ~/bin/")
+      UI.message("Skipping API diff check (tool not available locally)")
+      return
+    end
+
+    failed_platforms = []
+
+    ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
+      old_file = "../api/revenuecat-api#{platform[:suffix]}.swiftinterface"
+      new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
+
+      result = ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, platform[:name])
+      failed_platforms << result unless result[:success]
+    end
+
+    if failed_platforms.any?
+      ApiDiffHelper.print_failure_summary(failed_platforms)
+      UI.user_error!("API changes detected! Update baseline files if changes are intentional.")
+    else
+      UI.success("✅ No API changes detected")
     end
   end
 

@@ -65,7 +65,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
         ) == "offering"
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .purchase
     }
 
     func testPurchaseReturnsCorrectValues() async throws {
@@ -374,7 +374,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
         ) == "offering"
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .purchase
     }
 
     func testPurchaseWithPurchaseParamsReturnsCorrectValues() async throws {
@@ -500,7 +500,10 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let product = try await self.fetchSk1Product()
         let payment = self.storeKit1Wrapper.payment(with: product)
 
-        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
 
         _ = await withCheckedContinuation { continuation in
             self.orchestrator.purchase(
@@ -518,10 +521,10 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == Self.paywallEventCreationData
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
-        ) == Self.paywallEvent
+        ) == Self.paywallEventWithPurchaseInfo
     }
 
-    func testPurchaseFailureRemembersPresentedPaywall() async throws {
+    func testPurchaseFailureClearsPresentedPaywall() async throws {
         func purchase() async throws {
             let product = try await self.fetchSk1Product()
             let payment = self.storeKit1Wrapper.payment(with: product)
@@ -538,20 +541,132 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
-        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
 
         self.backend.stubbedPostReceiptResult = .failure(.unexpectedBackendResponse(.customerInfoNil))
         try await purchase()
 
+        // Simulate purchaseError event clearing the cache (as PurchaseHandler would do)
+        self.orchestrator.track(paywallEvent: .purchaseError(
+            Self.paywallEventCreationData,
+            Self.paywallEventForPurchaseError
+        ))
+
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         try await purchase()
 
+        // After purchaseError clears the cache, the second purchase should have no paywall data
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
-        ) == Self.paywallEventCreationData
+            self.backend.invokedPostReceiptDataParameters?.transactionData).toNot(beNil())
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
-        ) == Self.paywallEvent
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
+        ).to(beNil())
+    }
+
+    func testCancelEventClearsPresentedPaywall() async throws {
+        func purchase() async throws {
+            let product = try await self.fetchSk1Product()
+            let payment = self.storeKit1Wrapper.payment(with: product)
+
+            _ = await withCheckedContinuation { continuation in
+                self.orchestrator.purchase(
+                    sk1Product: product,
+                    payment: payment,
+                    package: nil,
+                    wrapper: self.storeKit1Wrapper
+                ) { transaction, customerInfo, error, userCancelled in
+                    continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+                }
+            }
+        }
+
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
+
+        // Simulate cancel event clearing the cache (as PurchaseHandler would do)
+        self.orchestrator.track(paywallEvent: .cancel(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
+
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        try await purchase()
+
+        // Verify the backend was called
+        expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
+        // After cancel clears the cache, the purchase should have no paywall data
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
+        ).to(beNil())
+    }
+
+    func testPurchaseWithDifferentProductDoesNotIncludePaywallData() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        // Track a purchaseInitiated event with a DIFFERENT product ID
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithDifferentProductId
+        ))
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // Verify the backend was called
+        expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
+        // The paywall data should NOT be included because the product ID doesn't match
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
+        ).to(beNil())
+    }
+
+    func testPurchaseBeforePaywallEventDoesNotIncludePaywallData() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        // Track a purchaseInitiated event with a date in the FUTURE (2050)
+        // This simulates processing a transaction that was purchased BEFORE the paywall event
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationDataInFuture,
+            Self.paywallEventWithPurchaseInfo
+        ))
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // Verify the backend was called
+        expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
+        // The paywall data should NOT be included because the transaction's purchase date
+        // is before the paywall event's creation date
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
+        ).to(beNil())
     }
 
     // MARK: - AdServices and Attributes
@@ -758,10 +873,15 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
         let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: diagnosticsSynchronizer)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(
+                delegate: nil,
+                userDefaults: nil
+            ),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer
+        )
 
         expect(transactionListener.invokedDelegateSetter).toEventually(beTrue())
         expect(transactionListener.invokedListenForTransactions) == false
@@ -799,7 +919,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .receipt(self.receiptFetcher.mockReceiptData)
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.appUserID
+            self.backend.invokedPostReceiptDataParameters?.appUserID
         ) == Self.mockUserID
 
         expect(self.customerInfoManager.invokedCustomerInfo).to(beFalse())
@@ -834,7 +954,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .receipt(self.receiptFetcher.mockReceiptData)
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.appUserID
+            self.backend.invokedPostReceiptDataParameters?.appUserID
         ) == Self.mockUserID
 
         expect(self.customerInfoManager.invokedCustomerInfo).to(beFalse())
@@ -879,11 +999,13 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
         let diagnosticsTracker = MockDiagnosticsTracker()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: diagnosticsSynchronizer,
-                               diagnosticsTracker: diagnosticsTracker)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer,
+            diagnosticsTracker: diagnosticsTracker
+        )
 
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
         systemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
@@ -933,11 +1055,16 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
         let diagnosticsTracker = MockDiagnosticsTracker()
 
-        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
-                               diagnosticsSynchronizer: diagnosticsSynchronizer,
-                               diagnosticsTracker: diagnosticsTracker)
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(
+                delegate: nil,
+                userDefaults: nil
+            ),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer,
+            diagnosticsTracker: diagnosticsTracker
+        )
 
         storeKit1Wrapper.mockAddPaymentTransactionState = .failed
         storeKit1Wrapper.mockTransactionError = NSError(domain: SKErrorDomain,
@@ -998,4 +1125,21 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         expect(error).to(matchError(ErrorCode.featureNotSupportedWithStoreKit1))
     }
     #endif
+
+    // MARK: - recordPurchase (handleRecordPurchase)
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testHandleRecordPurchaseThrowsErrorWhenUsingSK1() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.setUpSystemInfo(finishTransactions: false) // Observer mode
+        self.setUpOrchestrator()
+
+        do {
+            _ = try await self.orchestrator.handleRecordPurchase(.userCancelled)
+            fail("Expected error to be thrown")
+        } catch {
+            expect(error).to(matchError(ErrorCode.configurationError))
+        }
+    }
 }

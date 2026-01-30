@@ -27,9 +27,22 @@
         RCAdRevenuePrecision *unknown __unused = RCAdRevenuePrecision.unknown;
         NSString *precisionRawValue __unused = exact.rawValue;
 
+        // AdFormat API
+        RCAdFormat *formatFromRaw __unused = [[RCAdFormat alloc] initWithRawValue:@"custom_format"];
+        RCAdFormat *banner __unused = RCAdFormat.banner;
+        RCAdFormat *interstitial __unused = RCAdFormat.interstitial;
+        RCAdFormat *rewarded __unused = RCAdFormat.rewarded;
+        RCAdFormat *rewardedInterstitial __unused = RCAdFormat.rewardedInterstitial;
+        RCAdFormat *native __unused = RCAdFormat.native;
+        RCAdFormat *appOpen __unused = RCAdFormat.appOpen;
+        RCAdFormat *mrec __unused = RCAdFormat.mrec;
+        RCAdFormat *other __unused = RCAdFormat.other;
+        NSString *formatRawValue __unused = banner.rawValue;
+
         // AdFailedToLoad API - with placement
         RCAdFailedToLoad *failedWithPlacement __unused = [[RCAdFailedToLoad alloc] initWithNetworkName:@"AdMob"
                                                                                         mediatorName:RCMediatorName.appLovin
+                                                                                            adFormat:RCAdFormat.banner
                                                                                            placement:@"home_screen"
                                                                                             adUnitId:@"ca-app-pub-123"
                                                                                   mediatorErrorCode:@3];
@@ -37,12 +50,14 @@
         // AdFailedToLoad API - without placement
         RCAdFailedToLoad *failedNoPlacement __unused = [[RCAdFailedToLoad alloc] initWithNetworkName:@"AdMob"
                                                                                        mediatorName:RCMediatorName.appLovin
+                                                                                           adFormat:RCAdFormat.interstitial
                                                                                            adUnitId:@"ca-app-pub-123"
                                                                                  mediatorErrorCode:nil];
 
         // AdFailedToLoad properties
         NSString *failedNetworkName __unused = failedWithPlacement.networkName;
         RCMediatorName *failedMediator __unused = failedWithPlacement.mediatorName;
+        RCAdFormat *failedFormat __unused = failedWithPlacement.adFormat;
         NSString *failedPlacement __unused = failedWithPlacement.placement;
         NSString *failedAdUnitId __unused = failedWithPlacement.adUnitId;
         NSNumber *failedMediatorErrorCode __unused = failedWithPlacement.mediatorErrorCode;
@@ -50,6 +65,7 @@
         // AdDisplayed API - with placement
         RCAdDisplayed *displayedWithPlacement __unused = [[RCAdDisplayed alloc] initWithNetworkName:@"AdMob"
                                                                                         mediatorName:RCMediatorName.appLovin
+                                                                                            adFormat:RCAdFormat.rewarded
                                                                                            placement:@"home_screen"
                                                                                             adUnitId:@"ca-app-pub-123"
                                                                                         impressionId:@"impression-123"];
@@ -57,12 +73,14 @@
         // AdDisplayed API - without placement (convenience init)
         RCAdDisplayed *displayedNoPlacement __unused = [[RCAdDisplayed alloc] initWithNetworkName:@"AdMob"
                                                                                       mediatorName:RCMediatorName.appLovin
+                                                                                          adFormat:RCAdFormat.native
                                                                                           adUnitId:@"ca-app-pub-123"
                                                                                       impressionId:@"impression-123"];
 
         // AdDisplayed properties
         NSString *networkName __unused = displayedWithPlacement.networkName;
         RCMediatorName *mediator __unused = displayedWithPlacement.mediatorName;
+        RCAdFormat *format __unused = displayedWithPlacement.adFormat;
         NSString *placement __unused = displayedWithPlacement.placement;
         NSString *adUnitId __unused = displayedWithPlacement.adUnitId;
         NSString *impressionId __unused = displayedWithPlacement.impressionId;
@@ -70,6 +88,7 @@
         // AdOpened API - with placement
         RCAdOpened *openedWithPlacement __unused = [[RCAdOpened alloc] initWithNetworkName:@"AdMob"
                                                                                mediatorName:RCMediatorName.appLovin
+                                                                                   adFormat:RCAdFormat.mrec
                                                                                   placement:@"home_screen"
                                                                                    adUnitId:@"ca-app-pub-123"
                                                                                impressionId:@"impression-123"];
@@ -77,12 +96,14 @@
         // AdOpened API - without placement (convenience init)
         RCAdOpened *openedNoPlacement __unused = [[RCAdOpened alloc] initWithNetworkName:@"AdMob"
                                                                              mediatorName:RCMediatorName.appLovin
+                                                                                 adFormat:RCAdFormat.appOpen
                                                                                  adUnitId:@"ca-app-pub-123"
                                                                              impressionId:@"impression-123"];
 
         // AdOpened properties
         NSString *openedNetworkName __unused = openedWithPlacement.networkName;
         RCMediatorName *openedMediator __unused = openedWithPlacement.mediatorName;
+        RCAdFormat *openedFormat __unused = openedWithPlacement.adFormat;
         NSString *openedPlacement __unused = openedWithPlacement.placement;
         NSString *openedAdUnitId __unused = openedWithPlacement.adUnitId;
         NSString *openedImpressionId __unused = openedWithPlacement.impressionId;
@@ -90,6 +111,7 @@
         // AdLoaded API - with placement
         RCAdLoaded *loadedWithPlacement __unused = [[RCAdLoaded alloc] initWithNetworkName:@"AdMob"
                                                                               mediatorName:RCMediatorName.appLovin
+                                                                                  adFormat:RCAdFormat.rewardedInterstitial
                                                                                  placement:@"home_screen"
                                                                                   adUnitId:@"ca-app-pub-123"
                                                                               impressionId:@"impression-123"];
@@ -97,12 +119,14 @@
         // AdLoaded API - without placement
         RCAdLoaded *loadedNoPlacement __unused = [[RCAdLoaded alloc] initWithNetworkName:@"AdMob"
                                                                              mediatorName:RCMediatorName.appLovin
+                                                                                 adFormat:RCAdFormat.banner
                                                                                  adUnitId:@"ca-app-pub-123"
                                                                              impressionId:@"impression-123"];
 
         // AdLoaded properties
         NSString *loadedNetworkName __unused = loadedWithPlacement.networkName;
         RCMediatorName *loadedMediator __unused = loadedWithPlacement.mediatorName;
+        RCAdFormat *loadedFormat __unused = loadedWithPlacement.adFormat;
         NSString *loadedPlacement __unused = loadedWithPlacement.placement;
         NSString *loadedAdUnitId __unused = loadedWithPlacement.adUnitId;
         NSString *loadedImpressionId __unused = loadedWithPlacement.impressionId;
@@ -110,6 +134,7 @@
         // AdRevenue API - with placement
         RCAdRevenue *revenueWithPlacement __unused = [[RCAdRevenue alloc] initWithNetworkName:@"AdMob"
                                                                                   mediatorName:RCMediatorName.appLovin
+                                                                                      adFormat:RCAdFormat.native
                                                                                      placement:@"home_screen"
                                                                                       adUnitId:@"ca-app-pub-123"
                                                                                   impressionId:@"impression-123"
@@ -120,6 +145,7 @@
         // AdRevenue API - without placement (convenience init)
         RCAdRevenue *revenueNoPlacement __unused = [[RCAdRevenue alloc] initWithNetworkName:@"AdMob"
                                                                                mediatorName:RCMediatorName.appLovin
+                                                                                   adFormat:RCAdFormat.interstitial
                                                                                    adUnitId:@"ca-app-pub-123"
                                                                                impressionId:@"impression-123"
                                                                               revenueMicros:1500000
@@ -129,6 +155,7 @@
         // AdRevenue properties
         NSString *revenueNetworkName __unused = revenueWithPlacement.networkName;
         RCMediatorName *revenueMediator __unused = revenueWithPlacement.mediatorName;
+        RCAdFormat *revenueFormat __unused = revenueWithPlacement.adFormat;
         NSString *revenuePlacement __unused = revenueWithPlacement.placement;
         NSString *revenueAdUnitId __unused = revenueWithPlacement.adUnitId;
         NSString *revenueImpressionId __unused = revenueWithPlacement.impressionId;
@@ -139,26 +166,12 @@
         // AdTracker API
         RCAdTracker *adTracker __unused = RCPurchases.sharedPurchases.adTracker;
 
-        // AdTracker methods with completion handlers
-        [adTracker trackAdFailedToLoad:failedWithPlacement completion:^{
-            // Completion handler
-        }];
-
-        [adTracker trackAdLoaded:loadedWithPlacement completion:^{
-            // Completion handler
-        }];
-
-        [adTracker trackAdDisplayed:displayedWithPlacement completion:^{
-            // Completion handler
-        }];
-
-        [adTracker trackAdOpened:openedWithPlacement completion:^{
-            // Completion handler
-        }];
-
-        [adTracker trackAdRevenue:revenueWithPlacement completion:^{
-            // Completion handler
-        }];
+        // AdTracker methods - fire and forget
+        [adTracker trackAdFailedToLoad:failedWithPlacement];
+        [adTracker trackAdLoaded:loadedWithPlacement];
+        [adTracker trackAdDisplayed:displayedWithPlacement];
+        [adTracker trackAdOpened:openedWithPlacement];
+        [adTracker trackAdRevenue:revenueWithPlacement];
     }
 }
 

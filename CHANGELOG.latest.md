@@ -1,11 +1,11 @@
-## RevenueCat SDK
+## RevenueCatUI SDK
 ### 🐞 Bugfixes
-* UserDefaults Crash Fix (#5917) via Jacob Rakidzich (@JZDesign)
+* Fix price_per_period for non-subscription products (PW-69) (#6136) via Drago Crnjac (@popcorn)
+### Paywallv2
+#### 🐞 Bugfixes
+* [EXTERNAL] fix: dont show video in now playing (control center/lock screen #6115 via @erenkulaksiz (#6139) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Revert to fastlane v2.229.1 from 2.230.0 (#5952) via Antonio Pallares (@ajpallares)
-* Flush events in will resign active (#5932) via Antonio Pallares (@ajpallares)
-* Bump fastlane from 2.229.1 to 2.230.0 (#5950) via dependabot[bot] (@dependabot[bot])
-* Bump aws-sdk-s3 from 1.205.0 to 1.208.0 (#5948) via dependabot[bot] (@dependabot[bot])
-* Bump aws-sdk-s3 from 1.182.0 to 1.208.0 in /Tests/InstallationTests/CocoapodsInstallation (#5947) via dependabot[bot] (@dependabot[bot])
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5945) via RevenueCat Git Bot (@RCGitBot)
+* Consolidate Maestro E2E tests into a single CI job (#6147) via Antonio Pallares (@ajpallares)
+* Support for adFormat parameter in AdEvent (#6129) via Peter Porfy (@peterporfy)
+* Removed support for Swift 5.7 and removed related Swift version checks (#6142) via Rick (@rickvdl)

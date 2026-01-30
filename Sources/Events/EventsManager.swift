@@ -71,6 +71,11 @@ actor EventsManager: EventsManagerType {
     }
 
     func track(featureEvent: FeatureEvent) async {
+        // Some events are only used locally for attribution and should not be sent to the server.
+        guard featureEvent.shouldStoreEvent else {
+            return
+        }
+
         guard let event: StoredFeatureEvent = .init(event: featureEvent,
                                                     userID: self.userProvider.currentAppUserID,
                                                     feature: featureEvent.feature,
@@ -293,7 +298,7 @@ private extension EventsManager {
 
 // swiftlint:disable identifier_name
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum EventsManagerStrings {
+enum EventsManagerStrings {
 
     case background_task_unavailable
     case background_task_expired(String)

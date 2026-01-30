@@ -35,6 +35,23 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testRecordingPurchaseForProductIDThrowsIfPurchasesAreNotCompletedByMyApp() async throws {
+        let manager = ObserverModeManager()
+        _ = try await manager.purchaseProductFromStoreKit2()
+
+        let expectation = self.expectation(description: "Completion called")
+
+        Purchases.shared.recordPurchase(productID: Self.monthlyNoIntroProductID) { transaction, error in
+            expect(transaction).to(beNil())
+            expect(error).toNot(beNil())
+            expect(error).to(matchError(ErrorCode.configurationError))
+            expectation.fulfill()
+        }
+
+        await fulfillment(of: [expectation], timeout: 5.0)
+    }
+
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
     func testOriginalPurchaseDateAvailableAfterPurchase() async throws {
         // In this scenario, the AppTransaction should be posted with the SK2 transaction JWT

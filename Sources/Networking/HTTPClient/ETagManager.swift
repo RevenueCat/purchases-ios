@@ -20,14 +20,24 @@ class ETagManager {
     static let eTagResponseHeader = HTTPClient.ResponseHeader.eTag
 
     private let cache: SynchronizedLargeItemCache
+    private static let fileManager = FileManager.default
 
-    convenience init() {
-        self.init(largeItemCache: .init(cache: FileManager.default, basePath: Self.suiteName) )
+    init() {
+        self.cache = .init(
+            cache: Self.fileManager,
+            basePath: Self.cacheBasePath
+        )
+
+        // Perform one-time cleanup if needed
+        self.deleteOldDirectoryInDocumentsIfNeeded()
     }
 
+    #if DEBUG
+    /// Only used in testing. In any other case the init above should be used
     init(largeItemCache: SynchronizedLargeItemCache) {
         self.cache = largeItemCache
     }
+    #endif
 
     /// - Parameter withSignatureVerification: whether requests require a signature.
     func eTagHeader(
@@ -119,19 +129,23 @@ class ETagManager {
         self.cache.clear()
     }
 
-    struct CacheKey: DeviceCacheKeyType {
-        let rawValue: String
-    }
-
 }
 
 extension ETagManager {
 
     // Visible for tests
-    static func cacheKey(for request: URLRequest) -> CacheKey? {
-        return (request.url?.absoluteString.asData.md5String).map(ETagManager.CacheKey.init)
+    static func cacheKey(for request: URLRequest) -> String? {
+        return request.url?.absoluteString.asData.md5String
     }
 
+    static var oldDocumentsDirectoryBasePath: String {
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.revenuecat"
+        return "\(bundleID).revenuecat.etags"
+    }
+
+    static var cacheBasePath: String {
+        return "etags"
+    }
 }
 
 // MARK: - Private
@@ -153,7 +167,7 @@ private extension ETagManager {
 
     func storedETagAndResponse(for request: URLRequest) -> Response? {
         if let cacheKey = Self.cacheKey(for: request) {
-            return self.cache.value(forKey: cacheKey)
+            return try? self.cache.value(forKey: cacheKey)
         }
         return nil
     }
@@ -190,12 +204,30 @@ private extension ETagManager {
         }
     }
 
-    static let suiteNameBase: String  = "revenuecat.etags"
-    static var suiteName: String {
-        guard let bundleID = Bundle.main.bundleIdentifier else {
-            return suiteNameBase
+    private func oldETagDirectoryURL() -> URL? {
+        // swiftlint:disable:next avoid_using_directory_apis_directly
+        guard let documentsURL = Self.fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first else {
+            return nil
         }
-        return bundleID + ".\(suiteNameBase)"
+
+        return documentsURL.appendingPathComponent(Self.oldDocumentsDirectoryBasePath)
+    }
+
+    /*
+     We were previously storing these files in the Documents directory
+     which may end up in the Files app or the user's Documents directory on macOS.
+     We'll delete it on initialization if it exists.
+     */
+    private func deleteOldDirectoryInDocumentsIfNeeded() {
+        guard let oldDirectoryURL = self.oldETagDirectoryURL(),
+              Self.fileManager.fileExists(atPath: oldDirectoryURL.path) else {
+            return
+        }
+
+        try? Self.fileManager.removeItem(at: oldDirectoryURL)
     }
 
 }

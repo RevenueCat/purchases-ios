@@ -215,6 +215,12 @@ class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
     func testFetchProductsWithIdentifiersSK2ErrorTracksCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
+        // SKTestSession.setSimulatedError() doesn't work for .loadProducts API in iOS 26.2
+        // https://developer.apple.com/forums/thread/808030
+        // This makes the test assertion `expect(params?.wasSuccessful) == false` fail.
+        // So we skip the test in iOS 26.
+        try AvailabilityChecks.iOS26APINotAvailableOrSkipTest()
+
         try await self.testSession.setSimulatedError(.generic(.unknown), forAPI: .loadProducts)
         let manager = self.createManager(storeKitVersion: .storeKit2,
                                          diagnosticsTracker: self.mockDiagnosticsTracker)
