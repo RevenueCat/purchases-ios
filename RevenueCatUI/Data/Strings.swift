@@ -92,6 +92,16 @@ enum Strings {
     case customFontFailedToLoad(fontName: String)
     case googleFontsNotSupported
 
+    // Custom Variables
+    case paywall_custom_variable_not_found(variableName: String)
+    case paywall_custom_variable_invalid_number(value: String)
+    case paywall_custom_variable_unknown_type(type: String)
+    case paywall_variable_looks_like_custom(variableName: String)
+    case paywall_custom_variable_invalid_key(key: String)
+
+    // Video
+    case video_failed_to_set_audio_session_category(Error)
+
     // Exit Offers
     case errorFetchingOfferings(Error)
     case exitOfferNotFound(String)
@@ -306,6 +316,27 @@ extension Strings: CustomStringConvertible {
             return "Custom font '\(fontName)' could not be loaded. Falling back to system font."
         case .googleFontsNotSupported:
             return "Google Fonts are not supported on this platform"
+
+        case .paywall_custom_variable_not_found(let variableName):
+            return "Custom variable '\(variableName)' was not found. " +
+            "Make sure to provide a value using .customPaywallVariables() or set a default in the dashboard."
+
+        case .paywall_custom_variable_invalid_number(let value):
+            return "Custom variable default value '\(value)' could not be parsed as a number. Using as string."
+
+        case .paywall_custom_variable_unknown_type(let type):
+            return "Unknown custom variable type '\(type)'. Using as string."
+
+        case .paywall_variable_looks_like_custom(let variableName):
+            return "Variable '\(variableName)' looks like a custom variable but uses incorrect syntax. " +
+            "Custom variables must use the 'custom.' prefix with a dot, e.g., '{{ custom.variable_name }}'."
+
+        case .paywall_custom_variable_invalid_key(let key):
+            return "Custom variable key '\(key)' is invalid. " +
+            "Keys must start with a letter and contain only letters, numbers, and underscores."
+
+        case .video_failed_to_set_audio_session_category(let error):
+            return "Failed to set audio session category: \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"

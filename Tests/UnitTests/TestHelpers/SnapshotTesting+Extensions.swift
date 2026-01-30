@@ -16,7 +16,7 @@ import Nimble
 import SnapshotTesting
 import XCTest
 
-#if swift(>=5.8) && canImport(SwiftUI)
+#if canImport(SwiftUI)
 import SwiftUI
 #endif
 
@@ -115,7 +115,7 @@ extension Snapshotting where Value == Encodable, Format == String {
 
 // MARK: - Image Snapshoting
 
-#if !os(watchOS) && !os(macOS) && swift(>=5.8)
+#if !os(watchOS) && !os(macOS)
 extension SwiftUI.View {
 
     func snapshot(
