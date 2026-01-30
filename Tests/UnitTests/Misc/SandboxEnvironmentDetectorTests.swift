@@ -153,7 +153,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
     }
 
     func testUsesAppTransactionAfterPrefetchCompletes() async throws {
-        try AvailabilityChecks.iOS16APINotAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledAppTransactionEnvironment(
             receiptURLResult: .appStoreReceipt,
