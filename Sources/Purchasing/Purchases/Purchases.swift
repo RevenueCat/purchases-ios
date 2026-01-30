@@ -338,26 +338,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let apiKeyValidationResult = Configuration.validateAndLog(apiKey: apiKey)
 
-        let systemInfo = SystemInfo(
-            platformInfo: platformInfo,
-            finishTransactions: !observerMode,
-            operationDispatcher: operationDispatcher,
-            storeKitVersion: storeKitVersion,
-            apiKeyValidationResult: apiKeyValidationResult,
-            responseVerificationMode: responseVerificationMode,
-            dangerousSettings: dangerousSettings,
-            preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
-        )
-
-        apiKeyValidationResult.checkForSimulatedStoreAPIKeyInRelease(systemInfo: systemInfo, apiKey: apiKey)
-
-        let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
-        let eTagManager = ETagManager()
-        let attributionTypeFactory = AttributionTypeFactory()
-        let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
-        let userDefaults = userDefaults ?? UserDefaults.computeDefault()
-        let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
-
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard diagnosticsEnabled,
                   dangerousSettings?.uiPreviewMode != true,
@@ -376,10 +356,46 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             return nil
         }()
 
-        let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable(
-            diagnosticsTracker: diagnosticsTracker
-        )
         let transactionFetcher = StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
+
+        var injectedSandboxEnvironmentDetector: SandboxEnvironmentDetectorType?
+
+        #if DEBUG
+        if ProcessInfo.isRunningIntegrationTests {
+            injectedSandboxEnvironmentDetector = dangerousSettings?.internalSettings.testSandboxEnvironmentDetector
+        }
+        #endif
+
+        let sandboxEnvironmentDetector = injectedSandboxEnvironmentDetector
+        ?? SandboxEnvironmentDetector(transactionFetcher: transactionFetcher)
+
+        SandboxEnvironmentDetector.default = sandboxEnvironmentDetector
+
+        let systemInfo = SystemInfo(
+            platformInfo: platformInfo,
+            finishTransactions: !observerMode,
+            operationDispatcher: operationDispatcher,
+            sandboxEnvironmentDetector: sandboxEnvironmentDetector,
+            storeKitVersion: storeKitVersion,
+            apiKeyValidationResult: apiKeyValidationResult,
+            responseVerificationMode: responseVerificationMode,
+            dangerousSettings: dangerousSettings,
+            preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
+        )
+
+        apiKeyValidationResult.checkForSimulatedStoreAPIKeyInRelease(systemInfo: systemInfo, apiKey: apiKey)
+
+        let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
+        let eTagManager = ETagManager()
+        let attributionTypeFactory = AttributionTypeFactory()
+        let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
+        let userDefaults = userDefaults ?? UserDefaults.computeDefault()
+        let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
+
+        let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable(
+            diagnosticsTracker: diagnosticsTracker,
+            sandboxEnvironmentDetector: sandboxEnvironmentDetector
+        )
 
         let backend = Backend(
             apiKey: apiKey,

@@ -20,7 +20,7 @@ extension CustomerInfo {
     /// Useful only for backwards compatibility with old tests
     convenience init(
         data: [String: Any],
-        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector.default
     ) throws {
         self.init(customerInfo: try JSONDecoder.default.decode(dictionary: data),
                   sandboxEnvironmentDetector: sandboxEnvironmentDetector)

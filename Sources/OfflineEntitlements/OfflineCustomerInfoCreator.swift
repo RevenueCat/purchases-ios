@@ -26,11 +26,13 @@ class OfflineCustomerInfoCreator {
     private let creator: Creator
 
     static func createPurchasedProductsFetcherIfAvailable(
-        diagnosticsTracker: DiagnosticsTrackerType?
+        diagnosticsTracker: DiagnosticsTrackerType?,
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType
     ) -> PurchasedProductsFetcherType? {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             return PurchasedProductsFetcher(
-                storeKit2TransactionFetcher: StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
+                storeKit2TransactionFetcher: StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker),
+                sandboxDetector: sandboxEnvironmentDetector
             )
         } else {
             return nil

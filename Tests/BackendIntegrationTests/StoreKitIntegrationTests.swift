@@ -967,7 +967,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await self.purchaseMonthlyProduct()
 
         // 2. Relaunch in "production" mode
-        Self.isSandbox = false
+        self.isSandbox = false
         await self.resetSingleton()
 
         // 3. Verify no subscriptions are active

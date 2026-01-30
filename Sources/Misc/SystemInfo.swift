@@ -68,7 +68,7 @@ class SystemInfo {
 
     var observerMode: Bool { return !self.finishTransactions }
 
-    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    private let sandboxEnvironmentDetector: SandboxEnvironmentDetectorType
     private let storefrontProvider: StorefrontProviderType
     private let _finishTransactions: Atomic<Bool>
     private let _isAppBackgroundedState: Atomic<Bool>
@@ -81,12 +81,8 @@ class SystemInfo {
     static let defaultApiBaseURL = URL(string: "https://api.revenuecat.com")!
     private static let _apiBaseURL: Atomic<URL> = .init(defaultApiBaseURL)
 
-    private lazy var _isSandbox: Bool = {
-        return self.sandboxEnvironmentDetector.isSandbox
-    }()
-
     var isSandbox: Bool {
-        return self._isSandbox
+        return self.sandboxEnvironmentDetector.isSandbox
     }
 
     var isDebugBuild: Bool {
@@ -188,7 +184,7 @@ class SystemInfo {
          finishTransactions: Bool,
          operationDispatcher: OperationDispatcher = .default,
          bundle: Bundle = .main,
-         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
+         sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector.default,
          storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKitVersion: StoreKitVersion = .default,
          apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
@@ -314,7 +310,7 @@ extension SystemInfo {
 }
 #endif
 
-extension SystemInfo: SandboxEnvironmentDetector {}
+extension SystemInfo: SandboxEnvironmentDetectorType {}
 
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.

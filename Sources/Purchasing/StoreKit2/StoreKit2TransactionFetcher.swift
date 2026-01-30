@@ -35,6 +35,10 @@ protocol StoreKit2TransactionFetcherType: Sendable {
 
     func appTransactionJWS(_ completionHandler: @escaping (String?) -> Void)
 
+    /// Returns the environment from `AppTransaction`.
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    var appTransactionEnvironment: StoreEnvironment? { get async }
+
 }
 
 final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
@@ -153,6 +157,14 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
             } else {
                 return nil
             }
+        }
+    }
+
+    /// Returns the environment from `AppTransaction`.
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    var appTransactionEnvironment: StoreEnvironment? {
+        get async {
+            return await self.appTransaction?.environment
         }
     }
 }

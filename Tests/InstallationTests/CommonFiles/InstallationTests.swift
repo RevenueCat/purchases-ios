@@ -25,16 +25,17 @@ class InstallationTests: XCTestCase {
         RCInstallationRunner().start()
     }
 
-    func testCanFetchCustomerInfo() throws {
+    func testCanFetchCustomerInfo() async throws {
         let installationRunner = RCInstallationRunner()
         installationRunner.start()
-        let expectation = XCTestExpectation(description: "get CustomerInfo")
 
-        installationRunner.getCustomerInfo { customerInfo, error in
-            XCTAssertNil(error)
-            XCTAssertNotNil(customerInfo)
-            expectation.fulfill()
+        let (customerInfo, error) = await withCheckedContinuation { continuation in
+            installationRunner.getCustomerInfo { customerInfo, error in
+                continuation.resume(returning: (customerInfo, error))
+            }
         }
-        wait(for: [expectation], timeout: 10.0)
+
+        XCTAssertNil(error)
+        XCTAssertNotNil(customerInfo)
     }
 }

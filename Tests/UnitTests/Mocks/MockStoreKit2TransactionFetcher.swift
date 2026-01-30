@@ -87,6 +87,83 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         completion(self.stubbedAppTransactionJWS)
     }
 
+    // MARK: - AppTransaction Environment
+
+    private let _stubbedAppTransactionEnvironment: Atomic<StoreEnvironment?> = .init(nil)
+
+    var stubbedAppTransactionEnvironment: StoreEnvironment? {
+        get { return self._stubbedAppTransactionEnvironment.value }
+        set { self._stubbedAppTransactionEnvironment.value = newValue }
+    }
+
+    let appTransactionEnvironmentCalled = Atomic<Bool>(false)
+
+    /// When set to true, `appTransactionEnvironment` will stall until `resumeAppTransactionEnvironment()` is called.
+    let appTransactionEnvironmentShouldStall = Atomic<Bool>(false)
+
+    // Keep continuation + resume flag in one atomic state to avoid resume-before-wait
+    // and double-resume races between the getter and resumeAppTransactionEnvironment().
+    private struct AppTransactionStallState {
+        var continuation: CheckedContinuation<Void, Never>?
+        var resumeRequested: Bool
+    }
+
+    private let _appTransactionStallState: Atomic<AppTransactionStallState> = .init(
+        .init(continuation: nil, resumeRequested: false)
+    )
+
+    /// Resumes the stalled `appTransactionEnvironment` getter.
+    func resumeAppTransactionEnvironment() {
+        // Atomically decide whether to resume now or record a pending resume.
+        let continuationToResume: CheckedContinuation<Void, Never>? = self._appTransactionStallState.modify { state in
+            state.resumeRequested = true
+
+            if let continuation = state.continuation {
+                state.resumeRequested = false
+                state.continuation = nil
+                return continuation
+            }
+
+            return nil
+        }
+
+        continuationToResume?.resume()
+    }
+
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    var appTransactionEnvironment: StoreEnvironment? {
+        get async {
+            self.appTransactionEnvironmentCalled.value = true
+
+            if self.appTransactionEnvironmentShouldStall.value {
+                // Stalling until resumeAppTransactionEnvironment() is called
+                await withCheckedContinuation { continuation in
+                    // Atomically decide whether to store the continuation or immediately resume it
+                    // if a resume was already requested.
+                    let continuationToResume: CheckedContinuation<Void, Never>? = self._appTransactionStallState
+                        .modify { state in
+                        if state.resumeRequested {
+                            state.resumeRequested = false
+                            return continuation
+                        }
+
+                        state.continuation = continuation
+                        return nil
+                    }
+
+                    continuationToResume?.resume()
+                }
+            }
+
+            return self.stubbedAppTransactionEnvironment
+        }
+    }
+
+    func appTransactionEnvironment(_ completion: @escaping (StoreEnvironment?) -> Void) {
+        self.appTransactionEnvironmentCalled.value = true
+        completion(self.stubbedAppTransactionEnvironment)
+    }
+
     // MARK: -
 
     var stubbedHasPendingConsumablePurchase: Bool {

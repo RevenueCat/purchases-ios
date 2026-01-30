@@ -65,13 +65,13 @@ class StoreKit1Wrapper: NSObject {
     private let paymentQueue: SKPaymentQueue
     private let operationDispatcher: OperationDispatcher
     private let observerMode: Bool
-    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    private let sandboxEnvironmentDetector: SandboxEnvironmentDetectorType
     private let diagnosticsTracker: DiagnosticsTrackerType?
 
     init(paymentQueue: SKPaymentQueue = .default(),
          operationDispatcher: OperationDispatcher = .default,
          observerMode: Bool,
-         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
+         sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector.default,
          diagnosticsTracker: DiagnosticsTrackerType?) {
         self.paymentQueue = paymentQueue
         self.operationDispatcher = operationDispatcher

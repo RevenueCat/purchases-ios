@@ -122,7 +122,7 @@ extension EntitlementInfos {
         entitlements: [String: CustomerInfoResponse.Entitlement],
         purchases: [String: CustomerInfoResponse.Subscription],
         requestDate: Date,
-        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector.default,
         verification: VerificationResult
     ) {
         let allEntitlements: [String: EntitlementInfo] = .init(
