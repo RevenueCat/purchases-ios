@@ -47,6 +47,56 @@ public class PaywallViewController: UIViewController {
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
+    /// Custom variables to be used in paywall text replacement.
+    ///
+    /// Variables are defined in the RevenueCat dashboard using the `{{ custom.key }}` syntax.
+    ///
+    /// - Important: Set this property before presenting the view controller.
+    ///   Changes made after presentation will not be reflected in the paywall.
+    ///
+    /// ### Example
+    /// ```swift
+    /// let vc = PaywallViewController(offering: offering)
+    /// vc.customVariables = [
+    ///     "player_name": .string("John")
+    /// ]
+    /// present(vc, animated: true)
+    /// ```
+    public var customVariables: [String: CustomVariableValue] = [:] {
+        didSet {
+            assert(hostingController == nil, "Custom variables can only be set before presenting the paywall")
+        }
+    }
+
+    // MARK: - Objective-C Custom Variable Methods
+
+    /// Sets a string custom variable value for the given key.
+    /// - Parameters:
+    ///   - value: The string value to set.
+    ///   - key: The variable key (without the `custom.` prefix).
+    @objc public func setCustomVariable(_ value: String, forKey key: String) {
+        CustomVariableKeyValidator.validate(key)
+        self.customVariables[key] = .string(value)
+    }
+
+    /// Sets a numeric custom variable value for the given key.
+    /// - Parameters:
+    ///   - value: The numeric value to set.
+    ///   - key: The variable key (without the `custom.` prefix).
+    @objc func setCustomVariableNumber(_ value: Double, forKey key: String) {
+        CustomVariableKeyValidator.validate(key)
+        self.customVariables[key] = .number(value)
+    }
+
+    /// Sets a boolean custom variable value for the given key.
+    /// - Parameters:
+    ///   - value: The boolean value to set.
+    ///   - key: The variable key (without the `custom.` prefix).
+    @objc func setCustomVariableBool(_ value: Bool, forKey key: String) {
+        CustomVariableKeyValidator.validate(key)
+        self.customVariables[key] = .bool(value)
+    }
+
     private final var shouldBlockTouchEvents: Bool
     private final var dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
 
@@ -607,6 +657,7 @@ private extension PaywallViewController {
 
         let container = PaywallContainerView(
             configuration: self.configuration,
+            customVariables: self.customVariables,
             purchaseStarted: { [weak self] package in
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidStartPurchase?(self)
@@ -662,6 +713,7 @@ private extension PaywallViewController {
 private struct PaywallContainerView: View {
 
     var configuration: PaywallViewConfiguration
+    var customVariables: [String: CustomVariableValue]
 
     let purchaseStarted: PurchaseOfPackageStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
@@ -676,6 +728,7 @@ private struct PaywallContainerView: View {
 
     var body: some View {
         PaywallView(configuration: self.configuration)
+            .customPaywallVariables(self.customVariables)
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
