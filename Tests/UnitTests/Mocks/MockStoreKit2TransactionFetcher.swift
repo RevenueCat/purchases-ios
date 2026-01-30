@@ -101,12 +101,33 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     /// When set to true, `appTransactionEnvironment` will stall until `resumeAppTransactionEnvironment()` is called.
     let appTransactionEnvironmentShouldStall = Atomic<Bool>(false)
 
-    private let _appTransactionContinuation: Atomic<CheckedContinuation<Void, Never>?> = .init(nil)
+    // Keep continuation + resume flag in one atomic state to avoid resume-before-wait
+    // and double-resume races between the getter and resumeAppTransactionEnvironment().
+    private struct AppTransactionStallState {
+        var continuation: CheckedContinuation<Void, Never>?
+        var resumeRequested: Bool
+    }
+
+    private let _appTransactionStallState: Atomic<AppTransactionStallState> = .init(
+        .init(continuation: nil, resumeRequested: false)
+    )
 
     /// Resumes the stalled `appTransactionEnvironment` getter.
     func resumeAppTransactionEnvironment() {
-        self._appTransactionContinuation.value?.resume()
-        self._appTransactionContinuation.value = nil
+        // Atomically decide whether to resume now or record a pending resume.
+        let continuationToResume: CheckedContinuation<Void, Never>? = self._appTransactionStallState.modify { state in
+            state.resumeRequested = true
+
+            if let continuation = state.continuation {
+                state.resumeRequested = false
+                state.continuation = nil
+                return continuation
+            }
+
+            return nil
+        }
+
+        continuationToResume?.resume()
     }
 
     var appTransactionEnvironment: StoreEnvironment? {
@@ -116,7 +137,19 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
             if self.appTransactionEnvironmentShouldStall.value {
                 // Stalling until resumeAppTransactionEnvironment() is called
                 await withCheckedContinuation { continuation in
-                    self._appTransactionContinuation.value = continuation
+                    // Atomically decide whether to store the continuation or immediately resume it
+                    // if a resume was already requested.
+                    let continuationToResume: CheckedContinuation<Void, Never>? = self._appTransactionStallState.modify { state in
+                        if state.resumeRequested {
+                            state.resumeRequested = false
+                            return continuation
+                        }
+
+                        state.continuation = continuation
+                        return nil
+                    }
+
+                    continuationToResume?.resume()
                 }
             }
 

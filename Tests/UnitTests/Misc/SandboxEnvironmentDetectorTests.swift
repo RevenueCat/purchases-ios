@@ -139,7 +139,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
         mockFetcher.resumeAppTransactionEnvironment()
 
         // After prefetch completes, should use AppTransaction (production)
-        await expect(detector.isSandbox).toEventually(beFalse(), timeout: .seconds(10))
+        await expect(detector.isSandbox).toEventually(beFalse(), timeout: .seconds(3))
     }
 
     func testUsesAppTransactionAfterPrefetchCompletes() async {
@@ -155,7 +155,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
         mockFetcher.resumeAppTransactionEnvironment()
 
         // After prefetch completes, should use AppTransaction (sandbox)
-        await expect(detector.isSandbox).toEventually(beTrue(), timeout: .seconds(10))
+        await expect(detector.isSandbox).toEventually(beTrue(), timeout: .seconds(3))
     }
 
     func testSimulatorAlwaysReturnsTrueEvenBeforePrefetchCompletes() async {
@@ -363,7 +363,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
         mockFetcher.resumeAppTransactionEnvironment()
 
         // After prefetch completes, should use AppTransaction (production)
-        await expect(detector.isSandbox).toEventually(beFalse(), timeout: .seconds(10))
+        await expect(detector.isSandbox).toEventually(beFalse(), timeout: .seconds(3))
     }
 
     func testUsesAppTransactionAfterPrefetchCompletes() async {
@@ -382,7 +382,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
         mockFetcher.resumeAppTransactionEnvironment()
 
         // After prefetch completes, should use AppTransaction (sandbox)
-        await expect(detector.isSandbox).toEventually(beTrue(), timeout: .seconds(10))
+        await expect(detector.isSandbox).toEventually(beTrue(), timeout: .seconds(3))
     }
 
     func testFallsBackToMacAppStoreDetectorBeforePrefetchCompletesWithUnknownReceipt() async {
