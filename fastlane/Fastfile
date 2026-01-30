@@ -1849,6 +1849,14 @@ platform :ios do
   private_lane :setup_swiftinterface_xcconfig do
     base_path = "#{Dir.pwd}/.."
     xcconfig_path = "#{base_path}/CI.xcconfig"
+    local_xcconfig_path = "#{base_path}/Local.xcconfig"
+
+    # Temporarily move Local.xcconfig out of the way if it exists
+    # Local.xcconfig is loaded after CI.xcconfig and would override our settings
+    if File.exist?(local_xcconfig_path)
+      UI.message("Moving Local.xcconfig temporarily to prevent DEBUG override")
+      FileUtils.mv(local_xcconfig_path, "#{local_xcconfig_path}.bak")
+    end
 
     UI.message("Creating CI.xcconfig to exclude DEBUG compilation conditions")
 
@@ -1869,9 +1877,16 @@ platform :ios do
   private_lane :cleanup_swiftinterface_xcconfig do
     base_path = "#{Dir.pwd}/.."
     xcconfig_path = "#{base_path}/CI.xcconfig"
+    local_xcconfig_path = "#{base_path}/Local.xcconfig"
 
     FileUtils.rm_f(xcconfig_path)
     UI.message("Cleaned up CI.xcconfig")
+
+    # Restore Local.xcconfig if it was moved
+    if File.exist?("#{local_xcconfig_path}.bak")
+      FileUtils.mv("#{local_xcconfig_path}.bak", local_xcconfig_path)
+      UI.message("Restored Local.xcconfig")
+    end
   end
 
   desc "Check API changes and report results"
