@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 6/2/22.
 
 import Foundation
+import StoreKit
 
 /// A type that can determine if the current environment is sandbox.
 protocol SandboxEnvironmentDetectorType: Sendable {
@@ -33,7 +34,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
     /// Cached environment from `AppTransaction` (iOS 16+).
     /// This is populated asynchronously and used for more reliable sandbox detection.
-    private let cachedAppTransactionEnvironment: Atomic<StoreEnvironment?> = .init(nil)
+    private var cachedAppTransactionEnvironment: StoreEnvironment? = nil
 
     /// Cached result of receipt path-based sandbox detection.
     private let cachedIsSandboxBasedOnReceiptPath: Atomic<Bool?> = .init(nil)
@@ -60,7 +61,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
         // Start fetching the AppTransaction environment asynchronously.
         // The result will be cached and used by `isSandbox` once available.
-        self.prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: transactionFetcher)
+        self.prefetchAppTransactionEnvironmentIfAvailable()
     }
 
     private init() {
@@ -77,7 +78,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
         // On iOS 16+, prefer the cached AppTransaction environment if available.
         // This is more reliable than the receipt path-based detection.
-        if let cachedEnvironment = self.cachedAppTransactionEnvironment.value {
+        if let cachedEnvironment = self.cachedAppTransactionEnvironment {
             return cachedEnvironment != .production
         }
 
@@ -113,11 +114,13 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
 private extension SandboxEnvironmentDetector {
 
-    func prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: StoreKit2TransactionFetcherType) {
-//        Task.detached {
-//            let environment = await transactionFetcher.appTransactionEnvironment
-//            self.cachedAppTransactionEnvironment.value = environment
-//        }
+    func prefetchAppTransactionEnvironmentIfAvailable() {
+        Task.detached {
+            if #available(iOS 16.0, *) {
+                let environment = try? await AppTransaction.shared.verifiedAppTransaction?.environment
+                self.cachedAppTransactionEnvironment = environment
+            }
+        }
     }
 
 }
