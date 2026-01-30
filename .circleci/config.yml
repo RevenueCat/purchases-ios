@@ -451,7 +451,7 @@ commands:
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
-          version: "<< parameters.test_plan >>"
+          version: "BackendIntegrationTests"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -1701,10 +1701,7 @@ workflows:
       - run-test-ios-14
       - run-test-macos
       - run-test-watchos
-      - backend-integration-tests-other
-      - backend-integration-tests-offline
-      - backend-integration-tests-SK2
-      - backend-integration-tests-SK1
+      - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
 
 
   generate_revenuecatui_snapshots:
