@@ -451,7 +451,7 @@ commands:
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
-          version: ""
+          version: "<< parameters.test_plan >>"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
