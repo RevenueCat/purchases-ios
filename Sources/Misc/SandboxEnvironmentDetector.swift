@@ -26,7 +26,7 @@ protocol SandboxEnvironmentDetectorType: Sendable {
 /// On older OS versions (and in case of failure to retrieve), it falls back to checking the receipt file path.
 final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
-    private let bundle: Bundle
+    private let bundle: Atomic<Bundle>
     private let isRunningInSimulator: Bool
     private let receiptFetcher: LocalReceiptFetcherType
     private let macAppStoreDetector: MacAppStoreDetector?
@@ -53,7 +53,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         macAppStoreDetector: MacAppStoreDetector? = nil,
         transactionFetcher: StoreKit2TransactionFetcherType
     ) {
-        self.bundle = bundle
+        self.bundle = .init(bundle)
         self.isRunningInSimulator = isRunningInSimulator
         self.receiptFetcher = receiptFetcher
         self.macAppStoreDetector = macAppStoreDetector
@@ -64,7 +64,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
     }
 
     private init() {
-        self.bundle = Bundle.main
+        self.bundle = .init(Bundle.main)
         self.isRunningInSimulator = SystemInfo.isRunningInSimulator
         self.receiptFetcher = LocalReceiptFetcher()
         self.macAppStoreDetector = nil
@@ -127,7 +127,7 @@ private extension SandboxEnvironmentDetector {
 private extension SandboxEnvironmentDetector {
 
     func getIsSandboxBasedOnReceiptPath() -> Bool {
-        guard let path = self.bundle.appStoreReceiptURL?.path else {
+        guard let path = self.bundle.value.appStoreReceiptURL?.path else {
             return false
         }
 
