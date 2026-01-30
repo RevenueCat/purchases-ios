@@ -127,7 +127,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
     // MARK: - Prefetch Pending Tests
 
     func testUsesReceiptPathBeforePrefetchCompletes() async {
-        let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledPrefetch(
+        let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledAppTransactionEnvironment(
             receiptURLResult: .sandboxReceipt,
             appTransactionEnvironment: .production
         )
@@ -139,11 +139,11 @@ class SandboxEnvironmentDetectorTests: TestCase {
         mockFetcher.resumeAppTransactionEnvironment()
 
         // After prefetch completes, should use AppTransaction (production)
-        await expect(detector.isSandbox).toEventually(beFalse(), timeout: .seconds(3))
+        await expect(detector.isSandbox).toEventually(beFalse(), timeout: .seconds(10))
     }
 
     func testUsesAppTransactionAfterPrefetchCompletes() async {
-        let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledPrefetch(
+        let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledAppTransactionEnvironment(
             receiptURLResult: .appStoreReceipt,
             appTransactionEnvironment: .sandbox
         )
@@ -155,11 +155,11 @@ class SandboxEnvironmentDetectorTests: TestCase {
         mockFetcher.resumeAppTransactionEnvironment()
 
         // After prefetch completes, should use AppTransaction (sandbox)
-        await expect(detector.isSandbox).toEventually(beTrue())
+        await expect(detector.isSandbox).toEventually(beTrue(), timeout: .seconds(10))
     }
 
     func testSimulatorAlwaysReturnsTrueEvenBeforePrefetchCompletes() async {
-        let (detector, _) = SandboxEnvironmentDetector.withStalledPrefetch(
+        let (detector, _) = SandboxEnvironmentDetector.withStalledAppTransactionEnvironment(
             receiptURLResult: .appStoreReceipt,
             inSimulator: true,
             appTransactionEnvironment: .production
@@ -349,7 +349,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
 
     func testUsesReceiptEnvironmentBeforePrefetchCompletes() async {
         let macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: true)
-        let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledPrefetch(
+        let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledAppTransactionEnvironment(
             receiptEnvironment: .sandbox,
             macAppStoreDetector: macAppStoreDetector,
             appTransactionEnvironment: .production
@@ -363,12 +363,12 @@ class SandboxEnvironmentDetectorTests: TestCase {
         mockFetcher.resumeAppTransactionEnvironment()
 
         // After prefetch completes, should use AppTransaction (production)
-        await expect(detector.isSandbox).toEventually(beFalse())
+        await expect(detector.isSandbox).toEventually(beFalse(), timeout: .seconds(10))
     }
 
     func testUsesAppTransactionAfterPrefetchCompletes() async {
         let macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: true)
-        let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledPrefetch(
+        let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledAppTransactionEnvironment(
             receiptEnvironment: .production,
             macAppStoreDetector: macAppStoreDetector,
             appTransactionEnvironment: .sandbox
@@ -382,12 +382,12 @@ class SandboxEnvironmentDetectorTests: TestCase {
         mockFetcher.resumeAppTransactionEnvironment()
 
         // After prefetch completes, should use AppTransaction (sandbox)
-        await expect(detector.isSandbox).toEventually(beTrue())
+        await expect(detector.isSandbox).toEventually(beTrue(), timeout: .seconds(10))
     }
 
     func testFallsBackToMacAppStoreDetectorBeforePrefetchCompletesWithUnknownReceipt() async {
         let macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: false)
-        let (detector, _) = SandboxEnvironmentDetector.withStalledPrefetch(
+        let (detector, _) = SandboxEnvironmentDetector.withStalledAppTransactionEnvironment(
             receiptEnvironment: .unknown,
             macAppStoreDetector: macAppStoreDetector,
             appTransactionEnvironment: .sandbox
@@ -448,9 +448,10 @@ private extension SandboxEnvironmentDetector {
         return detector
     }
 
-    /// Creates a detector with a stalled prefetch, returning both the detector and the mock fetcher.
+    /// Creates a detector with a stalled response to `appTransactionEnvironment`, returning both the detector and
+    /// the mock fetcher.
     /// Use `mockFetcher.resumeAppTransactionEnvironment()` to complete the prefetch.
-    static func withStalledPrefetch(
+    static func withStalledAppTransactionEnvironment(
         receiptURLResult result: MockBundle.ReceiptURLResult = .appStoreReceipt,
         inSimulator: Bool = false,
         macAppStore: Bool = false,

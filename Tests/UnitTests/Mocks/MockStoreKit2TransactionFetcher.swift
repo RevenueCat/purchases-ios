@@ -114,6 +114,7 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
             self.appTransactionEnvironmentCalled.value = true
 
             if self.appTransactionEnvironmentShouldStall.value {
+                // Stalling until resumeAppTransactionEnvironment() is called
                 await withCheckedContinuation { continuation in
                     self._appTransactionContinuation.value = continuation
                 }
