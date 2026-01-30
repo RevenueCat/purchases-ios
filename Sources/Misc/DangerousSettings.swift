@@ -22,19 +22,22 @@ import Foundation
         let forceSignatureFailures: Bool
         let disableHeaderSignatureVerification: Bool
         let testReceiptIdentifier: String?
+        let testSandboxEnvironmentDetector: SandboxEnvironmentDetectorType?
 
         init(
             enableReceiptFetchRetry: Bool = false,
             forceServerErrorStrategy: ForceServerErrorStrategy? = nil,
             forceSignatureFailures: Bool = false,
             disableHeaderSignatureVerification: Bool = false,
-            testReceiptIdentifier: String? = nil
+            testReceiptIdentifier: String? = nil,
+            testSandboxEnvironmentDetector: SandboxEnvironmentDetectorType? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
             self.forceServerErrorStrategy = forceServerErrorStrategy
             self.forceSignatureFailures = forceSignatureFailures
             self.disableHeaderSignatureVerification = disableHeaderSignatureVerification
             self.testReceiptIdentifier = testReceiptIdentifier
+            self.testSandboxEnvironmentDetector = testSandboxEnvironmentDetector
         }
         #else
         init(
@@ -155,6 +158,9 @@ internal protocol InternalDangerousSettingsType: Sendable {
     /// Allows defining the receipt identifier for `PostReceiptDataOperation`.
     /// This allows the backend to disambiguate between receipts created across separate test invocations.
     var testReceiptIdentifier: String? { get }
+
+    /// Allows injecting a custom `SandboxEnvironmentDetector` for integration tests only.
+    var testSandboxEnvironmentDetector: SandboxEnvironmentDetectorType? { get }
 
     #endif
 
