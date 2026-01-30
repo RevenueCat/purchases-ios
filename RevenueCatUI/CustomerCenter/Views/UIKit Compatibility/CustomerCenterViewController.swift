@@ -39,7 +39,7 @@ public class CustomerCenterViewController: UIViewController {
 
     // MARK: - Initialization
     /// See ``CustomerCenterViewControllerDelegate`` for receiving Customer Center events.
-    @objc private final weak var delegate: CustomerCenterViewControllerDelegate?
+    private final weak var delegate: CustomerCenterViewControllerDelegate?
 
     /// The action wrapper for the current view, used for Swift closure-based handlers
     private var actionWrapper: CustomerCenterActionWrapper?
