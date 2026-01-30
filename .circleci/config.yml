@@ -19,7 +19,7 @@ parameters:
         update_paywall_templates,
         record_paywall_screenshots,
         tuist,
-        run-installation-tests
+        run-installation-tests-spm,
       ]
     default: default
   generate_snapshots:
@@ -2011,11 +2011,6 @@ workflows:
 
   manual-trigger-installation-tests:
     when:
-      equal: [run-installation-tests, << pipeline.parameters.action >>]
+      equal: [run-installation-tests-spm, << pipeline.parameters.action >>]
     jobs:
-      - installation-tests-cocoapods
       - installation-tests-swift-package-manager
-      - installation-tests-custom-entitlement-computation-swift-package-manager
-      - installation-tests-carthage
-      - installation-tests-xcode-direct-integration
-      - installation-tests-receipt-parser
