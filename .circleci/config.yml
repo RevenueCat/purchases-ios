@@ -1690,6 +1690,7 @@ jobs:
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
 workflows:
+
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
@@ -1733,10 +1734,13 @@ workflows:
           name: validate-package-swift-5.8
           xcode_version: "14.3.1"
           mac_os_executor_name: macos-executor
-      - run-test-ios-14
-      - run-test-ios-15
       - run-test-ios-18
       - run-test-ios-26
+      - pod-lib-lint
+      - run-revenuecat-ui-ios-18
+      - run-revenuecat-ui-ios-26
+      - emerge_purchases_ui_snapshot_tests
+      - emerge_binary_size_analysis
 
   create-tag:
     when:
