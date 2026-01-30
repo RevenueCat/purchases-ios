@@ -117,8 +117,9 @@ private extension SandboxEnvironmentDetector {
     func prefetchAppTransactionEnvironmentIfAvailable() {
         Task.detached {
             if #available(iOS 16.0, *) {
-                let environment = try? await AppTransaction.shared.verifiedAppTransaction?.environment
-                self.cachedAppTransactionEnvironment = environment
+                try? await Task.sleep(for: .seconds(2))
+//                let environment = try? await AppTransaction.shared.verifiedAppTransaction?.environment
+                self.cachedAppTransactionEnvironment = .sandbox
             }
         }
     }
