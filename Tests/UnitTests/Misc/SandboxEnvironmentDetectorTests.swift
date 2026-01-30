@@ -48,7 +48,9 @@ class SandboxEnvironmentDetectorTests: TestCase {
 
     // MARK: - AppTransaction Environment Tests
 
-    func testIsSandboxWhenAppTransactionEnvironmentIsSandbox() async {
+    func testIsSandboxWhenAppTransactionEnvironmentIsSandbox() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .appStoreReceipt,
             appTransactionEnvironment: .sandbox
@@ -56,7 +58,10 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(detector.isSandbox) == true
     }
 
-    func testIsSandboxWhenAppTransactionEnvironmentIsXcode() async {
+
+    func testIsSandboxWhenAppTransactionEnvironmentIsXcode() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .appStoreReceipt,
             appTransactionEnvironment: .xcode
@@ -64,7 +69,9 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(detector.isSandbox) == true
     }
 
-    func testIsNotSandboxWhenAppTransactionEnvironmentIsProduction() async {
+    func testIsNotSandboxWhenAppTransactionEnvironmentIsProduction() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .sandboxReceipt,
             appTransactionEnvironment: .production
@@ -72,7 +79,9 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(detector.isSandbox) == false
     }
 
-    func testAppTransactionEnvironmentTakesPrecedenceOverReceiptPath() async {
+    func testAppTransactionEnvironmentTakesPrecedenceOverReceiptPath() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         // Receipt says sandbox, but AppTransaction says production
         let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .sandboxReceipt,
@@ -126,7 +135,9 @@ class SandboxEnvironmentDetectorTests: TestCase {
 
     // MARK: - Prefetch Pending Tests
 
-    func testUsesReceiptPathBeforePrefetchCompletes() async {
+    func testUsesReceiptPathBeforePrefetchCompletes() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledAppTransactionEnvironment(
             receiptURLResult: .sandboxReceipt,
             appTransactionEnvironment: .production
@@ -169,6 +180,27 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(detector.isSandbox) == true
     }
 
+    func testAlwaysUsesReceiptValueOniOSVersionsBelow16() async throws {
+        try AvailabilityChecks.iOS16APINotAvailableOrSkipTest()
+
+        let detectorThatShouldBeSandbox = await SandboxEnvironmentDetector.with(
+            receiptURLResult: .sandboxReceipt,
+            appTransactionEnvironment: .production
+        )
+        expect(detectorThatShouldBeSandbox.isSandbox) == false
+
+        let detectorThatShouldBeProduction = await SandboxEnvironmentDetector.with(
+            receiptURLResult: .appStoreReceipt,
+            appTransactionEnvironment: .sandbox
+        )
+        expect(detectorThatShouldBeSandbox.isSandbox) == true
+
+        let detectorThatShouldBeProduction2 = await SandboxEnvironmentDetector.with(
+            receiptURLResult: .appStoreReceipt,
+            appTransactionEnvironment: .xcode
+        )
+        expect(detectorThatShouldBeProduction2.isSandbox) == true
+    }
 }
 
 #else
