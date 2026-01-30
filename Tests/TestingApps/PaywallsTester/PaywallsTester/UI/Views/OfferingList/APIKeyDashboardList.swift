@@ -47,6 +47,12 @@ struct APIKeyDashboardList: View {
     @State
     private var isLoadingPaywall: Bool = false
 
+    @State
+    private var customVariables: [String: CustomVariableValue] = [:]
+
+    @State
+    private var isShowingVariablesEditor = false
+
     var body: some View {
         ZStack {
             NavigationView {
@@ -57,17 +63,28 @@ struct APIKeyDashboardList: View {
                     #endif
                     .toolbar {
                         ToolbarItem(placement: .automatic) {
-                            Button {
-                                Task {
-                                    await fetchOfferings()
+                            HStack(spacing: 16) {
+                                Button {
+                                    isShowingVariablesEditor = true
+                                } label: {
+                                    Image(systemName: "curlybraces")
                                 }
-                            } label: {
-                                Image(systemName: "arrow.clockwise")
+
+                                Button {
+                                    Task {
+                                        await fetchOfferings()
+                                    }
+                                } label: {
+                                    Image(systemName: "arrow.clockwise")
+                                }
+                                #if !os(watchOS)
+                                .keyboardShortcut("r", modifiers: .shift)
+                                #endif
                             }
-                            #if !os(watchOS)
-                            .keyboardShortcut("r", modifiers: .shift)
-                            #endif
                         }
+                    }
+                    .sheet(isPresented: $isShowingVariablesEditor) {
+                        CustomVariablesEditorView(variables: $customVariables)
                     }
             }
             .task {
@@ -168,7 +185,8 @@ struct APIKeyDashboardList: View {
                                 destination: PaywallPresenter(offering: offering,
                                                               mode: .default,
                                                               introEligility: .eligible,
-                                                              displayCloseButton: false),
+                                                              displayCloseButton: false)
+                                    .customPaywallVariables(self.customVariables),
                                 tag: PresentedPaywall(offering: offering, mode: .default),
                                 selection: self.$presentedPaywall
                             ) {
@@ -203,6 +221,7 @@ struct APIKeyDashboardList: View {
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
+                .customPaywallVariables(self.customVariables)
                 .onAppear {
                     self.isLoadingPaywall = false
                     if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
@@ -216,6 +235,7 @@ struct APIKeyDashboardList: View {
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
+                .customPaywallVariables(self.customVariables)
                 .onAppear {
                     self.isLoadingPaywall = false
                     if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
