@@ -1690,7 +1690,6 @@ jobs:
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
 workflows:
-
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
@@ -1703,7 +1702,6 @@ workflows:
       - run-test-macos
       - run-test-watchos
       - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
-
 
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -1736,6 +1734,7 @@ workflows:
           mac_os_executor_name: macos-executor
       - run-test-ios-18
       - run-test-ios-26
+      - installation-tests-carthage
       - pod-lib-lint
       - run-revenuecat-ui-ios-18
       - run-revenuecat-ui-ios-26
@@ -1897,12 +1896,12 @@ workflows:
         - not:
             equal: [bump, << pipeline.parameters.action >>]
         - or:
-          - matches:
-              pattern: "^(release/.*|main)$"
-              value: << pipeline.git.branch >>
-          - equal: ["run-manual-tests", << pipeline.parameters.action >>]
-          - equal:
-              ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
+            - matches:
+                pattern: "^(release/.*|main)$"
+                value: << pipeline.git.branch >>
+            - equal: ["run-manual-tests", << pipeline.parameters.action >>]
+            - equal:
+                ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
     jobs:
       - check-api-changes:
           context:
