@@ -59,9 +59,11 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.receiptFetcher = receiptFetcher
         self.macAppStoreDetector = macAppStoreDetector
 
-        // Start fetching the AppTransaction environment asynchronously.
-        // The result will be cached and used by `isSandbox` once available.
-        self.prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: transactionFetcher)
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            // Start fetching the AppTransaction environment asynchronously.
+            // The result will be cached and used by `isSandbox` once available.
+            self.prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: transactionFetcher)
+        }
     }
 
     private init() {
@@ -114,12 +116,12 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
 private extension SandboxEnvironmentDetector {
 
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     func prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: StoreKit2TransactionFetcherType) {
         Task.detached(priority: .background) {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                let environment = await transactionFetcher.appTransactionEnvironment
-                self.cachedAppTransactionEnvironment.value = environment
-            }
+
+            let environment = await transactionFetcher.appTransactionEnvironment
+            self.cachedAppTransactionEnvironment.value = environment
         }
     }
 
