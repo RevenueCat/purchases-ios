@@ -117,8 +117,8 @@ private extension SandboxEnvironmentDetector {
     func prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: StoreKit2TransactionFetcherType) {
         Task.detached {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                let environment = await transactionFetcher.appTransactionEnvironment
-                self.cachedAppTransactionEnvironment.value = environment
+                try! await Task.sleep(for: .seconds(20))
+                self.cachedAppTransactionEnvironment.value = .sandbox
             }
         }
     }
