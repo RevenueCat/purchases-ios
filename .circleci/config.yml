@@ -503,7 +503,7 @@ commands:
           bundle_name: BackendIntegrationTests
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshots_repo_pr"
+          job: "create_snapshot_pr"
           version: ""
       - store_test_results:
           path: fastlane/test_output
