@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        run-installation-tests
       ]
     default: default
   generate_snapshots:
@@ -2007,3 +2008,14 @@ workflows:
       equal: [tuist, << pipeline.parameters.action >>]
     jobs:
       - test-tuist-generate-workspace
+
+  manual-trigger-installation-tests:
+    when:
+      equal: [run-installation-tests, << pipeline.parameters.action >>]
+    jobs:
+      - installation-tests-cocoapods
+      - installation-tests-swift-package-manager
+      - installation-tests-custom-entitlement-computation-swift-package-manager
+      - installation-tests-carthage
+      - installation-tests-xcode-direct-integration
+      - installation-tests-receipt-parser
