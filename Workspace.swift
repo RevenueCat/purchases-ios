@@ -11,17 +11,11 @@ var projects: [Path] = [
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",
+    "./Projects/RevenueCatTests",
+    "./Projects/RevenueCat",
+    "./Projects/RevenueCatUI"
     "./Projects/BinarySizeTest"
 ]
-
-if Environment.local {
-    projects.append("./Projects/RevenueCat")
-    projects.append("./Projects/RevenueCatUI")
-} else {
-    // Needs 3.0.0 of Purchases.
-    // Only when TUIST_RC_LOCAL=false tuist generate
-    projects.append("./Projects/v3LoadShedderIntegration")
-}
 
 var additionalFiles: [FileElement] = [
     .glob(pattern: "Global.xcconfig"),
@@ -30,7 +24,8 @@ var additionalFiles: [FileElement] = [
 ]
 if FileManager.default.fileExists(atPath: "CI.xcconfig") {
     additionalFiles.append(.glob(pattern: "CI.xcconfig"))
-} else if FileManager.default.fileExists(atPath: "Local.xcconfig") {
+}
+if FileManager.default.fileExists(atPath: "Local.xcconfig") {
     additionalFiles.append(.glob(pattern: "Local.xcconfig"))
 }
 

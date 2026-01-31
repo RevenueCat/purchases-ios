@@ -1,5 +1,4 @@
 {
-  "originHash" : "d3dfe8ddc09047dea2624c6a63b78c191d0d7f11946fd378510a6498cd4ca12b",
   "pins" : [
     {
       "identity" : "cwlcatchexception",
@@ -29,15 +28,6 @@
       }
     },
     {
-      "identity" : "ohhttpstubs",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/AliSoftware/OHHTTPStubs",
-      "state" : {
-        "branch" : "9.1.0",
-        "revision" : "12f19662426d0434d6c330c6974d53e2eb10ecd9"
-      }
-    },
-    {
       "identity" : "swift-snapshot-testing",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
@@ -46,5 +36,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }
