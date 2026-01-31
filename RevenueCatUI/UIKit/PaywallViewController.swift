@@ -127,6 +127,9 @@ public class PaywallViewController: UIViewController {
         return configuration.purchaseHandler
     }
 
+    /// The promo offer cache, shared with exit offer paywall to avoid race conditions.
+    private var promoOfferCache: PaywallPromoOfferCache
+
     /// Initialize a `PaywallViewController` with an optional `Offering`.
     /// - Parameter offering: The `Offering` containing the desired paywall to display.
     /// `Offerings.current` will be used by default.
@@ -249,18 +252,24 @@ public class PaywallViewController: UIViewController {
         shouldBlockTouchEvents: Bool,
         performPurchase: PerformPurchase?,
         performRestore: PerformRestore?,
-        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?,
+        promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         self.shouldBlockTouchEvents = shouldBlockTouchEvents
         self.dismissRequestedHandler = dismissRequestedHandler
         let handler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+
+        self.promoOfferCache = promoOfferCache ?? PaywallPromoOfferCache(
+            subscriptionHistoryTracker: handler.subscriptionHistoryTracker
+        )
 
         self.configuration = .init(
             content: content,
             mode: Self.mode,
             fonts: fonts,
             displayCloseButton: displayCloseButton,
-            purchaseHandler: handler
+            purchaseHandler: handler,
+            promoOfferCache: self.promoOfferCache
         )
 
         super.init(nibName: nil, bundle: nil)
@@ -446,10 +455,12 @@ public class PaywallViewController: UIViewController {
             )
 
             let exitOfferVC = PaywallViewController(
-                offering: offering,
+                content: .offering(offering),
                 fonts: fonts,
                 displayCloseButton: true,
                 shouldBlockTouchEvents: shouldBlock,
+                performPurchase: nil,
+                performRestore: nil,
                 dismissRequestedHandler: { controller in
                     // When exit offer is dismissed, call the original handler
                     if let handler = originalDismissHandler {
@@ -457,7 +468,8 @@ public class PaywallViewController: UIViewController {
                     } else {
                         controller.dismiss(animated: true)
                     }
-                }
+                },
+                promoOfferCache: self.promoOfferCache
             )
 
             // Set delegate directly - exit offer is now standalone

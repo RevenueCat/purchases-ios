@@ -21,6 +21,7 @@ struct PaywallViewConfiguration {
     let useDraftPaywall: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler
+    var promoOfferCache: PaywallPromoOfferCache?
 
     init(
         content: Content,
@@ -30,7 +31,8 @@ struct PaywallViewConfiguration {
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler
+        purchaseHandler: PurchaseHandler,
+        promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         self.content = content
         self.customerInfo = customerInfo
@@ -40,6 +42,7 @@ struct PaywallViewConfiguration {
         self.useDraftPaywall = useDraftPaywall
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
+        self.promoOfferCache = promoOfferCache
     }
 
 }
@@ -71,7 +74,8 @@ extension PaywallViewConfiguration {
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler = PurchaseHandler.default()
+        purchaseHandler: PurchaseHandler = PurchaseHandler.default(),
+        promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         let handler = purchaseHandler
 
@@ -83,7 +87,8 @@ extension PaywallViewConfiguration {
             displayCloseButton: displayCloseButton,
             useDraftPaywall: useDraftPaywall,
             introEligibility: introEligibility,
-            purchaseHandler: handler
+            purchaseHandler: handler,
+            promoOfferCache: promoOfferCache
         )
     }
 
