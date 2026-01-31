@@ -24,24 +24,12 @@ import Foundation
 /// This means simple get/set operations on single keys are safe without additional synchronization.
 ///
 /// However, **read-modify-write (RMW) operations are NOT atomic** and can have race conditions when
-/// accessed from multiple threads simultaneously. This class uses two different `UserDefaults` wrappers:
+/// accessed from multiple threads simultaneously.
 ///
-/// ### Lock-free wrapper (`userDefaults`)
-/// Used for simple read/write operations that don't require atomicity. This avoids deadlocks that can occur
-/// when the main thread waits for a lock while a background thread holds it and writes to UserDefaults
-/// (which posts `didChangeNotification` to main queue).
-///
-/// ### Locking wrapper (`lockingUserDefaults`)
-/// Used for **subscriber attribute write operations** which require atomic read-modify-write:
-/// - `store(subscriberAttributesByKey:)`, `deleteAttributesIfSynced()`, `copySubscriberAttributes()`,
-///   `cleanupSubscriberAttributes()`, `clearCaches()`
-///
-/// Read-only subscriber attribute operations (`subscriberAttribute()`, `unsyncedAttributesByKey()`,
-/// `unsyncedAttributesForAllUsers()`) use the lock-free wrapper since they don't modify data.
-///
-/// The locking wrapper has a potential deadlock risk if called from the main thread while a background thread
-/// holds the lock. This will be addressed in a future PR by refactoring subscriber attributes to use
-/// individual keys, eliminating the need for RMW operations.
+/// ### Subscriber Attributes
+/// Subscriber attributes are stored as **individual keys** (one key per attribute per user), which eliminates
+/// the need for read-modify-write operations. Each attribute write is atomic because it's a single key write.
+/// Key format: `com.revenuecat.userdefaults.subscriberAttributes.{userID}.{attributeKey}`
 ///
 /// ### SK2 Observer Mode Transaction IDs
 /// `registerNewSyncedSK2ObserverModeTransactionIDs()` performs RMW using a dedicated lock
@@ -49,7 +37,6 @@ import Foundation
 ///
 /// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/4137
 /// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/5729
-///
 class DeviceCache {
     private static let defaultBasePath = "device-cache"
     private static let oldDefaultBasePath = "RevenueCat"
@@ -60,7 +47,6 @@ class DeviceCache {
 
     private let systemInfo: SystemInfo
     private let userDefaults: SynchronizedUserDefaults
-    private let lockingUserDefaults: LockingSynchronizedUserDefaults
     private let largeItemCache: SynchronizedLargeItemCache
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
     private let fileManager: FileManager
@@ -82,7 +68,6 @@ class DeviceCache {
         self.offeringsCachedObject = offeringsCachedObject
         self.systemInfo = systemInfo
         self.userDefaults = .init(userDefaults: userDefaults)
-        self.lockingUserDefaults = .init(userDefaults: userDefaults)
         self._cachedAppUserID = .init(userDefaults.string(forKey: CacheKeys.appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults))
         self.largeItemCache = .init(
@@ -126,7 +111,7 @@ class DeviceCache {
     }
 
     func clearCaches(oldAppUserID: String, andSaveWithNewUserID newUserID: String) {
-        self.lockingUserDefaults.write { userDefaults in
+        self.userDefaults.write { userDefaults in
             userDefaults.removeObject(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
             userDefaults.removeObject(
                 forKey: CacheKey.customerInfo(oldAppUserID)
@@ -144,11 +129,17 @@ class DeviceCache {
             // Clear virtual currencies cache
             userDefaults.removeObject(forKey: CacheKey.virtualCurrencies(oldAppUserID))
 
-            // Delete attributes if synced for the old app user id.
-            if Self.unsyncedAttributesByKey(userDefaults, appUserID: oldAppUserID).isEmpty {
-                var attributes = Self.storedAttributesForAllUsers(userDefaults)
-                attributes.removeValue(forKey: oldAppUserID)
-                userDefaults.set(attributes, forKey: CacheKeys.subscriberAttributes)
+            // Delete subscriber attributes if all synced for the old app user id.
+            let oldUserKeys = Self.subscriberAttributeKeys(userDefaults, appUserID: oldAppUserID)
+            let hasUnsynced = oldUserKeys.contains { key in
+                guard let dict = userDefaults.dictionary(forKey: key),
+                      let attr = SubscriberAttribute(dictionary: dict) else { return false }
+                return !attr.isSynced
+            }
+            if !hasUnsynced {
+                for key in oldUserKeys {
+                    userDefaults.removeObject(forKey: key)
+                }
             }
 
             // Cache new appUserID.
@@ -274,10 +265,6 @@ class DeviceCache {
     }
 
     // MARK: - subscriber attributes
-    // Write operations use `lockingUserDefaults` to ensure atomic read-modify-write.
-    // Read operations use the lock-free `userDefaults` since they don't modify data.
-    // This will be addressed in a future PR by refactoring subscriber attributes to use
-    // individual keys, eliminating the need for RMW operations.
 
     func store(subscriberAttribute: SubscriberAttribute, appUserID: String) {
         store(subscriberAttributesByKey: [subscriberAttribute.key: subscriberAttribute], appUserID: appUserID)
@@ -288,14 +275,19 @@ class DeviceCache {
             return
         }
 
-        self.lockingUserDefaults.write {
-            Self.store($0, subscriberAttributesByKey: subscriberAttributesByKey, appUserID: appUserID)
+        self.userDefaults.write { userDefaults in
+            for (attributeKey, attribute) in subscriberAttributesByKey {
+                let key = CacheKey.subscriberAttribute(appUserID: appUserID, attributeKey: attributeKey)
+                userDefaults.set(attribute.asDictionary(), forKey: key.rawValue)
+            }
         }
     }
 
     func subscriberAttribute(attributeKey: String, appUserID: String) -> SubscriberAttribute? {
-        return self.userDefaults.read {
-            Self.storedSubscriberAttributes($0, appUserID: appUserID)[attributeKey]
+        return self.userDefaults.read { userDefaults in
+            let key = CacheKey.subscriberAttribute(appUserID: appUserID, attributeKey: attributeKey)
+            guard let dict = userDefaults.dictionary(forKey: key.rawValue) else { return nil }
+            return SubscriberAttribute(dictionary: dict)
         }
     }
 
@@ -310,51 +302,73 @@ class DeviceCache {
     }
 
     func cleanupSubscriberAttributes() {
-        self.lockingUserDefaults.write {
+        self.userDefaults.write {
+            // Step 1: Migrate legacy per-user format to grouped format (if any)
             Self.migrateSubscriberAttributes($0)
+            // Step 2: Migrate grouped format to individual keys
+            Self.migrateGroupedToIndividualKeys($0)
+            // Step 3: Delete synced attributes for older users
             Self.deleteSyncedSubscriberAttributesForOtherUsers($0)
         }
     }
 
     func unsyncedAttributesForAllUsers() -> [String: [String: SubscriberAttribute]] {
-        self.userDefaults.read {
-            let attributesDict = $0.dictionary(forKey: CacheKeys.subscriberAttributes) ?? [:]
-            var attributes: [String: [String: SubscriberAttribute]] = [:]
-            for (appUserID, attributesDictForUser) in attributesDict {
-                var attributesForUser: [String: SubscriberAttribute] = [:]
-                let attributesDictForUser = attributesDictForUser as? [String: [String: Any]] ?? [:]
-                for (attributeKey, attributeDict) in attributesDictForUser {
-                    if let attribute = SubscriberAttribute(dictionary: attributeDict), !attribute.isSynced {
-                        attributesForUser[attributeKey] = attribute
-                    }
-                }
-                if attributesForUser.count > 0 {
-                    attributes[appUserID] = attributesForUser
-                }
+        self.userDefaults.read { userDefaults in
+            var result: [String: [String: SubscriberAttribute]] = [:]
+            let allKeys = Self.allSubscriberAttributeKeys(userDefaults)
+
+            for key in allKeys {
+                guard let (appUserID, _) = Self.parseSubscriberAttributeKey(key),
+                      let dict = userDefaults.dictionary(forKey: key),
+                      let attr = SubscriberAttribute(dictionary: dict),
+                      !attr.isSynced else { continue }
+
+                result[appUserID, default: [:]][attr.key] = attr
             }
-            return attributes
+            return result
         }
     }
 
     func deleteAttributesIfSynced(appUserID: String) {
-        self.lockingUserDefaults.write {
-            guard Self.unsyncedAttributesByKey($0, appUserID: appUserID).isEmpty else {
-                return
+        self.userDefaults.write { userDefaults in
+            let keys = Self.subscriberAttributeKeys(userDefaults, appUserID: appUserID)
+
+            for key in keys {
+                if let dict = userDefaults.dictionary(forKey: key),
+                   let attr = SubscriberAttribute(dictionary: dict),
+                   !attr.isSynced {
+                    return // Found unsynced attribute, don't delete any
+                }
             }
-            Self.deleteAllAttributes($0, appUserID: appUserID)
+
+            for key in keys {
+                userDefaults.removeObject(forKey: key)
+            }
         }
     }
 
     func copySubscriberAttributes(oldAppUserID: String, newAppUserID: String) {
-        self.lockingUserDefaults.write {
-            let unsyncedAttributesToCopy = Self.unsyncedAttributesByKey($0, appUserID: oldAppUserID)
-            guard !unsyncedAttributesToCopy.isEmpty else {
-                return
+        self.userDefaults.write { userDefaults in
+            let oldKeys = Self.subscriberAttributeKeys(userDefaults, appUserID: oldAppUserID)
+            var copiedAny = false
+
+            for oldKey in oldKeys {
+                guard let dict = userDefaults.dictionary(forKey: oldKey),
+                      let attr = SubscriberAttribute(dictionary: dict),
+                      !attr.isSynced else { continue }
+
+                let newKey = CacheKey.subscriberAttribute(appUserID: newAppUserID, attributeKey: attr.key)
+                userDefaults.set(dict, forKey: newKey.rawValue)
+                copiedAny = true
             }
 
+            guard copiedAny else { return }
+
             Logger.info(Strings.attribution.copying_attributes(oldAppUserID: oldAppUserID, newAppUserID: newAppUserID))
-            Self.store($0, subscriberAttributesByKey: unsyncedAttributesToCopy, appUserID: newAppUserID)
-            Self.deleteAllAttributes($0, appUserID: oldAppUserID)
+
+            for oldKey in oldKeys {
+                userDefaults.removeObject(forKey: oldKey)
+            }
         }
     }
 
@@ -540,6 +554,7 @@ class DeviceCache {
         case customerInfoLastUpdated(String)
         case offerings(String)
         case legacySubscriberAttributes(String)
+        case subscriberAttribute(appUserID: String, attributeKey: String)
         case attributionDataDefaults(String)
         case syncedSK2ObserverModeTransactionIDs
         case virtualCurrencies(String)
@@ -551,6 +566,8 @@ class DeviceCache {
             case let .customerInfoLastUpdated(userID): return "\(Self.base)purchaserInfoLastUpdated.\(userID)"
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
+            case let .subscriberAttribute(userID, attrKey):
+                return "\(Self.legacySubscriberAttributesBase)\(userID).\(attrKey)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
             case .syncedSK2ObserverModeTransactionIDs:
                 return "\(Self.base)syncedSK2ObserverModeTransactionIDs"
@@ -604,6 +621,41 @@ private extension DeviceCache {
         return attributes
     }
 
+    // MARK: - Individual subscriber attribute key helpers
+
+    /// Returns all UserDefaults keys that store individual subscriber attributes for a specific user.
+    static func subscriberAttributeKeys(_ userDefaults: UserDefaults, appUserID: String) -> [String] {
+        let prefix = "\(CacheKey.legacySubscriberAttributesBase)\(appUserID)."
+        return userDefaults.dictionaryRepresentation().keys.filter { $0.hasPrefix(prefix) }
+    }
+
+    /// Returns all UserDefaults keys that store individual subscriber attributes (for any user).
+    static func allSubscriberAttributeKeys(_ userDefaults: UserDefaults) -> [String] {
+        let prefix = CacheKey.legacySubscriberAttributesBase
+        let groupedKey = CacheKeys.subscriberAttributes.rawValue
+        return userDefaults.dictionaryRepresentation().keys.filter {
+            $0.hasPrefix(prefix) &&
+            $0 != groupedKey && // Exclude the grouped format key
+            $0.dropFirst(prefix.count).contains(".") // Must have userID.attributeKey format
+        }
+    }
+
+    /// Parses a subscriber attribute key to extract the appUserID and attributeKey.
+    /// Returns nil if the key doesn't match the expected format.
+    static func parseSubscriberAttributeKey(_ key: String) -> (appUserID: String, attributeKey: String)? {
+        let prefix = CacheKey.legacySubscriberAttributesBase
+        guard key.hasPrefix(prefix) else { return nil }
+
+        let remainder = String(key.dropFirst(prefix.count))
+        guard let dotIndex = remainder.firstIndex(of: ".") else { return nil }
+
+        let appUserID = String(remainder[..<dotIndex])
+        let attributeKey = String(remainder[remainder.index(after: dotIndex)...])
+
+        guard !appUserID.isEmpty, !attributeKey.isEmpty else { return nil }
+        return (appUserID, attributeKey)
+    }
+
     static func customerInfoLastUpdated(
         _ userDefaults: UserDefaults,
         appUserID: String
@@ -633,33 +685,6 @@ private extension DeviceCache {
         return unsyncedAttributesByKey
     }
 
-    static func store(
-        _ userDefaults: UserDefaults,
-        subscriberAttributesByKey: [String: SubscriberAttribute],
-        appUserID: String
-    ) {
-        var groupedSubscriberAttributes = Self.storedAttributesForAllUsers(userDefaults)
-        var subscriberAttributesForAppUserID = groupedSubscriberAttributes[appUserID] as? [String: Any] ?? [:]
-        for (key, attributes) in subscriberAttributesByKey {
-            subscriberAttributesForAppUserID[key] = attributes.asDictionary()
-        }
-        groupedSubscriberAttributes[appUserID] = subscriberAttributesForAppUserID
-        userDefaults.set(groupedSubscriberAttributes, forKey: CacheKeys.subscriberAttributes)
-    }
-
-    static func deleteAllAttributes(
-        _ userDefaults: UserDefaults,
-        appUserID: String
-    ) {
-        var groupedAttributes = Self.storedAttributesForAllUsers(userDefaults)
-        let attributesForAppUserID = groupedAttributes.removeValue(forKey: appUserID)
-        guard attributesForAppUserID != nil else {
-            Logger.warn(Strings.identity.deleting_attributes_none_found)
-            return
-        }
-        userDefaults.set(groupedAttributes, forKey: CacheKeys.subscriberAttributes)
-    }
-
     static func setCustomerInfoCache(
         _ userDefaults: UserDefaults,
         timestamp: Date,
@@ -686,18 +711,21 @@ private extension DeviceCache {
         _ userDefaults: UserDefaults,
         appUserID: String
     ) -> [String: SubscriberAttribute] {
-        let allAttributesObjectsByKey = Self.subscriberAttributes(userDefaults, appUserID: appUserID)
-        var allSubscriberAttributesByKey: [String: SubscriberAttribute] = [:]
-        for (key, attributeDict) in allAttributesObjectsByKey {
-            if let dictionary = attributeDict as? [String: Any],
-                let attribute = SubscriberAttribute(dictionary: dictionary) {
-                allSubscriberAttributesByKey[key] = attribute
-            }
+        var result: [String: SubscriberAttribute] = [:]
+        let keys = subscriberAttributeKeys(userDefaults, appUserID: appUserID)
+
+        for key in keys {
+            guard let dict = userDefaults.dictionary(forKey: key),
+                  let attr = SubscriberAttribute(dictionary: dict) else { continue }
+            result[attr.key] = attr
         }
 
-        return allSubscriberAttributesByKey
+        return result
     }
 
+    /// Migrates legacy per-user subscriber attributes to the grouped format.
+    /// Legacy format: `com.revenuecat.userdefaults.subscriberAttributes.{userID}` (one key per user)
+    /// Grouped format: `com.revenuecat.userdefaults.subscriberAttributes` (all users in one dictionary)
     static func migrateSubscriberAttributes(_ userDefaults: UserDefaults) {
         let appUserIDsWithLegacyAttributes = Self.appUserIDsWithLegacyAttributes(userDefaults)
         var attributesInNewFormat = userDefaults.dictionary(forKey: CacheKeys.subscriberAttributes) ?? [:]
@@ -715,35 +743,45 @@ private extension DeviceCache {
         userDefaults.set(attributesInNewFormat, forKey: CacheKeys.subscriberAttributes)
     }
 
-    static func deleteSyncedSubscriberAttributesForOtherUsers(
-        _ userDefaults: UserDefaults
-    ) {
-        let allStoredAttributes: [String: [String: Any]]
-        = userDefaults.dictionary(forKey: CacheKeys.subscriberAttributes)
-        as? [String: [String: Any]] ?? [:]
+    /// Migrates grouped subscriber attributes to individual keys.
+    /// Grouped format: `com.revenuecat.userdefaults.subscriberAttributes` (all users in one dictionary)
+    /// Individual format: `com.revenuecat.userdefaults.subscriberAttributes.{userID}.{attributeKey}` (one key per attribute)
+    static func migrateGroupedToIndividualKeys(_ userDefaults: UserDefaults) {
+        guard let groupedAttributes = userDefaults.dictionary(forKey: CacheKeys.subscriberAttributes)
+                as? [String: [String: [String: Any]]] else {
+            return // Nothing to migrate or invalid format
+        }
 
-        var filteredAttributes: [String: Any] = [:]
-
-        // swiftlint:disable:next force_unwrapping
-        let currentAppUserID = Self.cachedAppUserID(userDefaults)!
-
-        filteredAttributes[currentAppUserID] = allStoredAttributes[currentAppUserID]
-
-        for appUserID in allStoredAttributes.keys where appUserID != currentAppUserID {
-            var unsyncedAttributesForUser: [String: [String: Any]] = [:]
-            let allStoredAttributesForAppUserID = allStoredAttributes[appUserID] as? [String: [String: Any]] ?? [:]
-            for (attributeKey, storedAttributesForUser) in allStoredAttributesForAppUserID {
-                if let attribute = SubscriberAttribute(dictionary: storedAttributesForUser), !attribute.isSynced {
-                    unsyncedAttributesForUser[attributeKey] = storedAttributesForUser
-                }
-            }
-
-            if !unsyncedAttributesForUser.isEmpty {
-                filteredAttributes[appUserID] = unsyncedAttributesForUser
+        // Write each attribute to its individual key
+        for (appUserID, attributesDict) in groupedAttributes {
+            for (attributeKey, attributeData) in attributesDict {
+                let key = CacheKey.subscriberAttribute(appUserID: appUserID, attributeKey: attributeKey)
+                userDefaults.set(attributeData, forKey: key.rawValue)
             }
         }
 
-        userDefaults.set(filteredAttributes, forKey: CacheKeys.subscriberAttributes)
+        // Remove the old grouped key
+        userDefaults.removeObject(forKey: CacheKeys.subscriberAttributes)
+    }
+
+    static func deleteSyncedSubscriberAttributesForOtherUsers(
+        _ userDefaults: UserDefaults
+    ) {
+        guard let currentAppUserID = Self.cachedAppUserID(userDefaults) else { return }
+
+        let allKeys = allSubscriberAttributeKeys(userDefaults)
+
+        for key in allKeys {
+            guard let (appUserID, _) = parseSubscriberAttributeKey(key),
+                  appUserID != currentAppUserID else { continue }
+
+            // For other users, delete if synced
+            if let dict = userDefaults.dictionary(forKey: key),
+               let attr = SubscriberAttribute(dictionary: dict),
+               attr.isSynced {
+                userDefaults.removeObject(forKey: key)
+            }
+        }
     }
 
     static func productEntitlementMappingLastUpdated(_ userDefaults: UserDefaults) -> Date? {
