@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        run-maestro-tests-only
       ]
     default: default
   generate_snapshots:
@@ -2013,3 +2014,85 @@ workflows:
       equal: [tuist, << pipeline.parameters.action >>]
     jobs:
       - test-tuist-generate-workspace
+
+  # Temporary workflow to run only maestro tests (10 parallel runs for flakiness testing)
+  # To trigger: set action parameter to "run-maestro-tests-only"
+  manual-trigger-maestro-tests-only:
+    when:
+      equal: [run-maestro-tests-only, << pipeline.parameters.action >>]
+    jobs:
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-1
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-2
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-3
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-4
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-5
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-6
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-7
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-8
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-9
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-10
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-11
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-12
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-13
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-14
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          name: maestro-e2e-run-15
+          context:
+            - e2e-tests
+            - slack-secrets
