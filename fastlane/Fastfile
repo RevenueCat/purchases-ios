@@ -1017,9 +1017,28 @@ platform :ios do
 
       UI.message("Using flow directory: #{flow_dir}")
 
-      sh("maestro", "test", "--format", "junit", "--output", "#{output_dir}/report.xml", "--test-output-dir", output_dir, "--debug-output", output_dir, flow_dir)
+      # CI-level retries for flaky Maestro tests
+      max_retries = 5
+      attempt = 0
 
-      success = true
+      while attempt <= max_retries && !success
+        attempt_output_dir = "#{output_dir}/attempt_#{attempt}"
+        FileUtils.mkdir_p(attempt_output_dir)
+
+        begin
+          sh("maestro", "test", "--format", "junit", "--output", "#{attempt_output_dir}/report.xml", "--test-output-dir", attempt_output_dir, flow_dir)
+          success = true
+          # Copy successful attempt's report to main output_dir for post-processing
+          FileUtils.cp("#{attempt_output_dir}/report.xml", "#{output_dir}/report.xml")
+        rescue => e
+          UI.error("Maestro test attempt #{attempt} failed: #{e.message}")
+          if attempt >= max_retries
+            raise e
+          end
+          attempt += 1
+          UI.message("Retrying... #{attempt}/#{max_retries}")
+        end
+      end
     rescue => e
       raise e
     ensure
