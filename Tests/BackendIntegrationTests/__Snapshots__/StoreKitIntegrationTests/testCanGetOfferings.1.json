@@ -1465,6 +1465,7 @@
         "exit_offers" : {
 
         },
+        "id" : "pweda62449327d4aef",
         "revision" : 2,
         "template_name" : "components",
         "zero_decimal_place_countries" : {
@@ -1565,6 +1566,7 @@
           "tos_url" : "https://revenuecat.com/tos"
         },
         "default_locale" : "en_US",
+        "id" : "pw15d37fb3b9f54470",
         "localized_strings" : {
           "en_US" : {
             "call_to_action" : "Continue",
@@ -1615,6 +1617,9 @@
       "fonts" : {
 
       }
+    },
+    "custom_variables" : {
+
     },
     "localizations" : {
       "en_US" : {

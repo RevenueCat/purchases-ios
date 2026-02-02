@@ -73,6 +73,11 @@ extension Data {
         return self.hash(with: &sha512)
     }
 
+    var sha1String: String {
+        var sha1 = Insecure.SHA1()
+        return self.hashString(with: &sha1)
+    }
+
     var sha256String: String {
         var sha256 = SHA256()
         return self.hashString(with: &sha256)

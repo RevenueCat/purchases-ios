@@ -50,6 +50,7 @@ extension AdEventsRequest {
         var timestamp: UInt64
         var networkName: String
         var mediatorName: String
+        var adFormat: String
         var placement: String?
         var adUnitId: String
         var impressionId: String?
@@ -97,6 +98,7 @@ extension AdEventsRequest.AdEventRequest {
                 timestamp: creationData.date.millisecondsSince1970,
                 networkName: eventData.networkName,
                 mediatorName: eventData.mediatorName.rawValue,
+                adFormat: eventData.adFormat.rawValue,
                 placement: eventData.placement,
                 adUnitId: eventData.adUnitId,
                 impressionId: adEvent.impressionIdentifier,
@@ -149,6 +151,7 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case timestamp = "timestampMs"
         case networkName
         case mediatorName
+        case adFormat
         case placement
         case adUnitId
         case impressionId

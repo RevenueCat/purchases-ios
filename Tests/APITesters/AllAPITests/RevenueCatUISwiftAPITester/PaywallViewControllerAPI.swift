@@ -92,6 +92,25 @@ func paywallViewControllerAPI(_ delegate: Delegate,
     controller.update(with: offering!)
     controller.update(with: "offering_identifier")
     controller.updateFont(with: "Papyrus")
+
+    // Custom Variables API
+    let customVars: [String: CustomVariableValue] = [
+        "player_name": .string("John")
+    ]
+    controller.customVariables = customVars
+
+    // Objective-C compatible methods
+    controller.setCustomVariable("Jane", forKey: "player_name")
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+func customVariableValueAPI() {
+    // CustomVariableValue type and static constructors
+    let _: CustomVariableValue = .string("test")
+
+    // Accessing underlying value
+    let stringValue: CustomVariableValue = .string("hello")
+    let _: String = stringValue.stringValue
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
@@ -133,6 +152,9 @@ final class Delegate: PaywallViewControllerDelegate {
     func paywallViewControllerDidStartPurchase(_ controller: PaywallViewController) {}
 
     func paywallViewController(_ controller: PaywallViewController,
+                               didStartPurchaseWith package: Package) {}
+
+    func paywallViewController(_ controller: PaywallViewController,
                                didFinishPurchasingWith customerInfo: CustomerInfo) {}
 
     func paywallViewController(_ controller: PaywallViewController,
@@ -156,6 +178,9 @@ final class Delegate: PaywallViewControllerDelegate {
 
     func paywallViewController(_ controller: PaywallViewController,
                                didChangeSizeTo size: CGSize) {}
+
+    func paywallViewController(_ controller: PaywallViewController,
+                               willPresentExitOfferController exitOfferController: PaywallViewController) {}
 
 }
 
