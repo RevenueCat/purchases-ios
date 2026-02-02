@@ -120,10 +120,12 @@ struct VideoComponentView: View {
                             }
                         }
 
-                        if let cachedURL = fileRepository.getCachedFileURL(
+                        let fullResCachedURL = fileRepository.getCachedFileURL(
                             for: viewData.url,
                             withChecksum: viewData.checksum
-                        ) {
+                        )
+
+                        if let cachedURL = fullResCachedURL {
                             self.cachedURL = cachedURL
                             // If we have a cached video, no need to display a fallback image
                             self.imageSource = nil
