@@ -12,6 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/18/25.
 
 import AVKit
+import Combine
 import RevenueCat
 import SwiftUI
 
@@ -64,7 +65,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator(player: player)
     }
 
     func makeUIViewController(context: Context) -> AVPlayerViewController {
@@ -104,9 +105,24 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) { }
 
     class Coordinator {
+        let player: AVPlayer
         var previousCategory: AVAudioSession.Category?
         var previousMode: AVAudioSession.Mode?
         var previousOptions: AVAudioSession.CategoryOptions?
+        private var wasPlayingBeforeBackground: Bool = false
+        private var cancellables = Set<AnyCancellable>()
+
+        init(player: AVPlayer) {
+            self.player = player
+
+            NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)
+                .sink { [weak self] _ in self?.appWillResignActive() }
+                .store(in: &cancellables)
+
+            NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
+                .sink { [weak self] _ in self?.appDidBecomeActive() }
+                .store(in: &cancellables)
+        }
 
         deinit {
             guard let category = previousCategory,
@@ -123,6 +139,16 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
                 )
             } catch {
                 Logger.warning(Strings.video_failed_to_set_audio_session_category(error))
+            }
+        }
+
+        private func appWillResignActive() {
+            wasPlayingBeforeBackground = player.timeControlStatus == .playing
+        }
+
+        private func appDidBecomeActive() {
+            if wasPlayingBeforeBackground {
+                player.play()
             }
         }
     }
