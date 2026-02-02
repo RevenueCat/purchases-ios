@@ -17,6 +17,7 @@ struct OfferingsListView: View {
 
     @State private var loadingState: LoadingState = .loading
     @State private var offeringForPaywall: Offering?
+    @State private var offeringForMetadata: Offering?
 
     var body: some View {
         Group {
@@ -54,23 +55,29 @@ struct OfferingsListView: View {
                                 offering: offering,
                                 onPresentPaywall: {
                                     offeringForPaywall = offering
+                                },
+                                onShowMetadata: {
+                                    offeringForMetadata = offering
                                 }
                             )
                         }
-                    }
-                    .refreshable {
-                        await fetchOfferings()
                     }
                 }
             }
         }
         .navigationTitle("Offerings")
+        .refreshable {
+            await refreshOfferings()
+        }
         .presentPaywall(
             offering: $offeringForPaywall,
             onDismiss: {
                 print("Paywall dismissed")
             }
         )
+        .sheet(item: $offeringForMetadata) { offering in
+            OfferingMetadataView(offering: offering)
+        }
         .task {
             await fetchOfferings()
         }
@@ -102,7 +109,14 @@ struct OfferingsListView: View {
 
     private func fetchOfferings() async {
         loadingState = .loading
+        await loadOfferings()
+    }
 
+    private func refreshOfferings() async {
+        await loadOfferings()
+    }
+
+    private func loadOfferings() async {
         do {
             let fetchedOfferings = try await Purchases.shared.offerings()
             let sortedOfferings = Array(fetchedOfferings.all.values).sorted { $0.identifier < $1.identifier }

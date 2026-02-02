@@ -10,15 +10,14 @@ struct OfferingSectionView: View {
 
     let offering: Offering
     let onPresentPaywall: () -> Void
-
-    @State private var showingMetadata = false
+    let onShowMetadata: () -> Void
 
     var body: some View {
         Section {
             // Header: Offering info and metadata button
             OfferingHeaderView(
                 offering: offering,
-                onShowMetadata: { showingMetadata = true }
+                onShowMetadata: onShowMetadata
             )
 
             // Packages with purchase buttons
@@ -35,9 +34,6 @@ struct OfferingSectionView: View {
                         .frame(maxWidth: .infinity)
                 }
             }
-        }
-        .sheet(isPresented: $showingMetadata) {
-            OfferingMetadataView(offering: offering)
         }
     }
 }
@@ -106,7 +102,7 @@ private struct PackageRowView: View {
 
 // MARK: - Offering Metadata View
 
-private struct OfferingMetadataView: View {
+struct OfferingMetadataView: View {
 
     let offering: Offering
 
@@ -194,7 +190,8 @@ private struct MetadataRow: View {
                 availablePackages: [],
                 webCheckoutUrl: nil
             ),
-            onPresentPaywall: {}
+            onPresentPaywall: {},
+            onShowMetadata: {}
         )
     }
 }
