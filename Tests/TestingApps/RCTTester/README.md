@@ -11,3 +11,14 @@ The SDK sends various attribution metadata with receipt posts to help track the 
 - **SDK originated**: Whether the purchase was initiated through SDK methods or detected externally
 - **Initiation source**: Whether the transaction came from `.purchase`, `.restore`, or `.queue`
 - **Observer mode state**: The `purchasesAreCompletedBy` setting at purchase time
+
+## Setup
+
+1. Generate and open the project:
+   ```bash
+   tuist generate RCTTester
+   ```
+
+2. Select the **RCTTester** scheme and run on a simulator or device.
+
+3. On first launch, enter your RevenueCat API key in the app (or set it via `Local.xcconfig`).

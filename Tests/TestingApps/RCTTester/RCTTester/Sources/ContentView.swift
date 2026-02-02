@@ -5,86 +5,49 @@
 
 import SwiftUI
 import RevenueCat
-import RevenueCatUI
 
 struct ContentView: View {
 
-    @State private var isConfigured = false
-    @State private var configurationError: String?
+    @State private var configuration: SDKConfiguration = .load()
+    @State private var isSDKConfigured = false
 
     var body: some View {
         NavigationView {
-            if isConfigured {
-                MainView()
+            if isSDKConfigured {
+                MainView(
+                    configuration: configuration,
+                    onReconfigure: { isSDKConfigured = false }
+                )
             } else {
-                SetupView(error: configurationError)
+                ConfigurationFormView(
+                    configuration: $configuration,
+                    onConfigure: configureSDK
+                )
             }
         }
         .navigationViewStyle(.stack)
-        .task {
-            await configure()
-        }
     }
 
-    private func configure() async {
-        guard !Constants.apiKey.isEmpty else {
-            configurationError = "REVENUECAT_API_KEY not set.\n\nAdd it to Local.xcconfig:\nREVENUECAT_API_KEY = your-api-key"
-            return
-        }
+    private func configureSDK() {
+        configuration.save()
 
         Purchases.logLevel = .verbose
-        Purchases.configure(withAPIKey: Constants.apiKey)
-        isConfigured = true
-    }
-}
 
-struct SetupView: View {
-    let error: String?
+        let storeKitVersion: StoreKitVersion = configuration.storeKitVersion == .storeKit1
+            ? .storeKit1
+            : .storeKit2
 
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 60))
-                .foregroundColor(.orange)
+        var builder = Configuration.Builder(withAPIKey: configuration.apiKey)
 
-            Text("Configuration Required")
-                .font(.title)
-                .bold()
-
-            if let error = error {
-                Text(error)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-            }
+        switch configuration.purchasesAreCompletedBy {
+        case .revenueCat:
+            builder = builder.with(purchasesAreCompletedBy: .revenueCat, storeKitVersion: storeKitVersion)
+        case .myApp:
+            builder = builder.with(purchasesAreCompletedBy: .myApp, storeKitVersion: storeKitVersion)
         }
-        .padding()
-        .navigationTitle("RCTTester")
-    }
-}
 
-struct MainView: View {
-    var body: some View {
-        VStack {
-            Text("RCTTester")
-                .font(.largeTitle)
-                .padding()
-
-            Text("Purchase Attribution Tester")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            Spacer()
-
-            Text("SDK Configured Successfully")
-                .foregroundColor(.green)
-
-            Spacer()
-        }
-        .navigationTitle("RCTTester")
+        Purchases.configure(with: builder.build())
+        isSDKConfigured = true
     }
 }
 
