@@ -16,6 +16,9 @@ name: Subscribe to product through V1 Paywall for alternative offering
     arguments:
         e2e_test_flow: subscribe_from_v1_paywall
 - assertVisible: "entitlement (pro): nil"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
 - tapOn:
     text: "Present Paywall"
 - assertVisible: "Paywall V1"
