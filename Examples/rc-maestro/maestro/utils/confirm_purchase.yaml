@@ -34,8 +34,9 @@ env:
       - tapOn:
           text: "Subscribe"
       - takeScreenshot: "${SCREENSHOT_PREFIX} - IAP Confirmation"
-      - waitForAnimationToEnd
       - extendedWaitUntil:
           visible: "OK"
           timeout: 15000
-      - pressKey: home # Instead of tapping OK (which fails sometimes), press home to dismiss the StoreKit system alert
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "OK"
