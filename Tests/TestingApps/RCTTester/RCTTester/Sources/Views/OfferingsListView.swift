@@ -48,13 +48,15 @@ struct OfferingsListView: View {
                 if offerings.isEmpty {
                     emptyStateView
                 } else {
-                    List(offerings) { offering in
-                        OfferingRowView(
-                            offering: offering,
-                            onShowPaywall: {
-                                offeringForPaywall = offering
-                            }
-                        )
+                    List {
+                        ForEach(offerings) { offering in
+                            OfferingSectionView(
+                                offering: offering,
+                                onPresentPaywall: {
+                                    offeringForPaywall = offering
+                                }
+                            )
+                        }
                     }
                     .refreshable {
                         await fetchOfferings()
