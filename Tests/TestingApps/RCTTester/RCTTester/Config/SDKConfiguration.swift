@@ -80,11 +80,11 @@ struct SDKConfiguration: Codable, Equatable {
 
     private static let userDefaultsKey = "com.revenuecat.rcttester.sdkConfiguration"
 
-    /// Loads the configuration from UserDefaults, or returns default if none exists
-    static func load() -> SDKConfiguration {
+    /// Loads the configuration from UserDefaults, or returns nil if none exists
+    static func load() -> SDKConfiguration? {
         guard let data = UserDefaults.standard.data(forKey: userDefaultsKey),
               let configuration = try? JSONDecoder().decode(SDKConfiguration.self, from: data) else {
-            return .default
+            return nil
         }
         return configuration
     }
@@ -93,6 +93,11 @@ struct SDKConfiguration: Codable, Equatable {
     func save() {
         guard let data = try? JSONEncoder().encode(self) else { return }
         UserDefaults.standard.set(data, forKey: Self.userDefaultsKey)
+    }
+
+    /// Clears the stored configuration from UserDefaults
+    static func clear() {
+        UserDefaults.standard.removeObject(forKey: userDefaultsKey)
     }
 
 }
