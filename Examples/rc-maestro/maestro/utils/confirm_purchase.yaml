@@ -38,6 +38,5 @@ env:
       - extendedWaitUntil:
           visible: "OK"
           timeout: 15000
-      - takeScreenshot: "${SCREENSHOT_PREFIX} - IAP Confirmation - OK button visible"
       - tapOn:
           text: "OK"
