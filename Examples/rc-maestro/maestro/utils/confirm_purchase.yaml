@@ -38,5 +38,4 @@ env:
       - extendedWaitUntil:
           visible: "OK"
           timeout: 15000
-      - tapOn:
-          text: "OK"
+      - pressKey: home # Instead of tapping OK (which fails sometimes), press home to dismiss the StoreKit system alert
