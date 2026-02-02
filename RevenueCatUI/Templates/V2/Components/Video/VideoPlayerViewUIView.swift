@@ -12,12 +12,21 @@
 //  Created by Jacob Zivan Rakidzich on 8/18/25.
 
 import AVKit
-import Combine
 import RevenueCat
 import SwiftUI
 
 #if canImport(UIKit) && !os(watchOS)
 import UIKit
+
+// MARK: - AVPlayer + VideoPlaybackController
+
+extension AVPlayer: VideoPlaybackController {
+
+    var isPlaying: Bool {
+        return timeControlStatus == .playing
+    }
+
+}
 
 struct VideoPlayerUIView: UIViewControllerRepresentable {
     let videoURL: URL
@@ -105,23 +114,18 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) { }
 
     class Coordinator {
-        let player: AVPlayer
+
         var previousCategory: AVAudioSession.Category?
         var previousMode: AVAudioSession.Mode?
         var previousOptions: AVAudioSession.CategoryOptions?
-        private var wasPlayingBeforeBackground: Bool = false
-        private var cancellables = Set<AnyCancellable>()
+
+        private let autoplayHandler: VideoAutoplayHandler
 
         init(player: AVPlayer) {
-            self.player = player
-
-            NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)
-                .sink { [weak self] _ in self?.appWillResignActive() }
-                .store(in: &cancellables)
-
-            NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
-                .sink { [weak self] _ in self?.appDidBecomeActive() }
-                .store(in: &cancellables)
+            self.autoplayHandler = VideoAutoplayHandler(
+                playbackController: player,
+                lifecycleObserver: SystemAppLifecycleObserver()
+            )
         }
 
         deinit {
@@ -142,15 +146,6 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
             }
         }
 
-        private func appWillResignActive() {
-            wasPlayingBeforeBackground = player.timeControlStatus == .playing
-        }
-
-        private func appDidBecomeActive() {
-            if wasPlayingBeforeBackground {
-                player.play()
-            }
-        }
     }
 }
 #endif
