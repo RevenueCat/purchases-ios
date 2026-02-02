@@ -40,7 +40,6 @@ struct VideoComponentView: View {
 
     @State var size: CGSize = .zero
 
-    @State private var stagedURL: URL?
     @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
 
@@ -61,19 +60,20 @@ struct VideoComponentView: View {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
 
                     ZStack {
-                        if imageSource == nil && cachedURL == nil {
-                            // greedily fill space while loading occurs
-                            render(Color.clear, size: size, with: style)
-                        }
-
-                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
+                        // Always show thumbnail as base layer while video loads/prepares
+                        if let thumbnailSource = imageSource ?? viewModel.imageSource,
+                           let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: imageSource, fitMode: style.contentMode == .fill ? .fill : .fit)
+                            component: .init(
+                                source: thumbnailSource,
+                                fitMode: style.contentMode == .fill ? .fill : .fit
+                            )
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
                         }
 
+                        // Video on top (will cover thumbnail once it renders first frame)
                         if let cachedURL {
                             render(
                                 VideoPlayerView(
@@ -87,6 +87,7 @@ struct VideoComponentView: View {
                                 size: size,
                                 with: style
                             )
+                            .transition(.opacity.animation(.easeIn(duration: 0.3)))
                         }
                     }
                     .onAppear {
@@ -107,11 +108,13 @@ struct VideoComponentView: View {
                                         )
                                     guard url != cachedURL, !Task.isCancelled else { return }
                                     await MainActor.run {
-                                        self.stagedURL = url
+                                        self.cachedURL = url
+                                        self.imageSource = nil
                                     }
                                 } catch {
                                     await MainActor.run {
-                                        self.stagedURL = viewData.url
+                                        self.cachedURL = viewData.url
+                                        self.imageSource = nil
                                     }
                                 }
                             }
@@ -156,19 +159,6 @@ struct VideoComponentView: View {
                     .clipped()
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
-                    .onReceive(
-                        stagedURL.publisher
-                            // In the event that the download of the high res video is so fast that it tries to set the
-                            // url moments after the low_res was set, we need to delay a bit to ensure the re-render
-                            // actually occurs. This happens consistently with small file sizes and great connection
-                            // at 60fps, this is a generous delay but is not a notable delay to the human eye
-                            .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
-                            .receive(on: RunLoop.main)
-                            .eraseToAnyPublisher()
-                            .removeDuplicates()
-                    ) { output in
-                        self.cachedURL = output
-                    }
                 }
             }
             .onSizeChange { size = $0 }
