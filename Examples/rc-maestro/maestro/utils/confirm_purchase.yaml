@@ -35,6 +35,8 @@ env:
           text: "Subscribe"
       - takeScreenshot: "${SCREENSHOT_PREFIX} - IAP Confirmation"
       - waitForAnimationToEnd
+      - extendedWaitUntil:
+          visible: "OK"
+          timeout: 15000
       - tapOn:
           text: "OK"
-          waitUntilVisible: true
