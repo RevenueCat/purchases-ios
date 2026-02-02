@@ -4,11 +4,13 @@ import GoogleMobileAds
 
 class AdMobManager: NSObject, ObservableObject {
 
-    @Published var bannerView: GADBannerView?
-    @Published var interstitialAd: GADInterstitialAd?
-    @Published var appOpenAd: GADAppOpenAd?
+    var bannerView: GADBannerView?
+    var interstitialAd: GADInterstitialAd?
+    var appOpenAd: GADAppOpenAd?
+    
     @Published var nativeAd: GADNativeAd?
     @Published var nativeVideoAd: GADNativeAd?
+    
     @Published var interstitialStatus = "Not Loaded"
     @Published var appOpenStatus = "Not Loaded"
     @Published var nativeAdStatus = "Not Loaded"
@@ -20,7 +22,7 @@ class AdMobManager: NSObject, ObservableObject {
 
     // MARK: - Banner Ad
 
-    func loadBannerAd(placement: String = "home_banner") -> GADBannerView {
+    func loadBannerAd() -> GADBannerView {
         let banner = GADBannerView(adSize: GADAdSizeBanner)
         banner.adUnitID = Constants.AdMob.bannerAdUnitID
         banner.delegate = self
@@ -29,7 +31,7 @@ class AdMobManager: NSObject, ObservableObject {
             self?.trackAdRevenue(
                 adFormat: .banner,
                 adUnitID: Constants.AdMob.bannerAdUnitID,
-                placement: placement,
+                placement: "home_banner",
                 responseInfo: banner.responseInfo,
                 adValue: adValue
             )
@@ -42,7 +44,7 @@ class AdMobManager: NSObject, ObservableObject {
 
     // MARK: - Interstitial Ad
 
-    func loadInterstitialAd(placement: String = "interstitial_main") {
+    func loadInterstitialAd() {
         interstitialStatus = "Loading..."
 
         GADInterstitialAd.load(
@@ -56,7 +58,7 @@ class AdMobManager: NSObject, ObservableObject {
                 self.trackAdFailedToLoad(
                     adFormat: .interstitial,
                     adUnitID: Constants.AdMob.interstitialAdUnitID,
-                    placement: placement,
+                    placement: "interstitial_main",
                     error: error
                 )
                 self.interstitialStatus = "Failed"
@@ -72,7 +74,7 @@ class AdMobManager: NSObject, ObservableObject {
             self.trackAdLoaded(
                 adFormat: .interstitial,
                 adUnitID: Constants.AdMob.interstitialAdUnitID,
-                placement: placement,
+                placement: "interstitial_main",
                 responseInfo: ad.responseInfo
             )
 
@@ -80,7 +82,7 @@ class AdMobManager: NSObject, ObservableObject {
                 self?.trackAdRevenue(
                     adFormat: .interstitial,
                     adUnitID: Constants.AdMob.interstitialAdUnitID,
-                    placement: placement,
+                    placement: "interstitial_main",
                     responseInfo: ad.responseInfo,
                     adValue: adValue
                 )
@@ -100,7 +102,7 @@ class AdMobManager: NSObject, ObservableObject {
 
     // MARK: - App Open Ad
 
-    func loadAppOpenAd(placement: String = "app_open_main") {
+    func loadAppOpenAd() {
         appOpenStatus = "Loading..."
 
         GADAppOpenAd.load(
@@ -114,7 +116,7 @@ class AdMobManager: NSObject, ObservableObject {
                 self.trackAdFailedToLoad(
                     adFormat: .appOpen,
                     adUnitID: Constants.AdMob.appOpenAdUnitID,
-                    placement: placement,
+                    placement: "app_open_main",
                     error: error
                 )
                 self.appOpenStatus = "Failed"
@@ -130,7 +132,7 @@ class AdMobManager: NSObject, ObservableObject {
             self.trackAdLoaded(
                 adFormat: .appOpen,
                 adUnitID: Constants.AdMob.appOpenAdUnitID,
-                placement: placement,
+                placement: "app_open_main",
                 responseInfo: ad.responseInfo
             )
 
@@ -138,7 +140,7 @@ class AdMobManager: NSObject, ObservableObject {
                 self?.trackAdRevenue(
                     adFormat: .appOpen,
                     adUnitID: Constants.AdMob.appOpenAdUnitID,
-                    placement: placement,
+                    placement: "app_open_main",
                     responseInfo: ad.responseInfo,
                     adValue: adValue
                 )
@@ -158,7 +160,7 @@ class AdMobManager: NSObject, ObservableObject {
 
     // MARK: - Native Ad
 
-    func loadNativeAd(adUnitID: String = Constants.AdMob.nativeAdUnitID, placement: String = "native_main") {
+    func loadNativeAd(adUnitID: String = Constants.AdMob.nativeAdUnitID, placement: String) {
         currentNativeAdUnitID = adUnitID
         currentNativePlacement = placement
 
@@ -180,7 +182,7 @@ class AdMobManager: NSObject, ObservableObject {
 
     // MARK: - Error Testing
 
-    func loadAdWithError(placement: String = "error_test") {
+    func loadAdWithError() {
         print("Loading ad with invalid ID to test error tracking")
 
         let banner = GADBannerView(adSize: GADAdSizeBanner)

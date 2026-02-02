@@ -109,6 +109,8 @@ Before running the sample:
    static let revenueCatAPIKey = "YOUR_REVENUECAT_API_KEY_HERE"
    ```
 
+   Then comment out the `#error` directive above it.
+
 3. **Install dependencies and generate project**
    ```bash
    tuist install
