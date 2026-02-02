@@ -7,30 +7,44 @@ import SwiftUI
 
 struct MainView: View {
 
-    let configuration: SDKConfiguration
+    @Binding var configuration: SDKConfiguration
     let onReconfigure: () -> Void
+
+    @State private var showingConfigurationSheet = false
+    @State private var editingConfiguration: SDKConfiguration = .default
 
     var body: some View {
         VStack {
-            Text("RCTTester")
-                .font(.largeTitle)
-                .padding()
-
-            Text("Purchase Attribution Tester")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            Spacer()
-
             ConfigurationSummaryView(configuration: configuration)
 
+            Text("🚧 Work in progress...").padding()
             Spacer()
         }
         .navigationTitle("RCTTester")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Reconfigure") {
-                    onReconfigure()
+                    editingConfiguration = configuration
+                    showingConfigurationSheet = true
+                }
+            }
+        }
+        .sheet(isPresented: $showingConfigurationSheet) {
+            NavigationView {
+                ConfigurationFormView(
+                    configuration: $editingConfiguration,
+                    onConfigure: {
+                        configuration = editingConfiguration
+                        showingConfigurationSheet = false
+                        onReconfigure()
+                    }
+                )
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            showingConfigurationSheet = false
+                        }
+                    }
                 }
             }
         }
@@ -39,6 +53,6 @@ struct MainView: View {
 
 #Preview {
     NavigationView {
-        MainView(configuration: .default, onReconfigure: {})
+        MainView(configuration: .constant(.default), onReconfigure: {})
     }
 }

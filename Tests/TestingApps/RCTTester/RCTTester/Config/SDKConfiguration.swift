@@ -94,4 +94,5 @@ struct SDKConfiguration: Codable, Equatable {
         guard let data = try? JSONEncoder().encode(self) else { return }
         UserDefaults.standard.set(data, forKey: Self.userDefaultsKey)
     }
+
 }

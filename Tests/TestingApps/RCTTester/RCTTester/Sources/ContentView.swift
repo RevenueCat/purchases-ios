@@ -15,8 +15,8 @@ struct ContentView: View {
         NavigationView {
             if isSDKConfigured {
                 MainView(
-                    configuration: configuration,
-                    onReconfigure: { isSDKConfigured = false }
+                    configuration: $configuration,
+                    onReconfigure: configureSDK
                 )
             } else {
                 ConfigurationFormView(
