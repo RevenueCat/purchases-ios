@@ -9,7 +9,7 @@ appId: com.revenuecat.maestro.ios
 name: Subscribe to product through V2 Paywall for default offering
 
 ---
-# Dismiss any leftover system alerts from previous test runs (StoreKit purchase confirmations)
+# Dismiss any leftover system alerts from previous test runs (e.g. StoreKit purchase confirmations)
 - pressKey: home
 - launchApp:
     clearState: true
