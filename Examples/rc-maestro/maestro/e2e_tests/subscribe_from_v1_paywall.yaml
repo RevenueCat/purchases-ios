@@ -9,10 +9,10 @@ appId: com.revenuecat.maestro.ios
 name: Subscribe to product through V1 Paywall for alternative offering
 
 ---
+- clearState
 # Dismiss any leftover system alerts from previous test runs (e.g. StoreKit purchase confirmations)
 - pressKey: home
 - launchApp:
-    clearState: true
     arguments:
         e2e_test_flow: subscribe_from_v1_paywall
 - assertVisible: "entitlement (pro): nil"
