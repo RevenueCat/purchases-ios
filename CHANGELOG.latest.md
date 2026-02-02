@@ -1,11 +1,19 @@
-## RevenueCatUI SDK
+## RevenueCat SDK
+### ✨ New Features
+* Adds more ObjC compatibility (#5999) via JayShortway (@JayShortway)
 ### 🐞 Bugfixes
-* Fix price_per_period for non-subscription products (PW-69) (#6136) via Drago Crnjac (@popcorn)
+* Fix potential infinite recursion in MagicWeather (#6146) via Tarek M. Ben Lechhab (@bilqisium)
+
+## RevenueCatUI SDK
 ### Paywallv2
-#### 🐞 Bugfixes
-* [EXTERNAL] fix: dont show video in now playing (control center/lock screen #6115 via @erenkulaksiz (#6139) via Facundo Menzella (@facumenzella)
+#### ✨ New Features
+* feat: Add Custom Paywall Variables support (#6080) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Consolidate Maestro E2E tests into a single CI job (#6147) via Antonio Pallares (@ajpallares)
-* Support for adFormat parameter in AdEvent (#6129) via Peter Porfy (@peterporfy)
-* Removed support for Swift 5.7 and removed related Swift version checks (#6142) via Rick (@rickvdl)
+* Fix `backend-integration-tests-custom-entitlements` on CI (#6179) via Antonio Pallares (@ajpallares)
+* Only run 1 backend integration tests CI job to generate all snapshots (#6170) via Antonio Pallares (@ajpallares)
+* Autogenerate snapshots for more tests (#5958) via Antonio Pallares (@ajpallares)
+* Only consider source files for public enums Danger rule (#6156) via Antonio Pallares (@ajpallares)
+* Fix integration test (#6157) via Antonio Pallares (@ajpallares)
+* Fix API tests (#6155) via Antonio Pallares (@ajpallares)
+* Add troubleshooting link to the generic error message (#6152) via Engin Kurutepe (@ekurutepe)
