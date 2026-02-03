@@ -27,10 +27,6 @@ parameters:
   generate_revenuecatui_snapshots:
     default: false
     type: boolean
-  # Temporary parameter to test integration-tests-all job - remove after testing
-  run_integration_tests_all:
-    default: false
-    type: boolean
 
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
@@ -1838,15 +1834,6 @@ workflows:
           major: "4"
           context:
             - slack-secrets
-      - integration-tests-all:
-          context:
-            - slack-secrets
-
-  # Temporary workflow to test integration-tests-all job - remove after testing
-  manual-integration-tests-all:
-    when:
-      equal: [true, << pipeline.parameters.run_integration_tests_all >>]
-    jobs:
       - integration-tests-all:
           context:
             - slack-secrets
