@@ -97,11 +97,11 @@ final class CustomerAPI {
     ) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
-        let postData = PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.PostData(
+        let postData = PostPurchaseBeBlockedByTransferBehaviorOperation.PostData(
             appUserID: appUserID,
             transactionJWS: transactionJWS
         )
-        let operation = PostWillPurchaseBeBlockedDueToTransferBehaviorOperation(
+        let operation = PostPurchaseBeBlockedByTransferBehaviorOperation(
             configuration: config,
             postData: postData,
             responseHandler: completion

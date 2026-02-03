@@ -927,7 +927,7 @@
 		57FFD2512922DBED00A9A878 /* MockStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */; };
 		57FFD2522922DBED00A9A878 /* MockStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */; };
 		5A6B1C303D4E5F60718293A4 /* WillPurchaseBeBlockedByTransferBehaviorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6B1C2F3D4E5F60718293A4 /* WillPurchaseBeBlockedByTransferBehaviorResponse.swift */; };
-		5A6B1C343D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6B1C333D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift */; };
+		5A6B1C343D4E5F60718293A4 /* PostPurchaseBeBlockedByTransferBehaviorOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6B1C333D4E5F60718293A4 /* PostPurchaseBeBlockedByTransferBehaviorOperation.swift */; };
 		6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* StoreProduct.swift */; };
 		750B39FE2E40940F005E141D /* PurchasesOrchestratorSimulatedStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750B39FD2E40940F005E141D /* PurchasesOrchestratorSimulatedStoreTests.swift */; };
 		751192DD2E39147600E583CC /* MockWebBillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751192DC2E39147600E583CC /* MockWebBillingAPI.swift */; };
@@ -2454,7 +2454,7 @@
 		57FDAABF28493C13009A48F1 /* MockSandboxEnvironmentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSandboxEnvironmentDetector.swift; sourceTree = "<group>"; };
 		57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
 		5A6B1C2F3D4E5F60718293A4 /* WillPurchaseBeBlockedByTransferBehaviorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WillPurchaseBeBlockedByTransferBehaviorResponse.swift; sourceTree = "<group>"; };
-		5A6B1C333D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift; path = Sources/Networking/Operations/PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift; sourceTree = SOURCE_ROOT; };
+		5A6B1C333D4E5F60718293A4 /* PostPurchaseBeBlockedByTransferBehaviorOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PostPurchaseBeBlockedByTransferBehaviorOperation.swift; path = Sources/Networking/Operations/PostPurchaseBeBlockedByTransferBehaviorOperation.swift; sourceTree = SOURCE_ROOT; };
 		65279ABC122869A50AEB8A27 /* ExitOffer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExitOffer.swift; sourceTree = "<group>"; };
 		750B39FD2E40940F005E141D /* PurchasesOrchestratorSimulatedStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorSimulatedStoreTests.swift; sourceTree = "<group>"; };
 		751192DC2E39147600E583CC /* MockWebBillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWebBillingAPI.swift; sourceTree = "<group>"; };
@@ -5931,7 +5931,7 @@
 				B34605B7279A6E380031CA74 /* LogInOperation.swift */,
 				B34605AB279A6E380031CA74 /* NetworkOperation.swift */,
 				B34605AD279A6E380031CA74 /* PostOfferForSigningOperation.swift */,
-				5A6B1C333D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift */,
+				5A6B1C333D4E5F60718293A4 /* PostPurchaseBeBlockedByTransferBehaviorOperation.swift */,
 				B34605B6279A6E380031CA74 /* PostReceiptDataOperation.swift */,
 				1ED4CA482CC148CF0021AB8F /* PostRedeemWebPurchaseOperation.swift */,
 				B34605B9279A6E380031CA74 /* PostSubscriberAttributesOperation.swift */,
@@ -6908,7 +6908,7 @@
 				57D5412E27F6311C004CC35C /* OfferingsResponse.swift in Sources */,
 				5A6B1C303D4E5F60718293A4 /* WillPurchaseBeBlockedByTransferBehaviorResponse.swift in Sources */,
 				57AC4C1C2770F56200DDE30F /* SK1StoreProduct.swift in Sources */,
-				5A6B1C343D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift in Sources */,
+				5A6B1C343D4E5F60718293A4 /* PostPurchaseBeBlockedByTransferBehaviorOperation.swift in Sources */,
 				B34605C3279A6E380031CA74 /* PostOfferForSigningOperation.swift in Sources */,
 				B3843BCB285149A1009F4854 /* Attribution.swift in Sources */,
 				57EFDC6B27BC1F370057EC39 /* ProductType.swift in Sources */,

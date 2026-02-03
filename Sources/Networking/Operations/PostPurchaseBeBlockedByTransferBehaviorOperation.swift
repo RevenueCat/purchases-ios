@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift
+//  PostPurchaseBeBlockedByTransferBehaviorOperation.swift
 //
-//  Created by RevenueCat.
+//  Created by Will Taylor on 02/03/2026.
 
 import Foundation
 
 // swiftlint:disable:next type_name
-final class PostWillPurchaseBeBlockedDueToTransferBehaviorOperation: NetworkOperation {
+final class PostPurchaseBeBlockedByTransferBehaviorOperation: NetworkOperation {
 
     typealias ResponseHandler = Backend.ResponseHandler<WillPurchaseBeBlockedByTransferBehaviorResponse>
 
@@ -71,9 +71,9 @@ final class PostWillPurchaseBeBlockedDueToTransferBehaviorOperation: NetworkOper
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension PostWillPurchaseBeBlockedDueToTransferBehaviorOperation: @unchecked Sendable {}
+extension PostPurchaseBeBlockedByTransferBehaviorOperation: @unchecked Sendable {}
 
-extension PostWillPurchaseBeBlockedDueToTransferBehaviorOperation {
+extension PostPurchaseBeBlockedByTransferBehaviorOperation {
 
     struct PostData {
         let appUserID: String
@@ -84,7 +84,7 @@ extension PostWillPurchaseBeBlockedDueToTransferBehaviorOperation {
 
 // MARK: - Codable
 
-extension PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.PostData: Encodable {
+extension PostPurchaseBeBlockedByTransferBehaviorOperation.PostData: Encodable {
 
     private enum CodingKeys: String, CodingKey {
         case appUserID = "appUserId"
@@ -101,7 +101,7 @@ extension PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.PostData: Enco
 
 // MARK: - HTTPRequestBody
 
-extension PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.PostData: HTTPRequestBody {
+extension PostPurchaseBeBlockedByTransferBehaviorOperation.PostData: HTTPRequestBody {
 
     var contentForSignature: [(key: String, value: String?)] {
         return [
