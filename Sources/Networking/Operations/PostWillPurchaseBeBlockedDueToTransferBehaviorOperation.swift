@@ -16,7 +16,7 @@ import Foundation
 // swiftlint:disable:next type_name
 final class PostWillPurchaseBeBlockedDueToTransferBehaviorOperation: NetworkOperation {
 
-    typealias ResponseHandler = Backend.ResponseHandler<PurchaseBlockStatusResponse>
+    typealias ResponseHandler = Backend.ResponseHandler<WillPurchaseBeBlockedByTransferBehaviorResponse>
 
     private let configuration: UserSpecificConfiguration
     private let postData: PostData
@@ -58,7 +58,7 @@ final class PostWillPurchaseBeBlockedDueToTransferBehaviorOperation: NetworkOper
         )
 
         // swiftlint:disable:next line_length
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<PurchaseBlockStatusResponse>.Result) in
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<WillPurchaseBeBlockedByTransferBehaviorResponse>.Result) in
             let result = response
                 .map { $0.body }
                 .mapError(BackendError.networkError)

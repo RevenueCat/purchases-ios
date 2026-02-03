@@ -104,7 +104,9 @@ extension BackendError: PurchasesErrorConvertible {
                                                     line: source.line)
 
         case let .missingTransactionJWS(source):
-            return ErrorUtils.storeProblemError()
+            return ErrorUtils.storeProblemError(fileName: source.file,
+                                                functionName: source.function,
+                                                line: source.line)
 
         case let .emptySubscriberAttributes(source):
             return ErrorUtils.emptySubscriberAttributesError(fileName: source.file,

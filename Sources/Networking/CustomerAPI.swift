@@ -19,7 +19,7 @@ final class CustomerAPI {
     typealias SimpleResponseHandler = (BackendError?) -> Void
 
     typealias PurchaseBlockStatusResponseHandler =
-    Backend.ResponseHandler<PurchaseBlockStatusResponse>
+    Backend.ResponseHandler<WillPurchaseBeBlockedByTransferBehaviorResponse>
 
     private let backendConfig: BackendConfiguration
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>

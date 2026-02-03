@@ -697,8 +697,6 @@
 		576F15472DD4AB67003D8EEC /* DiscountsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576F15462DD4AB64003D8EEC /* DiscountsHandlerTests.swift */; };
 		577132B92E4CE43A003A0CBD /* NoSubscriptionsCardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 577132B82E4CE43A003A0CBD /* NoSubscriptionsCardViewModel.swift */; };
 		5774F9B62805E6CC00997128 /* CustomerInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9B52805E6CC00997128 /* CustomerInfoResponse.swift */; };
-		5A6B1C303D4E5F60718293A4 /* PurchaseBlockStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6B1C2F3D4E5F60718293A4 /* PurchaseBlockStatusResponse.swift */; };
-		5A6B1C343D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6B1C333D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift */; };
 		5774F9BE2805E71100997128 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = 5774F9BD2805E71100997128 /* Fixtures */; };
 		5774F9C12805EA3000997128 /* BaseHTTPResponseTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9C02805EA3000997128 /* BaseHTTPResponseTest.swift */; };
 		5774F9C22805EA6900997128 /* CustomerInfoDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */; };
@@ -928,6 +926,8 @@
 		57FDAAC028493C13009A48F1 /* MockSandboxEnvironmentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FDAABF28493C13009A48F1 /* MockSandboxEnvironmentDetector.swift */; };
 		57FFD2512922DBED00A9A878 /* MockStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */; };
 		57FFD2522922DBED00A9A878 /* MockStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */; };
+		5A6B1C303D4E5F60718293A4 /* WillPurchaseBeBlockedByTransferBehaviorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6B1C2F3D4E5F60718293A4 /* WillPurchaseBeBlockedByTransferBehaviorResponse.swift */; };
+		5A6B1C343D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6B1C333D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift */; };
 		6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* StoreProduct.swift */; };
 		750B39FE2E40940F005E141D /* PurchasesOrchestratorSimulatedStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750B39FD2E40940F005E141D /* PurchasesOrchestratorSimulatedStoreTests.swift */; };
 		751192DD2E39147600E583CC /* MockWebBillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751192DC2E39147600E583CC /* MockWebBillingAPI.swift */; };
@@ -2253,8 +2253,6 @@
 		576F15462DD4AB64003D8EEC /* DiscountsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscountsHandlerTests.swift; sourceTree = "<group>"; };
 		577132B82E4CE43A003A0CBD /* NoSubscriptionsCardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoSubscriptionsCardViewModel.swift; sourceTree = "<group>"; };
 		5774F9B52805E6CC00997128 /* CustomerInfoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoResponse.swift; sourceTree = "<group>"; };
-		5A6B1C2F3D4E5F60718293A4 /* PurchaseBlockStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseBlockStatusResponse.swift; sourceTree = "<group>"; };
-		5A6B1C333D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift; path = Sources/Networking/Operations/PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift; sourceTree = SOURCE_ROOT; };
 		5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoDecodingTests.swift; sourceTree = "<group>"; };
 		5774F9BD2805E71100997128 /* Fixtures */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = Fixtures; path = Tests/UnitTests/Networking/Responses/Fixtures; sourceTree = SOURCE_ROOT; };
 		5774F9C02805EA3000997128 /* BaseHTTPResponseTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseHTTPResponseTest.swift; sourceTree = "<group>"; };
@@ -2455,6 +2453,8 @@
 		57FDAABD28493A29009A48F1 /* SandboxEnvironmentDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SandboxEnvironmentDetectorTests.swift; sourceTree = "<group>"; };
 		57FDAABF28493C13009A48F1 /* MockSandboxEnvironmentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSandboxEnvironmentDetector.swift; sourceTree = "<group>"; };
 		57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
+		5A6B1C2F3D4E5F60718293A4 /* WillPurchaseBeBlockedByTransferBehaviorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WillPurchaseBeBlockedByTransferBehaviorResponse.swift; sourceTree = "<group>"; };
+		5A6B1C333D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift; path = Sources/Networking/Operations/PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift; sourceTree = SOURCE_ROOT; };
 		65279ABC122869A50AEB8A27 /* ExitOffer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExitOffer.swift; sourceTree = "<group>"; };
 		750B39FD2E40940F005E141D /* PurchasesOrchestratorSimulatedStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorSimulatedStoreTests.swift; sourceTree = "<group>"; };
 		751192DC2E39147600E583CC /* MockWebBillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWebBillingAPI.swift; sourceTree = "<group>"; };
@@ -5172,7 +5172,7 @@
 				5774F9B52805E6CC00997128 /* CustomerInfoResponse.swift */,
 				5766C621282DAA700067D886 /* GetIntroEligibilityResponse.swift */,
 				57D5412D27F6311C004CC35C /* OfferingsResponse.swift */,
-				5A6B1C2F3D4E5F60718293A4 /* PurchaseBlockStatusResponse.swift */,
+				5A6B1C2F3D4E5F60718293A4 /* WillPurchaseBeBlockedByTransferBehaviorResponse.swift */,
 				75B6DFFC2E30ECB8009F0A99 /* WebOfferingProductsResponse.swift */,
 				574A2F4A282D7AEA00150D40 /* PostOfferResponse.swift */,
 				57488A7E29CA145B0000EE7E /* ProductEntitlementMappingResponse.swift */,
@@ -6906,7 +6906,7 @@
 				5740FCD32996CE5E00E049F9 /* VerificationResult.swift in Sources */,
 				572247D127BEC28E00C524A7 /* Array+Extensions.swift in Sources */,
 				57D5412E27F6311C004CC35C /* OfferingsResponse.swift in Sources */,
-				5A6B1C303D4E5F60718293A4 /* PurchaseBlockStatusResponse.swift in Sources */,
+				5A6B1C303D4E5F60718293A4 /* WillPurchaseBeBlockedByTransferBehaviorResponse.swift in Sources */,
 				57AC4C1C2770F56200DDE30F /* SK1StoreProduct.swift in Sources */,
 				5A6B1C343D4E5F60718293A4 /* PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.swift in Sources */,
 				B34605C3279A6E380031CA74 /* PostOfferForSigningOperation.swift in Sources */,
