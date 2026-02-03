@@ -67,7 +67,7 @@ struct OfferingsListView: View {
         }
         .navigationTitle("Offerings")
         .refreshable {
-            await refreshOfferings()
+            await fetchOfferings(showLoading: false)
         }
         .presentPaywall(
             offering: $offeringForPaywall,
@@ -107,16 +107,10 @@ struct OfferingsListView: View {
         }
     }
 
-    private func fetchOfferings() async {
-        loadingState = .loading
-        await loadOfferings()
-    }
-
-    private func refreshOfferings() async {
-        await loadOfferings()
-    }
-
-    private func loadOfferings() async {
+    private func fetchOfferings(showLoading: Bool = true) async {
+        if showLoading {
+            loadingState = .loading
+        }
         do {
             let fetchedOfferings = try await Purchases.shared.offerings()
             let sortedOfferings = Array(fetchedOfferings.all.values).sorted { $0.identifier < $1.identifier }
