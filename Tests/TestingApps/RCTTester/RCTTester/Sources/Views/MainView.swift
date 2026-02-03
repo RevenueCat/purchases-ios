@@ -14,11 +14,22 @@ struct MainView: View {
     @State private var editingConfiguration: SDKConfiguration = .default
 
     var body: some View {
-        VStack {
-            ConfigurationSummaryView(configuration: configuration)
+        List {
+            Section("SDK Configuration") {
+                ConfigurationSummaryView(configuration: $configuration)
+            }
 
-            Text("🚧 Work in progress...").padding()
-            Spacer()
+            Section("User") {
+                UserSummaryView(configuration: $configuration)
+            }
+
+            Section("Offerings") {
+                NavigationLink {
+                    OfferingsListView()
+                } label: {
+                    Label("View Offerings", systemImage: "tag")
+                }
+            }
         }
         .navigationTitle("RCTTester")
         .toolbar {
