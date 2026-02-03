@@ -1073,8 +1073,8 @@ extension Purchases {
     ///
     /// Only supported for StoreKit 2.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    public func willPurchaseBeBlockedDueToTranferBehavior() async throws -> Bool {
-        try await purchasesOrchestrator.willPurchaseBeBlockedDueToTranferBehavior()
+    public func willPurchaseBeBlockedDueToTransferBehavior() async throws -> Bool {
+        try await purchasesOrchestrator.willPurchaseBeBlockedDueToTransferBehavior()
     }
 
 #endif

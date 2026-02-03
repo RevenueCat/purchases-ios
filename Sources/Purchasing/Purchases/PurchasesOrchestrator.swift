@@ -2166,7 +2166,7 @@ extension PurchasesOrchestrator {
 // MARK: - willPurchaseBeBlockedDueToTranferBehavior
 extension PurchasesOrchestrator {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func willPurchaseBeBlockedDueToTranferBehavior() async throws -> Bool {
+    func willPurchaseBeBlockedDueToTransferBehavior() async throws -> Bool {
         guard self.systemInfo.storeKitVersion == .storeKit2 else {
             throw ErrorUtils.featureNotSupportedWithStoreKit1Error()
         }
