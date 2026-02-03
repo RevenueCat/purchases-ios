@@ -8,6 +8,7 @@ import SwiftUI
 struct MainView: View {
 
     @Binding var configuration: SDKConfiguration
+    let purchaseManager: AnyPurchaseManager
     let onReconfigure: () -> Void
 
     @State private var showingConfigurationSheet = false
@@ -25,7 +26,7 @@ struct MainView: View {
 
             Section("Offerings") {
                 NavigationLink {
-                    OfferingsListView()
+                    OfferingsListView(purchaseManager: purchaseManager)
                 } label: {
                     Label("View Offerings", systemImage: "tag")
                 }
@@ -64,6 +65,10 @@ struct MainView: View {
 
 #Preview {
     NavigationView {
-        MainView(configuration: .constant(.default), onReconfigure: {})
+        MainView(
+            configuration: .constant(.default),
+            purchaseManager: AnyPurchaseManager(RevenueCatPurchaseManager()),
+            onReconfigure: {}
+        )
     }
 }

@@ -15,6 +15,8 @@ struct OfferingsListView: View {
         case error(Error)
     }
 
+    let purchaseManager: AnyPurchaseManager
+
     @State private var loadingState: LoadingState = .loading
     @State private var offeringForPaywall: Offering?
     @State private var offeringForMetadata: Offering?
@@ -53,6 +55,7 @@ struct OfferingsListView: View {
                         ForEach(offerings) { offering in
                             OfferingSectionView(
                                 offering: offering,
+                                purchaseManager: purchaseManager,
                                 onPresentPaywall: {
                                     offeringForPaywall = offering
                                 },
@@ -71,6 +74,7 @@ struct OfferingsListView: View {
         }
         .presentPaywall(
             offering: $offeringForPaywall,
+            myAppPurchaseLogic: purchaseManager.myAppPurchaseLogic,
             onDismiss: {
                 print("Paywall dismissed")
             }
@@ -140,6 +144,6 @@ struct OfferingsListView: View {
 
 #Preview {
     NavigationView {
-        OfferingsListView()
+        OfferingsListView(purchaseManager: AnyPurchaseManager(RevenueCatPurchaseManager()))
     }
 }
