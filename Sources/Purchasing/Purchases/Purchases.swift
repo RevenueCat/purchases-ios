@@ -1065,6 +1065,18 @@ extension Purchases {
     public func switchUser(to newAppUserID: String) {
         self.internalSwitchUser(to: newAppUserID)
     }
+
+    /// Queries whether or not a purchase made by the current appUserId will result in the purchase being blocked
+    /// due to the app's transfer behavior.
+    ///
+    /// For more information, see https://www.revenuecat.com/docs/projects/restore-behavior
+    ///
+    /// Only supported for StoreKit 2.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    public func willPurchaseBeBlockedDueToTranferBehavior() async throws -> Bool {
+        try await purchasesOrchestrator.willPurchaseBeBlockedDueToTranferBehavior()
+    }
+
 #endif
 
     internal func internalSwitchUser(to newAppUserID: String) {

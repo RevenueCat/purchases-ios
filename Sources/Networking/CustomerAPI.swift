@@ -18,6 +18,9 @@ final class CustomerAPI {
     typealias CustomerInfoResponseHandler = Backend.ResponseHandler<CustomerInfo>
     typealias SimpleResponseHandler = (BackendError?) -> Void
 
+    typealias PurchaseBlockStatusResponseHandler =
+    Backend.ResponseHandler<PurchaseBlockStatusResponse>
+
     private let backendConfig: BackendConfiguration
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
     private let attributionFetcher: AttributionFetcher
@@ -85,6 +88,26 @@ final class CustomerAPI {
                                                                         token: adServicesToken,
                                                                         responseHandler: completion)
         self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
+    }
+
+    func willPurchaseBeBlockedDueToTranferBehavior(
+        appUserID: String,
+        transactionJWS: String,
+        completion: @escaping PurchaseBlockStatusResponseHandler
+    ) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let postData = PostWillPurchaseBeBlockedDueToTransferBehaviorOperation.PostData(
+            appUserID: appUserID,
+            transactionJWS: transactionJWS
+        )
+        let operation = PostWillPurchaseBeBlockedDueToTransferBehaviorOperation(
+            configuration: config,
+            postData: postData,
+            responseHandler: completion
+        )
+
+        self.backendConfig.operationQueue.addOperation(operation)
     }
 
     // swiftlint:disable function_parameter_count

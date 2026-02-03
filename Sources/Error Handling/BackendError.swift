@@ -30,6 +30,7 @@ enum BackendError: Error, Equatable {
     case purchaseBelongsToOtherUser
     case expiredWebRedemptionToken(obfuscatedEmail: String)
     case unsupportedInUIPreviewMode(Source)
+    case missingTransactionJWS(Source)
 
 }
 
@@ -39,6 +40,12 @@ extension BackendError {
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
         return .missingAppUserID(.init(file: file, function: function, line: line))
+    }
+
+    static func missingTransactionJWS(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .missingTransactionJWS(.init(file: file, function: function, line: line))
     }
 
     static func emptySubscriberAttributes(
@@ -95,6 +102,9 @@ extension BackendError: PurchasesErrorConvertible {
             return ErrorUtils.missingAppUserIDError(fileName: source.file,
                                                     functionName: source.function,
                                                     line: source.line)
+
+        case let .missingTransactionJWS(source):
+            return ErrorUtils.storeProblemError()
 
         case let .emptySubscriberAttributes(source):
             return ErrorUtils.emptySubscriberAttributesError(fileName: source.file,
@@ -194,7 +204,8 @@ extension BackendError {
              .invalidWebRedemptionToken,
              .purchaseBelongsToOtherUser,
              .expiredWebRedemptionToken,
-             .unsupportedInUIPreviewMode:
+             .unsupportedInUIPreviewMode,
+             .missingTransactionJWS:
             return nil
         }
     }
@@ -217,7 +228,8 @@ extension BackendError {
                 .invalidWebRedemptionToken,
                 .purchaseBelongsToOtherUser,
                 .expiredWebRedemptionToken,
-                .unsupportedInUIPreviewMode:
+                .unsupportedInUIPreviewMode,
+                .missingTransactionJWS:
             return nil
 
         case let .unexpectedBackendResponse(error, _, _):

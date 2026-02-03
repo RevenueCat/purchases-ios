@@ -123,6 +123,16 @@ class Backend {
                            completion: completion)
     }
 
+    func willPurchaseBeBlockedDueToTranferBehavior(
+        appUserID: String,
+        transactionJWS: String,
+        completion: @escaping CustomerAPI.PurchaseBlockStatusResponseHandler
+    ) {
+        self.customer.willPurchaseBeBlockedDueToTranferBehavior(appUserID: appUserID,
+                                                                transactionJWS: transactionJWS,
+                                                                completion: completion)
+    }
+
     func getCustomerInfo(appUserID: String,
                          isAppBackgrounded: Bool,
                          allowComputingOffline: Bool = true,

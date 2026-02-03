@@ -2163,6 +2163,33 @@ extension PurchasesOrchestrator {
 
 }
 
+// MARK: - willPurchaseBeBlockedDueToTranferBehavior
+extension PurchasesOrchestrator {
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func willPurchaseBeBlockedDueToTranferBehavior() async throws -> Bool {
+        guard self.systemInfo.storeKitVersion == .storeKit2 else {
+            throw ErrorUtils.featureNotSupportedWithStoreKit1Error()
+        }
+
+        guard let transaction = await self.transactionFetcher.firstVerifiedTransaction,
+              let jwsRepresentation = transaction.jwsRepresentation else {
+            // If the user has never made a purchase, then the receipt can't be tied to another
+            // RevenueCat subscriber
+            return false
+        }
+
+        let response = try await Async.call { completion in
+            self.backend.willPurchaseBeBlockedDueToTranferBehavior(
+                appUserID: self.appUserID,
+                transactionJWS: jwsRepresentation,
+                completion: completion
+            )
+        }
+
+        return !response.transactionBelongsToSubscriber && response.transferBehavior == "BLOCK"
+    }
+}
+
 // MARK: - Async extensions
 
 extension PurchasesOrchestrator {

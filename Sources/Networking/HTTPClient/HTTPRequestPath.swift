@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 8/8/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 protocol HTTPRequestPath {
@@ -103,6 +105,7 @@ extension HTTPRequest {
         case getVirtualCurrencies(appUserID: String)
         case postRedeemWebPurchase
         case postCreateTicket
+        case willPurchaseBeBlockedDueToTranferBehavior
 
     }
 
@@ -193,6 +196,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health,
              .appHealthReportAvailability:
             return false
+        case .willPurchaseBeBlockedDueToTranferBehavior:
+            return true
         }
     }
 
@@ -217,6 +222,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health,
              .appHealthReportAvailability:
             return false
+        case .willPurchaseBeBlockedDueToTranferBehavior:
+            return true
         }
     }
 
@@ -241,6 +248,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
+        case .willPurchaseBeBlockedDueToTranferBehavior:
+            return true
         }
     }
 
@@ -265,6 +274,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket:
             return false
+        case .willPurchaseBeBlockedDueToTranferBehavior:
+            return true
         }
     }
 
@@ -324,6 +335,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
+        case .willPurchaseBeBlockedDueToTranferBehavior:
+            return "willPurchaseBeBlockedDueToTranferBehavior"
         }
     }
 
@@ -379,7 +392,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postCreateTicket:
             return "post_create_ticket"
-
+        case .willPurchaseBeBlockedDueToTranferBehavior:
+            return "post_will_purchase_be_blocked_due_to_tranfer_behavior"
         }
     }
 
