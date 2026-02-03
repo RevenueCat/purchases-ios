@@ -51,6 +51,8 @@ struct ContentView: View {
 
         var builder = Configuration.Builder(withAPIKey: configuration.apiKey)
 
+        builder = builder.with(appUserID: configuration.appUserID)
+
         switch configuration.purchasesAreCompletedBy {
         case .revenueCat:
             builder = builder.with(purchasesAreCompletedBy: .revenueCat, storeKitVersion: storeKitVersion)

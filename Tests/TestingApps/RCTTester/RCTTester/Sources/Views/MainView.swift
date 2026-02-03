@@ -16,7 +16,11 @@ struct MainView: View {
     var body: some View {
         List {
             Section("SDK Configuration") {
-                ConfigurationSummaryView(configuration: configuration)
+                ConfigurationSummaryView(configuration: $configuration)
+            }
+
+            Section("User") {
+                UserSummaryView(configuration: $configuration)
             }
 
             Section("Offerings") {

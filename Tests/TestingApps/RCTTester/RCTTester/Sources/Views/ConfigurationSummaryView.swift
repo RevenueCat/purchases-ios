@@ -7,7 +7,9 @@ import SwiftUI
 
 struct ConfigurationSummaryView: View {
 
-    let configuration: SDKConfiguration
+    @Binding var configuration: SDKConfiguration
+
+    // MARK: - Body
 
     var body: some View {
         Group {
@@ -20,6 +22,8 @@ struct ConfigurationSummaryView: View {
             }
         }
     }
+
+    // MARK: - Helpers
 
     private var redactedAPIKey: String {
         let apiKey = configuration.apiKey
@@ -64,7 +68,7 @@ private struct ConfigurationRow: View {
 #Preview {
     List {
         Section("SDK Configuration") {
-            ConfigurationSummaryView(configuration: .default)
+            ConfigurationSummaryView(configuration: .constant(.default))
         }
     }
 }
