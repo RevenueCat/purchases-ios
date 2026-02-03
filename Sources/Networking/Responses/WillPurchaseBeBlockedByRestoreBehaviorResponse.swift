@@ -7,18 +7,18 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PurchaseBlockStatusResponse.swift
+//  WillPurchaseBeBlockedByRestoreBehaviorResponse.swift
 //
 //  Created by RevenueCat.
 
 import Foundation
 
 // swiftlint:disable:next type_name
-struct WillPurchaseBeBlockedByTransferBehaviorResponse: Decodable {
+struct WillPurchaseBeBlockedByRestoreBehaviorResponse: Decodable {
 
     let transactionBelongsToSubscriber: Bool
     let transferBehavior: String
 
 }
 
-extension WillPurchaseBeBlockedByTransferBehaviorResponse: HTTPResponseBody {}
+extension WillPurchaseBeBlockedByRestoreBehaviorResponse: HTTPResponseBody {}

@@ -2163,10 +2163,10 @@ extension PurchasesOrchestrator {
 
 }
 
-// MARK: - willPurchaseBeBlockedDueToTranferBehavior
+// MARK: - willPurchaseBeBlockedDueToRestoreBehavior
 extension PurchasesOrchestrator {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func willPurchaseBeBlockedDueToTransferBehavior() async throws -> Bool {
+    func willPurchaseBeBlockedDueToRestoreBehavior() async throws -> Bool {
         guard self.systemInfo.storeKitVersion == .storeKit2 else {
             throw ErrorUtils.featureNotSupportedWithStoreKit1Error()
         }
@@ -2179,7 +2179,7 @@ extension PurchasesOrchestrator {
         }
 
         let response = try await Async.call { completion in
-            self.backend.willPurchaseBeBlockedDueToTranferBehavior(
+            self.backend.willPurchaseBeBlockedDueToRestoreBehavior(
                 appUserID: self.appUserID,
                 transactionJWS: jwsRepresentation,
                 completion: completion

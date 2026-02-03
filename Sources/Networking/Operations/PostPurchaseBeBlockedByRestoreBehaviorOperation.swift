@@ -7,16 +7,16 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PostPurchaseBeBlockedByTransferBehaviorOperation.swift
+//  PostPurchaseBeBlockedByRestoreBehaviorOperation.swift
 //
 //  Created by Will Taylor on 02/03/2026.
 
 import Foundation
 
 // swiftlint:disable:next type_name
-final class PostPurchaseBeBlockedByTransferBehaviorOperation: NetworkOperation {
+final class PostPurchaseBeBlockedByRestoreBehaviorOperation: NetworkOperation {
 
-    typealias ResponseHandler = Backend.ResponseHandler<WillPurchaseBeBlockedByTransferBehaviorResponse>
+    typealias ResponseHandler = Backend.ResponseHandler<WillPurchaseBeBlockedByRestoreBehaviorResponse>
 
     private let configuration: UserSpecificConfiguration
     private let postData: PostData
@@ -54,11 +54,11 @@ final class PostPurchaseBeBlockedByTransferBehaviorOperation: NetworkOperation {
 
         let request = HTTPRequest(
             method: .post(self.postData),
-            path: .willPurchaseBeBlockedDueToTranferBehavior
+            path: .willPurchaseBeBlockedDueToRestoreBehavior
         )
 
         // swiftlint:disable:next line_length
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<WillPurchaseBeBlockedByTransferBehaviorResponse>.Result) in
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<WillPurchaseBeBlockedByRestoreBehaviorResponse>.Result) in
             let result = response
                 .map { $0.body }
                 .mapError(BackendError.networkError)
@@ -71,9 +71,9 @@ final class PostPurchaseBeBlockedByTransferBehaviorOperation: NetworkOperation {
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension PostPurchaseBeBlockedByTransferBehaviorOperation: @unchecked Sendable {}
+extension PostPurchaseBeBlockedByRestoreBehaviorOperation: @unchecked Sendable {}
 
-extension PostPurchaseBeBlockedByTransferBehaviorOperation {
+extension PostPurchaseBeBlockedByRestoreBehaviorOperation {
 
     struct PostData {
         let appUserID: String
@@ -84,7 +84,7 @@ extension PostPurchaseBeBlockedByTransferBehaviorOperation {
 
 // MARK: - Codable
 
-extension PostPurchaseBeBlockedByTransferBehaviorOperation.PostData: Encodable {
+extension PostPurchaseBeBlockedByRestoreBehaviorOperation.PostData: Encodable {
 
     private enum CodingKeys: String, CodingKey {
         case appUserID = "appUserId"
@@ -101,7 +101,7 @@ extension PostPurchaseBeBlockedByTransferBehaviorOperation.PostData: Encodable {
 
 // MARK: - HTTPRequestBody
 
-extension PostPurchaseBeBlockedByTransferBehaviorOperation.PostData: HTTPRequestBody {
+extension PostPurchaseBeBlockedByRestoreBehaviorOperation.PostData: HTTPRequestBody {
 
     var contentForSignature: [(key: String, value: String?)] {
         return [

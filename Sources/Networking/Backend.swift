@@ -123,12 +123,12 @@ class Backend {
                            completion: completion)
     }
 
-    func willPurchaseBeBlockedDueToTranferBehavior(
+    func willPurchaseBeBlockedDueToRestoreBehavior(
         appUserID: String,
         transactionJWS: String,
         completion: @escaping CustomerAPI.PurchaseBlockStatusResponseHandler
     ) {
-        self.customer.willPurchaseBeBlockedDueToTranferBehavior(appUserID: appUserID,
+        self.customer.willPurchaseBeBlockedDueToRestoreBehavior(appUserID: appUserID,
                                                                 transactionJWS: transactionJWS,
                                                                 completion: completion)
     }

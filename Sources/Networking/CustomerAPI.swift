@@ -19,7 +19,7 @@ final class CustomerAPI {
     typealias SimpleResponseHandler = (BackendError?) -> Void
 
     typealias PurchaseBlockStatusResponseHandler =
-    Backend.ResponseHandler<WillPurchaseBeBlockedByTransferBehaviorResponse>
+    Backend.ResponseHandler<WillPurchaseBeBlockedByRestoreBehaviorResponse>
 
     private let backendConfig: BackendConfiguration
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
@@ -90,18 +90,18 @@ final class CustomerAPI {
         self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
     }
 
-    func willPurchaseBeBlockedDueToTranferBehavior(
+    func willPurchaseBeBlockedDueToRestoreBehavior(
         appUserID: String,
         transactionJWS: String,
         completion: @escaping PurchaseBlockStatusResponseHandler
     ) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
-        let postData = PostPurchaseBeBlockedByTransferBehaviorOperation.PostData(
+        let postData = PostPurchaseBeBlockedByRestoreBehaviorOperation.PostData(
             appUserID: appUserID,
             transactionJWS: transactionJWS
         )
-        let operation = PostPurchaseBeBlockedByTransferBehaviorOperation(
+        let operation = PostPurchaseBeBlockedByRestoreBehaviorOperation(
             configuration: config,
             postData: postData,
             responseHandler: completion

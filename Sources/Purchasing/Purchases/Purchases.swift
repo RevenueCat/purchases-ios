@@ -1067,14 +1067,14 @@ extension Purchases {
     }
 
     /// Queries whether or not a purchase made by the current appUserId will result in the purchase being blocked
-    /// due to the app's transfer behavior.
+    /// due to the app's restore behavior.
     ///
     /// For more information, see https://www.revenuecat.com/docs/projects/restore-behavior
     ///
     /// Only supported for StoreKit 2.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    public func willPurchaseBeBlockedDueToTransferBehavior() async throws -> Bool {
-        try await purchasesOrchestrator.willPurchaseBeBlockedDueToTransferBehavior()
+    public func willPurchaseBeBlockedDueToRestoreBehavior() async throws -> Bool {
+        try await purchasesOrchestrator.willPurchaseBeBlockedDueToRestoreBehavior()
     }
 
 #endif
