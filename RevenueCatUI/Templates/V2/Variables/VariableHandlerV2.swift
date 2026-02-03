@@ -18,6 +18,10 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct VariableHandlerV2 {
 
+    /// Prefix for custom variables in paywall text.
+    /// Custom variables use the `{{ custom.variable_name }}` syntax.
+    private static let customVariablePrefix = "custom."
+
     private let variableCompatibilityMap: [String: String]
     private let functionCompatibilityMap: [String: String]
 
@@ -25,17 +29,26 @@ struct VariableHandlerV2 {
     private let discountRelativeToMostExpensivePerMonth: Double?
     private let dateProvider: () -> Date
 
+    /// Custom variables provided by the SDK at runtime.
+    private let customVariables: [String: CustomVariableValue]
+    /// Default custom variables defined in the dashboard.
+    private let defaultCustomVariables: [String: CustomVariableValue]
+
     init(
         variableCompatibilityMap: [String: String],
         functionCompatibilityMap: [String: String],
         discountRelativeToMostExpensivePerMonth: Double?,
         showZeroDecimalPlacePrices: Bool,
+        customVariables: [String: CustomVariableValue] = [:],
+        defaultCustomVariables: [String: CustomVariableValue] = [:],
         dateProvider: @escaping () -> Date = { Date() }
     ) {
         self.variableCompatibilityMap = variableCompatibilityMap
         self.functionCompatibilityMap = functionCompatibilityMap
         self.discountRelativeToMostExpensivePerMonth = discountRelativeToMostExpensivePerMonth
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        self.customVariables = customVariables
+        self.defaultCustomVariables = defaultCustomVariables
         self.dateProvider = dateProvider
     }
 
@@ -48,6 +61,13 @@ struct VariableHandlerV2 {
         countdownTime: CountdownTime? = nil
     ) -> String {
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
+            // Check for custom variable first (uses custom. prefix)
+            if variableRaw.hasPrefix(Self.customVariablePrefix) {
+                let processedValue = self.processCustomVariable(variableRaw)
+                let function = functionRaw.flatMap { self.findFunction($0) }
+                return function?.process(processedValue) ?? processedValue
+            }
+
             let variable = self.findVariable(variableRaw)
             let function = functionRaw.flatMap { self.findFunction($0) }
 
@@ -68,31 +88,54 @@ struct VariableHandlerV2 {
         return whisker.render()
     }
 
+    /// Process a custom variable, returning the resolved value.
+    /// Resolution order: SDK-provided value -> default value from dashboard -> empty string (with warning)
+    private func processCustomVariable(_ variableRaw: String) -> String {
+        let key = String(variableRaw.dropFirst(Self.customVariablePrefix.count))
+
+        // First, check SDK-provided custom variables
+        if let value = customVariables[key] {
+            return value.stringValue
+        }
+
+        // Then, check default values from the dashboard
+        if let defaultValue = defaultCustomVariables[key] {
+            return defaultValue.stringValue
+        }
+
+        // Variable not found - log warning and return empty string
+        Logger.warning(Strings.paywall_custom_variable_not_found(variableName: key))
+        return ""
+    }
+
     private func findVariable(_ variableRaw: String) -> VariablesV2? {
         guard let originalVariable = VariablesV2(rawValue: variableRaw) else {
 
             let backSupportedVariableRaw = self.variableCompatibilityMap[variableRaw]
 
             guard let backSupportedVariableRaw else {
-                Logger.error(
-                    "Paywall variable '\(variableRaw)' is not supported " +
-                    "and no backward compatible replacement found."
-                )
+                // Check if this looks like a custom variable with incorrect syntax
+                // e.g., "custom_player" or "customPlayer" instead of "custom.player"
+                if variableRaw.lowercased().hasPrefix("custom") &&
+                    !variableRaw.hasPrefix(Self.customVariablePrefix) {
+                    Logger.warning(Strings.paywall_variable_looks_like_custom(variableName: variableRaw))
+                } else {
+                    Logger.warning(
+                        "Paywall variable '\(variableRaw)' is not supported " +
+                        "and no backward compatible replacement found."
+                    )
+                }
                 return nil
             }
 
             guard let backSupportedVariable = VariablesV2(rawValue: backSupportedVariableRaw) else {
-                Logger.error(
+                Logger.warning(
                     "Paywall variable '\(variableRaw)' is not supported " +
                     "and could not find backward compatible '\(backSupportedVariableRaw)'."
                 )
                 return nil
             }
 
-            Logger.warning(
-                "Paywall variable '\(variableRaw)' is not supported. " +
-                "Using backward compatible '\(backSupportedVariableRaw)' instead."
-            )
             return backSupportedVariable
         }
 
@@ -105,22 +148,19 @@ struct VariableHandlerV2 {
             let backSupportedFunctionRaw = self.functionCompatibilityMap[functionRaw]
 
             guard let backSupportedFunctionRaw else {
-                Logger.error(
+                Logger.warning(
                     "Paywall function '\(functionRaw)' is not supported " +
                     "and no backward compatible replacement found.")
                 return nil
             }
 
             guard let backSupportedFunction = FunctionsV2(rawValue: backSupportedFunctionRaw) else {
-                Logger.error(
-                    "Paywall variable '\(functionRaw)' is not supported " +
+                Logger.warning(
+                    "Paywall function '\(functionRaw)' is not supported " +
                     "and could not find backward compatible '\(backSupportedFunctionRaw)'.")
                 return nil
             }
 
-            Logger.warning(
-                "Paywall function '\(functionRaw)' is not supported. " +
-                "Using backward compatible '\(backSupportedFunction)' instead.")
             return backSupportedFunction
         }
 
@@ -484,8 +524,12 @@ extension VariablesV2 {
         showZeroDecimalPlacePrices: Bool
     ) -> String {
         let price = package.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
-        let period = self.productPeriod(package: package, localizations: localizations)
 
+        guard package.storeProduct.subscriptionPeriod != nil else {
+            return price
+        }
+
+        let period = self.productPeriod(package: package, localizations: localizations)
         return "\(price)/\(period)"
     }
 
@@ -495,8 +539,12 @@ extension VariablesV2 {
         showZeroDecimalPlacePrices: Bool
     ) -> String {
         let price = package.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
-        let periodAbbreviated = self.productPeriodAbbreviated(package: package, localizations: localizations)
 
+        guard package.storeProduct.subscriptionPeriod != nil else {
+            return price
+        }
+
+        let periodAbbreviated = self.productPeriodAbbreviated(package: package, localizations: localizations)
         return "\(price)/\(periodAbbreviated)"
     }
 

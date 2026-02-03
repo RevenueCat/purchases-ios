@@ -28,6 +28,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         let failedToLoadData = AdFailedToLoad(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .banner,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             mediatorErrorCode: 3
@@ -36,6 +37,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         let loadedData = AdLoaded(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .banner,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123"
@@ -44,6 +46,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         let displayedData = AdDisplayed(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .banner,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-456"
@@ -52,6 +55,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         let openedData = AdOpened(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .banner,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-321"
@@ -60,6 +64,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         let revenueData = AdRevenue(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .banner,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-789",
@@ -68,12 +73,13 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             precision: .exact
         )
 
-        await Purchases.shared.adTracker.trackAdFailedToLoad(failedToLoadData)
-        await Purchases.shared.adTracker.trackAdLoaded(loadedData)
-        await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
-        await Purchases.shared.adTracker.trackAdOpened(openedData)
-        await Purchases.shared.adTracker.trackAdRevenue(revenueData)
+        Purchases.shared.adTracker.trackAdFailedToLoad(failedToLoadData)
+        Purchases.shared.adTracker.trackAdLoaded(loadedData)
+        Purchases.shared.adTracker.trackAdDisplayed(displayedData)
+        Purchases.shared.adTracker.trackAdOpened(openedData)
+        Purchases.shared.adTracker.trackAdRevenue(revenueData)
 
+        try await waitForEventsToBeStored(5)
         try await flushAndVerify(eventsCount: 5)
     }
 
@@ -98,13 +104,14 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         let displayedData = AdDisplayed(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .interstitial,
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123"
         )
 
-        await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
-        await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
-        await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
+        Purchases.shared.adTracker.trackAdDisplayed(displayedData)
+        Purchases.shared.adTracker.trackAdDisplayed(displayedData)
+        Purchases.shared.adTracker.trackAdDisplayed(displayedData)
 
         // Simulate app will resign active to trigger flush
         self.simulateAppWillResignActive()
@@ -133,6 +140,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         let displayedData = AdDisplayed(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .rewarded,
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123"
         )
@@ -140,12 +148,13 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         let openedData = AdOpened(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .rewarded,
             adUnitId: "ca-app-pub-456",
             impressionId: "impression-456"
         )
 
-        await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
-        await Purchases.shared.adTracker.trackAdOpened(openedData)
+        Purchases.shared.adTracker.trackAdDisplayed(displayedData)
+        Purchases.shared.adTracker.trackAdOpened(openedData)
 
         await self.resetSingleton()
 
@@ -156,6 +165,73 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             EventsManagerStrings.ad_events_flushed_successfully,
             level: .debug,
             expectedCount: 1
+        )
+    }
+
+    func testTrackingAdEventsWithDifferentFormats() async throws {
+        let bannerAd = AdDisplayed(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .banner,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-banner",
+            impressionId: "banner-impression-123"
+        )
+
+        let interstitialAd = AdDisplayed(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .interstitial,
+            placement: "level_complete",
+            adUnitId: "ca-app-pub-interstitial",
+            impressionId: "interstitial-impression-456"
+        )
+
+        let rewardedAd = AdRevenue(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .rewarded,
+            placement: "reward_screen",
+            adUnitId: "ca-app-pub-rewarded",
+            impressionId: "rewarded-impression-789",
+            revenueMicros: 2000000,
+            currency: "USD",
+            precision: .exact
+        )
+
+        let nativeAd = AdDisplayed(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .native,
+            placement: "feed",
+            adUnitId: "ca-app-pub-native",
+            impressionId: "native-impression-321"
+        )
+
+        let customFormatAd = AdDisplayed(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: AdFormat(rawValue: "custom_format"),
+            placement: "custom_placement",
+            adUnitId: "ca-app-pub-custom",
+            impressionId: "custom-impression-654"
+        )
+
+        Purchases.shared.adTracker.trackAdDisplayed(bannerAd)
+        Purchases.shared.adTracker.trackAdDisplayed(interstitialAd)
+        Purchases.shared.adTracker.trackAdRevenue(rewardedAd)
+        Purchases.shared.adTracker.trackAdDisplayed(nativeAd)
+        Purchases.shared.adTracker.trackAdDisplayed(customFormatAd)
+
+        try await waitForEventsToBeStored(5)
+        try await flushAndVerify(eventsCount: 5)
+    }
+
+    private func waitForEventsToBeStored(_ count: Int) async throws {
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            "Storing ad event:",
+            level: .verbose,
+            expectedCount: count
         )
     }
 

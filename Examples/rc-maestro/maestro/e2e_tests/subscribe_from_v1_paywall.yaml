@@ -3,17 +3,22 @@
 #  MAESTRO_EXPECTED_VERIFICATION_RESULT environment variable.
 #  MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE environment variable.
 # Example:
-# maestro test -e MAESTRO_STORE=test_store -e MAESTRO_EXPECTED_VERIFICATION_RESULT=verified -e MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE=main subscribe_from_v2_paywall.yaml
+# maestro test -e MAESTRO_STORE=test_store -e MAESTRO_EXPECTED_VERIFICATION_RESULT=verified -e MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE=main subscribe_from_v1_paywall.yaml
 
 appId: com.revenuecat.maestro.ios
 name: Subscribe to product through V1 Paywall for alternative offering
 
 ---
 - clearState
+# Dismiss any leftover system alerts from previous test runs (e.g. StoreKit purchase confirmations)
+- pressKey: home
 - launchApp:
     arguments:
         e2e_test_flow: subscribe_from_v1_paywall
 - assertVisible: "entitlement (pro): nil"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
 - tapOn:
     text: "Present Paywall"
 - assertVisible: "Paywall V1"

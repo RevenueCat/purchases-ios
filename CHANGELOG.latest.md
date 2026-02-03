@@ -1,16 +1,19 @@
 ## RevenueCat SDK
+### ✨ New Features
+* Adds more ObjC compatibility (#5999) via JayShortway (@JayShortway)
 ### 🐞 Bugfixes
-* Fix cache files visible in documents directory: Etags, offerings and product entitlements mapping  (#6020) via Rick (@rickvdl)
-* Fix paywall close tracking in PaywallViewController (#6083) via Cesar de la Vega (@vegaro)
+* Fix potential infinite recursion in MagicWeather (#6146) via Tarek M. Ben Lechhab (@bilqisium)
 
 ## RevenueCatUI SDK
 ### Paywallv2
-#### 🐞 Bugfixes
-* fix: Load high with high loader, load low with low loader (#6111) via Facundo Menzella (@facumenzella)
-* Fix close button being tappable during transition delay (#6106) via Facundo Menzella (@facumenzella)
+#### ✨ New Features
+* feat: Add Custom Paywall Variables support (#6080) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Add LocalKhepri file to be able to work with local instance (#6123) via Facundo Menzella (@facumenzella)
-* Fix loading in PaywallsTester when using present functions (#6109) via Cesar de la Vega (@vegaro)
-* Use `SKPaymentQueue.default()` instead of initializing a new instance in PurchaseTester app (#6108) via Antonio Pallares (@ajpallares)
-* Add Claude Code Review workflow configuration (#6107) via Cesar de la Vega (@vegaro)
+* Fix `backend-integration-tests-custom-entitlements` on CI (#6179) via Antonio Pallares (@ajpallares)
+* Only run 1 backend integration tests CI job to generate all snapshots (#6170) via Antonio Pallares (@ajpallares)
+* Autogenerate snapshots for more tests (#5958) via Antonio Pallares (@ajpallares)
+* Only consider source files for public enums Danger rule (#6156) via Antonio Pallares (@ajpallares)
+* Fix integration test (#6157) via Antonio Pallares (@ajpallares)
+* Fix API tests (#6155) via Antonio Pallares (@ajpallares)
+* Add troubleshooting link to the generic error message (#6152) via Engin Kurutepe (@ekurutepe)

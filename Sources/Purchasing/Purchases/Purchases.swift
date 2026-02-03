@@ -294,6 +294,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
     private let purchasedProductsFetcher: PurchasedProductsFetcherType?
     private let purchasesOrchestrator: PurchasesOrchestrator
+    private let transactionMetadataSyncHelper: TransactionMetadataSyncHelper
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
@@ -667,6 +668,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         )
         let healthManager = SDKHealthManager(backend: backend, identityManager: identityManager)
 
+        let transactionMetadataSyncHelper = TransactionMetadataSyncHelper(
+            customerInfoManager: customerInfoManager,
+            attribution: subscriberAttributes,
+            currentUserProvider: identityManager,
+            operationDispatcher: operationDispatcher,
+            transactionPoster: transactionPoster
+        )
+
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
                   receiptFetcher: receiptFetcher,
@@ -694,7 +703,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   storeMessagesHelper: storeMessagesHelper,
                   diagnosticsTracker: diagnosticsTracker,
                   virtualCurrencyManager: virtualCurrencyManager,
-                  healthManager: healthManager
+                  healthManager: healthManager,
+                  transactionMetadataSyncHelper: transactionMetadataSyncHelper
         )
     }
 
@@ -726,7 +736,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          storeMessagesHelper: StoreMessagesHelperType?,
          diagnosticsTracker: DiagnosticsTrackerType?,
          virtualCurrencyManager: VirtualCurrencyManagerType,
-         healthManager: SDKHealthManager
+         healthManager: SDKHealthManager,
+         transactionMetadataSyncHelper: TransactionMetadataSyncHelper
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -777,6 +788,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.diagnosticsTracker = diagnosticsTracker
         self.virtualCurrencyManager = virtualCurrencyManager
         self.healthManager = healthManager
+        self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
 
         super.init()
 
@@ -816,6 +828,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             guard let self = self else { return }
             self.handleCustomerInfoChanged(from: old, to: new)
         }
+
+        self.transactionMetadataSyncHelper.syncIfNeeded(
+            allowSharingAppStoreAccount: purchasesOrchestrator.allowSharingAppStoreAccount
+        )
     }
 
     deinit {
@@ -879,7 +895,7 @@ public extension Purchases {
 
     /// Parses a deep link URL to verify it's a RevenueCat web purchase redemption link
     /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
-    @objc internal static func parseAsWebPurchaseRedemption(_ url: URL) -> WebPurchaseRedemption? {
+    @objc static func parseAsWebPurchaseRedemption(_ url: URL) -> WebPurchaseRedemption? {
         return DeepLinkParser.parseAsWebPurchaseRedemption(url)
     }
 
@@ -1353,6 +1369,38 @@ public extension Purchases {
             return try await self.purchasesOrchestrator.handleRecordPurchase(purchaseResult)
         } catch {
             throw NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @objc(recordPurchaseForProductID:completion:)
+    func recordPurchase(
+        productID: String,
+        completion: @escaping (StoreTransaction?, PublicError?) -> Void
+    ) {
+        Task {
+            let result = await StoreKit.Transaction.latest(for: productID)
+
+            guard let result = result else {
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(nil, NewErrorUtils.storeProblemError(
+                        withMessage: "No transaction found for product ID: \(productID)"
+                    ).asPublicError)
+                }
+                return
+            }
+
+            do {
+                let transaction = try await self.recordPurchase(.success(result))
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(transaction, nil)
+                }
+            } catch {
+                let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(nil, publicError)
+                }
+            }
         }
     }
 
@@ -2152,7 +2200,9 @@ private extension Purchases {
         // of purchases due to pop-ups stealing focus from the app.
         self.updateAllCachesIfNeeded(isAppBackgrounded: false)
         self.dispatchSyncSubscriberAttributes()
-        self.purchasesOrchestrator.syncRemainingCachedTransactionMetadataIfNeeded()
+        self.transactionMetadataSyncHelper.syncIfNeeded(
+            allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
+        )
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 

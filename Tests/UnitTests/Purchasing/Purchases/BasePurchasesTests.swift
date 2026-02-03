@@ -312,6 +312,14 @@ class BasePurchasesTests: TestCase {
             identityManager: self.identityManager
         )
 
+        let transactionMetadataSyncHelper = TransactionMetadataSyncHelper(
+            customerInfoManager: self.customerInfoManager,
+            attribution: self.attribution,
+            currentUserProvider: self.identityManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            transactionPoster: self.transactionPoster
+        )
+
         self.purchases = Purchases(appUserID: appUserId,
                                    requestFetcher: self.requestFetcher,
                                    receiptFetcher: self.receiptFetcher,
@@ -339,7 +347,8 @@ class BasePurchasesTests: TestCase {
                                    storeMessagesHelper: self.mockStoreMessagesHelper,
                                    diagnosticsTracker: self.diagnosticsTracker,
                                    virtualCurrencyManager: self.mockVirtualCurrencyManager,
-                                   healthManager: healthManager)
+                                   healthManager: healthManager,
+                                   transactionMetadataSyncHelper: transactionMetadataSyncHelper)
 
         self.purchasesOrchestrator.delegate = self.purchases
 
