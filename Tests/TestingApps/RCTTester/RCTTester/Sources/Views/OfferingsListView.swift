@@ -119,7 +119,17 @@ struct OfferingsListView: View {
     private func loadOfferings() async {
         do {
             let fetchedOfferings = try await Purchases.shared.offerings()
-            let sortedOfferings = Array(fetchedOfferings.all.values).sorted { $0.identifier < $1.identifier }
+            let currentOffering = fetchedOfferings.current
+
+            // Sort by identifier, keeping the current offering first
+            let sortedOfferings = fetchedOfferings.all.values.sorted { lhs, rhs in
+                let lhsIsCurrent = lhs.identifier == currentOffering?.identifier
+                let rhsIsCurrent = rhs.identifier == currentOffering?.identifier
+                if lhsIsCurrent != rhsIsCurrent {
+                    return lhsIsCurrent
+                }
+                return lhs.identifier < rhs.identifier
+            }
             loadingState = .loaded(sortedOfferings)
         } catch {
             loadingState = .error(error)
