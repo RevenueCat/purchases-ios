@@ -112,9 +112,16 @@ struct OfferingsListView: View {
             loadingState = .loading
         }
         do {
-            let fetchedOfferings = try await Purchases.shared.offerings()
-            let sortedOfferings = Array(fetchedOfferings.all.values).sorted { $0.identifier < $1.identifier }
-            loadingState = .loaded(sortedOfferings)
+            let offerings = try await Purchases.shared.offerings()
+            var fetchedOfferings = Array(offerings.all.values)
+
+            // Move the default offering to the top of the list
+            if let defaultOffering = offerings.current,
+            fetchedOfferings.first?.identifier != defaultOffering.identifier {
+                fetchedOfferings.removeAll { $0.identifier == defaultOffering.identifier }
+                fetchedOfferings.insert(defaultOffering, at: 0)
+            }
+            loadingState = .loaded(fetchedOfferings)
         } catch {
             loadingState = .error(error)
             print("Error fetching offerings: \(error)")
