@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PostPurchaseBeBlockedByRestoreBehaviorOperation.swift
+//  PostWillPurchaseBeBlockedByRestoreBehaviorOperation.swift
 //
 //  Created by Will Taylor on 02/03/2026.
 
 import Foundation
 
 // swiftlint:disable:next type_name
-final class PostPurchaseBeBlockedByRestoreBehaviorOperation: NetworkOperation {
+final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: NetworkOperation {
 
     typealias ResponseHandler = Backend.ResponseHandler<WillPurchaseBeBlockedByRestoreBehaviorResponse>
 
@@ -71,9 +71,9 @@ final class PostPurchaseBeBlockedByRestoreBehaviorOperation: NetworkOperation {
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension PostPurchaseBeBlockedByRestoreBehaviorOperation: @unchecked Sendable {}
+extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation: @unchecked Sendable {}
 
-extension PostPurchaseBeBlockedByRestoreBehaviorOperation {
+extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation {
 
     struct PostData {
         let appUserID: String
@@ -84,7 +84,7 @@ extension PostPurchaseBeBlockedByRestoreBehaviorOperation {
 
 // MARK: - Codable
 
-extension PostPurchaseBeBlockedByRestoreBehaviorOperation.PostData: Encodable {
+extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation.PostData: Encodable {
 
     private enum CodingKeys: String, CodingKey {
         case appUserID = "appUserId"
@@ -101,7 +101,7 @@ extension PostPurchaseBeBlockedByRestoreBehaviorOperation.PostData: Encodable {
 
 // MARK: - HTTPRequestBody
 
-extension PostPurchaseBeBlockedByRestoreBehaviorOperation.PostData: HTTPRequestBody {
+extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation.PostData: HTTPRequestBody {
 
     var contentForSignature: [(key: String, value: String?)] {
         return [

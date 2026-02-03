@@ -1333,7 +1333,7 @@
 		FD2046812CB8333A00166727 /* StoreKit2PurchaseIntentListenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2046802CB8333200166727 /* StoreKit2PurchaseIntentListenerTests.swift */; };
 		FD2046832CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2046822CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift */; };
 		FD2046842CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2046822CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift */; };
-		FD25F3542F32AA20007C1A91 /* PostPurchaseBeBlockedByRestoreBehaviorOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD25F3532F32AA20007C1A91 /* PostPurchaseBeBlockedByRestoreBehaviorOperation.swift */; };
+		FD25F3542F32AA20007C1A91 /* PostWillPurchaseBeBlockedByRestoreBehaviorOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD25F3532F32AA20007C1A91 /* PostWillPurchaseBeBlockedByRestoreBehaviorOperation.swift */; };
 		FD2E6C9F2C480FF000CB4BD7 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E6C9E2C480FF000CB4BD7 /* OHHTTPStubs */; };
 		FD2E6CA12C48100900CB4BD7 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E6CA02C48100900CB4BD7 /* OHHTTPStubsSwift */; };
 		FD3A85FC2DDE7532005F3C79 /* VirtualCurrencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3A85FB2DDE7532005F3C79 /* VirtualCurrencies.swift */; };
@@ -2847,7 +2847,7 @@
 		FD20467E2CB82F1700166727 /* StoreKit2PurchaseIntentListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PurchaseIntentListener.swift; sourceTree = "<group>"; };
 		FD2046802CB8333200166727 /* StoreKit2PurchaseIntentListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PurchaseIntentListenerTests.swift; sourceTree = "<group>"; };
 		FD2046822CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2PurchaseIntentListenerDelegate.swift; sourceTree = "<group>"; };
-		FD25F3532F32AA20007C1A91 /* PostPurchaseBeBlockedByRestoreBehaviorOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostPurchaseBeBlockedByRestoreBehaviorOperation.swift; sourceTree = "<group>"; };
+		FD25F3532F32AA20007C1A91 /* PostWillPurchaseBeBlockedByRestoreBehaviorOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostWillPurchaseBeBlockedByRestoreBehaviorOperation.swift; sourceTree = "<group>"; };
 		FD33CD5F2D03500C000D13A4 /* CustomerCenterUIKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterUIKitView.swift; sourceTree = "<group>"; };
 		FD3A85FB2DDE7532005F3C79 /* VirtualCurrencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencies.swift; sourceTree = "<group>"; };
 		FD3A85FD2DDE76CD005F3C79 /* VirtualCurrenciesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesTests.swift; sourceTree = "<group>"; };
@@ -5931,7 +5931,7 @@
 				B34605B7279A6E380031CA74 /* LogInOperation.swift */,
 				B34605AB279A6E380031CA74 /* NetworkOperation.swift */,
 				B34605AD279A6E380031CA74 /* PostOfferForSigningOperation.swift */,
-				FD25F3532F32AA20007C1A91 /* PostPurchaseBeBlockedByRestoreBehaviorOperation.swift */,
+				FD25F3532F32AA20007C1A91 /* PostWillPurchaseBeBlockedByRestoreBehaviorOperation.swift */,
 				B34605B6279A6E380031CA74 /* PostReceiptDataOperation.swift */,
 				1ED4CA482CC148CF0021AB8F /* PostRedeemWebPurchaseOperation.swift */,
 				B34605B9279A6E380031CA74 /* PostSubscriberAttributesOperation.swift */,
@@ -6967,7 +6967,7 @@
 				5746508E275949F20053AB09 /* DispatchTimeInterval+Extensions.swift in Sources */,
 				35109DB92BC8143E001030C8 /* DiagnosticsEventsRequest.swift in Sources */,
 				2D294E5C26DECFD500B8FE4F /* StoreKit2TransactionListener.swift in Sources */,
-				FD25F3542F32AA20007C1A91 /* PostPurchaseBeBlockedByRestoreBehaviorOperation.swift in Sources */,
+				FD25F3542F32AA20007C1A91 /* PostWillPurchaseBeBlockedByRestoreBehaviorOperation.swift in Sources */,
 				57AC4C182770F55C00DDE30F /* SK2StoreProduct.swift in Sources */,
 				2DDF41B524F6F387005BC22D /* AppleReceiptBuilder.swift in Sources */,
 				1ED4CA492CC148CF0021AB8F /* PostRedeemWebPurchaseOperation.swift in Sources */,
