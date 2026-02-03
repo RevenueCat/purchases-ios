@@ -84,30 +84,39 @@ class SynchronizedUserDefaultsTests: TestCase {
             NotificationCenter.default.removeObserver(observer)
         }
 
-        // Write from background thread. Will post a notification to main queue
+        let writeStarted = DispatchSemaphore(value: 0)
+        let canFinishWrite = DispatchSemaphore(value: 0)
+        let writeCompleted = expectation(description: "Write completed")
+
         let syncDefaults = self.synchronizedUserDefaults!
         let key = self.testKey
-        DispatchQueue.global(qos: .userInteractive).async {
+
+        // Background thread acquires the write lock, signals it has started,
+        // then waits for permission to finish.
+        DispatchQueue.global().async {
             syncDefaults.write {
+                writeStarted.signal()
+                canFinishWrite.wait()
                 $0.set("value", forKey: key)
             }
+            writeCompleted.fulfill()
         }
 
-        // Give the background write operation time to start and potentially trigger the notification.
-        // The key issue is that the notification is posted synchronously but dispatched to main queue,
-        // and the write operation may wait for it to complete (causing deadlock if main thread is blocked).
-        Thread.sleep(forTimeInterval: 0.5)
+        // Wait until background thread is holding the lock.
+        writeStarted.wait()
 
-        // Read from main thread. This deadlocks if the background thread is still holding the lock and
-        // waiting for the notification to complete on main thread.
-        let value = self.synchronizedUserDefaults.read {
+        // Allow background to proceed and immediately try to read from main.
+        // This creates the race condition that would deadlock with a naive lock implementation.
+        canFinishWrite.signal()
+
+        _ = self.synchronizedUserDefaults.read {
             $0.string(forKey: self.testKey)
         }
 
-        // If we get here without deadlock, the value should be set
-        expect(value) == "value"
+        // If we reach here without hanging, there's no deadlock.
+        wait(for: [notificationExpectation, writeCompleted], timeout: 2.0)
 
-        wait(for: [notificationExpectation], timeout: 2.0)
+        expect(self.synchronizedUserDefaults.read { $0.string(forKey: self.testKey) }) == "value"
     }
 
     func testConcurrentReadsDoNotDeadlock() {
