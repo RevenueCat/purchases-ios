@@ -17,7 +17,8 @@ import XCTest
 @testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-final class PurchasesWillPurchaseBeBlockedDueToRestoreBehaviorTests: BasePurchasesTests {
+// swiftlint:disable:next type_name
+final class PurchasesWillPurchaseBeBlockedDueToRestoreBehaviorSK2Tests: BasePurchasesTests {
 
     override var storeKitVersion: StoreKitVersion { .storeKit2 }
 
@@ -92,7 +93,8 @@ final class PurchasesWillPurchaseBeBlockedDueToRestoreBehaviorTests: BasePurchas
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-final class PurchasesRestoreBehaviorStoreKit1Tests: BasePurchasesTests {
+// swiftlint:disable:next type_name
+final class PurchasesWillPurchaseBeBlockedDueToRestoreBehaviorSK1Tests: BasePurchasesTests {
 
     override var storeKitVersion: StoreKitVersion { .storeKit1 }
 

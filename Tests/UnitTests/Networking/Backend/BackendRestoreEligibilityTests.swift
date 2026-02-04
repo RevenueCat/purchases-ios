@@ -166,8 +166,8 @@ final class BackendRestoreEligibilityTests: BaseBackendTests {
         expect(self.httpClient.calls).toEventually(haveCount(1))
         expect(self.httpClient.calls).toNever(haveCount(2))
 
-        // swiftlint:disable:next line_length
         self.logger.verifyMessageWasLogged(
+            // swiftlint:disable:next line_length
             "Network operation '\(PostWillPurchaseBeBlockedByRestoreBehaviorOperation.self)' found with the same cache key",
             level: .debug
         )
