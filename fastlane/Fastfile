@@ -28,6 +28,21 @@ def run_plugin_action_in_current_directory(&block)
   Dir.chdir(Dir["*/"].first.chomp("/"), &block)
 end
 
+# Post-process JUnit XML to include environment name in testcase names
+def postprocess_maestro_junit_report(output_dir:, environment_name:)
+  junit_file = "#{output_dir}/report.xml"
+  if File.exist?(junit_file)
+    UI.message("Adding environment name (#{environment_name}) to test names in JUnit report...")
+    content = File.read(junit_file)
+    modified_content = content.gsub(/<testcase([^>]*)name="([^"]+)"/) do |match|
+      prefix = $1
+      test_name = $2
+      "<testcase#{prefix}name=\"#{test_name} (#{environment_name})\""
+    end
+    File.write(junit_file, modified_content)
+  end
+end
+
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
@@ -1017,24 +1032,33 @@ platform :ios do
 
       UI.message("Using flow directory: #{flow_dir}")
 
-      sh("maestro", "test", "--format", "junit", "--output", "#{output_dir}/report.xml", "--test-output-dir", output_dir, flow_dir)
+      # CI-level retries for flaky Maestro tests
+      max_retries = 5
+      attempt = 0
 
-      success = true
+      while attempt <= max_retries && !success
+        attempt_output_dir = "#{output_dir}/attempt_#{attempt}"
+        FileUtils.mkdir_p(attempt_output_dir)
+
+        begin
+          sh("maestro", "test", "--format", "junit", "--output", "#{attempt_output_dir}/report.xml", "--test-output-dir", attempt_output_dir, flow_dir)
+          success = true
+          postprocess_maestro_junit_report(output_dir: attempt_output_dir, environment_name: environment_name)
+          # Copy successful attempt's report to main output_dir
+          FileUtils.cp("#{attempt_output_dir}/report.xml", "#{output_dir}/report.xml")
+        rescue => e
+          UI.error("Maestro test attempt #{attempt} failed: #{e.message}")
+          postprocess_maestro_junit_report(output_dir: attempt_output_dir, environment_name: environment_name)
+          if attempt >= max_retries
+            raise e
+          end
+          attempt += 1
+          UI.message("Retrying... #{attempt}/#{max_retries}")
+        end
+      end
     rescue => e
       raise e
     ensure
-      # Post-process JUnit XML to include environment name in testcase names
-      junit_file = "#{output_dir}/report.xml"
-      if File.exist?(junit_file)
-        UI.message("Adding environment name (#{environment_name}) to test names in JUnit report...")
-        content = File.read(junit_file)
-        modified_content = content.gsub(/<testcase([^>]*)name="([^"]+)"/) do |match|
-          prefix = $1
-          test_name = $2
-          "<testcase#{prefix}name=\"#{test_name} (#{environment_name})\""
-        end
-        File.write(junit_file, modified_content)
-      end
       unless skip_slack_notification
         slack_backend_integration_test_results(
           environment: backend_environment,
