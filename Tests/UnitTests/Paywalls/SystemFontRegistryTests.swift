@@ -8,6 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 
+import CoreText
 @testable import RevenueCat
 import XCTest
 
