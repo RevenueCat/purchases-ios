@@ -31,8 +31,20 @@ struct SystemFontRegistry: FontRegistrar {
         var errorRef: Unmanaged<CFError>?
 
         if !CTFontManagerRegisterFontsForURL(url as CFURL, .process, &errorRef) {
-            throw DefaultPaywallFontsManager.FontsManagerError.registrationError(errorRef?.takeUnretainedValue())
+            let error = errorRef?.takeUnretainedValue()
+            if Self.isAlreadyRegisteredError(error) {
+                // Font is already registered for the process; treat as success.
+                return
+            }
+
+            throw DefaultPaywallFontsManager.FontsManagerError.registrationError(error)
         }
+    }
+
+    static func isAlreadyRegisteredError(_ error: CFError?) -> Bool {
+        guard let error = error as NSError? else { return false }
+        return error.domain == (kCTFontManagerErrorDomain as String)
+            && error.code == CTFontManagerError.alreadyRegistered.rawValue
     }
 }
 
