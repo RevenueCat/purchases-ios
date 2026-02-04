@@ -40,12 +40,6 @@ final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: NetworkOperatio
 
     private func post(completion: @escaping () -> Void) {
 
-        guard self.postData.appUserID.isNotEmpty else {
-            self.responseHandler(.failure(.missingAppUserID()))
-            completion()
-            return
-        }
-
         guard self.postData.transactionJWS.isNotEmpty else {
             self.responseHandler(.failure(.missingTransactionJWS()))
             completion()
@@ -54,7 +48,7 @@ final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: NetworkOperatio
 
         let request = HTTPRequest(
             method: .post(self.postData),
-            path: .willPurchaseBeBlockedDueToRestoreBehavior
+            path: .restoreEligibility(appUserID: self.configuration.appUserID)
         )
 
         // swiftlint:disable:next line_length
@@ -76,7 +70,6 @@ extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation: @unchecked Sendab
 extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation {
 
     struct PostData {
-        let appUserID: String
         let transactionJWS: String
     }
 
@@ -87,13 +80,11 @@ extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation {
 extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation.PostData: Encodable {
 
     private enum CodingKeys: String, CodingKey {
-        case appUserID = "appUserId"
-        case transactionJWS = "transactionJWS"
+        case transactionJWS = "fetch_token"
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.appUserID, forKey: .appUserID)
         try container.encode(self.transactionJWS, forKey: .transactionJWS)
     }
 
@@ -105,7 +96,6 @@ extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation.PostData: HTTPRequ
 
     var contentForSignature: [(key: String, value: String?)] {
         return [
-            (CodingKeys.appUserID.stringValue, self.appUserID),
             (CodingKeys.transactionJWS.stringValue, self.transactionJWS)
         ]
     }

@@ -105,7 +105,7 @@ extension HTTPRequest {
         case getVirtualCurrencies(appUserID: String)
         case postRedeemWebPurchase
         case postCreateTicket
-        case willPurchaseBeBlockedDueToRestoreBehavior
+        case restoreEligibility(appUserID: String)
 
     }
 
@@ -196,7 +196,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health,
              .appHealthReportAvailability:
             return false
-        case .willPurchaseBeBlockedDueToRestoreBehavior:
+        case .restoreEligibility:
             return true
         }
     }
@@ -222,7 +222,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health,
              .appHealthReportAvailability:
             return false
-        case .willPurchaseBeBlockedDueToRestoreBehavior:
+        case .restoreEligibility:
             return true
         }
     }
@@ -248,7 +248,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
-        case .willPurchaseBeBlockedDueToRestoreBehavior:
+        case .restoreEligibility:
             return true
         }
     }
@@ -274,7 +274,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket:
             return false
-        case .willPurchaseBeBlockedDueToRestoreBehavior:
+        case .restoreEligibility:
             return true
         }
     }
@@ -335,8 +335,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
-        case .willPurchaseBeBlockedDueToRestoreBehavior:
-            return "willPurchaseBeBlockedDueToRestoreBehavior"
+        case let .restoreEligibility(appUserID):
+            return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
         }
     }
 
@@ -392,8 +392,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postCreateTicket:
             return "post_create_ticket"
-        case .willPurchaseBeBlockedDueToRestoreBehavior:
-            return "post_will_purchase_be_blocked_due_to_restore_behavior"
+        case .restoreEligibility:
+            return "post_restore_eligibility"
         }
     }
 

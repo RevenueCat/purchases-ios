@@ -16,8 +16,13 @@ import Foundation
 // swiftlint:disable:next type_name
 struct WillPurchaseBeBlockedByRestoreBehaviorResponse: Decodable {
 
-    let transactionBelongsToSubscriber: Bool
-    let transferBehavior: String
+    let receiptBelongsToOtherSubscriber: Bool
+    let transferIsAllowed: Bool
+
+    private enum CodingKeys: String, CodingKey {
+        case receiptBelongsToOtherSubscriber = "receipt_belongs_to_other_subscriber"
+        case transferIsAllowed = "transfer_is_allowed"
+    }
 
 }
 

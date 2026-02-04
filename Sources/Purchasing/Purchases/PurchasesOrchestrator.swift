@@ -2186,7 +2186,7 @@ extension PurchasesOrchestrator {
             )
         }
 
-        return !response.transactionBelongsToSubscriber && response.transferBehavior == "BLOCK"
+        return response.receiptBelongsToOtherSubscriber && !response.transferIsAllowed
     }
 }
 

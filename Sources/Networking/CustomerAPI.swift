@@ -98,7 +98,6 @@ final class CustomerAPI {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let postData = PostWillPurchaseBeBlockedByRestoreBehaviorOperation.PostData(
-            appUserID: appUserID,
             transactionJWS: transactionJWS
         )
         let operation = PostWillPurchaseBeBlockedByRestoreBehaviorOperation(
