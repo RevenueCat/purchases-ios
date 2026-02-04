@@ -41,9 +41,9 @@ struct SystemFontRegistry: FontRegistrar {
         }
     }
 
-    static func isAlreadyRegisteredError(_ error: CFError?) -> Bool {
-        guard let cfError = error else { return false }
-        let nsError = cfError as Error as NSError
+    static func isAlreadyRegisteredError(_ error: Error?) -> Bool {
+        guard let error = error else { return false }
+        let nsError = error as NSError
         return nsError.domain == (kCTFontManagerErrorDomain as String)
             && nsError.code == CTFontManagerError.alreadyRegistered.rawValue
     }
