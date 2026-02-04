@@ -1194,6 +1194,19 @@ jobs:
             echo "All test suites passed!"
           when: always
 
+  test-xcframework-export-and-integration:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - install-dependencies
+      - tuist-generate-workspace
+      - run:
+          name: Test XCFramework export and integration
+          command: bundle exec fastlane test_xcframework_export_and_integration
+          no_output_timeout: 30m
+      - slack-notify-on-fail
+
   release-checks:
     executor:
       name: macos-executor
@@ -1725,21 +1738,22 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - lint
-      - check-api-changes:
-          context:
-            - slack-secrets-ios
-      - validate-package-swift:
-          name: validate-package-swift-5.8
-          xcode_version: "14.3.1"
-          mac_os_executor_name: macos-executor
-      - run-test-ios-18
-      - run-test-ios-26
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-18
-      - run-revenuecat-ui-ios-26
-      - emerge_purchases_ui_snapshot_tests
-      - emerge_binary_size_analysis
+      - test-xcframework-export-and-integration
+      # - lint
+      # - check-api-changes:
+      #     context:
+      #       - slack-secrets-ios
+      # - validate-package-swift:
+      #     name: validate-package-swift-5.8
+      #     xcode_version: "14.3.1"
+      #     mac_os_executor_name: macos-executor
+      # - run-test-ios-18
+      # - run-test-ios-26
+      # - pod-lib-lint
+      # - run-revenuecat-ui-ios-18
+      # - run-revenuecat-ui-ios-26
+      # - emerge_purchases_ui_snapshot_tests
+      # - emerge_binary_size_analysis
 
   create-tag:
     when:

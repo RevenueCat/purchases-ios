@@ -1434,6 +1434,11 @@ platform :ios do
 
   end
 
+  lane :test_xcframework_export_and_integration do |options|
+    export_xcframeworks(options)
+    test_xcframework_integration(options)
+  end
+
   desc "Test XCFramework integration by building XCFrameworkTester app"
   lane :test_xcframework_integration do |options|
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
