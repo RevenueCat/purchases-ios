@@ -14,24 +14,42 @@
 import Foundation
 
 // swiftlint:disable:next type_name
-final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: NetworkOperation {
+final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: CacheableNetworkOperation {
 
-    typealias ResponseHandler = Backend.ResponseHandler<WillPurchaseBeBlockedByRestoreBehaviorResponse>
-
-    private let configuration: UserSpecificConfiguration
+    private let configuration: AppUserConfiguration
     private let postData: PostData
-    private let responseHandler: ResponseHandler
+    private let restoreEligibilityCallbackCache: CallbackCache<RestoreEligibilityCallback>
+
+    static func createFactory(
+        configuration: UserSpecificConfiguration,
+        postData: PostData,
+        restoreEligibilityCallbackCache: CallbackCache<RestoreEligibilityCallback>
+    ) -> CacheableNetworkOperationFactory<PostWillPurchaseBeBlockedByRestoreBehaviorOperation> {
+        let cacheKey = "\(configuration.appUserID)-\(postData.transactionJWS)"
+
+        return CacheableNetworkOperationFactory({ cacheKey in
+                    PostWillPurchaseBeBlockedByRestoreBehaviorOperation(
+                        configuration: configuration,
+                        postData: postData,
+                        restoreEligibilityCallbackCache: restoreEligibilityCallbackCache,
+                        cacheKey: cacheKey
+                    )
+            },
+            individualizedCacheKeyPart: cacheKey
+        )
+    }
 
     init(
         configuration: UserSpecificConfiguration,
         postData: PostData,
-        responseHandler: @escaping ResponseHandler
+        restoreEligibilityCallbackCache: CallbackCache<RestoreEligibilityCallback>,
+        cacheKey: String
     ) {
         self.configuration = configuration
         self.postData = postData
-        self.responseHandler = responseHandler
+        self.restoreEligibilityCallbackCache = restoreEligibilityCallbackCache
 
-        super.init(configuration: configuration)
+        super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
     override func begin(completion: @escaping () -> Void) {
@@ -40,8 +58,14 @@ final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: NetworkOperatio
 
     private func post(completion: @escaping () -> Void) {
 
+        guard self.configuration.appUserID.isNotEmpty else {
+            self.handleResult(.failure(.missingAppUserID()))
+            completion()
+            return
+        }
+
         guard self.postData.transactionJWS.isNotEmpty else {
-            self.responseHandler(.failure(.missingTransactionJWS()))
+            self.handleResult(.failure(.missingTransactionJWS()))
             completion()
             return
         }
@@ -57,7 +81,7 @@ final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: NetworkOperatio
                 .map { $0.body }
                 .mapError(BackendError.networkError)
 
-            self.responseHandler(result)
+            self.handleResult(result)
             completion()
         }
     }
@@ -66,6 +90,18 @@ final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: NetworkOperatio
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
 extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation: @unchecked Sendable {}
+
+private extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation {
+
+    func handleResult(_ result: Result<WillPurchaseBeBlockedByRestoreBehaviorResponse, BackendError>) {
+        self.restoreEligibilityCallbackCache.performOnAllItemsAndRemoveFromCache(
+            withCacheable: self
+        ) { callback in
+            callback.completion(result)
+        }
+    }
+
+}
 
 extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation {
 

@@ -23,12 +23,14 @@ final class CustomerAPI {
 
     private let backendConfig: BackendConfiguration
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
+    private let restoreEligibilityCallbacksCache: CallbackCache<RestoreEligibilityCallback>
     private let attributionFetcher: AttributionFetcher
 
     init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
         self.backendConfig = backendConfig
         self.attributionFetcher = attributionFetcher
         self.customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>()
+        self.restoreEligibilityCallbacksCache = CallbackCache<RestoreEligibilityCallback>()
     }
 
     func getCustomerInfo(appUserID: String,
@@ -93,6 +95,7 @@ final class CustomerAPI {
     func willPurchaseBeBlockedDueToRestoreBehavior(
         appUserID: String,
         transactionJWS: String,
+        isAppBackgrounded: Bool,
         completion: @escaping PurchaseBlockStatusResponseHandler
     ) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
@@ -100,13 +103,19 @@ final class CustomerAPI {
         let postData = PostWillPurchaseBeBlockedByRestoreBehaviorOperation.PostData(
             transactionJWS: transactionJWS
         )
-        let operation = PostWillPurchaseBeBlockedByRestoreBehaviorOperation(
+        let factory = PostWillPurchaseBeBlockedByRestoreBehaviorOperation.createFactory(
             configuration: config,
             postData: postData,
-            responseHandler: completion
+            restoreEligibilityCallbackCache: self.restoreEligibilityCallbacksCache
         )
+        let callback = RestoreEligibilityCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.restoreEligibilityCallbacksCache.add(callback)
 
-        self.backendConfig.operationQueue.addOperation(operation)
+        self.backendConfig.addCacheableOperation(
+            with: factory,
+            delay: .default(forBackgroundedApp: isAppBackgrounded),
+            cacheStatus: cacheStatus
+        )
     }
 
     // swiftlint:disable function_parameter_count

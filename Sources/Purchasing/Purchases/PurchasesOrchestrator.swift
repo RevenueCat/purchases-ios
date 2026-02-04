@@ -2182,6 +2182,7 @@ extension PurchasesOrchestrator {
             self.backend.willPurchaseBeBlockedDueToRestoreBehavior(
                 appUserID: self.appUserID,
                 transactionJWS: jwsRepresentation,
+                isAppBackgrounded: self.systemInfo.isAppBackgroundedState,
                 completion: completion
             )
         }

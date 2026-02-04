@@ -190,6 +190,30 @@ class MockBackend: Backend {
         }
     }
 
+    var invokedWillPurchaseBeBlockedDueToRestoreBehavior = false
+    var invokedWillPurchaseBeBlockedDueToRestoreBehaviorCount = 0
+    var invokedWillPurchaseBeBlockedDueToRestoreBehaviorParameters:
+    (appUserID: String, transactionJWS: String, isAppBackgrounded: Bool)?
+    var stubbedWillPurchaseBeBlockedDueToRestoreBehaviorResult:
+    Result<WillPurchaseBeBlockedByRestoreBehaviorResponse, BackendError> = .failure(.missingAppUserID())
+
+    override func willPurchaseBeBlockedDueToRestoreBehavior(
+        appUserID: String,
+        transactionJWS: String,
+        isAppBackgrounded: Bool,
+        completion: @escaping CustomerAPI.PurchaseBlockStatusResponseHandler
+    ) {
+        self.invokedWillPurchaseBeBlockedDueToRestoreBehavior = true
+        self.invokedWillPurchaseBeBlockedDueToRestoreBehaviorCount += 1
+        self.invokedWillPurchaseBeBlockedDueToRestoreBehaviorParameters = (
+            appUserID,
+            transactionJWS,
+            isAppBackgrounded
+        )
+
+        completion(self.stubbedWillPurchaseBeBlockedDueToRestoreBehaviorResult)
+    }
+
     var invokedClearHTTPClientCaches = false
     var invokedClearHTTPClientCachesCount = 0
     override func clearHTTPClientCaches() {
