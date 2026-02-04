@@ -1200,6 +1200,10 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - run:
+          name: Set XCFrameworkTester environment variable
+          command: |
+            echo 'export TUIST_XCFRAMEWORK_TESTER=true' >> "$BASH_ENV"
       - tuist-generate-workspace
       - run:
           name: Test XCFramework export and integration

@@ -12,9 +12,12 @@ var projects: [Path] = [
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",
     "./Projects/BinarySizeTest",
-    "./Projects/RCTTester",
-    "./Projects/XCFrameworkTester"
+    "./Projects/RCTTester"
 ]
+
+if ProcessInfo.processInfo.environment["TUIST_XCFRAMEWORK_TESTER"] == "true" {
+    projects.append("./Projects/XCFrameworkTester")
+}
 
 if Environment.local {
     projects.append("./Projects/RevenueCat")
