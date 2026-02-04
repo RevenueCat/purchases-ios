@@ -134,7 +134,6 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         }
 
         deinit {
-
             guard let category = previousCategory,
                   let mode = previousMode,
                   let options = previousOptions else {

@@ -37,8 +37,13 @@ struct CarouselState: Equatable {
 
     /// Whether this page is active or adjacent to the active page in the data array.
     /// This matches the visible "side" pages in the carousel strip.
+    /// For looping carousels, also considers wrap-around neighbors (e.g., page 0 and page n-1).
     var isActiveOrNeighbor: Bool {
-        return abs(activeIndex - pageIndex) <= 1
+        let directDistance = abs(activeIndex - pageIndex)
+        guard originalCount > 1 else { return directDistance <= 1 }
+        // For looping carousels, check wrap-around distance
+        let wrapDistance = originalCount - directDistance
+        return min(directDistance, wrapDistance) <= 1
     }
 
 }
