@@ -38,11 +38,20 @@ struct VideoComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.carouselState)
+    private var carouselState
+
     @State var size: CGSize = .zero
 
     @State private var stagedURL: URL?
     @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
+
+    /// Tracks whether this page is active or adjacent. Updated via onChange to ensure SwiftUI detects the change.
+    @State private var isPlayable: Bool = true
+
+    /// Forces player recreation only when becoming playable (to keep autoplay reliable without churn).
+    @State private var playbackSeed: Int = 0
 
     var body: some View {
         viewModel
@@ -61,20 +70,26 @@ struct VideoComponentView: View {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
 
                     ZStack {
-                        if imageSource == nil && cachedURL == nil {
-                            // greedily fill space while loading occurs
-                            render(Color.clear, size: size, with: style)
-                        }
+                        // Determine if video player will render
+                        let willShowVideo = cachedURL != nil && isPlayable
 
-                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
+                        // Always render spacer for sizing
+                        render(Color.clear, size: size, with: style)
+
+                        // Show fallback image as background - video renders on top once ready
+                        if let source = imageSource ?? viewModel.imageSource,
+                           let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: imageSource, fitMode: style.contentMode == .fill ? .fill : .fit)
+                            component: .init(source: source, fitMode: style.contentMode == .fill ? .fill : .fit)
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
                         }
 
-                        if let cachedURL {
+                        // Only create VideoPlayerView when on active carousel page (or not in carousel)
+                        // This prevents multiple AVPlayer instances from competing for resources
+                        // Video layers on top of fallback image
+                        if let cachedURL, willShowVideo {
                             render(
                                 VideoPlayerView(
                                     videoURL: cachedURL,
@@ -83,7 +98,9 @@ struct VideoComponentView: View {
                                     showControls: style.showControls,
                                     loopVideo: style.loop,
                                     muteAudio: style.muteAudio
-                                ),
+                                )
+                                // Recreate only when becoming playable or URL changes.
+                                .id("\(cachedURL)-\(playbackSeed)"),
                                 size: size,
                                 with: style
                             )
@@ -172,12 +189,25 @@ struct VideoComponentView: View {
                 }
             }
             .onSizeChange { size = $0 }
+            .onAppear {
+                updatePlayableState(isPlayable: carouselState?.isActiveOrNeighbor ?? true)
+            }
+            .onChange(of: carouselState) { newState in
+                updatePlayableState(isPlayable: newState?.isActiveOrNeighbor ?? true)
+            }
 
     }
 
     private func aspectRatio(style: VideoComponentStyle) -> Double {
         let (width, height) = self.videoSize(style: style)
         return Double(width) / Double(height)
+    }
+
+    private func updatePlayableState(isPlayable newValue: Bool) {
+        if !self.isPlayable && newValue {
+            self.playbackSeed += 1
+        }
+        self.isPlayable = newValue
     }
 
     private func videoSize(style: VideoComponentStyle) -> (width: Int, height: Int) {

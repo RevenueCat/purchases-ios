@@ -97,9 +97,14 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         controller.player = player
         controller.view.backgroundColor = .clear
         controller.showsPlaybackControls = showControls
+        // Disable user interaction when controls are hidden to allow scroll gestures to pass through
+        if !showControls {
+            controller.view.isUserInteractionEnabled = false
+        }
         if #available(tvOS 14.0, *) {
             controller.allowsPictureInPicturePlayback = false
         }
+
         DispatchQueue.main.async {
             switch contentMode {
             case .fit:
@@ -129,6 +134,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         }
 
         deinit {
+
             guard let category = previousCategory,
                   let mode = previousMode,
                   let options = previousOptions else {
