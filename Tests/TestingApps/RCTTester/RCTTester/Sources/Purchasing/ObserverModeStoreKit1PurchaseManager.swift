@@ -47,7 +47,7 @@ final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
 
     var myAppPurchaseLogic: MyAppPurchaseLogic? {
         return MyAppPurchaseLogic(
-            performPurchase: { [wpuireak self] package in
+            performPurchase: { [weak self] package in
                 guard let self else { return (userCancelled: true, error: nil) }
                 let result = await self.purchase(package: package)
                 switch result {
