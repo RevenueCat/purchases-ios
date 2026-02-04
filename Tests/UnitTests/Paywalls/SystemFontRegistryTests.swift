@@ -8,7 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 
-@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCat
 import XCTest
 
 final class SystemFontRegistryTests: TestCase {
