@@ -8,8 +8,15 @@ import RevenueCat
 
 struct ContentView: View {
 
-    @State private var configuration: SDKConfiguration = .load()
+    @State private var configuration: SDKConfiguration
     @State private var isSDKConfigured = false
+    @State private var hasStoredConfiguration: Bool
+
+    init() {
+        let storedConfiguration = SDKConfiguration.load()
+        _configuration = State(initialValue: storedConfiguration ?? .default)
+        _hasStoredConfiguration = State(initialValue: storedConfiguration != nil)
+    }
 
     var body: some View {
         NavigationView {
@@ -26,6 +33,11 @@ struct ContentView: View {
             }
         }
         .navigationViewStyle(.stack)
+        .onAppear {
+            if hasStoredConfiguration && !isSDKConfigured {
+                configureSDK()
+            }
+        }
     }
 
     private func configureSDK() {
@@ -38,6 +50,8 @@ struct ContentView: View {
             : .storeKit2
 
         var builder = Configuration.Builder(withAPIKey: configuration.apiKey)
+
+        builder = builder.with(appUserID: configuration.appUserID)
 
         switch configuration.purchasesAreCompletedBy {
         case .revenueCat:

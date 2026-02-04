@@ -11,6 +11,10 @@ struct SDKConfiguration: Codable, Equatable {
     /// The RevenueCat API key
     var apiKey: String
 
+    /// The app user ID to use when configuring the SDK.
+    /// When empty, the SDK generates an anonymous user ID.
+    var appUserID: String
+
     /// Which StoreKit version to use
     var storeKitVersion: StoreKitVersion
 
@@ -70,6 +74,7 @@ struct SDKConfiguration: Codable, Equatable {
     static var `default`: SDKConfiguration {
         SDKConfiguration(
             apiKey: Constants.apiKey,
+            appUserID: "",
             storeKitVersion: .storeKit2,
             purchasesAreCompletedBy: .revenueCat,
             purchaseLogic: .throughRevenueCat
@@ -80,11 +85,11 @@ struct SDKConfiguration: Codable, Equatable {
 
     private static let userDefaultsKey = "com.revenuecat.rcttester.sdkConfiguration"
 
-    /// Loads the configuration from UserDefaults, or returns default if none exists
-    static func load() -> SDKConfiguration {
+    /// Loads the configuration from UserDefaults, or returns nil if none exists
+    static func load() -> SDKConfiguration? {
         guard let data = UserDefaults.standard.data(forKey: userDefaultsKey),
               let configuration = try? JSONDecoder().decode(SDKConfiguration.self, from: data) else {
-            return .default
+            return nil
         }
         return configuration
     }

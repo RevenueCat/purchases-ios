@@ -24,6 +24,16 @@ struct ConfigurationFormView: View {
             }
 
             Section {
+                TextField("App User ID", text: $configuration.appUserID)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+            } header: {
+                Text("App User ID")
+            } footer: {
+                Text("Leave empty to let the SDK generate an anonymous user ID.")
+            }
+
+            Section {
                 Picker("StoreKit Version", selection: $configuration.storeKitVersion) {
                     ForEach(SDKConfiguration.StoreKitVersion.allCases) { version in
                         Text(version.displayName).tag(version)

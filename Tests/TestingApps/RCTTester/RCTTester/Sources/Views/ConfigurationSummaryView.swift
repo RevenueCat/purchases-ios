@@ -7,27 +7,43 @@ import SwiftUI
 
 struct ConfigurationSummaryView: View {
 
-    let configuration: SDKConfiguration
+    @Binding var configuration: SDKConfiguration
+
+    // MARK: - Body
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("SDK Configuration")
-                .font(.headline)
+        Group {
+            ConfigurationRow(label: "API Key", value: redactedAPIKey, monospace: true)
+            ConfigurationRow(label: "StoreKit Version", value: configuration.storeKitVersion.displayName)
+            ConfigurationRow(label: "Purchases Completed By", value: configuration.purchasesAreCompletedBy.displayName)
 
-            Group {
-                ConfigurationRow(label: "StoreKit Version", value: configuration.storeKitVersion.displayName)
-                ConfigurationRow(label: "Purchases Completed By", value: configuration.purchasesAreCompletedBy.displayName)
-
-                if configuration.purchasesAreCompletedBy == .myApp {
-                    ConfigurationRow(label: "Purchase Logic", value: configuration.purchaseLogic.displayName)
-                }
+            if configuration.purchasesAreCompletedBy == .myApp {
+                ConfigurationRow(label: "Purchase Logic", value: configuration.purchaseLogic.displayName)
             }
-            .font(.subheadline)
         }
-        .padding()
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
-        .padding(.horizontal)
+    }
+
+    // MARK: - Helpers
+
+    private var redactedAPIKey: String {
+        let apiKey = configuration.apiKey
+        guard !apiKey.isEmpty else { return "—" }
+
+        let prefix: String
+        if let underscoreIndex = apiKey.firstIndex(of: "_") {
+            prefix = String(apiKey[...underscoreIndex])
+        } else {
+            prefix = String(apiKey.prefix(4))
+        }
+
+        let suffix = String(apiKey.suffix(4))
+
+        // Avoid showing duplicates if key is too short
+        if apiKey.count <= prefix.count + 4 {
+            return apiKey
+        }
+
+        return "\(prefix)•••••\(suffix)"
     }
 }
 
@@ -36,6 +52,7 @@ struct ConfigurationSummaryView: View {
 private struct ConfigurationRow: View {
     let label: String
     let value: String
+    var monospace: Bool = false
 
     var body: some View {
         HStack {
@@ -43,10 +60,15 @@ private struct ConfigurationRow: View {
                 .foregroundColor(.secondary)
             Spacer()
             Text(value)
+                .font(monospace ? .system(.body, design: .monospaced) : .body)
         }
     }
 }
 
 #Preview {
-    ConfigurationSummaryView(configuration: .default)
+    List {
+        Section("SDK Configuration") {
+            ConfigurationSummaryView(configuration: .constant(.default))
+        }
+    }
 }

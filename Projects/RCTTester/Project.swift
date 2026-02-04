@@ -26,12 +26,50 @@ let project = Project(
             ],
             resources: [
                 "../../Tests/TestingApps/RCTTester/RCTTester/**/*.xcassets",
+                "../../Tests/TestingApps/RCTTester/RCTTester/**/*.storekit",
             ],
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
             ],
             settings: .appTarget
+        )
+    ],
+    schemes: [
+        .scheme(
+            name: "RCTTester - SK Config",
+            shared: true,
+            buildAction: .buildAction(targets: ["RCTTester"]),
+            runAction: .runAction(
+                configuration: "Debug",
+                executable: "RCTTester",
+                options: .options(
+                    storeKitConfigurationPath: "../../Tests/TestingApps/RCTTester/RCTTester/RCTTester.storekit"
+                )
+            )
+        ),
+        .scheme(
+            name: "RCTTester - Live Config",
+            shared: true,
+            buildAction: .buildAction(targets: ["RCTTester"]),
+            runAction: .runAction(
+                configuration: "Debug",
+                executable: "RCTTester"
+            )
+        ),
+        // Hide the default scheme
+        .scheme(
+            name: "RCTTester",
+            shared: false,
+            hidden: true,
+            buildAction: .buildAction(targets: ["RCTTester"]),
+            runAction: .runAction(
+                configuration: "Debug",
+                executable: "RCTTester",
+                options: .options(
+                    storeKitConfigurationPath: "../../Tests/TestingApps/RCTTester/RCTTester/RCTTester.storekit"
+                )
+            )
         )
     ]
 )
