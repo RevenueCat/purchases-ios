@@ -190,7 +190,7 @@ public typealias ProductIdentifier = String
     /// Initializes a `CustomerInfo` with the underlying data in the current schema version
     convenience init(response: CustomerInfoResponse,
                      entitlementVerification: VerificationResult,
-                     sandboxEnvironmentDetector: SandboxEnvironmentDetector,
+                     sandboxEnvironmentDetector: SandboxEnvironmentDetectorType,
                      httpResponseOriginalSource: HTTPResponseOriginalSource?) {
         let originalSource = OriginalSource(entitlementVerification: entitlementVerification,
                                             httpResponseOriginalSource: httpResponseOriginalSource)
@@ -248,14 +248,14 @@ public typealias ProductIdentifier = String
 
     /// Initializes a `CustomerInfo` creating a copy.
     convenience init(customerInfo: CustomerInfo,
-                     sandboxEnvironmentDetector: SandboxEnvironmentDetector) {
+                     sandboxEnvironmentDetector: SandboxEnvironmentDetectorType) {
         self.init(data: customerInfo.data, sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
     // swiftlint:disable:next function_body_length
     fileprivate convenience init(
         data: Contents,
-        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector.default
     ) {
         let response = data.response
         let subscriber = response.subscriber

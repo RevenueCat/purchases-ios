@@ -30,7 +30,7 @@ extension PurchasedSK2Product {
 
     init(
         from transaction: StoreKit.Transaction,
-        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector.default
     ) {
         let expiration = transaction.expirationDate
 

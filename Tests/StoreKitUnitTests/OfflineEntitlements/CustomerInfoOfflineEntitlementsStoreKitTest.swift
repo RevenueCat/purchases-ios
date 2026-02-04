@@ -22,7 +22,7 @@ import XCTest
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
 
-    private var sandboxDetector: SandboxEnvironmentDetector!
+    private var sandboxDetector: SandboxEnvironmentDetectorType!
 
     private static let userID: String = IdentityManager.generateRandomID()
 

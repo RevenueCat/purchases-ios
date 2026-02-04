@@ -20,7 +20,7 @@ import XCTest
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class BasePurchasedProductsFetcherTests: StoreKitConfigTestCase {
 
-    fileprivate var sandboxDetector: SandboxEnvironmentDetector!
+    fileprivate var sandboxDetector: SandboxEnvironmentDetectorType!
     fileprivate var fetcher: PurchasedProductsFetcher!
 
     override func setUpWithError() throws {
