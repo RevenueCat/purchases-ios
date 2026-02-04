@@ -12,7 +12,8 @@ var projects: [Path] = [
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",
     "./Projects/BinarySizeTest",
-    "./Projects/RCTTester"
+    "./Projects/RCTTester",
+    "./Projects/XCFrameworkTester"
 ]
 
 if Environment.local {
