@@ -30,6 +30,7 @@ let allDestinations = destinations + [.appleWatch]
 let project = Project(
     name: "PurchaseTester",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .appProject,
     targets: [
         .target(
@@ -87,7 +88,7 @@ let project = Project(
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
-                .receiptparser,
+                .receiptParser,
             ],
             settings: .framework
         ),
