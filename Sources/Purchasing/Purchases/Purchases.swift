@@ -1078,13 +1078,16 @@ extension Purchases {
     public func isPurchaseAllowedByRestoreBehavior(
         completion: @escaping (Bool?, PublicError?) -> Void
     ) {
-        Async.call(with: { result in
-            OperationDispatcher.dispatchOnMainActor {
-                completion(result.error == nil ? result.value : nil, result.error?.asPublicError)
+        Async.call(
+            with: { result in
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(result.error == nil ? result.value : nil, result.error?.asPublicError)
+                }
+            },
+            asyncMethod: {
+                try await self.isPurchaseAllowedByRestoreBehavior()
             }
-        }) {
-            try await self.isPurchaseAllowedByRestoreBehavior()
-        }
+        )
     }
 
     /// Queries whether a purchase made by the current appUserId is allowed by the app's restore behavior.
