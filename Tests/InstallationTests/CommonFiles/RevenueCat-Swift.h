@@ -3645,6 +3645,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 - (void)eligiblePromotionalOffersForProduct:(RCStoreProduct * _Nonnull)product completionHandler:(void (^ _Nonnull)(NSArray<RCPromotionalOffer *> * _Nonnull))completionHandler;
 - (void)showManageSubscriptionsWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completion SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(watchos,unavailable);
 - (void)showManageSubscriptionsWithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(watchos,unavailable);
+- (void)recordPurchaseForProductID:(NSString * _Nonnull)productID completion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, NSError * _Nullable))completion SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(tvos,introduced=15.0) SWIFT_AVAILABILITY(macos,introduced=12.0) SWIFT_AVAILABILITY(ios,introduced=15.0);
 - (void)redeemWebPurchaseWithWebPurchaseRedemption:(RCWebPurchaseRedemption * _Nonnull)webPurchaseRedemption completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 @end
 

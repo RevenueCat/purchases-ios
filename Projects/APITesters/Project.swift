@@ -46,7 +46,8 @@ let project = Project(
                 ]
             ),
             dependencies: [
-                .revenueCat
+                .revenueCat,
+                .revenueCatUI
             ],
             metadata: .metadata(tags: ["APITester"])
         ),

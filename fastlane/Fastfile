@@ -28,6 +28,21 @@ def run_plugin_action_in_current_directory(&block)
   Dir.chdir(Dir["*/"].first.chomp("/"), &block)
 end
 
+# Post-process JUnit XML to include environment name in testcase names
+def postprocess_maestro_junit_report(output_dir:, environment_name:)
+  junit_file = "#{output_dir}/report.xml"
+  if File.exist?(junit_file)
+    UI.message("Adding environment name (#{environment_name}) to test names in JUnit report...")
+    content = File.read(junit_file)
+    modified_content = content.gsub(/<testcase([^>]*)name="([^"]+)"/) do |match|
+      prefix = $1
+      test_name = $2
+      "<testcase#{prefix}name=\"#{test_name} (#{environment_name})\""
+    end
+    File.write(junit_file, modified_content)
+  end
+end
+
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
@@ -1017,24 +1032,33 @@ platform :ios do
 
       UI.message("Using flow directory: #{flow_dir}")
 
-      sh("maestro", "test", "--format", "junit", "--output", "#{output_dir}/report.xml", "--test-output-dir", output_dir, flow_dir)
+      # CI-level retries for flaky Maestro tests
+      max_retries = 5
+      attempt = 0
 
-      success = true
+      while attempt <= max_retries && !success
+        attempt_output_dir = "#{output_dir}/attempt_#{attempt}"
+        FileUtils.mkdir_p(attempt_output_dir)
+
+        begin
+          sh("maestro", "test", "--format", "junit", "--output", "#{attempt_output_dir}/report.xml", "--test-output-dir", attempt_output_dir, flow_dir)
+          success = true
+          postprocess_maestro_junit_report(output_dir: attempt_output_dir, environment_name: environment_name)
+          # Copy successful attempt's report to main output_dir
+          FileUtils.cp("#{attempt_output_dir}/report.xml", "#{output_dir}/report.xml")
+        rescue => e
+          UI.error("Maestro test attempt #{attempt} failed: #{e.message}")
+          postprocess_maestro_junit_report(output_dir: attempt_output_dir, environment_name: environment_name)
+          if attempt >= max_retries
+            raise e
+          end
+          attempt += 1
+          UI.message("Retrying... #{attempt}/#{max_retries}")
+        end
+      end
     rescue => e
       raise e
     ensure
-      # Post-process JUnit XML to include environment name in testcase names
-      junit_file = "#{output_dir}/report.xml"
-      if File.exist?(junit_file)
-        UI.message("Adding environment name (#{environment_name}) to test names in JUnit report...")
-        content = File.read(junit_file)
-        modified_content = content.gsub(/<testcase([^>]*)name="([^"]+)"/) do |match|
-          prefix = $1
-          test_name = $2
-          "<testcase#{prefix}name=\"#{test_name} (#{environment_name})\""
-        end
-        File.write(junit_file, modified_content)
-      end
       unless skip_slack_notification
         slack_backend_integration_test_results(
           environment: backend_environment,
@@ -1281,7 +1305,12 @@ platform :ios do
     base_branch = options[:base_branch]
     build_number = ENV["CIRCLE_BUILD_NUM"]
 
-    branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
+    ## Version can be empty
+    if version.empty?
+      branch_name = "generated_snapshots/#{base_branch}-#{build_number}"
+    else
+      branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
+    end
 
     sh("git", "checkout", "-b", branch_name)
     sh("git", "add", options[:files_to_add])
@@ -1300,7 +1329,7 @@ platform :ios do
 
       create_pull_request(
         repo: options[:repo],
-        title: "Generating new test snapshots for `#{base_branch}` - #{version}",
+        title: "Generating new test snapshots for `#{base_branch}` #{version.empty? ? "" : "- #{version}"}",
         body: body,
         base: base_branch,
         api_token: ENV["GITHUB_TOKEN"],
@@ -1401,7 +1430,8 @@ platform :ios do
 
   desc "Run BackendIntegrationTests"
   lane :backend_integration_tests do |options|
-    fail_build = options[:fail_build]
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+    test_configuration = generate_snapshots ? "GenerateSnapshots" : "Default"
 
     fetch_snapshots
     replace_api_key_integration_tests
@@ -1416,9 +1446,11 @@ platform :ios do
         output_style: 'raw',
         result_bundle: true,
         testplan: options[:test_plan],
+        only_test_configurations: [test_configuration],
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios",
-        number_of_retries: 5 # Number of retries in an xcodebuild run
+        number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
+        fail_build: !generate_snapshots,
       )
       success = true
     rescue => exception
@@ -1849,6 +1881,14 @@ platform :ios do
   private_lane :setup_swiftinterface_xcconfig do
     base_path = "#{Dir.pwd}/.."
     xcconfig_path = "#{base_path}/CI.xcconfig"
+    local_xcconfig_path = "#{base_path}/Local.xcconfig"
+
+    # Temporarily move Local.xcconfig out of the way if it exists
+    # Local.xcconfig is loaded after CI.xcconfig and would override our settings
+    if File.exist?(local_xcconfig_path)
+      UI.message("Moving Local.xcconfig temporarily to prevent DEBUG override")
+      FileUtils.mv(local_xcconfig_path, "#{local_xcconfig_path}.bak")
+    end
 
     UI.message("Creating CI.xcconfig to exclude DEBUG compilation conditions")
 
@@ -1869,9 +1909,16 @@ platform :ios do
   private_lane :cleanup_swiftinterface_xcconfig do
     base_path = "#{Dir.pwd}/.."
     xcconfig_path = "#{base_path}/CI.xcconfig"
+    local_xcconfig_path = "#{base_path}/Local.xcconfig"
 
     FileUtils.rm_f(xcconfig_path)
     UI.message("Cleaned up CI.xcconfig")
+
+    # Restore Local.xcconfig if it was moved
+    if File.exist?("#{local_xcconfig_path}.bak")
+      FileUtils.mv("#{local_xcconfig_path}.bak", local_xcconfig_path)
+      UI.message("Restored Local.xcconfig")
+    end
   end
 
   desc "Check API changes and report results"

@@ -2412,6 +2412,9 @@ public typealias StartPurchaseBlock = (@escaping RevenueCat.PurchaseCompletedBlo
   @objc deinit
 }
 extension RevenueCat.Purchases {
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc public static func parseAsWebPurchaseRedemption(_ url: Foundation.URL) -> RevenueCat.WebPurchaseRedemption?
+  #endif
   @objc final public var appUserID: Swift.String {
     @objc get
   }
@@ -2518,6 +2521,10 @@ extension RevenueCat.Purchases {
   #if compiler(>=5.3) && $NonescapableTypes
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   final public func recordPurchase(_ purchaseResult: StoreKit.Product.PurchaseResult) async throws -> RevenueCat.StoreTransaction?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @objc(recordPurchaseForProductID:completion:) final public func recordPurchase(productID: Swift.String, completion: @escaping (RevenueCat.StoreTransaction?, RevenueCat.PublicError?) -> Swift.Void)
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
   @objc final public func redeemWebPurchase(webPurchaseRedemption: RevenueCat.WebPurchaseRedemption, completion: @escaping (RevenueCat.CustomerInfo?, RevenueCat.PublicError?) -> Swift.Void)
@@ -2989,13 +2996,22 @@ public struct UIConfig : Swift.Codable, Swift.Equatable, Swift.Sendable {
     public func encode(to encoder: any Swift.Encoder) throws
     public init(from decoder: any Swift.Decoder) throws
   }
+  public struct CustomVariableDefinition : Swift.Codable, Swift.Equatable, Swift.Sendable {
+    public let type: Swift.String
+    public let defaultValue: Swift.String
+    public init(type: Swift.String, defaultValue: Swift.String)
+    public static func == (a: RevenueCat.UIConfig.CustomVariableDefinition, b: RevenueCat.UIConfig.CustomVariableDefinition) -> Swift.Bool
+    public func encode(to encoder: any Swift.Encoder) throws
+    public init(from decoder: any Swift.Decoder) throws
+  }
   public var app: RevenueCat.UIConfig.AppConfig
   public var localizations: [Swift.String : [Swift.String : Swift.String]]
   public var variableConfig: RevenueCat.UIConfig.VariableConfig
-  public init(app: RevenueCat.UIConfig.AppConfig, localizations: [Swift.String : [Swift.String : Swift.String]], variableConfig: RevenueCat.UIConfig.VariableConfig)
+  public var customVariables: [Swift.String : RevenueCat.UIConfig.CustomVariableDefinition]
+  public init(app: RevenueCat.UIConfig.AppConfig, localizations: [Swift.String : [Swift.String : Swift.String]], variableConfig: RevenueCat.UIConfig.VariableConfig, customVariables: [Swift.String : RevenueCat.UIConfig.CustomVariableDefinition] = [:])
+  public init(from decoder: any Swift.Decoder) throws
   public static func == (a: RevenueCat.UIConfig, b: RevenueCat.UIConfig) -> Swift.Bool
   public func encode(to encoder: any Swift.Encoder) throws
-  public init(from decoder: any Swift.Decoder) throws
 }
 extension RevenueCat.PaywallComponent {
   final public class TimelineComponent : RevenueCat.PaywallComponentBase {

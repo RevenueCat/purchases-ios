@@ -448,6 +448,10 @@ commands:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "BackendIntegrationTests"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -1697,6 +1701,8 @@ workflows:
       - run-test-ios-14
       - run-test-macos
       - run-test-watchos
+      - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
+
 
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>

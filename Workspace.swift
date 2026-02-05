@@ -13,8 +13,9 @@ var projects: [Path] = [
     "./Projects/PaywallValidationTester",
     "./Projects/RevenueCatTests",
     "./Projects/RevenueCat",
-    "./Projects/RevenueCatUI"
-    "./Projects/BinarySizeTest"
+    "./Projects/RevenueCatUI",
+    "./Projects/BinarySizeTest",
+    "./Projects/RCTTester"
 ]
 
 var additionalFiles: [FileElement] = [
