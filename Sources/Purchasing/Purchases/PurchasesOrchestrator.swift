@@ -1042,13 +1042,13 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
         // For observer mode. Should only come from calls to `restoreCompletedTransactions`,
         // which the SDK does not currently use.
         case .restored:
-            self.handlePurchasedTransaction(storeTransaction,
-                                            storefront: storeKit1Wrapper.currentStorefront,
-                                            restored: true)
+            self.handleSK1PurchasedTransaction(storeTransaction,
+                                               storefront: storeKit1Wrapper.currentStorefront,
+                                               restored: true)
         case .purchased:
-            self.handlePurchasedTransaction(storeTransaction,
-                                            storefront: storeKit1Wrapper.currentStorefront,
-                                            restored: false)
+            self.handleSK1PurchasedTransaction(storeTransaction,
+                                               storefront: storeKit1Wrapper.currentStorefront,
+                                               restored: false)
         case .purchasing:
             break
         case .failed:
@@ -1827,9 +1827,9 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
-                                    storefront: StorefrontType?,
-                                    restored: Bool) {
+    func handleSK1PurchasedTransaction(_ purchasedTransaction: StoreTransaction,
+                                       storefront: StorefrontType?,
+                                       restored: Bool) {
         // Don't attribute offering context or paywall data for restored transactions
         let cachedOfferingContext = restored ? nil : self.getAndRemovePresentedOfferingContext(
             for: purchasedTransaction
