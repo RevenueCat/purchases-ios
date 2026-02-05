@@ -1194,21 +1194,6 @@ jobs:
             echo "All test suites passed!"
           when: always
 
-  test-xcframework-export-and-integration:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout
-      - install-dependencies
-      - revenuecat/install-tuist
-      - run:
-          name: Test XCFramework export and integration
-          command: |
-            export TUIST_PATH="$HOME/.local/share/mise/shims/tuist"
-            bundle exec fastlane test_xcframework_export_and_integration
-          no_output_timeout: 30m
-      - slack-notify-on-fail
-
   release-checks:
     executor:
       name: macos-executor
@@ -1226,9 +1211,12 @@ jobs:
             - vendor/bundle
       - install-dependencies
       - update-spm-installation-commit
+      - revenuecat/install-tuist
       - run:
           name: Deployment checks
-          command: bundle exec fastlane release_checks
+          command: |
+            export TUIST_PATH="$HOME/.local/share/mise/shims/tuist"
+            bundle exec fastlane release_checks
           environment:
             SCAN_SCHEME: All Tests
           no_output_timeout: 30m
@@ -1732,7 +1720,6 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - test-xcframework-export-and-integration
       - lint
       - check-api-changes:
           context:
