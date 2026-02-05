@@ -270,6 +270,8 @@ extension PurchaseHandler {
 
         self.startAction(.purchase)
         self.trackPurchaseInitiated(package: package)
+        self.purchases.cachePresentedOfferingContext(package.presentedOfferingContext,
+                                                     productIdentifier: package.storeProduct.productIdentifier)
 
         do {
             let result: PurchaseResultData
@@ -319,6 +321,8 @@ extension PurchaseHandler {
 
         self.startAction(.purchase)
         self.trackPurchaseInitiated(package: package)
+        self.purchases.cachePresentedOfferingContext(package.presentedOfferingContext,
+                                                     productIdentifier: package.storeProduct.productIdentifier)
 
         let result = await externalPurchaseMethod(package)
 
@@ -630,6 +634,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func track(paywallEvent: PaywallEvent) async {}
+
+    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {}
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {}
