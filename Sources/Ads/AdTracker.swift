@@ -74,8 +74,8 @@ public final class AdTracker: NSObject {
      ## Example:
      ```swift
      Purchases.shared.adTracker.trackAdFailedToLoad(.init(
-         networkName: "AdMob",
          mediatorName: .appLovin,
+         adFormat: .banner,
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
          mediatorErrorCode: 3

@@ -40,22 +40,19 @@
         NSString *formatRawValue __unused = banner.rawValue;
 
         // AdFailedToLoad API - with placement
-        RCAdFailedToLoad *failedWithPlacement __unused = [[RCAdFailedToLoad alloc] initWithNetworkName:@"AdMob"
-                                                                                        mediatorName:RCMediatorName.appLovin
-                                                                                            adFormat:RCAdFormat.banner
-                                                                                           placement:@"home_screen"
-                                                                                            adUnitId:@"ca-app-pub-123"
-                                                                                  mediatorErrorCode:@3];
+        RCAdFailedToLoad *failedWithPlacement __unused = [[RCAdFailedToLoad alloc] initWithMediatorName:RCMediatorName.appLovin
+                                                                                              adFormat:RCAdFormat.banner
+                                                                                             placement:@"home_screen"
+                                                                                              adUnitId:@"ca-app-pub-123"
+                                                                                    mediatorErrorCode:@3];
 
         // AdFailedToLoad API - without placement
-        RCAdFailedToLoad *failedNoPlacement __unused = [[RCAdFailedToLoad alloc] initWithNetworkName:@"AdMob"
-                                                                                       mediatorName:RCMediatorName.appLovin
-                                                                                           adFormat:RCAdFormat.interstitial
-                                                                                           adUnitId:@"ca-app-pub-123"
-                                                                                 mediatorErrorCode:nil];
+        RCAdFailedToLoad *failedNoPlacement __unused = [[RCAdFailedToLoad alloc] initWithMediatorName:RCMediatorName.appLovin
+                                                                                            adFormat:RCAdFormat.interstitial
+                                                                                            adUnitId:@"ca-app-pub-123"
+                                                                                  mediatorErrorCode:nil];
 
         // AdFailedToLoad properties
-        NSString *failedNetworkName __unused = failedWithPlacement.networkName;
         RCMediatorName *failedMediator __unused = failedWithPlacement.mediatorName;
         RCAdFormat *failedFormat __unused = failedWithPlacement.adFormat;
         NSString *failedPlacement __unused = failedWithPlacement.placement;

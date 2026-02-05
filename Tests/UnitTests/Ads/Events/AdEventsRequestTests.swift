@@ -118,7 +118,6 @@ private extension AdFeatureEventsRequestTests {
     )
 
     static let failedToLoadData: AdFailedToLoad = .init(
-        networkName: "AdMob",
         mediatorName: .appLovin,
         adFormat: .banner,
         placement: "home_screen",
