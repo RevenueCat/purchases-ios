@@ -60,8 +60,11 @@ final class ObserverModeStoreKit2PurchaseManager: PurchaseManager {
             let result = try await sk2Product.purchase()
 
             // Notify RevenueCat about the purchase result.
-            // This is required in observer mode with SK2 so RevenueCat can sync the transaction.
+            // This is required for native macOS in observer mode with SK2 so RevenueCat can sync the transaction.
+            // On other platforms, RevenueCat automatically observes Transaction.updates.
+            #if os(macOS) && !targetEnvironment(macCatalyst)
             _ = try await Purchases.shared.recordPurchase(result)
+            #endif
 
             switch result {
             case .success(let verification):
