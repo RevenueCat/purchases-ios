@@ -650,6 +650,159 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    // MARK: - PresentedOfferingContext from Paywall Event
+
+    func testPurchaseWithPaywallContextUsedWhenNoCachedContext() async throws {
+        // When there's no cached context but we have a paywall event with presentedOfferingContext,
+        // the paywall's context should be used
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+
+        // Track paywall event with presentedOfferingContext (no cached context from package)
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo,
+            Self.paywallPresentedOfferingContext
+        ))
+
+        // Purchase WITHOUT a package (so no cached context is set)
+        _ = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+
+        // Verify the presentedOfferingContext from the paywall event is used
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
+        ) == Self.paywallPresentedOfferingContext.offeringIdentifier
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.presentedOfferingContext?.offeringIdentifier
+        ) == Self.paywallPresentedOfferingContext.offeringIdentifier
+    }
+
+    func testPurchaseWithCachedContextPrioritizedOverPaywallContext() async throws {
+        // When both cached context and paywall context exist with the same offering ID but different values,
+        // the cached context should be used
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+
+        // Create a cached context with same offering ID but different placement/targeting values
+        let cachedContext = PresentedOfferingContext(
+            offeringIdentifier: Self.paywallPresentedOfferingContext.offeringIdentifier,
+            placementIdentifier: "cached_placement",
+            targetingContext: .init(revision: 99, ruleId: "cached_rule")
+        )
+
+        // Create a paywall context with same offering ID but different values
+        let paywallContext = PresentedOfferingContext(
+            offeringIdentifier: Self.paywallPresentedOfferingContext.offeringIdentifier,
+            placementIdentifier: "paywall_placement",
+            targetingContext: .init(revision: 1, ruleId: "paywall_rule")
+        )
+
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk2Product: product),
+            presentedOfferingContext: cachedContext,
+            webCheckoutUrl: nil
+        )
+
+        // Track paywall event with paywallContext (same offering ID, different values)
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo,
+            paywallContext
+        ))
+
+        // Purchase WITH a package (sets cached context)
+        _ = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: package,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+
+        // Verify the cached context values are used, not the paywall context values
+        let resultContext = self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        expect(resultContext?.offeringIdentifier) == cachedContext.offeringIdentifier
+        expect(resultContext?.placementIdentifier) == cachedContext.placementIdentifier
+        expect(resultContext?.targetingContext?.revision) == cachedContext.targetingContext?.revision
+        expect(resultContext?.targetingContext?.ruleId) == cachedContext.targetingContext?.ruleId
+    }
+
+    func testPurchaseWithMismatchedContextsUsesCached() async throws {
+        // When cached context and paywall context have different offering IDs,
+        // the cached context should be used
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+
+        // Create a paywall context with a DIFFERENT offering ID
+        let differentOfferingContext = PresentedOfferingContext(
+            offeringIdentifier: Self.paywallPresentedOfferingContext.offeringIdentifier + "_different"
+        )
+
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk2Product: product),
+            offeringIdentifier: Self.paywallPresentedOfferingContext.offeringIdentifier,
+            webCheckoutUrl: nil
+        )
+
+        // Track paywall event with a DIFFERENT presentedOfferingContext
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo,
+            differentOfferingContext
+        ))
+
+        // Purchase WITH a package (sets cached context that differs from paywall)
+        _ = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: package,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+
+        // Verify the CACHED context is used (not the paywall's)
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
+        ) == Self.paywallPresentedOfferingContext.offeringIdentifier
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
+        ) != differentOfferingContext.offeringIdentifier
+    }
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSyncsPaywallEvents() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
