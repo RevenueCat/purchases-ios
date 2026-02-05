@@ -59,7 +59,6 @@ final class PostIsPurchaseAllowedByRestoreBehaviorOperation: CacheableNetworkOpe
     }
 
     private func post(completion: @escaping () -> Void) {
-
         guard self.configuration.appUserID.isNotEmpty else {
             self.handleResult(.failure(.missingAppUserID()))
             completion()

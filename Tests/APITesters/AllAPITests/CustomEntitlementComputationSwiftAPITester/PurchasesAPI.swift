@@ -270,6 +270,10 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
 #endif
     }
 
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        purchases.isPurchaseAllowedByRestoreBehavior { (_: Bool?, _: PublicError?) in }
+    }
+
     purchases.checkTrialOrIntroDiscountEligibility(
         productIdentifiers: [""],
         completion: { eligibilityDictionary in
