@@ -1445,6 +1445,9 @@ platform :ios do
     env_vars = options[:env_vars] || {}
     
     Dir.chdir(project_root) do
+      # Use TUIST_PATH environment variable if set (for CI), otherwise use 'tuist' (assumes it's in PATH)
+      tuist_binary = ENV['TUIST_PATH'] || 'tuist'
+      
       # Build environment variable exports for TUIST_ prefixed variables
       env_exports = []
       env_vars.each do |var_name, var_value|
@@ -1453,13 +1456,13 @@ platform :ios do
       end
       
       # Build tuist command
-      tuist_cmd = "tuist install && tuist generate"
+      tuist_cmd = "#{tuist_binary} install && #{tuist_binary} generate"
       if query && !query.empty?
         tuist_cmd += " #{query}"
       end
       tuist_cmd += " --no-open"
       
-      # Run tuist generate directly (assumes tuist is in PATH)
+      # Run tuist generate
       if env_exports.any?
         sh("#{env_exports.join(' && ')} && #{tuist_cmd}")
       else
