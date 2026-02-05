@@ -1445,15 +1445,8 @@ platform :ios do
     env_vars = options[:env_vars] || {}
     
     Dir.chdir(project_root) do
-      # Ensure Tuist is in PATH (CI should have it installed via mise)
-      mise_path = File.join(ENV["HOME"] || Dir.home, ".local/share/mise/shims")
-      path_with_mise = "#{mise_path}:#{ENV['PATH']}"
-      
-      # Build environment variable exports
+      # Build environment variable exports for TUIST_ prefixed variables
       env_exports = []
-      env_exports << "export PATH=\"#{path_with_mise}\""
-      
-      # Add TUIST_ prefixed environment variables
       env_vars.each do |var_name, var_value|
         tuist_var_name = "TUIST_#{var_name}"
         env_exports << "export #{tuist_var_name}=#{var_value}"
@@ -1466,8 +1459,12 @@ platform :ios do
       end
       tuist_cmd += " --no-open"
       
-      # Run tuist generate
-      sh("#{env_exports.join(' && ')} && #{tuist_cmd}")
+      # Run tuist generate directly (assumes tuist is in PATH)
+      if env_exports.any?
+        sh("#{env_exports.join(' && ')} && #{tuist_cmd}")
+      else
+        sh(tuist_cmd)
+      end
     end
     
     # Verify workspace was generated
