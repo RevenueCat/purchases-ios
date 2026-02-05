@@ -717,7 +717,7 @@ platform :ios do
     check_pods
     export_xcframeworks
     check_no_github_release_exists(version_number)
-    test_xcframework_integration
+    xcframework_installation_tests
   end
 
   desc "build tvOS, watchOS, macOS"
@@ -1442,7 +1442,7 @@ platform :ios do
 
   lane :test_xcframework_export_and_integration do |options|
     export_xcframeworks(options)
-    test_xcframework_integration(options)
+    xcframework_installation_tests(options)
   end
 
   desc "Generate Tuist workspace"
@@ -1487,7 +1487,7 @@ platform :ios do
   end
 
   desc "Test XCFramework integration by building XCFrameworkTester app"
-  lane :test_xcframework_integration do |options|
+  lane :xcframework_installation_tests do |options|
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
     
     # Extract xcframework zip files to the root of the project
