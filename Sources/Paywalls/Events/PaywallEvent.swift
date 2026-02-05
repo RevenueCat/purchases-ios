@@ -66,7 +66,7 @@ public enum PaywallEvent: FeatureEvent {
     case exitOffer(CreationData, Data, ExitOfferData)
 
     /// A purchase was initiated from the paywall.
-    case purchaseInitiated(CreationData, Data)
+    case purchaseInitiated(CreationData, Data, PresentedOfferingContext)
 
     /// A purchase from the paywall failed with an error.
     case purchaseError(CreationData, Data)
@@ -218,7 +218,7 @@ extension PaywallEvent {
         case let .cancel(creationData, _): return creationData
         case let .close(creationData, _): return creationData
         case let .exitOffer(creationData, _, _): return creationData
-        case let .purchaseInitiated(creationData, _): return creationData
+        case let .purchaseInitiated(creationData, _, _): return creationData
         case let .purchaseError(creationData, _): return creationData
         }
     }
@@ -230,7 +230,7 @@ extension PaywallEvent {
         case let .cancel(_, data): return data
         case let .close(_, data): return data
         case let .exitOffer(_, data, _): return data
-        case let .purchaseInitiated(_, data): return data
+        case let .purchaseInitiated(_, data, _): return data
         case let .purchaseError(_, data): return data
         }
     }
@@ -240,6 +240,14 @@ extension PaywallEvent {
         switch self {
         case .impression, .cancel, .close, .purchaseInitiated, .purchaseError: return nil
         case let .exitOffer(_, _, exitOfferData): return exitOfferData
+        }
+    }
+
+    /// - Returns: the ``PresentedOfferingContext`` for purchaseInitiated events, `nil` otherwise.
+    var presentedOfferingContext: PresentedOfferingContext? {
+        switch self {
+        case .impression, .cancel, .close, .exitOffer, .purchaseError: return nil
+        case let .purchaseInitiated(_, _, context): return context
         }
     }
 

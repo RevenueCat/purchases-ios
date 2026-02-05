@@ -462,7 +462,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         self.orchestrator.track(paywallEvent: .purchaseInitiated(
             Self.paywallEventCreationData,
-            Self.paywallEventWithPurchaseInfo
+            Self.paywallEventWithPurchaseInfo,
+            Self.paywallPresentedOfferingContext
         ))
 
         let mockListener = try XCTUnwrap(
@@ -497,7 +498,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.orchestrator.track(paywallEvent: .purchaseInitiated(
             Self.paywallEventCreationData,
-            Self.paywallEventWithPurchaseInfo
+            Self.paywallEventWithPurchaseInfo,
+            Self.paywallPresentedOfferingContext
         ))
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
@@ -551,7 +553,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.orchestrator.track(paywallEvent: .purchaseInitiated(
             Self.paywallEventCreationData,
-            Self.paywallEventWithPurchaseInfo
+            Self.paywallEventWithPurchaseInfo,
+            Self.paywallPresentedOfferingContext
         ))
 
         // Simulate cancel event clearing the cache (as PurchaseHandler would do)
@@ -586,7 +589,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         // Track a purchaseInitiated event with a DIFFERENT product ID
         self.orchestrator.track(paywallEvent: .purchaseInitiated(
             Self.paywallEventCreationData,
-            Self.paywallEventWithDifferentProductId
+            Self.paywallEventWithDifferentProductId,
+            Self.paywallPresentedOfferingContext
         ))
 
         let mockListener = try XCTUnwrap(
@@ -619,7 +623,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         // This simulates processing a transaction that was purchased BEFORE the paywall event
         self.orchestrator.track(paywallEvent: .purchaseInitiated(
             Self.paywallEventCreationDataInFuture,
-            Self.paywallEventWithPurchaseInfo
+            Self.paywallEventWithPurchaseInfo,
+            Self.paywallPresentedOfferingContext
         ))
 
         let mockListener = try XCTUnwrap(
@@ -991,7 +996,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         // Track a purchaseInitiated event (only purchaseInitiated caches paywall data)
         self.orchestrator.track(paywallEvent: .purchaseInitiated(
             Self.paywallEventCreationData,
-            Self.paywallEventWithPurchaseInfo
+            Self.paywallEventWithPurchaseInfo,
+            Self.paywallPresentedOfferingContext
         ))
 
         // Perform an actual purchase to get the Product.PurchaseResult

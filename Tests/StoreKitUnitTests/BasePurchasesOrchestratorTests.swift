@@ -324,6 +324,10 @@ extension BasePurchasesOrchestratorTests {
     static let testErrorCode = 12
     static let testErrorMessage = "Test error message"
 
+    static let paywallPresentedOfferingContext = PresentedOfferingContext(
+        offeringIdentifier: "offering"
+    )
+
     static var paywallEventWithPurchaseInfo: PaywallEvent.Data {
         return paywallEvent.withPurchaseInfo(
             packageId: testPackageId,

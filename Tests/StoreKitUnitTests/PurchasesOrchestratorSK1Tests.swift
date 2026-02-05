@@ -502,7 +502,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.orchestrator.track(paywallEvent: .purchaseInitiated(
             Self.paywallEventCreationData,
-            Self.paywallEventWithPurchaseInfo
+            Self.paywallEventWithPurchaseInfo,
+            Self.paywallPresentedOfferingContext
         ))
 
         _ = await withCheckedContinuation { continuation in
@@ -543,7 +544,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.orchestrator.track(paywallEvent: .purchaseInitiated(
             Self.paywallEventCreationData,
-            Self.paywallEventWithPurchaseInfo
+            Self.paywallEventWithPurchaseInfo,
+            Self.paywallPresentedOfferingContext
         ))
 
         self.backend.stubbedPostReceiptResult = .failure(.unexpectedBackendResponse(.customerInfoNil))
@@ -585,7 +587,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.orchestrator.track(paywallEvent: .purchaseInitiated(
             Self.paywallEventCreationData,
-            Self.paywallEventWithPurchaseInfo
+            Self.paywallEventWithPurchaseInfo,
+            Self.paywallPresentedOfferingContext
         ))
 
         // Simulate cancel event clearing the cache (as PurchaseHandler would do)
@@ -614,7 +617,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         // Track a purchaseInitiated event with a DIFFERENT product ID
         self.orchestrator.track(paywallEvent: .purchaseInitiated(
             Self.paywallEventCreationData,
-            Self.paywallEventWithDifferentProductId
+            Self.paywallEventWithDifferentProductId,
+            Self.paywallPresentedOfferingContext
         ))
 
         _ = await withCheckedContinuation { continuation in
@@ -646,7 +650,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         // This simulates processing a transaction that was purchased BEFORE the paywall event
         self.orchestrator.track(paywallEvent: .purchaseInitiated(
             Self.paywallEventCreationDataInFuture,
-            Self.paywallEventWithPurchaseInfo
+            Self.paywallEventWithPurchaseInfo,
+            Self.paywallPresentedOfferingContext
         ))
 
         _ = await withCheckedContinuation { continuation in

@@ -1831,8 +1831,14 @@ private extension PurchasesOrchestrator {
                                     storefront: StorefrontType?,
                                     restored: Bool) {
         // Don't attribute offering context or paywall data for restored transactions
-        let offeringContext = restored ? nil : self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
+        let cachedOfferingContext = restored ? nil : self.getAndRemovePresentedOfferingContext(
+            for: purchasedTransaction
+        )
         let paywall = restored ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: purchasedTransaction)
+        let offeringContext = self.resolvePresentedOfferingContext(
+            cachedContext: cachedOfferingContext,
+            paywall: paywall
+        )
         let unsyncedAttributes = self.unsyncedAttributes
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
@@ -1929,6 +1935,36 @@ private extension PurchasesOrchestrator {
             cachedPaywall = nil
             return paywall
         }
+    }
+
+    /// Resolves the `PresentedOfferingContext` to use for a transaction.
+    /// Prioritizes the cached context over the paywall's context.
+    ///
+    /// - Parameters:
+    ///   - cachedContext: The offering context from the cache (set during purchase initiation)
+    ///   - paywall: The paywall event associated with the purchase
+    /// - Returns: The resolved `PresentedOfferingContext`, or `nil` if neither source is available
+    func resolvePresentedOfferingContext(
+        cachedContext: PresentedOfferingContext?,
+        paywall: PaywallEvent?
+    ) -> PresentedOfferingContext? {
+        let paywallContext = paywall?.presentedOfferingContext
+
+        // If we have a cached context, prioritize it
+        if let cachedContext = cachedContext {
+            // If paywall also has a context, verify they match
+            if let paywallContext = paywallContext,
+               cachedContext.offeringIdentifier != paywallContext.offeringIdentifier {
+                Logger.error(Strings.paywalls.offering_context_mismatch(
+                    cached: cachedContext.offeringIdentifier,
+                    paywall: paywallContext.offeringIdentifier
+                ))
+            }
+            return cachedContext
+        }
+
+        // Fall back to the paywall's context if available
+        return paywallContext
     }
 
     /// Computes a `ProductRequestData` for an active subscription found in the receipt,
@@ -2172,8 +2208,12 @@ extension PurchasesOrchestrator {
         _ initiationSource: PostReceiptSource.InitiationSource,
         _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
-        let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
+        let cachedOfferingContext = self.getAndRemovePresentedOfferingContext(for: transaction)
         let paywall = self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
+        let offeringContext = self.resolvePresentedOfferingContext(
+            cachedContext: cachedOfferingContext,
+            paywall: paywall
+        )
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(

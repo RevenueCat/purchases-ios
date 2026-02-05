@@ -31,6 +31,7 @@ enum PaywallsStrings {
 
     case caching_purchase_initiated_paywall
     case clearing_purchase_initiated_paywall
+    case offering_context_mismatch(cached: String, paywall: String)
 
     // MARK: - Localization
 
@@ -102,6 +103,10 @@ extension PaywallsStrings: LogMessage {
 
         case .clearing_purchase_initiated_paywall:
             return "PurchasesOrchestrator: clearing paywall from purchase initiated event"
+
+        case let .offering_context_mismatch(cached, paywall):
+            return "PurchasesOrchestrator: cached presentedOfferingContext offering '\(cached)' " +
+            "differs from paywall offering '\(paywall)'. This should never happen."
 
         case .empty_localization:
             return "Looking up localization but found no strings"

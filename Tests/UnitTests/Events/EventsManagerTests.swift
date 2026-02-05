@@ -86,7 +86,11 @@ class EventsManagerTests: TestCase {
 
     /// We should remove this test once we support the purchase initiated event in the backend.
     func testTrackPurchaseInitiatedEventDoesNotStore() async throws {
-        let event: PaywallEvent = .purchaseInitiated(.random(), .random())
+        let event: PaywallEvent = .purchaseInitiated(
+            .random(),
+            .random(),
+            PresentedOfferingContext(offeringIdentifier: "test_offering")
+        )
 
         await self.manager.track(featureEvent: event)
 

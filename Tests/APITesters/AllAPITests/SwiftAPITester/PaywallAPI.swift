@@ -215,9 +215,10 @@ func checkPaywallEvent(_ event: PaywallEvent) {
         checkPaywallEventCreationData(creationData)
         checkPaywallEventData(data)
         checkExitOfferData(exitOfferData)
-    case let .purchaseInitiated(creationData, data):
+    case let .purchaseInitiated(creationData, data, presentedOfferingContext):
         checkPaywallEventCreationData(creationData)
         checkPaywallEventData(data)
+        let _: PresentedOfferingContext = presentedOfferingContext
     case let .purchaseError(creationData, data):
         checkPaywallEventCreationData(creationData)
         checkPaywallEventData(data)

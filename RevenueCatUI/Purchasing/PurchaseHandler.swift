@@ -486,7 +486,7 @@ extension PurchaseHandler {
             errorCode: nil,
             errorMessage: nil
         )
-        self.track(.purchaseInitiated(.init(), purchaseData))
+        self.track(.purchaseInitiated(.init(), purchaseData, package.presentedOfferingContext))
         return true
     }
 
