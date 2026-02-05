@@ -15,7 +15,10 @@ var projects: [Path] = [
     "./Projects/RCTTester"
 ]
 
-if ProcessInfo.processInfo.environment["TUIST_XCFRAMEWORK_TESTER"] == "true" {
+// Only include XCFrameworkTester when explicitly enabled via environment variable
+// This allows tuist generate to run before xcframeworks are created in CI
+// Set TUIST_INCLUDE_XCFRAMEWORK_TESTER=true to include it
+if Environment.includeXCFrameworkTester {
     projects.append("./Projects/XCFrameworkTester")
 }
 
