@@ -1200,6 +1200,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - revenuecat/install-tuist
       - run:
           name: Test XCFramework export and integration
           command: bundle exec fastlane test_xcframework_export_and_integration
