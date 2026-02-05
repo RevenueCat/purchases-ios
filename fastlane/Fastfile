@@ -1410,21 +1410,20 @@ platform :ios do
 
     # sh runs from the Fastfile's location, but other commands run from the project root.
     output_directory_for_sh = "../#{output_directory}"
+    xcframework_path = "#{output_directory_for_sh}/#{product_name}.xcframework"
 
     # Post-process headers to suppress StoreKit 1 deprecation warnings
     suppress_deprecation_warnings_in_headers(
-      xcframework_path: "#{output_directory_for_sh}/#{product_name}.xcframework"
+      xcframework_path: xcframework_path
     )
 
     # Sign XCFramework for Xcode 15
     sign_xcframework(
-      file: "#{output_directory_for_sh}/#{product_name}.xcframework"
+      file: xcframework_path
     )
 
     xcframeworks_zip_path_for_sh = "../#{product_name}.xcframework.zip"
-    sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent",
-      output_directory_for_sh,
-      xcframeworks_zip_path_for_sh)
+    sh("ditto", "-c", "-k", "--sequesterRsrc", xcframework_path, xcframeworks_zip_path_for_sh)
 
   end
 
