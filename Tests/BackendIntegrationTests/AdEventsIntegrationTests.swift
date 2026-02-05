@@ -26,7 +26,6 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
 
     func testTrackingAndFlushingAdEvents() async throws {
         let failedToLoadData = AdFailedToLoad(
-            networkName: "AdMob",
             mediatorName: .appLovin,
             adFormat: .banner,
             placement: "home_screen",
