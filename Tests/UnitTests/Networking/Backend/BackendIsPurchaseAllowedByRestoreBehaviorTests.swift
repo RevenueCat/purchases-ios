@@ -184,6 +184,17 @@ final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
         expect(result?.error) == .missingAppUserID()
     }
 
+    func testRestoreEligibilitySkipsBackendCallIfTransactionJWSIsEmpty() {
+        let result = self.restoreEligibilityResult(
+            appUserID: Self.userID,
+            transactionJWS: ""
+        )
+
+        expect(self.httpClient.calls).to(beEmpty())
+        expect(result).to(beFailure())
+        expect(result?.error) == .missingTransactionJWS()
+    }
+
 }
 
     private extension BackendIsPurchaseAllowedByRestoreBehaviorTests {
