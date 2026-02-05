@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RestoreEligibilityDecodingTests.swift
+//  IsPurchaseAllowedByRestoreBehaviorDecodingTests.swift
 //
 //  Created by Will Taylor on 6/12/25.
 
@@ -16,9 +16,9 @@ import XCTest
 
 @testable import RevenueCat
 
-class RestoreEligibilityDecodingTests: BaseHTTPResponseTest {
+class IsPurchaseAllowedByRestoreBehaviorDecodingTests: BaseHTTPResponseTest {
 
-    private var response: WillPurchaseBeBlockedByRestoreBehaviorResponse!
+    private var response: IsPurchaseAllowedByRestoreBehaviorResponse!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -27,8 +27,7 @@ class RestoreEligibilityDecodingTests: BaseHTTPResponseTest {
     }
 
     func testResponseDataIsCorrect() {
-        expect(self.response.receiptBelongsToOtherSubscriber) == true
-        expect(self.response.transferIsAllowed) == false
+        expect(self.response.isPurchaseAllowedByRestoreBehavior) == true
     }
 
 }

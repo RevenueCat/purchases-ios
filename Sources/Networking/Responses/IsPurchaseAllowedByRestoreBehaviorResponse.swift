@@ -7,15 +7,17 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RestoreEligibilityCallback.swift
+//  IsPurchaseAllowedByRestoreBehaviorResponse.swift
 //
 //  Created by Will Taylor on 2/4/26.
 
 import Foundation
 
-struct RestoreEligibilityCallback: CacheKeyProviding {
+// swiftlint:disable:next type_name
+struct IsPurchaseAllowedByRestoreBehaviorResponse: Decodable {
 
-    let cacheKey: String
-    let completion: (Result<WillPurchaseBeBlockedByRestoreBehaviorResponse, BackendError>) -> Void
+    let isPurchaseAllowedByRestoreBehavior: Bool
 
 }
+
+extension IsPurchaseAllowedByRestoreBehaviorResponse: HTTPResponseBody {}

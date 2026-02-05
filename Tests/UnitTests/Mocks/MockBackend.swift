@@ -190,28 +190,28 @@ class MockBackend: Backend {
         }
     }
 
-    var invokedWillPurchaseBeBlockedDueToRestoreBehavior = false
-    var invokedWillPurchaseBeBlockedDueToRestoreBehaviorCount = 0
-    var invokedWillPurchaseBeBlockedDueToRestoreBehaviorParameters:
+    var invokedIsPurchaseAllowedByRestoreBehavior = false
+    var invokedIsPurchaseAllowedByRestoreBehaviorCount = 0
+    var invokedIsPurchaseAllowedByRestoreBehaviorParameters:
     (appUserID: String, transactionJWS: String, isAppBackgrounded: Bool)?
-    var stubbedWillPurchaseBeBlockedDueToRestoreBehaviorResult:
-    Result<WillPurchaseBeBlockedByRestoreBehaviorResponse, BackendError> = .failure(.missingAppUserID())
+    var stubbedIsPurchaseAllowedByRestoreBehaviorResult:
+    Result<IsPurchaseAllowedByRestoreBehaviorResponse, BackendError> = .failure(.missingAppUserID())
 
-    override func willPurchaseBeBlockedDueToRestoreBehavior(
+    override func isPurchaseAllowedByRestoreBehavior(
         appUserID: String,
         transactionJWS: String,
         isAppBackgrounded: Bool,
-        completion: @escaping CustomerAPI.PurchaseBlockStatusResponseHandler
+        completion: @escaping CustomerAPI.IsPurchaseAllowedByRestoreBehaviorResponseHandler
     ) {
-        self.invokedWillPurchaseBeBlockedDueToRestoreBehavior = true
-        self.invokedWillPurchaseBeBlockedDueToRestoreBehaviorCount += 1
-        self.invokedWillPurchaseBeBlockedDueToRestoreBehaviorParameters = (
+        self.invokedIsPurchaseAllowedByRestoreBehavior = true
+        self.invokedIsPurchaseAllowedByRestoreBehaviorCount += 1
+        self.invokedIsPurchaseAllowedByRestoreBehaviorParameters = (
             appUserID,
             transactionJWS,
             isAppBackgrounded
         )
 
-        completion(self.stubbedWillPurchaseBeBlockedDueToRestoreBehaviorResult)
+        completion(self.stubbedIsPurchaseAllowedByRestoreBehaviorResult)
     }
 
     var invokedClearHTTPClientCaches = false

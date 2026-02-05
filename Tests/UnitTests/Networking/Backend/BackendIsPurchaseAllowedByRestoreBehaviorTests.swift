@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  BackendRestoreEligibilityTests.swift
+//  BackendIsPurchaseAllowedByRestoreBehaviorTests.swift
 //
 //  Created by Will Taylor on 2/4/26.
 
@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-final class BackendRestoreEligibilityTests: BaseBackendTests {
+final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
 
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
@@ -67,8 +67,7 @@ final class BackendRestoreEligibilityTests: BaseBackendTests {
         )
 
         expect(result).to(beSuccess())
-        expect(result?.value?.receiptBelongsToOtherSubscriber) == true
-        expect(result?.value?.transferIsAllowed) == false
+        expect(result?.value?.isPurchaseAllowedByRestoreBehavior) == false
     }
 
     // MARK: - Jitterable Delay Tests
@@ -152,12 +151,12 @@ final class BackendRestoreEligibilityTests: BaseBackendTests {
             )
         )
 
-        self.backend.willPurchaseBeBlockedDueToRestoreBehavior(
+        self.backend.isPurchaseAllowedByRestoreBehavior(
             appUserID: Self.userID,
             transactionJWS: "jws-token",
             isAppBackgrounded: false
         ) { _ in }
-        self.backend.willPurchaseBeBlockedDueToRestoreBehavior(
+        self.backend.isPurchaseAllowedByRestoreBehavior(
             appUserID: Self.userID,
             transactionJWS: "jws-token",
             isAppBackgrounded: false
@@ -168,7 +167,7 @@ final class BackendRestoreEligibilityTests: BaseBackendTests {
 
         self.logger.verifyMessageWasLogged(
             // swiftlint:disable:next line_length
-            "Network operation '\(PostWillPurchaseBeBlockedByRestoreBehaviorOperation.self)' found with the same cache key",
+            "Network operation '\(PostIsPurchaseAllowedByRestoreBehaviorOperation.self)' found with the same cache key",
             level: .debug
         )
     }
@@ -187,15 +186,15 @@ final class BackendRestoreEligibilityTests: BaseBackendTests {
 
 }
 
-    private extension BackendRestoreEligibilityTests {
+    private extension BackendIsPurchaseAllowedByRestoreBehaviorTests {
 
     func restoreEligibilityResult(
         appUserID: String,
         transactionJWS: String,
         isAppBackgrounded: Bool = false
-    ) -> Result<WillPurchaseBeBlockedByRestoreBehaviorResponse, BackendError>? {
+    ) -> Result<IsPurchaseAllowedByRestoreBehaviorResponse, BackendError>? {
         return waitUntilValue { completed in
-            self.backend.willPurchaseBeBlockedDueToRestoreBehavior(
+            self.backend.isPurchaseAllowedByRestoreBehavior(
                 appUserID: appUserID,
                 transactionJWS: transactionJWS,
                 isAppBackgrounded: isAppBackgrounded,
@@ -205,13 +204,11 @@ final class BackendRestoreEligibilityTests: BaseBackendTests {
     }
 
     static let allowedTransferResponse: [String: Any] = [
-        "receipt_belongs_to_other_subscriber": false,
-        "transfer_is_allowed": true
+        "is_purchase_allowed_by_restore_behavior": true
     ]
 
     static let blockedTransferResponse: [String: Any] = [
-        "receipt_belongs_to_other_subscriber": true,
-        "transfer_is_allowed": false
+        "is_purchase_allowed_by_restore_behavior": false
     ]
 
 }

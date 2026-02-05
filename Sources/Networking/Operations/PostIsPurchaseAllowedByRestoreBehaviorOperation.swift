@@ -7,31 +7,32 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PostWillPurchaseBeBlockedByRestoreBehaviorOperation.swift
+//  PostIsPurchaseAllowedByRestoreBehaviorOperation.swift
 //
 //  Created by Will Taylor on 02/03/2026.
 
 import Foundation
 
 // swiftlint:disable:next type_name
-final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: CacheableNetworkOperation {
+final class PostIsPurchaseAllowedByRestoreBehaviorOperation: CacheableNetworkOperation {
 
     private let configuration: AppUserConfiguration
     private let postData: PostData
-    private let restoreEligibilityCallbackCache: CallbackCache<RestoreEligibilityCallback>
+    private let isPurchaseAllowedByRestoreBehaviorCallbackCache:
+    CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
         postData: PostData,
-        restoreEligibilityCallbackCache: CallbackCache<RestoreEligibilityCallback>
-    ) -> CacheableNetworkOperationFactory<PostWillPurchaseBeBlockedByRestoreBehaviorOperation> {
+        isPurchaseAllowedByRestoreBehaviorCallbackCache: CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>
+    ) -> CacheableNetworkOperationFactory<PostIsPurchaseAllowedByRestoreBehaviorOperation> {
         let cacheKey = "\(configuration.appUserID)-\(postData.transactionJWS)"
 
         return CacheableNetworkOperationFactory({ cacheKey in
-                    PostWillPurchaseBeBlockedByRestoreBehaviorOperation(
+                    PostIsPurchaseAllowedByRestoreBehaviorOperation(
                         configuration: configuration,
                         postData: postData,
-                        restoreEligibilityCallbackCache: restoreEligibilityCallbackCache,
+                        isPurchaseAllowedByRestoreBehaviorCallbackCache: isPurchaseAllowedByRestoreBehaviorCallbackCache,
                         cacheKey: cacheKey
                     )
             },
@@ -42,12 +43,12 @@ final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: CacheableNetwor
     init(
         configuration: UserSpecificConfiguration,
         postData: PostData,
-        restoreEligibilityCallbackCache: CallbackCache<RestoreEligibilityCallback>,
+        isPurchaseAllowedByRestoreBehaviorCallbackCache: CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>,
         cacheKey: String
     ) {
         self.configuration = configuration
         self.postData = postData
-        self.restoreEligibilityCallbackCache = restoreEligibilityCallbackCache
+        self.isPurchaseAllowedByRestoreBehaviorCallbackCache = isPurchaseAllowedByRestoreBehaviorCallbackCache
 
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
@@ -76,7 +77,7 @@ final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: CacheableNetwor
         )
 
         // swiftlint:disable:next line_length
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<WillPurchaseBeBlockedByRestoreBehaviorResponse>.Result) in
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<IsPurchaseAllowedByRestoreBehaviorResponse>.Result) in
             let result = response
                 .map { $0.body }
                 .mapError(BackendError.networkError)
@@ -89,12 +90,12 @@ final class PostWillPurchaseBeBlockedByRestoreBehaviorOperation: CacheableNetwor
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation: @unchecked Sendable {}
+extension PostIsPurchaseAllowedByRestoreBehaviorOperation: @unchecked Sendable {}
 
-private extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation {
+private extension PostIsPurchaseAllowedByRestoreBehaviorOperation {
 
-    func handleResult(_ result: Result<WillPurchaseBeBlockedByRestoreBehaviorResponse, BackendError>) {
-        self.restoreEligibilityCallbackCache.performOnAllItemsAndRemoveFromCache(
+    func handleResult(_ result: Result<IsPurchaseAllowedByRestoreBehaviorResponse, BackendError>) {
+        self.isPurchaseAllowedByRestoreBehaviorCallbackCache.performOnAllItemsAndRemoveFromCache(
             withCacheable: self
         ) { callback in
             callback.completion(result)
@@ -103,7 +104,7 @@ private extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation {
 
 }
 
-extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation {
+extension PostIsPurchaseAllowedByRestoreBehaviorOperation {
 
     struct PostData {
         let transactionJWS: String
@@ -113,7 +114,7 @@ extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation {
 
 // MARK: - Codable
 
-extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation.PostData: Encodable {
+extension PostIsPurchaseAllowedByRestoreBehaviorOperation.PostData: Encodable {
 
     private enum CodingKeys: String, CodingKey {
         case transactionJWS = "fetch_token"
@@ -128,7 +129,7 @@ extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation.PostData: Encodabl
 
 // MARK: - HTTPRequestBody
 
-extension PostWillPurchaseBeBlockedByRestoreBehaviorOperation.PostData: HTTPRequestBody {
+extension PostIsPurchaseAllowedByRestoreBehaviorOperation.PostData: HTTPRequestBody {
 
     var contentForSignature: [(key: String, value: String?)] {
         return [

@@ -18,19 +18,21 @@ final class CustomerAPI {
     typealias CustomerInfoResponseHandler = Backend.ResponseHandler<CustomerInfo>
     typealias SimpleResponseHandler = (BackendError?) -> Void
 
-    typealias PurchaseBlockStatusResponseHandler =
-    Backend.ResponseHandler<WillPurchaseBeBlockedByRestoreBehaviorResponse>
+    typealias IsPurchaseAllowedByRestoreBehaviorResponseHandler =
+    Backend.ResponseHandler<IsPurchaseAllowedByRestoreBehaviorResponse>
 
     private let backendConfig: BackendConfiguration
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
-    private let restoreEligibilityCallbacksCache: CallbackCache<RestoreEligibilityCallback>
+    private let isPurchaseAllowedByRestoreBehaviorCallbacksCache:
+    CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>
     private let attributionFetcher: AttributionFetcher
 
     init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
         self.backendConfig = backendConfig
         self.attributionFetcher = attributionFetcher
         self.customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>()
-        self.restoreEligibilityCallbacksCache = CallbackCache<RestoreEligibilityCallback>()
+        self.isPurchaseAllowedByRestoreBehaviorCallbacksCache =
+        CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>()
     }
 
     func getCustomerInfo(appUserID: String,
@@ -92,24 +94,24 @@ final class CustomerAPI {
         self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
     }
 
-    func willPurchaseBeBlockedDueToRestoreBehavior(
+    func isPurchaseAllowedByRestoreBehavior(
         appUserID: String,
         transactionJWS: String,
         isAppBackgrounded: Bool,
-        completion: @escaping PurchaseBlockStatusResponseHandler
+        completion: @escaping IsPurchaseAllowedByRestoreBehaviorResponseHandler
     ) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
-        let postData = PostWillPurchaseBeBlockedByRestoreBehaviorOperation.PostData(
+        let postData = PostIsPurchaseAllowedByRestoreBehaviorOperation.PostData(
             transactionJWS: transactionJWS
         )
-        let factory = PostWillPurchaseBeBlockedByRestoreBehaviorOperation.createFactory(
+        let factory = PostIsPurchaseAllowedByRestoreBehaviorOperation.createFactory(
             configuration: config,
             postData: postData,
-            restoreEligibilityCallbackCache: self.restoreEligibilityCallbacksCache
+            isPurchaseAllowedByRestoreBehaviorCallbackCache: self.isPurchaseAllowedByRestoreBehaviorCallbacksCache
         )
-        let callback = RestoreEligibilityCallback(cacheKey: factory.cacheKey, completion: completion)
-        let cacheStatus = self.restoreEligibilityCallbacksCache.add(callback)
+        let callback = IsPurchaseAllowedByRestoreBehaviorCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.isPurchaseAllowedByRestoreBehaviorCallbacksCache.add(callback)
 
         self.backendConfig.addCacheableOperation(
             with: factory,

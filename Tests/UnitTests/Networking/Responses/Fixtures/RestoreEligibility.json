@@ -1,4 +1,3 @@
 {
-  "receipt_belongs_to_other_subscriber": true,
-  "transfer_is_allowed": false
+  "is_purchase_allowed_by_restore_behavior": true
 }

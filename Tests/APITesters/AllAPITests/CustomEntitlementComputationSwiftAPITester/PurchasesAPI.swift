@@ -241,7 +241,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: CustomerInfo = try await purchases.restorePurchases()
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            let _: Bool = try await purchases.willPurchaseBeBlockedDueToRestoreBehavior()
+            let _: Bool = try await purchases.isPurchaseAllowedByRestoreBehavior()
         }
 
         if #available(iOS 15.0, *) {

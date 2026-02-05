@@ -7,18 +7,15 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WillPurchaseBeBlockedByRestoreBehaviorResponse.swift
+//  IsPurchaseAllowedByRestoreBehaviorCallback.swift
 //
 //  Created by Will Taylor on 2/4/26.
 
 import Foundation
 
-// swiftlint:disable:next type_name
-struct WillPurchaseBeBlockedByRestoreBehaviorResponse: Decodable {
+struct IsPurchaseAllowedByRestoreBehaviorCallback: CacheKeyProviding {
 
-    let receiptBelongsToOtherSubscriber: Bool
-    let transferIsAllowed: Bool
+    let cacheKey: String
+    let completion: (Result<IsPurchaseAllowedByRestoreBehaviorResponse, BackendError>) -> Void
 
 }
-
-extension WillPurchaseBeBlockedByRestoreBehaviorResponse: HTTPResponseBody {}

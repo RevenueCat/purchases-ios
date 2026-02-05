@@ -123,16 +123,16 @@ class Backend {
                            completion: completion)
     }
 
-    func willPurchaseBeBlockedDueToRestoreBehavior(
+    func isPurchaseAllowedByRestoreBehavior(
         appUserID: String,
         transactionJWS: String,
         isAppBackgrounded: Bool,
-        completion: @escaping CustomerAPI.PurchaseBlockStatusResponseHandler
+        completion: @escaping CustomerAPI.IsPurchaseAllowedByRestoreBehaviorResponseHandler
     ) {
-        self.customer.willPurchaseBeBlockedDueToRestoreBehavior(appUserID: appUserID,
-                                                                transactionJWS: transactionJWS,
-                                                                isAppBackgrounded: isAppBackgrounded,
-                                                                completion: completion)
+        self.customer.isPurchaseAllowedByRestoreBehavior(appUserID: appUserID,
+                                                         transactionJWS: transactionJWS,
+                                                         isAppBackgrounded: isAppBackgrounded,
+                                                         completion: completion)
     }
 
     func getCustomerInfo(appUserID: String,
