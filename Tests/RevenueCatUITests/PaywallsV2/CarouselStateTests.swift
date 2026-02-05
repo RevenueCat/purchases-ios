@@ -32,9 +32,9 @@ class CarouselStateTests: TestCase {
     }
 
     func testIsActiveHandlesLoopingCarousel() {
-        // In a looping carousel with 3 original pages, indices 0, 3, 6 all represent the same page
+        // In a looping carousel, isActive represents the visible data index only.
         let state = CarouselState(activeIndex: 3, pageIndex: 0, originalCount: 3)
-        XCTAssertTrue(state.isActive, "Page 0 and page 3 should be the same in a 3-page looping carousel")
+        XCTAssertFalse(state.isActive, "Only the active data index should be marked active")
     }
 
     func testIsActiveWithZeroOriginalCountFallsBackToDirectComparison() {
@@ -67,16 +67,16 @@ class CarouselStateTests: TestCase {
         XCTAssertFalse(state.isActiveOrNeighbor)
     }
 
-    func testIsActiveOrNeighborHandlesWrapAroundAtEnd() {
-        // In a 5-page carousel, when on page 0, page 4 is a neighbor (wrap-around)
-        let state = CarouselState(activeIndex: 0, pageIndex: 4, originalCount: 5)
-        XCTAssertTrue(state.isActiveOrNeighbor, "Page 4 should be a neighbor of page 0 in a 5-page looping carousel")
-    }
+    func testIsActiveOrNeighborUsesDataIndicesInExpandedCarousel() {
+        // In a looping carousel, indices are from the expanded data array.
+        // User starts in the middle copy (index 5 for a 5-page carousel).
+        let active = CarouselState(activeIndex: 5, pageIndex: 5, originalCount: 5)
+        let neighbor = CarouselState(activeIndex: 5, pageIndex: 6, originalCount: 5)
+        let distant = CarouselState(activeIndex: 5, pageIndex: 10, originalCount: 5)
 
-    func testIsActiveOrNeighborHandlesWrapAroundAtStart() {
-        // In a 5-page carousel, when on page 4, page 0 is a neighbor (wrap-around)
-        let state = CarouselState(activeIndex: 4, pageIndex: 0, originalCount: 5)
-        XCTAssertTrue(state.isActiveOrNeighbor, "Page 0 should be a neighbor of page 4 in a 5-page looping carousel")
+        XCTAssertTrue(active.isActiveOrNeighbor)
+        XCTAssertTrue(neighbor.isActiveOrNeighbor)
+        XCTAssertFalse(distant.isActiveOrNeighbor)
     }
 
     func testIsActiveOrNeighborWithSinglePageCarousel() {
@@ -93,17 +93,14 @@ class CarouselStateTests: TestCase {
         XCTAssertTrue(state2.isActiveOrNeighbor)
     }
 
-    func testIsActiveOrNeighborWithThreePageCarouselAllAreNeighbors() {
-        // In a 3-page carousel, every page is a neighbor of every other page
-        for active in 0..<3 {
-            for page in 0..<3 {
-                let state = CarouselState(activeIndex: active, pageIndex: page, originalCount: 3)
-                XCTAssertTrue(
-                    state.isActiveOrNeighbor,
-                    "In 3-page carousel, page \(page) should be neighbor of active \(active)"
-                )
-            }
-        }
+    func testIsActiveOrNeighborWithThreePageCarouselUsesDataAdjacency() {
+        let active = CarouselState(activeIndex: 0, pageIndex: 0, originalCount: 3)
+        let neighbor = CarouselState(activeIndex: 0, pageIndex: 1, originalCount: 3)
+        let distant = CarouselState(activeIndex: 0, pageIndex: 2, originalCount: 3)
+
+        XCTAssertTrue(active.isActiveOrNeighbor)
+        XCTAssertTrue(neighbor.isActiveOrNeighbor)
+        XCTAssertFalse(distant.isActiveOrNeighbor)
     }
 
     func testIsActiveOrNeighborWithZeroOriginalCountFallsBackToDirectDistance() {

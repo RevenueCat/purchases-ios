@@ -50,7 +50,7 @@ struct VideoComponentView: View {
     @State private var isPlayable: Bool = true
 
     /// Forces player recreation only when becoming playable (to keep autoplay reliable without churn).
-    @State private var playbackSeed: Int = 0
+    @State private var playbackSeed: Bool = false
 
     var body: some View {
         viewModel
@@ -195,7 +195,7 @@ struct VideoComponentView: View {
 
     private func updatePlayableState(isPlayable newValue: Bool) {
         if !self.isPlayable && newValue {
-            self.playbackSeed += 1
+            self.playbackSeed.toggle()
         }
         self.isPlayable = newValue
     }

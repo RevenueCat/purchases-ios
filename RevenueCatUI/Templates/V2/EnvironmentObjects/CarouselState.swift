@@ -28,22 +28,15 @@ struct CarouselState: Equatable {
     /// The number of original pages (before copies for looping).
     let originalCount: Int
 
-    /// Whether this page is the currently visible page.
-    /// For looping carousels, compares original page indices since the same content exists at multiple data indices.
+    /// Whether this page is the currently visible page in the data array.
     var isActive: Bool {
-        guard originalCount > 0 else { return activeIndex == pageIndex }
-        return activeIndex % originalCount == pageIndex % originalCount
+        return activeIndex == pageIndex
     }
 
     /// Whether this page is active or adjacent to the active page in the data array.
     /// This matches the visible "side" pages in the carousel strip.
-    /// For looping carousels, also considers wrap-around neighbors (e.g., page 0 and page n-1).
     var isActiveOrNeighbor: Bool {
-        let directDistance = abs(activeIndex - pageIndex)
-        guard originalCount > 1 else { return directDistance <= 1 }
-        // For looping carousels, check wrap-around distance
-        let wrapDistance = originalCount - directDistance
-        return min(directDistance, wrapDistance) <= 1
+        return abs(activeIndex - pageIndex) <= 1
     }
 
 }
