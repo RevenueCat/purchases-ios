@@ -1373,21 +1373,14 @@ platform :ios do
       scheme: 'RevenueCat',
       product_name: 'RevenueCat',
       platforms: [
-      'iOS',
-      'macOS',
-      'maccatalyst',
-      'tvOS',
-      'watchOS',
-      'visionOS'
+      'iOS'
     ])
     create_and_sign_xcframework(
       workspace: 'RevenueCat.xcworkspace',
       scheme: 'RevenueCatUIDev',
       product_name: 'RevenueCatUI',
       platforms: [
-      'iOS',
-      'maccatalyst',
-      'watchOS',
+      'iOS'
     ])
   end
 
@@ -1413,11 +1406,14 @@ platform :ios do
       override_xcargs: true
     )
 
-    # sh runs from the Fastfile's location, but other commands run from the project root.
-    output_directory_for_sh = "../#{output_directory}"
-    xcframework_path = "#{output_directory_for_sh}/#{product_name}.xcframework"
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+    xcframework_path = File.join(project_root, output_directory, "#{product_name}.xcframework")
     xcframework_zip_path = File.join(project_root, "#{product_name}.xcframework.zip")
+
+    # Verify xcframework was created
+    unless File.directory?(xcframework_path)
+      UI.user_error!("XCFramework not found at #{xcframework_path}")
+    end
 
     # Post-process headers to suppress StoreKit 1 deprecation warnings
     suppress_deprecation_warnings_in_headers(
@@ -1430,7 +1426,10 @@ platform :ios do
     )
 
     # Use zip -r to preserve directory structure
-    sh("zip", "-r", "-q", xcframework_zip_path, xcframework_path)
+    # Change to the xcframework's parent directory so the zip contains the xcframework folder
+    Dir.chdir(File.dirname(xcframework_path)) do
+      sh("zip", "-r", "-q", xcframework_zip_path, File.basename(xcframework_path))
+    end
 
   end
 
@@ -1516,41 +1515,11 @@ platform :ios do
     
     workspace_path = File.join(project_root, "RevenueCat-Tuist.xcworkspace")
     
-    # Build for each destination to verify xcframework integration
-    # These destinations match the platforms exported in the xcframework:
-    # iOS, macOS, Mac Catalyst, watchOS, visionOS
+    # Build for iOS Simulator to verify xcframework integration
     destinations = [
       {
         destination: "generic/platform=iOS Simulator",
         description: "iOS Simulator"
-      },
-      {
-        destination: "generic/platform=iOS",
-        description: "iOS Device"
-      },
-      {
-        destination: "generic/platform=macOS,variant=Mac Catalyst",
-        description: "Mac Catalyst"
-      },
-      {
-        destination: "generic/platform=macOS",
-        description: "macOS"
-      },
-      {
-        destination: "generic/platform=watchOS Simulator",
-        description: "watchOS Simulator"
-      },
-      {
-        destination: "generic/platform=watchOS",
-        description: "watchOS Device"
-      },
-      {
-        destination: "generic/platform=visionOS Simulator",
-        description: "visionOS Simulator"
-      },
-      {
-        destination: "generic/platform=visionOS",
-        description: "visionOS Device"
       }
     ]
     

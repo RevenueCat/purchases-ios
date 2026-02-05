@@ -2,20 +2,10 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 
 let destinations: Destinations = [
-    .iPhone,
-    .iPad,
-    .mac,
-    .macCatalyst,
-    .appleWatch,
-    .appleVision
+    .iPhone
 ]
 
-let deploymentTargets: DeploymentTargets = .multiplatform(
-    iOS: "13.0",
-    macOS: "11.0",
-    watchOS: "7.0",
-    visionOS: "1.3"
-)
+let deploymentTargets: DeploymentTargets = .iOS("13.0")
 
 let project = Project(
     name: "XCFrameworkTester",
