@@ -60,6 +60,9 @@ struct VideoComponentView: View {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
 
                     ZStack {
+                        // Always render spacer for sizing (needed for fixed-size videos)
+                        render(Color.clear, size: size, with: style)
+
                         // Always show thumbnail as base layer while video loads/prepares
                         if let thumbnailSource = imageSource ?? viewModel.imageSource,
                            let imageViewModel = try? ImageComponentViewModel(
