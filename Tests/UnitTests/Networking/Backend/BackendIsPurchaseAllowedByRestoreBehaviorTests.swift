@@ -26,7 +26,7 @@ final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
 
     func testRestoreEligibilitySendsExpectedRequest() throws {
         self.httpClient.mock(
-            requestPath: .restoreEligibility(appUserID: Self.userID),
+            requestPath: .isPurchaseAllowedByRestoreBehavior(appUserID: Self.userID),
             response: .init(
                 statusCode: .success,
                 response: Self.allowedTransferResponse
@@ -45,7 +45,7 @@ final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
 
         let call = try XCTUnwrap(self.httpClient.calls.first)
         let path = try XCTUnwrap(call.request.path as? HTTPRequest.Path)
-        expect(path) == .restoreEligibility(appUserID: Self.userID)
+        expect(path) == .isPurchaseAllowedByRestoreBehavior(appUserID: Self.userID)
         expect(call.request.method.httpMethod) == "POST"
 
         let bodyDict = try XCTUnwrap(call.request.requestBody?.asJSONDictionary())
@@ -55,7 +55,7 @@ final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
 
     func testRestoreEligibilityReturnsDecodedResponse() {
         self.httpClient.mock(
-            requestPath: .restoreEligibility(appUserID: Self.userID),
+            requestPath: .isPurchaseAllowedByRestoreBehavior(appUserID: Self.userID),
             response: .init(
                 statusCode: .success,
                 response: Self.blockedTransferResponse
@@ -74,7 +74,7 @@ final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
     // MARK: - Jitterable Delay Tests
     func testRestoreEligibilityUsesDefaultJitterableDelayWhenAppBackgrounded() {
         self.httpClient.mock(
-            requestPath: .restoreEligibility(appUserID: Self.userID),
+            requestPath: .isPurchaseAllowedByRestoreBehavior(appUserID: Self.userID),
             response: .init(
                 statusCode: .success,
                 response: Self.allowedTransferResponse
@@ -93,7 +93,7 @@ final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
 
     func testRestoreEligibilityUsesNoJitterableDelayWhenAppNotBackgrounded() {
         self.httpClient.mock(
-            requestPath: .restoreEligibility(appUserID: Self.userID),
+            requestPath: .isPurchaseAllowedByRestoreBehavior(appUserID: Self.userID),
             response: .init(
                 statusCode: .success,
                 response: Self.allowedTransferResponse
@@ -114,7 +114,7 @@ final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
         let mockedError: NetworkError = .unexpectedResponse(nil)
 
         self.httpClient.mock(
-            requestPath: .restoreEligibility(appUserID: Self.userID),
+            requestPath: .isPurchaseAllowedByRestoreBehavior(appUserID: Self.userID),
             response: .init(error: mockedError)
         )
 
@@ -129,7 +129,7 @@ final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
 
     func testRestoreEligibilityFailSendsError() {
         self.httpClient.mock(
-            requestPath: .restoreEligibility(appUserID: Self.userID),
+            requestPath: .isPurchaseAllowedByRestoreBehavior(appUserID: Self.userID),
             response: .init(error: .unexpectedResponse(nil))
         )
 
@@ -144,7 +144,7 @@ final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
     // MARK: - Logging Tests
     func testRepeatedRequestsLogDebugMessage() {
         self.httpClient.mock(
-            requestPath: .restoreEligibility(appUserID: Self.userID),
+            requestPath: .isPurchaseAllowedByRestoreBehavior(appUserID: Self.userID),
             response: .init(
                 statusCode: .success,
                 response: Self.allowedTransferResponse,

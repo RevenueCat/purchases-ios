@@ -105,7 +105,7 @@ extension HTTPRequest {
         case getVirtualCurrencies(appUserID: String)
         case postRedeemWebPurchase
         case postCreateTicket
-        case restoreEligibility(appUserID: String)
+        case isPurchaseAllowedByRestoreBehavior(appUserID: String)
 
     }
 
@@ -196,7 +196,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health,
              .appHealthReportAvailability:
             return false
-        case .restoreEligibility:
+        case .isPurchaseAllowedByRestoreBehavior:
             return true
         }
     }
@@ -222,7 +222,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health,
              .appHealthReportAvailability:
             return false
-        case .restoreEligibility:
+        case .isPurchaseAllowedByRestoreBehavior:
             return true
         }
     }
@@ -248,7 +248,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
-        case .restoreEligibility:
+        case .isPurchaseAllowedByRestoreBehavior:
             return true
         }
     }
@@ -274,7 +274,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket:
             return false
-        case .restoreEligibility:
+        case .isPurchaseAllowedByRestoreBehavior:
             return true
         }
     }
@@ -335,7 +335,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
-        case let .restoreEligibility(appUserID):
+        case let .isPurchaseAllowedByRestoreBehavior(appUserID):
             return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
         }
     }
@@ -392,7 +392,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postCreateTicket:
             return "post_create_ticket"
-        case .restoreEligibility:
+        case .isPurchaseAllowedByRestoreBehavior:
             return "post_restore_eligibility"
         }
     }

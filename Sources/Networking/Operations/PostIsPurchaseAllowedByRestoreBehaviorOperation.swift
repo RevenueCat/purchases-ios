@@ -74,7 +74,7 @@ final class PostIsPurchaseAllowedByRestoreBehaviorOperation: CacheableNetworkOpe
 
         let request = HTTPRequest(
             method: .post(self.postData),
-            path: .restoreEligibility(appUserID: self.configuration.appUserID)
+            path: .isPurchaseAllowedByRestoreBehavior(appUserID: self.configuration.appUserID)
         )
 
         // swiftlint:disable:next line_length
