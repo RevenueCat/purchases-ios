@@ -110,6 +110,18 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("$"))
     }
 
+    func testProductCurrencySymbolUsesProductCurrencyNotLocale() {
+        // A Romanian locale user with a USD product should see "$", not "¤"
+        let romanianLocale = Locale(identifier: "ro_RO")
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: TestData.monthlyPackage,
+            locale: romanianLocale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$"))
+    }
+
     func testProductPeriodly() {
         let result = variableHandler.processVariables(
             in: "{{ product.periodly }}",
@@ -940,15 +952,14 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
         expect(result).to(equal(""))
     }
 
-    func testNonProductVariablesWorkWhenPackageIsNil() {
-        // Currency symbol doesn't require a package
+    func testProductCurrencySymbolReturnsEmptyWhenPackageIsNil() {
         let result = variableHandlerWithoutZeroDecimal.processVariables(
             in: "{{ product.currency_symbol }}",
             with: nil,
             locale: locale,
             localizations: localizations["en_US"]!
         )
-        expect(result).to(equal("$"))
+        expect(result).to(equal(""))
     }
 
     func testRelativeDiscountWorksWhenPackageIsNil() {

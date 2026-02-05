@@ -298,7 +298,9 @@ extension VariablesV2 {
                 return self.productCurrencyCode(package: package)
             }
         case .productCurrencySymbol:
-            return self.productCurrencySymbol(locale: locale)
+            if let package {
+                return self.productCurrencySymbol(package: package, locale: locale)
+            }
         case .productPeriodly:
             if let package {
                 return self.productPeriodly(package: package, localizations: localizations)
@@ -510,8 +512,11 @@ extension VariablesV2 {
         return package.storeProduct.currencyCode ?? ""
     }
 
-    func productCurrencySymbol(locale: Locale) -> String {
-        return locale.currencySymbol ?? ""
+    func productCurrencySymbol(package: Package, locale: Locale) -> String {
+        guard let currencyCode = package.storeProduct.currencyCode else {
+            return ""
+        }
+        return locale.currencySymbol(forCurrencyCode: currencyCode) ?? ""
     }
 
     func productPrice(package: Package, showZeroDecimalPlacePrices: Bool) -> String {
