@@ -21,7 +21,7 @@ import Foundation
 
 /// Internal protocol to ensure all ad event types have consistent ad event fields.
 internal protocol AdEventData {
-    var networkName: String { get }
+    var networkName: String? { get }
     var mediatorName: MediatorName { get }
     var adFormat: AdFormat { get }
     var placement: String? { get }
@@ -125,7 +125,6 @@ internal protocol AdImpressionEventData: AdEventData {
                                                                                 @unchecked Sendable {
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String
     @objc public private(set) var mediatorName: MediatorName
     @objc public private(set) var adFormat: AdFormat
     @objc public private(set) var placement: String?
@@ -138,15 +137,16 @@ internal protocol AdImpressionEventData: AdEventData {
         return self.mediatorErrorCodeRawValue
     }
 
+    /// Always returns nil for failed to load events since multiple networks may be involved.
+    internal var networkName: String? { nil }
+
     @objc public init(
-        networkName: String,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         placement: String?,
         adUnitId: String,
         mediatorErrorCode: NSNumber?
     ) {
-        self.networkName = networkName
         self.mediatorName = mediatorName
         self.adFormat = adFormat
         self.placement = placement
@@ -156,7 +156,6 @@ internal protocol AdImpressionEventData: AdEventData {
     }
 
     public convenience init(
-        networkName: String,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         placement: String?,
@@ -164,7 +163,6 @@ internal protocol AdImpressionEventData: AdEventData {
         mediatorErrorCode: Int?
     ) {
         self.init(
-            networkName: networkName,
             mediatorName: mediatorName,
             adFormat: adFormat,
             placement: placement,
@@ -174,14 +172,12 @@ internal protocol AdImpressionEventData: AdEventData {
     }
 
     @objc public convenience init(
-        networkName: String,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         adUnitId: String,
         mediatorErrorCode: NSNumber? = nil
     ) {
         self.init(
-            networkName: networkName,
             mediatorName: mediatorName,
             adFormat: adFormat,
             placement: nil,
@@ -195,8 +191,7 @@ internal protocol AdImpressionEventData: AdEventData {
 
     public override func isEqual(_ object: Any?) -> Bool {
         guard let other = object as? AdFailedToLoad else { return false }
-        return self.networkName == other.networkName &&
-               self.mediatorName == other.mediatorName &&
+        return self.mediatorName == other.mediatorName &&
                self.adFormat == other.adFormat &&
                self.placement == other.placement &&
                self.adUnitId == other.adUnitId &&
@@ -205,7 +200,6 @@ internal protocol AdImpressionEventData: AdEventData {
 
     public override var hash: Int {
         var hasher = Hasher()
-        hasher.combine(networkName)
         hasher.combine(mediatorName)
         hasher.combine(adFormat)
         hasher.combine(placement)
@@ -215,7 +209,6 @@ internal protocol AdImpressionEventData: AdEventData {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case networkName
         case mediatorName
         case adFormat
         case placement

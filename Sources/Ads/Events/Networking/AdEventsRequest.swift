@@ -48,7 +48,7 @@ extension AdEventsRequest {
         var appUserId: String
         var appSessionId: String
         var timestamp: UInt64
-        var networkName: String
+        var networkName: String?
         var mediatorName: String
         var adFormat: String
         var placement: String?
