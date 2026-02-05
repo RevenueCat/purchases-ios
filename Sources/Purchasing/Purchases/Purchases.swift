@@ -1466,7 +1466,7 @@ public extension Purchases {
 public extension Purchases {
 
     /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
-    func track(paywallEvent: PaywallEvent) async {
+    @_spi(Internal) func track(paywallEvent: PaywallEvent) async {
         self.purchasesOrchestrator.track(paywallEvent: paywallEvent)
         await self.eventsManager?.track(featureEvent: paywallEvent)
     }

@@ -198,82 +198,6 @@ func checkPaywallViewMode(_ mode: PaywallViewMode) {
     }
 }
 
-func checkPaywallEvent(_ event: PaywallEvent) {
-    let _: PaywallEvent.SessionID = UUID()
-
-    switch event {
-    case let .impression(creationData, data):
-        checkPaywallEventCreationData(creationData)
-        checkPaywallEventData(data)
-    case let .cancel(creationData, data):
-        checkPaywallEventCreationData(creationData)
-        checkPaywallEventData(data)
-    case let .close(creationData, data):
-        checkPaywallEventCreationData(creationData)
-        checkPaywallEventData(data)
-    case let .exitOffer(creationData, data, exitOfferData):
-        checkPaywallEventCreationData(creationData)
-        checkPaywallEventData(data)
-        checkExitOfferData(exitOfferData)
-    case let .purchaseInitiated(creationData, data):
-        checkPaywallEventCreationData(creationData)
-        checkPaywallEventData(data)
-    case let .purchaseError(creationData, data):
-        checkPaywallEventCreationData(creationData)
-        checkPaywallEventData(data)
-    @unknown default: break
-    }
-
-    let _: PaywallEvent.CreationData = event.creationData
-    let _: PaywallEvent.Data = event.data
-    let _: PaywallEvent.ExitOfferData? = event.exitOfferData
-}
-
-func checkPaywallEventCreationData(_ creationData: PaywallEvent.CreationData) {
-    let _: PaywallEvent.ID = creationData.id
-    let _: Date = creationData.date
-
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func create(
-        id: PaywallEvent.ID,
-        date: Date
-    ) {
-        _ = PaywallEvent.CreationData(
-            id: id,
-            date: date
-        )
-    }
-}
-
-func checkPaywallEventData(_ data: PaywallEvent.Data) {
-    let _: String? = data.paywallIdentifier
-    let _: String = data.offeringIdentifier
-    let _: Int = data.paywallRevision
-    let _: PaywallEvent.SessionID = data.sessionIdentifier
-    let _: PaywallViewMode = data.displayMode
-    let _: String = data.localeIdentifier
-    let _: Bool = data.darkMode
-
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func create(
-        offering: Offering,
-        paywall: PaywallData,
-        sessionID: PaywallEvent.SessionID,
-        displayMode: PaywallViewMode,
-        locale: Locale,
-        darkMode: Bool
-    ) {
-        _ = PaywallEvent.Data(
-            offering: offering,
-            paywall: paywall,
-            sessionID: sessionID,
-            displayMode: displayMode,
-            locale: locale,
-            darkMode: darkMode
-        )
-    }
-}
-
 func checkPaywallComponentsData(_ data: PaywallComponentsData) {
     let id: String? = data.id
     let templateName: String = data.templateName
@@ -310,21 +234,3 @@ func checkExitOffers(_ exitOffers: ExitOffers) {
     let _: ExitOffers = ExitOffers(dismiss: dismiss)
 }
 
-func checkExitOfferType(_ type: ExitOfferType) {
-    switch type {
-    case .dismiss:
-        break
-    @unknown default:
-        break
-    }
-}
-
-func checkExitOfferData(_ data: PaywallEvent.ExitOfferData) {
-    let exitOfferType: ExitOfferType = data.exitOfferType
-    let exitOfferingIdentifier: String = data.exitOfferingIdentifier
-
-    let _: PaywallEvent.ExitOfferData = PaywallEvent.ExitOfferData(
-        exitOfferType: exitOfferType,
-        exitOfferingIdentifier: exitOfferingIdentifier
-    )
-}
