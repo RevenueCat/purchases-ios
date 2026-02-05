@@ -1,19 +1,13 @@
-## RevenueCat SDK
-### ✨ New Features
-* Adds more ObjC compatibility (#5999) via JayShortway (@JayShortway)
-### 🐞 Bugfixes
-* Fix potential infinite recursion in MagicWeather (#6146) via Tarek M. Ben Lechhab (@bilqisium)
-
 ## RevenueCatUI SDK
 ### Paywallv2
-#### ✨ New Features
-* feat: Add Custom Paywall Variables support (#6080) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Make paywall font registration idempotent (#6193) via Facundo Menzella (@facumenzella)
+* fix: fixes video autoplay on first paywall open by removing broken stagedURL.publisher observation (#6114) @erenkulaksiz (#6185) via Facundo Menzella (@facumenzella)
+* [EXTERNAL] fix: listen willResignActiveNotification and didBecomeActiveNotification to autoplay the video (#6116) @erenkulaksiz (#6184) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix `backend-integration-tests-custom-entitlements` on CI (#6179) via Antonio Pallares (@ajpallares)
-* Only run 1 backend integration tests CI job to generate all snapshots (#6170) via Antonio Pallares (@ajpallares)
-* Autogenerate snapshots for more tests (#5958) via Antonio Pallares (@ajpallares)
-* Only consider source files for public enums Danger rule (#6156) via Antonio Pallares (@ajpallares)
-* Fix integration test (#6157) via Antonio Pallares (@ajpallares)
-* Fix API tests (#6155) via Antonio Pallares (@ajpallares)
-* Add troubleshooting link to the generic error message (#6152) via Engin Kurutepe (@ekurutepe)
+* Remove fallback url caching mechanism (#6188) via Toni Rico (@tonidero)
+* RCT Tester app Part 2 - Offerings + User management + Configuration persistence (#6189) via Antonio Pallares (@ajpallares)
+* RCT Tester app Part 1 - Tuist project + App setup (#6187) via Antonio Pallares (@ajpallares)
+* Fix `integration-tests-all` on CI (#6190) via Antonio Pallares (@ajpallares)
+* [Maestro] Improve e2e test stability (#6182) via Antonio Pallares (@ajpallares)
