@@ -17,19 +17,19 @@ extension Environment {
         Environment.rcLocal.getBoolean(default: true)
     }
     
-    /// Returns whether to include the XCFrameworkTester project in the workspace.
-    /// This is determined by the `TUIST_INCLUDE_XCFRAMEWORK_TESTER` environment variable, defaulting to `false` if not set.
+    /// Returns whether to include the XCFrameworkInstallationTests project in the workspace.
+    /// This is determined by the `TUIST_INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS` environment variable, defaulting to `false` if not set.
     /// 
     /// Example usage:
     /// ```bash
-    /// # Generate workspace without XCFrameworkTester (default)
+    /// # Generate workspace without XCFrameworkInstallationTests (default)
     /// tuist generate
     /// 
-    /// # Generate workspace with XCFrameworkTester
-    /// TUIST_INCLUDE_XCFRAMEWORK_TESTER=true tuist generate
+    /// # Generate workspace with XCFrameworkInstallationTests
+    /// TUIST_INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS=true tuist generate
     /// ```
-    public static var includeXCFrameworkTester: Bool {
-        let envValue = ProcessInfo.processInfo.environment["TUIST_INCLUDE_XCFRAMEWORK_TESTER"] ?? "false"
+    public static var includeXCFrameworkInstallationTests: Bool {
+        let envValue = ProcessInfo.processInfo.environment["TUIST_INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS"] ?? "false"
         return envValue.lowercased() == "true"
     }
 }

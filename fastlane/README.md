@@ -346,13 +346,13 @@ Creates RevenueCat-Swift.h for a new release
 
 Generate Tuist workspace
 
-### ios test_xcframework_integration
+### ios xcframework_installation_tests
 
 ```sh
-[bundle exec] fastlane ios test_xcframework_integration
+[bundle exec] fastlane ios xcframework_installation_tests
 ```
 
-Test XCFramework integration by building XCFrameworkTester app
+Test XCFramework integration by building XCFrameworkInstallationTests app
 
 ### ios backend_integration_tests
 

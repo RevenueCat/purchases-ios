@@ -1486,7 +1486,7 @@ platform :ios do
     UI.success("✓ Tuist workspace generated successfully")
   end
 
-  desc "Test XCFramework integration by building XCFrameworkTester app"
+  desc "Test XCFramework integration by building XCFrameworkInstallationTests app"
   lane :xcframework_installation_tests do |options|
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
     
@@ -1516,9 +1516,9 @@ platform :ios do
       UI.success("✓ Extracted #{xcframework_name}")
     end
     
-    # Generate Tuist workspace with XCFrameworkTester included
-    UI.message("Generating Tuist workspace with XCFrameworkTester...")
-    tuist_generate(env_vars: { "INCLUDE_XCFRAMEWORK_TESTER" => "true" })
+    # Generate Tuist workspace with XCFrameworkInstallationTests included
+    UI.message("Generating Tuist workspace with XCFrameworkInstallationTests...")
+    tuist_generate(env_vars: { "INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS" => "true" })
     
     workspace_path = File.join(project_root, "RevenueCat-Tuist.xcworkspace")
     
@@ -1561,12 +1561,12 @@ platform :ios do
     ]
     
     # Build for each destination
-    UI.message("\nBuilding XCFrameworkTester for #{destinations.length} destination(s)...")
+    UI.message("\nBuilding XCFrameworkInstallationTests for #{destinations.length} destination(s)...")
     destinations.each_with_index do |dest_info, index|
       UI.message("\n[#{index + 1}/#{destinations.length}] Building for #{dest_info[:description]}...")
       xcodebuild(
         workspace: workspace_path,
-        scheme: "XCFrameworkTester",
+        scheme: "XCFrameworkInstallationTests",
         destination: dest_info[:destination],
         configuration: "Debug",
         derivedDataPath: File.join(project_root, "build"),
@@ -1575,7 +1575,7 @@ platform :ios do
       UI.success("✓ Built successfully for #{dest_info[:description]}")
     end
     
-    UI.success("\n✓ XCFramework integration test passed - XCFrameworkTester built successfully for all destinations")
+    UI.success("\n✓ XCFramework integration test passed - XCFrameworkInstallationTests built successfully for all destinations")
   end
 
   desc "Run BackendIntegrationTests"

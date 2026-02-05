@@ -18,15 +18,15 @@ let deploymentTargets: DeploymentTargets = .multiplatform(
 )
 
 let project = Project(
-    name: "XCFrameworkTester",
+    name: "XCFrameworkInstallationTests",
     organizationName: .revenueCatOrgName,
     settings: .appProject,
     targets: [
         .target(
-            name: "XCFrameworkTester",
+            name: "XCFrameworkInstallationTests",
             destinations: destinations,
             product: .app,
-            bundleId: "com.revenuecat.xcframeworktester",
+            bundleId: "com.revenuecat.xcframeworkinstallationtests",
             deploymentTargets: deploymentTargets,
             infoPlist: .extendingDefault(
                 with: [
@@ -37,7 +37,7 @@ let project = Project(
                 ]
             ),
             sources: [
-                "XCFrameworkTester/Sources/**/*.swift"
+                "XCFrameworkInstallationTests/Sources/**/*.swift"
             ],
             dependencies: [
                 .xcframework(path: "../../RevenueCat.xcframework")
@@ -47,9 +47,9 @@ let project = Project(
     ],
     schemes: [
         .scheme(
-            name: "XCFrameworkTester",
+            name: "XCFrameworkInstallationTests",
             shared: true,
-            buildAction: .buildAction(targets: ["XCFrameworkTester"]),
+            buildAction: .buildAction(targets: ["XCFrameworkInstallationTests"]),
             runAction: .runAction(configuration: "Debug"),
             archiveAction: .archiveAction(configuration: "Release")
         )
