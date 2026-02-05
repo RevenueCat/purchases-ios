@@ -96,7 +96,7 @@ extension AdEventsRequest.AdEventRequest {
                 appUserId: storedEvent.userID,
                 appSessionId: storedEvent.appSessionID.uuidString,
                 timestamp: creationData.date.millisecondsSince1970,
-                networkName: eventData.networkName,
+                networkName: adEvent.networkName,
                 mediatorName: eventData.mediatorName.rawValue,
                 adFormat: eventData.adFormat.rawValue,
                 placement: eventData.placement,

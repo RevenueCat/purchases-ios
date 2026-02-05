@@ -19,16 +19,17 @@ import Foundation
 
 // MARK: - Internal Protocol
 
-/// Internal protocol to ensure all ad event types have consistent ad event fields.
+/// Internal protocol for base ad event fields shared by all ad event types.
 internal protocol AdEventData {
-    var networkName: String? { get }
     var mediatorName: MediatorName { get }
     var adFormat: AdFormat { get }
     var placement: String? { get }
     var adUnitId: String { get }
 }
 
+/// Internal protocol for ad impression events that have a network name and impression ID.
 internal protocol AdImpressionEventData: AdEventData {
+    var networkName: String { get }
     var impressionId: String { get }
 }
 
@@ -136,9 +137,6 @@ internal protocol AdImpressionEventData: AdEventData {
     public var mediatorErrorCodeValue: Int? {
         return self.mediatorErrorCodeRawValue
     }
-
-    /// Always returns nil for failed to load events since multiple networks may be involved.
-    internal var networkName: String? { nil }
 
     @objc public init(
         mediatorName: MediatorName,
@@ -661,6 +659,22 @@ extension AdEvent {
             return nil
         case let .revenue(_, revenueData):
             return revenueData
+        }
+    }
+
+    /// - Returns: the network name for impression events, nil for failed to load events.
+    internal var networkName: String? {
+        switch self {
+        case .failedToLoad:
+            return nil
+        case let .loaded(_, data):
+            return data.networkName
+        case let .displayed(_, data):
+            return data.networkName
+        case let .opened(_, data):
+            return data.networkName
+        case let .revenue(_, data):
+            return data.networkName
         }
     }
 

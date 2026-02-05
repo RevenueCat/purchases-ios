@@ -50,7 +50,6 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             return
         }
 
-        expect(eventData.networkName).to(beNil())
         expect(eventData.mediatorName) == .appLovin
         expect(eventData.adFormat) == .banner
         expect(eventData.placement) == "home_screen"
