@@ -32,6 +32,7 @@ final class PostIsPurchaseAllowedByRestoreBehaviorOperation: CacheableNetworkOpe
                     PostIsPurchaseAllowedByRestoreBehaviorOperation(
                         configuration: configuration,
                         postData: postData,
+                        // swiftlint:disable:next line_length
                         isPurchaseAllowedByRestoreBehaviorCallbackCache: isPurchaseAllowedByRestoreBehaviorCallbackCache,
                         cacheKey: cacheKey
                     )

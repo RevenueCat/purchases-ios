@@ -16,6 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
+// swiftlint:disable:next type_name
 class IsPurchaseAllowedByRestoreBehaviorDecodingTests: BaseHTTPResponseTest {
 
     private var response: IsPurchaseAllowedByRestoreBehaviorResponse!

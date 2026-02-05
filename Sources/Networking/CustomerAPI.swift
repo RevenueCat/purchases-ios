@@ -18,6 +18,7 @@ final class CustomerAPI {
     typealias CustomerInfoResponseHandler = Backend.ResponseHandler<CustomerInfo>
     typealias SimpleResponseHandler = (BackendError?) -> Void
 
+    // swiftlint:disable:next type_name
     typealias IsPurchaseAllowedByRestoreBehaviorResponseHandler =
     Backend.ResponseHandler<IsPurchaseAllowedByRestoreBehaviorResponse>
 

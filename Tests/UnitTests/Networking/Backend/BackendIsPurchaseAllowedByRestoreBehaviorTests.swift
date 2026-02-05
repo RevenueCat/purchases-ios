@@ -17,6 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
+// swiftlint:disable:next type_name
 final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
 
     override func createClient() -> MockHTTPClient {
@@ -166,7 +167,6 @@ final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
         expect(self.httpClient.calls).toNever(haveCount(2))
 
         self.logger.verifyMessageWasLogged(
-            // swiftlint:disable:next line_length
             "Network operation '\(PostIsPurchaseAllowedByRestoreBehaviorOperation.self)' found with the same cache key",
             level: .debug
         )

@@ -13,6 +13,7 @@
 
 import Foundation
 
+// swiftlint:disable:next type_name
 struct IsPurchaseAllowedByRestoreBehaviorCallback: CacheKeyProviding {
 
     let cacheKey: String
