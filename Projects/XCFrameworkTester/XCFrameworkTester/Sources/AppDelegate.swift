@@ -12,7 +12,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         _ = Tester()
-        
+
         return true
     }
 }
@@ -45,7 +45,7 @@ class Tester {
         // Test that RevenueCat can be imported and configured
         // This verifies that the xcframework is linked correctly
         Purchases.configure(withAPIKey: "")
-        
+
         // Tests that RevenueCatUI can be imported and the types are available
         // This verifies that the xcframework is linked correctly
         if #available(iOS 15.0, macOS 12.0, *) {
