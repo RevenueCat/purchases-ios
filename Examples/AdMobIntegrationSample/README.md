@@ -242,7 +242,7 @@ Inside the tracking method:
 private func trackAdRevenue(adFormat: AdFormat, adUnitID: String, placement: String,
                            responseInfo: GADResponseInfo?, adValue: GADAdValue) {
     let data = AdRevenue(
-        networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName ?? "Google AdMob",
+        networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName,
         mediatorName: .adMob,
         adFormat: adFormat,
         placement: placement,

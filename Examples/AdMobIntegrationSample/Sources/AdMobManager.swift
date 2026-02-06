@@ -195,7 +195,7 @@ class AdMobManager: NSObject, ObservableObject {
 
     private func trackAdLoaded(adFormat: AdFormat, adUnitID: String, placement: String, responseInfo: GADResponseInfo?) {
         let data = AdLoaded(
-            networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName ?? "Google AdMob",
+            networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName,
             mediatorName: .adMob,
             adFormat: adFormat,
             placement: placement,
@@ -208,7 +208,7 @@ class AdMobManager: NSObject, ObservableObject {
 
     func trackAdDisplayed(adFormat: AdFormat, adUnitID: String, placement: String, responseInfo: GADResponseInfo?) {
         let data = AdDisplayed(
-            networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName ?? "Google AdMob",
+            networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName,
             mediatorName: .adMob,
             adFormat: adFormat,
             placement: placement,
@@ -221,7 +221,7 @@ class AdMobManager: NSObject, ObservableObject {
 
     func trackAdOpened(adFormat: AdFormat, adUnitID: String, placement: String, responseInfo: GADResponseInfo?) {
         let data = AdOpened(
-            networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName ?? "Google AdMob",
+            networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName,
             mediatorName: .adMob,
             adFormat: adFormat,
             placement: placement,
@@ -234,7 +234,7 @@ class AdMobManager: NSObject, ObservableObject {
 
     private func trackAdRevenue(adFormat: AdFormat, adUnitID: String, placement: String, responseInfo: GADResponseInfo?, adValue: GADAdValue) {
         let data = AdRevenue(
-            networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName ?? "Google AdMob",
+            networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName,
             mediatorName: .adMob,
             adFormat: adFormat,
             placement: placement,
@@ -251,7 +251,6 @@ class AdMobManager: NSObject, ObservableObject {
 
     private func trackAdFailedToLoad(adFormat: AdFormat, adUnitID: String, placement: String, error: Error) {
         let data = AdFailedToLoad(
-            networkName: "Google AdMob",
             mediatorName: .adMob,
             adFormat: adFormat,
             placement: placement,
