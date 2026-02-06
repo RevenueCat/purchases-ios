@@ -190,14 +190,13 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
                 .appHealthReport,
-                .postCreateTicket:
+                .postCreateTicket,
+                .isPurchaseAllowedByRestoreBehavior:
             return true
 
         case .health,
              .appHealthReportAvailability:
             return false
-        case .isPurchaseAllowedByRestoreBehavior:
-            return true
         }
     }
 
@@ -217,13 +216,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
                 .appHealthReport,
-                .postCreateTicket:
+                .postCreateTicket,
+                .isPurchaseAllowedByRestoreBehavior:
             return true
         case .health,
              .appHealthReportAvailability:
             return false
-        case .isPurchaseAllowedByRestoreBehavior:
-            return true
         }
     }
 
@@ -246,10 +244,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket:
+                .postCreateTicket,
+                .isPurchaseAllowedByRestoreBehavior:
             return false
-        case .isPurchaseAllowedByRestoreBehavior:
-            return true
         }
     }
 
@@ -260,7 +257,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postReceiptData,
                 .getVirtualCurrencies,
                 .health,
-                .appHealthReportAvailability:
+                .appHealthReportAvailability,
+                .isPurchaseAllowedByRestoreBehavior:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -274,8 +272,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket:
             return false
-        case .isPurchaseAllowedByRestoreBehavior:
-            return true
         }
     }
 
