@@ -233,7 +233,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
                 .appHealthReport,
-                .appHealthReportAvailability:
+                .appHealthReportAvailability,
+                .isPurchaseAllowedByRestoreBehavior:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -242,8 +243,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket,
-                .isPurchaseAllowedByRestoreBehavior:
+                .postCreateTicket:
             return false
         }
     }
