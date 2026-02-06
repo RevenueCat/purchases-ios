@@ -1426,12 +1426,20 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
+        // Only attribute offering context and paywall data for transactions that are not known
+        // to be renewals. When the reason is `nil` (SK1, or SK2 on iOS < 17), we still attempt
+        // attribution because the product-ID and date matching in `getAndRemovePresentedOfferingContext`
+        // and `getAndRemovePurchaseInitiatedPaywall` will safely return nil for non-matching transactions.
+        let isKnownRenewal = transaction.reason == .renewal
+        let offeringContext = isKnownRenewal ? nil : self.getAndRemovePresentedOfferingContext(for: transaction)
+        let paywall = isKnownRenewal ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
 
         let storefront = await self.storefront(from: transaction)
         let subscriberAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
-            presentedOfferingContext: nil,
+            presentedOfferingContext: offeringContext,
+            presentedPaywall: paywall,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
             storeCountry: storefront?.countryCode
@@ -1923,7 +1931,7 @@ private extension PurchasesOrchestrator {
         self.presentedOfferingContextsByProductID.modify { $0.removeValue(forKey: productIdentifier) }
     }
 
-    func getAndRemovePresentedOfferingContext(for transaction: StoreTransaction) -> PresentedOfferingContext? {
+    func getAndRemovePresentedOfferingContext(for transaction: StoreTransactionType) -> PresentedOfferingContext? {
         return self.presentedOfferingContextsByProductID.modify { cache in
             guard let cached = cache[transaction.productIdentifier] else {
                 return nil
@@ -1938,7 +1946,7 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func getAndRemovePurchaseInitiatedPaywall(for transaction: StoreTransaction) -> PaywallEvent? {
+    func getAndRemovePurchaseInitiatedPaywall(for transaction: StoreTransactionType) -> PaywallEvent? {
         return self.purchaseInitiatedPaywall.modify { cachedPaywall in
             guard let paywall = cachedPaywall else {
                 return nil
