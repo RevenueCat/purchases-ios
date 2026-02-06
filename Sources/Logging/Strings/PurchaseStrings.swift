@@ -15,7 +15,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable identifier_name
+// swiftlint:disable identifier_name file_length
 
 enum PurchaseStrings {
 
@@ -50,6 +50,7 @@ enum PurchaseStrings {
 
     case purchased_product(productIdentifier: String)
     case product_purchase_failed(productIdentifier: String, error: Error)
+    case purchase_interrupted_external_app(productIdentifier: String)
     case skpayment_missing_from_skpaymenttransaction
     case skpayment_missing_product_identifier
     case sktransaction_missing_transaction_date(SKPaymentTransactionState)
@@ -233,6 +234,10 @@ extension PurchaseStrings: LogMessage {
 
         case let .product_purchase_failed(productIdentifier, error):
             return "Product purchase for '\(productIdentifier)' failed with error: \(error)"
+
+        case let .purchase_interrupted_external_app(productIdentifier):
+            return "Purchase for '\(productIdentifier)' interrupted - app was backgrounded during payment. " +
+            "User may have switched to external payment app (e.g., UPI). Returning purchaseInterruptedError."
 
         case .skpayment_missing_from_skpaymenttransaction:
             return """
