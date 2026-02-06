@@ -334,6 +334,28 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         await expect(self.backend.healthReportRequests).toEventually(equal([]))
     }
 
+    func testHealthCheckIsEnqueuedAfterCacheOperations() async {
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.setupPurchases()
+
+        // healthReportAvailability should be the last operation enqueued,
+        // so once it's called, all cache operations must have already been called.
+        await expect(self.backend.healthReportAvailabilityRequests).toEventually(haveCount(1))
+
+        expect(self.backend.getCustomerInfoCallCount).to(beGreaterThan(0))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).to(beGreaterThan(0))
+        expect(self.mockOfflineEntitlementsManager.invokedUpdateProductsEntitlementsCacheIfStaleCount).to(beGreaterThan(0))
+
+        // Verify getCustomerInfo was called before healthReportAvailability
+        let order = self.backend.callOrder
+        guard let customerInfoIndex = order.firstIndex(of: .getCustomerInfo),
+              let healthAvailabilityIndex = order.firstIndex(of: .healthReportAvailability) else {
+            fail("Expected both getCustomerInfo and healthReportAvailability to be called")
+            return
+        }
+        expect(customerInfoIndex).to(beLessThan(healthAvailabilityIndex))
+    }
+
     func testFirstInitializationFromForegroundUpdatesCustomerInfoCacheIfUserDefaultsCacheStale() async {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -20, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: staleCacheDateForForeground,
