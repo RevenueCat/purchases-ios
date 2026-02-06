@@ -913,6 +913,8 @@ final class PurchasesOrchestrator {
 
         case .cancel, .purchaseError:
             self.clearPurchaseInitiatedPaywall()
+            // productId may be nil for events not originating from PurchaseHandler.
+            // In that case we can't determine which cached context to clear, so we skip.
             if let productId = paywallEvent.data.productId {
                 self.clearCachedPresentedOfferingContext(for: productId)
             }

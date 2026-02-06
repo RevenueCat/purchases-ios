@@ -77,8 +77,10 @@ final class MockPurchases: PaywallPurchasesType {
         await self.trackEventBlock(paywallEvent)
     }
 
+    var cachedPresentedOfferingContextByProductID: [String: PresentedOfferingContext] = [:]
+
     func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
-        // No-op, this is a mock implementation.
+        self.cachedPresentedOfferingContextByProductID[productIdentifier] = context
     }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION

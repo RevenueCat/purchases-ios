@@ -87,6 +87,118 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.restoreError).to(beNil())
     }
 
+    func testCancelEventContainsProductIdentifier() async throws {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+
+        let handler = PurchaseHandler(
+            purchases: MockPurchases { _ in
+                return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: true)
+            } restorePurchases: {
+                return TestData.customerInfo
+            } trackEvent: { event in
+                trackedEvents.modify { $0.append(event) }
+            } customerInfo: {
+                return TestData.customerInfo
+            }
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+        handler.trackPaywallImpression(eventData)
+
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        // Events are tracked asynchronously via Task.detached
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        let cancelEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .cancel = $0 { return true }
+            return false
+        }))
+        expect(cancelEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
+    }
+
+    func testPurchaseErrorEventContainsProductIdentifier() async throws {
+        let error: ErrorCode = .storeProblemError
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+
+        let handler = PurchaseHandler(
+            purchases: MockPurchases { _ in
+                throw error
+            } restorePurchases: {
+                return TestData.customerInfo
+            } trackEvent: { event in
+                trackedEvents.modify { $0.append(event) }
+            } customerInfo: {
+                return TestData.customerInfo
+            }
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+        handler.trackPaywallImpression(eventData)
+
+        do {
+            _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+            fail("Expected error")
+        } catch {}
+
+        // Events are tracked asynchronously via Task.detached
+        await expect(trackedEvents.value.contains(where: {
+            if case .purchaseError = $0 { return true }
+            return false
+        })).toEventually(beTrue(), timeout: .seconds(2))
+
+        let errorEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .purchaseError = $0 { return true }
+            return false
+        }))
+        expect(errorEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
+    }
+
+    func testPurchaseInitiatedCachesPresentedOfferingContext() async throws {
+        let mockPurchases = MockPurchases { _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+
+        let handler = PurchaseHandler(purchases: mockPurchases)
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+        handler.trackPaywallImpression(eventData)
+
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        let expectedProductId = TestData.packageWithIntroOffer.storeProduct.productIdentifier
+        let cachedContext = mockPurchases.cachedPresentedOfferingContextByProductID[expectedProductId]
+        expect(cachedContext).toNot(beNil())
+        expect(cachedContext?.offeringIdentifier)
+            == TestData.packageWithIntroOffer.presentedOfferingContext.offeringIdentifier
+    }
+
     func testInProgressPropertiesDuringPurchase() async throws {
         self.continueAfterFailure = false
 
