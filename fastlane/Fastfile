@@ -1373,14 +1373,21 @@ platform :ios do
       scheme: 'RevenueCat',
       product_name: 'RevenueCat',
       platforms: [
-      'iOS'
+      'iOS',
+      'macOS',
+      'maccatalyst',
+      'tvOS',
+      'watchOS',
+      'visionOS'
     ])
     create_and_sign_xcframework(
       workspace: 'RevenueCat.xcworkspace',
       scheme: 'RevenueCatUIDev',
       product_name: 'RevenueCatUI',
       platforms: [
-      'iOS'
+      'iOS',
+      'maccatalyst',
+      'watchOS',
     ])
   end
 
@@ -1431,11 +1438,6 @@ platform :ios do
       sh("zip", "-r", "-q", xcframework_zip_path, File.basename(xcframework_path))
     end
 
-  end
-
-  lane :test_xcframework_export_and_integration do |options|
-    export_xcframeworks(options)
-    xcframework_installation_tests(options)
   end
 
   desc "Generate Tuist workspace"
@@ -1515,11 +1517,41 @@ platform :ios do
     
     workspace_path = File.join(project_root, "RevenueCat-Tuist.xcworkspace")
     
-    # Build for iOS Simulator to verify xcframework integration
+    # Build for each destination to verify xcframework integration
+    # These destinations match the platforms exported in the xcframework:
+    # iOS, macOS, Mac Catalyst, watchOS, visionOS
     destinations = [
       {
         destination: "generic/platform=iOS Simulator",
         description: "iOS Simulator"
+      },
+      {
+        destination: "generic/platform=iOS",
+        description: "iOS Device"
+      },
+      {
+        destination: "generic/platform=macOS,variant=Mac Catalyst",
+        description: "Mac Catalyst"
+      },
+      {
+        destination: "generic/platform=macOS",
+        description: "macOS"
+      },
+      {
+        destination: "generic/platform=watchOS Simulator",
+        description: "watchOS Simulator"
+      },
+      {
+        destination: "generic/platform=watchOS",
+        description: "watchOS Device"
+      },
+      {
+        destination: "generic/platform=visionOS Simulator",
+        description: "visionOS Simulator"
+      },
+      {
+        destination: "generic/platform=visionOS",
+        description: "visionOS Device"
       }
     ]
     
