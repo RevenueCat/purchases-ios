@@ -717,6 +717,7 @@ platform :ios do
     check_pods
     export_xcframeworks
     check_no_github_release_exists(version_number)
+    xcframework_installation_tests
   end
 
   desc "build tvOS, watchOS, macOS"
@@ -1368,6 +1369,7 @@ platform :ios do
 
   lane :export_xcframeworks do |options|
     create_and_sign_xcframework(
+      workspace: 'RevenueCat.xcworkspace',
       scheme: 'RevenueCat',
       product_name: 'RevenueCat',
       platforms: [
@@ -1379,6 +1381,7 @@ platform :ios do
       'visionOS'
     ])
     create_and_sign_xcframework(
+      workspace: 'RevenueCat.xcworkspace',
       scheme: 'RevenueCatUIDev',
       product_name: 'RevenueCatUI',
       platforms: [
@@ -1389,6 +1392,7 @@ platform :ios do
   end
 
   private_lane :create_and_sign_xcframework do |options|
+    workspace = options[:workspace]
     scheme = options[:scheme]
     product_name = options[:product_name]
     platforms = options[:platforms]
@@ -1396,6 +1400,7 @@ platform :ios do
     output_directory = "build/xcframeworks/#{product_name}"
 
     create_xcframework(
+      workspace: workspace,
       destinations: platforms,
       scheme: scheme,
       product_name: product_name,
@@ -1408,9 +1413,14 @@ platform :ios do
       override_xcargs: true
     )
 
-    # sh runs from the Fastfile's location, but other commands run from the project root.
-    output_directory_for_sh = "../#{output_directory}"
-    xcframework_path = "#{output_directory_for_sh}/#{product_name}.xcframework"
+    project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+    xcframework_path = File.join(project_root, output_directory, "#{product_name}.xcframework")
+    xcframework_zip_path = File.join(project_root, "#{product_name}.xcframework.zip")
+
+    # Verify xcframework was created
+    unless File.directory?(xcframework_path)
+      UI.user_error!("XCFramework not found at #{xcframework_path}")
+    end
 
     # Post-process headers to suppress StoreKit 1 deprecation warnings
     suppress_deprecation_warnings_in_headers(
@@ -1422,9 +1432,145 @@ platform :ios do
       file: xcframework_path
     )
 
-    xcframeworks_zip_path_for_sh = "../#{product_name}.xcframework.zip"
-    sh("ditto", "-c", "-k", "--sequesterRsrc", xcframework_path, xcframeworks_zip_path_for_sh)
+    # Use zip -r to preserve directory structure
+    # Change to the xcframework's parent directory so the zip contains the xcframework folder
+    Dir.chdir(File.dirname(xcframework_path)) do
+      sh("zip", "-r", "-q", xcframework_zip_path, File.basename(xcframework_path))
+    end
 
+  end
+
+  desc "Generate Tuist workspace"
+  lane :tuist_generate do |options|
+    project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+    query = options[:query] || ""
+    env_vars = options[:env_vars] || {}
+    
+    Dir.chdir(project_root) do
+      # Use tuist directly (assumes it's in PATH, which is set by install-tuist step in CI)
+      tuist_binary = 'tuist'
+      
+      # Build environment variable exports for TUIST_ prefixed variables
+      env_exports = []
+      env_vars.each do |var_name, var_value|
+        tuist_var_name = "TUIST_#{var_name}"
+        env_exports << "export #{tuist_var_name}=#{var_value}"
+      end
+      
+      # Build tuist command
+      tuist_cmd = "#{tuist_binary} install && #{tuist_binary} generate"
+      if query && !query.empty?
+        tuist_cmd += " #{query}"
+      end
+      tuist_cmd += " --no-open"
+      
+      # Run tuist generate
+      if env_exports.any?
+        sh("#{env_exports.join(' && ')} && #{tuist_cmd}")
+      else
+        sh(tuist_cmd)
+      end
+    end
+    
+    # Verify workspace was generated
+    workspace_path = File.join(project_root, "RevenueCat-Tuist.xcworkspace")
+    unless File.directory?(workspace_path)
+      UI.user_error!("Tuist workspace not found at #{workspace_path}")
+    end
+    
+    UI.success("✓ Tuist workspace generated successfully")
+  end
+
+  desc "Test XCFramework integration by building XCFrameworkInstallationTests app"
+  lane :xcframework_installation_tests do |options|
+    project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+    
+    # Extract xcframework zip files to the root of the project
+    xcframework_zips = [
+      "RevenueCat.xcframework.zip",
+      "RevenueCatUI.xcframework.zip"
+    ]
+    
+    xcframework_zips.each do |zip_file|
+      zip_path = File.join(project_root, zip_file)
+      unless File.exist?(zip_path)
+        UI.user_error!("XCFramework zip not found: #{zip_path}")
+      end
+      
+      UI.message("Extracting #{zip_file} to project root...")
+      Dir.chdir(project_root) do
+        sh("unzip", "-o", "-q", zip_file)
+      end
+      
+      # Verify the xcframework was extracted
+      xcframework_name = zip_file.gsub(".zip", "")
+      xcframework_path = File.join(project_root, xcframework_name)
+      unless File.directory?(xcframework_path)
+        UI.user_error!("XCFramework extraction failed: #{xcframework_path} not found")
+      end
+      UI.success("✓ Extracted #{xcframework_name}")
+    end
+    
+    # Generate Tuist workspace with XCFrameworkInstallationTests included
+    UI.message("Generating Tuist workspace with XCFrameworkInstallationTests...")
+    tuist_generate(env_vars: { "INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS" => "true" })
+    
+    workspace_path = File.join(project_root, "RevenueCat-Tuist.xcworkspace")
+    
+    # Build for each destination to verify xcframework integration
+    # These destinations match the platforms exported in the xcframework:
+    # iOS, macOS, Mac Catalyst, watchOS, visionOS
+    destinations = [
+      {
+        destination: "generic/platform=iOS Simulator",
+        description: "iOS Simulator"
+      },
+      {
+        destination: "generic/platform=iOS",
+        description: "iOS Device"
+      },
+      {
+        destination: "generic/platform=macOS,variant=Mac Catalyst",
+        description: "Mac Catalyst"
+      },
+      {
+        destination: "generic/platform=macOS",
+        description: "macOS"
+      },
+      {
+        destination: "generic/platform=watchOS Simulator",
+        description: "watchOS Simulator"
+      },
+      {
+        destination: "generic/platform=watchOS",
+        description: "watchOS Device"
+      },
+      {
+        destination: "generic/platform=visionOS Simulator",
+        description: "visionOS Simulator"
+      },
+      {
+        destination: "generic/platform=visionOS",
+        description: "visionOS Device"
+      }
+    ]
+    
+    # Build for each destination
+    UI.message("\nBuilding XCFrameworkInstallationTests for #{destinations.length} destination(s)...")
+    destinations.each_with_index do |dest_info, index|
+      UI.message("\n[#{index + 1}/#{destinations.length}] Building for #{dest_info[:description]}...")
+      xcodebuild(
+        workspace: workspace_path,
+        scheme: "XCFrameworkInstallationTests",
+        destination: dest_info[:destination],
+        configuration: "Debug",
+        derivedDataPath: File.join(project_root, "build"),
+        clean: index == 0  # Only clean on first build
+      )
+      UI.success("✓ Built successfully for #{dest_info[:description]}")
+    end
+    
+    UI.success("\n✓ XCFramework integration test passed - XCFrameworkInstallationTests built successfully for all destinations")
   end
 
   desc "Run BackendIntegrationTests"

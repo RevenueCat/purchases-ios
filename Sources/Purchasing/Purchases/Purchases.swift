@@ -802,13 +802,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         self.purchasesOrchestrator.delegate = self
 
-        // Don't update caches in the background to potentially avoid apps being launched through a notification
-        // all at the same time by too many users concurrently.
-        self.updateCachesIfInForeground()
-
-        #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        self.runHealthCheckIfInForeground()
-        #endif
+        // Don't update caches or run health checks in the background to avoid too many users
+        // hitting the backend concurrently when launched through a notification at the same time.
+        self.performInitialForegroundSetup()
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
             self.paymentQueueWrapper.sk1Wrapper?.delegate = purchasesOrchestrator
@@ -2293,18 +2289,24 @@ private extension Purchases {
         #endif
     }
 
-    func updateCachesIfInForeground() {
-        self.systemInfo.isApplicationBackgrounded { isBackgrounded in
-            if !isBackgrounded {
-                self.operationDispatcher.dispatchOnWorkerThread {
-                    self.updateAllCaches(isAppBackgrounded: isBackgrounded, completion: nil)
-                }
+    private func performInitialForegroundSetup() {
+        self.systemInfo.isApplicationBackgrounded { [weak self] isBackgrounded in
+            guard !isBackgrounded, let self = self else { return }
+
+            self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
+                self?.updateAllCaches(isAppBackgrounded: isBackgrounded, completion: nil)
+
+                // Run the health check after all cache operations have been
+                // enqueued on the serial queue, so it doesn't block user-facing requests.
+                #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+                self?.enqueueHealthCheckIfNeeded()
+                #endif
             }
         }
     }
 
     #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    func runHealthCheckIfInForeground() {
+    private func enqueueHealthCheckIfNeeded() {
         // This is a workaround and needs to be fixed at some point. Explanation:
         // The StoreKit integration tests are very time sensitive and set very
         // short expiry times for most products. This results in flakiness, which
@@ -2315,14 +2317,14 @@ private extension Purchases {
         // in the future.
         guard !ProcessInfo.isRunningIntegrationTests else { return }
 
-        self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
-            guard self?.systemInfo.isAppBackgroundedState == false,
-            let appUserID = self?.appUserID,
-                let availability = try? await self?.backend.healthReportAvailabilityRequest(
-                    appUserID: appUserID
-                ), availability.reportLogs else {
-                    return
-                }
+        let appUserID = self.appUserID
+
+        Task { [weak self] in
+            guard let availability = try? await self?.backend.healthReportAvailabilityRequest(
+                appUserID: appUserID
+            ), availability.reportLogs else {
+                return
+            }
             await self?.healthManager.logSDKHealthReportOutcome()
         }
     }
