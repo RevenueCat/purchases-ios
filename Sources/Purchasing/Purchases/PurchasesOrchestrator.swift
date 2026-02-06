@@ -1427,9 +1427,10 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
         // Only attribute offering context and paywall data for transactions that are not known
-        // to be renewals. When the reason is `nil` (SK1, or SK2 on iOS < 17), we still attempt
+        // to be renewals. When the reason is `nil` (i.e. iOS < 17), we still attempt
         // attribution because the product-ID and date matching in `getAndRemovePresentedOfferingContext`
-        // and `getAndRemovePurchaseInitiatedPaywall` will safely return nil for non-matching transactions.
+        // and `getAndRemovePurchaseInitiatedPaywall` will safely return nil for non-matching transactions,
+        // making the misattribution case extremely unlikely.
         let isKnownRenewal = transaction.reason == .renewal
         let offeringContext = isKnownRenewal ? nil : self.getAndRemovePresentedOfferingContext(for: transaction)
         let paywall = isKnownRenewal ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
