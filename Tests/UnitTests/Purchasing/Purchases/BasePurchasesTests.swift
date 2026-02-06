@@ -460,20 +460,20 @@ extension BasePurchasesTests {
 
     }
 
+    enum MockBackendOperation: String {
+        case getCustomerInfo
+        case healthReport
+        case healthReportAvailability
+        case postReceipt
+        case postAttribution
+    }
+
     final class MockBackend: Backend {
 
         static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
 
-        enum Operation: String {
-            case getCustomerInfo
-            case healthReport
-            case healthReportAvailability
-            case postReceipt
-            case postAttribution
-        }
-
         /// Tracks the order in which backend methods are called.
-        var callOrder: [Operation] = []
+        var callOrder: [MockBackendOperation] = []
 
         var userID: String?
         var originalApplicationVersion: String?

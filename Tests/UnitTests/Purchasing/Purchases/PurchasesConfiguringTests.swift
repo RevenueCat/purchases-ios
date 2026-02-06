@@ -344,7 +344,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         expect(self.backend.getCustomerInfoCallCount).to(beGreaterThan(0))
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).to(beGreaterThan(0))
-        expect(self.mockOfflineEntitlementsManager.invokedUpdateProductsEntitlementsCacheIfStaleCount).to(beGreaterThan(0))
+        expect(self.mockOfflineEntitlementsManager.invokedUpdateProductsEntitlementsCacheIfStaleCount)
+            .to(beGreaterThan(0))
 
         // Verify getCustomerInfo was called before healthReportAvailability
         let order = self.backend.callOrder
