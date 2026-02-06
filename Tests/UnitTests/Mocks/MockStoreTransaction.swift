@@ -32,12 +32,13 @@ final class MockStoreTransaction: StoreTransactionType {
 
     init(
         productIdentifier: String = UUID().uuidString,
+        purchaseDate: Date = Date(),
         jwsRepresentation: String? = nil,
         environment: StoreEnvironment = .sandbox,
         reason: TransactionReason? = nil
     ) {
         self.productIdentifier = productIdentifier
-        self.purchaseDate = Date()
+        self.purchaseDate = purchaseDate
         self.transactionIdentifier = UUID().uuidString
         self.quantity = 1
         self.storefront = nil
