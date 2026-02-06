@@ -913,7 +913,9 @@ final class PurchasesOrchestrator {
 
         case .cancel, .purchaseError:
             self.clearPurchaseInitiatedPaywall()
-            self.clearCachedPresentedOfferingContext()
+            if let productId = paywallEvent.data.productId {
+                self.clearCachedPresentedOfferingContext(for: productId)
+            }
 
         case .impression, .close, .exitOffer:
             break
@@ -1917,13 +1919,13 @@ private extension PurchasesOrchestrator {
         let cacheDate: Date
     }
 
-    func clearCachedPresentedOfferingContext() {
-        self.presentedOfferingContextsByProductID.modify { $0.removeAll() }
+    func clearCachedPresentedOfferingContext(for productIdentifier: String) {
+        self.presentedOfferingContextsByProductID.modify { $0.removeValue(forKey: productIdentifier) }
     }
 
     func getAndRemovePresentedOfferingContext(for transaction: StoreTransaction) -> PresentedOfferingContext? {
         return self.presentedOfferingContextsByProductID.modify { cache in
-            guard let cached = cache.removeValue(forKey: transaction.productIdentifier) else {
+            guard let cached = cache[transaction.productIdentifier] else {
                 return nil
             }
 
@@ -1931,6 +1933,7 @@ private extension PurchasesOrchestrator {
                 return nil
             }
 
+            cache.removeValue(forKey: transaction.productIdentifier)
             return cached.context
         }
     }

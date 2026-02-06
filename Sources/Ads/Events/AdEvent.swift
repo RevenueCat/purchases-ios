@@ -29,7 +29,7 @@ internal protocol AdEventData {
 
 /// Internal protocol for ad impression events that have a network name and impression ID.
 internal protocol AdImpressionEventData: AdEventData {
-    var networkName: String { get }
+    var networkName: String? { get }
     var impressionId: String { get }
 }
 
@@ -223,7 +223,7 @@ internal protocol AdImpressionEventData: AdEventData {
                                                                     @unchecked Sendable {
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String
+    @objc public private(set) var networkName: String?
     @objc public private(set) var mediatorName: MediatorName
     @objc public private(set) var adFormat: AdFormat
     @objc public private(set) var placement: String?
@@ -231,7 +231,7 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public private(set) var impressionId: String
 
     @objc public init(
-        networkName: String,
+        networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         placement: String?,
@@ -248,7 +248,7 @@ internal protocol AdImpressionEventData: AdEventData {
     }
 
     @objc public convenience init(
-        networkName: String,
+        networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         adUnitId: String,
@@ -297,7 +297,7 @@ internal protocol AdImpressionEventData: AdEventData {
                                                                           @unchecked Sendable {
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String
+    @objc public private(set) var networkName: String?
     @objc public private(set) var mediatorName: MediatorName
     @objc public private(set) var adFormat: AdFormat
     @objc public private(set) var placement: String?
@@ -305,7 +305,7 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public private(set) var impressionId: String
 
     @objc public init(
-        networkName: String,
+        networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         placement: String?,
@@ -322,7 +322,7 @@ internal protocol AdImpressionEventData: AdEventData {
     }
 
     @objc public convenience init(
-        networkName: String,
+        networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         adUnitId: String,
@@ -371,7 +371,7 @@ internal protocol AdImpressionEventData: AdEventData {
                                                                     @unchecked Sendable {
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String
+    @objc public private(set) var networkName: String?
     @objc public private(set) var mediatorName: MediatorName
     @objc public private(set) var adFormat: AdFormat
     @objc public private(set) var placement: String?
@@ -379,7 +379,7 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public private(set) var impressionId: String
 
     @objc public init(
-        networkName: String,
+        networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         placement: String?,
@@ -396,7 +396,7 @@ internal protocol AdImpressionEventData: AdEventData {
     }
 
     @objc public convenience init(
-        networkName: String,
+        networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         adUnitId: String,
@@ -445,7 +445,7 @@ internal protocol AdImpressionEventData: AdEventData {
                                                                       @unchecked Sendable {
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String
+    @objc public private(set) var networkName: String?
     @objc public private(set) var mediatorName: MediatorName
     @objc public private(set) var adFormat: AdFormat
     @objc public private(set) var placement: String?
@@ -456,7 +456,7 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public private(set) var precision: Precision
 
     @objc public init(
-        networkName: String,
+        networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         placement: String?,
@@ -479,7 +479,7 @@ internal protocol AdImpressionEventData: AdEventData {
     }
 
     @objc public convenience init(
-        networkName: String,
+        networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         adUnitId: String,
