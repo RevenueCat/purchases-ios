@@ -1077,7 +1077,7 @@ extension Purchases {
         Async.call(
             with: { result in
                 OperationDispatcher.dispatchOnMainActor {
-                    completion(result.error == nil ? result.value : nil, result.error?.asPublicError)
+                    completion(result.value, result.error?.asPublicError)
                 }
             },
             asyncMethod: {
