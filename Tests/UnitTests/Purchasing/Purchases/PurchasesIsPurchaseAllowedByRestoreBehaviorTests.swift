@@ -29,7 +29,7 @@ final class PurchasesIsPurchaseAllowedByRestoreBehaviorSK2Tests: BasePurchasesTe
     }
 
     func testIsPurchaseAllowedReturnsTrueWhenNoVerifiedTransaction() async throws {
-        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = nil
+        self.mockTransactionFetcher.stubbedOldestVerifiedTransaction = nil
 
         let result = try await self.purchasesOrchestrator.isPurchaseAllowedByRestoreBehavior()
 
@@ -39,7 +39,7 @@ final class PurchasesIsPurchaseAllowedByRestoreBehaviorSK2Tests: BasePurchasesTe
 
     func testIsPurchaseAllowedReturnsTrueWhenTransactionHasNoJWS() async throws {
         let transaction = StoreTransaction.from(transaction: MockStoreTransaction(jwsRepresentation: nil))
-        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
+        self.mockTransactionFetcher.stubbedOldestVerifiedTransaction = transaction
 
         let result = try await self.purchasesOrchestrator.isPurchaseAllowedByRestoreBehavior()
 
@@ -50,7 +50,7 @@ final class PurchasesIsPurchaseAllowedByRestoreBehaviorSK2Tests: BasePurchasesTe
     func testIsPurchaseAllowedUsesBackendResponse() async throws {
         let jws = "transaction-jws"
         let transaction = StoreTransaction.from(transaction: MockStoreTransaction(jwsRepresentation: jws))
-        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
+        self.mockTransactionFetcher.stubbedOldestVerifiedTransaction = transaction
         self.backend.stubbedIsPurchaseAllowedByRestoreBehaviorResult = .success(
             .init(isPurchaseAllowedByRestoreBehavior: true)
         )
@@ -67,7 +67,7 @@ final class PurchasesIsPurchaseAllowedByRestoreBehaviorSK2Tests: BasePurchasesTe
     func testIsPurchaseAllowedReturnsFalseWhenNotAllowedByRestoreBehavior() async throws {
         let jws = "transaction-jws"
         let transaction = StoreTransaction.from(transaction: MockStoreTransaction(jwsRepresentation: jws))
-        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
+        self.mockTransactionFetcher.stubbedOldestVerifiedTransaction = transaction
         self.backend.stubbedIsPurchaseAllowedByRestoreBehaviorResult = .success(
             .init(isPurchaseAllowedByRestoreBehavior: false)
         )

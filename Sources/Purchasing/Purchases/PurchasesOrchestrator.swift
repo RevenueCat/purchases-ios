@@ -2171,7 +2171,7 @@ extension PurchasesOrchestrator {
             throw ErrorUtils.featureNotSupportedWithStoreKit1Error()
         }
 
-        guard let transaction = await self.transactionFetcher.firstVerifiedTransaction,
+        guard let transaction = await self.transactionFetcher.oldestVerifiedTransaction,
               let jwsRepresentation = transaction.jwsRepresentation else {
             // If the user has never made a purchase, then the receipt can't be tied to another
             // RevenueCat subscriber, and thus the purchase will be allowed
