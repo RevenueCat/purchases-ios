@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 9/6/23.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class MockInternalAPI: InternalAPI {
 

@@ -14,7 +14,7 @@
 import Foundation
 import Nimble
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 import XCTest
 
