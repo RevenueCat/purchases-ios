@@ -2188,6 +2188,34 @@ extension PurchasesOrchestrator {
 
 }
 
+// MARK: - isPurchaseAllowedByRestoreBehavior
+extension PurchasesOrchestrator {
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func isPurchaseAllowedByRestoreBehavior() async throws -> Bool {
+        guard self.systemInfo.storeKitVersion == .storeKit2 else {
+            throw ErrorUtils.featureNotSupportedWithStoreKit1Error()
+        }
+
+        guard let transaction = await self.transactionFetcher.oldestVerifiedTransaction,
+              let jwsRepresentation = transaction.jwsRepresentation else {
+            // If the user has never made a purchase, then the receipt can't be tied to another
+            // RevenueCat subscriber, and thus the purchase will be allowed
+            return true
+        }
+
+        let response = try await Async.call { completion in
+            self.backend.isPurchaseAllowedByRestoreBehavior(
+                appUserID: self.appUserID,
+                transactionJWS: jwsRepresentation,
+                isAppBackgrounded: self.systemInfo.isAppBackgroundedState,
+                completion: completion
+            )
+        }
+
+        return response.isPurchaseAllowedByRestoreBehavior
+    }
+}
+
 // MARK: - Async extensions
 
 extension PurchasesOrchestrator {
