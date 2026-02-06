@@ -299,7 +299,7 @@ extension VariablesV2 {
             }
         case .productCurrencySymbol:
             if let package {
-                return self.productCurrencySymbol(package: package, locale: locale)
+                return self.productCurrencySymbol(package: package)
             }
         case .productPeriodly:
             if let package {
@@ -512,11 +512,12 @@ extension VariablesV2 {
         return package.storeProduct.currencyCode ?? ""
     }
 
-    func productCurrencySymbol(package: Package, locale: Locale) -> String {
-        guard let currencyCode = package.storeProduct.currencyCode else {
-            return ""
-        }
-        return locale.currencySymbol(forCurrencyCode: currencyCode) ?? ""
+    func productCurrencySymbol(package: Package) -> String {
+        // Use the product's priceFormatter to get the currency symbol.
+        // Returns empty string if unavailable - we intentionally don't fallback to
+        // locale.currencySymbol because that returns the user's locale currency symbol
+        // (e.g., "¤" for Romanian) instead of the product's currency symbol (e.g., "$" for USD).
+        return package.storeProduct.priceFormatter?.currencySymbol ?? ""
     }
 
     func productPrice(package: Package, showZeroDecimalPlacePrices: Bool) -> String {
@@ -1083,13 +1084,6 @@ extension SubscriptionPeriod {
         ).rounding(accordingToBehavior: nil).intValue
     }
 
-}
-
-extension Locale {
-    func currencySymbol(forCurrencyCode currencyCode: String) -> String? {
-        let localeIdentifier = Locale.identifier(fromComponents: [NSLocale.Key.currencyCode.rawValue: currencyCode])
-        return Locale(identifier: localeIdentifier).currencySymbol
-    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
