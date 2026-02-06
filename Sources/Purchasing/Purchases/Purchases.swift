@@ -1061,6 +1061,41 @@ extension Purchases {
     public func switchUser(to newAppUserID: String) {
         self.internalSwitchUser(to: newAppUserID)
     }
+
+    /// Queries whether a purchase made by the current appUserId is allowed by the app's restore behavior.
+    ///
+    /// For more information, see https://www.revenuecat.com/docs/projects/restore-behavior
+    ///
+    /// - Parameter completion: Completion containing whether or not a purchase will be allowed and an optional error.
+    ///   If the error is non-nil, the result will be `nil`.
+    ///
+    /// Only supported for StoreKit 2.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    public func isPurchaseAllowedByRestoreBehavior(
+        completion: @escaping (Bool?, PublicError?) -> Void
+    ) {
+        Async.call(
+            with: { result in
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(result.value, result.error?.asPublicError)
+                }
+            },
+            asyncMethod: {
+                try await self.isPurchaseAllowedByRestoreBehavior()
+            }
+        )
+    }
+
+    /// Queries whether a purchase made by the current appUserId is allowed by the app's restore behavior.
+    ///
+    /// For more information, see https://www.revenuecat.com/docs/projects/restore-behavior
+    ///
+    /// Only supported for StoreKit 2.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    public func isPurchaseAllowedByRestoreBehavior() async throws -> Bool {
+        try await purchasesOrchestrator.isPurchaseAllowedByRestoreBehavior()
+    }
+
 #endif
 
     internal func internalSwitchUser(to newAppUserID: String) {
