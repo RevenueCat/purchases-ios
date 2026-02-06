@@ -1840,9 +1840,7 @@ private extension PurchasesOrchestrator {
                                        storefront: StorefrontType?,
                                        restored: Bool) {
         // Don't attribute offering context or paywall data for restored transactions
-        let offeringContext = restored ? nil : self.getAndRemovePresentedOfferingContext(
-            for: purchasedTransaction
-        )
+        let offeringContext = restored ? nil : self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
         let paywall = restored ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: purchasedTransaction)
         let unsyncedAttributes = self.unsyncedAttributes
         self.attribution.unsyncedAdServicesToken { adServicesToken in

@@ -168,7 +168,7 @@ class PurchaseHandlerTests: TestCase {
         expect(errorEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
     }
 
-    func testPurchaseInitiatedCachesPresentedOfferingContext() async throws {
+    func testPurchaseCachesPresentedOfferingContextWhenCompletedByRevenueCat() async throws {
         let mockPurchases = MockPurchases { _ in
             return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
         } restorePurchases: {
@@ -179,6 +179,43 @@ class PurchaseHandlerTests: TestCase {
         }
 
         let handler = PurchaseHandler(purchases: mockPurchases)
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+        handler.trackPaywallImpression(eventData)
+
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        let expectedProductId = TestData.packageWithIntroOffer.storeProduct.productIdentifier
+        let cachedContext = mockPurchases.cachedPresentedOfferingContextByProductID[expectedProductId]
+        expect(cachedContext).toNot(beNil())
+        expect(cachedContext?.offeringIdentifier)
+            == TestData.packageWithIntroOffer.presentedOfferingContext.offeringIdentifier
+    }
+
+    func testPurchaseCachesPresentedOfferingContextWhenCompletedByMyApp() async throws {
+        let mockPurchases = MockPurchases(
+            purchasesAreCompletedBy: .myApp
+        ) { _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+
+        let handler = PurchaseHandler(
+            purchases: mockPurchases,
+            performPurchase: { _ in (userCancelled: false, error: nil) },
+            performRestore: { (success: true, error: nil) }
+        )
 
         let eventData: PaywallEvent.Data = .init(
             offering: TestData.offeringWithIntroOffer,
