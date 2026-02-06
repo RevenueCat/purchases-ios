@@ -270,8 +270,6 @@ extension PurchaseHandler {
 
         self.startAction(.purchase)
         self.trackPurchaseInitiated(package: package)
-        self.purchases.cachePresentedOfferingContext(package.presentedOfferingContext,
-                                                     productIdentifier: package.storeProduct.productIdentifier)
 
         do {
             let result: PurchaseResultData
@@ -321,8 +319,6 @@ extension PurchaseHandler {
 
         self.startAction(.purchase)
         self.trackPurchaseInitiated(package: package)
-        self.purchases.cachePresentedOfferingContext(package.presentedOfferingContext,
-                                                     productIdentifier: package.storeProduct.productIdentifier)
 
         let result = await externalPurchaseMethod(package)
 
@@ -491,6 +487,11 @@ extension PurchaseHandler {
             errorMessage: nil
         )
         self.track(.purchaseInitiated(.init(), purchaseData))
+        self.purchases.cachePresentedOfferingContext(
+            package.presentedOfferingContext,
+            productIdentifier: package.storeProduct.productIdentifier
+        )
+
         return true
     }
 
