@@ -80,6 +80,7 @@ final class PurchasesOrchestrator {
     private let dateProvider: DateProvider
 
     let notificationCenter: NotificationCenter
+    private var appBackgroundObserver: NSObjectProtocol?
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -271,7 +272,7 @@ final class PurchasesOrchestrator {
         self.notificationCenter = notificationCenter
 
         // Observe app background events to track if purchases were interrupted by external payment apps
-        self.notificationCenter.addObserver(
+        self.appBackgroundObserver = self.notificationCenter.addObserver(
             forName: SystemInfo.applicationDidEnterBackgroundNotification,
             object: nil,
             queue: nil
@@ -283,6 +284,9 @@ final class PurchasesOrchestrator {
     }
 
     deinit {
+        if let observer = self.appBackgroundObserver {
+            self.notificationCenter.removeObserver(observer)
+        }
         Logger.verbose(Strings.purchase.purchases_orchestrator_deinit(self))
     }
 
@@ -1287,6 +1291,9 @@ private extension PurchasesOrchestrator {
         let userCancelled = transaction.error?.isCancelledError ?? false
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
 
+        // Clean up backgrounded state tracking (for UPI/external payment app detection)
+        _ = self.getAndClearBackgroundedState(productIdentifier: storeTransaction.productIdentifier)
+
         guard let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) else {
             return
         }
@@ -1886,9 +1893,11 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func handleSK1PurchasedTransaction(_ purchasedTransaction: StoreTransaction,
+func handleSK1PurchasedTransaction(_ purchasedTransaction: StoreTransaction,
                                        storefront: StorefrontType?,
                                        restored: Bool) {
+        // Clean up backgrounded state tracking (for UPI/external payment app detection)
+        _ = self.getAndClearBackgroundedState(productIdentifier: purchasedTransaction.productIdentifier)
         // Don't attribute offering context or paywall data for restored transactions
         let offeringContext = restored ? nil : self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
         let paywall = restored ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: purchasedTransaction)
@@ -2301,6 +2310,7 @@ extension PurchasesOrchestrator {
         _ initiationSource: PostReceiptSource.InitiationSource,
         _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
+        defer { _ = self.getAndClearBackgroundedState(productIdentifier: transaction.productIdentifier) }
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
         let paywall = self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
         let unsyncedAttributes = self.unsyncedAttributes
