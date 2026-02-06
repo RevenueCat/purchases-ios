@@ -310,14 +310,14 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 /// Data for ad displayed events.
 SWIFT_CLASS_NAMED("AdDisplayed")
 @interface RCAdDisplayed : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nonnull networkName;
+@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
 @property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
 @property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
 @property (nonatomic, readonly, copy) NSString * _Nullable placement;
 @property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
 @property (nonatomic, readonly, copy) NSString * _Nonnull impressionId;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -328,14 +328,13 @@ SWIFT_CLASS_NAMED("AdDisplayed")
 /// Data for ad failed to load events.
 SWIFT_CLASS_NAMED("AdFailedToLoad")
 @interface RCAdFailedToLoad : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nonnull networkName;
 @property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
 @property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
 @property (nonatomic, readonly, copy) NSString * _Nullable placement;
 @property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
 @property (nonatomic, readonly, strong) NSNumber * _Nullable mediatorErrorCode;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId mediatorErrorCode:(NSNumber * _Nullable)mediatorErrorCode OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId mediatorErrorCode:(NSNumber * _Nullable)mediatorErrorCode;
+- (nonnull instancetype)initWithMediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId mediatorErrorCode:(NSNumber * _Nullable)mediatorErrorCode OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithMediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId mediatorErrorCode:(NSNumber * _Nullable)mediatorErrorCode;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -384,14 +383,14 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat *
 /// Data for ad loaded events.
 SWIFT_CLASS_NAMED("AdLoaded")
 @interface RCAdLoaded : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nonnull networkName;
+@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
 @property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
 @property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
 @property (nonatomic, readonly, copy) NSString * _Nullable placement;
 @property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
 @property (nonatomic, readonly, copy) NSString * _Nonnull impressionId;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -401,14 +400,14 @@ SWIFT_CLASS_NAMED("AdLoaded")
 /// Data for ad opened/clicked events.
 SWIFT_CLASS_NAMED("AdOpened")
 @interface RCAdOpened : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nonnull networkName;
+@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
 @property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
 @property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
 @property (nonatomic, readonly, copy) NSString * _Nullable placement;
 @property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
 @property (nonatomic, readonly, copy) NSString * _Nonnull impressionId;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -419,7 +418,7 @@ SWIFT_CLASS_NAMED("AdOpened")
 /// Data for ad revenue events.
 SWIFT_CLASS_NAMED("AdRevenue")
 @interface RCAdRevenue : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nonnull networkName;
+@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
 @property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
 @property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
 @property (nonatomic, readonly, copy) NSString * _Nullable placement;
@@ -428,8 +427,8 @@ SWIFT_CLASS_NAMED("AdRevenue")
 @property (nonatomic, readonly) NSInteger revenueMicros;
 @property (nonatomic, readonly, copy) NSString * _Nonnull currency;
 @property (nonatomic, readonly, strong) RCAdRevenuePrecision * _Nonnull precision;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId revenueMicros:(NSInteger)revenueMicros currency:(NSString * _Nonnull)currency precision:(RCAdRevenuePrecision * _Nonnull)precision OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId revenueMicros:(NSInteger)revenueMicros currency:(NSString * _Nonnull)currency precision:(RCAdRevenuePrecision * _Nonnull)precision;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId revenueMicros:(NSInteger)revenueMicros currency:(NSString * _Nonnull)currency precision:(RCAdRevenuePrecision * _Nonnull)precision OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId revenueMicros:(NSInteger)revenueMicros currency:(NSString * _Nonnull)currency precision:(RCAdRevenuePrecision * _Nonnull)precision;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -504,8 +503,8 @@ SWIFT_CLASS_NAMED("AdTracker") SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_
 /// <h2>Example:</h2>
 /// \code
 /// Purchases.shared.adTracker.trackAdFailedToLoad(.init(
-///     networkName: "AdMob",
 ///     mediatorName: .appLovin,
+///     adFormat: .banner,
 ///     placement: "home_screen",
 ///     adUnitId: "ca-app-pub-123",
 ///     mediatorErrorCode: 3
