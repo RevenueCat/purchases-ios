@@ -77,10 +77,10 @@ final class MockPurchases: PaywallPurchasesType {
         await self.trackEventBlock(paywallEvent)
     }
 
-    var cachedPresentedOfferingContextByProductID: [String: PresentedOfferingContext] = [:]
+    let cachedPresentedOfferingContextByProductID: Atomic<[String: PresentedOfferingContext]> = .init([:])
 
     func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
-        self.cachedPresentedOfferingContextByProductID[productIdentifier] = context
+        self.cachedPresentedOfferingContextByProductID.modify { $0[productIdentifier] = context }
     }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
