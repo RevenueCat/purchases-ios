@@ -460,9 +460,20 @@ extension BasePurchasesTests {
 
     }
 
+    enum MockBackendOperation: String {
+        case getCustomerInfo
+        case healthReport
+        case healthReportAvailability
+        case postReceipt
+        case postAttribution
+    }
+
     final class MockBackend: Backend {
 
         static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
+
+        /// Tracks the order in which backend methods are called.
+        var callOrder: [MockBackendOperation] = []
 
         var userID: String?
         var originalApplicationVersion: String?
@@ -477,6 +488,7 @@ extension BasePurchasesTests {
                                       isAppBackgrounded: Bool,
                                       allowComputingOffline: Bool,
                                       completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+            self.callOrder.append(.getCustomerInfo)
             self.getCustomerInfoCallCount += 1
             self.userID = appUserID
 
@@ -488,6 +500,7 @@ extension BasePurchasesTests {
 
         var healthReportRequests = [String]()
         override func healthReportRequest(appUserID: String) async throws -> HealthReport {
+            self.callOrder.append(.healthReport)
             healthReportRequests += [appUserID]
 
             return .init(
@@ -501,6 +514,7 @@ extension BasePurchasesTests {
         var overrideHealthReportAvailabilityResponse = HealthReportAvailability(reportLogs: true)
         var healthReportAvailabilityRequests = [String]()
         override func healthReportAvailabilityRequest(appUserID: String) async throws -> HealthReportAvailability {
+            self.callOrder.append(.healthReportAvailability)
             healthReportAvailabilityRequests.append(appUserID)
 
             return overrideHealthReportAvailabilityResponse
@@ -535,6 +549,7 @@ extension BasePurchasesTests {
                            appUserID: String,
                            containsAttributionData: Bool = false,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+            self.callOrder.append(.postReceipt)
             self.postReceiptDataCalled = true
             self.postReceiptDataCallCount += 1
             self.postedReceiptData = receipt
@@ -576,6 +591,7 @@ extension BasePurchasesTests {
                            network: AttributionNetwork,
                            appUserID: String,
                            completion: ((BackendError?) -> Void)? = nil) {
+            self.callOrder.append(.postAttribution)
             self.invokedPostAttributionData = true
             self.invokedPostAttributionDataCount += 1
             self.invokedPostAttributionDataParameters = (attributionData, network, appUserID)
