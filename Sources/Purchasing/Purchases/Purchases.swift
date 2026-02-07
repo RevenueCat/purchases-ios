@@ -2078,15 +2078,21 @@ extension Purchases {
     }
 }
 
-extension Purchases: InternalPurchasesType {
+// MARK: - Health
 
-    internal func healthRequest(signatureVerification: Bool) async throws {
+extension Purchases {
+
+    public func healthRequest(signatureVerification: Bool) async throws {
         do {
             try await self.backend.healthRequest(signatureVerification: signatureVerification)
         } catch {
             throw NewErrorUtils.purchasesError(withUntypedError: error)
         }
     }
+
+}
+
+extension Purchases: InternalPurchasesType {
 
     #if DEBUG
     internal func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
