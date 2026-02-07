@@ -105,9 +105,28 @@ struct LoadedTabsComponentView: View {
     @State
     private var parentOwnedVariableContext: PackageContext.VariableContext
 
+    // Tracks whether the user made an explicit package selection (vs. using initial defaults).
+    // When false, tabs with packages should show their own defaults.
+    // When true, the user's selection should be preserved across tabs if the package exists in the tab.
+    @State
+    private var didUserSelectPackage: Bool = false
+
     var activeTabViewModel: TabViewModel? {
         return self.viewModel.tabViewModels[self.tabControlContext.selectedTabId] ??
             self.viewModel.tabViewModels.values.first
+    }
+
+    /// Determines the effective parent-owned package to use when switching tabs.
+    ///
+    /// - Package-less tabs: always use `parentOwnedPackage` for inheritance from parent
+    /// - Tabs with packages + user made selection: preserve user's selection
+    /// - Tabs with packages + no user selection: return nil to use tab's default
+    private func effectiveParentOwnedPackage(for tabViewModel: TabViewModel) -> Package? {
+        if tabViewModel.packages.isEmpty || self.didUserSelectPackage {
+            return self.parentOwnedPackage
+        } else {
+            return nil
+        }
     }
 
     init(viewModel: TabsComponentViewModel,
@@ -200,8 +219,8 @@ struct LoadedTabsComponentView: View {
             //    (the selection before any tab propagated its package)
             //
             // 2. If the tab HAS packages:
-            //    - If parent's selected package IS in the tab's packages → keep parent's selection
-            //    - If parent's selected package IS NOT in the tab's packages → use tab's default
+            //    - If user made an explicit selection AND it's in the tab → keep it
+            //    - Otherwise → use tab's default
             //
             .onChangeOf(self.tabControlContext.selectedTabId) { newTabId in
                 guard let newTabViewModel = self.viewModel.tabViewModels[newTabId],
@@ -210,7 +229,7 @@ struct LoadedTabsComponentView: View {
                 }
 
                 let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
-                    parentOwnedPackage: self.parentOwnedPackage,
+                    parentOwnedPackage: effectiveParentOwnedPackage(for: newTabViewModel),
                     parentOwnedVariableContext: self.parentOwnedVariableContext,
                     parentCurrentVariableContext: self.packageContext.variableContext,
                     tabPackages: newTabViewModel.packages,
@@ -261,6 +280,7 @@ struct LoadedTabsComponentView: View {
                 }
 
                 // This is a user selection - track it
+                self.didUserSelectPackage = true
                 self.parentOwnedPackage = newPackage
                 self.parentOwnedVariableContext = self.packageContext.variableContext
 

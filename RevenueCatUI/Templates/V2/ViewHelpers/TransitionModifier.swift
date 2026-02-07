@@ -31,6 +31,7 @@ struct TransitionModifier: ViewModifier {
                     case .greedy:
                         content
                             .hidden()
+                            .allowsHitTesting(false)
                             .accessibilityHidden(true)
                     case .lazy:
                         EmptyView()
@@ -40,8 +41,13 @@ struct TransitionModifier: ViewModifier {
                 }
                 .transition(transition.toTransition)
             }
-        }.onAppear {
-            withAnimation(transition.animation?.toAnimation ?? .none) {
+        }.task {
+            // Delay the state change by msDelay before showing the content
+            let delayMs = transition.animation?.msDelay ?? 0
+            if delayMs > 0 {
+                try? await Task.sleep(nanoseconds: UInt64(delayMs) * 1_000_000)
+            }
+            withAnimation(transition.animation?.toAnimation ?? .default) {
                 isPresented = true
             }
         }
@@ -80,16 +86,17 @@ extension PaywallComponent.Transition {
 }
 
 extension PaywallComponent.Animation {
+    /// The animation without delay (delay is handled separately via Task.sleep)
     var toAnimation: SwiftUI.Animation {
         switch self.type {
         case .easeIn:
-            return .easeIn(duration: msDuration.seconds).delay(msDelay.seconds)
+            return .easeIn(duration: msDuration.asSeconds)
         case .easeInOut:
-            return .easeInOut(duration: msDuration.seconds).delay(msDelay.seconds)
+            return .easeInOut(duration: msDuration.asSeconds)
         case .easeOut:
-            return .easeOut(duration: msDuration.seconds).delay(msDelay.seconds)
+            return .easeOut(duration: msDuration.asSeconds)
         case .linear:
-            return .linear(duration: msDuration.seconds).delay(msDelay.seconds)
+            return .linear(duration: msDuration.asSeconds)
         @unknown default:
             return .default
         }
@@ -97,7 +104,7 @@ extension PaywallComponent.Animation {
 }
 
 private extension Int {
-    var seconds: TimeInterval {
+    var asSeconds: TimeInterval {
         return TimeInterval(Double(self) / 1000)
     }
 }

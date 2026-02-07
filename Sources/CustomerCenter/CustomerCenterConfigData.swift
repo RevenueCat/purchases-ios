@@ -143,6 +143,7 @@ import Foundation
             case storeMacAppStore = "mac_app_store"
             case storePlayStore = "google_play_store"
             case testStore = "test_store"
+            case galaxyStore = "galaxy_store"
             case storeStripe = "stripe"
             case storePromotional = "promotional"
             case storeAmazon = "amazon_store"
@@ -426,6 +427,8 @@ import Foundation
                     return "Purchases"
                 case .testStore:
                     return "Test Store"
+                case .galaxyStore:
+                    return "Galaxy Store"
                 case .supportTicketCreate:
                     return "Create a support ticket"
                 case .email:

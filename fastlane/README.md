@@ -274,6 +274,14 @@ Tag current branch with current version number
 
 Trigger bump
 
+### ios trigger_bump_sdk_in_rc_mobile_app
+
+```sh
+[bundle exec] fastlane ios trigger_bump_sdk_in_rc_mobile_app
+```
+
+Trigger bump SDK in RC mobile app
+
 ### ios generate_snapshots_RC
 
 ```sh
@@ -321,6 +329,30 @@ Creates RevenueCat-Swift.h for a new release
 ```
 
 
+
+### ios test_xcframework_export_and_integration
+
+```sh
+[bundle exec] fastlane ios test_xcframework_export_and_integration
+```
+
+
+
+### ios tuist_generate
+
+```sh
+[bundle exec] fastlane ios tuist_generate
+```
+
+Generate Tuist workspace
+
+### ios xcframework_installation_tests
+
+```sh
+[bundle exec] fastlane ios xcframework_installation_tests
+```
+
+Test XCFramework integration by building XCFrameworkInstallationTests app
 
 ### ios backend_integration_tests
 
@@ -393,6 +425,22 @@ Clones or updates snapshots repo
 ```
 
 Clones or updates paywall-preview-resources repo
+
+### ios generate_swiftinterface
+
+```sh
+[bundle exec] fastlane ios generate_swiftinterface
+```
+
+Generate Swift interface files for API change detection
+
+### ios check_api_changes
+
+```sh
+[bundle exec] fastlane ios check_api_changes
+```
+
+Check API changes and report results
 
 ### ios update_snapshots_repo
 

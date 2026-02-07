@@ -11,8 +11,6 @@
 //
 //  Created by Nacho Soto on 6/12/23.
 
-#if swift(>=5.8)
-
 import Foundation
 import Nimble
 import SnapshotTesting
@@ -54,5 +52,3 @@ func haveValidSnapshot<Value>(
         )
     }
 }
-
-#endif

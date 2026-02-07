@@ -139,6 +139,10 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     urls += item.icon.imageUrls
                 }
             case .tabs(let tabs):
+                urls += self.collectAllImageURLs(
+                    in: tabs.control.stack,
+                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                )
                 for tab in tabs.tabs {
                     urls += self.collectAllImageURLs(
                         in: tab.stack,

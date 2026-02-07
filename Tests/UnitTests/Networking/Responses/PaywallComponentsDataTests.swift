@@ -34,6 +34,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(offering.packages).to(haveCount(1))
 
         let components = try XCTUnwrap(offering.paywallComponents)
+        expect(components.id) == "pw_test_1"
         expect(components.templateName) == "componentsTEST"
         expect(components.revision) == 3
         expect(components.componentsConfig.base.background) == .color(.init(light: .hex("#220000ff"), dark: nil))
@@ -112,5 +113,22 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
 
         let components = try XCTUnwrap(offering.paywallComponents)
         expect(components.exitOffers).to(beNil())
+    }
+
+    func testDecodesPaywallComponentsWithZeroDecimalPlaceCountries() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 4])
+
+        expect(offering.identifier) == "paywall_components_with_zero_decimal_countries"
+        expect(offering.description) == "Offering with paywall components and zero decimal place countries"
+
+        let components = try XCTUnwrap(offering.paywallComponents)
+        expect(components.zeroDecimalPlaceCountries) == ["TWN", "KAZ", "MEX", "PHL", "THA", "IND"]
+    }
+
+    func testDecodesPaywallComponentsWithoutZeroDecimalPlaceCountries() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 0])
+
+        let components = try XCTUnwrap(offering.paywallComponents)
+        expect(components.zeroDecimalPlaceCountries).to(beEmpty())
     }
 }

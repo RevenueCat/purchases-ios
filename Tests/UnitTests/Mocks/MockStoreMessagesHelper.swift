@@ -26,7 +26,7 @@ class MockStoreMessagesHelper: StoreMessagesHelperType {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func deferMessagesIfNeeded() {
+    func deferMessagesIfNeeded() async throws {
         self.deferMessagesIfNeededCalled = true
         self.deferMessagesIfNeededCallCount += 1
     }
@@ -38,7 +38,7 @@ class MockStoreMessagesHelper: StoreMessagesHelperType {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showStoreMessages(types: Set<StoreMessageType>) {
+    func showStoreMessages(types: Set<StoreMessageType>) async {
         self.showStoreMessageCalled = true
         self.showStoreMessageCallCount += 1
     }

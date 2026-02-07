@@ -157,6 +157,16 @@ enum TestData {
         subscriptionPeriod: nil,
         locale: Self.locale
     )
+    static let consumableProduct = TestStoreProduct(
+        localizedTitle: "Coins",
+        price: 4.99,
+        currencyCode: "USD",
+        localizedPriceString: "$4.99",
+        productIdentifier: "com.revenuecat.consumable_coins",
+        productType: .consumable,
+        localizedDescription: "100 Coins",
+        locale: Self.locale
+    )
     static let weeklyPackage = Package(
         identifier: PackageType.weekly.identifier,
         packageType: .weekly,
@@ -217,6 +227,13 @@ enum TestData {
         identifier: PackageType.lifetime.identifier,
         packageType: .lifetime,
         storeProduct: Self.lifetimeProduct.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier,
+        webCheckoutUrl: nil
+    )
+    static let consumablePackage = Package(
+        identifier: "consumable",
+        packageType: .custom,
+        storeProduct: Self.consumableProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier,
         webCheckoutUrl: nil
     )

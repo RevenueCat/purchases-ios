@@ -84,6 +84,24 @@ class EventsManagerTests: TestCase {
         ]
     }
 
+    /// We should remove this test once we support the purchase initiated event in the backend.
+    func testTrackPurchaseInitiatedEventDoesNotStore() async throws {
+        let event: PaywallEvent = .purchaseInitiated(.random(), .random())
+
+        await self.manager.track(featureEvent: event)
+
+        await self.verifyEmptyStore()
+    }
+
+    /// We should remove this test once we support the purchase error event in the backend.
+    func testTrackPurchaseErrorEventDoesNotStore() async throws {
+        let event: PaywallEvent = .purchaseError(.random(), .random())
+
+        await self.manager.track(featureEvent: event)
+
+        await self.verifyEmptyStore()
+    }
+
     // MARK: - flushAllEvents
 
     func testFlushEmptyStore() async throws {

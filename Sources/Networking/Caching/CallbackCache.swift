@@ -41,13 +41,12 @@ final class CallbackCache<T> where T: CacheKeyProviding {
     }
 
     func performOnAllItemsAndRemoveFromCache(withCacheable cacheable: CacheKeyProviding, _ block: (T) -> Void) {
-        self._cachedCallbacksByKey.modify { cachedCallbacksByKey in
-            guard let items = cachedCallbacksByKey.removeValue(forKey: cacheable.cacheKey) else {
-                return
-            }
-
-            items.forEach(block)
+        // Remove items from cache while holding the lock, then invoke callbacks AFTER releasing it.
+        // This prevents deadlock when callbacks synchronously add new items to the cache.
+        let items: [T]? = self._cachedCallbacksByKey.modify { cachedCallbacksByKey in
+            return cachedCallbacksByKey.removeValue(forKey: cacheable.cacheKey)
         }
+        items?.forEach(block)
     }
 
     deinit {

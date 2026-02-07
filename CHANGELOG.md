@@ -1,3 +1,198 @@
+## 5.58.0
+## RevenueCat SDK
+### ✨ New Features
+* [CEC Mode]: Introduce isPurchaseAllowedByRestoreBehavior() (#6192) via Will Taylor (@fire-at-will)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Fix product.currency_symbol to use product currency instead of locale (#6209) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Cache `presentedOfferingContext` when making a purchase from a paywall (#6228) via Antonio Pallares (@ajpallares)
+* Add XCFramework installation tests to the release checks (#6195) via Rick (@rickvdl)
+* Deprioritize debug health check to avoid blocking user-facing requests at startup (#6230) via Antonio Pallares (@ajpallares)
+
+## 5.57.2
+### 🔄 Other Changes
+* Make networkName nullable in ad event data types (#6229) via Pol Miro (@polmiro)
+* Remove networkName from AdFailedToLoad event (#6208) via Pol Miro (@polmiro)
+* Excluding xcarchive and separate dSYMs folder from XCFramework in order to reduce download size (#5967) via Rick (@rickvdl)
+
+## 5.57.1
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Make paywall font registration idempotent (#6193) via Facundo Menzella (@facumenzella)
+* fix: fixes video autoplay on first paywall open by removing broken stagedURL.publisher observation (#6114) @erenkulaksiz (#6185) via Facundo Menzella (@facumenzella)
+* [EXTERNAL] fix: listen willResignActiveNotification and didBecomeActiveNotification to autoplay the video (#6116) @erenkulaksiz (#6184) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Remove fallback url caching mechanism (#6188) via Toni Rico (@tonidero)
+* RCT Tester app Part 2 - Offerings + User management + Configuration persistence (#6189) via Antonio Pallares (@ajpallares)
+* RCT Tester app Part 1 - Tuist project + App setup (#6187) via Antonio Pallares (@ajpallares)
+* Fix `integration-tests-all` on CI (#6190) via Antonio Pallares (@ajpallares)
+* [Maestro] Improve e2e test stability (#6182) via Antonio Pallares (@ajpallares)
+
+## 5.57.0
+## RevenueCat SDK
+### ✨ New Features
+* Adds more ObjC compatibility (#5999) via JayShortway (@JayShortway)
+### 🐞 Bugfixes
+* Fix potential infinite recursion in MagicWeather (#6146) via Tarek M. Ben Lechhab (@bilqisium)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* feat: Add Custom Paywall Variables support (#6080) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Fix `backend-integration-tests-custom-entitlements` on CI (#6179) via Antonio Pallares (@ajpallares)
+* Only run 1 backend integration tests CI job to generate all snapshots (#6170) via Antonio Pallares (@ajpallares)
+* Autogenerate snapshots for more tests (#5958) via Antonio Pallares (@ajpallares)
+* Only consider source files for public enums Danger rule (#6156) via Antonio Pallares (@ajpallares)
+* Fix integration test (#6157) via Antonio Pallares (@ajpallares)
+* Fix API tests (#6155) via Antonio Pallares (@ajpallares)
+* Add troubleshooting link to the generic error message (#6152) via Engin Kurutepe (@ekurutepe)
+
+## 5.56.1
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix price_per_period for non-subscription products (PW-69) (#6136) via Drago Crnjac (@popcorn)
+### Paywallv2
+#### 🐞 Bugfixes
+* [EXTERNAL] fix: dont show video in now playing (control center/lock screen #6115 via @erenkulaksiz (#6139) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Consolidate Maestro E2E tests into a single CI job (#6147) via Antonio Pallares (@ajpallares)
+* Support for adFormat parameter in AdEvent (#6129) via Peter Porfy (@peterporfy)
+* Removed support for Swift 5.7 and removed related Swift version checks (#6142) via Rick (@rickvdl)
+
+## 5.56.0
+## RevenueCat SDK
+### ✨ New Features
+* Add Galaxy to Store Enum (#6127) via Will Taylor (@fire-at-will)
+### 🐞 Bugfixes
+* Making sure that the SK2 StorefrontListener only calls the delegate when the storefront identifier actually changed (#6030) via Rick (@rickvdl)
+* Fix date parsing to support ISO8601 with fractional seconds (#6120) via Josh Holtz (@joshdholtz)
+
+### 🔄 Other Changes
+* Remove CircleCI M1 macOS executors  (#6132) via Rick (@rickvdl)
+* Introduce adyen to CI pipeline for public API changes detection (#5484) via Facundo Menzella (@facumenzella)
+* Avoid public enums (#6140) via Facundo Menzella (@facumenzella)
+* Simplify ad tracking API to fire-and-forget pattern for Swift and Obj-C (#6133) via Pol Miro (@polmiro)
+* Small cleanup of `PurchasesOrchestrator` (#6135) via Antonio Pallares (@ajpallares)
+* Fix `Decimal` precision issue in `LocalTransactionMetadata` on iOS 14 (#6138) via Antonio Pallares (@ajpallares)
+* Add `paywall_id` to paywall events and POST /receipt requests (#6087) via Antonio Pallares (@ajpallares)
+* Add payload_version to POST /receipt (#6130) via Antonio Pallares (@ajpallares)
+* Improve accuracy of transactions origin Part 8: sync cached local transaction metadata (#6073) via Antonio Pallares (@ajpallares)
+* Fix `CodingKeys` to work correctly with snake_case key decoding strategies (#6134) via Antonio Pallares (@ajpallares)
+* Improve accuracy of transactions origin Part 7: add `sdk_originated` to POST /receipt (#6091) via Antonio Pallares (@ajpallares)
+* Improve accuracy of transactions origin Part 6: add `transaction_id` to POST /receipt (#6023) via Antonio Pallares (@ajpallares)
+* Improve accuracy of transactions origin Part 5: keep local transaction metadata when `CustomerInfo` is computed offline (#6131) via Antonio Pallares (@ajpallares)
+* Add missing APITests for Exit Offers (#6128) via Facundo Menzella (@facumenzella)
+* Improve accuracy of transactions origin Part 4: store transaction metadata when `PresentedOfferingContext` or paywall info are present (#6110) via Antonio Pallares (@ajpallares)
+* Improve accuracy of transactions origin Part 3: remove `PurchaseSource` from `PurchasedTransactionData` and rename it to `PostReceiptSource` (#6076) via Antonio Pallares (@ajpallares)
+* Added a swiftlint rule that disallows direct use of storage directory URL related APIs (#6113) via Rick (@rickvdl)
+* Improve accuracy of transactions origin Part 2: store and fetch transaction metadata (#6014) via Antonio Pallares (@ajpallares)
+* Improve accuracy of transactions origin Part 1: refactor to allow caching transaction metadata (#5940) via Antonio Pallares (@ajpallares)
+* Fix paywall data misattributions  (#6119) via Antonio Pallares (@ajpallares)
+* Add missing data attribution to SK2 purchases in Observer Mode (#6117) via Antonio Pallares (@ajpallares)
+
+## 5.55.3
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix cache files visible in documents directory: Etags, offerings and product entitlements mapping  (#6020) via Rick (@rickvdl)
+* Fix paywall close tracking in PaywallViewController (#6083) via Cesar de la Vega (@vegaro)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* fix: Load high with high loader, load low with low loader (#6111) via Facundo Menzella (@facumenzella)
+* Fix close button being tappable during transition delay (#6106) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Add LocalKhepri file to be able to work with local instance (#6123) via Facundo Menzella (@facumenzella)
+* Fix loading in PaywallsTester when using present functions (#6109) via Cesar de la Vega (@vegaro)
+* Use `SKPaymentQueue.default()` instead of initializing a new instance in PurchaseTester app (#6108) via Antonio Pallares (@ajpallares)
+* Add Claude Code Review workflow configuration (#6107) via Cesar de la Vega (@vegaro)
+
+## 5.55.2
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* fix images not being updated in paywalls v2 (#6101) via Will Taylor (@fire-at-will)
+
+### 🔄 Other Changes
+* Update CI to Xcode 26.2 (#6088) via Antonio Pallares (@ajpallares)
+* Add loading of paywall to paywall tester (#6074) via Cesar de la Vega (@vegaro)
+
+## 5.55.1
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Fix paywall selection reset after eligibility redraw (#5972) via Facundo Menzella (@facumenzella)
+* Fix gradient overlay to cover full viewport instead of image bounds (#6072) via Facundo Menzella (@facumenzella)
+* Prewarm images in tabs control (#6077) via Cesar de la Vega (@vegaro)
+* Fix image loading on tab switch with @StateObject (#6078) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Reduce flakiness of an Offline StoreKit integration test (#6084) via Antonio Pallares (@ajpallares)
+
+## 5.55.0
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* Add Basque and Serbian (Latin and Cyrillic) support for paywalls (#5995) via Rosie Watson (@RosieWatson)
+
+### 🔄 Other Changes
+* Add public initializer of `StoreTransaction` for unit tests (#6079) via Rick (@rickvdl)
+* Added a public initializer to the CustomerInfo class (#6075) via Rick (@rickvdl)
+
+## 5.54.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix cache files visible in documents directory: diagnostics (#6008) via Rick (@rickvdl)
+* Propagate support information through navigation stack (#6019) via Rosie Watson (@RosieWatson)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* fix: infinite recursion crash in PaywallViewController delegate methods (#6066) via Facundo Menzella (@facumenzella)
+* Fix toggle component state sync and package defaults for tabs with overlapping packages (#5982) via Facundo Menzella (@facumenzella)
+* Fix Dynamic Type not updating for Paywalls V2 text (#5990) via Facundo Menzella (@facumenzella)
+* fix: paywall promo eligibility updates to refresh UI on first load (#5980) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Track Exit offers (#5964) via Cesar de la Vega (@vegaro)
+* Add Customer Center and Paywalls tabs to SampleCat (#5989) via Andy Boedo (@aboedo)
+* Simplify `SynchronizedLargeItemCache`'s key to use strings (#6012) via Antonio Pallares (@ajpallares)
+
+## 5.54.0
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* Add exit offer support to PaywallViewController for hybrid SDKs (#6003) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Add zeroDecimalPlaceCountries support for Paywalls V2 (#5991) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Added zero_decimal_place_countries in backend integration tests offerings snapshot reference (#6011) via Rick (@rickvdl)
+
+## 5.53.0
+## RevenueCat SDK
+### ✨ New Features
+* Add Solar Engine integration support (#5992) via Lim Hoang (@limdauto)
+### 🐞 Bugfixes
+* Ensure cache writes create parent directory (#5986) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Updated Loadshedder backend integration test reference snapshot (#6001) via Rick (@rickvdl)
+* Updated reference snapshot for testCanGetOfferingsFromFallbackURL test (#6000) via Rick (@rickvdl)
+* chore: Update swiftlint commit hook (#5993) via Facundo Menzella (@facumenzella)
+* Install Swiftlint via Mise (#5998) via Facundo Menzella (@facumenzella)
+* Fix Nimble test failure reporting in Tuist workspace (#5987) via Facundo Menzella (@facumenzella)
+
 ## 5.52.1
 ## RevenueCat SDK
 ### 🐞 Bugfixes

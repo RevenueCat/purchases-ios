@@ -40,7 +40,6 @@ struct VideoComponentView: View {
 
     @State var size: CGSize = .zero
 
-    @State private var stagedURL: URL?
     @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
 
@@ -107,20 +106,24 @@ struct VideoComponentView: View {
                                         )
                                     guard url != cachedURL, !Task.isCancelled else { return }
                                     await MainActor.run {
-                                        self.stagedURL = url
+                                        self.cachedURL = url
+                                        self.imageSource = nil
                                     }
                                 } catch {
                                     await MainActor.run {
-                                        self.stagedURL = viewData.url
+                                        self.cachedURL = viewData.url
+                                        self.imageSource = nil
                                     }
                                 }
                             }
                         }
 
-                        if let cachedURL = fileRepository.getCachedFileURL(
+                        let fullResCachedURL = fileRepository.getCachedFileURL(
                             for: viewData.url,
                             withChecksum: viewData.checksum
-                        ) {
+                        )
+
+                        if let cachedURL = fullResCachedURL {
                             self.cachedURL = cachedURL
                             // If we have a cached video, no need to display a fallback image
                             self.imageSource = nil
@@ -156,19 +159,6 @@ struct VideoComponentView: View {
                     .clipped()
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
-                    .onReceive(
-                        stagedURL.publisher
-                            // In the event that the download of the high res video is so fast that it tries to set the
-                            // url moments after the low_res was set, we need to delay a bit to ensure the re-render
-                            // actually occurs. This happens consistently with small file sizes and great connection
-                            // at 60fps, this is a generous delay but is not a notable delay to the human eye
-                            .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
-                            .receive(on: RunLoop.main)
-                            .eraseToAnyPublisher()
-                            .removeDuplicates()
-                    ) { output in
-                        self.cachedURL = output
-                    }
                 }
             }
             .onSizeChange { size = $0 }

@@ -178,20 +178,20 @@ struct CustomerCenterConfigResponse {
                 let userSince: Bool?
 
                 enum CodingKeys: String, CodingKey {
-                    case activeEntitlements = "active_entitlements"
-                    case appUserId = "app_user_id"
-                    case attConsent = "att_consent"
+                    case activeEntitlements
+                    case appUserId
+                    case attConsent
                     case country
-                    case deviceVersion = "device_version"
+                    case deviceVersion
                     case email
-                    case facebookAnonId = "facebook_anon_id"
+                    case facebookAnonId
                     case idfa
                     case idfv
                     case ipAddress = "ip"
-                    case lastOpened = "last_opened"
-                    case lastSeenAppVersion = "last_seen_app_version"
-                    case totalSpent = "total_spent"
-                    case userSince = "user_since"
+                    case lastOpened
+                    case lastSeenAppVersion
+                    case totalSpent
+                    case userSince
                 }
             }
         }

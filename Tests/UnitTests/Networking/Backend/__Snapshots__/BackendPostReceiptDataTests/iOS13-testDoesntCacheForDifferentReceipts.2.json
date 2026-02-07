@@ -33,7 +33,8 @@
       "fetch_token" : "YW4gYXdlc29tZWVyIHJlY2VpcHQ=",
       "initiation_source" : "queue",
       "is_restore" : true,
-      "observer_mode" : true
+      "observer_mode" : true,
+      "payload_version" : 1
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

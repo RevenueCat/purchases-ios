@@ -105,7 +105,8 @@ extension LogInOperation {
 
     struct Body: Encodable {
 
-        // These need to be explicit for `contentForSignature`
+        // Note: These keys need to be explicitly declared using snake_case
+        // because the CodingKeys are also used for request signing via `contentForSignature`.
         // swiftlint:disable:next nesting
         fileprivate enum CodingKeys: String, CodingKey {
             case appUserID = "app_user_id"

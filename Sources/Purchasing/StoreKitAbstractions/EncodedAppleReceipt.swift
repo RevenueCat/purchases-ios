@@ -45,3 +45,5 @@ extension EncodedAppleReceipt {
     }
 
 }
+
+extension EncodedAppleReceipt: Codable {}

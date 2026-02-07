@@ -1,0 +1,12 @@
+name: Claude Code Review
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+jobs:
+  claude-review:
+    uses: revenuecat/sdk-github-workflows/.github/workflows/claude-code-review.yml@v5
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

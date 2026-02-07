@@ -56,6 +56,75 @@ class UIConfigDecodingTests: BaseHTTPResponseTest {
         ]))
     }
 
+    func testDecodesCustomVariables() throws {
+        let json = """
+        {
+            "app": {
+                "colors": {},
+                "fonts": {}
+            },
+            "localizations": {},
+            "variable_config": {
+                "variable_compatibility_map": {},
+                "function_compatibility_map": {}
+            },
+            "custom_variables": {
+                "player_name": {
+                    "type": "string",
+                    "default_value": "Player"
+                },
+                "max_health": {
+                    "type": "number",
+                    "default_value": "100"
+                },
+                "is_premium": {
+                    "type": "boolean",
+                    "default_value": "false"
+                }
+            }
+        }
+        """
+
+        let uiConfig: UIConfig = try JSONDecoder.default.decode(
+            UIConfig.self,
+            from: json.data(using: .utf8)!
+        )
+
+        expect(uiConfig.customVariables.count).to(equal(3))
+
+        expect(uiConfig.customVariables["player_name"]?.type).to(equal("string"))
+        expect(uiConfig.customVariables["player_name"]?.defaultValue).to(equal("Player"))
+
+        expect(uiConfig.customVariables["max_health"]?.type).to(equal("number"))
+        expect(uiConfig.customVariables["max_health"]?.defaultValue).to(equal("100"))
+
+        expect(uiConfig.customVariables["is_premium"]?.type).to(equal("boolean"))
+        expect(uiConfig.customVariables["is_premium"]?.defaultValue).to(equal("false"))
+    }
+
+    func testDecodesWithoutCustomVariables() throws {
+        let json = """
+        {
+            "app": {
+                "colors": {},
+                "fonts": {}
+            },
+            "localizations": {},
+            "variable_config": {
+                "variable_compatibility_map": {},
+                "function_compatibility_map": {}
+            }
+        }
+        """
+
+        let uiConfig: UIConfig = try JSONDecoder.default.decode(
+            UIConfig.self,
+            from: json.data(using: .utf8)!
+        )
+
+        expect(uiConfig.customVariables).to(beEmpty())
+    }
+
 }
 
 #endif

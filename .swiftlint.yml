@@ -65,6 +65,18 @@ custom_rules:
     message: "Trailing commas are not allowed"
     severity: error
 
+  avoid_using_directory_apis_directly:
+    name: "Avoid Using Directory APIs Directly"
+    regex: '\b(URL\.(cachesDirectory|applicationDirectory|libraryDirectory|userDirectory|documentsDirectory|desktopDirectory|applicationSupportDirectory|downloadsDirectory|moviesDirectory|musicDirectory|picturesDirectory|sharedPublicDirectory|trashDirectory|homeDirectory|temporaryDirectory)|URL\.(currentDirectory\(\)|homeDirectory\(forUser:)|FileManager\.default\.(urls?)\s*\(|(?<!FileManager\.)(?!default\.)[a-zA-Z_][a-zA-Z0-9_]*\.(urls?)\s*\(\s*for\s*:\s*\.)'
+    match_kinds:
+      - identifier
+      - keyword
+    message: "Use DirectoryHelper.baseUrl(for:) instead of FileManager or URL directory APIs."
+    severity: error
+    excluded:
+      - Sources/Caching/DirectoryHelper.swift
+      - Tests/
+
 identifier_name:
   max_length:
     warning: 60

@@ -766,6 +766,242 @@ final class TabsPackageInheritanceTests: TestCase {
         expect(parentOwnedVariableContext.showZeroDecimalPlacePrices)
             == parentContext.variableContext.showZeroDecimalPlacePrices
     }
+
+    // MARK: - Overlapping Packages Toggle Tests
+
+    @MainActor
+    func testOverlappingPackagesToggleShowsEachTabDefaultWithoutUserSelection() {
+        // Scenario: Both tabs have overlapping packages but different defaults.
+        // When toggling without user selection, each tab should show its own default.
+        //
+        // Setup:
+        //   - Tab 1: packages [A, B], default = A
+        //   - Tab 2: packages [A, B], default = B
+        //
+        // Flow:
+        //   1. Start on Tab 1 → shows A (Tab 1's default)
+        //   2. Toggle to Tab 2 → should show B (Tab 2's default), NOT A
+        //   3. Toggle back to Tab 1 → should show A (Tab 1's default)
+
+        // Given: Both tabs have overlapping packages with different defaults
+        let tab1Packages = [self.parentPackageA, self.parentPackageB]
+        let tab1Default = self.parentPackageA
+
+        let tab2Packages = [self.parentPackageA, self.parentPackageB]
+        let tab2Default = self.parentPackageB
+
+        // Given: didUserSelectPackage starts as false (no user selection yet)
+        var didUserSelectPackage = false
+
+        // Given: parentOwnedPackage initialized from parent (could be A)
+        var parentOwnedPackage: Package? = self.parentPackageA
+
+        // Step 1: Start on Tab 1 - shows A (tab's default)
+        // (This is initialization, no switching needed)
+
+        // Step 2: Toggle to Tab 2 (no user selection)
+        // Determine effectiveParentOwnedPackage based on didUserSelectPackage
+        let effectiveParentOwnedPackageForTab2: Package?
+        if didUserSelectPackage {
+            effectiveParentOwnedPackageForTab2 = parentOwnedPackage
+        } else {
+            effectiveParentOwnedPackageForTab2 = nil  // Use tab's default
+        }
+
+        let tab2UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: effectiveParentOwnedPackageForTab2,
+            parentOwnedVariableContext: .init(packages: tab1Packages),
+            parentCurrentVariableContext: .init(packages: tab1Packages),
+            tabPackages: tab2Packages,
+            tabDefaultPackage: tab2Default
+        )
+
+        // Then: Tab 2 should show its default (B), not the parent's initialized value (A)
+        expect(tab2UpdatePlan.tabUpdate?.package?.identifier) == self.parentPackageB.identifier
+
+        // Step 3: Toggle back to Tab 1 (still no user selection)
+        let effectiveParentOwnedPackageForTab1: Package?
+        if didUserSelectPackage {
+            effectiveParentOwnedPackageForTab1 = parentOwnedPackage
+        } else {
+            effectiveParentOwnedPackageForTab1 = nil  // Use tab's default
+        }
+
+        let tab1UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: effectiveParentOwnedPackageForTab1,
+            parentOwnedVariableContext: .init(packages: tab2Packages),
+            parentCurrentVariableContext: .init(packages: tab2Packages),
+            tabPackages: tab1Packages,
+            tabDefaultPackage: tab1Default
+        )
+
+        // Then: Tab 1 should show its default (A)
+        expect(tab1UpdatePlan.tabUpdate?.package?.identifier) == self.parentPackageA.identifier
+    }
+
+    @MainActor
+    func testOverlappingPackagesTogglePreservesUserSelection() {
+        // Scenario: User makes an explicit selection, then toggles.
+        // The selection should be preserved if it exists in the new tab.
+        //
+        // Setup:
+        //   - Tab 1: packages [A, B], default = A
+        //   - Tab 2: packages [A, B], default = B
+        //
+        // Flow:
+        //   1. Start on Tab 1, user selects B
+        //   2. Toggle to Tab 2 → should show B (user's selection, which is in Tab 2)
+        //   3. Toggle back to Tab 1 → should show B (user's selection, which is in Tab 1)
+
+        // Given: Both tabs have overlapping packages
+        let tab1Packages = [self.parentPackageA, self.parentPackageB]
+        let tab1Default = self.parentPackageA
+
+        let tab2Packages = [self.parentPackageA, self.parentPackageB]
+        let tab2Default = self.parentPackageB
+
+        // Given: User selected B (sets didUserSelectPackage = true)
+        var didUserSelectPackage = true
+        var parentOwnedPackage: Package? = self.parentPackageB
+
+        // Step 1: Toggle to Tab 2 (user has selected B)
+        let effectiveParentOwnedPackageForTab2: Package?
+        if didUserSelectPackage {
+            effectiveParentOwnedPackageForTab2 = parentOwnedPackage
+        } else {
+            effectiveParentOwnedPackageForTab2 = nil
+        }
+
+        let tab2UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: effectiveParentOwnedPackageForTab2,
+            parentOwnedVariableContext: .init(packages: tab1Packages),
+            parentCurrentVariableContext: .init(packages: tab1Packages),
+            tabPackages: tab2Packages,
+            tabDefaultPackage: tab2Default
+        )
+
+        // Then: Tab 2 should show B (user's selection, which is also in Tab 2)
+        expect(tab2UpdatePlan.tabUpdate?.package?.identifier) == self.parentPackageB.identifier
+
+        // Step 2: Toggle back to Tab 1 (user still has B selected)
+        let effectiveParentOwnedPackageForTab1: Package?
+        if didUserSelectPackage {
+            effectiveParentOwnedPackageForTab1 = parentOwnedPackage
+        } else {
+            effectiveParentOwnedPackageForTab1 = nil
+        }
+
+        let tab1UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: effectiveParentOwnedPackageForTab1,
+            parentOwnedVariableContext: .init(packages: tab2Packages),
+            parentCurrentVariableContext: .init(packages: tab2Packages),
+            tabPackages: tab1Packages,
+            tabDefaultPackage: tab1Default
+        )
+
+        // Then: Tab 1 should show B (user's selection, which is also in Tab 1)
+        expect(tab1UpdatePlan.tabUpdate?.package?.identifier) == self.parentPackageB.identifier
+    }
+
+    @MainActor
+    func testDidUserSelectPackageIsSetOnUserSelection() {
+        // Scenario: Track when didUserSelectPackage should be set to true.
+        //
+        // Given: Initial state - no user selection
+        var didUserSelectPackage = false
+        var parentOwnedPackage: Package? = self.parentPackageA
+
+        // Given: Tab context with package C
+        let tabContext = PackageContext(
+            package: self.tabPackageC,
+            variableContext: .init(packages: [self.tabPackageC])
+        )
+
+        // Given: Parent context
+        let parentContext = PackageContext(
+            package: self.parentPackageA,
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        // When: Tab propagates its package to parent (Tab propagation, NOT user selection)
+        parentContext.update(
+            package: self.tabPackageC,
+            variableContext: tabContext.variableContext
+        )
+
+        let isTabPropagation = parentContext.package?.identifier == tabContext.package?.identifier
+        if !isTabPropagation {
+            didUserSelectPackage = true
+            parentOwnedPackage = parentContext.package
+        }
+
+        // Then: didUserSelectPackage should still be false (it was a tab propagation)
+        expect(didUserSelectPackage) == false
+        expect(parentOwnedPackage?.identifier) == self.parentPackageA.identifier
+
+        // When: User selects B (different from tab's package C)
+        parentContext.update(
+            package: self.parentPackageB,
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        let isTabPropagation2 = parentContext.package?.identifier == tabContext.package?.identifier
+        if !isTabPropagation2 {
+            didUserSelectPackage = true
+            parentOwnedPackage = parentContext.package
+        }
+
+        // Then: didUserSelectPackage should be true (user made a selection)
+        expect(didUserSelectPackage) == true
+        expect(parentOwnedPackage?.identifier) == self.parentPackageB.identifier
+    }
+
+    @MainActor
+    func testPackagelessTabStillInheritsWithoutUserSelection() {
+        // Scenario: Ensure package-less tabs still work correctly.
+        // Even without user selection, package-less tabs should inherit parentOwnedPackage.
+        //
+        // Setup:
+        //   - Tab 1: packages [C], default = C
+        //   - Tab 2: no packages (should inherit from parent)
+        //
+        // Flow:
+        //   1. Parent has A initially (parentOwnedPackage = A)
+        //   2. Switch to Tab 1 → shows C (tab's default)
+        //   3. Switch to Tab 2 (no packages) → should show A (parent's initial selection)
+
+        // Given: No user selection yet
+        let didUserSelectPackage = false
+        let parentOwnedPackage: Package? = self.parentPackageA
+        let parentOwnedVariableContext = PackageContext.VariableContext(
+            packages: [self.parentPackageA, self.parentPackageB]
+        )
+
+        // When: Switch to Tab 2 (no packages)
+        // For package-less tabs, we always use parentOwnedPackage regardless of didUserSelectPackage
+        let effectiveParentOwnedPackage: Package?
+        let tab2Packages: [Package] = []  // Package-less tab
+
+        if tab2Packages.isEmpty {
+            // Package-less tab: always use parentOwnedPackage
+            effectiveParentOwnedPackage = parentOwnedPackage
+        } else if didUserSelectPackage {
+            effectiveParentOwnedPackage = parentOwnedPackage
+        } else {
+            effectiveParentOwnedPackage = nil
+        }
+
+        let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: effectiveParentOwnedPackage,
+            parentOwnedVariableContext: parentOwnedVariableContext,
+            parentCurrentVariableContext: parentOwnedVariableContext,
+            tabPackages: tab2Packages,
+            tabDefaultPackage: nil
+        )
+
+        // Then: Parent should be restored to A (the initial parentOwnedPackage)
+        expect(updatePlan.parentUpdate?.package?.identifier) == self.parentPackageA.identifier
+    }
 }
 
 // MARK: - Test Helpers

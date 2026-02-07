@@ -306,16 +306,18 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 
 @class NSString;
 @class RCMediatorName;
+@class RCAdFormat;
 /// Data for ad displayed events.
 SWIFT_CLASS_NAMED("AdDisplayed")
 @interface RCAdDisplayed : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nonnull networkName;
+@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
 @property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
+@property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
 @property (nonatomic, readonly, copy) NSString * _Nullable placement;
 @property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
 @property (nonatomic, readonly, copy) NSString * _Nonnull impressionId;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -326,13 +328,52 @@ SWIFT_CLASS_NAMED("AdDisplayed")
 /// Data for ad failed to load events.
 SWIFT_CLASS_NAMED("AdFailedToLoad")
 @interface RCAdFailedToLoad : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nonnull networkName;
 @property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
+@property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
 @property (nonatomic, readonly, copy) NSString * _Nullable placement;
 @property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
 @property (nonatomic, readonly, strong) NSNumber * _Nullable mediatorErrorCode;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId mediatorErrorCode:(NSNumber * _Nullable)mediatorErrorCode OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adUnitId:(NSString * _Nonnull)adUnitId mediatorErrorCode:(NSNumber * _Nullable)mediatorErrorCode;
+- (nonnull instancetype)initWithMediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId mediatorErrorCode:(NSNumber * _Nullable)mediatorErrorCode OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithMediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId mediatorErrorCode:(NSNumber * _Nullable)mediatorErrorCode;
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
+/// Type representing an ad format type.
+/// Use the predefined static properties for common ad formats, or create custom values
+/// for other ad format types.
+SWIFT_CLASS_NAMED("AdFormat")
+@interface RCAdFormat : NSObject
+/// The raw string value of the ad format
+@property (nonatomic, readonly, copy) NSString * _Nonnull rawValue;
+/// Creates an ad format with the specified raw value
+- (nonnull instancetype)initWithRawValue:(NSString * _Nonnull)rawValue OBJC_DESIGNATED_INITIALIZER;
+/// Ad format type not in our predefined list
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull other;)
++ (RCAdFormat * _Nonnull)other SWIFT_WARN_UNUSED_RESULT;
+/// Standard banner ad format
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull banner;)
++ (RCAdFormat * _Nonnull)banner SWIFT_WARN_UNUSED_RESULT;
+/// Full-screen interstitial ad format
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull interstitial;)
++ (RCAdFormat * _Nonnull)interstitial SWIFT_WARN_UNUSED_RESULT;
+/// Rewarded video ad format
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull rewarded;)
++ (RCAdFormat * _Nonnull)rewarded SWIFT_WARN_UNUSED_RESULT;
+/// Rewarded interstitial ad format
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull rewardedInterstitial;)
++ (RCAdFormat * _Nonnull)rewardedInterstitial SWIFT_WARN_UNUSED_RESULT;
+/// Native ad format that matches app design
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull native;)
++ (RCAdFormat * _Nonnull)native SWIFT_WARN_UNUSED_RESULT;
+/// App open ad format displayed at app launch
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull appOpen;)
++ (RCAdFormat * _Nonnull)appOpen SWIFT_WARN_UNUSED_RESULT;
+/// Medium rectangle ad format
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull mrec;)
++ (RCAdFormat * _Nonnull)mrec SWIFT_WARN_UNUSED_RESULT;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -342,13 +383,14 @@ SWIFT_CLASS_NAMED("AdFailedToLoad")
 /// Data for ad loaded events.
 SWIFT_CLASS_NAMED("AdLoaded")
 @interface RCAdLoaded : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nonnull networkName;
+@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
 @property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
+@property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
 @property (nonatomic, readonly, copy) NSString * _Nullable placement;
 @property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
 @property (nonatomic, readonly, copy) NSString * _Nonnull impressionId;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -358,13 +400,14 @@ SWIFT_CLASS_NAMED("AdLoaded")
 /// Data for ad opened/clicked events.
 SWIFT_CLASS_NAMED("AdOpened")
 @interface RCAdOpened : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nonnull networkName;
+@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
 @property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
+@property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
 @property (nonatomic, readonly, copy) NSString * _Nullable placement;
 @property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
 @property (nonatomic, readonly, copy) NSString * _Nonnull impressionId;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -375,16 +418,17 @@ SWIFT_CLASS_NAMED("AdOpened")
 /// Data for ad revenue events.
 SWIFT_CLASS_NAMED("AdRevenue")
 @interface RCAdRevenue : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nonnull networkName;
+@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
 @property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
+@property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
 @property (nonatomic, readonly, copy) NSString * _Nullable placement;
 @property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
 @property (nonatomic, readonly, copy) NSString * _Nonnull impressionId;
 @property (nonatomic, readonly) NSInteger revenueMicros;
 @property (nonatomic, readonly, copy) NSString * _Nonnull currency;
 @property (nonatomic, readonly, strong) RCAdRevenuePrecision * _Nonnull precision;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId revenueMicros:(NSInteger)revenueMicros currency:(NSString * _Nonnull)currency precision:(RCAdRevenuePrecision * _Nonnull)precision OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nonnull)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId revenueMicros:(NSInteger)revenueMicros currency:(NSString * _Nonnull)currency precision:(RCAdRevenuePrecision * _Nonnull)precision;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId revenueMicros:(NSInteger)revenueMicros currency:(NSString * _Nonnull)currency precision:(RCAdRevenuePrecision * _Nonnull)precision OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId revenueMicros:(NSInteger)revenueMicros currency:(NSString * _Nonnull)currency precision:(RCAdRevenuePrecision * _Nonnull)precision;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -453,47 +497,88 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdRevenueP
 /// \endcode
 SWIFT_CLASS_NAMED("AdTracker") SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(macos,introduced=12.0) SWIFT_AVAILABILITY(tvos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=15.0)
 @interface RCAdTracker : NSObject
-/// Tracks when an ad fails to load (Objective-C compatible).
+/// Tracks when an ad fails to load.
 /// Call this method from your ad SDK’s failure callback to report load failures to RevenueCat.
-/// Include the optional <code>mediatorErrorCode</code> if provided by the mediation SDK.
-/// This is the completion handler version for Objective-C compatibility.
-/// \param data The failed to load ad event data
+/// Include the optional <code>mediatorErrorCode</code> if provided by the mediation SDK to aid debugging.
+/// <h2>Example:</h2>
+/// \code
+/// Purchases.shared.adTracker.trackAdFailedToLoad(.init(
+///     mediatorName: .appLovin,
+///     adFormat: .banner,
+///     placement: "home_screen",
+///     adUnitId: "ca-app-pub-123",
+///     mediatorErrorCode: 3
+/// ))
 ///
-/// \param completion Called when the tracking is complete
+/// \endcode\param data The failed to load ad event data, including optional <code>mediatorErrorCode</code>
 ///
-- (void)trackAdFailedToLoad:(RCAdFailedToLoad * _Nonnull)data completion:(void (^ _Nonnull)(void))completion;
-/// Tracks when an ad successfully loads (Objective-C compatible).
+- (void)trackAdFailedToLoad:(RCAdFailedToLoad * _Nonnull)data;
+/// Tracks when an ad successfully loads.
 /// Call this method from your ad SDK’s load callback to report successful ad loads to RevenueCat.
-/// This is the completion handler version for Objective-C compatibility.
-/// \param data The loaded ad event data
+/// Tracking load events helps correlate mediation performance with revenue and impressions.
+/// <h2>Example:</h2>
+/// \code
+/// Purchases.shared.adTracker.trackAdLoaded(.init(
+///     networkName: "AdMob",
+///     mediatorName: .appLovin,
+///     placement: "home_screen",
+///     adUnitId: "ca-app-pub-123",
+///     impressionId: "impression-456"
+/// ))
 ///
-/// \param completion Called when the tracking is complete
+/// \endcode\param data The loaded ad event data
 ///
-- (void)trackAdLoaded:(RCAdLoaded * _Nonnull)data completion:(void (^ _Nonnull)(void))completion;
-/// Tracks when an ad impression is displayed (Objective-C compatible).
+- (void)trackAdLoaded:(RCAdLoaded * _Nonnull)data;
+/// Tracks when an ad impression is displayed.
 /// Call this method from your ad SDK’s impression callback to report ad displays to RevenueCat.
-/// This is the completion handler version for Objective-C compatibility.
-/// \param data The displayed ad event data
+/// This enables RevenueCat to track ad impressions alongside your subscription revenue.
+/// <h2>Example:</h2>
+/// \code
+/// Purchases.shared.adTracker.trackAdDisplayed(.init(
+///     networkName: "AdMob",
+///     mediatorName: .appLovin,
+///     placement: "home_screen",
+///     adUnitId: "ca-app-pub-123",
+///     impressionId: "impression-456"
+/// ))
 ///
-/// \param completion Called when the tracking is complete
+/// \endcode\param data The displayed ad event data
 ///
-- (void)trackAdDisplayed:(RCAdDisplayed * _Nonnull)data completion:(void (^ _Nonnull)(void))completion;
-/// Tracks when an ad is opened or clicked (Objective-C compatible).
+- (void)trackAdDisplayed:(RCAdDisplayed * _Nonnull)data;
+/// Tracks when an ad is opened or clicked.
 /// Call this method from your ad SDK’s click callback to report ad interactions to RevenueCat.
-/// This is the completion handler version for Objective-C compatibility.
-/// \param data The opened/clicked ad event data
+/// <h2>Example:</h2>
+/// \code
+/// Purchases.shared.adTracker.trackAdOpened(.init(
+///     networkName: "AdMob",
+///     mediatorName: .appLovin,
+///     placement: "home_screen",
+///     adUnitId: "ca-app-pub-123",
+///     impressionId: "impression-456"
+/// ))
 ///
-/// \param completion Called when the tracking is complete
+/// \endcode\param data The opened/clicked ad event data
 ///
-- (void)trackAdOpened:(RCAdOpened * _Nonnull)data completion:(void (^ _Nonnull)(void))completion;
-/// Tracks ad revenue from an impression (Objective-C compatible).
+- (void)trackAdOpened:(RCAdOpened * _Nonnull)data;
+/// Tracks ad revenue from an impression.
 /// Call this method from your ad SDK’s revenue callback to report ad revenue to RevenueCat.
-/// This is the completion handler version for Objective-C compatibility.
-/// \param data The ad revenue data including amount, currency, and precision
+/// This enables comprehensive LTV tracking across subscriptions and ad monetization.
+/// <h2>Example:</h2>
+/// \code
+/// Purchases.shared.adTracker.trackAdRevenue(.init(
+///     networkName: "AdMob",
+///     mediatorName: .appLovin,
+///     placement: "home_screen",
+///     adUnitId: "ca-app-pub-123",
+///     impressionId: "impression-456",
+///     revenueMicros: 1500000,  // $1.50
+///     currency: "USD",
+///     precision: .exact
+/// ))
 ///
-/// \param completion Called when the tracking is complete
+/// \endcode\param data The ad revenue data including amount, currency, and precision
 ///
-- (void)trackAdRevenue:(RCAdRevenue * _Nonnull)data completion:(void (^ _Nonnull)(void))completion;
+- (void)trackAdRevenue:(RCAdRevenue * _Nonnull)data;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -702,6 +787,21 @@ SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWI
 /// \param kochavaDeviceID Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setKochavaDeviceID:(NSString * _Nullable)kochavaDeviceID;
+/// Subscriber attribute associated with the Solar Engine Distinct ID for the user.
+/// Recommended for the RevenueCat Solar Engine integration.
+/// \param solarEngineDistinctId Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setSolarEngineDistinctId:(NSString * _Nullable)solarEngineDistinctId;
+/// Subscriber attribute associated with the Solar Engine Account ID for the user.
+/// Recommended for the RevenueCat Solar Engine integration.
+/// \param solarEngineAccountId Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setSolarEngineAccountId:(NSString * _Nullable)solarEngineAccountId;
+/// Subscriber attribute associated with the Solar Engine Visitor ID for the user.
+/// Recommended for the RevenueCat Solar Engine integration.
+/// \param solarEngineVisitorId Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setSolarEngineVisitorId:(NSString * _Nullable)solarEngineVisitorId;
 /// Subscriber attribute associated with the Mixpanel Distinct ID for the user.
 /// Optional for the RevenueCat Mixpanel integration.
 /// <h4>Related Articles</h4>
@@ -1000,11 +1100,11 @@ SWIFT_CLASS_NAMED("Builder")
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
+- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
+- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
 @end
 
 /// Specifies the behavior for a caching API.
@@ -1905,6 +2005,10 @@ SWIFT_CLASS("_TtC10RevenueCat28PostAttributionDataOperation")
 /// A <code>NetworkOperation</code> for posting feature events to the feature events endpoint.
 SWIFT_CLASS("_TtC10RevenueCat26PostFeatureEventsOperation")
 @interface PostFeatureEventsOperation : NetworkOperation
+@end
+
+SWIFT_CLASS("_TtC10RevenueCat47PostIsPurchaseAllowedByRestoreBehaviorOperation")
+@interface PostIsPurchaseAllowedByRestoreBehaviorOperation : CacheableNetworkOperation
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat28PostOfferForSigningOperation")
@@ -3147,6 +3251,34 @@ SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduce
 @end
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+/// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
++ (BOOL)debugLogsEnabled SWIFT_WARN_UNUSED_RESULT;
++ (void)setDebugLogsEnabled:(BOOL)newValue;
+/// Deprecated
+@property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED_MSG("\n    Configure behavior through the RevenueCat dashboard instead. If you have configured the \"Legacy\" restore\n    behavior in the [RevenueCat Dashboard](app.revenuecat.com) and are currently setting this to `true`, keep\n    this setting active.\n    ");
+/// Deprecated. Where responsibility for completing purchase transactions lies.
+@property (nonatomic) BOOL finishTransactions SWIFT_DEPRECATED_MSG("Use ``purchasesAreCompletedBy`` instead.");
+/// Deprecated
++ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
+/// Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
+/// <h4>Related articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/attribution">Attribution</a>
+///   </li>
+/// </ul>
+/// \param data Dictionary provided by the network.
+///
+/// \param network Enum for the network the data is coming from, see <code>AttributionNetwork</code> for supported
+/// networks.
+///
+/// \param networkUserId User Id that should be sent to the network. Default is the current App User Id.
+///
++ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
+@end
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Configures an instance of the Purchases SDK with a specified <code>Configuration</code>.
 /// The instance will be set as a singleton.
 /// You should access the singleton instance using <code>Purchases/shared</code>
@@ -3240,34 +3372,6 @@ SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduce
 /// returns:
 /// An instantiated <code>Purchases</code> object that has been set as a singleton.
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID purchasesAreCompletedBy:(enum RCPurchasesAreCompletedBy)purchasesAreCompletedBy storeKitVersion:(enum RCStoreKitVersion)storeKitVersion;
-@end
-
-@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-/// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
-+ (BOOL)debugLogsEnabled SWIFT_WARN_UNUSED_RESULT;
-+ (void)setDebugLogsEnabled:(BOOL)newValue;
-/// Deprecated
-@property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED_MSG("\n    Configure behavior through the RevenueCat dashboard instead. If you have configured the \"Legacy\" restore\n    behavior in the [RevenueCat Dashboard](app.revenuecat.com) and are currently setting this to `true`, keep\n    this setting active.\n    ");
-/// Deprecated. Where responsibility for completing purchase transactions lies.
-@property (nonatomic) BOOL finishTransactions SWIFT_DEPRECATED_MSG("Use ``purchasesAreCompletedBy`` instead.");
-/// Deprecated
-+ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
-/// Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
-/// <h4>Related articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/attribution">Attribution</a>
-///   </li>
-/// </ul>
-/// \param data Dictionary provided by the network.
-///
-/// \param network Enum for the network the data is coming from, see <code>AttributionNetwork</code> for supported
-/// networks.
-///
-/// \param networkUserId User Id that should be sent to the network. Default is the current App User Id.
-///
-+ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
 @end
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -3544,6 +3648,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 - (void)eligiblePromotionalOffersForProduct:(RCStoreProduct * _Nonnull)product completionHandler:(void (^ _Nonnull)(NSArray<RCPromotionalOffer *> * _Nonnull))completionHandler;
 - (void)showManageSubscriptionsWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completion SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(watchos,unavailable);
 - (void)showManageSubscriptionsWithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(watchos,unavailable);
+- (void)recordPurchaseForProductID:(NSString * _Nonnull)productID completion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, NSError * _Nullable))completion SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(tvos,introduced=15.0) SWIFT_AVAILABILITY(macos,introduced=12.0) SWIFT_AVAILABILITY(ios,introduced=15.0);
 - (void)redeemWebPurchaseWithWebPurchaseRedemption:(RCWebPurchaseRedemption * _Nonnull)webPurchaseRedemption completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 @end
 
@@ -3717,6 +3822,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCPaddle SWIFT_COMPILE_NAME("paddle") = 9,
 /// For entitlements granted via the Test Store.
   RCTestStore SWIFT_COMPILE_NAME("testStore") = 10,
+/// For entitlements granted via the Galaxy Store.
+  RCGalaxy SWIFT_COMPILE_NAME("galaxy") = 11,
 };
 
 SWIFT_CLASS("_TtC10RevenueCat16StoreKit1Wrapper")
