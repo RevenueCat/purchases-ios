@@ -516,13 +516,20 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.fontProvider = fontProvider
         self.customerInfoFetcher = customerInfoFetcher
         self.introEligibility = introEligibility
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
-                                      PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
-                                                              performRestore: myAppPurchaseLogic?.performRestore))
+        let handler = purchaseHandler ??
+            PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                    performRestore: myAppPurchaseLogic?.performRestore)
+        self._purchaseHandler = .init(wrappedValue: handler)
+        self._promoOfferCache = .init(wrappedValue: PaywallPromoOfferCache(
+            subscriptionHistoryTracker: handler.subscriptionHistoryTracker
+        ))
     }
 
     @StateObject
     private var purchaseHandler: PurchaseHandler
+
+    @StateObject
+    private var promoOfferCache: PaywallPromoOfferCache
 
     @State
     private var data: Data?
@@ -624,7 +631,8 @@ private struct PresentingPaywallModifier: ViewModifier {
                 fonts: self.fontProvider,
                 displayCloseButton: true,
                 introEligibility: self.introEligibility,
-                purchaseHandler: self.purchaseHandler
+                purchaseHandler: self.purchaseHandler,
+                promoOfferCache: self.promoOfferCache
             )
         )
         .onPurchaseStarted {
@@ -733,7 +741,8 @@ private struct PresentingPaywallModifier: ViewModifier {
                 fonts: self.fontProvider,
                 displayCloseButton: true,
                 introEligibility: self.introEligibility,
-                purchaseHandler: self.purchaseHandler
+                purchaseHandler: self.purchaseHandler,
+                promoOfferCache: self.promoOfferCache
             )
         )
         .onPurchaseStarted {
@@ -816,6 +825,9 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     @StateObject
     private var purchaseHandler: PurchaseHandler
 
+    @StateObject
+    private var promoOfferCache: PaywallPromoOfferCache
+
     init(
         offering: Binding<Offering?>,
         myAppPurchaseLogic: MyAppPurchaseLogic?,
@@ -841,9 +853,12 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self.purchaseFailure = purchaseFailure
         self.restoreFailure = restoreFailure
         self.onDismiss = onDismiss
-        self._purchaseHandler = .init(wrappedValue:
-            PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
-                                    performRestore: myAppPurchaseLogic?.performRestore))
+        let handler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                              performRestore: myAppPurchaseLogic?.performRestore)
+        self._purchaseHandler = .init(wrappedValue: handler)
+        self._promoOfferCache = .init(wrappedValue: PaywallPromoOfferCache(
+            subscriptionHistoryTracker: handler.subscriptionHistoryTracker
+        ))
     }
 
     func body(content: Content) -> some View {
@@ -886,7 +901,8 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 content: .offering(offering),
                 fonts: self.fontProvider,
                 displayCloseButton: true,
-                purchaseHandler: self.purchaseHandler
+                purchaseHandler: self.purchaseHandler,
+                promoOfferCache: self.promoOfferCache
             )
         )
         .onPurchaseStarted {
@@ -929,7 +945,8 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 content: .offering(offering),
                 fonts: self.fontProvider,
                 displayCloseButton: true,
-                purchaseHandler: self.purchaseHandler
+                purchaseHandler: self.purchaseHandler,
+                promoOfferCache: self.promoOfferCache
             )
         )
         .onPurchaseStarted {
