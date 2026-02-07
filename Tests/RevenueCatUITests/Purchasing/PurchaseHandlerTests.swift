@@ -13,8 +13,8 @@
 
 import Combine
 import Nimble
-@testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 #if !os(macOS)

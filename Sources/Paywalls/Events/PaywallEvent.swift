@@ -14,6 +14,7 @@
 import Foundation
 
 /// The type of exit offer shown.
+@_spi(Internal)
 public enum ExitOfferType: String, Codable, Sendable {
 
     /// An exit offer shown when the user attempts to dismiss the paywall without interacting.
@@ -22,6 +23,7 @@ public enum ExitOfferType: String, Codable, Sendable {
 }
 
 /// An event to be sent by the `RevenueCatUI` SDK.
+@_spi(Internal)
 public enum PaywallEvent: FeatureEvent {
 
     // swiftlint:disable type_name
@@ -73,6 +75,7 @@ public enum PaywallEvent: FeatureEvent {
 
 }
 
+@_spi(Internal)
 extension PaywallEvent {
 
     /// The creation data of a ``PaywallEvent``.
@@ -95,6 +98,7 @@ extension PaywallEvent {
 
 }
 
+@_spi(Internal)
 extension PaywallEvent {
 
     /// The content of a ``PaywallEvent``.
@@ -187,6 +191,7 @@ extension PaywallEvent {
 
 }
 
+@_spi(Internal)
 extension PaywallEvent {
 
     /// The data specific to an exit offer event.
@@ -209,6 +214,7 @@ extension PaywallEvent {
 
 }
 
+@_spi(Internal)
 extension PaywallEvent {
 
     /// - Returns: the underlying ``PaywallEvent/CreationData-swift.struct`` for this event.
@@ -247,10 +253,10 @@ extension PaywallEvent {
 
 // MARK: -
 
+@_spi(Internal)
 extension PaywallEvent.Data {
 
     /// Creates a copy of this data with purchase-related information.
-    @_spi(Internal)
     public func withPurchaseInfo(
         packageId: String?,
         productId: String?,
@@ -274,7 +280,7 @@ extension PaywallEvent.Data {
 
 }
 
-extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
-extension PaywallEvent.Data: Equatable, Codable, Sendable {}
-extension PaywallEvent.ExitOfferData: Equatable, Codable, Sendable {}
-extension PaywallEvent: Equatable, Codable, Sendable {}
+@_spi(Internal) extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
+@_spi(Internal) extension PaywallEvent.Data: Equatable, Codable, Sendable {}
+@_spi(Internal) extension PaywallEvent.ExitOfferData: Equatable, Codable, Sendable {}
+@_spi(Internal) extension PaywallEvent: Equatable, Codable, Sendable {}

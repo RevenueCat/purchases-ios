@@ -13,7 +13,7 @@
 // swiftlint:disable type_name
 
 import Nimble
-import RevenueCat
+@_spi(Internal) import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
