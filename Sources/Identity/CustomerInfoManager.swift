@@ -49,7 +49,7 @@ class CustomerInfoManager {
         self.systemInfo = systemInfo
         self.dateProvider = dateProvider
 
-        self.data = .init(.init(deviceCache: deviceCache))
+        self.data = .init(.init(deviceCache: deviceCache), lock: .init(.recursive))
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
