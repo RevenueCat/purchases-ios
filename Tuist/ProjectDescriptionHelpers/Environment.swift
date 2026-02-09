@@ -34,7 +34,7 @@ extension Environment {
     }
 
     /// Returns the custom StoreKit configuration file path for PaywallsTester, if set.
-    /// When set, a "PaywallsTester - Custom" scheme will be generated using this path.
+    /// When set, the "PaywallsTester - SK Config" scheme will use this path instead of the default.
     ///
     /// Example usage:
     /// ```bash
@@ -43,6 +43,19 @@ extension Environment {
     /// ```
     public static var storekitConfigPath: String? {
         let value = Environment.skConfigPath.getString(default: "")
+        return value.isEmpty ? nil : value
+    }
+
+    /// Returns the RevenueCat API key for PaywallsTester, if set.
+    /// When set, this will be written to Local.xcconfig during project generation.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// # Generate project with custom API key and StoreKit config
+    /// TUIST_RC_API_KEY=appl_xxxxx TUIST_SK_CONFIG_PATH=/path/to/config.storekit tuist generate PaywallsTester
+    /// ```
+    public static var rcApiKey: String? {
+        let value = ProcessInfo.processInfo.environment["TUIST_RC_API_KEY"] ?? ""
         return value.isEmpty ? nil : value
     }
 }
