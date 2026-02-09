@@ -88,7 +88,7 @@ enum Localization {
     }
 
     /// - Returns: the `Bundle` associated with the given locale if found
-    /// Defaults to `Bundle.module`.
+    /// Defaults to `Bundle.revenueCatUI`.
     ///
     /// `SwiftUI.Text` uses `EnvironmentValues.locale` and therefore
     /// can be mocked in tests.
@@ -104,7 +104,7 @@ enum Localization {
     ///    )
     /// ```
     static func localizedBundle(_ locale: Locale) -> Bundle {
-        let containerBundle: Bundle = .module
+        let containerBundle: Bundle = .revenueCatUI
 
         let preferredLocale = Bundle.preferredLocalizations(
             from: containerBundle.localizations,
