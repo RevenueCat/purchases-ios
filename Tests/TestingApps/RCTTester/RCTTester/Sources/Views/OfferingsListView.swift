@@ -103,20 +103,23 @@ struct OfferingsListView: View {
                 print(".presentPaywall dismissed")
             }
         )
-        .sheet(item: $offeringForPaywallIfNeeded) { offering in
-            NavigationView {
-                PresentPaywallIfNeededView(
-                    offering: offering,
-                    myAppPurchaseLogic: purchaseManager.myAppPurchaseLogic
-                )
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Done") {
-                            offeringForPaywallIfNeeded = nil
-                        }
+        .background {
+            NavigationLink(
+                isActive: Binding(
+                    get: { offeringForPaywallIfNeeded != nil },
+                    set: { if !$0 { offeringForPaywallIfNeeded = nil } }
+                ),
+                destination: {
+                    if let offering = offeringForPaywallIfNeeded {
+                        PresentPaywallIfNeededView(
+                            offering: offering,
+                            myAppPurchaseLogic: purchaseManager.myAppPurchaseLogic
+                        )
                     }
-                }
-            }
+                },
+                label: { EmptyView() }
+            )
+            .hidden()
         }
         .sheet(item: $offeringForPaywallView) { offering in
             PaywallView(
