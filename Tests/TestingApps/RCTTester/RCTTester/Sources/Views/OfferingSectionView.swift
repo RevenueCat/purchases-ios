@@ -12,7 +12,7 @@ struct OfferingSectionView: View {
     let offering: Offering
     let configuration: SDKConfiguration
     let purchaseManager: AnyPurchaseManager
-    let onPresentPaywall: () -> Void
+    let onPresentPaywall: (PaywallPresentationType) -> Void
     let onShowMetadata: () -> Void
     let onPresentStoreView: (StoreViewSheetType) -> Void
 
@@ -37,10 +37,18 @@ struct OfferingSectionView: View {
                 )
             }
 
-            // Present Paywall button (if offering has a paywall)
+            // Present Paywall menu (if offering has a paywall)
             if offering.hasPaywall {
-                Button {
-                    onPresentPaywall()
+                Menu {
+                    Button(".presentPaywall") {
+                        onPresentPaywall(.presentPaywall)
+                    }
+                    Button(".presentPaywallIfNeeded") {
+                        onPresentPaywall(.presentPaywallIfNeeded)
+                    }
+                    Button("PaywallView") {
+                        onPresentPaywall(.paywallView)
+                    }
                 } label: {
                     Label("Present Paywall", systemImage: "rectangle.on.rectangle")
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -79,6 +87,21 @@ struct OfferingSectionView: View {
             }
         }
     }
+}
+
+// MARK: - Paywall Presentation Type
+
+/// Represents which API to use when presenting a paywall.
+enum PaywallPresentationType {
+
+    /// Use the `.presentPaywall(offering:)` view modifier.
+    case presentPaywall
+
+    /// Use the `.presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:)` view modifier.
+    case presentPaywallIfNeeded
+
+    /// Present a `PaywallView(offering:)` directly in a sheet.
+    case paywallView
 }
 
 // MARK: - StoreView Sheet Type
@@ -326,7 +349,7 @@ private struct MetadataRow: View {
             ),
             configuration: .default,
             purchaseManager: AnyPurchaseManager(RevenueCatPurchaseManager()),
-            onPresentPaywall: {},
+            onPresentPaywall: { _ in },
             onShowMetadata: {},
             onPresentStoreView: { _ in }
         )

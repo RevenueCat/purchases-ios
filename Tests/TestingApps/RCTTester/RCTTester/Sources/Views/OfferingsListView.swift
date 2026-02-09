@@ -21,6 +21,8 @@ struct OfferingsListView: View {
 
     @State private var loadingState: LoadingState = .loading
     @State private var offeringForPaywall: Offering?
+    @State private var offeringForPaywallIfNeeded: Offering?
+    @State private var offeringForPaywallView: Offering?
     @State private var offeringForMetadata: Offering?
     @State private var storeViewPresentation: StoreViewPresentation?
     @State private var showingStoreViewUnavailableAlert = false
@@ -61,8 +63,15 @@ struct OfferingsListView: View {
                                 offering: offering,
                                 configuration: configuration,
                                 purchaseManager: purchaseManager,
-                                onPresentPaywall: {
-                                    offeringForPaywall = offering
+                                onPresentPaywall: { type in
+                                    switch type {
+                                    case .presentPaywall:
+                                        offeringForPaywall = offering
+                                    case .presentPaywallIfNeeded:
+                                        offeringForPaywallIfNeeded = offering
+                                    case .paywallView:
+                                        offeringForPaywallView = offering
+                                    }
                                 },
                                 onShowMetadata: {
                                     offeringForMetadata = offering
@@ -91,9 +100,32 @@ struct OfferingsListView: View {
             offering: $offeringForPaywall,
             myAppPurchaseLogic: purchaseManager.myAppPurchaseLogic,
             onDismiss: {
-                print("Paywall dismissed")
+                print(".presentPaywall dismissed")
             }
         )
+        .sheet(item: $offeringForPaywallIfNeeded) { offering in
+            NavigationView {
+                PresentPaywallIfNeededView(
+                    offering: offering,
+                    myAppPurchaseLogic: purchaseManager.myAppPurchaseLogic
+                )
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Done") {
+                            offeringForPaywallIfNeeded = nil
+                        }
+                    }
+                }
+            }
+        }
+        .sheet(item: $offeringForPaywallView) { offering in
+            PaywallView(
+                offering: offering,
+                displayCloseButton: true,
+                performPurchase: purchaseManager.myAppPurchaseLogic?.performPurchase,
+                performRestore: purchaseManager.myAppPurchaseLogic?.performRestore
+            )
+        }
         .sheet(item: $offeringForMetadata) { offering in
             OfferingMetadataView(offering: offering)
         }
