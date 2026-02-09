@@ -221,7 +221,8 @@ extension ObserverModeStoreKit1PurchaseManager: SKPaymentTransactionObserver {
             completion(SK1PurchaseResult(transaction: transaction))
 
         @unknown default:
-            break
+            purchaseCompletionHandlers.removeValue(forKey: productIdentifier)
+            completion(SK1PurchaseResult(transaction: transaction))
         }
     }
 
