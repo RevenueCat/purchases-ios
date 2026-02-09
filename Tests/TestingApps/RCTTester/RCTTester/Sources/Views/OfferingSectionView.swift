@@ -30,7 +30,11 @@ struct OfferingSectionView: View {
 
             // Packages with purchase buttons
             ForEach(offering.availablePackages, id: \.identifier) { package in
-                PackageRowView(package: package, purchaseManager: purchaseManager)
+                PackageRowView(
+                    package: package,
+                    configuration: configuration,
+                    purchaseManager: purchaseManager
+                )
             }
 
             // Present Paywall button (if offering has a paywall)
@@ -131,11 +135,18 @@ private struct OfferingHeaderView: View {
 private struct PackageRowView: View {
 
     let package: Package
+    let configuration: SDKConfiguration
     let purchaseManager: AnyPurchaseManager
 
     @State private var isPurchasing = false
     @State private var purchaseError: Error?
     @State private var showError = false
+
+    /// Whether purchases go through RevenueCat APIs (as opposed to StoreKit directly).
+    private var purchasesThroughRevenueCat: Bool {
+        configuration.purchasesAreCompletedBy == .revenueCat
+        || configuration.purchaseLogic == .throughRevenueCat
+    }
 
     var body: some View {
         HStack {
@@ -150,23 +161,35 @@ private struct PackageRowView: View {
 
             Spacer()
 
-            Button {
-                Task {
-                    await performPurchase()
-                }
-            } label: {
-                if isPurchasing {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                } else {
+            if isPurchasing {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+            } else if purchasesThroughRevenueCat {
+                Menu {
+                    Button("Purchase Package") {
+                        Task { await performPurchase(mode: .package) }
+                    }
+                    Button("Purchase Product") {
+                        Task { await performPurchase(mode: .product) }
+                    }
+                } label: {
                     Text(package.storeProduct.localizedPriceString)
                         .font(.subheadline)
                         .fontWeight(.semibold)
                 }
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+            } else {
+                Button {
+                    Task { await performPurchase(mode: .product) }
+                } label: {
+                    Text(package.storeProduct.localizedPriceString)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                }
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
             }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.capsule)
-            .disabled(isPurchasing)
         }
         .alert("Purchase Error", isPresented: $showError) {
             Button("OK", role: .cancel) { }
@@ -175,12 +198,23 @@ private struct PackageRowView: View {
         }
     }
 
+    private enum PurchaseMode {
+        case package
+        case product
+    }
+
     @MainActor
-    private func performPurchase() async {
+    private func performPurchase(mode: PurchaseMode) async {
         isPurchasing = true
         defer { isPurchasing = false }
 
-        let result = await purchaseManager.purchase(package: package)
+        let result: PurchaseOperationResult
+        switch mode {
+        case .package:
+            result = await purchaseManager.purchase(package: package)
+        case .product:
+            result = await purchaseManager.purchase(product: package.storeProduct)
+        }
 
         switch result {
         case .success(let customerInfo):

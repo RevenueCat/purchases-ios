@@ -54,17 +54,17 @@ final class ObserverModeThroughRevenueCatPurchaseManager: PurchaseManager {
     func purchase(package: Package) async -> PurchaseOperationResult {
         do {
             let result = try await Purchases.shared.purchase(package: package)
+            return try await handlePurchaseResult(result)
+        } catch {
+            return .failure(error)
+        }
+    }
 
-            if result.userCancelled {
-                return .userCancelled
-            }
-
-            // Finish the transaction manually since purchasesAreCompletedBy is .myApp
-            if let transaction = result.transaction {
-                await finishTransaction(transaction)
-            }
-
-            return .success(result.customerInfo)
+    /// Purchases a product using RevenueCat's `purchase(product:)` method, then finishes the transaction.
+    func purchase(product: StoreProduct) async -> PurchaseOperationResult {
+        do {
+            let result = try await Purchases.shared.purchase(product: product)
+            return try await handlePurchaseResult(result)
         } catch {
             return .failure(error)
         }
@@ -88,6 +88,20 @@ final class ObserverModeThroughRevenueCatPurchaseManager: PurchaseManager {
     }
 
     // MARK: - Private
+
+    /// Handles the result of a RevenueCat purchase, finishing the transaction manually.
+    private func handlePurchaseResult(_ result: PurchaseResultData) async throws -> PurchaseOperationResult {
+        if result.userCancelled {
+            return .userCancelled
+        }
+
+        // Finish the transaction manually since purchasesAreCompletedBy is .myApp
+        if let transaction = result.transaction {
+            await finishTransaction(transaction)
+        }
+
+        return .success(result.customerInfo)
+    }
 
     /// Finishes a transaction depending on whether it's SK1 or SK2.
     private func finishTransaction(_ storeTransaction: StoreTransaction) async {

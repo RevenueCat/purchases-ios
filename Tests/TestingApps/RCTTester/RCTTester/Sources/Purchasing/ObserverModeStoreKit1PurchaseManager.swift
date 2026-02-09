@@ -73,49 +73,18 @@ final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
         )
     }
 
+    /// Purchases a product directly using StoreKit 1's `SKPaymentQueue`.
+    func purchase(product: StoreProduct) async -> PurchaseOperationResult {
+        guard let sk1Product = product.sk1Product else {
+            return .failure(SK1PurchaseError.productNotFound(product.productIdentifier))
+        }
+        return await purchaseSK1ProductAndHandleResult(sk1Product)
+    }
+
+    /// Delegates to `purchase(product:)` since "package" is a RevenueCat concept
+    /// and this manager purchases through StoreKit directly.
     func purchase(package: Package) async -> PurchaseOperationResult {
-        guard let sk1Product = package.storeProduct.sk1Product else {
-            return .failure(SK1PurchaseError.productNotFound(package.storeProduct.productIdentifier))
-        }
-
-        // Make the purchase with SK1
-        let result = await purchaseSK1Product(sk1Product)
-
-        // Handle the result based on transaction state
-        switch result.transactionState {
-        case .failed:
-            if let skError = result.error as? SKError,
-               skError.code == .paymentCancelled || skError.code == .overlayCancelled {
-                return .userCancelled
-            }
-            return .failure(result.error ?? SK1PurchaseError.unknown)
-
-        case .deferred:
-            // Transaction requires external action (e.g., Ask to Buy approval)
-            return .pending
-
-        case .purchased, .restored:
-            // Get updated customer info after purchase
-            // RevenueCat should have observed the transaction and synced entitlements
-            do {
-                let customerInfo = try await Purchases.shared.customerInfo()
-                return .success(customerInfo)
-            } catch {
-                // Purchase succeeded but couldn't get customer info
-                print("Warning: Purchase succeeded but couldn't fetch customer info: \(error)")
-                if let cachedInfo = Purchases.shared.cachedCustomerInfo {
-                    return .success(cachedInfo)
-                }
-                return .failure(error)
-            }
-
-        case .purchasing:
-            // This shouldn't happen as the completion is only called after purchasing
-            return .failure(SK1PurchaseError.unknown)
-
-        @unknown default:
-            return .failure(SK1PurchaseError.unknown)
-        }
+        await purchase(product: package.storeProduct)
     }
 
     /// Restores purchases using SK1's `restoreCompletedTransactions()`.
@@ -160,6 +129,40 @@ final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
     }
 
     // MARK: - Private SK1 Purchase
+
+    private func purchaseSK1ProductAndHandleResult(_ sk1Product: SKProduct) async -> PurchaseOperationResult {
+        let result = await purchaseSK1Product(sk1Product)
+
+        switch result.transactionState {
+        case .failed:
+            if let skError = result.error as? SKError,
+               skError.code == .paymentCancelled || skError.code == .overlayCancelled {
+                return .userCancelled
+            }
+            return .failure(result.error ?? SK1PurchaseError.unknown)
+
+        case .deferred:
+            return .pending
+
+        case .purchased, .restored:
+            do {
+                let customerInfo = try await Purchases.shared.customerInfo()
+                return .success(customerInfo)
+            } catch {
+                print("Warning: Purchase succeeded but couldn't fetch customer info: \(error)")
+                if let cachedInfo = Purchases.shared.cachedCustomerInfo {
+                    return .success(cachedInfo)
+                }
+                return .failure(error)
+            }
+
+        case .purchasing:
+            return .failure(SK1PurchaseError.unknown)
+
+        @unknown default:
+            return .failure(SK1PurchaseError.unknown)
+        }
+    }
 
     private func purchaseSK1Product(_ product: SKProduct) async -> SK1PurchaseResult {
         return await withCheckedContinuation { continuation in

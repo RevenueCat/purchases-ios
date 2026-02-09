@@ -64,11 +64,25 @@ protocol PurchaseManager: AnyObject {
 
     // MARK: - Direct Purchase Operations
 
-    /// Purchases a package directly (used for purchase buttons outside of paywalls).
+    /// Purchases a package using `Purchases.shared.purchase(package:)`.
     ///
+    /// Unlike `purchase(product:)`, this includes offering/package context, which means
+    /// RevenueCat analytics will associate the purchase with a specific offering.
+    ///
+    /// - Note: Only meaningful when purchases go through RevenueCat APIs.
+    ///   For StoreKit-direct observer modes, this delegates to `purchase(product:)`.
     /// - Parameter package: The package to purchase.
     /// - Returns: The result of the purchase operation.
     func purchase(package: Package) async -> PurchaseOperationResult
+
+    /// Purchases a product directly.
+    ///
+    /// When purchases go through RevenueCat, this calls `Purchases.shared.purchase(product:)`.
+    /// When purchases go through StoreKit directly, this uses the underlying StoreKit API.
+    ///
+    /// - Parameter product: The store product to purchase.
+    /// - Returns: The result of the purchase operation.
+    func purchase(product: StoreProduct) async -> PurchaseOperationResult
 
     // MARK: - Restore Operations
 
@@ -104,6 +118,10 @@ final class AnyPurchaseManager: PurchaseManager {
 
     func purchase(package: Package) async -> PurchaseOperationResult {
         await wrapped.purchase(package: package)
+    }
+
+    func purchase(product: StoreProduct) async -> PurchaseOperationResult {
+        await wrapped.purchase(product: product)
     }
 
     func restorePurchases() async throws -> RestoreOperationResult {
