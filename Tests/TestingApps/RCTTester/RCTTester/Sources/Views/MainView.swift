@@ -85,6 +85,14 @@ struct MainView: View {
                             showingConfigurationSheet = false
                         }
                     }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Configure") {
+                            configuration = editingConfiguration
+                            showingConfigurationSheet = false
+                            onReconfigure()
+                        }
+                        .disabled(editingConfiguration.apiKey.isEmpty)
+                    }
                 }
             }
         }
