@@ -74,7 +74,7 @@ final class ObserverModeThroughRevenueCatPurchaseManager: PurchaseManager {
     ///
     /// - Warning: A successful restore does not imply that the user has any entitlements.
     ///   Always verify `customerInfo.entitlements.active` to confirm entitlement status.
-    private func restorePurchases() async throws -> RestoreOperationResult {
+    func restorePurchases() async throws -> RestoreOperationResult {
         let customerInfo = try await Purchases.shared.restorePurchases()
 
         // Check if any purchases were found (not whether entitlements are active)

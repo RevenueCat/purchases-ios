@@ -124,7 +124,7 @@ final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
     ///
     /// - Warning: A successful restore does not imply that the user has any entitlements.
     ///   Always verify `customerInfo.entitlements.active` to confirm entitlement status.
-    private func restorePurchases() async throws -> RestoreOperationResult {
+    func restorePurchases() async throws -> RestoreOperationResult {
         // Trigger SK1 restore - RevenueCat will observe the restored transactions
         try await restoreCompletedTransactionsSK1()
 
