@@ -1,19 +1,13 @@
 ## RevenueCat SDK
 ### ✨ New Features
-* Adds more ObjC compatibility (#5999) via JayShortway (@JayShortway)
-### 🐞 Bugfixes
-* Fix potential infinite recursion in MagicWeather (#6146) via Tarek M. Ben Lechhab (@bilqisium)
+* [CEC Mode]: Introduce isPurchaseAllowedByRestoreBehavior() (#6192) via Will Taylor (@fire-at-will)
 
 ## RevenueCatUI SDK
 ### Paywallv2
-#### ✨ New Features
-* feat: Add Custom Paywall Variables support (#6080) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Fix product.currency_symbol to use product currency instead of locale (#6209) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix `backend-integration-tests-custom-entitlements` on CI (#6179) via Antonio Pallares (@ajpallares)
-* Only run 1 backend integration tests CI job to generate all snapshots (#6170) via Antonio Pallares (@ajpallares)
-* Autogenerate snapshots for more tests (#5958) via Antonio Pallares (@ajpallares)
-* Only consider source files for public enums Danger rule (#6156) via Antonio Pallares (@ajpallares)
-* Fix integration test (#6157) via Antonio Pallares (@ajpallares)
-* Fix API tests (#6155) via Antonio Pallares (@ajpallares)
-* Add troubleshooting link to the generic error message (#6152) via Engin Kurutepe (@ekurutepe)
+* Cache `presentedOfferingContext` when making a purchase from a paywall (#6228) via Antonio Pallares (@ajpallares)
+* Add XCFramework installation tests to the release checks (#6195) via Rick (@rickvdl)
+* Deprioritize debug health check to avoid blocking user-facing requests at startup (#6230) via Antonio Pallares (@ajpallares)
