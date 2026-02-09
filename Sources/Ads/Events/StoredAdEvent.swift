@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 /// Contains the necessary information for storing and sending ad events.
 struct StoredAdEvent {
 
@@ -60,5 +58,3 @@ extension StoredAdEvent: Codable {
 }
 
 extension StoredAdEvent: Equatable {}
-
-#endif

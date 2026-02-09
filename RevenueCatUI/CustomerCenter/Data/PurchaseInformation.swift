@@ -578,6 +578,7 @@ extension PurchaseInformation {
         case .unknownStore: return .storeUnknownStore
         case .paddle, .stripe, .rcBilling, .external: return .storeWeb
         case .testStore: return .testStore
+        case .galaxy: return .galaxyStore
         }
     }
 }

@@ -169,7 +169,7 @@ extension ErrorUtils {
 
 extension Encodable {
 
-    func asDictionary() throws -> [String: Any] {
+    func asJSONDictionary() throws -> [String: Any] {
         return try JSONEncoder.default
             .encode(self)
             .asJSONDictionary()

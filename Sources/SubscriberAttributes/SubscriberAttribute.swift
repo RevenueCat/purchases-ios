@@ -115,6 +115,7 @@ extension SubscriberAttribute {
 }
 
 extension SubscriberAttribute: Equatable {}
+extension SubscriberAttribute: Codable {}
 
 extension SubscriberAttribute: CustomStringConvertible {
 
@@ -140,9 +141,11 @@ extension SubscriberAttribute {
 extension SubscriberAttribute.Dictionary {
 
     var individualizedCacheKeyPart: String {
-        return self.mapValues {
-            $0.individualizedCacheKeyPart
-        }.debugDescription
+        // Sort keys to ensure deterministic ordering for cache key computation.
+        self.keys.sorted().compactMap { key in
+            guard let attribute = self[key] else { return nil }
+            return "\(key):\(attribute.individualizedCacheKeyPart)"
+        }.joined(separator: ",")
     }
 }
 

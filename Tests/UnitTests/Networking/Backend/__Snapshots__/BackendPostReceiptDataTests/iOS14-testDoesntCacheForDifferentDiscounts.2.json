@@ -42,8 +42,11 @@
           "price" : "12"
         }
       ],
+      "payload_version" : 1,
       "price" : "15.99",
       "product_id" : "product_id",
+      "purchase_completed_by" : "revenuecat",
+      "sdk_originated" : false,
       "store_country" : "ESP"
     },
     "method" : "POST",

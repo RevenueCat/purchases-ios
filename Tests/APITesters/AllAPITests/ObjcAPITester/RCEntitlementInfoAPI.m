@@ -50,6 +50,7 @@
         case RCPaddle:
         case RCExternal:
         case RCTestStore:
+        case RCGalaxy:
             NSLog(@"%ld", (long)rs);
             break;
     }

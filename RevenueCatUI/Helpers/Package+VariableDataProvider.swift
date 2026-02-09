@@ -72,6 +72,19 @@ extension Package: VariableDataProvider {
         return price
     }
 
+    func localizedPricePerYear(showZeroDecimalPlacePrices: Bool = false) -> String {
+        guard let price = self.storeProduct.localizedPricePerYear else {
+            Logger.warning(Strings.package_not_subscription(self))
+            return self.storeProduct.localizedPriceString
+        }
+
+        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
+            return formatAsZeroDecimalPlaces(price)
+        }
+
+        return price
+    }
+
     func localizedIntroductoryOfferPrice(showZeroDecimalPlacePrices: Bool = false) -> String? {
         guard let price = self.storeProduct.introductoryDiscount?.localizedPriceString else {
             return self.storeProduct.introductoryDiscount?.localizedPriceString

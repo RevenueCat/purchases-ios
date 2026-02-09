@@ -66,3 +66,25 @@ func checkDeprecatedAPI() {
     let _: Set<String> = customerInfo.nonConsumablePurchases
     let _: [StoreTransaction] = customerInfo.nonSubscriptionTransactions
 }
+
+func checkCanCreateCustomerInfo() {
+    var entitlementInfos: EntitlementInfos!
+    _ = CustomerInfo(
+        entitlements: entitlementInfos,
+        requestDate: Date(),
+        firstSeen: Date(),
+        originalAppUserId: ""
+    )
+    
+    _ = CustomerInfo(
+        entitlements: entitlementInfos,
+        expirationDatesByProductId: ["": Date()],
+        purchaseDatesByProductId: ["": Date()],
+        allPurchasedProductIds: Set([""]),
+        requestDate: Date(),
+        firstSeen: Date(),
+        originalAppUserId: "",
+        originalPurchaseDate: Date(),
+        managementURL: URL(string: "Test")!
+    )
+}

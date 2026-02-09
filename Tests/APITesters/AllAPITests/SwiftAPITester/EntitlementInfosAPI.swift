@@ -25,3 +25,21 @@ func checkEntitlementInfosAPI() {
 
     print(eis!, all, active, activeInAnyEnvironment, activeInCurrentEnvironment, enti!)
 }
+
+func checkCanCreateEntitlementInfos() {
+    _ = EntitlementInfos()
+    
+    _ = EntitlementInfos(
+        entitlements: ["": EntitlementInfo(
+            identifier: "",
+            isActive: true,
+            willRenew: true,
+            periodType: .intro,
+            store: .appStore,
+            productIdentifier: "com.revenuecat.test",
+            isSandbox: false,
+            ownershipType: .purchased
+        )],
+        verification: .verified
+    )
+}

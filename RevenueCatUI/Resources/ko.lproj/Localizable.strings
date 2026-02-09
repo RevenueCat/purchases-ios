@@ -17,8 +17,4 @@
 "%d%% off" = "%d%% 할인";
 "Continue" = "계속";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} 무료 체험을 시작한 후 {{ total_price_and_per_month }}을(를) 시작하세요.";
-"free_trial_period" = "%@ 무료";
-"pay_as_you_go_period" = "%@ 동안 %@";
-"pay_up_front_period" = "%@ 에 %@";
-"then_price_per_period" = "그다음 %@";
 "Something went wrong" = "문제가 발생했습니다";

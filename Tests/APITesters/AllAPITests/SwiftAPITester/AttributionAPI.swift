@@ -55,6 +55,15 @@ func checkAttributionAPI() {
     attribution.setKochavaDeviceID("")
     attribution.setKochavaDeviceID(nil)
 
+    attribution.setSolarEngineDistinctId("")
+    attribution.setSolarEngineDistinctId(nil)
+
+    attribution.setSolarEngineAccountId("")
+    attribution.setSolarEngineAccountId(nil)
+
+    attribution.setSolarEngineVisitorId("")
+    attribution.setSolarEngineVisitorId(nil)
+
     attribution.setMixpanelDistinctID("")
     attribution.setMixpanelDistinctID(nil)
 

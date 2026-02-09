@@ -113,6 +113,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
     )
 
     static let eventData: PaywallEvent.Data = .init(
+        paywallIdentifier: "test_paywall_id",
         offeringIdentifier: "offering",
         paywallRevision: 0,
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,

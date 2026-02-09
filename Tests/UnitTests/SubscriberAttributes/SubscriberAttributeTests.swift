@@ -220,6 +220,53 @@ class SubscriberAttributeTests: TestCase {
         expect(dict1.individualizedCacheKeyPart) != dict2.individualizedCacheKeyPart
     }
 
+    func testDictionaryIndividualizedCacheKeyPartIsDeterministicRegardlessOfInsertionOrder() {
+        let dateProvider = MockDateProvider(stubbedNow: Date(timeIntervalSince1970: 1000))
+
+        let attr1 = SubscriberAttribute(withKey: "aaa_first",
+                                        value: "value1",
+                                        dateProvider: dateProvider)
+        let attr2 = SubscriberAttribute(withKey: "bbb_second",
+                                        value: "value2",
+                                        dateProvider: dateProvider)
+        let attr3 = SubscriberAttribute(withKey: "ccc_third",
+                                        value: "value3",
+                                        dateProvider: dateProvider)
+
+        let dictInsertedInOrder: SubscriberAttribute.Dictionary = [
+            "aaa_first": attr1,
+            "bbb_second": attr2,
+            "ccc_third": attr3
+        ]
+
+        let dictInsertedInReverseOrder: SubscriberAttribute.Dictionary = [
+            "ccc_third": attr3,
+            "bbb_second": attr2,
+            "aaa_first": attr1
+        ]
+
+        let dictInsertedRandomly: SubscriberAttribute.Dictionary = [
+            "bbb_second": attr2,
+            "ccc_third": attr3,
+            "aaa_first": attr1
+        ]
+
+        let cacheKey1 = dictInsertedInOrder.individualizedCacheKeyPart
+        let cacheKey2 = dictInsertedInReverseOrder.individualizedCacheKeyPart
+        let cacheKey3 = dictInsertedRandomly.individualizedCacheKeyPart
+
+        expect(cacheKey1) == cacheKey2
+        expect(cacheKey2) == cacheKey3
+
+        // Verify the cache key is sorted alphabetically
+        let aaaRange = cacheKey1.range(of: "aaa_first")!
+        let bbbRange = cacheKey1.range(of: "bbb_second")!
+        let cccRange = cacheKey1.range(of: "ccc_third")!
+
+        expect(aaaRange.lowerBound) < bbbRange.lowerBound
+        expect(bbbRange.lowerBound) < cccRange.lowerBound
+    }
+
 }
 
 private extension SubscriberAttributeTests {

@@ -202,6 +202,38 @@ class VariablesTests: TestCase {
         expect(result) == "$119.49"
     }
 
+    func testPricePerPeriodForLifetimeProductsReturnsPrice() {
+        let result = self.process(
+            "{{ price_per_period }}",
+            with: TestData.lifetimePackage
+        )
+        expect(result) == "$119.49"
+    }
+
+    func testPricePerPeriodFullForLifetimeProductsReturnsPrice() {
+        let result = self.process(
+            "{{ price_per_period_full }}",
+            with: TestData.lifetimePackage
+        )
+        expect(result) == "$119.49"
+    }
+
+    func testPricePerPeriodForConsumableProductsReturnsPrice() {
+        let result = self.process(
+            "{{ price_per_period }}",
+            with: TestData.consumablePackage
+        )
+        expect(result) == "$4.99"
+    }
+
+    func testPricePerPeriodFullForConsumableProductsReturnsPrice() {
+        let result = self.process(
+            "{{ price_per_period_full }}",
+            with: TestData.consumablePackage
+        )
+        expect(result) == "$4.99"
+    }
+
     func testTotalPriceAndPerMonthForForMonthlyPackage() {
         let result = self.process(
             "{{ total_price_and_per_month }}",

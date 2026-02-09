@@ -156,7 +156,7 @@ final class BackendPostCreateTicketTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(1))
 
         if let call = self.httpClient.calls.first,
-           let bodyDict = try call.request.requestBody?.asDictionary() {
+           let bodyDict = try call.request.requestBody?.asJSONDictionary() {
             expect(bodyDict["app_user_id"] as? String) == Self.userID
             expect(bodyDict["customer_email"] as? String) == testEmail
             expect(bodyDict["issue_description"] as? String) == testDescription

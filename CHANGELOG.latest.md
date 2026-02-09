@@ -1,15 +1,13 @@
 ## RevenueCat SDK
 ### ✨ New Features
-* Adds `setAppsFlyerConversionData` to conveniently track AppsFlyer conversion data (#5936) via JayShortway (@JayShortway)
-### 🐞 Bugfixes
-* Jzdesign/video component load bug (#5926) via Jacob Rakidzich (@JZDesign)
+* [CEC Mode]: Introduce isPurchaseAllowedByRestoreBehavior() (#6192) via Will Taylor (@fire-at-will)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Fix product.currency_symbol to use product currency instead of locale (#6209) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix flaky tests (#5938) via Antonio Pallares (@ajpallares)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5937) via RevenueCat Git Bot (@RCGitBot)
-* Format test store price strings with same currency code and locale as localizedPriceString (#5784) via Rick (@rickvdl)
-* Improve flakiness of some tests + add extra logs for easier debugging (#5919) via Antonio Pallares (@ajpallares)
-* Replace `RCPurchasesErrorCodeDomain` with `ErrorCode.errorDomain` in tests (#5924) via Antonio Pallares (@ajpallares)
-* Update broken docs links (#5933) via Jens-Fabian Goetzmann (@jefago)
-* Remove Brewfile + lock file and fix Homebrew formula caching in CircleCI (#5927) via Rick (@rickvdl)
-* Fix Carthage installation tests (#5922) via Antonio Pallares (@ajpallares)
+* Cache `presentedOfferingContext` when making a purchase from a paywall (#6228) via Antonio Pallares (@ajpallares)
+* Add XCFramework installation tests to the release checks (#6195) via Rick (@rickvdl)
+* Deprioritize debug health check to avoid blocking user-facing requests at startup (#6230) via Antonio Pallares (@ajpallares)

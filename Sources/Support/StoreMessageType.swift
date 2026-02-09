@@ -56,11 +56,9 @@ extension Message.Reason {
 
             // billingIssue message reason was added in iOS 16.4, but it's not recognized by older xcode versions.
             // https://developer.apple.com/documentation/xcode-release-notes/xcode-14_3-release-notes
-            #if swift(>=5.8)
             if #available(iOS 16.4, *), case .billingIssue = self {
                 return .billingIssue
             }
-            #endif
 
             Logger.error("Unrecognized Message.Reason: \(self)")
             return nil

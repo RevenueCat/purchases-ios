@@ -75,11 +75,11 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         let parameters = try XCTUnwrap(self.mockTransactionPoster.invokedHandlePurchasedTransactionParameters.value)
 
         expect(parameters.transaction as? StoreTransaction) === transaction
-        expect(parameters.data.appUserID) == Self.userID
+        expect(parameters.currentUserID) == Self.userID
         expect(parameters.data.presentedOfferingContext?.offeringIdentifier).to(beNil())
         expect(parameters.data.unsyncedAttributes).to(beEmpty())
-        expect(parameters.data.source.isRestore) == false
-        expect(parameters.data.source.initiationSource) == .queue
+        expect(parameters.postReceiptSource.isRestore) == false
+        expect(parameters.postReceiptSource.initiationSource) == .queue
     }
 
     func testPostsFirstTransaction() async throws {

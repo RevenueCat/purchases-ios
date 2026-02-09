@@ -15,7 +15,7 @@ import Nimble
 @_spi(Internal) @testable import RevenueCat
 import XCTest
 
-class OfferingsDecodingTests: BaseHTTPResponseTest {
+final class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     private var response: OfferingsResponse!
 
@@ -27,7 +27,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     func testDecodesAllOfferings() throws {
         expect(self.response.currentOfferingId) == "default"
-        expect(self.response.offerings).to(haveCount(6))
+        expect(self.response.offerings).to(haveCount(8))
     }
 
     func testDecodesFirstOffering() throws {

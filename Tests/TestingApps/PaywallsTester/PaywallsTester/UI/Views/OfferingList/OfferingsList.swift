@@ -113,6 +113,10 @@ struct OfferingsList: View {
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
         }
         #endif
+        .presentPaywall(
+            offering: $viewModel.presentPaywallOffering,
+            onDismiss: { }
+        )
     }
 
     @ViewBuilder

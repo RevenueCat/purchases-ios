@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 /// A `NetworkOperation` for posting ad events to the ad events endpoint.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PostAdEventsOperation: NetworkOperation {
@@ -55,5 +53,3 @@ final class PostAdEventsOperation: NetworkOperation {
 // Restating inherited @unchecked Sendable from Foundation's Operation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PostAdEventsOperation: @unchecked Sendable {}
-
-#endif

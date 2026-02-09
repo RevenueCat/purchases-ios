@@ -44,6 +44,7 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var storefront: Storefront? { self.transaction.storefront }
     @objc internal var jwsRepresentation: String? { self.transaction.jwsRepresentation }
     internal var environment: StoreEnvironment? { self.transaction.environment }
+    internal var reason: TransactionReason? { self.transaction.reason }
 
     var hasKnownPurchaseDate: Bool { return self.transaction.hasKnownPurchaseDate }
     var hasKnownTransactionIdentifier: Bool { self.transaction.hasKnownTransactionIdentifier }
@@ -122,6 +123,10 @@ internal protocol StoreTransactionType: Sendable {
     /// - Note: this is only available for StoreKit 2 transactions.
     var environment: StoreEnvironment? { get }
 
+    /// The reason for the transaction, if known.
+    /// - Note: this is only available for StoreKit 2 transactions starting with iOS 17.
+    var reason: TransactionReason? { get }
+
     /// Indicates to the App Store that the app delivered the purchased content
     /// or enabled the service to finish the transaction.
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void)
@@ -131,6 +136,31 @@ internal protocol StoreTransactionType: Sendable {
 // MARK: - Wrapper constructors / getters
 
 extension StoreTransaction {
+
+    /// Creates a `StoreTransaction` instance for testing purposes.
+    /// - Parameters:
+    ///   - productIdentifier: The product identifier.
+    ///   - purchaseDate: The date that the user's account was charged for a purchased or restored product.
+    ///   - transactionIdentifier: The unique identifier for the transaction.
+    ///   - quantity: The number of consumable products purchased. Defaults to 1.
+    ///   - storefront: The App Store storefront associated with the transaction. Defaults to `nil`.
+    public convenience init(
+        productIdentifier: String,
+        purchaseDate: Date,
+        transactionIdentifier: String,
+        quantity: Int = 1,
+        storefront: Storefront? = nil
+    ) {
+        self.init(
+            TestStoreTransaction(
+                productIdentifier: productIdentifier,
+                purchaseDate: purchaseDate,
+                transactionIdentifier: transactionIdentifier,
+                quantity: quantity,
+                storefront: storefront
+            )
+        )
+    }
 
     internal convenience init(sk1Transaction: SK1Transaction) {
         self.init(SK1StoreTransaction(sk1Transaction: sk1Transaction))

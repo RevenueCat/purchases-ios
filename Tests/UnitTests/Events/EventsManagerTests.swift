@@ -40,7 +40,20 @@ class EventsManagerTests: TestCase {
             userProvider: self.userProvider,
             store: self.store,
             systemInfo: MockSystemInfo(finishTransactions: true),
-            appSessionID: self.appSessionID
+            appSessionID: self.appSessionID,
+            adEventStore: nil
+        )
+    }
+
+    func createManagerWithAdEvents() {
+        let adEventStore = MockAdEventStore()
+        self.manager = .init(
+            internalAPI: self.api,
+            userProvider: self.userProvider,
+            store: self.store,
+            systemInfo: MockSystemInfo(finishTransactions: true),
+            appSessionID: self.appSessionID,
+            adEventStore: adEventStore
         )
     }
 
@@ -69,6 +82,24 @@ class EventsManagerTests: TestCase {
             try createStoredFeatureEvent(from: event1),
             try createStoredFeatureEvent(from: event2)
         ]
+    }
+
+    /// We should remove this test once we support the purchase initiated event in the backend.
+    func testTrackPurchaseInitiatedEventDoesNotStore() async throws {
+        let event: PaywallEvent = .purchaseInitiated(.random(), .random())
+
+        await self.manager.track(featureEvent: event)
+
+        await self.verifyEmptyStore()
+    }
+
+    /// We should remove this test once we support the purchase error event in the backend.
+    func testTrackPurchaseErrorEventDoesNotStore() async throws {
+        let event: PaywallEvent = .purchaseError(.random(), .random())
+
+        await self.manager.track(featureEvent: event)
+
+        await self.verifyEmptyStore()
     }
 
     // MARK: - flushAllEvents
@@ -317,6 +348,132 @@ class EventsManagerTests: TestCase {
     }
     #endif
 
+    // MARK: - flushAllEvents with ad events
+
+    func testFlushAllEventsFlushesFeatureAndAdEvents() async throws {
+        self.createManagerWithAdEvents()
+
+        // Store feature events
+        let featureEvent1: PaywallEvent = .impression(.random(), .random())
+        let featureEvent2: PaywallEvent = .close(.random(), .random())
+        await self.manager.track(featureEvent: featureEvent1)
+        await self.manager.track(featureEvent: featureEvent2)
+
+        // Store ad events
+        let adEvent1: AdEvent = .randomDisplayedEvent()
+        let adEvent2: AdEvent = .randomDisplayedEvent()
+        await self.manager.track(adEvent: adEvent1)
+        await self.manager.track(adEvent: adEvent2)
+
+        let result = try await self.manager.flushAllEvents(batchSize: 10)
+
+        // Should have flushed both types
+        expect(result) == 4
+
+        // Both stores should be empty
+        await self.verifyEmptyStore()
+        expect(self.api.invokedPostPaywallEvents) == true
+        expect(self.api.invokedPostAdEvents) == true
+    }
+
+    func testFlushAllEventsReturnsZeroWhenBothStoresEmpty() async throws {
+        self.createManagerWithAdEvents()
+
+        let result = try await self.manager.flushAllEvents(batchSize: 1)
+        expect(result) == 0
+    }
+
+    func testFlushAllEventsOnlyFlushesFeatureEventsWhenAdStoreEmpty() async throws {
+        self.createManagerWithAdEvents()
+
+        let featureEvent: PaywallEvent = .impression(.random(), .random())
+        await self.manager.track(featureEvent: featureEvent)
+
+        let result = try await self.manager.flushAllEvents(batchSize: 10)
+
+        expect(result) == 1
+
+        let featureEvents = await self.store.storedEvents
+        expect(featureEvents).to(beEmpty())
+        expect(self.api.invokedPostPaywallEvents) == true
+        expect(self.api.invokedPostAdEvents) == false
+    }
+
+    func testFlushAllEventsOnlyFlushesAdEventsWhenFeatureStoreEmpty() async throws {
+        self.createManagerWithAdEvents()
+
+        let adEvent1: AdEvent = .randomDisplayedEvent()
+        let adEvent2: AdEvent = .randomDisplayedEvent()
+        await self.manager.track(adEvent: adEvent1)
+        await self.manager.track(adEvent: adEvent2)
+
+        let result = try await self.manager.flushAllEvents(batchSize: 10)
+
+        expect(result) == 2
+
+        await self.verifyEmptyStore()
+        expect(self.api.invokedPostPaywallEvents) == false
+        expect(self.api.invokedPostAdEvents) == true
+    }
+
+    func testFlushAllEventsThrowsIfFeatureEventsFlushFails() async throws {
+        self.createManagerWithAdEvents()
+
+        let featureEvent: PaywallEvent = .impression(.random(), .random())
+        await self.manager.track(featureEvent: featureEvent)
+
+        let adEvent: AdEvent = .randomDisplayedEvent()
+        await self.manager.track(adEvent: adEvent)
+
+        let expectedError: NetworkError = .offlineConnection()
+        self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
+
+        do {
+            _ = try await self.manager.flushAllEvents(batchSize: 10)
+            fail("Expected error")
+        } catch BackendError.networkError(expectedError) {
+            // Expected
+        } catch {
+            throw error
+        }
+
+        // Feature event should still be in store
+        let featureEvents = await self.store.storedEvents
+        expect(featureEvents).to(haveCount(1))
+
+        // Ad events API should not have been called (not flushed if feature flush failed)
+        expect(self.api.invokedPostAdEvents) == false
+    }
+
+    func testFlushAllEventsThrowsIfAdEventsFlushFails() async throws {
+        self.createManagerWithAdEvents()
+
+        let featureEvent: PaywallEvent = .impression(.random(), .random())
+        await self.manager.track(featureEvent: featureEvent)
+
+        let adEvent: AdEvent = .randomDisplayedEvent()
+        await self.manager.track(adEvent: adEvent)
+
+        let expectedError: NetworkError = .offlineConnection()
+        self.api.stubbedPostAdEventsCompletionResult = .networkError(expectedError)
+
+        do {
+            _ = try await self.manager.flushAllEvents(batchSize: 10)
+            fail("Expected error")
+        } catch BackendError.networkError(expectedError) {
+            // Expected
+        } catch {
+            throw error
+        }
+
+        // Feature event should be flushed (succeeded first)
+        let featureEvents = await self.store.storedEvents
+        expect(featureEvents).to(beEmpty())
+
+        // Ad events should have been attempted
+        expect(self.api.invokedPostAdEvents) == true
+    }
+
     // MARK: -
 
     private static let userID = "nacho"
@@ -371,6 +528,27 @@ private actor MockFeatureEventStore: FeatureEventStoreType {
     }
 
     func fetch(_ count: Int) -> [StoredFeatureEvent] {
+        return Array(self.storedEvents.prefix(count))
+    }
+
+    func clear(_ count: Int) {
+        self.storedEvents.removeFirst(min(count, self.storedEvents.count))
+    }
+
+}
+
+// MARK: - MockAdEventStore
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private actor MockAdEventStore: AdEventStoreType {
+
+    var storedEvents: [StoredAdEvent] = []
+
+    func store(_ storedEvent: StoredAdEvent) {
+        self.storedEvents.append(storedEvent)
+    }
+
+    func fetch(_ count: Int) -> [StoredAdEvent] {
         return Array(self.storedEvents.prefix(count))
     }
 

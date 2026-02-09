@@ -41,7 +41,7 @@ extension CustomerInfo {
         let content: CustomerInfoResponse = .init(
             subscriber: subscriber,
             requestDate: Date(),
-            rawData: (try? subscriber.asDictionary()) ?? [:]
+            rawData: (try? subscriber.asJSONDictionary()) ?? [:]
         )
 
         self.init(
