@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import StoreKit
 import RevenueCat
 import RevenueCatUI
 
@@ -15,11 +16,14 @@ struct OfferingsListView: View {
         case error(Error)
     }
 
+    let configuration: SDKConfiguration
     let purchaseManager: AnyPurchaseManager
 
     @State private var loadingState: LoadingState = .loading
     @State private var offeringForPaywall: Offering?
     @State private var offeringForMetadata: Offering?
+    @State private var storeViewPresentation: StoreViewPresentation?
+    @State private var showingStoreViewUnavailableAlert = false
 
     var body: some View {
         Group {
@@ -55,12 +59,23 @@ struct OfferingsListView: View {
                         ForEach(offerings) { offering in
                             OfferingSectionView(
                                 offering: offering,
+                                configuration: configuration,
                                 purchaseManager: purchaseManager,
                                 onPresentPaywall: {
                                     offeringForPaywall = offering
                                 },
                                 onShowMetadata: {
                                     offeringForMetadata = offering
+                                },
+                                onPresentStoreView: { sheetType in
+                                    if configuration.storeKitVersion == .storeKit2 {
+                                        storeViewPresentation = StoreViewPresentation(
+                                            offering: offering,
+                                            sheetType: sheetType
+                                        )
+                                    } else {
+                                        showingStoreViewUnavailableAlert = true
+                                    }
                                 }
                             )
                         }
@@ -81,6 +96,13 @@ struct OfferingsListView: View {
         )
         .sheet(item: $offeringForMetadata) { offering in
             OfferingMetadataView(offering: offering)
+        }
+        .modifier(StoreViewSheetModifier(storeViewPresentation: $storeViewPresentation))
+        .alert("Unavailable", isPresented: $showingStoreViewUnavailableAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("StoreView and SubscriptionStoreView require StoreKit 2. "
+                 + "Reconfigure the SDK with StoreKit 2 to use these views.")
         }
         .task {
             await fetchOfferings()
@@ -136,8 +158,49 @@ struct OfferingsListView: View {
     }
 }
 
+// MARK: - StoreView Presentation
+
+/// Pairs an offering with the type of StoreKit view to present.
+private struct StoreViewPresentation: Identifiable {
+    let offering: Offering
+    let sheetType: StoreViewSheetType
+
+    var id: String { "\(offering.identifier)-\(sheetType.id)" }
+}
+
+/// Encapsulates the `@available(iOS 17.0, *)` sheet presentation for `StoreView` and
+/// `SubscriptionStoreView`, avoiding the need for `@available` on the entire parent view.
+private struct StoreViewSheetModifier: ViewModifier {
+
+    @Binding var storeViewPresentation: StoreViewPresentation?
+
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content
+                .sheet(item: $storeViewPresentation) { presentation in
+                    switch presentation.sheetType {
+                    case .storeView:
+                        VStack(spacing: 0) {
+                            Text("StoreView")
+                                .font(.headline)
+                                .padding()
+                            StoreView.forOffering(presentation.offering)
+                        }
+                    case .subscriptionStoreView:
+                        SubscriptionStoreView.forOffering(presentation.offering)
+                    }
+                }
+        } else {
+            content
+        }
+    }
+}
+
 #Preview {
     NavigationView {
-        OfferingsListView(purchaseManager: AnyPurchaseManager(RevenueCatPurchaseManager()))
+        OfferingsListView(
+            configuration: .default,
+            purchaseManager: AnyPurchaseManager(RevenueCatPurchaseManager())
+        )
     }
 }

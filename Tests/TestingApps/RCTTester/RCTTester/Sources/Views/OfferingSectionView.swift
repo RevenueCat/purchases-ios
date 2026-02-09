@@ -4,14 +4,21 @@
 //
 
 import SwiftUI
+import StoreKit
 import RevenueCat
 
 struct OfferingSectionView: View {
 
     let offering: Offering
+    let configuration: SDKConfiguration
     let purchaseManager: AnyPurchaseManager
     let onPresentPaywall: () -> Void
     let onShowMetadata: () -> Void
+    let onPresentStoreView: (StoreViewSheetType) -> Void
+
+    private var isStoreKit2: Bool {
+        configuration.storeKitVersion == .storeKit2
+    }
 
     var body: some View {
         Section {
@@ -32,9 +39,59 @@ struct OfferingSectionView: View {
                     onPresentPaywall()
                 } label: {
                     Label("Present Paywall", systemImage: "rectangle.on.rectangle")
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+
+            // StoreView and SubscriptionStoreView buttons (iOS 17+ / SK2 only)
+            if #available(iOS 17.0, *) {
+                Button {
+                    onPresentStoreView(.storeView)
+                } label: {
+                    HStack {
+                        Label("Present StoreView", systemImage: "storefront")
+                        if !isStoreKit2 {
+                            Spacer()
+                            Image(systemName: "nosign")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                Button {
+                    onPresentStoreView(.subscriptionStoreView)
+                } label: {
+                    HStack {
+                        Label("Present SubscriptionStoreView", systemImage: "storefront")
+                        if !isStoreKit2 {
+                            Spacer()
+                            Image(systemName: "nosign")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - StoreView Sheet Type
+
+/// Represents which StoreKit view sheet to present.
+enum StoreViewSheetType: Identifiable {
+
+    /// Present `StoreView.forOffering(_:)`.
+    case storeView
+
+    /// Present `SubscriptionStoreView.forOffering(_:)`.
+    case subscriptionStoreView
+
+    var id: String {
+        switch self {
+        case .storeView: return "storeView"
+        case .subscriptionStoreView: return "subscriptionStoreView"
         }
     }
 }
@@ -233,9 +290,11 @@ private struct MetadataRow: View {
                 availablePackages: [],
                 webCheckoutUrl: nil
             ),
+            configuration: .default,
             purchaseManager: AnyPurchaseManager(RevenueCatPurchaseManager()),
             onPresentPaywall: {},
-            onShowMetadata: {}
+            onShowMetadata: {},
+            onPresentStoreView: { _ in }
         )
     }
 }

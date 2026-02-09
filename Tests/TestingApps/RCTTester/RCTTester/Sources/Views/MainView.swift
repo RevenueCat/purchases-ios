@@ -29,7 +29,10 @@ struct MainView: View {
 
             Section("Offerings") {
                 NavigationLink {
-                    OfferingsListView(purchaseManager: purchaseManager)
+                    OfferingsListView(
+                        configuration: configuration,
+                        purchaseManager: purchaseManager
+                    )
                 } label: {
                     Label("View Offerings", systemImage: "tag")
                 }
