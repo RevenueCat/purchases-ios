@@ -1724,7 +1724,7 @@ workflows:
       - run-revenuecat-ui-ios-18
       - run-revenuecat-ui-ios-26
 
-  build-test:
+  run-all-tests:
     when:
       and:
         - not:
