@@ -2040,24 +2040,6 @@ workflows:
             - docs-build
           <<: *exclude-main-and-release
 
-  create-tag:
-    when:
-      and:
-        - not:
-            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - matches:
-            pattern: "^release/.*$"
-            value: << pipeline.git.branch >>
-    jobs:
-      - release-checks
-      - hold:
-          type: approval
-          requires:
-            - release-checks
-      - tag-release-branch:
-          requires:
-            - hold
-
   deploy-tag:
     when:
       not:
@@ -2187,7 +2169,7 @@ workflows:
   #   - Parameter Type: string
   #   - Name: action
   #   - Value: run-manual-tests
-  all-tests:
+  ci:
     when:
       and:
         - not:
@@ -2306,4 +2288,62 @@ workflows:
       - emerge_binary_size_analysis:
           context:
             - slack-secrets
+
+      # =============================================================
+      # Summary gate: all tests passed
+      # =============================================================
+      - all-tests-passed:
+          requires:
+            - check-api-changes
+            - run-all-maestro-e2e-tests
+            - backend-integration-tests-SK1
+            - backend-integration-tests-SK2
+            - backend-integration-tests-custom-entitlements
+            - backend-integration-tests-other
+            - backend-integration-tests-offline
+            - build-tv-watch-and-macos
+            - build-visionos
+            - docs-build
+            - run-test-ios-14
+            - run-test-ios-15
+            - run-test-ios-16
+            - run-test-ios-17
+            - run-test-macos
+            - run-test-tvos
+            - run-test-watchos
+            - spm-receipt-parser
+            - spm-release-build
+            - spm-release-build-xcode-14
+            - spm-release-build-xcode-15
+            - spm-revenuecat-ui-ios-15
+            - spm-revenuecat-ui-ios-16
+            - run-revenuecat-ui-ios-17
+            - spm-revenuecat-ui-watchos
+            - installation-tests-cocoapods
+            - installation-tests-swift-package-manager
+            - installation-tests-custom-entitlement-computation-swift-package-manager
+            - installation-tests-carthage
+            - installation-tests-xcode-direct-integration
+            - installation-tests-receipt-parser
+            - api-tests
+            - deploy-purchase-tester
+            - emerge_binary_size_analysis
+
+      # =============================================================
+      # Release tagging: only on release branches
+      # Requires both release-checks and all-tests-passed before
+      # the hold can be approved.
+      # =============================================================
+      - release-checks:
+          <<: *release-branches
+      - hold:
+          type: approval
+          requires:
+            - release-checks
+            - all-tests-passed
+          <<: *release-branches
+      - tag-release-branch:
+          requires:
+            - hold
+          <<: *release-branches
 
