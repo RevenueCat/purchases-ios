@@ -2296,7 +2296,7 @@ workflows:
       # =============================================================
       - release-checks:
           <<: *release-branches
-      - hold:
+      - approve-release:
           type: approval
           requires:
             - release-checks
@@ -2304,6 +2304,6 @@ workflows:
           <<: *release-branches
       - tag-release-branch:
           requires:
-            - hold
+            - approve-release
           <<: *release-branches
 
