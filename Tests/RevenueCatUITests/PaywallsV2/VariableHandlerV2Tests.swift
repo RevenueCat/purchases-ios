@@ -692,6 +692,193 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("Monthly"))
     }
 
+    // MARK: - Intro Offer Ineligibility Fallback Tests
+
+    func testOfferPriceFallsBackToProductPriceWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // packageWithIntroOffer product price is $3.99
+        expect(result).to(equal("$3.99"))
+    }
+
+    func testOfferPricePerDayFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_day }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product price per day ($3.99/month => ~$0.13/day)
+        expect(result).to(equal("$0.13"))
+    }
+
+    func testOfferPricePerWeekFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_week }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product price per week ($3.99/month => ~$0.91/week)
+        expect(result).to(equal("$0.91"))
+    }
+
+    func testOfferPricePerMonthFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_month }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product price per month ($3.99)
+        expect(result).to(equal("$3.99"))
+    }
+
+    func testOfferPricePerYearFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_year }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product price per year ($3.99/month => ~$47.88/year)
+        expect(result).to(equal("$47.88"))
+    }
+
+    func testOfferPeriodFallsBackToProductPeriodWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period (month)
+        expect(result).to(equal("month"))
+    }
+
+    func testOfferPeriodAbbreviatedFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_abbreviated }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period abbreviated (mo)
+        expect(result).to(equal("mo"))
+    }
+
+    func testOfferPeriodInDaysFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_in_days }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period in days (1 month = 30 days)
+        expect(result).to(equal("30"))
+    }
+
+    func testOfferPeriodInWeeksFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_in_weeks }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period in weeks (1 month = 4 weeks)
+        expect(result).to(equal("4"))
+    }
+
+    func testOfferPeriodInMonthsFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_in_months }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period in months (1)
+        expect(result).to(equal("1"))
+    }
+
+    func testOfferPeriodInYearsFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_in_years }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period in years (1 month = 0 years)
+        expect(result).to(equal("0"))
+    }
+
+    func testOfferPeriodWithUnitFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_with_unit }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period with unit (1 month)
+        expect(result).to(equal("1 month"))
+    }
+
+    func testOfferEndDateReturnsEmptyWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_end_date }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // No product equivalent for end date
+        expect(result).to(equal(""))
+    }
+
+    func testPromoOfferStillWorksWhenIneligibleForIntro() {
+        let discount = TestData.packageWithPromoOfferPayUpFront.storeProduct.discounts.first!
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithPromoOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false,
+            promoOffer: .init(
+                discount: discount,
+                signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
+            )
+        )
+        // Promo offer should still work regardless of intro eligibility
+        expect(result).to(equal("$1.99"))
+    }
+
+    func testOfferPriceUsesIntroWhenEligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        // When eligible, should still use intro offer (free trial)
+        expect(result).to(equal("free"))
+    }
+
     // MARK: - Non-Subscription Tests
 
     func testProductPricePerPeriodForLifetime() {
