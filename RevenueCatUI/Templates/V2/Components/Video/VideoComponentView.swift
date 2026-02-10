@@ -75,22 +75,25 @@ struct VideoComponentView: View {
                         // Determine if video player will render
                         let willShowVideo = cachedURL != nil && isPlayable
 
-                        // Always render spacer for sizing
+                        // Always render spacer for sizing (needed for fixed-size videos)
                         render(Color.clear, size: size, with: style)
 
-                        // Show fallback image as background - video renders on top once ready
-                        if let source = imageSource ?? viewModel.imageSource,
+                        // Always show thumbnail as base layer while video loads/prepares
+                        if let thumbnailSource = imageSource ?? viewModel.imageSource,
                            let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: source, fitMode: style.contentMode == .fill ? .fill : .fit)
+                            component: .init(
+                                source: thumbnailSource,
+                                fitMode: style.contentMode == .fill ? .fill : .fit
+                            )
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
                         }
 
                         // Only create VideoPlayerView when on active carousel page (or not in carousel)
                         // This prevents multiple AVPlayer instances from competing for resources
-                        // Video layers on top of fallback image
+                        // Video layers on top of thumbnail once ready
                         if let cachedURL, willShowVideo {
                             render(
                                 VideoPlayerView(
@@ -106,6 +109,7 @@ struct VideoComponentView: View {
                                 size: size,
                                 with: style
                             )
+                            .transition(.opacity.animation(.easeIn(duration: 0.3)))
                         }
                     }
                     .onAppear {
