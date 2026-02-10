@@ -88,28 +88,28 @@ struct TemplateBackgroundImageView_Previews: PreviewProvider {
             lowResUrl: nil,
             blurred: false
         )
-        .previewDisplayName("Wrong aspect ratio not blured")
+        .previewDisplayName("Wrong aspect ratio not blurred")
 
         TemplateBackgroundImageView(
             url: TestData.paywallAssetBaseURL.appendingPathComponent(TestData.paywallHeaderImageName),
             lowResUrl: nil,
             blurred: true
         )
-        .previewDisplayName("Wrong aspect ratio blured")
+        .previewDisplayName("Wrong aspect ratio blurred")
 
         TemplateBackgroundImageView(
             url: TestData.paywallAssetBaseURL.appendingPathComponent(TestData.paywallBackgroundImageName),
             lowResUrl: nil,
             blurred: false
         )
-        .previewDisplayName("Correct aspect ratio not blured")
+        .previewDisplayName("Correct aspect ratio not blurred")
 
         TemplateBackgroundImageView(
             url: TestData.paywallAssetBaseURL.appendingPathComponent(TestData.paywallBackgroundImageName),
             lowResUrl: nil,
             blurred: true
         )
-        .previewDisplayName("Correct aspect ratio blured")
+        .previewDisplayName("Correct aspect ratio blurred")
     }
 
 }
