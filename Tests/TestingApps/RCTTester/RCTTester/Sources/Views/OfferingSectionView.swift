@@ -12,6 +12,7 @@ struct OfferingSectionView: View {
     let offering: Offering
     let configuration: SDKConfiguration
     let purchaseManager: AnyPurchaseManager
+    let entitlementIdentifiers: [String]
     let onPresentPaywall: (PaywallPresentationType) -> Void
     let onShowMetadata: () -> Void
     let onPresentStoreView: (StoreViewSheetType) -> Void
@@ -43,8 +44,17 @@ struct OfferingSectionView: View {
                     Button(".presentPaywall") {
                         onPresentPaywall(.presentPaywall)
                     }
-                    Button(".presentPaywallIfNeeded") {
-                        onPresentPaywall(.presentPaywallIfNeeded)
+                    Menu(".presentPaywallIfNeeded") {
+                        Section("requiredEntitlementIdentifier") {
+                            Button("(empty string)") {
+                                onPresentPaywall(.presentPaywallIfNeeded(entitlementIdentifier: ""))
+                            }
+                            ForEach(entitlementIdentifiers, id: \.self) { entitlementID in
+                                Button(entitlementID) {
+                                    onPresentPaywall(.presentPaywallIfNeeded(entitlementIdentifier: entitlementID))
+                                }
+                            }
+                        }
                     }
                     Button("PaywallView") {
                         onPresentPaywall(.paywallView)
@@ -97,8 +107,9 @@ enum PaywallPresentationType {
     /// Use the `.presentPaywall(offering:)` view modifier.
     case presentPaywall
 
-    /// Use the `.presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:)` view modifier.
-    case presentPaywallIfNeeded
+    /// Use the `.presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:)` view modifier
+    /// with the specified entitlement identifier.
+    case presentPaywallIfNeeded(entitlementIdentifier: String)
 
     /// Present a `PaywallView(offering:)` directly in a sheet.
     case paywallView
@@ -349,6 +360,7 @@ private struct MetadataRow: View {
             ),
             configuration: .default,
             purchaseManager: AnyPurchaseManager(RevenueCatPurchaseManager()),
+            entitlementIdentifiers: ["pro", "premium"],
             onPresentPaywall: { _ in },
             onShowMetadata: {},
             onPresentStoreView: { _ in }

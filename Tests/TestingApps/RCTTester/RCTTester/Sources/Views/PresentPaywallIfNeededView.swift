@@ -9,21 +9,15 @@ import RevenueCatUI
 
 /// A screen that demonstrates the `.presentPaywallIfNeeded` view modifier.
 ///
-/// This screen is pushed via navigation and immediately applies the modifier,
-/// which checks the user's entitlements and presents the paywall if the specified
-/// entitlement is not active. If the entitlement is already active, the paywall
-/// won't appear -- this is the expected behavior of the API.
+/// Presented as a sheet, this view immediately applies the modifier on appear.
+/// The SDK checks whether the specified entitlement is active and presents the
+/// paywall if it is not. If the entitlement is already active, the paywall
+/// shouldn't appear, as this is the expected behavior of the API.
 struct PresentPaywallIfNeededView: View {
 
     let offering: Offering
+    let entitlementIdentifier: String
     let myAppPurchaseLogic: MyAppPurchaseLogic?
-
-    private let requiredEntitlementIdentifier = "pro"
-
-    /// Tracks whether the paywall was already presented once during this screen's lifetime.
-    /// This prevents the modifier from re-triggering the paywall when the user dismisses it
-    /// without purchasing and then interacts with the navigation (e.g. tapping back).
-    @State private var paywallAlreadyPresented = false
 
     var body: some View {
         VStack(spacing: 16) {
@@ -36,14 +30,14 @@ struct PresentPaywallIfNeededView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 InfoRow(label: "Offering", value: offering.identifier)
-                InfoRow(label: "Entitlement", value: "\"\(requiredEntitlementIdentifier)\"")
+                InfoRow(label: "Entitlement", value: "\"\(entitlementIdentifier)\"")
             }
             .padding()
             .background(Color(.secondarySystemBackground))
             .cornerRadius(12)
 
             Text("The `.presentPaywallIfNeeded` modifier checks whether the entitlement "
-                 + "\"\(requiredEntitlementIdentifier)\" is active. If it is not, "
+                 + "\"\(entitlementIdentifier)\" is active. If it is not, "
                  + "the paywall for offering \"\(offering.identifier)\" is presented automatically.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
@@ -57,16 +51,11 @@ struct PresentPaywallIfNeededView: View {
         .navigationTitle(".presentPaywallIfNeeded")
         .navigationBarTitleDisplayMode(.inline)
         .presentPaywallIfNeeded(
+            requiredEntitlementIdentifier: entitlementIdentifier,
             offering: offering,
             myAppPurchaseLogic: myAppPurchaseLogic,
-            shouldDisplay: { customerInfo in
-                guard !paywallAlreadyPresented else { return false }
-                let hasEntitlement = customerInfo.entitlements[requiredEntitlementIdentifier]?.isActive == true
-                return !hasEntitlement
-            },
             onDismiss: {
                 print(".presentPaywallIfNeeded dismissed")
-                paywallAlreadyPresented = true
             }
         )
     }

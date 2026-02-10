@@ -21,11 +21,12 @@ struct OfferingsListView: View {
 
     @State private var loadingState: LoadingState = .loading
     @State private var offeringForPaywall: Offering?
-    @State private var offeringForPaywallIfNeeded: Offering?
     @State private var offeringForPaywallView: Offering?
     @State private var offeringForMetadata: Offering?
     @State private var storeViewPresentation: StoreViewPresentation?
     @State private var showingStoreViewUnavailableAlert = false
+    @State private var paywallIfNeededPresentation: PaywallIfNeededPresentation?
+    @State private var entitlementIdentifiers: [String] = []
 
     var body: some View {
         Group {
@@ -63,12 +64,16 @@ struct OfferingsListView: View {
                                 offering: offering,
                                 configuration: configuration,
                                 purchaseManager: purchaseManager,
+                                entitlementIdentifiers: entitlementIdentifiers,
                                 onPresentPaywall: { type in
                                     switch type {
                                     case .presentPaywall:
                                         offeringForPaywall = offering
-                                    case .presentPaywallIfNeeded:
-                                        offeringForPaywallIfNeeded = offering
+                                    case .presentPaywallIfNeeded(let entitlementIdentifier):
+                                        paywallIfNeededPresentation = PaywallIfNeededPresentation(
+                                            offering: offering,
+                                            entitlementIdentifier: entitlementIdentifier
+                                        )
                                     case .paywallView:
                                         offeringForPaywallView = offering
                                     }
@@ -103,16 +108,17 @@ struct OfferingsListView: View {
                 print(".presentPaywall dismissed")
             }
         )
-        .sheet(item: $offeringForPaywallIfNeeded) { offering in
+        .sheet(item: $paywallIfNeededPresentation) { presentation in
             NavigationView {
                 PresentPaywallIfNeededView(
-                    offering: offering,
+                    offering: presentation.offering,
+                    entitlementIdentifier: presentation.entitlementIdentifier,
                     myAppPurchaseLogic: purchaseManager.myAppPurchaseLogic
                 )
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Done") {
-                            offeringForPaywallIfNeeded = nil
+                            paywallIfNeededPresentation = nil
                         }
                     }
                 }
@@ -138,6 +144,7 @@ struct OfferingsListView: View {
         }
         .task {
             await fetchOfferings()
+            await fetchEntitlementIdentifiers()
         }
     }
 
@@ -165,6 +172,15 @@ struct OfferingsListView: View {
         }
     }
 
+    private func fetchEntitlementIdentifiers() async {
+        do {
+            let customerInfo = try await Purchases.shared.customerInfo()
+            entitlementIdentifiers = customerInfo.entitlements.all.keys.sorted()
+        } catch {
+            print("Error fetching entitlement identifiers: \(error)")
+        }
+    }
+
     private func fetchOfferings(showLoading: Bool = true) async {
         if showLoading {
             loadingState = .loading
@@ -188,6 +204,16 @@ struct OfferingsListView: View {
             print("Error fetching offerings: \(error)")
         }
     }
+}
+
+// MARK: - presentPaywallIfNeeded Presentation
+
+/// Pairs an offering with the entitlement identifier to check.
+private struct PaywallIfNeededPresentation: Identifiable {
+    let offering: Offering
+    let entitlementIdentifier: String
+
+    var id: String { offering.identifier }
 }
 
 // MARK: - StoreView Presentation
