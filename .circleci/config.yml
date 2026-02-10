@@ -1453,6 +1453,9 @@ jobs:
       - trust-github-key
       - install-rubydocker-dependencies
       - run:
+          name: Check PR is approved
+          command: bundle exec fastlane check_release_pr_approved
+      - run:
           name: Tag branch
           command: bundle exec fastlane tag_current_branch
 
@@ -1680,6 +1683,18 @@ jobs:
       - run:
           name: Trigger RC App Pipeline
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
+
+  merge-release-pr:
+    docker:
+      - image: cimg/ruby:3.2.0
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - install-rubydocker-dependencies
+      - run:
+          name: Merge release PR
+          command: bundle exec fastlane merge_release_pr
 
   full-suite-gate:
     docker:
@@ -2031,6 +2046,14 @@ workflows:
       - bump-sdk-in-rc-mobile-app:
           requires:
             - make-release
+          <<: *release-tags
+      - merge-release-pr:
+          requires:
+            - push-revenuecatui-pod
+            - deploy-to-spm
+            - docs-deploy
+            - deploy-purchase-tester
+            - bump-sdk-in-rc-mobile-app
           <<: *release-tags
 
   snapshot-bump:
