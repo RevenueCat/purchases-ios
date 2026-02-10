@@ -2375,6 +2375,7 @@ def get_pr_review_decision(pr_number:)
   uri = URI("https://api.github.com/graphql")
   request = Net::HTTP::Post.new(uri)
   request["Authorization"] = "bearer #{token}"
+  request["Content-Type"] = "application/json"
   request.body = {
     query: "{ repository(owner: \"RevenueCat\", name: \"#{REPO_NAME}\") { pullRequest(number: #{pr_number}) { reviewDecision } } }"
   }.to_json
@@ -2392,6 +2393,7 @@ def merge_pr(pr_number:, merge_method: "squash")
   uri = URI("https://api.github.com/repos/RevenueCat/#{REPO_NAME}/pulls/#{pr_number}/merge")
   request = Net::HTTP::Put.new(uri)
   request["Authorization"] = "token #{token}"
+  request["Content-Type"] = "application/json"
   request.body = { merge_method: merge_method }.to_json
   response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
 
