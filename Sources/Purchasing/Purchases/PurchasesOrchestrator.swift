@@ -1894,8 +1894,8 @@ private extension PurchasesOrchestrator {
     }
 
 func handleSK1PurchasedTransaction(_ purchasedTransaction: StoreTransaction,
-                                       storefront: StorefrontType?,
-                                       restored: Bool) {
+                                   storefront: StorefrontType?,
+                                   restored: Bool) {
         // Clean up backgrounded state tracking (for UPI/external payment app detection)
         _ = self.getAndClearBackgroundedState(productIdentifier: purchasedTransaction.productIdentifier)
         // Don't attribute offering context or paywall data for restored transactions
