@@ -102,14 +102,6 @@ aliases:
         ignore: /.*/
       branches:
         only: main
-  exclude-main-and-release: &exclude-main-and-release
-    filters:
-      tags:
-        ignore: /.*/
-      branches:
-        ignore:
-          - main
-          - /^release\/.*/
 commands:
   slack-notify-on-fail:
     steps:
@@ -1743,6 +1735,10 @@ workflows:
             equal: [bump, << pipeline.parameters.action >>]
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
+        - not:
+            matches:
+              pattern: "^(main|release/.*)$"
+              value: << pipeline.git.branch >>
     jobs:
       # =============================================================
       # Tier 1: Auto-run on every push
@@ -1765,11 +1761,10 @@ workflows:
 
       # =============================================================
       # Hold gate: can be approved immediately, no need to wait for
-      # Tier 1. Only applies to PR branches (not main or release).
+      # Tier 1.
       # =============================================================
       - approve-full-tests:
           type: approval
-          <<: *exclude-main-and-release
 
       # =============================================================
       # Full suite gate: unlocks Tier 2 jobs. Requires BOTH the hold
@@ -1789,11 +1784,9 @@ workflows:
             - emerge_binary_size_analysis
             - build-tv-watch-and-macos
             - build-visionos
-          <<: *exclude-main-and-release
 
       # =============================================================
       # Tier 2: Gated behind full-suite-gate
-      # Only applies to PR branches (not main or release)
       # =============================================================
 
       # Backend Integration Tests
@@ -1802,31 +1795,26 @@ workflows:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - backend-integration-tests-SK2:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - backend-integration-tests-custom-entitlements:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - backend-integration-tests-other:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - backend-integration-tests-offline:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
 
       # Older iOS Version Tests
       - run-test-ios-18:
@@ -1834,31 +1822,26 @@ workflows:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - run-test-ios-14:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - run-test-ios-15:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - run-test-ios-16:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - run-test-ios-17:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
 
       # Platform Runtime Tests
       - run-test-macos:
@@ -1866,49 +1849,41 @@ workflows:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - run-test-tvos:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - run-test-watchos:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
 
       # RevenueCatUI Tests
       - run-revenuecat-ui-ios-18:
           requires:
             - full-suite-gate
-          <<: *exclude-main-and-release
       - spm-revenuecat-ui-ios-15:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - spm-revenuecat-ui-ios-16:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - run-revenuecat-ui-ios-17:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - spm-revenuecat-ui-watchos:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
 
       # Installation Tests
       - installation-tests-cocoapods:
@@ -1916,37 +1891,31 @@ workflows:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - installation-tests-swift-package-manager:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - installation-tests-custom-entitlement-computation-swift-package-manager:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - installation-tests-carthage:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - installation-tests-xcode-direct-integration:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - installation-tests-receipt-parser:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
 
       # SPM / Other Build Tests
       - spm-release-build:
@@ -1954,51 +1923,43 @@ workflows:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - spm-release-build-xcode-14:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - spm-release-build-xcode-15:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - api-tests:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - spm-receipt-parser:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - deploy-purchase-tester:
           dry_run: true
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
       - run-all-maestro-e2e-tests:
           requires:
             - full-suite-gate
           context:
             - e2e-tests
             - slack-secrets
-          <<: *exclude-main-and-release
       - docs-build:
           requires:
             - full-suite-gate
           context:
             - slack-secrets
-          <<: *exclude-main-and-release
 
       # =============================================================
       # Summary gate: blocks merge until all Tier 2 jobs pass
@@ -2038,7 +1999,6 @@ workflows:
             - deploy-purchase-tester
             - run-all-maestro-e2e-tests
             - docs-build
-          <<: *exclude-main-and-release
 
   deploy-tag:
     when:
