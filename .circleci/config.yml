@@ -2248,6 +2248,17 @@ workflows:
       - emerge_binary_size_analysis:
           context:
             - slack-secrets
+      - lint
+      - validate-package-swift:
+          name: validate-package-swift-5.8
+          xcode_version: "14.3.1"
+          mac_os_executor_name: macos-executor
+      - run-test-ios-26
+      - run-test-ios-18
+      - pod-lib-lint
+      - run-revenuecat-ui-ios-26
+      - run-revenuecat-ui-ios-18
+      - emerge_purchases_ui_snapshot_tests
 
       # =============================================================
       # Summary gate: all tests passed
@@ -2256,6 +2267,14 @@ workflows:
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
+            - lint
+            - validate-package-swift-5.8
+            - run-test-ios-26
+            - run-test-ios-18
+            - pod-lib-lint
+            - run-revenuecat-ui-ios-26
+            - run-revenuecat-ui-ios-18
+            - emerge_purchases_ui_snapshot_tests
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
             - backend-integration-tests-custom-entitlements
