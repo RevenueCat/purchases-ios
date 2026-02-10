@@ -123,6 +123,18 @@ class Backend {
                            completion: completion)
     }
 
+    func isPurchaseAllowedByRestoreBehavior(
+        appUserID: String,
+        transactionJWS: String,
+        isAppBackgrounded: Bool,
+        completion: @escaping CustomerAPI.IsPurchaseAllowedByRestoreBehaviorResponseHandler
+    ) {
+        self.customer.isPurchaseAllowedByRestoreBehavior(appUserID: appUserID,
+                                                         transactionJWS: transactionJWS,
+                                                         isAppBackgrounded: isAppBackgrounded,
+                                                         completion: completion)
+    }
+
     func getCustomerInfo(appUserID: String,
                          isAppBackgrounded: Bool,
                          allowComputingOffline: Bool = true,

@@ -46,11 +46,14 @@ struct VideoComponentView: View {
     @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
 
-    /// Tracks whether this page is active or adjacent. Updated via onChange to ensure SwiftUI detects the change.
+    /// Tracks whether this page is active or adjacent in a carousel.
+    /// Updated via onChange to ensure SwiftUI detects the change.
     @State private var isPlayable: Bool = true
 
-    /// Forces player recreation only when becoming playable (to keep autoplay reliable without churn).
-    @State private var playbackSeed: Bool = false
+    /// Toggled when transitioning from non-playable to playable state.
+    /// Used as part of the VideoPlayerView's identity to force recreation,
+    /// ensuring autoplay triggers correctly when the page becomes visible again.
+    @State private var playerRefreshToggle: Bool = false
 
     var body: some View {
         viewModel
@@ -98,8 +101,8 @@ struct VideoComponentView: View {
                                     loopVideo: style.loop,
                                     muteAudio: style.muteAudio
                                 )
-                                // Recreate only when becoming playable or URL changes.
-                                .id("\(cachedURL)-\(playbackSeed)"),
+                                // Recreate player when becoming playable or URL changes.
+                                .id("\(cachedURL)-\(playerRefreshToggle)"),
                                 size: size,
                                 with: style
                             )
@@ -182,7 +185,7 @@ struct VideoComponentView: View {
             .onAppear {
                 updatePlayableState(isPlayable: carouselState?.isActiveOrNeighbor ?? true)
             }
-            .onChange(of: carouselState) { newState in
+            .onChangeOf(carouselState) { newState in
                 updatePlayableState(isPlayable: newState?.isActiveOrNeighbor ?? true)
             }
 
@@ -195,7 +198,7 @@ struct VideoComponentView: View {
 
     private func updatePlayableState(isPlayable newValue: Bool) {
         if !self.isPlayable && newValue {
-            self.playbackSeed.toggle()
+            self.playerRefreshToggle.toggle()
         }
         self.isPlayable = newValue
     }

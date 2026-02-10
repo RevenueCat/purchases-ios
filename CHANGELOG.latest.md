@@ -1,13 +1,13 @@
+## RevenueCat SDK
+### ✨ New Features
+* [CEC Mode]: Introduce isPurchaseAllowedByRestoreBehavior() (#6192) via Will Taylor (@fire-at-will)
+
 ## RevenueCatUI SDK
 ### Paywallv2
 #### 🐞 Bugfixes
-* Make paywall font registration idempotent (#6193) via Facundo Menzella (@facumenzella)
-* fix: fixes video autoplay on first paywall open by removing broken stagedURL.publisher observation (#6114) @erenkulaksiz (#6185) via Facundo Menzella (@facumenzella)
-* [EXTERNAL] fix: listen willResignActiveNotification and didBecomeActiveNotification to autoplay the video (#6116) @erenkulaksiz (#6184) via Facundo Menzella (@facumenzella)
+* Fix product.currency_symbol to use product currency instead of locale (#6209) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Remove fallback url caching mechanism (#6188) via Toni Rico (@tonidero)
-* RCT Tester app Part 2 - Offerings + User management + Configuration persistence (#6189) via Antonio Pallares (@ajpallares)
-* RCT Tester app Part 1 - Tuist project + App setup (#6187) via Antonio Pallares (@ajpallares)
-* Fix `integration-tests-all` on CI (#6190) via Antonio Pallares (@ajpallares)
-* [Maestro] Improve e2e test stability (#6182) via Antonio Pallares (@ajpallares)
+* Cache `presentedOfferingContext` when making a purchase from a paywall (#6228) via Antonio Pallares (@ajpallares)
+* Add XCFramework installation tests to the release checks (#6195) via Rick (@rickvdl)
+* Deprioritize debug health check to avoid blocking user-facing requests at startup (#6230) via Antonio Pallares (@ajpallares)
