@@ -4,6 +4,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "MagicWeatherSwiftUI",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .appProject,
     targets: [
         .target(
