@@ -23,8 +23,8 @@ protocol SandboxEnvironmentDetectorType: Sendable {
 
 /// Object used to detect the sandbox environment
 ///
-/// On iOS 16+, this attempts to use `AppTransaction.environment` for more reliable detection.
-/// On older OS versions (and in case of failure to retrieve), it falls back to checking the receipt file path.
+/// This attempts to prefetch and parse the local receipt environment.
+/// While prefetching (or in case of failure), it falls back to existing non-prefetched checks.
 final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
     private let bundle: Atomic<Bundle>
@@ -32,38 +32,34 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
     private let receiptFetcher: LocalReceiptFetcherType
     private let macAppStoreDetector: MacAppStoreDetector?
 
-    /// Cached environment from `AppTransaction` (iOS 16+).
-    /// This is populated asynchronously and used for more reliable sandbox detection.
-    private let cachedAppTransactionEnvironment: Atomic<StoreEnvironment?> = .init(nil)
+    /// Cached `isSandbox` computed from a prefetched and parsed local receipt.
+    /// This is populated asynchronously and used when available.
+    private let cachedIsSandboxFromPrefetchedReceipt: Atomic<Bool?> = .init(nil)
 
     /// Cached result of receipt path-based sandbox detection.
     private let cachedIsSandboxBasedOnReceiptPath: Atomic<Bool?> = .init(nil)
 
-    /// Creates a new detector that uses `AppTransaction` for environment detection on iOS 16+.
+    /// Creates a new detector that prefetches the local receipt environment.
     ///
     /// - Parameters:
     ///   - bundle: The bundle to use for receipt URL detection.
     ///   - isRunningInSimulator: Whether the app is running in a simulator.
     ///   - receiptFetcher: The receipt fetcher for macOS receipt parsing.
     ///   - macAppStoreDetector: Detector for macOS App Store detection.
-    ///   - transactionFetcher: The transaction fetcher used to get `AppTransaction` environment.
+    ///   - requestFetcher: The request fetcher used to refresh the StoreKit 1 receipt.
     init(
         bundle: Bundle = .main,
         isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator,
         receiptFetcher: LocalReceiptFetcherType = LocalReceiptFetcher(),
         macAppStoreDetector: MacAppStoreDetector? = nil,
-        transactionFetcher: StoreKit2TransactionFetcherType
+        requestFetcher: StoreKitRequestFetcher
     ) {
         self.bundle = .init(bundle)
         self.isRunningInSimulator = isRunningInSimulator
         self.receiptFetcher = receiptFetcher
         self.macAppStoreDetector = macAppStoreDetector
 
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            // Start fetching the AppTransaction environment asynchronously.
-            // The result will be cached and used by `isSandbox` once available.
-            self.prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: transactionFetcher)
-        }
+        self.prefetchReceiptEnvironment(requestFetcher: requestFetcher)
     }
 
     private init() {
@@ -78,10 +74,9 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
             return true
         }
 
-        // On iOS 16+, prefer the cached AppTransaction environment if available.
-        // This is more reliable than the receipt path-based detection.
-        if let cachedEnvironment = self.cachedAppTransactionEnvironment.value {
-            return cachedEnvironment != .production
+        // Prefer prefetched receipt environment when available.
+        if let cachedIsSandbox = self.cachedIsSandboxFromPrefetchedReceipt.value {
+            return cachedIsSandbox
         }
 
         // Fallback to the legacy path-based detection.
@@ -102,7 +97,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
     /// By default, this uses a simplified `SandboxEnvironmentDetector` that only relies on
     /// the legacy receipt path detection. When the SDK is initialized via `Purchases.configure()`,
     /// this is replaced with a full `SandboxEnvironmentDetector` that includes
-    /// `AppTransaction`-based detection on iOS 16+.
+    /// prefetched receipt environment detection.
     private static let _default: Atomic<SandboxEnvironmentDetectorType> = .init(SandboxEnvironmentDetector())
 
     static var `default`: SandboxEnvironmentDetectorType {
@@ -112,17 +107,40 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
 }
 
-// MARK: - AppTransaction Environment Detection (iOS 16+)
+// MARK: - Prefetched Receipt Environment Detection
 
 private extension SandboxEnvironmentDetector {
 
-    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-    func prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: StoreKit2TransactionFetcherType) {
-        Task.detached(priority: .background) {
-
-            let environment = await transactionFetcher.appTransactionEnvironment
-            self.cachedAppTransactionEnvironment.value = environment
+    func prefetchReceiptEnvironment(requestFetcher: StoreKitRequestFetcher) {
+        // If there's already a receipt on disk, use it and avoid refreshing.
+        guard !self.hasLocalReceiptOnDisk else {
+            self.cacheIsSandboxFromLocalReceiptEnvironment()
+            return
         }
+
+        requestFetcher.fetchReceiptData {
+            self.cacheIsSandboxFromLocalReceiptEnvironment()
+        }
+    }
+
+    var hasLocalReceiptOnDisk: Bool {
+        guard let receiptURL = self.bundle.value.appStoreReceiptURL else {
+            return false
+        }
+
+        return FileManager.default.fileExists(atPath: receiptURL.path)
+    }
+
+    func cacheIsSandboxFromLocalReceiptEnvironment() {
+        guard let environment = try? self.receiptFetcher.fetchAndParseLocalReceipt().environment else {
+            return
+        }
+
+        guard environment != .unknown else {
+            return
+        }
+
+        self.cachedIsSandboxFromPrefetchedReceipt.value = environment != .production
     }
 
 }

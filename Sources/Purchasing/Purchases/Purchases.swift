@@ -367,7 +367,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         #endif
 
         let sandboxEnvironmentDetector = injectedSandboxEnvironmentDetector
-        ?? SandboxEnvironmentDetector(transactionFetcher: transactionFetcher)
+        ?? SandboxEnvironmentDetector(requestFetcher: fetcher)
 
         SandboxEnvironmentDetector.default = sandboxEnvironmentDetector
 

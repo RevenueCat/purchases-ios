@@ -184,7 +184,7 @@ private extension SystemInfo {
 
         let sandboxDetector = sandboxEnvironmentDetector ?? SandboxEnvironmentDetector(
             bundle: bundle,
-            transactionFetcher: MockStoreKit2TransactionFetcher()
+            requestFetcher: MockRequestFetcher()
         )
 
         return SystemInfo(platformInfo: nil,
