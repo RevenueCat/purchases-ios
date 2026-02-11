@@ -955,13 +955,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
     }
 
-    func testSK2TransactionListenerDelegateDoesNotIncludePaywallAttribution() async throws {
+    func testSK2TransactionListenerDelegateDoesNotIncludePaywallAttributionForImpressions() async throws {
         self.setUpStoreKit2Listener()
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        // Track a paywall impression
+        // Track a paywall impression (only purchaseInitiated caches paywall data, not impressions)
         self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
 
         let transaction = MockStoreTransaction()
@@ -973,9 +973,318 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         )
 
         expect(self.backend.invokedPostReceiptData) == true
-        // Paywall attribution should NOT be included for transactions from the SK2 listener
-        // because those are for restores, renewals, or purchases from other devices
+        // Paywall attribution should NOT be included because only purchaseInitiated events cache paywall data
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
+    }
+
+    // MARK: - SK2 Transaction Listener Delegate with paywall/offering attribution
+
+    func testSK2TransactionListenerDelegateIncludesPaywallAttributionInObserverMode() async throws {
+        self.setUpSystemInfo(finishTransactions: false) // Observer mode
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Track a purchaseInitiated event (this caches the paywall data)
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
+
+        // Use a transaction with the matching product ID so the paywall is attributed
+        let transaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEventWithPurchaseInfo
+    }
+
+    func testSK2TransactionListenerDelegateIncludesOfferingContextInObserverMode() async throws {
+        self.setUpSystemInfo(finishTransactions: false) // Observer mode
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let offeringContext = PresentedOfferingContext(offeringIdentifier: "test_offering")
+
+        // Cache the offering context (as StoreView/PurchaseHandler would do)
+        self.orchestrator.cachePresentedOfferingContext(
+            offeringContext,
+            productIdentifier: Self.testProductId
+        )
+
+        let transaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+    }
+
+    func testSK2TransactionListenerDelegateIncludesPaywallAttributionInNonObserverMode() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Track a purchaseInitiated event (this caches the paywall data)
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
+
+        // Use a transaction with the matching product ID so the paywall is attributed
+        let transaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        // In non-observer mode, the SK2 listener receives transactions from StoreView
+        // and deferred purchases, which should also include paywall attribution.
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEventWithPurchaseInfo
+    }
+
+    func testSK2TransactionListenerDelegateIncludesOfferingContextInNonObserverMode() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let offeringContext = PresentedOfferingContext(offeringIdentifier: "test_offering")
+
+        // Cache the offering context (as StoreView's onInAppPurchaseStart would do)
+        self.orchestrator.cachePresentedOfferingContext(
+            offeringContext,
+            productIdentifier: Self.testProductId
+        )
+
+        let transaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+    }
+
+    func testSK2TransactionListenerDelegateDoesNotIncludeAttributionForRenewals() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Track a purchaseInitiated event and cache an offering context
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
+        self.orchestrator.cachePresentedOfferingContext(
+            PresentedOfferingContext(offeringIdentifier: "test_offering"),
+            productIdentifier: Self.testProductId
+        )
+
+        // Use a transaction with reason .renewal (iOS 17+ provides this)
+        let transaction = MockStoreTransaction(
+            productIdentifier: Self.testProductId,
+            reason: .renewal
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        // Renewal transactions should NOT include paywall or offering attribution
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext).to(beNil())
+    }
+
+    func testRenewalDoesNotConsumeCachedAttributionData() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Track a purchaseInitiated event and cache an offering context
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
+        self.orchestrator.cachePresentedOfferingContext(
+            PresentedOfferingContext(offeringIdentifier: "test_offering"),
+            productIdentifier: Self.testProductId
+        )
+
+        // A renewal arrives first — should NOT consume the cached data
+        let renewalTransaction = MockStoreTransaction(
+            productIdentifier: Self.testProductId,
+            reason: .renewal
+        )
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: renewalTransaction
+        )
+
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext).to(beNil())
+
+        // Now the actual purchase arrives — the cached data should still be available
+        let purchaseTransaction = MockStoreTransaction(
+            productIdentifier: Self.testProductId,
+            reason: .purchase
+        )
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: purchaseTransaction
+        )
+
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+    }
+
+    func testSK2TransactionListenerDoesNotAttributeOfferingContextWhenPurchaseDateIsBeforeCacheDate() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Create a transaction with a purchase date in the past (before the cache date)
+        let pastDate = Date(timeIntervalSince1970: 1000)
+        let transaction = MockStoreTransaction(
+            productIdentifier: Self.testProductId,
+            purchaseDate: pastDate
+        )
+
+        // Cache the offering context AFTER the transaction's purchase date
+        self.orchestrator.cachePresentedOfferingContext(
+            PresentedOfferingContext(offeringIdentifier: "test_offering"),
+            productIdentifier: Self.testProductId
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        // The offering context should NOT be attributed because the transaction's purchase date
+        // is before the cache date (the paywall was shown after the purchase happened)
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext).to(beNil())
+    }
+
+    func testSK2TransactionListenerDelegateIncludesAttributionForPurchaseReason() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Track a purchaseInitiated event and cache an offering context
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
+        self.orchestrator.cachePresentedOfferingContext(
+            PresentedOfferingContext(offeringIdentifier: "test_offering"),
+            productIdentifier: Self.testProductId
+        )
+
+        // Use a transaction with reason .purchase (iOS 17+ provides this)
+        let transaction = MockStoreTransaction(
+            productIdentifier: Self.testProductId,
+            reason: .purchase
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        // Purchase transactions SHOULD include paywall and offering attribution
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+    }
+
+    func testSK2TransactionListenerDelegateIncludesAttributionWhenReasonIsNil() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Track a purchaseInitiated event and cache an offering context
+        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
+        self.orchestrator.cachePresentedOfferingContext(
+            PresentedOfferingContext(offeringIdentifier: "test_offering"),
+            productIdentifier: Self.testProductId
+        )
+
+        // Use a transaction with nil reason (SK1 or SK2 on iOS < 17)
+        let transaction = MockStoreTransaction(
+            productIdentifier: Self.testProductId,
+            reason: nil
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        // When reason is nil, we should still attempt attribution
+        // (the product-ID and date matching will prevent false positives)
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
     }
 
     // MARK: - recordPurchase (handleRecordPurchase)

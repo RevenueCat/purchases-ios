@@ -12,37 +12,63 @@ import RevenueCatUI
 
 extension E2ETestFlowView {
     struct SubscribeFromV1Paywall: View {
-        
-        @State private var offering: Offering?
+
+        enum GetOfferingsState {
+            case loading
+            case loaded(Offering)
+            case failed(Error)
+        }
+
+        @State private var offeringsState: GetOfferingsState = .loading
         @State private var presentPaywall = false
-        
+
         var body: some View {
             VStack {
                 Text("V1 Paywall - alternative offering")
                     .font(.largeTitle)
-                
-                if offering != nil {
+
+                switch offeringsState {
+                case .loading:
+                    Text("Loading offerings...")
+                case .loaded(let offering):
                     Button("Present Paywall") {
                         presentPaywall = true
                     }
                     .buttonStyle(.borderedProminent)
+                    .sheet(isPresented: $presentPaywall) {
+                        PaywallView(offering: offering)
+                    }
+                case .failed(let error):
+                    Text("Error: \(error.localizedDescription)")
+                        .foregroundColor(.red)
                 }
-                else {
-                    Text("Loading offerings...")
-                }
-                
+
                 EntitlementView(identifier: "pro")
             }
             .task {
-                let offerings = try? await Purchases.shared.offerings()
-                self.offering = offerings?.offering(identifier: "paywall_v1")
-            }
-            .sheet(isPresented: $presentPaywall) {
-                if let offering {
-                    PaywallView(offering: offering)
+                do {
+                    let offerings = try await Purchases.shared.offerings()
+                    if let offering = offerings.offering(identifier: "paywall_v1") {
+                        offeringsState = .loaded(offering)
+                    } else {
+                        offeringsState = .failed(OfferingError.notFound)
+                    }
+                } catch {
+                    offeringsState = .failed(error)
                 }
             }
             .multilineTextAlignment(.center)
+        }
+
+        enum OfferingError: LocalizedError {
+            case notFound
+
+            var errorDescription: String? {
+                switch self {
+                case .notFound:
+                    return "Offering 'paywall_v1' not found"
+                }
+            }
         }
     }
 }
