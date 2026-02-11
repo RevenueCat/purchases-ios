@@ -1164,6 +1164,11 @@ platform :ios do
     trigger_action_in_circle_ci(action: 'bump', repo_name: REPO_NAME)
   end
 
+  desc "Trigger dependency update in purchases-hybrid-common"
+  lane :trigger_hybrid_common_update do
+    trigger_action_in_circle_ci(action: 'dependency-update', repo_name: 'purchases-hybrid-common')
+  end
+
   desc "Trigger bump SDK in RC mobile app"
   lane :trigger_bump_sdk_in_rc_mobile_app do
     require 'rest-client'
