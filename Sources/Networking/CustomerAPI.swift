@@ -18,14 +18,22 @@ final class CustomerAPI {
     typealias CustomerInfoResponseHandler = Backend.ResponseHandler<CustomerInfo>
     typealias SimpleResponseHandler = (BackendError?) -> Void
 
+    // swiftlint:disable:next type_name
+    typealias IsPurchaseAllowedByRestoreBehaviorResponseHandler =
+    Backend.ResponseHandler<IsPurchaseAllowedByRestoreBehaviorResponse>
+
     private let backendConfig: BackendConfiguration
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
+    private let isPurchaseAllowedByRestoreBehaviorCallbacksCache:
+    CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>
     private let attributionFetcher: AttributionFetcher
 
     init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
         self.backendConfig = backendConfig
         self.attributionFetcher = attributionFetcher
         self.customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>()
+        self.isPurchaseAllowedByRestoreBehaviorCallbacksCache =
+        CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>()
     }
 
     func getCustomerInfo(appUserID: String,
@@ -85,6 +93,32 @@ final class CustomerAPI {
                                                                         token: adServicesToken,
                                                                         responseHandler: completion)
         self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
+    }
+
+    func isPurchaseAllowedByRestoreBehavior(
+        appUserID: String,
+        transactionJWS: String,
+        isAppBackgrounded: Bool,
+        completion: @escaping IsPurchaseAllowedByRestoreBehaviorResponseHandler
+    ) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let postData = PostIsPurchaseAllowedByRestoreBehaviorOperation.PostData(
+            transactionJWS: transactionJWS
+        )
+        let factory = PostIsPurchaseAllowedByRestoreBehaviorOperation.createFactory(
+            configuration: config,
+            postData: postData,
+            isPurchaseAllowedByRestoreBehaviorCallbackCache: self.isPurchaseAllowedByRestoreBehaviorCallbacksCache
+        )
+        let callback = IsPurchaseAllowedByRestoreBehaviorCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.isPurchaseAllowedByRestoreBehaviorCallbacksCache.add(callback)
+
+        self.backendConfig.addCacheableOperation(
+            with: factory,
+            delay: .default(forBackgroundedApp: isAppBackgrounded),
+            cacheStatus: cacheStatus
+        )
     }
 
     // swiftlint:disable function_parameter_count

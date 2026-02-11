@@ -14,7 +14,6 @@
 
 import Foundation
 
-// swiftlint:disable file_length
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -37,13 +36,6 @@ protocol PaywallCacheWarmingType: Sendable {
 #endif
 }
 
-protocol PaywallImageFetcherType: Sendable {
-
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func downloadImage(_ url: URL) async throws
-
-}
-
 protocol PaywallFontManagerType: Sendable {
 
     func fontIsAlreadyInstalled(fontName: String, fontFamily: String?) -> Bool
@@ -57,7 +49,6 @@ protocol PaywallFontManagerType: Sendable {
 actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
-    private let imageFetcher: PaywallImageFetcherType
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
 
@@ -68,12 +59,10 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
-        imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher(),
         fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
         fileRepository: FileRepositoryType = FileRepository.shared
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
-        self.imageFetcher = imageFetcher
         self.fontsManager = fontsManager
         self.fileRepository = fileRepository
     }
@@ -104,13 +93,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                     guard let self = self else { return }
                     // Preferred method - load with FileRepository
                     _ = try? await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
-
-                    // Legacy method - load with URLSession
-                    do {
-                        try await self.imageFetcher.downloadImage(url)
-                    } catch {
-                        Logger.error(Strings.paywalls.error_prefetching_image(url, error))
-                    }
                 }
             }
         }
@@ -206,17 +188,6 @@ extension PaywallCacheWarming {
 
     private static let urlCache = URLCache(memoryCapacity: 50_000_000, // 50M
                                            diskCapacity: 200_000_000) // 200MB
-}
-
-// MARK: -
-
-private final class DefaultPaywallImageFetcher: PaywallImageFetcherType {
-
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func downloadImage(_ url: URL) async throws {
-        _ = try await PaywallCacheWarming.downloadSession.data(from: url)
-    }
-
 }
 
 // MARK: - Extensions
