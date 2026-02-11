@@ -82,13 +82,22 @@ struct PreviewRequiredPaywallsV2Properties: ViewModifier {
     let screenCondition: ScreenCondition
     let componentViewState: ComponentViewState
     let packageContext: PackageContext?
+    let simulateLoading: Bool
 
     func body(content: Content) -> some View {
-        content
+        let loadingState = PaywallLoadingState()
+        // For previews, simulate loaded state unless testing loading
+        if !simulateLoading {
+            loadingState.setIntroOfferEligibilityLoaded()
+            loadingState.setPromoOfferEligibilityLoaded()
+        }
+
+        return content
             .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: .default()))
             .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
             .environmentObject(PurchaseHandler.default())
             .environmentObject(self.packageContext ?? Self.defaultPackageContext)
+            .environmentObject(loadingState)
             .environment(\.screenCondition, screenCondition)
             .environment(\.componentViewState, componentViewState)
             .environment(\.safeAreaInsets, EdgeInsets())
@@ -102,12 +111,14 @@ extension View {
     func previewRequiredPaywallsV2Properties(
         screenCondition: ScreenCondition = .compact,
         componentViewState: ComponentViewState = .default,
-        packageContext: PackageContext? = nil
+        packageContext: PackageContext? = nil,
+        simulateLoading: Bool = false
     ) -> some View {
         self.modifier(PreviewRequiredPaywallsV2Properties(
             screenCondition: screenCondition,
             componentViewState: componentViewState,
-            packageContext: packageContext
+            packageContext: packageContext,
+            simulateLoading: simulateLoading
         ))
     }
 }

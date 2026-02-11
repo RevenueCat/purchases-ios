@@ -30,6 +30,9 @@ struct StackComponentView: View {
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @EnvironmentObject
+    private var loadingState: PaywallLoadingState
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -62,19 +65,21 @@ struct StackComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = loadingState.introOfferEligibility ||
+            self.introOfferEligibilityContext.isEligible(package: self.packageContext.package)
+        let isEligibleForPromoOffer = loadingState.promoOfferEligibility ||
+            self.paywallPromoOfferCache.isMostLikelyEligible(for: self.packageContext.package)
+
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
                 self.make(style: style)
+                    .redacted(reason: loadingState.isLoadingOfferEligibility ? .placeholder : [])
             }
         }
     }
@@ -309,6 +314,50 @@ struct HorizontalStack: View {
 // swiftlint:disable:next type_body_length
 struct StackComponentView_Previews: PreviewProvider {
     static var previews: some View {
+        // Loading State - Simulates redacted placeholder for offer content
+        StackComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: .init(
+                    components: [
+                        .text(.init(
+                            text: "title",
+                            fontWeight: .bold,
+                            color: .init(light: .hex("#000000")),
+                            fontSize: 24)),
+                        .text(.init(
+                            text: "offer_text",
+                            color: .init(light: .hex("#666666")),
+                            fontSize: 16)),
+                        .text(.init(
+                            text: "price",
+                            fontWeight: .semibold,
+                            color: .init(light: .hex("#007AFF")),
+                            fontSize: 18))
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fit),
+                    spacing: 12,
+                    backgroundColor: .init(light: .hex("#f5f5f5")),
+                    padding: .init(top: 20, bottom: 20, leading: 20, trailing: 20),
+                    shape: .rectangle(.init(topLeading: 12, topTrailing: 12, bottomLeading: 12, bottomTrailing: 12))
+                ),
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "title": .string("Premium Subscription"),
+                        "offer_text": .string("Start your 7-day free trial today!"),
+                        "price": .string("Then $9.99/month")
+                    ]
+                ),
+                colorScheme: .light
+            ),
+            onDismiss: {}
+        )
+        .previewRequiredPaywallsV2Properties(simulateLoading: true)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Loading State (Redacted)")
+
         // Default - Fill
         StackComponentView(
             // swiftlint:disable:next force_try

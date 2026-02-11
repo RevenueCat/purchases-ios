@@ -121,6 +121,9 @@ struct PaywallsV2View: View {
     @StateObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @StateObject
+    private var loadingState: PaywallLoadingState = .init()
+
     public init(
         paywallComponents: Offering.PaywallComponents,
         offering: Offering,
@@ -210,6 +213,7 @@ struct PaywallsV2View: View {
                     .environmentObject(self.purchaseHandler)
                     .environmentObject(self.introOfferEligibilityContext)
                     .environmentObject(self.paywallPromoOfferCache)
+                    .environmentObject(self.loadingState)
                     .disabled(self.purchaseHandler.actionInProgress)
                     .onAppear {
                         self.purchaseHandler.trackPaywallImpression(
@@ -227,13 +231,30 @@ struct PaywallsV2View: View {
                             return
                         }
 
-                        async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
-                            for: paywallState.packages
-                        )
-                        async let promoCheck: Void = paywallPromoOfferCache.computeEligibility(
-                            for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
-                        )
-                        _ = await (introCheck, promoCheck)
+                        // swiftlint:disable:next todo
+                        // TODO: Remove this debug delay before merging
+                        #if DEBUG
+                        try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 second delay
+                        #endif
+
+                        await withTaskGroup(of: Void.self) { group in
+                            group.addTask {
+                                await introOfferEligibilityContext.computeEligibility(
+                                    for: paywallState.packages
+                                )
+                                await MainActor.run {
+                                    loadingState.setIntroOfferEligibilityLoaded()
+                                }
+                            }
+                            group.addTask {
+                                await paywallPromoOfferCache.computeEligibility(
+                                    for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                                )
+                                await MainActor.run {
+                                    loadingState.setPromoOfferEligibilityLoaded()
+                                }
+                            }
+                        }
                         didFinishEligibilityCheck = true
                     }
                     // Note: preferences need to be applied after `.toolbar` call

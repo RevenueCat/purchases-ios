@@ -29,6 +29,9 @@ struct VideoComponentView: View {
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @EnvironmentObject
+    private var loadingState: PaywallLoadingState
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -44,16 +47,17 @@ struct VideoComponentView: View {
     @State var imageSource: PaywallComponent.ThemeImageUrls?
 
     var body: some View {
+        let isEligibleForIntroOffer = loadingState.introOfferEligibility ||
+            self.introOfferEligibilityContext.isEligible(package: self.packageContext.package)
+        let isEligibleForPromoOffer = loadingState.promoOfferEligibility ||
+            self.paywallPromoOfferCache.isMostLikelyEligible(for: self.packageContext.package)
+
         viewModel
             .styles(
                 state: componentViewState,
                 condition: screenCondition,
-                isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                    package: self.packageContext.package
-                ),
-                isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                    for: self.packageContext.package
-                ),
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
                 colorScheme: colorScheme
             ) { style in
                 if style.visible {
@@ -164,6 +168,7 @@ struct VideoComponentView: View {
                     .clipped()
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
+                    .redacted(reason: loadingState.isLoadingOfferEligibility ? .placeholder : [])
                 }
             }
             .onSizeChange { size = $0 }

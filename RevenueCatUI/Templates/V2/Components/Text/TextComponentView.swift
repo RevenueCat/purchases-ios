@@ -31,6 +31,9 @@ struct TextComponentView: View {
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @EnvironmentObject
+    private var loadingState: PaywallLoadingState
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -55,13 +58,14 @@ struct TextComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = loadingState.introOfferEligibility ||
+            self.introOfferEligibilityContext.isEligible(package: self.packageContext.package)
+
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
             packageContext: self.packageContext,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
             promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package),
             countdownTime: countdownTime,
             customVariables: self.customVariables
@@ -80,6 +84,7 @@ struct TextComponentView: View {
                           horizontalAlignment: style.horizontalAlignment)
                     .backgroundStyle(style.backgroundStyle)
                     .padding(style.margin)
+                    .redacted(reason: loadingState.isLoadingOfferEligibility ? .placeholder : [])
             }
         }
     }
@@ -215,6 +220,28 @@ struct TextComponentView_Previews: PreviewProvider {
     static var previews: some View {
         defaultPreview
         .previewDisplayName("Default")
+
+        // Loading State - Simulates redacted placeholder
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("This text will be redacted while loading offers")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000")),
+                    fontSize: 18
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties(simulateLoading: true)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Loading State (Redacted)")
 
         platformPreview
         .previewDisplayName("Detected Platform")

@@ -31,6 +31,9 @@ struct TimelineComponentView: View {
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @EnvironmentObject
+    private var loadingState: PaywallLoadingState
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -46,19 +49,26 @@ struct TimelineComponentView: View {
 
     @State private var maxIconWidth: CGFloat = 0
 
+    private var isEligibleForIntroOffer: Bool {
+        loadingState.introOfferEligibility ||
+            self.introOfferEligibilityContext.isEligible(package: self.packageContext.package)
+    }
+
+    private var isEligibleForPromoOffer: Bool {
+        loadingState.promoOfferEligibility ||
+            self.paywallPromoOfferCache.isMostLikelyEligible(for: self.packageContext.package)
+    }
+
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            )
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer
         ) { style in
             if style.visible {
                 timeline(style: style)
+                    .redacted(reason: loadingState.isLoadingOfferEligibility ? .placeholder : [])
             }
         }
     }
@@ -72,12 +82,8 @@ struct TimelineComponentView: View {
                 item.styles(
                     state: self.componentViewState,
                     condition: self.screenCondition,
-                    isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                        package: self.packageContext.package
-                    ),
-                    isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                        for: self.packageContext.package
-                    )
+                    isEligibleForIntroOffer: isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: isEligibleForPromoOffer
                 ) { itemStyle in
                     if itemStyle.visible {
                         timelineRow(itemStyle: itemStyle, style: style)
@@ -97,12 +103,8 @@ struct TimelineComponentView: View {
                     item.styles(
                         state: self.componentViewState,
                         condition: self.screenCondition,
-                        isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                            package: self.packageContext.package
-                        ),
-                        isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                            for: self.packageContext.package
-                        )
+                        isEligibleForIntroOffer: isEligibleForIntroOffer,
+                        isEligibleForPromoOffer: isEligibleForPromoOffer
                     ) { itemStyle in
                         if itemStyle.visible {
                             let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil

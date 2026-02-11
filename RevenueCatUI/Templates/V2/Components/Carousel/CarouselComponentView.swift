@@ -30,6 +30,9 @@ struct CarouselComponentView: View {
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @EnvironmentObject
+    private var loadingState: PaywallLoadingState
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -45,15 +48,16 @@ struct CarouselComponentView: View {
     @State private var carouselHeight: CGFloat = 0
 
     var body: some View {
+        let isEligibleForIntroOffer = loadingState.introOfferEligibility ||
+            self.introOfferEligibilityContext.isEligible(package: self.packageContext.package)
+        let isEligibleForPromoOffer = loadingState.promoOfferEligibility ||
+            self.paywallPromoOfferCache.isMostLikelyEligible(for: self.packageContext.package)
+
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
@@ -91,6 +95,7 @@ struct CarouselComponentView: View {
                        uiConfigProvider: self.viewModel.uiConfigProvider)
                 .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape())
                 .padding(style.margin)
+                .redacted(reason: loadingState.isLoadingOfferEligibility ? .placeholder : [])
             }
         }
     }

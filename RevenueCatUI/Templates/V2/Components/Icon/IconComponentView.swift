@@ -29,6 +29,9 @@ struct IconComponentView: View {
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @EnvironmentObject
+    private var loadingState: PaywallLoadingState
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -41,15 +44,16 @@ struct IconComponentView: View {
     let viewModel: IconComponentViewModel
 
     var body: some View {
+        let isEligibleForIntroOffer = loadingState.introOfferEligibility ||
+            self.introOfferEligibilityContext.isEligible(package: self.packageContext.package)
+        let isEligibleForPromoOffer = loadingState.promoOfferEligibility ||
+            self.paywallPromoOfferCache.isMostLikelyEligible(for: self.packageContext.package)
+
         self.viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
@@ -70,6 +74,7 @@ struct IconComponentView: View {
                         shape: style.iconBackgroundShape?.toInsettableShape())
                 .padding(style.margin)
                 .size(style.size)
+                .redacted(reason: loadingState.isLoadingOfferEligibility ? .placeholder : [])
             }
         }
     }
