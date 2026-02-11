@@ -20,6 +20,8 @@ final class MockBundle: Bundle {
         case appStoreReceipt
         case emptyReceipt
         case sandboxReceipt
+        case appStoreReceiptMissingOnDisk
+        case sandboxReceiptMissingOnDisk
         case nilURL
 
     }
@@ -38,6 +40,12 @@ final class MockBundle: Bundle {
         case .sandboxReceipt:
             return testBundle
                 .url(forResource: Self.mockSandboxReceiptFileName, withExtension: "txt")
+        case .appStoreReceiptMissingOnDisk:
+            return URL(fileURLWithPath: NSTemporaryDirectory())
+                .appendingPathComponent("missing_appStoreReceipt_\(UUID().uuidString)")
+        case .sandboxReceiptMissingOnDisk:
+            return URL(fileURLWithPath: NSTemporaryDirectory())
+                .appendingPathComponent("missing_sandboxReceipt_\(UUID().uuidString)")
         case .nilURL:
             return nil
         }

@@ -126,7 +126,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
 
     func testUsesReceiptPathBeforePrefetchCompletes() async {
         let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledReceiptEnvironment(
-            receiptURLResult: .sandboxReceipt,
+            receiptURLResult: .sandboxReceiptMissingOnDisk,
             prefetchedReceiptEnvironment: .production
         )
 
@@ -139,7 +139,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
 
     func testUsesPrefetchedReceiptEnvironmentAfterPrefetchCompletes() async {
         let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledReceiptEnvironment(
-            receiptURLResult: .appStoreReceipt,
+            receiptURLResult: .appStoreReceiptMissingOnDisk,
             prefetchedReceiptEnvironment: .sandbox
         )
 
@@ -152,7 +152,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
 
     func testSimulatorAlwaysReturnsTrueEvenBeforePrefetchCompletes() async {
         let (detector, _) = SandboxEnvironmentDetector.withStalledReceiptEnvironment(
-            receiptURLResult: .appStoreReceipt,
+            receiptURLResult: .appStoreReceiptMissingOnDisk,
             inSimulator: true,
             prefetchedReceiptEnvironment: .production
         )
@@ -400,7 +400,7 @@ private extension SandboxEnvironmentDetector {
         receiptURLResult result: MockBundle.ReceiptURLResult = .appStoreReceipt,
         inSimulator: Bool = false,
         macAppStore: Bool = false,
-        receiptEnvironment: AppleReceipt.Environment = .production,
+        receiptEnvironment: AppleReceipt.Environment? = nil,
         failReceiptParsing: Bool = false,
         macAppStoreDetector: MockMacAppStoreDetector? = nil,
         prefetchedReceiptEnvironment: AppleReceipt.Environment? = nil
@@ -408,8 +408,19 @@ private extension SandboxEnvironmentDetector {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
+        let resolvedReceiptEnvironment: AppleReceipt.Environment = receiptEnvironment ?? {
+            switch result {
+            case .sandboxReceipt, .sandboxReceiptMissingOnDisk:
+                return .sandbox
+            case .appStoreReceipt, .appStoreReceiptMissingOnDisk:
+                return .production
+            case .emptyReceipt, .nilURL:
+                return .unknown
+            }
+        }()
+
         let mockReceipt = AppleReceipt(
-            environment: receiptEnvironment,
+            environment: resolvedReceiptEnvironment,
             bundleId: "bundle",
             applicationVersion: "1.0",
             originalApplicationVersion: nil,
@@ -438,6 +449,11 @@ private extension SandboxEnvironmentDetector {
             prefetchedReceipt: prefetchedReceipt,
             failReceiptParsing: failReceiptParsing
         )
+        // If prefetch can use an already available receipt on disk,
+        // make that parsed value match `prefetchedReceiptEnvironment` for these tests.
+        if prefetchedReceiptEnvironment != nil {
+            localReceiptFetcher.usePrefetchedReceipt.value = true
+        }
         mockRequestFetcher.onReceiptFetchCompletion = {
             localReceiptFetcher.usePrefetchedReceipt.value = true
         }
@@ -450,7 +466,7 @@ private extension SandboxEnvironmentDetector {
             requestFetcher: mockRequestFetcher
         )
 
-        await expect(mockRequestFetcher.fetchReceiptCalled.value).toEventually(beTrue())
+        await expect(localReceiptFetcher.fetchAndParseCalled.value).toEventually(beTrue())
 
         return detector
     }
@@ -462,7 +478,7 @@ private extension SandboxEnvironmentDetector {
         receiptURLResult result: MockBundle.ReceiptURLResult = .appStoreReceipt,
         inSimulator: Bool = false,
         macAppStore: Bool = false,
-        receiptEnvironment: AppleReceipt.Environment = .production,
+        receiptEnvironment: AppleReceipt.Environment? = nil,
         failReceiptParsing: Bool = false,
         macAppStoreDetector: MockMacAppStoreDetector? = nil,
         prefetchedReceiptEnvironment: AppleReceipt.Environment? = nil
@@ -470,8 +486,19 @@ private extension SandboxEnvironmentDetector {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
+        let resolvedReceiptEnvironment: AppleReceipt.Environment = receiptEnvironment ?? {
+            switch result {
+            case .sandboxReceipt, .sandboxReceiptMissingOnDisk:
+                return .sandbox
+            case .appStoreReceipt, .appStoreReceiptMissingOnDisk:
+                return .production
+            case .emptyReceipt, .nilURL:
+                return .unknown
+            }
+        }()
+
         let mockReceipt = AppleReceipt(
-            environment: receiptEnvironment,
+            environment: resolvedReceiptEnvironment,
             bundleId: "bundle",
             applicationVersion: "1.0",
             originalApplicationVersion: nil,
@@ -524,6 +551,7 @@ private final class MockLocalReceiptFetcher: LocalReceiptFetcherType {
     let prefetchedReceipt: AppleReceipt
     let failReceiptParsing: Bool
     let usePrefetchedReceipt: Atomic<Bool> = false
+    let fetchAndParseCalled: Atomic<Bool> = false
 
     init(mockReceipt: AppleReceipt, prefetchedReceipt: AppleReceipt, failReceiptParsing: Bool) {
         self.mockReceipt = mockReceipt
@@ -532,6 +560,8 @@ private final class MockLocalReceiptFetcher: LocalReceiptFetcherType {
     }
 
     func fetchAndParseLocalReceipt() throws -> RevenueCat.AppleReceipt {
+        self.fetchAndParseCalled.value = true
+
         if failReceiptParsing {
             throw PurchasesReceiptParser.Error.receiptParsingError
         }
