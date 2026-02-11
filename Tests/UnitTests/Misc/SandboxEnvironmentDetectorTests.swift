@@ -475,7 +475,7 @@ private extension SandboxEnvironmentDetector {
     /// the mock fetcher.
     /// Use `mockFetcher.resumeReceiptFetch()` to complete the prefetch.
     static func withStalledReceiptEnvironment(
-        receiptURLResult result: MockBundle.ReceiptURLResult = .appStoreReceipt,
+        receiptURLResult result: MockBundle.ReceiptURLResult = .appStoreReceiptMissingOnDisk,
         inSimulator: Bool = false,
         macAppStore: Bool = false,
         receiptEnvironment: AppleReceipt.Environment? = nil,

@@ -31,6 +31,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
     private let isRunningInSimulator: Bool
     private let receiptFetcher: LocalReceiptFetcherType
     private let macAppStoreDetector: MacAppStoreDetector?
+    private let operationDispatcher: OperationDispatcher
 
     /// Cached `isSandbox` computed from a prefetched and parsed local receipt.
     /// This is populated asynchronously and used when available.
@@ -47,17 +48,20 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
     ///   - receiptFetcher: The receipt fetcher for macOS receipt parsing.
     ///   - macAppStoreDetector: Detector for macOS App Store detection.
     ///   - requestFetcher: The request fetcher used to refresh the StoreKit 1 receipt.
+    ///   - operationDispatcher: The dispatcher to use when dispatching work
     init(
         bundle: Bundle = .main,
         isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator,
         receiptFetcher: LocalReceiptFetcherType = LocalReceiptFetcher(),
         macAppStoreDetector: MacAppStoreDetector? = nil,
-        requestFetcher: StoreKitRequestFetcher
+        requestFetcher: StoreKitRequestFetcher,
+        operationDispatcher: OperationDispatcher = OperationDispatcher.default
     ) {
         self.bundle = .init(bundle)
         self.isRunningInSimulator = isRunningInSimulator
         self.receiptFetcher = receiptFetcher
         self.macAppStoreDetector = macAppStoreDetector
+        self.operationDispatcher = operationDispatcher
 
         self.prefetchReceiptEnvironment(requestFetcher: requestFetcher)
     }
@@ -67,6 +71,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.isRunningInSimulator = SystemInfo.isRunningInSimulator
         self.receiptFetcher = LocalReceiptFetcher()
         self.macAppStoreDetector = nil
+        self.operationDispatcher = OperationDispatcher.default
     }
 
     var isSandbox: Bool {
@@ -132,15 +137,20 @@ private extension SandboxEnvironmentDetector {
     }
 
     func cacheIsSandboxFromLocalReceiptEnvironment() {
-        guard let environment = try? self.receiptFetcher.fetchAndParseLocalReceipt().environment else {
-            return
-        }
+        operationDispatcher.dispatchOnWorkerThread {
+            // Parsing the receipt must be performed off of the main thread
+            guard let environment = try? self.receiptFetcher.fetchAndParseLocalReceipt().environment else {
+                return
+            }
 
-        guard environment != .unknown else {
-            return
-        }
+            guard environment != .unknown else {
+                return
+            }
 
-        self.cachedIsSandboxFromPrefetchedReceipt.value = environment != .production
+            self.operationDispatcher.dispatchOnMainActor {
+                self.cachedIsSandboxFromPrefetchedReceipt.value = environment != .production
+            }
+        }
     }
 
 }
