@@ -48,6 +48,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
     ///   - receiptFetcher: The receipt fetcher for macOS receipt parsing.
     ///   - macAppStoreDetector: Detector for macOS App Store detection.
     ///   - requestFetcher: The request fetcher used to refresh the StoreKit 1 receipt.
+    ///   - shouldPrefetchReceiptEnvironment: Whether to prefetch receipt environment asynchronously.
     ///   - operationDispatcher: The dispatcher to use when dispatching work
     init(
         bundle: Bundle = .main,
@@ -55,6 +56,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         receiptFetcher: LocalReceiptFetcherType = LocalReceiptFetcher(),
         macAppStoreDetector: MacAppStoreDetector? = nil,
         requestFetcher: StoreKitRequestFetcher,
+        shouldPrefetchReceiptEnvironment: Bool = true,
         operationDispatcher: OperationDispatcher = OperationDispatcher.default
     ) {
         self.bundle = .init(bundle)
@@ -63,7 +65,9 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.macAppStoreDetector = macAppStoreDetector
         self.operationDispatcher = operationDispatcher
 
-        self.prefetchReceiptEnvironment(requestFetcher: requestFetcher)
+        if shouldPrefetchReceiptEnvironment {
+            self.prefetchReceiptEnvironment(requestFetcher: requestFetcher)
+        }
     }
 
     private init() {
