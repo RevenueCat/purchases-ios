@@ -119,7 +119,13 @@ private extension SandboxEnvironmentDetector {
     func prefetchReceiptEnvironment(requestFetcher: StoreKitRequestFetcher) {
         // If there's already a receipt on disk, use it and avoid refreshing.
         guard !self.hasLocalReceiptOnDisk else {
-            self.cacheIsSandboxFromLocalReceiptEnvironment()
+            self.cacheIsSandboxFromLocalReceiptEnvironment { didCache in
+                guard !didCache else { return }
+
+                requestFetcher.fetchReceiptData {
+                    self.cacheIsSandboxFromLocalReceiptEnvironment()
+                }
+            }
             return
         }
 
@@ -136,19 +142,23 @@ private extension SandboxEnvironmentDetector {
         return FileManager.default.fileExists(atPath: receiptURL.path)
     }
 
-    func cacheIsSandboxFromLocalReceiptEnvironment() {
+    func cacheIsSandboxFromLocalReceiptEnvironment(completion: (@Sendable (Bool) -> Void)? = nil) {
         operationDispatcher.dispatchOnWorkerThread {
             // Parsing the receipt must be performed off of the main thread
             guard let environment = try? self.receiptFetcher.fetchAndParseLocalReceipt().environment else {
+                completion?(false)
                 return
             }
 
             guard environment != .unknown else {
+                completion?(false)
                 return
             }
 
+            let isSandbox = environment != .production
             self.operationDispatcher.dispatchOnMainActor {
-                self.cachedIsSandboxFromPrefetchedReceipt.value = environment != .production
+                self.cachedIsSandboxFromPrefetchedReceipt.value = isSandbox
+                completion?(true)
             }
         }
     }
