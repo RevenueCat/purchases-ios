@@ -60,19 +60,23 @@ struct VideoComponentView: View {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
 
                     ZStack {
-                        if imageSource == nil && cachedURL == nil {
-                            // greedily fill space while loading occurs
-                            render(Color.clear, size: size, with: style)
-                        }
+                        // Always render spacer for sizing (needed for fixed-size videos)
+                        render(Color.clear, size: size, with: style)
 
-                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
+                        // Always show thumbnail as base layer while video loads/prepares
+                        if let thumbnailSource = imageSource ?? viewModel.imageSource,
+                           let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: imageSource, fitMode: style.contentMode == .fill ? .fill : .fit)
+                            component: .init(
+                                source: thumbnailSource,
+                                fitMode: style.contentMode == .fill ? .fill : .fit
+                            )
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
                         }
 
+                        // Video on top (will cover thumbnail once it renders first frame)
                         if let cachedURL {
                             render(
                                 VideoPlayerView(
@@ -86,6 +90,7 @@ struct VideoComponentView: View {
                                 size: size,
                                 with: style
                             )
+                            .transition(.opacity.animation(.easeIn(duration: 0.3)))
                         }
                     }
                     .onAppear {
