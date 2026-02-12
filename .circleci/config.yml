@@ -2231,10 +2231,16 @@ workflows:
       - emerge_purchases_ui_snapshot_tests
 
       # =============================================================
-      # Summary gate: all tests passed
+      # Release tagging: only on release branches
+      # Requires both release-checks and all other tasks to pass
+      # before the hold can be approved.
       # =============================================================
-      - all-tasks-passed:
+      - release-checks:
+          <<: *release-branches
+      - approve-release:
+          type: approval
           requires:
+            - release-checks
             - check-api-changes
             - run-all-maestro-e2e-tests
             - lint
@@ -2277,22 +2283,12 @@ workflows:
             - api-tests
             - deploy-purchase-tester
             - emerge_binary_size_analysis
-
-      # =============================================================
-      # Release tagging: only on release branches
-      # Requires both release-checks and all-tasks-passed before
-      # the hold can be approved.
-      # =============================================================
-      - release-checks:
-          <<: *release-branches
-      - approve-release:
-          type: approval
-          requires:
-            - release-checks
-            - all-tasks-passed
           <<: *release-branches
       - tag-release-branch:
           requires:
             - approve-release
           <<: *release-branches
+      - all-tasks-passed:
+          requires:
+            - tag-release-branch
 
