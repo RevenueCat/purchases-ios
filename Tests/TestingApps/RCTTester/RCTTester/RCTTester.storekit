@@ -9,7 +9,7 @@
       }
     ]
   },
-  "identifier" : "0509F812",
+  "identifier" : "D2C642F9",
   "nonRenewingSubscriptions" : [
 
   ],
@@ -17,10 +17,10 @@
     {
       "displayPrice" : "99.99",
       "familyShareable" : false,
-      "internalID" : "D8AC29AE",
+      "internalID" : "52E62DEB",
       "localizations" : [
         {
-          "description" : "One-time purchase for the Premium entitlement",
+          "description" : "Lifetime purchase for the Premium entitlement",
           "displayName" : "Premium lifetime",
           "locale" : "en_US"
         }
@@ -28,6 +28,21 @@
       "productID" : "com.revenuecat.rcttester.premium_lifetime",
       "referenceName" : "Premium lifetime",
       "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "5DDF05F9",
+      "localizations" : [
+        {
+          "description" : "A small tip purchase to test consumables",
+          "displayName" : "Small tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "small_tip",
+      "referenceName" : "Small tip",
+      "type" : "Consumable"
     }
   ],
   "settings" : {
@@ -46,7 +61,7 @@
   },
   "subscriptionGroups" : [
     {
-      "id" : "9389359A",
+      "id" : "55A8C000",
       "localizations" : [
 
       ],
@@ -62,7 +77,7 @@
           "displayPrice" : "9.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "7D7F0BED",
+          "internalID" : "5E102C02",
           "introductoryOffer" : null,
           "localizations" : [
             {
@@ -74,7 +89,7 @@
           "productID" : "com.revenuecat.rcttester.premium_monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Premium monthly",
-          "subscriptionGroupID" : "9389359A",
+          "subscriptionGroupID" : "55A8C000",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
 
@@ -90,7 +105,7 @@
           "displayPrice" : "79.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "13D9BF5C",
+          "internalID" : "761D6906",
           "introductoryOffer" : null,
           "localizations" : [
             {
@@ -102,7 +117,72 @@
           "productID" : "com.revenuecat.rcttester.premium_yearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Premium yearly",
-          "subscriptionGroupID" : "9389359A",
+          "subscriptionGroupID" : "55A8C000",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    },
+    {
+      "id" : "AE6D2E18",
+      "localizations" : [
+
+      ],
+      "name" : "RCTTester Lite",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "9.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "96CA5E6B",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Monthly subscription for the Lite entitlement",
+              "displayName" : "Lite yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.rcttester.lite_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Lite monthly",
+          "subscriptionGroupID" : "AE6D2E18",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "79.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "04DBA1ED",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Yearly subscription for the Lite entitlement",
+              "displayName" : "Lite yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.rcttester.lite_yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Lite yearly",
+          "subscriptionGroupID" : "AE6D2E18",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
 
