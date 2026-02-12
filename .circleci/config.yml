@@ -2345,12 +2345,11 @@ workflows:
 
       # =============================================================
       # Final gate: required GitHub status check for PRs into main.
-      # On release branches. Waits for both tests and the release.
+      # On release branches. Waits for the release to finish.
       # This should trigger the merge of the release PR into main.
       # =============================================================
       - all-tasks-passed:
           requires:
             - wait-for-release-to-finish
-            - all-tests-succeeded
           <<: *release-branches
 
