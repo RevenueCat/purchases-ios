@@ -1681,7 +1681,7 @@ jobs:
           name: Trigger RC App Pipeline
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
-  all-tasks-finished:
+  all-tasks-passed:
     docker:
       - image: cimg/base:stable
     resource_class: small
@@ -1935,7 +1935,7 @@ workflows:
       # =============================================================
       # Summary gate: blocks merge until all Full Test Suite jobs pass
       # =============================================================
-      - all-tasks-finished:
+      - all-tasks-passed:
           requires:
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
@@ -2233,7 +2233,7 @@ workflows:
       # =============================================================
       # Summary gate: all tests passed
       # =============================================================
-      - all-tasks-finished:
+      - all-tasks-passed:
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
@@ -2280,7 +2280,7 @@ workflows:
 
       # =============================================================
       # Release tagging: only on release branches
-      # Requires both release-checks and all-tasks-finished before
+      # Requires both release-checks and all-tasks-passed before
       # the hold can be approved.
       # =============================================================
       - release-checks:
@@ -2289,7 +2289,7 @@ workflows:
           type: approval
           requires:
             - release-checks
-            - all-tasks-finished
+            - all-tasks-passed
           <<: *release-branches
       - tag-release-branch:
           requires:
