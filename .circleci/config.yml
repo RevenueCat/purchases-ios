@@ -1933,10 +1933,22 @@ workflows:
             - slack-secrets
 
       # =============================================================
-      # Summary gate: blocks merge until all Full Test Suite jobs pass
+      # Summary gate: blocks merge until all jobs pass
       # =============================================================
       - all-tasks-passed:
           requires:
+            # Reduced Test Suite
+            - lint
+            - check-api-changes
+            - validate-package-swift-5.8
+            - run-test-ios-26
+            - pod-lib-lint
+            - run-revenuecat-ui-ios-26
+            - emerge_purchases_ui_snapshot_tests
+            - emerge_binary_size_analysis
+            - build-tv-watch-and-macos
+            - build-visionos
+            # Full Test Suite
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
             - backend-integration-tests-custom-entitlements
