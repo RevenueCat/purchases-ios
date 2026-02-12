@@ -1684,28 +1684,7 @@ jobs:
           name: Trigger RC App Pipeline
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
-  merge-release-pr:
-    docker:
-      - image: cimg/ruby:3.2.0
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
-    steps:
-      - checkout
-      - install-rubydocker-dependencies
-      - run:
-          name: Merge release PR
-          command: bundle exec fastlane merge_release_pr
-
-  full-suite-gate:
-    docker:
-      - image: cimg/base:stable
-    resource_class: small
-    steps:
-      - run:
-          name: Full suite gate passed
-          command: echo "Tier 1 passed and full tests approved - unlocking Tier 2"
-
-  all-tests-passed:
+  all-tasks-passed:
     docker:
       - image: cimg/base:stable
     resource_class: small
@@ -1756,7 +1735,7 @@ workflows:
               value: << pipeline.git.branch >>
     jobs:
       # =============================================================
-      # Tier 1: Auto-run on every push
+      # Reduced Test Suite: Auto-run on every push
       # =============================================================
       - lint
       - check-api-changes:
@@ -1775,20 +1754,193 @@ workflows:
       - build-visionos
 
       # =============================================================
-      # Hold gate: can be approved immediately, no need to wait for
-      # Tier 1.
+      # Hold gate for the Full Test Suite
       # =============================================================
       - approve-full-tests:
           type: approval
 
       # =============================================================
-      # Full suite gate: unlocks Tier 2 jobs. Requires BOTH the hold
-      # approval AND all Tier 1 jobs to pass. This allows maintainers
-      # to approve early while Tier 1 is still running.
+      # Full Test Suite: Gated behind approve-full-tests
       # =============================================================
-      - full-suite-gate:
+
+      # Backend Integration Tests
+      - backend-integration-tests-SK1:
           requires:
             - approve-full-tests
+          context:
+            - slack-secrets
+      - backend-integration-tests-SK2:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - backend-integration-tests-custom-entitlements:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - backend-integration-tests-other:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+
+      # Older iOS Version Tests
+      - run-test-ios-18:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-test-ios-14:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-test-ios-15:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-test-ios-16:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-test-ios-17:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+
+      # Platform Runtime Tests
+      - run-test-macos:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-test-tvos:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-test-watchos:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+
+      # RevenueCatUI Tests
+      - run-revenuecat-ui-ios-18:
+          requires:
+            - approve-full-tests
+      - spm-revenuecat-ui-ios-15:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - spm-revenuecat-ui-ios-16:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-17:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - spm-revenuecat-ui-watchos:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+
+      # Installation Tests
+      - installation-tests-cocoapods:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - installation-tests-swift-package-manager:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - installation-tests-custom-entitlement-computation-swift-package-manager:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - installation-tests-carthage:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - installation-tests-xcode-direct-integration:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - installation-tests-receipt-parser:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+
+      # SPM / Other Build Tests
+      - spm-release-build:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - spm-release-build-xcode-14:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - spm-release-build-xcode-15:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - api-tests:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - spm-receipt-parser:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - deploy-purchase-tester:
+          dry_run: true
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-all-maestro-e2e-tests:
+          requires:
+            - approve-full-tests
+          context:
+            - e2e-tests
+            - slack-secrets
+      - docs-build:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+
+      # =============================================================
+      # Summary gate: blocks merge until all jobs pass
+      # =============================================================
+      - all-tasks-passed:
+          requires:
+            # Reduced Test Suite
             - lint
             - check-api-changes
             - validate-package-swift-5.8
@@ -1799,189 +1951,7 @@ workflows:
             - emerge_binary_size_analysis
             - build-tv-watch-and-macos
             - build-visionos
-
-      # =============================================================
-      # Tier 2: Gated behind full-suite-gate
-      # =============================================================
-
-      # Backend Integration Tests
-      - backend-integration-tests-SK1:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - backend-integration-tests-SK2:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - backend-integration-tests-custom-entitlements:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - backend-integration-tests-other:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - backend-integration-tests-offline:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-
-      # Older iOS Version Tests
-      - run-test-ios-18:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - run-test-ios-14:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - run-test-ios-15:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - run-test-ios-16:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - run-test-ios-17:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-
-      # Platform Runtime Tests
-      - run-test-macos:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - run-test-tvos:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - run-test-watchos:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-
-      # RevenueCatUI Tests
-      - run-revenuecat-ui-ios-18:
-          requires:
-            - full-suite-gate
-      - spm-revenuecat-ui-ios-15:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - spm-revenuecat-ui-ios-16:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - run-revenuecat-ui-ios-17:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - spm-revenuecat-ui-watchos:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-
-      # Installation Tests
-      - installation-tests-cocoapods:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - installation-tests-swift-package-manager:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - installation-tests-custom-entitlement-computation-swift-package-manager:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - installation-tests-carthage:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - installation-tests-xcode-direct-integration:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - installation-tests-receipt-parser:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-
-      # SPM / Other Build Tests
-      - spm-release-build:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - spm-release-build-xcode-14:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - spm-release-build-xcode-15:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - api-tests:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - spm-receipt-parser:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - deploy-purchase-tester:
-          dry_run: true
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-      - run-all-maestro-e2e-tests:
-          requires:
-            - full-suite-gate
-          context:
-            - e2e-tests
-            - slack-secrets
-      - docs-build:
-          requires:
-            - full-suite-gate
-          context:
-            - slack-secrets
-
-      # =============================================================
-      # Summary gate: blocks merge until all Tier 2 jobs pass
-      # Add "ci/circleci: all-tests-passed" as a required check in GitHub
-      # =============================================================
-      - all-tests-passed:
-          requires:
+            # Full Test Suite
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
             - backend-integration-tests-custom-entitlements
@@ -2152,7 +2122,7 @@ workflows:
   #   - Parameter Type: string
   #   - Name: action
   #   - Value: run-manual-tests
-  ci:
+  release-or-main:
     when:
       and:
         - not:
@@ -2286,7 +2256,7 @@ workflows:
       # =============================================================
       # Summary gate: all tests passed
       # =============================================================
-      - all-tests-passed:
+      - all-tasks-passed:
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
@@ -2333,7 +2303,7 @@ workflows:
 
       # =============================================================
       # Release tagging: only on release branches
-      # Requires both release-checks and all-tests-passed before
+      # Requires both release-checks and all-tasks-passed before
       # the hold can be approved.
       # =============================================================
       - release-checks:
@@ -2342,7 +2312,7 @@ workflows:
           type: approval
           requires:
             - release-checks
-            - all-tests-passed
+            - all-tasks-passed
           <<: *release-branches
       - tag-release-branch:
           requires:
