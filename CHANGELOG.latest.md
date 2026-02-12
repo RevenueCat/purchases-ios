@@ -1,13 +1,10 @@
-## RevenueCat SDK
-### ✨ New Features
-* [CEC Mode]: Introduce isPurchaseAllowedByRestoreBehavior() (#6192) via Will Taylor (@fire-at-will)
-
 ## RevenueCatUI SDK
 ### Paywallv2
 #### 🐞 Bugfixes
-* Fix product.currency_symbol to use product currency instead of locale (#6209) via Facundo Menzella (@facumenzella)
+* fix: improve video autoplay with thumbnail fallback and fade transition (#6186) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Cache `presentedOfferingContext` when making a purchase from a paywall (#6228) via Antonio Pallares (@ajpallares)
-* Add XCFramework installation tests to the release checks (#6195) via Rick (@rickvdl)
-* Deprioritize debug health check to avoid blocking user-facing requests at startup (#6230) via Antonio Pallares (@ajpallares)
+* Add custom StoreKit config support to PaywallsTester (#6237) via Facundo Menzella (@facumenzella)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5951) via RevenueCat Git Bot (@RCGitBot)
+* Adds support for Compose Resources (#6239) via JayShortway (@JayShortway)
+* Include attribution data in POST /receipt when using SK2 in Observer mode (#6233) via Antonio Pallares (@ajpallares)
