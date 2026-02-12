@@ -1152,15 +1152,6 @@ platform :ios do
     pod_push_with_error_handling(path: "RevenueCatUI.podspec", synchronous: true)
   end
 
-  desc "Check that the release PR is approved by an org member with write permissions"
-  lane :check_release_pr_approved do
-    if check_pr_approved
-      UI.success("Release PR is approved by an org member with write permissions!")
-    else
-      UI.user_error!("Release PR is not approved by an org member with write permissions. The release PR must be approved before tagging.")
-    end
-  end
-
   desc "Tag current branch with current version number"
   lane :tag_current_branch do |options|
     version_number = current_version_number
