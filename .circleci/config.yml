@@ -710,7 +710,7 @@ jobs:
   run-revenuecat-ui-ios-26:
     executor:
       name: macos-executor
-      xcode_version: "26.2"
+      xcode_version: "26.3"
 
     steps:
       - checkout
@@ -797,7 +797,7 @@ jobs:
   run-test-ios-26:
     executor:
       name: macos-executor
-      xcode_version: "26.2"
+      xcode_version: "26.3"
     steps:
       - checkout
       - install-dependencies
@@ -1097,7 +1097,7 @@ jobs:
   run-all-maestro-e2e-tests:
     executor:
       name: macos-executor
-      xcode_version: "26.2"
+      xcode_version: "26.3"
     steps:
       - macos/preboot-simulator:
           version: "18.6"
