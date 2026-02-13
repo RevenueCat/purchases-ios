@@ -744,10 +744,9 @@ extension VariablesV2 {
             return discount.localizedPriceString
         }
 
-        return formattedPrice(
+        return formatter.priceStringWithZeroDecimalFormatting(
             discount.localizedPriceString,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-            formatter: formatter
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         )
     }
 
@@ -782,7 +781,8 @@ extension VariablesV2 {
             return ""
         }
 
-        return formattedPrice(priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices, formatter: formatter)
+        return formatter.priceStringWithZeroDecimalFormatting(
+            priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
     func productOfferPricePerWeek(
@@ -816,7 +816,8 @@ extension VariablesV2 {
             return ""
         }
 
-        return formattedPrice(priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices, formatter: formatter)
+        return formatter.priceStringWithZeroDecimalFormatting(
+            priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
     func productOfferPricePerMonth(
@@ -850,7 +851,8 @@ extension VariablesV2 {
             return ""
         }
 
-        return formattedPrice(priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices, formatter: formatter)
+        return formatter.priceStringWithZeroDecimalFormatting(
+            priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
     func productOfferPricePerYear(
@@ -884,7 +886,8 @@ extension VariablesV2 {
             return ""
         }
 
-        return formattedPrice(priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices, formatter: formatter)
+        return formatter.priceStringWithZeroDecimalFormatting(
+            priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
     func productOfferPeriod(
@@ -1141,31 +1144,6 @@ private extension VariablesV2 {
     ) -> StoreProductDiscount? {
         let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
         return promoOffer?.discount ?? introDiscount
-    }
-
-    func formattedPrice(
-        _ priceString: String,
-        showZeroDecimalPlacePrices: Bool,
-        formatter: NumberFormatter
-    ) -> String {
-        guard showZeroDecimalPlacePrices else {
-            return priceString
-        }
-
-        guard let price = formatter.number(from: priceString)?.doubleValue else {
-            return priceString
-        }
-
-        let roundedPrice = round(price * 100) / 100.0
-        guard roundedPrice.truncatingRemainder(dividingBy: 1) == 0 else {
-            return priceString
-        }
-
-        guard let copy = formatter.copy() as? NumberFormatter else {
-            return priceString
-        }
-        copy.maximumFractionDigits = 0
-        return copy.string(from: NSNumber(value: price)) ?? priceString
     }
 
 }
