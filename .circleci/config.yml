@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        run-installation-tests
       ]
     default: default
   generate_snapshots:
@@ -2176,3 +2177,10 @@ workflows:
           context:
             - slack-secrets
 
+  manual-trigger-installation-tests:
+    when:
+      equal: [run-installation-tests, << pipeline.parameters.action >>]
+    jobs:
+      - installation-tests:
+          context:
+            - slack-secrets
