@@ -99,6 +99,7 @@ class TextComponentViewModel {
         apply(style)
     }
 
+    // swiftlint:disable:next function_parameter_count
     private static func processText(
         _ text: String,
         packageContext: PackageContext,
@@ -134,6 +135,7 @@ class TextComponentViewModel {
         return processedWithV2AndV1
     }
 
+    // swiftlint:disable:next function_parameter_count
     private static func processTextV2(
         _ text: String,
         packageContext: PackageContext,
