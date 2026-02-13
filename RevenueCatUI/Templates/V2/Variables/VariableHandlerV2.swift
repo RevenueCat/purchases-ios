@@ -740,7 +740,15 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        return discount.localizedPriceString
+        guard let formatter = package.storeProduct.priceFormatter else {
+            return discount.localizedPriceString
+        }
+
+        return formattedPrice(
+            discount.localizedPriceString,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            formatter: formatter
+        )
     }
 
     func productOfferPricePerDay(
@@ -770,7 +778,11 @@ extension VariablesV2 {
             return ""
         }
 
-        return formatter.string(from: price as NSDecimalNumber) ?? ""
+        guard let priceString = formatter.string(from: price as NSDecimalNumber) else {
+            return ""
+        }
+
+        return formattedPrice(priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices, formatter: formatter)
     }
 
     func productOfferPricePerWeek(
@@ -800,7 +812,11 @@ extension VariablesV2 {
             return ""
         }
 
-        return formatter.string(from: price as NSDecimalNumber) ?? ""
+        guard let priceString = formatter.string(from: price as NSDecimalNumber) else {
+            return ""
+        }
+
+        return formattedPrice(priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices, formatter: formatter)
     }
 
     func productOfferPricePerMonth(
@@ -830,7 +846,11 @@ extension VariablesV2 {
             return ""
         }
 
-        return formatter.string(from: price as NSDecimalNumber) ?? ""
+        guard let priceString = formatter.string(from: price as NSDecimalNumber) else {
+            return ""
+        }
+
+        return formattedPrice(priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices, formatter: formatter)
     }
 
     func productOfferPricePerYear(
@@ -860,7 +880,11 @@ extension VariablesV2 {
             return ""
         }
 
-        return formatter.string(from: price as NSDecimalNumber) ?? ""
+        guard let priceString = formatter.string(from: price as NSDecimalNumber) else {
+            return ""
+        }
+
+        return formattedPrice(priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices, formatter: formatter)
     }
 
     func productOfferPeriod(
@@ -1117,6 +1141,31 @@ private extension VariablesV2 {
     ) -> StoreProductDiscount? {
         let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
         return promoOffer?.discount ?? introDiscount
+    }
+
+    func formattedPrice(
+        _ priceString: String,
+        showZeroDecimalPlacePrices: Bool,
+        formatter: NumberFormatter
+    ) -> String {
+        guard showZeroDecimalPlacePrices else {
+            return priceString
+        }
+
+        guard let price = formatter.number(from: priceString)?.doubleValue else {
+            return priceString
+        }
+
+        let roundedPrice = round(price * 100) / 100.0
+        guard roundedPrice.truncatingRemainder(dividingBy: 1) == 0 else {
+            return priceString
+        }
+
+        guard let copy = formatter.copy() as? NumberFormatter else {
+            return priceString
+        }
+        copy.maximumFractionDigits = 0
+        return copy.string(from: NSNumber(value: price)) ?? priceString
     }
 
 }
