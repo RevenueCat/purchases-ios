@@ -105,7 +105,11 @@ struct VideoComponentView: View {
                                     muteAudio: style.muteAudio
                                 )
                                 // Recreate player when becoming playable again (carousel navigation).
-                                // URL changes are handled by the player's updateVideoIfNeeded method.
+                                // swiftlint:disable:next todo
+                                // TODO: Add cachedURL back to .id() once we find a way to swap
+                                // video URLs without visual glitches. Currently, iOS AVPlayer
+                                // causes visible stuttering when replacing items mid-playback,
+                                // so the high-res version is only used on next paywall open.
                                 .id(playerRefreshToggle),
                                 size: size,
                                 with: style

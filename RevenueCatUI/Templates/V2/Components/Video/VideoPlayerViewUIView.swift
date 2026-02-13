@@ -30,19 +30,51 @@ extension AVPlayer: VideoPlaybackController {
 
 struct VideoPlayerUIView: UIViewControllerRepresentable {
     let videoURL: URL
-    let shouldAutoPlay: Bool
     let contentMode: ContentMode
-    let loopVideo: Bool
     let showControls: Bool
-    let muteAudio: Bool
+    let player: AVPlayer
+    let looper: AVPlayerLooper?
+
+    init(
+        videoURL: URL,
+        shouldAutoPlay: Bool,
+        contentMode: ContentMode,
+        loopVideo: Bool,
+        showControls: Bool,
+        muteAudio: Bool
+    ) {
+        self.videoURL = videoURL
+        self.contentMode = contentMode
+        self.showControls = showControls
+
+        let playerItem = AVPlayerItem(url: videoURL)
+
+        let avPlayer: AVPlayer
+        if loopVideo {
+            let aVQueuePlayer = AVQueuePlayer()
+            self.looper = AVPlayerLooper(player: aVQueuePlayer, templateItem: playerItem)
+            avPlayer = aVQueuePlayer
+        } else {
+            avPlayer = AVPlayer(playerItem: playerItem)
+            avPlayer.actionAtItemEnd = .pause
+            self.looper = nil
+        }
+
+        avPlayer.isMuted = muteAudio
+        #if !os(visionOS)
+        avPlayer.preventsDisplaySleepDuringVideoPlayback = false
+        avPlayer.allowsExternalPlayback = false
+        #endif
+
+        self.player = avPlayer
+
+        if shouldAutoPlay {
+            avPlayer.play()
+        }
+    }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(
-            videoURL: videoURL,
-            shouldAutoPlay: shouldAutoPlay,
-            loopVideo: loopVideo,
-            muteAudio: muteAudio
-        )
+        Coordinator(player: player)
     }
 
     func makeUIViewController(context: Context) -> AVPlayerViewController {
@@ -62,7 +94,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         }
 
         let controller = AVPlayerViewController()
-        controller.player = context.coordinator.player
+        controller.player = player
         controller.view.backgroundColor = .clear
         controller.showsPlaybackControls = showControls
         // When controls are hidden, disable user interaction to allow carousel swipes to pass through.
@@ -87,17 +119,9 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         return controller
     }
 
-    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
-        // Don't swap video URL during playback to avoid visual glitches.
-        // Unlike Android which swaps the video source and preserves playback position,
-        // iOS AVPlayer causes visible stuttering when replacing items mid-playback.
-        // The high-res version will be used on next paywall open once cached.
-    }
+    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) { }
 
     class Coordinator {
-
-        let player: AVPlayer
-        private(set) var looper: AVPlayerLooper?
 
         var previousCategory: AVAudioSession.Category?
         var previousMode: AVAudioSession.Mode?
@@ -105,49 +129,14 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
 
         private let autoplayHandler: VideoAutoplayHandler
 
-        init(
-            videoURL: URL,
-            shouldAutoPlay: Bool,
-            loopVideo: Bool,
-            muteAudio: Bool
-        ) {
-            let playerItem = AVPlayerItem(url: videoURL)
-
-            let avPlayer: AVPlayer
-            if loopVideo {
-                let queuePlayer = AVQueuePlayer()
-                self.looper = AVPlayerLooper(player: queuePlayer, templateItem: playerItem)
-                avPlayer = queuePlayer
-            } else {
-                avPlayer = AVPlayer(playerItem: playerItem)
-                avPlayer.actionAtItemEnd = .pause
-                self.looper = nil
-            }
-
-            avPlayer.isMuted = muteAudio
-            #if !os(visionOS)
-            avPlayer.preventsDisplaySleepDuringVideoPlayback = false
-            avPlayer.allowsExternalPlayback = false
-            #endif
-
-            self.player = avPlayer
-
+        init(player: AVPlayer) {
             self.autoplayHandler = VideoAutoplayHandler(
-                playbackController: avPlayer,
+                playbackController: player,
                 lifecycleObserver: SystemAppLifecycleObserver()
             )
-
-            if shouldAutoPlay {
-                avPlayer.play()
-            }
         }
 
         deinit {
-            // Clean up player to prevent retain cycles
-            player.pause()
-            player.replaceCurrentItem(with: nil)
-            looper?.disableLooping()
-
             guard let category = previousCategory,
                   let mode = previousMode,
                   let options = previousOptions else {
