@@ -1944,6 +1944,8 @@ platform :ios do
     dry_run = options[:dry_run] || false
 
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+    bundle_id = "com.revenuecat.rcttester"
+    provisioning_profile_name = "match AppStore #{bundle_id}"
 
     # Build release notes with SDK version and optional commit hash
     sdk_version = current_version_number
@@ -1985,7 +1987,7 @@ platform :ios do
 
     # Get the latest TestFlight build number and increment
     latest_build = latest_testflight_build_number(
-      app_identifier: "com.revenuecat.rcttester",
+      app_identifier: bundle_id,
       platform: 'ios'
     )
 
@@ -2000,7 +2002,7 @@ platform :ios do
         signingStyle: "manual",
         manageAppVersionAndBuildNumber: false,
         provisioningProfiles: {
-          "com.revenuecat.rcttester" => "match AppStore com.revenuecat.rcttester",
+          bundle_id => provisioning_profile_name,
         }
       }
     )
@@ -2011,7 +2013,7 @@ platform :ios do
     if not dry_run
       upload_to_testflight(
         changelog: changelog,
-        app_identifier: "com.revenuecat.rcttester",
+        app_identifier: bundle_id,
         wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
       )
     else
