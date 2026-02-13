@@ -38,11 +38,22 @@ struct VideoComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.carouselState)
+    private var carouselState
+
     @State var size: CGSize = .zero
 
-    @State private var stagedURL: URL?
     @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
+
+    /// Tracks whether this page is active or adjacent in a carousel.
+    /// Updated via onChange to ensure SwiftUI detects the change.
+    @State private var isPlayable: Bool = true
+
+    /// Toggled when transitioning from non-playable to playable state.
+    /// Used as part of the VideoPlayerView's identity to force recreation,
+    /// ensuring autoplay triggers correctly when the page becomes visible again.
+    @State private var playerRefreshToggle: Bool = false
 
     var body: some View {
         viewModel
@@ -61,20 +72,29 @@ struct VideoComponentView: View {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
 
                     ZStack {
-                        if imageSource == nil && cachedURL == nil {
-                            // greedily fill space while loading occurs
-                            render(Color.clear, size: size, with: style)
-                        }
+                        // Determine if video player will render
+                        let willShowVideo = cachedURL != nil && isPlayable
 
-                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
+                        // Always render spacer for sizing (needed for fixed-size videos)
+                        render(Color.clear, size: size, with: style)
+
+                        // Always show thumbnail as base layer while video loads/prepares
+                        if let thumbnailSource = imageSource ?? viewModel.imageSource,
+                           let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: imageSource, fitMode: style.contentMode == .fill ? .fill : .fit)
+                            component: .init(
+                                source: thumbnailSource,
+                                fitMode: style.contentMode == .fill ? .fill : .fit
+                            )
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
                         }
 
-                        if let cachedURL {
+                        // Only create VideoPlayerView when on active carousel page (or not in carousel)
+                        // This prevents multiple AVPlayer instances from competing for resources
+                        // Video layers on top of thumbnail once ready
+                        if let cachedURL, willShowVideo {
                             render(
                                 VideoPlayerView(
                                     videoURL: cachedURL,
@@ -83,10 +103,13 @@ struct VideoComponentView: View {
                                     showControls: style.showControls,
                                     loopVideo: style.loop,
                                     muteAudio: style.muteAudio
-                                ),
+                                )
+                                // Recreate player when becoming playable or URL changes.
+                                .id("\(cachedURL)-\(playerRefreshToggle)"),
                                 size: size,
                                 with: style
                             )
+                            .transition(.opacity.animation(.easeIn(duration: 0.3)))
                         }
                     }
                     .onAppear {
@@ -107,20 +130,24 @@ struct VideoComponentView: View {
                                         )
                                     guard url != cachedURL, !Task.isCancelled else { return }
                                     await MainActor.run {
-                                        self.stagedURL = url
+                                        self.cachedURL = url
+                                        self.imageSource = nil
                                     }
                                 } catch {
                                     await MainActor.run {
-                                        self.stagedURL = viewData.url
+                                        self.cachedURL = viewData.url
+                                        self.imageSource = nil
                                     }
                                 }
                             }
                         }
 
-                        if let cachedURL = fileRepository.getCachedFileURL(
+                        let fullResCachedURL = fileRepository.getCachedFileURL(
                             for: viewData.url,
                             withChecksum: viewData.checksum
-                        ) {
+                        )
+
+                        if let cachedURL = fullResCachedURL {
                             self.cachedURL = cachedURL
                             // If we have a cached video, no need to display a fallback image
                             self.imageSource = nil
@@ -156,28 +183,28 @@ struct VideoComponentView: View {
                     .clipped()
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
-                    .onReceive(
-                        stagedURL.publisher
-                            // In the event that the download of the high res video is so fast that it tries to set the
-                            // url moments after the low_res was set, we need to delay a bit to ensure the re-render
-                            // actually occurs. This happens consistently with small file sizes and great connection
-                            // at 60fps, this is a generous delay but is not a notable delay to the human eye
-                            .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
-                            .receive(on: RunLoop.main)
-                            .eraseToAnyPublisher()
-                            .removeDuplicates()
-                    ) { output in
-                        self.cachedURL = output
-                    }
                 }
             }
             .onSizeChange { size = $0 }
+            .onAppear {
+                updatePlayableState(isPlayable: carouselState?.isActiveOrNeighbor ?? true)
+            }
+            .onChangeOf(carouselState) { newState in
+                updatePlayableState(isPlayable: newState?.isActiveOrNeighbor ?? true)
+            }
 
     }
 
     private func aspectRatio(style: VideoComponentStyle) -> Double {
         let (width, height) = self.videoSize(style: style)
         return Double(width) / Double(height)
+    }
+
+    private func updatePlayableState(isPlayable newValue: Bool) {
+        if !self.isPlayable && newValue {
+            self.playerRefreshToggle.toggle()
+        }
+        self.isPlayable = newValue
     }
 
     private func videoSize(style: VideoComponentStyle) -> (width: Int, height: Int) {

@@ -189,6 +189,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         // Ignoring events from loading paywall view
     }
 
+    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
+        // No-op for loading paywall
+    }
+
     func invalidateCustomerInfoCache() {
         // No-op, this is a mock implementation.
     }

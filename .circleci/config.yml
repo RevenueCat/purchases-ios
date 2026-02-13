@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.10.0
+  revenuecat: revenuecat/sdks-common-config@dev:045d2d8cd7ac24d4591c662de97e133c1eff795a
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -709,7 +709,7 @@ jobs:
   run-revenuecat-ui-ios-26:
     executor:
       name: macos-executor
-      xcode_version: "26.2"
+      xcode_version: "26.3"
 
     steps:
       - checkout
@@ -796,7 +796,7 @@ jobs:
   run-test-ios-26:
     executor:
       name: macos-executor
-      xcode_version: "26.2"
+      xcode_version: "26.3"
     steps:
       - checkout
       - install-dependencies
@@ -1096,7 +1096,7 @@ jobs:
   run-all-maestro-e2e-tests:
     executor:
       name: macos-executor
-      xcode_version: "26.2"
+      xcode_version: "26.3"
     steps:
       - macos/preboot-simulator:
           version: "18.6"
@@ -1211,6 +1211,7 @@ jobs:
             - vendor/bundle
       - install-dependencies
       - update-spm-installation-commit
+      - revenuecat/install-tuist
       - run:
           name: Deployment checks
           command: bundle exec fastlane release_checks
@@ -1565,14 +1566,6 @@ jobs:
       - run:
           name: Build BinarySizeTest (SPM) and upload to Emerge
           command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:SPM
-
-  test-tuist-generate-workspace:
-    executor:
-      name: macos-executor
-      xcode_version: "16.4"
-    steps:
-      - checkout
-      - tuist-generate-workspace
 
   record-and-push-paywall-template-screenshots:
     description: "Record new paywall template screenshots with Paparazzi and push them to the paywall-rendering-validation repository"
@@ -2008,8 +2001,3 @@ workflows:
           context:
             - slack-secrets
 
-  test-tuist-workflow:
-    when:
-      equal: [tuist, << pipeline.parameters.action >>]
-    jobs:
-      - test-tuist-generate-workspace

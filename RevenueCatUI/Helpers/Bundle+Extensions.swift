@@ -14,7 +14,83 @@
 
 import Foundation
 
-#if COCOAPODS || !SWIFT_PACKAGE
+extension Bundle {
+    /// The bundle to use for RevenueCatUI resources.
+    /// Automatically selects the correct bundle based on build configuration:
+    /// - SWIFT_PACKAGE: Uses SPM's auto-generated Bundle.module
+    /// - COCOAPODS: Uses CocoaPods bundle lookup
+    /// - COMPOSE_RESOURCES: Uses Compose Resources bundle lookup
+    static var revenueCatUI: Bundle {
+        #if COMPOSE_RESOURCES
+        return composeResourcesBundle
+        #else
+        return module
+        #endif
+    }
+}
+
+#if COMPOSE_RESOURCES
+
+extension Bundle {
+    private static let composeResourcesBundle: Bundle = {
+        let composeResourcesPath = findComposeResourcesPath()
+        let path = composeResourcesPath
+            .appending("/composeResources")
+            .appending("/swiftPMImport.com.revenuecat.purchases.kn.ui.resources")
+            .appending("/files")
+        let bundle = Bundle(path: path)
+        guard let bundle else {
+            preconditionFailure("Could not find Compose Resources bundle at \(path)")
+        }
+        return bundle
+    }()
+
+    /// Determines the path to the compose resources directory.
+    /// It first searches for a "/Frameworks/*.framework/composeResources" directory in the main bundle.
+    /// If none exists, it defaults to "compose-resources" in the main bundle.
+    private static func findComposeResourcesPath() -> String {
+        let mainBundle = Bundle.main
+        let fileManager = FileManager.default
+        let resourcePath = mainBundle.resourcePath ?? ""
+        let frameworksPath = (resourcePath as NSString).appendingPathComponent("Frameworks")
+
+        let frameworkDirs = fileManager.findSubDirs(in: frameworksPath) { $0.hasSuffix(".framework") }
+
+        if let frameworkResourcesDir = frameworkDirs.first(where: { dir in
+            !fileManager.findSubDirs(in: dir) { $0.hasSuffix("composeResources") }.isEmpty
+        }) {
+            return frameworkResourcesDir
+        }
+
+        return (resourcePath as NSString).appendingPathComponent("compose-resources")
+    }
+}
+
+private extension FileManager {
+    func findSubDirs(in parentDir: String, filter: (String) -> Bool) -> [String] {
+        var results: [String] = []
+        var isDir: ObjCBool = false
+
+        guard fileExists(atPath: parentDir, isDirectory: &isDir), isDir.boolValue else {
+            return results
+        }
+
+        guard let contents = try? contentsOfDirectory(atPath: parentDir) else {
+            return results
+        }
+
+        for item in contents {
+            let fullPath = (parentDir as NSString).appendingPathComponent(item)
+            var isSubDir: ObjCBool = false
+            if fileExists(atPath: fullPath, isDirectory: &isSubDir), isSubDir.boolValue, filter(fullPath) {
+                results.append(fullPath)
+            }
+        }
+        return results
+    }
+}
+
+#elseif COCOAPODS || !SWIFT_PACKAGE
 
 extension Bundle {
 
