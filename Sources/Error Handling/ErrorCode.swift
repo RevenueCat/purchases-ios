@@ -65,6 +65,7 @@ import Foundation
     @objc(RCPurchaseBelongsToOtherUser) case purchaseBelongsToOtherUser = 40
     @objc(RCExpiredWebPurchaseToken) case expiredWebPurchaseToken = 41
     @objc(RCTestStoreSimulatedPurchaseError) case testStoreSimulatedPurchaseError = 42
+    @objc(RCPurchaseInterruptedError) case purchaseInterruptedError = 43
 
     // swiftlint:enable missing_docs
 
@@ -200,6 +201,8 @@ extension ErrorCode: DescribableError {
             return "The link you provided has expired. A new one will be sent to the email used to make the purchase."
         case .testStoreSimulatedPurchaseError:
             return "Purchase failure simulated successfully in Test Store."
+        case .purchaseInterruptedError:
+            return "Purchase was interrupted. The user may have switched to an external payment app."
         @unknown default:
             return "Something went wrong."
         }
@@ -310,6 +313,8 @@ extension ErrorCode {
             return "EXPIRED_WEB_PURCHASE_TOKEN"
         case .testStoreSimulatedPurchaseError:
             return "TEST_STORE_SIMULATED_PURCHASE_ERROR"
+        case .purchaseInterruptedError:
+            return "PURCHASE_INTERRUPTED"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }

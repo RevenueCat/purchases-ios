@@ -1640,6 +1640,7 @@ extension RevenueCat.Configuration.Builder {
   @objc(RCPurchaseBelongsToOtherUser) case purchaseBelongsToOtherUser = 40
   @objc(RCExpiredWebPurchaseToken) case expiredWebPurchaseToken = 41
   @objc(RCTestStoreSimulatedPurchaseError) case testStoreSimulatedPurchaseError = 42
+  @objc(RCPurchaseInterruptedError) case purchaseInterruptedError = 43
   #if compiler(>=5.3) && $NonescapableTypes
   public init?(rawValue: Swift.Int)
   #endif
