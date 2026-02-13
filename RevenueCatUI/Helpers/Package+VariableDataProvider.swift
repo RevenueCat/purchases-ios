@@ -24,11 +24,8 @@ extension Package: VariableDataProvider {
     }
 
     func localizedPrice(showZeroDecimalPlacePrices: Bool = false) -> String {
-        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(self.storeProduct.localizedPriceString) {
-            return formatAsZeroDecimalPlaces(self.storeProduct.localizedPriceString)
-        } else {
-            return self.storeProduct.localizedPriceString
-        }
+        return formatPrice(self.storeProduct.localizedPriceString,
+                           showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
     func localizedPricePerDay(showZeroDecimalPlacePrices: Bool = false) -> String {
@@ -36,13 +33,7 @@ extension Package: VariableDataProvider {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
         }
-
-        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
-            return formatAsZeroDecimalPlaces(price)
-        } else {
-            return price
-        }
-
+        return formatPrice(price, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
     func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool = false) -> String {
@@ -50,13 +41,7 @@ extension Package: VariableDataProvider {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
         }
-
-        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
-            return formatAsZeroDecimalPlaces(price)
-        } else {
-            return price
-        }
-
+        return formatPrice(price, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
     func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool = false) -> String {
@@ -64,12 +49,7 @@ extension Package: VariableDataProvider {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
         }
-
-        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
-            return formatAsZeroDecimalPlaces(price)
-        }
-
-        return price
+        return formatPrice(price, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
     func localizedPricePerYear(showZeroDecimalPlacePrices: Bool = false) -> String {
@@ -77,24 +57,24 @@ extension Package: VariableDataProvider {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
         }
-
-        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
-            return formatAsZeroDecimalPlaces(price)
-        }
-
-        return price
+        return formatPrice(price, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
     }
 
     func localizedIntroductoryOfferPrice(showZeroDecimalPlacePrices: Bool = false) -> String? {
         guard let price = self.storeProduct.introductoryDiscount?.localizedPriceString else {
             return self.storeProduct.introductoryDiscount?.localizedPriceString
         }
+        return formatPrice(price, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+    }
 
-        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
-            return formatAsZeroDecimalPlaces(price)
+    private func formatPrice(_ priceString: String, showZeroDecimalPlacePrices: Bool) -> String {
+        guard let formatter = self.storeProduct.priceFormatter else {
+            return priceString
         }
-
-        return price
+        return formatter.formattedPriceStrippingTrailingZerosIfNeeded(
+            from: priceString,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
     }
 
     var productName: String {
@@ -223,46 +203,6 @@ extension Package: VariableDataProvider {
 }
 
 // MARK: - Private
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private extension Package {
-
-    func isPriceEndingIn00Cents(_ priceString: String) -> Bool {
-        guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
-            Logger.warning(Strings.no_price_format_price_formatter_unavailable)
-            return false
-        }
-
-        guard let price = formatter.number(from: priceString)?.doubleValue else {
-            Logger.warning(Strings.no_price_format_price_string_incompatible)
-            return false
-        }
-
-        let roundedPrice = round(price * 100) / 100.0
-        return roundedPrice.truncatingRemainder(dividingBy: 1) == 0
-    }
-
-    func formatAsZeroDecimalPlaces(_ priceString: String) -> String {
-        guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
-            Logger.warning(Strings.no_price_round_price_formatter_nil)
-            return priceString
-        }
-
-        guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
-            Logger.warning(Strings.no_price_round_price_string_incompatible)
-            return priceString
-        }
-
-        formatter.maximumFractionDigits = 0
-
-        guard let roundedPriceString = formatter.string(from: NSNumber(value: priceToRound)) else {
-            Logger.warning(Strings.no_price_round_formatter_failed)
-            return priceString
-        }
-
-        return roundedPriceString
-    }
-}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Package {
