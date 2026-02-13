@@ -389,7 +389,7 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("free"))
     }
 
-    func testProductFreeOfferPricePerMonth() {
+    func testOfferPricePerMonthReturnsEmptyForDayBasedTrial() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_month }}",
             with: TestData.packageWithIntroOffer,
@@ -400,7 +400,7 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal(""))
     }
 
-    func testProductFreeOfferPricePerYear() {
+    func testOfferPricePerYearReturnsEmptyForDayBasedTrial() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_year }}",
             with: TestData.packageWithIntroOffer,
@@ -905,7 +905,7 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal(""))
     }
 
-    func testPromoOfferStillWorksWhenIneligibleForIntro() {
+    func testPromoOfferPriceWorksWhenIneligibleForIntro() {
         let discount = TestData.packageWithPromoOfferPayUpFront.storeProduct.discounts.first!
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price }}",
@@ -918,8 +918,23 @@ class VariableHandlerV2Test: TestCase {
                 signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
             )
         )
-        // Promo offer should still work regardless of intro eligibility
         expect(result).to(equal("$1.99"))
+    }
+
+    func testPromoOfferPeriodWorksWhenIneligibleForIntro() {
+        let discount = TestData.packageWithPromoOfferPayUpFront.storeProduct.discounts.first!
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period }}",
+            with: TestData.packageWithPromoOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false,
+            promoOffer: .init(
+                discount: discount,
+                signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
+            )
+        )
+        expect(result).to(equal("week"))
     }
 
     func testOfferPriceUsesIntroWhenEligible() {
@@ -930,8 +945,51 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: true
         )
-        // When eligible, should still use intro offer (free trial)
         expect(result).to(equal("free"))
+    }
+
+    func testAnnualProductOfferPriceFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.annualPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(result).to(equal("$53.99"))
+    }
+
+    func testAnnualProductOfferPricePerMonthFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_month }}",
+            with: TestData.annualPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(result).to(equal("$4.49"))
+    }
+
+    func testOfferVariablesWithLifetimeProduct() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }} for {{ product.offer_period }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$119.49 for "))
+    }
+
+    func testOfferVariablesWithConsumableProduct() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.consumablePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$4.99"))
     }
 
     // MARK: - Non-Subscription Tests
