@@ -18,6 +18,7 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
+                    "CFBundleIconName": "AppIcon",
                     "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)",
                 ]
             ),
