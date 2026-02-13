@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        deploy_rct_tester
       ]
     default: default
   generate_snapshots:
@@ -1512,6 +1513,25 @@ jobs:
           command: bundle exec fastlane deploy_purchase_tester dry_run:<< parameters.dry_run >>
       - slack-notify-on-fail
 
+  deploy-rct-tester:
+    executor:
+      name: macos-executor
+      xcode_version: "26.3"
+    parameters:
+      dry_run:
+        type: boolean
+        default: false
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-dependencies
+      - revenuecat/install-tuist
+      - run:
+          name: Submit RCT Tester
+          command: bundle exec fastlane deploy_rct_tester dry_run:<< parameters.dry_run >>
+      - slack-notify-on-fail
+
   emerge_purchases_ui_snapshot_tests:
     executor:
       name: macos-executor
@@ -1780,6 +1800,11 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
+      - deploy-rct-tester:
+          dry_run: false
+          requires:
+            - make-release
+          <<: *release-tags
       - bump-sdk-in-rc-mobile-app:
           requires:
             - make-release
@@ -1874,6 +1899,15 @@ workflows:
       equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
     jobs:
       - docs-deploy
+
+  # The deployment of the RCT Tester app can be done manually from CircleCI
+  # by triggering the pipeline with the "deploy_rct_tester" action
+  manual-deploy-rct-tester:
+    when:
+      equal: [deploy_rct_tester, << pipeline.parameters.action >>]
+    jobs:
+      - deploy-rct-tester:
+          dry_run: false
 
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
   # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields
