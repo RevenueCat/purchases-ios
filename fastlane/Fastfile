@@ -1997,6 +1997,7 @@ platform :ios do
       export_method: 'app-store',
       xcargs: "CURRENT_PROJECT_VERSION=#{latest_build + 1}",
       export_options: {
+        signingStyle: "manual",
         manageAppVersionAndBuildNumber: false,
         provisioningProfiles: {
           "com.revenuecat.rcttester" => "match AppStore com.revenuecat.rcttester",
