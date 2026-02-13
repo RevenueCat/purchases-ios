@@ -21,12 +21,11 @@ struct OfferingsListView: View {
 
     @State private var loadingState: LoadingState = .loading
     @State private var offeringForPaywall: Offering?
+    @State private var paywallIfNeededPresentation: PaywallIfNeededPresentation?
     @State private var offeringForPaywallView: Offering?
     @State private var offeringForMetadata: Offering?
     @State private var storeViewPresentation: StoreViewPresentation?
     @State private var showingStoreViewUnavailableAlert = false
-    @State private var paywallIfNeededPresentation: PaywallIfNeededPresentation?
-    @State private var entitlementIdentifiers: [String] = []
 
     var body: some View {
         Group {
@@ -64,7 +63,6 @@ struct OfferingsListView: View {
                                 offering: offering,
                                 configuration: configuration,
                                 purchaseManager: purchaseManager,
-                                entitlementIdentifiers: entitlementIdentifiers,
                                 onPresentPaywall: { type in
                                     switch type {
                                     case .presentPaywall:
@@ -144,7 +142,6 @@ struct OfferingsListView: View {
         }
         .task {
             await fetchOfferings()
-            await fetchEntitlementIdentifiers()
         }
     }
 
@@ -169,15 +166,6 @@ struct OfferingsListView: View {
                     .multilineTextAlignment(.center)
             }
             .padding()
-        }
-    }
-
-    private func fetchEntitlementIdentifiers() async {
-        do {
-            let customerInfo = try await Purchases.shared.customerInfo()
-            entitlementIdentifiers = customerInfo.entitlements.all.keys.sorted()
-        } catch {
-            print("Error fetching entitlement identifiers: \(error)")
         }
     }
 
@@ -208,12 +196,12 @@ struct OfferingsListView: View {
 
 // MARK: - presentPaywallIfNeeded Presentation
 
-/// Pairs an offering with the entitlement identifier to check.
+/// Pairs an offering with the entitlement identifier for `.presentPaywallIfNeeded`.
 private struct PaywallIfNeededPresentation: Identifiable {
     let offering: Offering
     let entitlementIdentifier: String
 
-    var id: String { offering.identifier }
+    var id: String { "\(offering.identifier)-\(entitlementIdentifier)" }
 }
 
 // MARK: - StoreView Presentation

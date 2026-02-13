@@ -12,10 +12,14 @@ struct OfferingSectionView: View {
     let offering: Offering
     let configuration: SDKConfiguration
     let purchaseManager: AnyPurchaseManager
-    let entitlementIdentifiers: [String]
     let onPresentPaywall: (PaywallPresentationType) -> Void
     let onShowMetadata: () -> Void
     let onPresentStoreView: (StoreViewSheetType) -> Void
+
+    private static let knownEntitlements = ["lite", "premium"]
+
+    @State private var showCustomEntitlementAlert = false
+    @State private var customEntitlementText = ""
 
     private var isStoreKit2: Bool {
         configuration.storeKitVersion == .storeKit2
@@ -46,13 +50,14 @@ struct OfferingSectionView: View {
                     }
                     Menu(".presentPaywallIfNeeded") {
                         Section("requiredEntitlementIdentifier") {
-                            Button("(empty string)") {
-                                onPresentPaywall(.presentPaywallIfNeeded(entitlementIdentifier: ""))
-                            }
-                            ForEach(entitlementIdentifiers, id: \.self) { entitlementID in
+                            ForEach(Self.knownEntitlements, id: \.self) { entitlementID in
                                 Button(entitlementID) {
                                     onPresentPaywall(.presentPaywallIfNeeded(entitlementIdentifier: entitlementID))
                                 }
+                            }
+                            Button("Custom...") {
+                                customEntitlementText = ""
+                                showCustomEntitlementAlert = true
                             }
                         }
                     }
@@ -95,6 +100,15 @@ struct OfferingSectionView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+        }
+        .alert("Custom Entitlement", isPresented: $showCustomEntitlementAlert) {
+            TextField("Entitlement identifier", text: $customEntitlementText)
+            Button("Present") {
+                onPresentPaywall(.presentPaywallIfNeeded(entitlementIdentifier: customEntitlementText))
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Enter the entitlement identifier to check.")
         }
     }
 }
@@ -360,7 +374,6 @@ private struct MetadataRow: View {
             ),
             configuration: .default,
             purchaseManager: AnyPurchaseManager(RevenueCatPurchaseManager()),
-            entitlementIdentifiers: ["pro", "premium"],
             onPresentPaywall: { _ in },
             onShowMetadata: {},
             onPresentStoreView: { _ in }
