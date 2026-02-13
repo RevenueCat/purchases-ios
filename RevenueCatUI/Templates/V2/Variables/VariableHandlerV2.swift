@@ -728,8 +728,11 @@ extension VariablesV2 {
         showZeroDecimalPlacePrices: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
-        guard let discount = promoOffer?.discount ?? introDiscount else {
+        guard let discount = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        ) else {
             return package.storeProduct.localizedPriceString
         }
 
@@ -747,8 +750,11 @@ extension VariablesV2 {
         showZeroDecimalPlacePrices: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
-        guard let discount = promoOffer?.discount ?? introDiscount else {
+        guard let discount = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        ) else {
             return self.productPricePerDay(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
 
@@ -774,8 +780,11 @@ extension VariablesV2 {
         showZeroDecimalPlacePrices: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
-        guard let discount = promoOffer?.discount ?? introDiscount else {
+        guard let discount = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        ) else {
             return self.productPricePerWeek(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
 
@@ -801,8 +810,11 @@ extension VariablesV2 {
         showZeroDecimalPlacePrices: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
-        guard let discount = promoOffer?.discount ?? introDiscount else {
+        guard let discount = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        ) else {
             return self.productPricePerMonth(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
 
@@ -828,8 +840,11 @@ extension VariablesV2 {
         showZeroDecimalPlacePrices: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
-        guard let discount = promoOffer?.discount ?? introDiscount else {
+        guard let discount = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        ) else {
             return self.productPricePerYear(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
 
@@ -854,10 +869,11 @@ extension VariablesV2 {
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let initialOffer = isEligibleForIntroOffer
-            ? package.storeProduct.introductoryDiscount?.subscriptionPeriod
-            : nil
-        guard let period = promoOffer?.discount.subscriptionPeriod ?? initialOffer else {
+        guard let period = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        )?.subscriptionPeriod else {
             return self.productPeriod(package: package, localizations: localizations)
         }
 
@@ -870,10 +886,11 @@ extension VariablesV2 {
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let initialOffer = isEligibleForIntroOffer
-            ? package.storeProduct.introductoryDiscount?.subscriptionPeriod
-            : nil
-        guard let period = promoOffer?.discount.subscriptionPeriod ?? initialOffer else {
+        guard let period = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        )?.subscriptionPeriod else {
             return self.productPeriodAbbreviated(package: package, localizations: localizations)
         }
 
@@ -885,8 +902,11 @@ extension VariablesV2 {
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
-        guard let discount = promoOffer?.discount ?? introDiscount else {
+        guard let discount = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        ) else {
             return self.productPeriodInDays(package: package)
         }
 
@@ -902,8 +922,11 @@ extension VariablesV2 {
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
-        guard let discount = promoOffer?.discount ?? introDiscount else {
+        guard let discount = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        ) else {
             return self.productPeriodInWeeks(package: package)
         }
 
@@ -919,8 +942,11 @@ extension VariablesV2 {
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
-        guard let discount = promoOffer?.discount ?? introDiscount else {
+        guard let discount = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        ) else {
             return self.productPeriodInMonths(package: package)
         }
 
@@ -936,8 +962,11 @@ extension VariablesV2 {
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
-        guard let discount = promoOffer?.discount ?? introDiscount else {
+        guard let discount = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        ) else {
             return self.productPeriodInYears(package: package)
         }
 
@@ -954,10 +983,11 @@ extension VariablesV2 {
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let introOffer = isEligibleForIntroOffer
-            ? package.storeProduct.introductoryDiscount?.subscriptionPeriod
-            : nil
-        guard let period = promoOffer?.discount.subscriptionPeriod ?? introOffer else {
+        guard let period = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        )?.subscriptionPeriod else {
             return self.productPeriodWithUnit(package: package, localizations: localizations)
         }
 
@@ -975,8 +1005,11 @@ extension VariablesV2 {
         date: Date,
         promoOffer: PromotionalOffer?
     ) -> String {
-        let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
-        guard let discount = promoOffer?.discount ?? introDiscount else {
+        guard let discount = resolvedDiscount(
+            for: package,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer
+        ) else {
             return ""
         }
 
@@ -1075,6 +1108,15 @@ private extension VariablesV2 {
         case .payAsYouGo, .payUpFront:
             return false
         }
+    }
+
+    func resolvedDiscount(
+        for package: Package,
+        isEligibleForIntroOffer: Bool,
+        promoOffer: PromotionalOffer?
+    ) -> StoreProductDiscount? {
+        let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
+        return promoOffer?.discount ?? introDiscount
     }
 
 }
