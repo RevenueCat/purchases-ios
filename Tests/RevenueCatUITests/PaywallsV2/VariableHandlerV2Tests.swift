@@ -1224,9 +1224,9 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
         expect(resultWithoutZeroDecimal).to(equal("$2.00"))
     }
 
-    func testOfferPricePerWeekRespectsZeroDecimalPlacePrices() {
+    func testOfferPricePerMonthRespectsZeroDecimalPlacePrices() {
         let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
-            in: "{{ product.offer_price_per_week }}",
+            in: "{{ product.offer_price_per_month }}",
             with: TestData.packageWithIntroOfferPayUpFrontWholeDollar,
             locale: locale,
             localizations: localizations["en_US"]!,
@@ -1235,7 +1235,7 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
         expect(resultWithZeroDecimal).to(equal("$2"))
 
         let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
-            in: "{{ product.offer_price_per_week }}",
+            in: "{{ product.offer_price_per_month }}",
             with: TestData.packageWithIntroOfferPayUpFrontWholeDollar,
             locale: locale,
             localizations: localizations["en_US"]!,
