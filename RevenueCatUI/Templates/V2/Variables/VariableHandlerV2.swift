@@ -57,7 +57,7 @@ struct VariableHandlerV2 {
         with package: Package?,
         locale: Locale,
         localizations: [String: String],
-        isEligibleForIntroOffer: Bool = true,
+        isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer? = nil,
         countdownTime: CountdownTime? = nil
     ) -> String {
