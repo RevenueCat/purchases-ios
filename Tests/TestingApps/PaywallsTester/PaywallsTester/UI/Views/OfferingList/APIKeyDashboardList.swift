@@ -112,7 +112,7 @@ struct APIKeyDashboardList: View {
             let offerings = try await Purchases.shared.offerings()
                 .all
                 .map(\.value)
-                .sorted { $0.serverDescription > $1.serverDescription }
+                .sorted { $0.id < $1.id }
 
             if let presentedPaywall = presentedPaywall {
                 for offering in offerings {
@@ -208,7 +208,12 @@ struct APIKeyDashboardList: View {
                             #endif
                         }
                         else {
-                            Text(offering.serverDescription)
+                            VStack(alignment: .leading) {
+                                Text(offering.id)
+                                Text(offering.serverDescription)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                 } header: {
@@ -294,7 +299,12 @@ struct APIKeyDashboardList: View {
         var body: some View {
             Button(action: action) {
                 HStack {
-                    Text(self.offering.serverDescription)
+                    VStack(alignment: .leading) {
+                        Text(self.offering.id)
+                        Text(self.offering.serverDescription)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                     Spacer()
                     if let errorInfo = self.offering.paywallComponents?.data.errorInfo, !errorInfo.isEmpty {
                         Image(systemName: "exclamationmark.circle.fill")
