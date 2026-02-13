@@ -740,13 +740,11 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        guard let formatter = package.storeProduct.priceFormatter else {
-            return discount.localizedPriceString
-        }
-
-        return formatter.priceStringWithZeroDecimalFormatting(
-            discount.localizedPriceString,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        return formatDiscountPrice(
+            discount.price,
+            package: package,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            fallback: discount.localizedPriceString
         )
     }
 
@@ -773,16 +771,11 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        guard let price = discount.pricePerDay, let formatter = package.storeProduct.priceFormatter else {
-            return ""
-        }
-
-        guard let priceString = formatter.string(from: price as NSDecimalNumber) else {
-            return ""
-        }
-
-        return formatter.priceStringWithZeroDecimalFormatting(
-            priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+        return formatDiscountPrice(
+            discount.pricePerDay?.decimalValue,
+            package: package,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
     }
 
     func productOfferPricePerWeek(
@@ -808,16 +801,11 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        guard let price = discount.pricePerWeek, let formatter = package.storeProduct.priceFormatter else {
-            return ""
-        }
-
-        guard let priceString = formatter.string(from: price as NSDecimalNumber) else {
-            return ""
-        }
-
-        return formatter.priceStringWithZeroDecimalFormatting(
-            priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+        return formatDiscountPrice(
+            discount.pricePerWeek?.decimalValue,
+            package: package,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
     }
 
     func productOfferPricePerMonth(
@@ -843,16 +831,11 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        guard let price = discount.pricePerMonth, let formatter = package.storeProduct.priceFormatter else {
-            return ""
-        }
-
-        guard let priceString = formatter.string(from: price as NSDecimalNumber) else {
-            return ""
-        }
-
-        return formatter.priceStringWithZeroDecimalFormatting(
-            priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+        return formatDiscountPrice(
+            discount.pricePerMonth?.decimalValue,
+            package: package,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
     }
 
     func productOfferPricePerYear(
@@ -878,16 +861,11 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        guard let price = discount.pricePerYear, let formatter = package.storeProduct.priceFormatter else {
-            return ""
-        }
-
-        guard let priceString = formatter.string(from: price as NSDecimalNumber) else {
-            return ""
-        }
-
-        return formatter.priceStringWithZeroDecimalFormatting(
-            priceString, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+        return formatDiscountPrice(
+            discount.pricePerYear?.decimalValue,
+            package: package,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
     }
 
     func productOfferPeriod(
@@ -1144,6 +1122,21 @@ private extension VariablesV2 {
     ) -> StoreProductDiscount? {
         let introDiscount = isEligibleForIntroOffer ? package.storeProduct.introductoryDiscount : nil
         return promoOffer?.discount ?? introDiscount
+    }
+
+    func formatDiscountPrice(
+        _ price: Decimal?,
+        package: Package,
+        showZeroDecimalPlacePrices: Bool,
+        fallback: String = ""
+    ) -> String {
+        guard let price, let formatter = package.storeProduct.priceFormatter else {
+            return fallback
+        }
+        return formatter.formattedPriceStrippingTrailingZerosIfNeeded(
+            price,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        ) ?? fallback
     }
 
 }

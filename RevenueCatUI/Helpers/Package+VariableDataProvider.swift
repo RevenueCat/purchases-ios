@@ -71,8 +71,8 @@ extension Package: VariableDataProvider {
         guard let formatter = self.storeProduct.priceFormatter else {
             return priceString
         }
-        return formatter.priceStringWithZeroDecimalFormatting(
-            priceString,
+        return formatter.formattedPriceStrippingTrailingZerosIfNeeded(
+            from: priceString,
             showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         )
     }

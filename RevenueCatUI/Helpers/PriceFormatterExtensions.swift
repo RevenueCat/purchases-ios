@@ -14,28 +14,52 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension NumberFormatter {
 
-    func priceStringWithZeroDecimalFormatting(
-        _ priceString: String,
+    /// If `showZeroDecimalPlacePrices` is `true` and the given price is a whole number,
+    /// returns the price formatted without decimal places (e.g. "$2.00" → "$2").
+    /// Otherwise, formats the price normally.
+    func formattedPriceStrippingTrailingZerosIfNeeded(
+        _ price: Decimal,
+        showZeroDecimalPlacePrices: Bool
+    ) -> String? {
+        guard showZeroDecimalPlacePrices, price.isWholeNumber else {
+            return self.string(from: price as NSDecimalNumber)
+        }
+
+        guard let copy = self.copy() as? NumberFormatter else {
+            return self.string(from: price as NSDecimalNumber)
+        }
+        copy.maximumFractionDigits = 0
+        return copy.string(from: price as NSDecimalNumber)
+    }
+
+    /// Convenience overload that parses the price from an already-formatted string.
+    func formattedPriceStrippingTrailingZerosIfNeeded(
+        from priceString: String,
         showZeroDecimalPlacePrices: Bool
     ) -> String {
         guard showZeroDecimalPlacePrices else {
             return priceString
         }
 
-        guard let price = self.number(from: priceString)?.doubleValue else {
+        guard let number = self.number(from: priceString) else {
             return priceString
         }
 
-        let roundedPrice = round(price * 100) / 100.0
-        guard roundedPrice.truncatingRemainder(dividingBy: 1) == 0 else {
-            return priceString
-        }
+        return self.formattedPriceStrippingTrailingZerosIfNeeded(
+            number.decimalValue,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        ) ?? priceString
+    }
 
-        guard let copy = self.copy() as? NumberFormatter else {
-            return priceString
-        }
-        copy.maximumFractionDigits = 0
-        return copy.string(from: NSNumber(value: price)) ?? priceString
+}
+
+private extension Decimal {
+
+    var isWholeNumber: Bool {
+        var value = self
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &value, 0, .plain)
+        return self == rounded
     }
 
 }
