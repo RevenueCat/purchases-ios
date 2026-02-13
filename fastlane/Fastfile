@@ -1997,7 +1997,11 @@ platform :ios do
       destination: "generic/platform=ios",
       xcodebuild_formatter: '',
       export_method: 'app-store',
-      xcargs: "CURRENT_PROJECT_VERSION=#{latest_build + 1}",
+      xcargs: "CURRENT_PROJECT_VERSION=#{latest_build + 1} " \
+              "CODE_SIGN_STYLE=Manual " \
+              "DEVELOPMENT_TEAM=8SXR2327BM " \
+              "CODE_SIGN_IDENTITY='Apple Distribution' " \
+              "PROVISIONING_PROFILE_SPECIFIER='#{provisioning_profile_name}'",
       export_options: {
         signingStyle: "manual",
         manageAppVersionAndBuildNumber: false,
