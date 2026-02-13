@@ -53,6 +53,9 @@ struct APIKeyDashboardList: View {
     @State
     private var isShowingVariablesEditor = false
 
+    @State
+    private var searchText = ""
+
     var body: some View {
         ZStack {
             NavigationView {
@@ -112,7 +115,7 @@ struct APIKeyDashboardList: View {
             let offerings = try await Purchases.shared.offerings()
                 .all
                 .map(\.value)
-                .sorted { $0.serverDescription > $1.serverDescription }
+                .sorted { $0.id < $1.id }
 
             if let presentedPaywall = presentedPaywall {
                 for offering in offerings {
@@ -173,49 +176,66 @@ struct APIKeyDashboardList: View {
         offering.paywallComponents != nil
     }
 
+    private func filteredOfferings(for template: Template, in data: Data) -> [Offering] {
+        let offerings = data.offeringsBySection[template] ?? []
+        guard !searchText.isEmpty else { return offerings }
+        return offerings.filter {
+            $0.id.localizedCaseInsensitiveContains(searchText) ||
+            $0.serverDescription.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
     @ViewBuilder
     private func list(with data: Data) -> some View {
         List {
             ForEach(data.sections, id: \.self) { template in
-                Section {
-                    ForEach(data.offeringsBySection[template]!, id: \.id) { offering in
-                        if offering.paywall != nil || offeringHasComponents(offering) {
-                            #if targetEnvironment(macCatalyst)
-                            NavigationLink(
-                                destination: PaywallPresenter(offering: offering,
-                                                              mode: .default,
-                                                              introEligility: .eligible,
-                                                              displayCloseButton: false)
-                                    .customPaywallVariables(self.customVariables),
-                                tag: PresentedPaywall(offering: offering, mode: .default),
-                                selection: self.$presentedPaywall
-                            ) {
-                                OfferButton(offering: offering) {}
-                                .contextMenu {
-                                    self.contextMenu(for: offering)
+                let offerings = filteredOfferings(for: template, in: data)
+                if !offerings.isEmpty {
+                    Section {
+                        ForEach(offerings, id: \.id) { offering in
+                            if offering.paywall != nil || offeringHasComponents(offering) {
+                                #if targetEnvironment(macCatalyst)
+                                NavigationLink(
+                                    destination: PaywallPresenter(offering: offering,
+                                                                  mode: .default,
+                                                                  introEligility: .eligible,
+                                                                  displayCloseButton: false)
+                                        .customPaywallVariables(self.customVariables),
+                                    tag: PresentedPaywall(offering: offering, mode: .default),
+                                    selection: self.$presentedPaywall
+                                ) {
+                                    OfferButton(offering: offering) {}
+                                    .contextMenu {
+                                        self.contextMenu(for: offering)
+                                    }
                                 }
-                            }
-                            #else
-                            OfferButton(offering: offering) {
-                                self.isLoadingPaywall = true
-                                self.presentedPaywall = .init(offering: offering, mode: .default)
-                            }
-                                #if !os(watchOS)
-                                .contextMenu {
-                                    self.contextMenu(for: offering)
+                                #else
+                                OfferButton(offering: offering) {
+                                    self.isLoadingPaywall = true
+                                    self.presentedPaywall = .init(offering: offering, mode: .default)
                                 }
+                                    #if !os(watchOS)
+                                    .contextMenu {
+                                        self.contextMenu(for: offering)
+                                    }
+                                    #endif
                                 #endif
-                            #endif
+                            } else {
+                                VStack(alignment: .leading) {
+                                    Text(offering.id)
+                                    Text(offering.serverDescription)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
-                        else {
-                            Text(offering.serverDescription)
-                        }
+                    } header: {
+                        Text(verbatim: template.description)
                     }
-                } header: {
-                    Text(verbatim: template.description)
                 }
             }
         }
+        .searchable(text: $searchText, prompt: "Search offerings")
         .sheet(item: self.$presentedPaywall) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
                 .onRestoreCompleted { _ in
@@ -294,7 +314,12 @@ struct APIKeyDashboardList: View {
         var body: some View {
             Button(action: action) {
                 HStack {
-                    Text(self.offering.serverDescription)
+                    VStack(alignment: .leading) {
+                        Text(self.offering.id)
+                        Text(self.offering.serverDescription)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                     Spacer()
                     if let errorInfo = self.offering.paywallComponents?.data.errorInfo, !errorInfo.isEmpty {
                         Image(systemName: "exclamationmark.circle.fill")
