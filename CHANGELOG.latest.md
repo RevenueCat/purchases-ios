@@ -1,10 +1,14 @@
 ## RevenueCatUI SDK
+### Paywall Components
+#### ✨ New Features
+* [SDK-4254] Add onPurchaseInitiated delegate method to PaywallViewController (#6257) via Toni Rico (@tonidero)
 ### Paywallv2
 #### 🐞 Bugfixes
-* fix: improve video autoplay with thumbnail fallback and fade transition (#6186) via Facundo Menzella (@facumenzella)
+* [Paywalls V2] Fix video performance in multi-page carousels (#6196) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Add custom StoreKit config support to PaywallsTester (#6237) via Facundo Menzella (@facumenzella)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5951) via RevenueCat Git Bot (@RCGitBot)
-* Adds support for Compose Resources (#6239) via JayShortway (@JayShortway)
-* Include attribution data in POST /receipt when using SK2 in Observer mode (#6233) via Antonio Pallares (@ajpallares)
+* Update CI to use Xcode 26.3 (#6258) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `e6454e3` to `afc9219` (#6253) via dependabot[bot] (@dependabot[bot])
+* Fix Xcode 15 warning for main actor-isolated background task calls (#6251) via Antonio Pallares (@ajpallares)
+* Bump faraday from 1.10.4 to 1.10.5 in /Tests/InstallationTests/CocoapodsInstallation (#6249) via dependabot[bot] (@dependabot[bot])
+* Bump faraday from 1.10.4 to 1.10.5 (#6250) via dependabot[bot] (@dependabot[bot])
