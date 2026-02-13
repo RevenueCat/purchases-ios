@@ -733,7 +733,7 @@ extension VariablesV2 {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             promoOffer: promoOffer
         ) else {
-            return package.storeProduct.localizedPriceString
+            return self.productPrice(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
 
         if isFree(discount) {
