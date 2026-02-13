@@ -38,10 +38,22 @@ struct VideoComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.carouselState)
+    private var carouselState
+
     @State var size: CGSize = .zero
 
     @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
+
+    /// Tracks whether this page is active or adjacent in a carousel.
+    /// Updated via onChange to ensure SwiftUI detects the change.
+    @State private var isPlayable: Bool = true
+
+    /// Toggled when transitioning from non-playable to playable state.
+    /// Used as part of the VideoPlayerView's identity to force recreation,
+    /// ensuring autoplay triggers correctly when the page becomes visible again.
+    @State private var playerRefreshToggle: Bool = false
 
     var body: some View {
         viewModel
@@ -60,20 +72,29 @@ struct VideoComponentView: View {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
 
                     ZStack {
-                        if imageSource == nil && cachedURL == nil {
-                            // greedily fill space while loading occurs
-                            render(Color.clear, size: size, with: style)
-                        }
+                        // Determine if video player will render
+                        let willShowVideo = cachedURL != nil && isPlayable
 
-                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
+                        // Always render spacer for sizing (needed for fixed-size videos)
+                        render(Color.clear, size: size, with: style)
+
+                        // Always show thumbnail as base layer while video loads/prepares
+                        if let thumbnailSource = imageSource ?? viewModel.imageSource,
+                           let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: imageSource, fitMode: style.contentMode == .fill ? .fill : .fit)
+                            component: .init(
+                                source: thumbnailSource,
+                                fitMode: style.contentMode == .fill ? .fill : .fit
+                            )
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
                         }
 
-                        if let cachedURL {
+                        // Only create VideoPlayerView when on active carousel page (or not in carousel)
+                        // This prevents multiple AVPlayer instances from competing for resources
+                        // Video layers on top of thumbnail once ready
+                        if let cachedURL, willShowVideo {
                             render(
                                 VideoPlayerView(
                                     videoURL: cachedURL,
@@ -82,10 +103,13 @@ struct VideoComponentView: View {
                                     showControls: style.showControls,
                                     loopVideo: style.loop,
                                     muteAudio: style.muteAudio
-                                ),
+                                )
+                                // Recreate player when becoming playable or URL changes.
+                                .id("\(cachedURL)-\(playerRefreshToggle)"),
                                 size: size,
                                 with: style
                             )
+                            .transition(.opacity.animation(.easeIn(duration: 0.3)))
                         }
                     }
                     .onAppear {
@@ -162,12 +186,25 @@ struct VideoComponentView: View {
                 }
             }
             .onSizeChange { size = $0 }
+            .onAppear {
+                updatePlayableState(isPlayable: carouselState?.isActiveOrNeighbor ?? true)
+            }
+            .onChangeOf(carouselState) { newState in
+                updatePlayableState(isPlayable: newState?.isActiveOrNeighbor ?? true)
+            }
 
     }
 
     private func aspectRatio(style: VideoComponentStyle) -> Double {
         let (width, height) = self.videoSize(style: style)
         return Double(width) / Double(height)
+    }
+
+    private func updatePlayableState(isPlayable newValue: Bool) {
+        if !self.isPlayable && newValue {
+            self.playerRefreshToggle.toggle()
+        }
+        self.isPlayable = newValue
     }
 
     private func videoSize(style: VideoComponentStyle) -> (width: Int, height: Int) {
