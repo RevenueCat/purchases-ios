@@ -901,7 +901,18 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: false
         )
-        // No product equivalent for end date
+        expect(result).to(equal(""))
+    }
+
+    func testOfferEndDateReturnsEmptyWhenNoIntroOffer() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_end_date }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Unlike other offer variables, there's no product fallback for end date
         expect(result).to(equal(""))
     }
 
