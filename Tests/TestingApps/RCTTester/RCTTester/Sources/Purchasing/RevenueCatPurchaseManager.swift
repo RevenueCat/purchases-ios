@@ -38,4 +38,32 @@ final class RevenueCatPurchaseManager: PurchaseManager {
             return .failure(error)
         }
     }
+
+    /// Purchases a product using RevenueCat's `purchase(product:)` method.
+    func purchase(product: StoreProduct) async -> PurchaseOperationResult {
+        do {
+            let result = try await Purchases.shared.purchase(product: product)
+
+            if result.userCancelled {
+                return .userCancelled
+            }
+
+            return .success(result.customerInfo)
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    /// Restores purchases using RevenueCat's built-in restore method.
+    func restorePurchases() async throws -> RestoreOperationResult {
+        let customerInfo = try await Purchases.shared.restorePurchases()
+
+        let hasActiveSubscriptions = !customerInfo.activeSubscriptions.isEmpty
+        let hasNonSubscriptions = !customerInfo.nonSubscriptions.isEmpty
+
+        return RestoreOperationResult(
+            customerInfo: customerInfo,
+            purchasesRecovered: hasActiveSubscriptions || hasNonSubscriptions
+        )
+    }
 }

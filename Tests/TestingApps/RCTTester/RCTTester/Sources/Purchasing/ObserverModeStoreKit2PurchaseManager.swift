@@ -50,12 +50,23 @@ final class ObserverModeStoreKit2PurchaseManager: PurchaseManager {
         )
     }
 
-    func purchase(package: Package) async -> PurchaseOperationResult {
-        guard let sk2Product = package.storeProduct.sk2Product else {
-            return .failure(SK2PurchaseError.productNotFound(package.storeProduct.productIdentifier))
+    /// Purchases a product directly using StoreKit 2's `Product.purchase()`.
+    func purchase(product: StoreProduct) async -> PurchaseOperationResult {
+        guard let sk2Product = product.sk2Product else {
+            return .failure(SK2PurchaseError.productNotFound(product.productIdentifier))
         }
+        return await purchaseSK2Product(sk2Product)
+    }
 
-        // Make the purchase with SK2
+    /// Delegates to `purchase(product:)` since "package" is a RevenueCat concept
+    /// and this manager purchases through StoreKit directly.
+    func purchase(package: Package) async -> PurchaseOperationResult {
+        await purchase(product: package.storeProduct)
+    }
+
+    // MARK: - Private SK2 Purchase
+
+    private func purchaseSK2Product(_ sk2Product: Product) async -> PurchaseOperationResult {
         do {
             let result = try await sk2Product.purchase()
 
@@ -109,7 +120,7 @@ final class ObserverModeStoreKit2PurchaseManager: PurchaseManager {
     ///
     /// - Warning: A successful restore does not imply that the user has any entitlements.
     ///   Always verify `customerInfo.entitlements.active` to confirm entitlement status.
-    private func restorePurchases() async throws -> RestoreOperationResult {
+    func restorePurchases() async throws -> RestoreOperationResult {
         // Trigger SK2 sync - RevenueCat will observe the transactions
         try await AppStore.sync()
 

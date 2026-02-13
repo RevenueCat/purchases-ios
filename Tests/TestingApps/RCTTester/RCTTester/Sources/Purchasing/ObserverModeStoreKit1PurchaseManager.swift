@@ -22,7 +22,13 @@ final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
     // MARK: - Properties
 
     private let paymentQueue: SKPaymentQueue = .default()
-    private var purchaseCompletionHandlers: [String: (SK1PurchaseResult) -> Void] = [:]
+
+    /// Completion handlers for in-flight purchases, keyed by product identifier.
+    /// Using `nonisolated(unsafe)` to allow cleanup in `deinit`.
+    nonisolated(unsafe) private var purchaseCompletionHandlers: [String: (Result<SK1PurchaseResult, Error>) -> Void] = [:]
+
+    /// Completion handler for an in-flight restore operation.
+    nonisolated(unsafe) private var restoreCompletionHandler: ((Error?) -> Void)?
 
     // MARK: - Types
 
@@ -40,6 +46,16 @@ final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
     }
 
     deinit {
+        // Cancel any in-flight purchase completion handlers
+        for (_, completion) in purchaseCompletionHandlers {
+            completion(.failure(SK1PurchaseError.unknown))
+        }
+        purchaseCompletionHandlers.removeAll()
+
+        // Cancel any in-flight restore completion handler
+        restoreCompletionHandler?(SK1PurchaseError.unknown)
+        restoreCompletionHandler = nil
+
         self.paymentQueue.remove(self)
     }
 
@@ -73,49 +89,18 @@ final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
         )
     }
 
+    /// Purchases a product directly using StoreKit 1's `SKPaymentQueue`.
+    func purchase(product: StoreProduct) async -> PurchaseOperationResult {
+        guard let sk1Product = product.sk1Product else {
+            return .failure(SK1PurchaseError.productNotFound(product.productIdentifier))
+        }
+        return await purchaseSK1ProductAndHandleResult(sk1Product)
+    }
+
+    /// Delegates to `purchase(product:)` since "package" is a RevenueCat concept
+    /// and this manager purchases through StoreKit directly.
     func purchase(package: Package) async -> PurchaseOperationResult {
-        guard let sk1Product = package.storeProduct.sk1Product else {
-            return .failure(SK1PurchaseError.productNotFound(package.storeProduct.productIdentifier))
-        }
-
-        // Make the purchase with SK1
-        let result = await purchaseSK1Product(sk1Product)
-
-        // Handle the result based on transaction state
-        switch result.transactionState {
-        case .failed:
-            if let skError = result.error as? SKError,
-               skError.code == .paymentCancelled || skError.code == .overlayCancelled {
-                return .userCancelled
-            }
-            return .failure(result.error ?? SK1PurchaseError.unknown)
-
-        case .deferred:
-            // Transaction requires external action (e.g., Ask to Buy approval)
-            return .pending
-
-        case .purchased, .restored:
-            // Get updated customer info after purchase
-            // RevenueCat should have observed the transaction and synced entitlements
-            do {
-                let customerInfo = try await Purchases.shared.customerInfo()
-                return .success(customerInfo)
-            } catch {
-                // Purchase succeeded but couldn't get customer info
-                print("Warning: Purchase succeeded but couldn't fetch customer info: \(error)")
-                if let cachedInfo = Purchases.shared.cachedCustomerInfo {
-                    return .success(cachedInfo)
-                }
-                return .failure(error)
-            }
-
-        case .purchasing:
-            // This shouldn't happen as the completion is only called after purchasing
-            return .failure(SK1PurchaseError.unknown)
-
-        @unknown default:
-            return .failure(SK1PurchaseError.unknown)
-        }
+        await purchase(product: package.storeProduct)
     }
 
     /// Restores purchases using SK1's `restoreCompletedTransactions()`.
@@ -124,7 +109,7 @@ final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
     ///
     /// - Warning: A successful restore does not imply that the user has any entitlements.
     ///   Always verify `customerInfo.entitlements.active` to confirm entitlement status.
-    private func restorePurchases() async throws -> RestoreOperationResult {
+    func restorePurchases() async throws -> RestoreOperationResult {
         // Trigger SK1 restore - RevenueCat will observe the restored transactions
         try await restoreCompletedTransactionsSK1()
 
@@ -140,8 +125,6 @@ final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
             purchasesRecovered: hasActiveSubscriptions || hasNonSubscriptions
         )
     }
-
-    private var restoreCompletionHandler: ((Error?) -> Void)?
 
     private func restoreCompletedTransactionsSK1() async throws {
         return try await withCheckedThrowingContinuation { continuation in
@@ -161,15 +144,54 @@ final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
 
     // MARK: - Private SK1 Purchase
 
-    private func purchaseSK1Product(_ product: SKProduct) async -> SK1PurchaseResult {
-        return await withCheckedContinuation { continuation in
+    private func purchaseSK1ProductAndHandleResult(_ sk1Product: SKProduct) async -> PurchaseOperationResult {
+        let result: SK1PurchaseResult
+        do {
+            result = try await purchaseSK1Product(sk1Product)
+        } catch {
+            return .failure(error)
+        }
+
+        switch result.transactionState {
+        case .failed:
+            if let skError = result.error as? SKError,
+               skError.code == .paymentCancelled || skError.code == .overlayCancelled {
+                return .userCancelled
+            }
+            return .failure(result.error ?? SK1PurchaseError.unknown)
+
+        case .deferred:
+            return .pending
+
+        case .purchased, .restored:
+            do {
+                let customerInfo = try await Purchases.shared.customerInfo()
+                return .success(customerInfo)
+            } catch {
+                print("Warning: Purchase succeeded but couldn't fetch customer info: \(error)")
+                if let cachedInfo = Purchases.shared.cachedCustomerInfo {
+                    return .success(cachedInfo)
+                }
+                return .failure(error)
+            }
+
+        case .purchasing:
+            return .failure(SK1PurchaseError.unknown)
+
+        @unknown default:
+            return .failure(SK1PurchaseError.unknown)
+        }
+    }
+
+    private func purchaseSK1Product(_ product: SKProduct) async throws -> SK1PurchaseResult {
+        return try await withCheckedThrowingContinuation { continuation in
             let productIdentifier = product.productIdentifier
 
             assert(purchaseCompletionHandlers[productIdentifier] == nil,
                    "Purchase already in progress for \(productIdentifier)")
 
             purchaseCompletionHandlers[productIdentifier] = { result in
-                continuation.resume(returning: result)
+                continuation.resume(with: result)
             }
 
             let payment = SKPayment(product: product)
@@ -218,11 +240,11 @@ extension ObserverModeStoreKit1PurchaseManager: SKPaymentTransactionObserver {
             print("⏳ SK1 purchase deferred for \(productIdentifier)")
             // Don't finish the transaction - it will be processed when approved
             purchaseCompletionHandlers.removeValue(forKey: productIdentifier)
-            completion(SK1PurchaseResult(transaction: transaction))
+            completion(.success(SK1PurchaseResult(transaction: transaction)))
 
         @unknown default:
             purchaseCompletionHandlers.removeValue(forKey: productIdentifier)
-            completion(SK1PurchaseResult(transaction: transaction))
+            completion(.success(SK1PurchaseResult(transaction: transaction)))
         }
     }
 
@@ -230,11 +252,11 @@ extension ObserverModeStoreKit1PurchaseManager: SKPaymentTransactionObserver {
     private func finishAndComplete(
         _ transaction: SKPaymentTransaction,
         productIdentifier: String,
-        completion: (SK1PurchaseResult) -> Void
+        completion: (Result<SK1PurchaseResult, Error>) -> Void
     ) {
         paymentQueue.finishTransaction(transaction)
         purchaseCompletionHandlers.removeValue(forKey: productIdentifier)
-        completion(SK1PurchaseResult(transaction: transaction))
+        completion(.success(SK1PurchaseResult(transaction: transaction)))
     }
 
     // MARK: - Restore Callbacks
