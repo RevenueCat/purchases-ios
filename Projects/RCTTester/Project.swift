@@ -27,12 +27,15 @@ let project = Project(
             resources: [
                 "../../Tests/TestingApps/RCTTester/RCTTester/**/*.xcassets",
                 "../../Tests/TestingApps/RCTTester/RCTTester/**/*.storekit",
+                "../../Tests/TestingApps/RCTTester/RCTTester/**/*.icon",
             ],
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
             ],
-            settings: .appTarget
+            settings: .appTarget(including: [
+                "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+            ])
         )
     ],
     schemes: [
