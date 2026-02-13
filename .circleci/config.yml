@@ -1453,6 +1453,12 @@ jobs:
       - trust-github-key
       - install-rubydocker-dependencies
       - run:
+          name: Check Release PR is approved
+          command: |
+            echo "Verifying that the release PR has been approved by an org member with write permissions."
+            echo "This check prevents tagging a release before the PR is properly reviewed."
+            bundle exec fastlane run validate_pr_approved
+      - run:
           name: Tag branch
           command: bundle exec fastlane tag_current_branch
 
@@ -1681,14 +1687,36 @@ jobs:
           name: Trigger RC App Pipeline
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
+  all-tests-succeeded:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - run:
+          name: All tests succeeded
+          command: echo "All tests succeeded"
+
+  wait-for-release-to-finish:
+    docker:
+      - image: cimg/ruby:3.2.0
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - install-rubydocker-dependencies
+      - run:
+          name: Wait for GitHub release
+          no_output_timeout: 60m
+          command: bundle exec fastlane wait_for_release_to_finish
+
   all-tasks-passed:
     docker:
       - image: cimg/base:stable
     resource_class: small
     steps:
       - run:
-          name: All tests passed
-          command: echo "All tests passed"
+          name: All tasks passed
+          command: echo "All tasks passed"
 
 workflows:
 
@@ -1987,33 +2015,31 @@ workflows:
       not:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
-      - make-release:
-          <<: *release-tags
       - push-revenuecat-pod:
-          requires:
-            - make-release
           <<: *release-tags
       - push-revenuecatui-pod:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
       - deploy-to-spm:
-          requires:
-            - make-release
           <<: *release-tags
       - docs-deploy:
-          requires:
-            - make-release
           <<: *release-tags
       - deploy-purchase-tester:
           dry_run: false
+          <<: *release-tags
+      - make-release:
           requires:
-            - make-release
+            - push-revenuecatui-pod
+            - deploy-to-spm
+            - docs-deploy
+            - deploy-purchase-tester
           <<: *release-tags
       - bump-sdk-in-rc-mobile-app:
           requires:
             - make-release
           <<: *release-tags
+
 
   snapshot-bump:
     when:
@@ -2243,9 +2269,9 @@ workflows:
       - emerge_purchases_ui_snapshot_tests
 
       # =============================================================
-      # Summary gate: all tests passed
+      # All tests gate for release branches
       # =============================================================
-      - all-tasks-passed:
+      - all-tests-succeeded:
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
@@ -2291,9 +2317,10 @@ workflows:
             - emerge_binary_size_analysis
 
       # =============================================================
-      # Release tagging: only on release branches
-      # Requires both release-checks and all-tasks-passed before
-      # the hold can be approved.
+      # Release tagging: only on release branches.
+      # The approve-release hold gates tagging until a maintainer
+      # manually approves. tag-release-branch also verifies the
+      # GitHub PR is approved via check_pr_approved.
       # =============================================================
       - release-checks:
           <<: *release-branches
@@ -2301,10 +2328,31 @@ workflows:
           type: approval
           requires:
             - release-checks
-            - all-tasks-passed
+            - all-tests-succeeded
           <<: *release-branches
       - tag-release-branch:
           requires:
             - approve-release
+          <<: *release-branches
+
+      # =============================================================
+      # Wait for the GitHub release to be created by the deploy-tag
+      # workflow (triggered by the tag). Only on release branches.
+      # =============================================================
+      - wait-for-release-to-finish:
+          requires:
+            - all-tests-succeeded
+          <<: *release-branches
+          context:
+            - slack-secrets
+
+      # =============================================================
+      # Final gate: required GitHub status check for PRs into main.
+      # On release branches. Waits for the release to finish.
+      # This should trigger the merge of the release PR into main.
+      # =============================================================
+      - all-tasks-passed:
+          requires:
+            - wait-for-release-to-finish
           <<: *release-branches
 
