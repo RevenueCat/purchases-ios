@@ -104,8 +104,9 @@ struct VideoComponentView: View {
                                     loopVideo: style.loop,
                                     muteAudio: style.muteAudio
                                 )
-                                // Recreate player when becoming playable or URL changes.
-                                .id("\(cachedURL)-\(playerRefreshToggle)"),
+                                // Recreate player when becoming playable again (carousel navigation).
+                                // URL changes are handled by the player's updateVideoIfNeeded method.
+                                .id(playerRefreshToggle),
                                 size: size,
                                 with: style
                             )
