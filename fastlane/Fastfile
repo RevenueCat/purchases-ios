@@ -1447,8 +1447,10 @@ platform :ios do
     env_vars = options[:env_vars] || {}
 
     Dir.chdir(project_root) do
-      # Use tuist directly (assumes it's in PATH, which is set by install-tuist step in CI)
-      tuist_binary = 'tuist'
+      tuist_binary = `which tuist 2>/dev/null`.strip
+      if tuist_binary.empty?
+        UI.user_error!("tuist not found in PATH. Install it with `mise install` or run the `revenuecat/install-tuist` CI step.")
+      end
 
       # Build environment variable exports for TUIST_ prefixed variables
       env_exports = []
