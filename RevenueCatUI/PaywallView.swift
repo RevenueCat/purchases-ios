@@ -53,6 +53,11 @@ public struct PaywallView: View {
     @State
     private var error: NSError?
 
+    #if os(macOS)
+    @State
+    private var containerSize: CGSize = .zero
+    #endif
+
 //    @StateObject
 //    private var defaultPaywallPromoOfferCache = PaywallPromoOfferCache()
 
@@ -205,6 +210,24 @@ public struct PaywallView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         self.content
+        // Fix: - Paywall adapts size dynamically to 80% of macOS window size
+        // See https://github.com/RevenueCat/purchases-ios/issues/5827
+        #if os(macOS)
+            .frame(width: self.containerSize.width > 0 ? self.containerSize.width : nil,
+                   height: self.containerSize.height > 0 ? self.containerSize.height : nil)
+            .task {
+                if let window = NSApplication.shared.windows.first {
+                    self.containerSize = CGSize(width: window.frame.width * 0.8,
+                                                height: window.frame.height * 0.8)
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSWindow.didResizeNotification)) { _ in
+                if let window = NSApplication.shared.windows.first {
+                    self.containerSize = CGSize(width: window.frame.width * 0.8,
+                                                height: window.frame.height * 0.8)
+                }
+            }
+        #endif
             .displayError(self.$error) {
                 guard let onRequestedDismissal = self.onRequestedDismissal else {
                     self.dismiss()
