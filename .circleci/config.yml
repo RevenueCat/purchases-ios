@@ -87,6 +87,13 @@ aliases:
           - /^.*-customercenter.alpha.*/
       branches:
         ignore: /.*/
+  stable-release-tags: &stable-release-tags
+    filters:
+      tags:
+        ignore:
+          - /^.*-.*$/
+      branches:
+        ignore: /.*/
   release-branches-and-main: &release-branches-and-main
     filters:
       tags:
@@ -1681,6 +1688,19 @@ jobs:
           name: Trigger RC App Pipeline
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
+  trigger-hybrid-common-update:
+    docker:
+      - image: cimg/ruby:3.2.0
+    resource_class: small
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - install-rubydocker-dependencies
+      - run:
+          name: Trigger dependency update in purchases-hybrid-common
+          command: bundle exec fastlane trigger_hybrid_common_update
+
 workflows:
 
   generate-snapshot:
@@ -1784,6 +1804,10 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
+      - trigger-hybrid-common-update:
+          requires:
+            - make-release
+          <<: *stable-release-tags
 
   snapshot-bump:
     when:
