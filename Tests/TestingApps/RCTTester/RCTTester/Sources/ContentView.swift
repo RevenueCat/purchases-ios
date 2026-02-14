@@ -9,8 +9,12 @@ import RevenueCat
 struct ContentView: View {
 
     @State private var configuration: SDKConfiguration
-    @State private var isSDKConfigured = false
+    @State private var purchaseManager: AnyPurchaseManager?
     @State private var hasStoredConfiguration: Bool
+
+    private var isSDKConfigured: Bool {
+        purchaseManager != nil
+    }
 
     init() {
         let storedConfiguration = SDKConfiguration.load()
@@ -20,9 +24,10 @@ struct ContentView: View {
 
     var body: some View {
         NavigationView {
-            if isSDKConfigured {
+            if let purchaseManager {
                 MainView(
                     configuration: $configuration,
+                    purchaseManager: purchaseManager,
                     onReconfigure: configureSDK
                 )
             } else {
@@ -61,7 +66,9 @@ struct ContentView: View {
         }
 
         Purchases.configure(with: builder.build())
-        isSDKConfigured = true
+
+        // Create the appropriate PurchaseManager based on configuration
+        purchaseManager = .create(for: configuration)
     }
 }
 
