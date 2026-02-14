@@ -177,12 +177,15 @@ private extension SystemInfo {
 
     static func withReceiptResult(
         _ result: MockBundle.ReceiptURLResult,
-        _ sandboxEnvironmentDetector: SandboxEnvironmentDetector? = nil
+        _ sandboxEnvironmentDetector: SandboxEnvironmentDetectorType? = nil
     ) -> SystemInfo {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
-        let sandboxDetector = sandboxEnvironmentDetector ?? BundleSandboxEnvironmentDetector(bundle: bundle)
+        let sandboxDetector = sandboxEnvironmentDetector ?? SandboxEnvironmentDetector(
+            bundle: bundle,
+            requestFetcher: MockRequestFetcher()
+        )
 
         return SystemInfo(platformInfo: nil,
                           finishTransactions: false,

@@ -49,9 +49,14 @@ class BaseBackendIntegrationTests: TestCase {
 
     var forceServerErrorStrategy: ForceServerErrorStrategy?
 
-    static var isSandbox: Bool = true {
-        didSet {
-            BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector(isSandbox: Self.isSandbox)
+    private let mockSandboxEnvironmentDetector = MockSandboxEnvironmentDetector(isSandbox: true)
+
+    var isSandbox: Bool {
+        get {
+            return self.mockSandboxEnvironmentDetector.isSandbox
+        }
+        set {
+            self.mockSandboxEnvironmentDetector.isSandbox = newValue
         }
     }
 
@@ -101,8 +106,6 @@ class BaseBackendIntegrationTests: TestCase {
               self.proxyURL != "REVENUECAT_PROXY_URL" else {
             throw ErrorUtils.configurationError(message: "Must set configuration in `Constants.swift`")
         }
-
-        Self.isSandbox = true
 
         self.mainThreadMonitor = .init()
         self.mainThreadMonitor.run()
@@ -274,6 +277,10 @@ extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
 
     final func allServersUp() {
         self.forceServerErrorStrategy = nil
+    }
+
+    var testSandboxEnvironmentDetector: SandboxEnvironmentDetectorType? {
+        return self.mockSandboxEnvironmentDetector
     }
 
 }

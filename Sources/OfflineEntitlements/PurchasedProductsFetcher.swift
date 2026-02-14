@@ -30,12 +30,12 @@ final class PurchasedProductsFetcher: PurchasedProductsFetcherType {
     private typealias Transactions = [StoreKit.VerificationResult<StoreKit.Transaction>]
 
     private let transactionFetcher: StoreKit2TransactionFetcherType
-    private let sandboxDetector: SandboxEnvironmentDetector
+    private let sandboxDetector: SandboxEnvironmentDetectorType
     private let cache: InMemoryCachedObject<Transactions>
 
     init(
         storeKit2TransactionFetcher: StoreKit2TransactionFetcherType,
-        sandboxDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
+        sandboxDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector.default
     ) {
         self.sandboxDetector = sandboxDetector
         self.transactionFetcher = storeKit2TransactionFetcher

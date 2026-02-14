@@ -2000,4 +2000,3 @@ workflows:
       - emerge_binary_size_analysis:
           context:
             - slack-secrets
-

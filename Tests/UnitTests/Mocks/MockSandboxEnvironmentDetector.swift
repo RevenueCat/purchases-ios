@@ -17,12 +17,17 @@
 @testable import RevenueCat
 #endif
 
-final class MockSandboxEnvironmentDetector: SandboxEnvironmentDetector {
+final class MockSandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
     init(isSandbox: Bool = true) {
-        self.isSandbox = isSandbox
+        self._isSandbox = .init(isSandbox)
     }
 
-    let isSandbox: Bool
+    private let _isSandbox: Atomic<Bool>
+
+    var isSandbox: Bool {
+        get { self._isSandbox.value }
+        set { self._isSandbox.value = newValue }
+    }
 
 }

@@ -12,32 +12,70 @@
 //  Created by Nacho Soto on 6/2/22.
 
 import Foundation
+import StoreKit
 
 /// A type that can determine if the current environment is sandbox.
-protocol SandboxEnvironmentDetector: Sendable {
+protocol SandboxEnvironmentDetectorType: Sendable {
 
     var isSandbox: Bool { get }
 
 }
 
-/// ``SandboxEnvironmentDetector`` that uses a `Bundle` to detect the environment
-final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
+/// Object used to detect the sandbox environment
+///
+/// This attempts to prefetch and parse the local receipt environment.
+/// While prefetching (or in case of failure), it falls back to existing non-prefetched checks.
+final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
     private let bundle: Atomic<Bundle>
     private let isRunningInSimulator: Bool
     private let receiptFetcher: LocalReceiptFetcherType
     private let macAppStoreDetector: MacAppStoreDetector?
+    private let operationDispatcher: OperationDispatcher
 
+    /// Cached `isSandbox` computed from a prefetched and parsed local receipt.
+    /// This is populated asynchronously and used when available.
+    private let cachedIsSandboxFromPrefetchedReceipt: Atomic<Bool?> = .init(nil)
+
+    /// Cached result of receipt path-based sandbox detection.
+    private let cachedIsSandboxBasedOnReceiptPath: Atomic<Bool?> = .init(nil)
+
+    /// Creates a new detector that prefetches the local receipt environment.
+    ///
+    /// - Parameters:
+    ///   - bundle: The bundle to use for receipt URL detection.
+    ///   - isRunningInSimulator: Whether the app is running in a simulator.
+    ///   - receiptFetcher: The receipt fetcher for macOS receipt parsing.
+    ///   - macAppStoreDetector: Detector for macOS App Store detection.
+    ///   - requestFetcher: The request fetcher used to refresh the StoreKit 1 receipt.
+    ///   - shouldPrefetchReceiptEnvironment: Whether to prefetch receipt environment asynchronously.
+    ///   - operationDispatcher: The dispatcher to use when dispatching work
     init(
         bundle: Bundle = .main,
         isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator,
         receiptFetcher: LocalReceiptFetcherType = LocalReceiptFetcher(),
-        macAppStoreDetector: MacAppStoreDetector? = nil
+        macAppStoreDetector: MacAppStoreDetector? = nil,
+        requestFetcher: StoreKitRequestFetcher,
+        shouldPrefetchReceiptEnvironment: Bool = true,
+        operationDispatcher: OperationDispatcher = OperationDispatcher.default
     ) {
         self.bundle = .init(bundle)
         self.isRunningInSimulator = isRunningInSimulator
         self.receiptFetcher = receiptFetcher
         self.macAppStoreDetector = macAppStoreDetector
+        self.operationDispatcher = operationDispatcher
+
+        if shouldPrefetchReceiptEnvironment {
+            self.prefetchReceiptEnvironment(requestFetcher: requestFetcher)
+        }
+    }
+
+    private init() {
+        self.bundle = .init(Bundle.main)
+        self.isRunningInSimulator = SystemInfo.isRunningInSimulator
+        self.receiptFetcher = LocalReceiptFetcher()
+        self.macAppStoreDetector = nil
+        self.operationDispatcher = OperationDispatcher.default
     }
 
     var isSandbox: Bool {
@@ -45,6 +83,87 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
             return true
         }
 
+        // Prefer prefetched receipt environment when available.
+        if let cachedIsSandbox = self.cachedIsSandboxFromPrefetchedReceipt.value {
+            return cachedIsSandbox
+        }
+
+        // Fallback to the legacy path-based detection.
+        if let cachedIsSandbox = self.cachedIsSandboxBasedOnReceiptPath.value {
+            return cachedIsSandbox
+        }
+
+        // Cache the result to avoid recomputing it
+        let isSandboxBasedOnReceiptPath = self.getIsSandboxBasedOnReceiptPath()
+        self.cachedIsSandboxBasedOnReceiptPath.value = isSandboxBasedOnReceiptPath
+        return isSandboxBasedOnReceiptPath
+    }
+
+    // MARK: - Default Instance
+
+    /// The default sandbox environment detector.
+    ///
+    /// By default, this uses a simplified `SandboxEnvironmentDetector` that only relies on
+    /// the legacy receipt path detection. When the SDK is initialized via `Purchases.configure()`,
+    /// this is replaced with a full `SandboxEnvironmentDetector` that includes
+    /// prefetched receipt environment detection.
+    private static let _default: Atomic<SandboxEnvironmentDetectorType> = .init(SandboxEnvironmentDetector())
+
+    static var `default`: SandboxEnvironmentDetectorType {
+        get { _default.value }
+        set { _default.value = newValue }
+    }
+
+}
+
+// MARK: - Prefetched Receipt Environment Detection
+
+private extension SandboxEnvironmentDetector {
+
+    func prefetchReceiptEnvironment(requestFetcher: StoreKitRequestFetcher) {
+        // If there's already a receipt on disk, use it and avoid refreshing.
+        guard !self.hasLocalReceiptOnDisk else {
+            self.cacheIsSandboxFromLocalReceiptEnvironment()
+            return
+        }
+
+        requestFetcher.fetchReceiptData {
+            self.cacheIsSandboxFromLocalReceiptEnvironment()
+        }
+    }
+
+    var hasLocalReceiptOnDisk: Bool {
+        guard let receiptURL = self.bundle.value.appStoreReceiptURL else {
+            return false
+        }
+
+        return FileManager.default.fileExists(atPath: receiptURL.path)
+    }
+
+    func cacheIsSandboxFromLocalReceiptEnvironment() {
+        operationDispatcher.dispatchOnWorkerThread {
+            // Parsing the receipt must be performed off of the main thread
+            guard let environment = try? self.receiptFetcher.fetchAndParseLocalReceipt().environment else {
+                return
+            }
+
+            guard environment != .unknown else {
+                return
+            }
+
+            self.operationDispatcher.dispatchOnMainActor {
+                self.cachedIsSandboxFromPrefetchedReceipt.value = environment != .production
+            }
+        }
+    }
+
+}
+
+// MARK: - Legacy Receipt Path-Based Detection
+
+private extension SandboxEnvironmentDetector {
+
+    func getIsSandboxBasedOnReceiptPath() -> Bool {
         guard let path = self.bundle.value.appStoreReceiptURL?.path else {
             return false
         }
@@ -63,22 +182,15 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
         #endif
     }
 
-    #if DEBUG
-    // Mutable in tests so it can be overriden
-    static var `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
-    #else
-    static let `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
-    #endif
-
 }
 
-extension BundleSandboxEnvironmentDetector: Sendable {}
+extension SandboxEnvironmentDetector: Sendable {}
 
 // MARK: -
 
 #if os(macOS) || targetEnvironment(macCatalyst)
 
-private extension BundleSandboxEnvironmentDetector {
+private extension SandboxEnvironmentDetector {
 
     var isProductionReceipt: Bool? {
         do {
