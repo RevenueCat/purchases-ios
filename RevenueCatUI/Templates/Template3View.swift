@@ -120,6 +120,7 @@ struct Template3View: TemplateViewType {
             .foregroundStyle(self.configuration.colors.text1Color)
             .multilineTextAlignment(.center)
             .matchedGeometryEffect(id: Geometry.title, in: self.namespace)
+            .accessibilityAddTraits(.isHeader)
     }
 
     private var features: some View {
