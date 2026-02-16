@@ -18,8 +18,7 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist,
-        run-installation-tests
+        tuist
       ]
     default: default
   generate_snapshots:
@@ -1534,73 +1533,18 @@ jobs:
             fi
             echo "export FAILED_INSTALLATION_TESTS=\"$FAILED_TESTS\"" >> $BASH_ENV
       - slack/notify:
+          branch_pattern: main
           channel: "feed-circleci-ios-failures"
           event: fail
           custom: |
             {
-              "text": "CircleCI job failed.",
               "blocks": [
                 {
-                  "type": "header",
+                  "type": "section",
                   "text": {
-                    "type": "plain_text",
-                    "text": "Job Failed. :red_circle:",
-                    "emoji": true
+                    "type": "mrkdwn",
+                    "text": ":red_circle: *${CIRCLE_JOB}* failed on branch `${CIRCLE_BRANCH}`\n\nFailed installation tests: ${FAILED_INSTALLATION_TESTS}\n\n<${CIRCLE_BUILD_URL}|View Job>"
                   }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Job*: ${CIRCLE_JOB}"
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Branch*: $CIRCLE_BRANCH"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Author*: $CIRCLE_USERNAME"
-                    }
-                  ],
-                  "accessory": {
-                    "type": "image",
-                    "image_url": "https://images.ctfassets.net/il1yandlcjgk/1VhtXIX9wwJMh29GurJsYp/5dc5a0ea52c6c35a2b630b462c7d74dd/circle-logo-badge-black.png",
-                    "alt_text": "CircleCI logo"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Failed installation tests*: ${FAILED_INSTALLATION_TESTS}"
-                    }
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "action_id": "basic_fail_view",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Job"
-                      },
-                      "url": "${CIRCLE_BUILD_URL}"
-                    }
-                  ]
                 }
               ]
             }
@@ -2207,13 +2151,4 @@ workflows:
           context:
             - slack-secrets
 
-  manual-trigger-installation-tests:
-    when:
-      equal: [run-installation-tests, << pipeline.parameters.action >>]
-    jobs:
-      - installation-tests-all-but-carthage:
-          context:
-            - slack-secrets
-      - installation-tests-carthage:
-          context:
-            - slack-secrets
+
