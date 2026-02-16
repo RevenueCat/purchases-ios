@@ -27,7 +27,6 @@ parameters:
   generate_revenuecatui_snapshots:
     default: false
     type: boolean
-
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
@@ -1029,27 +1028,15 @@ jobs:
           destination: scan-test-output
       - slack-notify-on-fail
 
-  build-tv-watch-and-macos:
+  build-tv-watch-mac-and-visionos:
     executor:
       name: macos-executor
     steps:
       - checkout
       - install-dependencies
       - run:
-          name: Build tvOS, watchOS and macOS
-          command: bundle exec fastlane build_tv_watch_mac
-          no_output_timeout: 30m
-      - slack-notify-on-fail
-
-  build-visionos:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout
-      - install-dependencies
-      - run:
-          name: Build visionOS
-          command: bundle exec fastlane build_visionos
+          name: Build tvOS, watchOS, macOS and visionOS
+          command: bundle exec fastlane build_tv_watch_mac_visionos
           no_output_timeout: 30m
       - slack-notify-on-fail
 
@@ -1918,10 +1905,7 @@ workflows:
       - backend-integration-tests-offline:
           context:
             - slack-secrets
-      - build-tv-watch-and-macos:
-          context:
-            - slack-secrets
-      - build-visionos:
+      - build-tv-watch-mac-and-visionos:
           context:
             - slack-secrets
       - docs-build:
@@ -2000,4 +1984,5 @@ workflows:
       - emerge_binary_size_analysis:
           context:
             - slack-secrets
+
 
