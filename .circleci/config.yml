@@ -1334,7 +1334,7 @@ jobs:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
 
-  installation-tests:
+  installation-tests-all-but-carthage:
     executor:
       name: macos-executor
     steps:
@@ -1345,15 +1345,6 @@ jobs:
       - run:
           name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
-      - run:
-          name: Upgrade Carthage
-          command: |
-            brew update
-            brew upgrade carthage
-      - run:
-          name: Update Carthage commit
-          working_directory: Tests/InstallationTests/CarthageInstallation/
-          command: bundle exec fastlane update_carthage_commit
 
       # Install per-test dependencies
       - install-dependencies:
@@ -1364,8 +1355,6 @@ jobs:
           directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/
       - install-dependencies:
           directory: Tests/InstallationTests/ReceiptParserInstallation/
-      - install-dependencies:
-          directory: Tests/InstallationTests/CarthageInstallation/
       - install-dependencies:
           directory: Tests/InstallationTests/XcodeDirectInstallation/
 
@@ -1514,41 +1503,6 @@ jobs:
       - save-installation-test-cache:
           test-name: receipt-parser
 
-      # --- Carthage ---
-      - restore-installation-test-cache:
-          test-name: carthage
-      - run:
-          name: "Installation Test: Carthage"
-          when: always
-          no_output_timeout: 30m
-          command: |
-            CACHE_DIR="/tmp/cache/installation-test-carthage"
-            if [ -f "$CACHE_DIR/SUCCESS" ]; then
-              echo "===== SKIPPED ====="
-              echo "Test already passed for this commit."
-              cat "$CACHE_DIR/SUCCESS"
-              exit 0
-            fi
-            set +e
-            (
-              set -e
-              cd Tests/InstallationTests/CarthageInstallation
-              bundle exec fastlane installation_tests
-              bundle exec fastlane scan
-              bundle exec fastlane archive
-            )
-            EXIT_CODE=$?
-            set -e
-            if [ $EXIT_CODE -eq 0 ]; then
-              mkdir -p "$CACHE_DIR"
-              echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
-            else
-              echo "FAILED" > /tmp/test_exit_codes/carthage
-              exit $EXIT_CODE
-            fi
-      - save-installation-test-cache:
-          test-name: carthage
-
       # --- Xcode Direct Integration ---
       - restore-installation-test-cache:
           test-name: xcode-direct-integration
@@ -1594,6 +1548,28 @@ jobs:
               exit 1
             fi
             echo "All installation tests passed!"
+      - slack-notify-on-fail
+
+  installation-tests-carthage:
+    executor:
+      name: macos-executor-large
+    steps:
+      - checkout-with-minimal-permissions
+      - run:
+          name: Upgrade Carthage
+          command: |
+            brew update
+            brew upgrade carthage
+      - update-carthage-installation-commit
+      # Carthage
+      - run:
+          name: Carthage Update
+          working_directory: Tests/InstallationTests/CarthageInstallation/
+          command: |
+            bundle exec fastlane installation_tests
+      - set-signing-repo-deploy-key-for-git
+      - install-dependencies-scan-and-archive:
+          directory: Tests/InstallationTests/CarthageInstallation/
       - slack-notify-on-fail
 
   lint:
@@ -2162,7 +2138,10 @@ workflows:
       - spm-revenuecat-ui-watchos:
           context:
             - slack-secrets
-      - installation-tests:
+      - installation-tests-all-but-carthage:
+          context:
+            - slack-secrets
+      - installation-tests-carthage:
           context:
             - slack-secrets
       - api-tests:
