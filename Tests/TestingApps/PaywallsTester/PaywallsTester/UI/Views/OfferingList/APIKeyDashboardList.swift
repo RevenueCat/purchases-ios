@@ -169,17 +169,13 @@ struct APIKeyDashboardList: View {
         }
     }
 
-    private func offeringHasComponents(_ offering: Offering) -> Bool {
-        offering.paywallComponents != nil
-    }
-
     @ViewBuilder
     private func list(with data: Data) -> some View {
         List {
             ForEach(data.sections, id: \.self) { template in
                 Section {
                     ForEach(data.offeringsBySection[template]!, id: \.id) { offering in
-                        if offering.paywall != nil || offeringHasComponents(offering) {
+                        if offering.hasPaywall {
                             #if targetEnvironment(macCatalyst)
                             NavigationLink(
                                 destination: PaywallPresenter(offering: offering,
