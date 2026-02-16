@@ -51,9 +51,10 @@ jobs:
           APPROVAL_JOB_NAME="approve-full-tests"
 
           # 1. Get the most recent pipeline for this branch
-          PIPELINE_ID=$(curl -sf \
+          PIPELINE_ID=$(curl -sf -G \
             -H "Circle-Token: $CCI_TOKEN" \
-            "https://circleci.com/api/v2/project/$PROJECT_SLUG/pipeline?branch=$BRANCH" \
+            --data-urlencode "branch=$BRANCH" \
+            "https://circleci.com/api/v2/project/$PROJECT_SLUG/pipeline" \
             | jq -r '.items[0].id')
 
           if [[ -z "$PIPELINE_ID" || "$PIPELINE_ID" == "null" ]]; then
