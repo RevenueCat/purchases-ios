@@ -27,11 +27,6 @@ parameters:
   generate_revenuecatui_snapshots:
     default: false
     type: boolean
-  # Temporary parameter to test the unified build job. Remove once verified.
-  run_build_all_platforms:
-    default: false
-    type: boolean
-
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
@@ -1990,11 +1985,4 @@ workflows:
           context:
             - slack-secrets
 
-  # Temporary workflow to test the unified build-tv-watch-mac-and-visionos job.
-  # Remove once verified.
-  test-build-all-platforms:
-    when: << pipeline.parameters.run_build_all_platforms >>
-    jobs:
-      - build-tv-watch-mac-and-visionos:
-          context:
-            - slack-secrets
+
