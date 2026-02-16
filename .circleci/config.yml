@@ -459,11 +459,6 @@ commands:
             else
               echo "FAILED" > "$STATUS_FILE"
             fi
-      - store_test_results:
-          path: << parameters.directory >>/fastlane/test_output
-      - store_artifacts:
-          path: << parameters.directory >>/fastlane/test_output/report.html
-          destination: << parameters.test-name >>_test_report.html
       - save-installation-test-cache:
           test-name: << parameters.test-name >>
 
