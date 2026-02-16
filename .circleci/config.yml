@@ -404,7 +404,6 @@ commands:
       - restore_cache:
           keys:
             - installation-test-<< parameters.test-name >>-{{ .Revision }}
-          when: always
 
   save-installation-test-cache:
     parameters:
@@ -415,7 +414,6 @@ commands:
           key: installation-test-<< parameters.test-name >>-{{ .Revision }}
           paths:
             - /tmp/cache/installation-test-<< parameters.test-name >>
-          when: always
 
   tuist-generate-workspace:
     description: "Install Tuist and generate workspace"
@@ -1359,6 +1357,18 @@ jobs:
       - install-dependencies:
           directory: Tests/InstallationTests/XcodeDirectInstallation/
 
+      # Restore all caches upfront (before any test can fail, so restore_cache always runs)
+      - restore-installation-test-cache:
+          test-name: cocoapods
+      - restore-installation-test-cache:
+          test-name: spm
+      - restore-installation-test-cache:
+          test-name: spm-custom-entitlement-computation
+      - restore-installation-test-cache:
+          test-name: receipt-parser
+      - restore-installation-test-cache:
+          test-name: xcode-direct-integration
+
       # Initialize test failure tracking
       - run:
           name: Initialize test tracking
@@ -1367,13 +1377,12 @@ jobs:
       # === Installation Tests ===
       # Each test checks for a cached success marker before running.
       # On success, a marker is saved to cache so retries skip passing tests.
+      # IMPORTANT: test steps always exit 0 so that save_cache reliably runs.
+      # Failures are reported in the "Result" steps at the end.
 
       # --- CocoaPods ---
-      - restore-installation-test-cache:
-          test-name: cocoapods
       - run:
           name: "Installation Test: CocoaPods"
-          when: always
           no_output_timeout: 30m
           command: |
             CACHE_DIR="/tmp/cache/installation-test-cocoapods"
@@ -1398,17 +1407,13 @@ jobs:
               echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
             else
               echo "FAILED" > /tmp/test_exit_codes/cocoapods
-              exit $EXIT_CODE
             fi
       - save-installation-test-cache:
           test-name: cocoapods
 
       # --- Swift Package Manager ---
-      - restore-installation-test-cache:
-          test-name: spm
       - run:
           name: "Installation Test: Swift Package Manager"
-          when: always
           no_output_timeout: 30m
           command: |
             CACHE_DIR="/tmp/cache/installation-test-spm"
@@ -1432,17 +1437,13 @@ jobs:
               echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
             else
               echo "FAILED" > /tmp/test_exit_codes/spm
-              exit $EXIT_CODE
             fi
       - save-installation-test-cache:
           test-name: spm
 
       # --- Custom Entitlement Computation SPM ---
-      - restore-installation-test-cache:
-          test-name: spm-custom-entitlement-computation
       - run:
           name: "Installation Test: Custom Entitlement Computation SPM"
-          when: always
           no_output_timeout: 30m
           command: |
             CACHE_DIR="/tmp/cache/installation-test-spm-custom-entitlement-computation"
@@ -1465,17 +1466,13 @@ jobs:
               echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
             else
               echo "FAILED" > /tmp/test_exit_codes/spm-custom-entitlement-computation
-              exit $EXIT_CODE
             fi
       - save-installation-test-cache:
           test-name: spm-custom-entitlement-computation
 
       # --- Receipt Parser ---
-      - restore-installation-test-cache:
-          test-name: receipt-parser
       - run:
           name: "Installation Test: Receipt Parser"
-          when: always
           no_output_timeout: 30m
           command: |
             CACHE_DIR="/tmp/cache/installation-test-receipt-parser"
@@ -1499,17 +1496,13 @@ jobs:
               echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
             else
               echo "FAILED" > /tmp/test_exit_codes/receipt-parser
-              exit $EXIT_CODE
             fi
       - save-installation-test-cache:
           test-name: receipt-parser
 
       # --- Xcode Direct Integration ---
-      - restore-installation-test-cache:
-          test-name: xcode-direct-integration
       - run:
           name: "Installation Test: Xcode Direct Integration"
-          when: always
           no_output_timeout: 30m
           command: |
             CACHE_DIR="/tmp/cache/installation-test-xcode-direct-integration"
@@ -1533,12 +1526,58 @@ jobs:
               echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
             else
               echo "FAILED" > /tmp/test_exit_codes/xcode-direct-integration
-              exit $EXIT_CODE
             fi
       - save-installation-test-cache:
           test-name: xcode-direct-integration
 
-      # === Final check ===
+      # === Results ===
+      # These steps report pass/fail visually. They use when: always (supported
+      # on run steps) so they execute even after a previous result step fails.
+      - run:
+          name: "Result: CocoaPods"
+          when: always
+          command: |
+            if [ -f /tmp/test_exit_codes/cocoapods ]; then
+              echo "Installation Test: CocoaPods FAILED"
+              exit 1
+            fi
+            echo "Installation Test: CocoaPods PASSED (or skipped)"
+      - run:
+          name: "Result: Swift Package Manager"
+          when: always
+          command: |
+            if [ -f /tmp/test_exit_codes/spm ]; then
+              echo "Installation Test: Swift Package Manager FAILED"
+              exit 1
+            fi
+            echo "Installation Test: Swift Package Manager PASSED (or skipped)"
+      - run:
+          name: "Result: Custom Entitlement Computation SPM"
+          when: always
+          command: |
+            if [ -f /tmp/test_exit_codes/spm-custom-entitlement-computation ]; then
+              echo "Installation Test: Custom Entitlement Computation SPM FAILED"
+              exit 1
+            fi
+            echo "Installation Test: Custom Entitlement Computation SPM PASSED (or skipped)"
+      - run:
+          name: "Result: Receipt Parser"
+          when: always
+          command: |
+            if [ -f /tmp/test_exit_codes/receipt-parser ]; then
+              echo "Installation Test: Receipt Parser FAILED"
+              exit 1
+            fi
+            echo "Installation Test: Receipt Parser PASSED (or skipped)"
+      - run:
+          name: "Result: Xcode Direct Integration"
+          when: always
+          command: |
+            if [ -f /tmp/test_exit_codes/xcode-direct-integration ]; then
+              echo "Installation Test: Xcode Direct Integration FAILED"
+              exit 1
+            fi
+            echo "Installation Test: Xcode Direct Integration PASSED (or skipped)"
       - run:
           name: Check for test failures
           when: always
