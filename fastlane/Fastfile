@@ -1982,16 +1982,18 @@ platform :ios do
 
     workspace_path = "#{project_root}/RevenueCat-Tuist.xcworkspace"
 
-    # Fetch certificates and provisioning profiles
+    xcodeproj_path = "#{project_root}/Projects/RCTTester/RCTTester.xcodeproj"
+
+    # Fetch certificates and provisioning profiles, and increment build number.
+    # increment_build_number modifies the generated .xcodeproj directly,
+    # which is the only reliable way to set the build number for Tuist projects.
     Dir.chdir("#{rct_tester_root}/fastlane") do
       match(readonly: true, platform: "ios")
+      increment_build_number(
+        build_number: latest_testflight_build_number(app_identifier: bundle_id, platform: 'ios') + 1,
+        xcodeproj: xcodeproj_path,
+      )
     end
-
-    # Get the latest TestFlight build number and increment
-    latest_build = latest_testflight_build_number(
-      app_identifier: bundle_id,
-      platform: 'ios'
-    )
 
     build_ios_app(
       workspace: workspace_path,
@@ -1999,8 +2001,7 @@ platform :ios do
       destination: "generic/platform=ios",
       xcodebuild_formatter: '',
       export_method: 'app-store',
-      xcargs: "CURRENT_PROJECT_VERSION=#{latest_build + 1} " \
-              "CODE_SIGN_STYLE=Manual " \
+      xcargs: "CODE_SIGN_STYLE=Manual " \
               "DEVELOPMENT_TEAM=8SXR2327BM " \
               "CODE_SIGN_IDENTITY='Apple Distribution' " \
               "PROVISIONING_PROFILE_SPECIFIER='#{provisioning_profile_name}'",
