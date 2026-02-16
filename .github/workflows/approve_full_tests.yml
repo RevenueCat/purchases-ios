@@ -31,8 +31,9 @@ jobs:
           fi
           echo "User is a member of the organization"
 
-      # Note: actions based on issue comments always trigger from the main branch,
-      # so we need to resolve the PR's head branch to find the right CircleCI pipeline.
+      # GitHub Actions `issue_comment` workflows always run from the default branch,
+      # so we resolve the PR's head branch to find its CircleCI pipeline and approve
+      # the hold job in the existing workflow.
       - name: Get PR branch
         id: get-branch
         run: echo "branch=$(gh pr view "$PR_NO" --repo "$REPO" --json headRefName --jq '.headRefName')" >> "$GITHUB_OUTPUT"
@@ -42,6 +43,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Approve CircleCI hold job
+        id: approve
         env:
           CCI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
           BRANCH: ${{ steps.get-branch.outputs.branch }}
@@ -51,7 +53,7 @@ jobs:
           APPROVAL_JOB_NAME="approve-full-tests"
 
           # 1. Get the most recent pipeline for this branch
-          PIPELINE_ID=$(curl -sf -G \
+          PIPELINE_ID=$(curl -s --max-time 15 -G \
             -H "Circle-Token: $CCI_TOKEN" \
             --data-urlencode "branch=$BRANCH" \
             "https://circleci.com/api/v2/project/$PROJECT_SLUG/pipeline" \
@@ -64,7 +66,7 @@ jobs:
           echo "Found pipeline: $PIPELINE_ID"
 
           # 2. Find the run-all-tests workflow in that pipeline
-          WORKFLOW_ID=$(curl -sf \
+          WORKFLOW_ID=$(curl -s --max-time 15 \
             -H "Circle-Token: $CCI_TOKEN" \
             "https://circleci.com/api/v2/pipeline/$PIPELINE_ID/workflow" \
             | jq -r --arg name "$WORKFLOW_NAME" '.items[] | select(.name == $name) | .id')
@@ -76,11 +78,20 @@ jobs:
           echo "Found workflow: $WORKFLOW_ID"
 
           # 3. Find the approve-full-tests approval job
-          APPROVAL_REQUEST_ID=$(curl -sf \
+          JOBS_RESPONSE=$(curl -s --max-time 15 \
             -H "Circle-Token: $CCI_TOKEN" \
-            "https://circleci.com/api/v2/workflow/$WORKFLOW_ID/job" \
-            | jq -r --arg name "$APPROVAL_JOB_NAME" \
-              '.items[] | select(.name == $name and .type == "approval") | .approval_request_id')
+            "https://circleci.com/api/v2/workflow/$WORKFLOW_ID/job")
+
+          JOB_STATUS=$(echo "$JOBS_RESPONSE" | jq -r --arg name "$APPROVAL_JOB_NAME" \
+            '.items[] | select(.name == $name and .type == "approval") | .status')
+
+          if [[ "$JOB_STATUS" == "success" ]]; then
+            echo "Hold job '$APPROVAL_JOB_NAME' was already approved"
+            exit 0
+          fi
+
+          APPROVAL_REQUEST_ID=$(echo "$JOBS_RESPONSE" | jq -r --arg name "$APPROVAL_JOB_NAME" \
+            '.items[] | select(.name == $name and .type == "approval") | .approval_request_id')
 
           if [[ -z "$APPROVAL_REQUEST_ID" || "$APPROVAL_REQUEST_ID" == "null" ]]; then
             echo "::error::Approval job '$APPROVAL_JOB_NAME' not found in workflow $WORKFLOW_ID"
@@ -90,7 +101,7 @@ jobs:
           echo "Found approval request: $APPROVAL_REQUEST_ID"
 
           # 4. Approve it
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+          HTTP_STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" -X POST \
             -H "Circle-Token: $CCI_TOKEN" \
             "https://circleci.com/api/v2/workflow/$WORKFLOW_ID/approve/$APPROVAL_REQUEST_ID")
 
@@ -100,3 +111,17 @@ jobs:
           fi
 
           echo "Successfully approved '$APPROVAL_JOB_NAME' in workflow '$WORKFLOW_NAME'"
+
+      - name: React to comment
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          if [[ "$JOB_STATUS" == "success" ]]; then
+            REACTION="+1"
+          else
+            REACTION="-1"
+          fi
+          gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions \
+            -f content="$REACTION"
