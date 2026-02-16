@@ -555,7 +555,7 @@ enum TestData {
                 offerDetailsWithIntroOffer: "Includes {{ sub_offer_duration }} **free** trial",
                 offerName: "{{ sub_duration_in_months }}"
             ),
-            assetBaseURL: Bundle.module.resourceURL ?? Bundle.module.bundleURL
+            assetBaseURL: Bundle.revenueCatUI.resourceURL ?? Bundle.revenueCatUI.bundleURL
         ),
         availablePackages: [TestData.monthlyPackage,
                             TestData.sixMonthPackage,

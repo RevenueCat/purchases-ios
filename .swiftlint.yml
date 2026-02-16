@@ -77,6 +77,15 @@ custom_rules:
       - Sources/Caching/DirectoryHelper.swift
       - Tests/
 
+  no_bundle_module:
+    included: "RevenueCatUI/.*\\.swift"
+    excluded:
+      - RevenueCatUI/Helpers/Bundle\+Extensions.swift
+    name: "No Bundle.module"
+    regex: '(Bundle\.module|bundle:\s*\.module)'
+    message: "Use Bundle.revenueCatUI instead of Bundle.module for Compose Resources compatibility"
+    severity: error
+
 identifier_name:
   max_length:
     warning: 60

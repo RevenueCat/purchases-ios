@@ -33,11 +33,14 @@ internal struct SK2StoreTransaction: StoreTransactionType {
         #if swift(>=5.9)
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
             self.storefront = .init(sk2Storefront: sk2Transaction.storefront)
+            self.reason = TransactionReason(sk2TransactionReason: sk2Transaction.reason)
         } else {
             self.storefront = nil
+            self.reason = nil
         }
         #else
         self.storefront = nil
+        self.reason = nil
         #endif
     }
 
@@ -50,6 +53,7 @@ internal struct SK2StoreTransaction: StoreTransactionType {
     let storefront: Storefront?
     let jwsRepresentation: String?
     var environment: StoreEnvironment?
+    let reason: TransactionReason?
 
     var hasKnownPurchaseDate: Bool { return true }
     var hasKnownTransactionIdentifier: Bool { return true }

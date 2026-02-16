@@ -22,7 +22,7 @@ struct IconView<S: ShapeStyle>: View {
     let tint: S
 
     var body: some View {
-        Image(self.icon.localAssetName, bundle: .module)
+        Image(self.icon.localAssetName, bundle: .revenueCatUI)
             .renderingMode(.template)
             .resizable()
             .scaledToFit()

@@ -641,6 +641,14 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     optional func paywallViewController(_ controller: PaywallViewController,
                                         willPresentExitOfferController exitOfferController: PaywallViewController)
 
+    /// Notifies that a purchase is about to be initiated, before the payment sheet is displayed.
+    /// This allows the delegate to gate the purchase flow (e.g., requiring authentication).
+    /// The `resume` closure **must** be called to either proceed (`true`) or cancel (`false`) the purchase.
+    @objc(paywallViewController:didInitiatePurchaseWithPackage:resume:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didInitiatePurchaseWith package: Package,
+                                        resume: @escaping (Bool) -> Void)
+
 }
 
 // MARK: - Private
@@ -694,7 +702,8 @@ private extension PaywallViewController {
             onSizeChange: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
-            }
+            },
+            purchaseInitiated: self.createPurchaseInitiatedHandler()
         )
 
         let controller = UIHostingController(rootView: container)
@@ -705,6 +714,17 @@ private extension PaywallViewController {
         controller.view.translatesAutoresizingMaskIntoConstraints = false
 
         return controller
+    }
+
+    private func createPurchaseInitiatedHandler() -> (Package, @escaping (Bool) -> Void) -> Void {
+        return { [weak self] package, resume in
+            guard let self else {
+                resume(true)
+                return
+            }
+            self.delegate?.paywallViewController?(self, didInitiatePurchaseWith: package, resume: resume)
+                ?? resume(true)
+        }
     }
 
 }
@@ -726,6 +746,8 @@ private struct PaywallContainerView: View {
 
     let onSizeChange: (CGSize) -> Void
 
+    let purchaseInitiated: (Package, @escaping (Bool) -> Void) -> Void
+
     var body: some View {
         PaywallView(configuration: self.configuration)
             .customPaywallVariables(self.customVariables)
@@ -738,6 +760,13 @@ private struct PaywallContainerView: View {
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
             .onRequestedDismissal(self.requestedDismissal)
+            .onPurchaseInitiated { package, resumeAction in
+                self.purchaseInitiated(package) { shouldProceed in
+                    Task { @MainActor in
+                        resumeAction(shouldProceed: shouldProceed)
+                    }
+                }
+            }
     }
 
 }

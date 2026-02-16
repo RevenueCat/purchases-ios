@@ -97,9 +97,17 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         controller.player = player
         controller.view.backgroundColor = .clear
         controller.showsPlaybackControls = showControls
+        // When controls are hidden, disable user interaction to allow carousel swipes to pass through.
+        // When controls are shown, user interaction remains enabled so users can tap to play/pause,
+        // seek, etc. In this case, carousel swipes over the video area won't work, which is the
+        // expected behavior since the user is interacting with the video controls.
+        if !showControls {
+            controller.view.isUserInteractionEnabled = false
+        }
         if #available(tvOS 14.0, *) {
             controller.allowsPictureInPicturePlayback = false
         }
+
         DispatchQueue.main.async {
             switch contentMode {
             case .fit:

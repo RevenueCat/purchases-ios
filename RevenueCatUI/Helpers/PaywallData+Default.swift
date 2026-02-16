@@ -114,7 +114,7 @@ private extension PaywallData {
     }
 
     static let backgroundImage = "background.jpg"
-    static let defaultTemplateBaseURL = Bundle.module.resourceURL ?? Bundle.module.bundleURL
+    static let defaultTemplateBaseURL = Bundle.revenueCatUI.resourceURL ?? Bundle.revenueCatUI.bundleURL
     static let revisionID: Int = -1
 
 }

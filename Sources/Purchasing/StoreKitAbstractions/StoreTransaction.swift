@@ -44,6 +44,7 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var storefront: Storefront? { self.transaction.storefront }
     @objc internal var jwsRepresentation: String? { self.transaction.jwsRepresentation }
     internal var environment: StoreEnvironment? { self.transaction.environment }
+    internal var reason: TransactionReason? { self.transaction.reason }
 
     var hasKnownPurchaseDate: Bool { return self.transaction.hasKnownPurchaseDate }
     var hasKnownTransactionIdentifier: Bool { self.transaction.hasKnownTransactionIdentifier }
@@ -121,6 +122,10 @@ internal protocol StoreTransactionType: Sendable {
     /// The server environment where the receipt was generated.
     /// - Note: this is only available for StoreKit 2 transactions.
     var environment: StoreEnvironment? { get }
+
+    /// The reason for the transaction, if known.
+    /// - Note: this is only available for StoreKit 2 transactions starting with iOS 17.
+    var reason: TransactionReason? { get }
 
     /// Indicates to the App Store that the app delivered the purchased content
     /// or enabled the service to finish the transaction.
