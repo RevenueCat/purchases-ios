@@ -18,8 +18,7 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist,
-        run-installation-tests
+        tuist
       ]
     default: default
   generate_snapshots:
@@ -402,6 +401,7 @@ commands:
         type: string
     steps:
       - restore_cache:
+          name: "Restore cache: << parameters.test-name >>"
           keys:
             - installation-test-<< parameters.test-name >>-{{ .Revision }}
 
@@ -411,6 +411,7 @@ commands:
         type: string
     steps:
       - save_cache:
+          name: "Save cache: << parameters.test-name >>"
           key: installation-test-<< parameters.test-name >>-{{ .Revision }}
           paths:
             - /tmp/cache/installation-test-<< parameters.test-name >>
@@ -2195,13 +2196,3 @@ workflows:
           context:
             - slack-secrets
 
-  manual-trigger-installation-tests:
-    when:
-      equal: [run-installation-tests, << pipeline.parameters.action >>]
-    jobs:
-      - installation-tests-all-but-carthage:
-          context:
-            - slack-secrets
-      - installation-tests-carthage:
-          context:
-            - slack-secrets
