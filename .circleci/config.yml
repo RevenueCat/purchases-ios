@@ -402,7 +402,7 @@ commands:
       - restore_cache:
           name: "Restore cache: << parameters.test-name >>"
           keys:
-            - installation-test-<< parameters.test-name >>-{{ .Revision }}
+            - installation-test-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
 
   save-installation-test-cache:
     parameters:
@@ -411,7 +411,7 @@ commands:
     steps:
       - save_cache:
           name: "Save cache: << parameters.test-name >>"
-          key: installation-test-<< parameters.test-name >>-{{ .Revision }}
+          key: installation-test-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
           paths:
             - /tmp/cache/installation-test-<< parameters.test-name >>
 
