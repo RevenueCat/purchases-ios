@@ -371,33 +371,25 @@ enum ErrorUtils {
      * Constructs an Error with the ``ErrorCode/purchaseCancelledError`` code.
      *
      * - Note: This error is used when  a purchase is cancelled by the user.
+     *
+     * - Parameter error: The underlying error, if any.
+     * - Parameter wasBackgrounded: If `true`, adds `purchaseWasBackgroundedKey` to `userInfo`.
+     *   This indicates the app was backgrounded during the purchase (e.g., user switched to UPI app).
      */
     static func purchaseCancelledError(
         error: Error? = nil,
+        wasBackgrounded: Bool = false,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
         let errorCode = ErrorCode.purchaseCancelledError
+        var extraUserInfo: [NSError.UserInfoKey: Any] = [:]
+        if wasBackgrounded {
+            extraUserInfo[.purchaseWasBackgroundedKey] = true
+        }
         return ErrorUtils.error(with: errorCode,
                                 message: errorCode.description,
                                 underlyingError: error,
-                                fileName: fileName, functionName: functionName, line: line)
-    }
-
-    /**
-     * Constructs an Error with the ``ErrorCode/purchaseInterruptedError`` code.
-     *
-     * - Note: This error is used when a purchase was interrupted, potentially due to
-     *         the user being redirected to an external payment app (e.g., UPI).
-     *         Unlike `purchaseCancelledError`, this does not indicate user intent to cancel.
-     */
-    static func purchaseInterruptedError(
-        error: Error? = nil,
-        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> PurchasesError {
-        let errorCode = ErrorCode.purchaseInterruptedError
-        return ErrorUtils.error(with: errorCode,
-                                message: errorCode.description,
-                                underlyingError: error,
+                                extraUserInfo: extraUserInfo,
                                 fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -744,7 +736,6 @@ private extension ErrorUtils {
                 )
 
         case .purchaseCancelledError,
-                .purchaseInterruptedError,
                 .storeProblemError,
                 .purchaseNotAllowedError,
                 .purchaseInvalidError,

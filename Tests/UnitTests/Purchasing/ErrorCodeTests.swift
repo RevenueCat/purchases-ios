@@ -203,13 +203,8 @@ class ErrorCodeTests: TestCase {
                                               expectedRawValue: 42)
     }
 
-    func testPurchaseInterruptedError() {
-        ensureEnumCaseMatchesExpectedRawValue(errorCode: .purchaseInterruptedError,
-                                              expectedRawValue: 43)
-    }
-
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases).to(haveCount(43))
+        expect(ErrorCode.allCases).to(haveCount(42))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {

@@ -782,6 +782,9 @@ final class PurchasesOrchestrator {
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
 
+            // Track that a purchase has started so we can detect if app is backgrounded during payment
+            self.markPurchaseStarted(productIdentifier: sk2Product.id)
+
             result = try await self.purchase(sk2Product, options)
 
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
@@ -792,12 +795,17 @@ final class PurchasesOrchestrator {
             let transaction: StoreTransaction?
             let userCancelled: Bool
 
+            // Check if app was backgrounded during purchase (for UPI/external payment app detection)
+            let wasBackgrounded = self.getAndClearBackgroundedState(productIdentifier: sk2Product.id)
+
             switch handleResult {
             case .userCancelled:
                 userCancelled = true
                 transaction = nil
-                if self.systemInfo.dangerousSettings.customEntitlementComputation {
-                    throw ErrorUtils.purchaseCancelledError()
+                // If app was backgrounded during purchase OR using custom entitlement computation,
+                // throw an error so the wasBackgrounded flag is included in the error's userInfo.
+                if wasBackgrounded || self.systemInfo.dangerousSettings.customEntitlementComputation {
+                    throw ErrorUtils.purchaseCancelledError(wasBackgrounded: wasBackgrounded)
                 }
             case let .successfulVerifiedTransaction(verifiedTransaction):
                 userCancelled = false
@@ -842,10 +850,12 @@ final class PurchasesOrchestrator {
         promotionalOfferId: String?,
         winBackOfferApplied: Bool
     ) async throws -> PurchaseResultData {
+        // Check if app was backgrounded during purchase (for UPI/external payment app detection)
+        let wasBackgrounded = self.getAndClearBackgroundedState(productIdentifier: productId)
 
         if case StoreKitError.userCancelled = error {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
-                throw ErrorUtils.purchaseCancelledError()
+                throw ErrorUtils.purchaseCancelledError(wasBackgrounded: wasBackgrounded)
             }
 
             self.trackPurchaseAttemptEventIfNeeded(startTime,
@@ -1281,7 +1291,10 @@ private extension PurchasesOrchestrator {
             Logger.debug(Strings.purchase.purchase_interrupted_external_app(
                 productIdentifier: skError.userInfo["productId"] as? String ?? "unknown"
             ))
-            return ErrorUtils.purchaseInterruptedError(error: error)
+            // Return purchaseCancelledError with wasBackgrounded flag set.
+            // This adds `purchaseWasBackgroundedKey` to userInfo so developers can detect
+            // that the cancellation may be due to an external payment app redirect.
+            return ErrorUtils.purchaseCancelledError(error: error, wasBackgrounded: true)
         }
 
         return ErrorUtils.purchasesError(withSKError: error)
@@ -1893,9 +1906,9 @@ private extension PurchasesOrchestrator {
         }
     }
 
-func handleSK1PurchasedTransaction(_ purchasedTransaction: StoreTransaction,
-                                   storefront: StorefrontType?,
-                                   restored: Bool) {
+    func handleSK1PurchasedTransaction(_ purchasedTransaction: StoreTransaction,
+                                       storefront: StorefrontType?,
+                                       restored: Bool) {
         // Clean up backgrounded state tracking (for UPI/external payment app detection)
         _ = self.getAndClearBackgroundedState(productIdentifier: purchasedTransaction.productIdentifier)
         // Don't attribute offering context or paywall data for restored transactions
@@ -1971,7 +1984,7 @@ func handleSK1PurchasedTransaction(_ purchasedTransaction: StoreTransaction,
         self.purchaseInitiatedPaywall.value = nil
     }
 
-// MARK: - Purchase Background State Tracking (for UPI/external payment app detection)
+    // MARK: - Purchase Background State Tracking (for UPI/external payment app detection)
 
     /// Marks that a purchase has started for the given product.
     /// This should be called when initiating a purchase to track if the app gets backgrounded during the flow.

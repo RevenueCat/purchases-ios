@@ -891,7 +891,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
     }
 
     @MainActor
-    func testPaymentSheetFailedWhenBackgroundedReturnsInterruptedError() throws {
+    func testPaymentSheetFailedWhenBackgroundedReturnsCancelledErrorWithBackgroundedFlag() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedUserCancelled: Bool?
         var receivedError: NSError?
@@ -922,8 +922,13 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventuallyNot(beNil())
-        expect(receivedUserCancelled) == false
-        expect(receivedError).to(matchError(ErrorCode.purchaseInterruptedError))
+        // userCancelled is true because it's still a purchaseCancelledError (isCancelledError returns true)
+        expect(receivedUserCancelled) == true
+        expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
+
+        // Verify the purchaseWasBackgroundedKey is set in userInfo
+        let wasBackgrounded = receivedError?.userInfo[NSError.UserInfoKey.purchaseWasBackgroundedKey as String] as? Bool
+        expect(wasBackgrounded) == true
     }
 
     func testSendsProductDataIfProductIsCached() {

@@ -237,7 +237,8 @@ extension PurchaseStrings: LogMessage {
 
         case let .purchase_interrupted_external_app(productIdentifier):
             return "Purchase for '\(productIdentifier)' interrupted - app was backgrounded during payment. " +
-            "User may have switched to external payment app (e.g., UPI). Returning purchaseInterruptedError."
+            "User may have switched to external payment app (e.g., UPI). " +
+            "Returning purchaseCancelledError with purchaseWasBackgroundedKey in userInfo."
 
         case .skpayment_missing_from_skpaymenttransaction:
             return """
