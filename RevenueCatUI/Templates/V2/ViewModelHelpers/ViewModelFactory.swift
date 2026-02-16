@@ -37,6 +37,9 @@ struct ViewModelFactory {
         uiConfigProvider: UIConfigProvider,
         colorScheme: ColorScheme
     ) throws -> RootViewModel {
+        // Validate that no unsupported conditions exist before building view models
+        try ConditionValidator.validateConditions(in: componentsConfig)
+
         let firstItemIgnoresSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
 
         let rootStackViewModel = try toStackViewModel(

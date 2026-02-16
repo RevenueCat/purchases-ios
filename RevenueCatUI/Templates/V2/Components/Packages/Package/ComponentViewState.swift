@@ -27,11 +27,26 @@ struct ComponentViewStateKey: EnvironmentKey {
 
 }
 
+/// Environment key for the current package ID within a PackageComponent context.
+/// This is used for evaluating `package` conditions in component overrides.
+struct CurrentPackageIdKey: EnvironmentKey {
+
+    static let defaultValue: String? = nil
+
+}
+
 extension EnvironmentValues {
 
     var componentViewState: ComponentViewState {
         get { self[ComponentViewStateKey.self] }
         set { self[ComponentViewStateKey.self] = newValue }
+    }
+
+    /// The package identifier of the enclosing PackageComponent, if any.
+    /// Used for evaluating `package` conditions in conditional configurability.
+    var currentPackageId: String? {
+        get { self[CurrentPackageIdKey.self] }
+        set { self[CurrentPackageIdKey.self] = newValue }
     }
 
 }

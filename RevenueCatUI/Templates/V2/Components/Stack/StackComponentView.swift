@@ -39,6 +39,12 @@ struct StackComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customPaywallVariables
+
+    @Environment(\.currentPackageId)
+    private var currentPackageId
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -62,15 +68,22 @@ struct StackComponentView: View {
     }
 
     var body: some View {
-        viewModel.styles(
+        let context = ConditionEvaluationContext(
             state: self.componentViewState,
-            condition: self.screenCondition,
+            screenCondition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
             ),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
             ),
+            customVariables: self.customPaywallVariables,
+            selectedPackageId: self.packageContext.package?.identifier,
+            currentPackageId: self.currentPackageId
+        )
+
+        viewModel.styles(
+            context: context,
             colorScheme: colorScheme
         ) { style in
             if style.visible {

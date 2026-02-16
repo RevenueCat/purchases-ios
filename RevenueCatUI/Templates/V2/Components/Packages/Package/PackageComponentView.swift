@@ -43,6 +43,8 @@ struct PackageComponentView: View {
                 onDismiss: self.onDismiss
             )
             .environment(\.componentViewState, componentViewState)
+            // Set the current package ID for condition evaluation within this PackageComponent
+            .environment(\.currentPackageId, package.identifier)
             // Overrides the existing PackageContext
             .environmentObject(PackageContext(
                 // This is needed so text component children use this

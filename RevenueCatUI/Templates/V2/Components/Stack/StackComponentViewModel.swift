@@ -94,6 +94,39 @@ class StackComponentViewModel {
         apply(style)
     }
 
+    @ViewBuilder
+    func styles(
+        context: ConditionEvaluationContext,
+        colorScheme: ColorScheme,
+        @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
+    ) -> some View {
+        let partial = PresentedStackPartial.buildPartial(
+            context: context,
+            with: self.presentedOverrides
+        )
+
+        let style = StackComponentStyle(
+            uiConfigProvider: self.uiConfigProvider,
+            badgeViewModels: self.badgeViewModels,
+            visible: partial?.visible ?? self.component.visible ?? true,
+            dimension: partial?.dimension ?? self.component.dimension,
+            size: partial?.size ?? self.component.size,
+            spacing: partial?.spacing ?? self.component.spacing,
+            backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
+            background: partial?.background ?? self.component.background,
+            padding: partial?.padding ?? self.component.padding,
+            margin: partial?.margin ?? self.component.margin,
+            shape: partial?.shape ?? self.component.shape,
+            border: partial?.border ?? self.component.border,
+            shadow: partial?.shadow ?? self.component.shadow,
+            badge: partial?.badge ?? self.component.badge,
+            overflow: partial?.overflow ?? self.component.overflow,
+            colorScheme: colorScheme
+        )
+
+        apply(style)
+    }
+
 }
 
 extension PresentedStackPartial: PresentedPartial {
