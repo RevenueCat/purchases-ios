@@ -1,5 +1,5 @@
 //
-//  ObserverModeStoreKit2PurchaseManager.swift
+//  StoreKit2PurchaseManager.swift
 //  RCTTester
 //
 
@@ -8,7 +8,7 @@ import RevenueCat
 import RevenueCatUI
 import StoreKit
 
-/// Purchase manager for observer mode with direct StoreKit 2 purchases.
+/// Purchase manager that makes purchases directly with StoreKit 2.
 ///
 /// In this mode:
 /// - `purchasesAreCompletedBy` is set to `.myApp`
@@ -18,7 +18,7 @@ import StoreKit
 /// - RevenueCat observes transactions and syncs entitlements
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-final class ObserverModeStoreKit2PurchaseManager: PurchaseManager {
+final class StoreKit2PurchaseManager: PurchaseManager {
 
     // MARK: - PurchaseManager
 
