@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        test-prepare-integration-tests
       ]
     default: default
   generate_snapshots:
@@ -2217,4 +2218,53 @@ workflows:
           context:
             - slack-secrets
 
-
+  # TEMP: Test workflow for validating prepare-integration-tests job. Remove after validation.
+  test-prepare-integration-tests:
+    when:
+      equal: [test-prepare-integration-tests, << pipeline.parameters.action >>]
+    jobs:
+      # 1. Normal build+test (for runtime comparison)
+      - backend-integration-tests-SK1:
+          context:
+            - slack-secrets
+      - backend-integration-tests-SK2:
+          context:
+            - slack-secrets
+      - backend-integration-tests-other:
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          context:
+            - slack-secrets
+      # 2. Full prepare + test-without-building flow (for runtime comparison)
+      - prepare-integration-tests:
+          context:
+            - slack-secrets
+      - backend-integration-tests-SK1:
+          name: test-SK1-without-building
+          test_without_building: true
+          requires:
+            - prepare-integration-tests
+          context:
+            - slack-secrets
+      - backend-integration-tests-SK2:
+          name: test-SK2-without-building
+          test_without_building: true
+          requires:
+            - prepare-integration-tests
+          context:
+            - slack-secrets
+      - backend-integration-tests-other:
+          name: test-other-without-building
+          test_without_building: true
+          requires:
+            - prepare-integration-tests
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          name: test-offline-without-building
+          test_without_building: true
+          requires:
+            - prepare-integration-tests
+          context:
+            - slack-secrets
