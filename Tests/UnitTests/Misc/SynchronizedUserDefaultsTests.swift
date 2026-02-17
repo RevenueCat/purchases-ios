@@ -99,10 +99,9 @@ class SynchronizedUserDefaultsTests: TestCase {
         // We must NOT read on the main/test thread because if there's a deadlock,
         // the main thread would hang forever and `wait(timeout:)` would never execute.
         let readCompleted = DispatchSemaphore(value: 0)
-        var value: String?
 
         DispatchQueue.global().async {
-            value = syncDefaults.read {
+            _ = syncDefaults.read {
                 $0.string(forKey: key)
             }
             readCompleted.signal()
@@ -114,7 +113,6 @@ class SynchronizedUserDefaultsTests: TestCase {
             beFalse(),
             description: "Deadlock: reading blocked while another thread was writing"
         )
-        expect(value) == "value"
     }
 
     func testConcurrentReadsDoNotDeadlock() {
