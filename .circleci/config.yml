@@ -394,6 +394,113 @@ commands:
           command: |
             bundle exec fastlane update_carthage_commit
 
+  restore-installation-test-cache:
+    parameters:
+      test-name:
+        type: string
+    steps:
+      - restore_cache:
+          name: "Restore cache: << parameters.test-name >>"
+          keys:
+            - installation-test-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
+
+  save-installation-test-cache:
+    parameters:
+      test-name:
+        type: string
+    steps:
+      - save_cache:
+          name: "Save cache: << parameters.test-name >>"
+          key: installation-test-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
+          paths:
+            - /tmp/cache/installation-test-<< parameters.test-name >>
+
+  run-installation-test:
+    description: "Run a single installation test with caching support"
+    parameters:
+      test-name:
+        type: string
+      display-name:
+        type: string
+      directory:
+        type: string
+      test-commands:
+        type: string
+    steps:
+      - run:
+          name: "Installation Test: << parameters.display-name >>"
+          no_output_timeout: 30m
+          command: |
+            CACHE_DIR="/tmp/cache/installation-test-<< parameters.test-name >>"
+            STATUS_FILE="/tmp/test_status/<< parameters.test-name >>"
+
+            if [ -f "$CACHE_DIR/SUCCESS" ]; then
+              echo "===== SKIPPED ====="
+              echo "Test already passed for this commit."
+              cat "$CACHE_DIR/SUCCESS"
+              echo "SKIPPED" > "$STATUS_FILE"
+              exit 0
+            fi
+
+            echo "STARTED" > "$STATUS_FILE"
+            set +e
+            (
+              set -e
+              cd << parameters.directory >>
+              << parameters.test-commands >>
+            )
+            EXIT_CODE=$?
+            set -e
+
+            if [ $EXIT_CODE -eq 0 ]; then
+              mkdir -p "$CACHE_DIR"
+              echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
+              echo "PASSED" > "$STATUS_FILE"
+            else
+              echo "FAILED" > "$STATUS_FILE"
+            fi
+      - save-installation-test-cache:
+          test-name: << parameters.test-name >>
+
+  report-installation-test-result:
+    description: "Report pass/fail status of an installation test"
+    parameters:
+      test-name:
+        type: string
+      display-name:
+        type: string
+    steps:
+      - run:
+          name: "Result: << parameters.display-name >>"
+          when: always
+          command: |
+            STATUS_FILE="/tmp/test_status/<< parameters.test-name >>"
+            if [ ! -f "$STATUS_FILE" ]; then
+              echo "Installation Test: << parameters.display-name >> DID NOT RUN (previous step failure)"
+              exit 1
+            fi
+            STATUS=$(cat "$STATUS_FILE")
+            case "$STATUS" in
+              PASSED)
+                echo "Installation Test: << parameters.display-name >> PASSED"
+                ;;
+              SKIPPED)
+                echo "Installation Test: << parameters.display-name >> SKIPPED (cached)"
+                ;;
+              FAILED)
+                echo "Installation Test: << parameters.display-name >> FAILED"
+                exit 1
+                ;;
+              STARTED)
+                echo "Installation Test: << parameters.display-name >> DID NOT COMPLETE (likely killed by timeout)"
+                exit 1
+                ;;
+              *)
+                echo "Installation Test: << parameters.display-name >> UNKNOWN STATUS: $STATUS"
+                exit 1
+                ;;
+            esac
+
   tuist-generate-workspace:
     description: "Install Tuist and generate workspace"
     parameters:
@@ -1300,64 +1407,147 @@ jobs:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
 
-  installation-tests-cocoapods:
+  installation-tests-all-but-carthage:
     executor:
       name: macos-executor
     steps:
+      # === Common setup ===
       - checkout-with-minimal-permissions
       - install-dependencies
-      - install-dependencies:
-          directory: Tests/InstallationTests/CocoapodsInstallation
+      - update-spm-installation-commit
       - run:
-          name: Install Pods
-          working_directory: Tests/InstallationTests/CocoapodsInstallation/
-          command: |
-            bundle exec pod install
-      - set-signing-repo-deploy-key-for-git
-      - scan-and-archive:
+          name: Replace API key
+          command: bundle exec fastlane replace_api_key_integration_tests
+
+      # Install per-test dependencies
+      - install-dependencies:
           directory: Tests/InstallationTests/CocoapodsInstallation
-      - slack-notify-on-fail
-
-  installation-tests-swift-package-manager:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout-with-minimal-permissions
-      - install-dependencies
-      - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/SPMInstallation/
-      - set-signing-repo-deploy-key-for-git
-      - scan-and-archive-all-platforms:
-          directory: Tests/InstallationTests/SPMInstallation/
-      - slack-notify-on-fail
-
-  installation-tests-custom-entitlement-computation-swift-package-manager:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout-with-minimal-permissions
-      - install-dependencies
-      - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/
-      - scan:
-          directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/
-      - slack-notify-on-fail
-
-  installation-tests-receipt-parser:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout-with-minimal-permissions
-      - install-dependencies
-      - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/ReceiptParserInstallation/
-      - set-signing-repo-deploy-key-for-git
-      - scan-and-archive-all-platforms:
-          directory: Tests/InstallationTests/ReceiptParserInstallation/
-      - slack-notify-on-fail
+      - install-dependencies:
+          directory: Tests/InstallationTests/XcodeDirectInstallation/
+
+      # Restore all caches upfront (before any test can fail, so restore_cache always runs)
+      - restore-installation-test-cache:
+          test-name: cocoapods
+      - restore-installation-test-cache:
+          test-name: spm
+      - restore-installation-test-cache:
+          test-name: spm-custom-entitlement-computation
+      - restore-installation-test-cache:
+          test-name: receipt-parser
+      - restore-installation-test-cache:
+          test-name: xcode-direct-integration
+
+      # Initialize test status tracking
+      - run:
+          name: Initialize test tracking
+          command: mkdir -p /tmp/test_status
+
+      # === Installation Tests ===
+      # Each test checks for a cached success marker before running.
+      # On success, a marker is saved to cache so retries skip passing tests.
+      # Test steps always exit 0 so that save_cache reliably runs.
+      # Failures are reported in the "Result" steps at the end.
+
+      - run-installation-test:
+          test-name: cocoapods
+          display-name: CocoaPods
+          directory: Tests/InstallationTests/CocoapodsInstallation
+          test-commands: |
+            bundle exec pod install
+            bundle exec fastlane scan
+            bundle exec fastlane archive
+      - run-installation-test:
+          test-name: spm
+          display-name: Swift Package Manager
+          directory: Tests/InstallationTests/SPMInstallation
+          test-commands: |
+            bundle exec fastlane scan
+            bundle exec fastlane archive_all_platforms
+      - run-installation-test:
+          test-name: spm-custom-entitlement-computation
+          display-name: Custom Entitlement Computation SPM
+          directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation
+          test-commands: |
+            bundle exec fastlane scan
+      - run-installation-test:
+          test-name: receipt-parser
+          display-name: Receipt Parser
+          directory: Tests/InstallationTests/ReceiptParserInstallation
+          test-commands: |
+            bundle exec fastlane scan
+            bundle exec fastlane archive_all_platforms
+      - run-installation-test:
+          test-name: xcode-direct-integration
+          display-name: Xcode Direct Integration
+          directory: Tests/InstallationTests/XcodeDirectInstallation
+          test-commands: |
+            bundle exec fastlane scan
+            bundle exec fastlane archive
+
+      # === Results ===
+      # These steps report pass/fail visually. They use when: always so they
+      # execute even after a previous result step or test step fails.
+      - report-installation-test-result:
+          test-name: cocoapods
+          display-name: CocoaPods
+      - report-installation-test-result:
+          test-name: spm
+          display-name: Swift Package Manager
+      - report-installation-test-result:
+          test-name: spm-custom-entitlement-computation
+          display-name: Custom Entitlement Computation SPM
+      - report-installation-test-result:
+          test-name: receipt-parser
+          display-name: Receipt Parser
+      - report-installation-test-result:
+          test-name: xcode-direct-integration
+          display-name: Xcode Direct Integration
+
+      # Slack notification with failed test details
+      - run:
+          name: Collect failed test names for Slack
+          when: always
+          command: |
+            echo 'export SLACK_ACCESS_TOKEN="${SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
+            echo 'export SLACK_DEFAULT_CHANNEL="${SLACK_DEFAULT_CHANNEL_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
+            FAILED_TESTS=""
+            for test in cocoapods spm spm-custom-entitlement-computation receipt-parser xcode-direct-integration; do
+              STATUS_FILE="/tmp/test_status/$test"
+              if [ ! -f "$STATUS_FILE" ]; then
+                FAILED_TESTS="${FAILED_TESTS:+$FAILED_TESTS, }$test (did not run)"
+              else
+                STATUS=$(cat "$STATUS_FILE")
+                if [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "STARTED" ]; then
+                  FAILED_TESTS="${FAILED_TESTS:+$FAILED_TESTS, }$test"
+                fi
+              fi
+            done
+            if [ -z "$FAILED_TESTS" ]; then
+              FAILED_TESTS="(none detected)"
+            fi
+            echo "export FAILED_INSTALLATION_TESTS=\"$FAILED_TESTS\"" >> $BASH_ENV
+      - slack/notify:
+          branch_pattern: main
+          channel: "feed-circleci-ios-failures"
+          event: fail
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":red_circle: *${CIRCLE_JOB}* failed on branch `${CIRCLE_BRANCH}`\n\nFailed installation tests: ${FAILED_INSTALLATION_TESTS}\n\n<${CIRCLE_BUILD_URL}|View Job>"
+                  }
+                }
+              ]
+            }
 
   installation-tests-carthage:
     executor:
@@ -1379,18 +1569,6 @@ jobs:
       - set-signing-repo-deploy-key-for-git
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/CarthageInstallation/
-      - slack-notify-on-fail
-
-  installation-tests-xcode-direct-integration:
-    executor:
-      name: macos-executor
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
-    steps:
-      - checkout-with-minimal-permissions
-      - set-signing-repo-deploy-key-for-git
-      - install-dependencies-scan-and-archive:
-          directory: Tests/InstallationTests/XcodeDirectInstallation/
       - slack-notify-on-fail
 
   lint:
@@ -1956,22 +2134,10 @@ workflows:
       - spm-revenuecat-ui-watchos:
           context:
             - slack-secrets
-      - installation-tests-cocoapods:
-          context:
-            - slack-secrets
-      - installation-tests-swift-package-manager:
-          context:
-            - slack-secrets
-      - installation-tests-custom-entitlement-computation-swift-package-manager:
+      - installation-tests-all-but-carthage:
           context:
             - slack-secrets
       - installation-tests-carthage:
-          context:
-            - slack-secrets
-      - installation-tests-xcode-direct-integration:
-          context:
-            - slack-secrets
-      - installation-tests-receipt-parser:
           context:
             - slack-secrets
       - api-tests:
