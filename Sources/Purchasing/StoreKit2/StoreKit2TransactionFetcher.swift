@@ -44,9 +44,14 @@ protocol StoreKit2TransactionFetcherType: Sendable {
 
 }
 
-final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
+actor StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
 
     private let diagnosticsTracker: DiagnosticsTrackerType?
+
+    /// Type-erased storage for the in-flight `AppTransaction.shared` task.
+    /// The actual type is `Task<VerificationResult<AppTransaction>, Error>` (iOS 16+).
+    /// Using `Any?` avoids an `@available` annotation on the stored property.
+    private var currentAppTransactionTask: Any?
 
     init(diagnosticsTracker: DiagnosticsTrackerType?) {
         self.diagnosticsTracker = diagnosticsTracker
@@ -141,7 +146,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         get async {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 do {
-                    return try await AppTransaction.shared.jwsRepresentation
+                    return try await self.fetchCoalescedAppTransaction().jwsRepresentation
                 } catch {
                     self.trackAppleAppTransactionError(error)
                     return nil
@@ -162,18 +167,9 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     /// if the feature is unavailable on the current platform version.
     /// - Parameter result: A `String?` containing the JWS representation of the app transaction, 
     /// or `nil` if unavailable.
-    func appTransactionJWS(_ completion: @escaping (String?) -> Void) {
+    nonisolated func appTransactionJWS(_ completion: @escaping (String?) -> Void) {
         Async.call(with: completion) {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                do {
-                    return try await AppTransaction.shared.jwsRepresentation
-                } catch {
-                    self.trackAppleAppTransactionError(error)
-                    return nil
-                }
-            } else {
-                return nil
-            }
+            await self.appTransactionJWS
         }
     }
 
@@ -329,7 +325,7 @@ extension StoreKit2TransactionFetcher {
         get async {
             do {
                 if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                    let transaction = try await StoreKit.AppTransaction.shared
+                    let transaction = try await self.fetchCoalescedAppTransaction()
                     return transaction.verifiedAppTransaction
                 } else {
                     Logger.warn(Strings.storeKit.sk2_app_transaction_unavailable)
@@ -343,7 +339,7 @@ extension StoreKit2TransactionFetcher {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    private func trackAppleAppTransactionError(_ error: Error) {
+    private nonisolated func trackAppleAppTransactionError(_ error: Error) {
         let purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
         let errorMessage: String = (purchasesError.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription
             ?? purchasesError.localizedDescription
@@ -353,5 +349,29 @@ extension StoreKit2TransactionFetcher {
                                                                errorCode: errorCode,
                                                                storeKitErrorDescription: storeKitErrorDescription)
         Logger.warn(Strings.storeKit.sk2_error_fetching_app_transaction(error))
+    }
+
+    // MARK: - AppTransaction Coalescing
+
+    /// Ensures only one `AppTransaction.shared` fetch is in-flight at a time.
+    ///
+    /// If a fetch is already running, concurrent callers await the same `Task`.
+    /// Once the fetch completes, the task is cleared so subsequent calls trigger a fresh fetch
+    /// (avoiding stale cached values).
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    private func fetchCoalescedAppTransaction() async throws -> StoreKit.VerificationResult<AppTransaction> {
+        typealias AppTransactionTask = Task<StoreKit.VerificationResult<AppTransaction>, Error>
+
+        if let existingTask = currentAppTransactionTask as? AppTransactionTask {
+            return try await existingTask.value
+        }
+
+        let task = AppTransactionTask {
+            try await AppTransaction.shared
+        }
+        currentAppTransactionTask = task
+
+        defer { currentAppTransactionTask = nil }
+        return try await task.value
     }
 }
