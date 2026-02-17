@@ -478,10 +478,7 @@ private extension SandboxEnvironmentDetector {
         // Wait for the async prefetch to complete. We only do this on iOS 16.0+ because that's where AppTransaction is
         // available.
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            await expect(mockTransactionFetcher.appTransactionEnvironmentCalled.value).toEventually(
-                beTrue(),
-                timeout: .seconds(5)
-            )
+            await expect(mockTransactionFetcher.appTransactionEnvironmentCalled.value).toEventually(beTrue())
         }
 
         return detector
