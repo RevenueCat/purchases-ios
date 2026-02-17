@@ -38,7 +38,10 @@ class TextComponentViewModel {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
-        self.text = try localizationProvider.localizedStrings.string(key: component.text)
+        self.text = (try? localizationProvider.localizedStrings.string(key: component.text)) ?? {
+            Logger.warning("Missing localization for text_lid '\(component.text)', using empty string.")
+            return ""
+        }()
 
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
             try LocalizedTextPartial.create(from: $0, using: localizationProvider.localizedStrings)

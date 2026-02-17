@@ -720,30 +720,20 @@ platform :ios do
     xcframework_installation_tests
   end
 
-  desc "build tvOS, watchOS, macOS"
-  lane :build_tv_watch_mac do |options|
+  desc "build tvOS, watchOS, macOS and visionOS"
+  lane :build_tv_watch_mac_visionos do |options|
     load_spm_dependencies
     build_release(platform: 'watchOS')
     build_release(platform: 'tvOS')
     build_release(platform: 'macOS')
+    build_release(platform: 'visionOS')
+    build_release(platform: 'visionOS', scheme: 'RevenueCatUI')
   end
 
   desc "macOS build"
   lane :build_mac do |options|
     load_spm_dependencies
     build_release(platform: 'macOS')
-  end
-
-  desc "visionOS build"
-  lane :build_visionos do |options|
-    build_release(
-      platform: 'visionOS',
-      scheme: 'RevenueCat'
-    )
-    build_release(
-      platform: 'visionOS',
-      scheme: 'RevenueCatUI'
-    )
   end
 
   desc "Build BinarySizeTest app and upload to Emerge"
