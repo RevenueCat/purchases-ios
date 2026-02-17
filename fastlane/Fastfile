@@ -1606,6 +1606,7 @@ platform :ios do
 
     if test_without_building
       scan_options[:test_without_building] = true
+      scan_options[:skip_build] = true
       scan_options[:skip_package_dependencies_resolution] = true
       scan_options[:disable_package_automatic_updates] = true
       scan_options[:skip_detect_devices] = true
