@@ -310,7 +310,11 @@ extension SystemInfo {
 }
 #endif
 
-extension SystemInfo: SandboxEnvironmentDetectorType {}
+extension SystemInfo: SandboxEnvironmentDetectorType {
+    func cancelInFlightAppTransactionPrefetch() {
+        self.sandboxEnvironmentDetector.cancelInFlightAppTransactionPrefetch()
+    }
+}
 
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.

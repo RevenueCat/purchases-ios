@@ -30,4 +30,5 @@ final class MockSandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         set { self._isSandbox.value = newValue }
     }
 
+    func cancelInFlightAppTransactionPrefetch() {}
 }

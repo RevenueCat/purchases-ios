@@ -19,6 +19,7 @@ protocol SandboxEnvironmentDetectorType: Sendable {
 
     var isSandbox: Bool { get }
 
+    func cancelInFlightAppTransactionPrefetch()
 }
 
 /// Object used to detect the sandbox environment
@@ -31,6 +32,8 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
     private let isRunningInSimulator: Bool
     private let receiptFetcher: LocalReceiptFetcherType
     private let macAppStoreDetector: MacAppStoreDetector?
+
+    private let appTransactionFetchTask: Atomic<Task<Void, Never>?>
 
     /// Cached environment from `AppTransaction` (iOS 16+).
     /// This is populated asynchronously and used for more reliable sandbox detection.
@@ -58,6 +61,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.isRunningInSimulator = isRunningInSimulator
         self.receiptFetcher = receiptFetcher
         self.macAppStoreDetector = macAppStoreDetector
+        self.appTransactionFetchTask = Atomic(nil)
 
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             // Start fetching the AppTransaction environment asynchronously.
@@ -71,6 +75,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.isRunningInSimulator = SystemInfo.isRunningInSimulator
         self.receiptFetcher = LocalReceiptFetcher()
         self.macAppStoreDetector = nil
+        self.appTransactionFetchTask = nil
     }
 
     var isSandbox: Bool {
@@ -114,19 +119,30 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
 // MARK: - AppTransaction Environment Detection (iOS 16+)
 
-private extension SandboxEnvironmentDetector {
+internal extension SandboxEnvironmentDetector {
 
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     func prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: StoreKit2TransactionFetcherType) {
         // Important: Do not use background priority on this task.
         // In testing, this caused `AppTransaction.shared` to sometimes
         // throw a cancellation error despite no explicit cancellation.
-        Task {
+
+        guard self.appTransactionFetchTask.value == nil else {
+            // Prefetch is already in progress, don't prefetch again
+            return
+        }
+
+        self.appTransactionFetchTask.value = Task {
             let environment = await transactionFetcher.appTransactionEnvironment
             self.cachedAppTransactionEnvironment.value = environment
+            self.appTransactionFetchTask.value = nil
         }
     }
 
+    func cancelInFlightAppTransactionPrefetch() {
+        self.appTransactionFetchTask.value?.cancel()
+        self.appTransactionFetchTask.value = nil
+    }
 }
 
 // MARK: - Legacy Receipt Path-Based Detection
