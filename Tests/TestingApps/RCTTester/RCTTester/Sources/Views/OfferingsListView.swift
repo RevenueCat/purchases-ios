@@ -15,6 +15,8 @@ struct OfferingsListView: View {
         case error(Error)
     }
 
+    let purchaseManager: AnyPurchaseManager
+
     @State private var loadingState: LoadingState = .loading
     @State private var offeringForPaywall: Offering?
     @State private var offeringForMetadata: Offering?
@@ -53,6 +55,7 @@ struct OfferingsListView: View {
                         ForEach(offerings) { offering in
                             OfferingSectionView(
                                 offering: offering,
+                                purchaseManager: purchaseManager,
                                 onPresentPaywall: {
                                     offeringForPaywall = offering
                                 },
@@ -71,6 +74,7 @@ struct OfferingsListView: View {
         }
         .presentPaywall(
             offering: $offeringForPaywall,
+            myAppPurchaseLogic: purchaseManager.myAppPurchaseLogic,
             onDismiss: {
                 print("Paywall dismissed")
             }
@@ -112,16 +116,19 @@ struct OfferingsListView: View {
             loadingState = .loading
         }
         do {
-            let offerings = try await Purchases.shared.offerings()
-            var fetchedOfferings = Array(offerings.all.values)
+            let fetchedOfferings = try await Purchases.shared.offerings()
+            let currentOffering = fetchedOfferings.current
 
-            // Move the default offering to the top of the list
-            if let defaultOffering = offerings.current,
-            fetchedOfferings.first?.identifier != defaultOffering.identifier {
-                fetchedOfferings.removeAll { $0.identifier == defaultOffering.identifier }
-                fetchedOfferings.insert(defaultOffering, at: 0)
+            // Sort by identifier, keeping the current offering first
+            let sortedOfferings = fetchedOfferings.all.values.sorted { lhs, rhs in
+                let lhsIsCurrent = lhs.identifier == currentOffering?.identifier
+                let rhsIsCurrent = rhs.identifier == currentOffering?.identifier
+                if lhsIsCurrent != rhsIsCurrent {
+                    return lhsIsCurrent
+                }
+                return lhs.identifier < rhs.identifier
             }
-            loadingState = .loaded(fetchedOfferings)
+            loadingState = .loaded(sortedOfferings)
         } catch {
             loadingState = .error(error)
             print("Error fetching offerings: \(error)")
@@ -131,6 +138,6 @@ struct OfferingsListView: View {
 
 #Preview {
     NavigationView {
-        OfferingsListView()
+        OfferingsListView(purchaseManager: AnyPurchaseManager(RevenueCatPurchaseManager()))
     }
 }
