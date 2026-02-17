@@ -859,6 +859,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     static func clearSingleton() {
         self.purchases.modify { purchases in
             purchases?.delegate = nil
+            SandboxEnvironmentDetector.default.cancelInFlightAppTransactionPrefetch()
             purchases = nil
         }
     }

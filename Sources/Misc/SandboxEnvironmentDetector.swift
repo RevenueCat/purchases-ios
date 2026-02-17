@@ -19,6 +19,7 @@ protocol SandboxEnvironmentDetectorType: Sendable {
 
     var isSandbox: Bool { get }
 
+    func cancelInFlightAppTransactionPrefetch()
 }
 
 /// Object used to detect the sandbox environment
@@ -32,6 +33,8 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
     private let receiptFetcher: LocalReceiptFetcherType
     private let macAppStoreDetector: MacAppStoreDetector?
 
+    private let appTransactionFetchTask: Atomic<Task<Void, Never>?>
+
     /// Cached environment from `AppTransaction` (iOS 16+).
     /// This is populated asynchronously and used for more reliable sandbox detection.
     private let cachedAppTransactionEnvironment: Atomic<StoreEnvironment?> = .init(nil)
@@ -39,7 +42,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
     /// Cached result of receipt path-based sandbox detection.
     private let cachedIsSandboxBasedOnReceiptPath: Atomic<Bool?> = .init(nil)
 
-    /// Creates a new detector that uses `AppTransaction` for environment detection on iOS 16+.
+    /// Creates a new detector that uses `AppTransaction` for environment detection on iOS 18+.
     ///
     /// - Parameters:
     ///   - bundle: The bundle to use for receipt URL detection.
@@ -58,8 +61,9 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.isRunningInSimulator = isRunningInSimulator
         self.receiptFetcher = receiptFetcher
         self.macAppStoreDetector = macAppStoreDetector
+        self.appTransactionFetchTask = Atomic(nil)
 
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
             // Start fetching the AppTransaction environment asynchronously.
             // The result will be cached and used by `isSandbox` once available.
             self.prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: transactionFetcher)
@@ -71,6 +75,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.isRunningInSimulator = SystemInfo.isRunningInSimulator
         self.receiptFetcher = LocalReceiptFetcher()
         self.macAppStoreDetector = nil
+        self.appTransactionFetchTask = nil
     }
 
     var isSandbox: Bool {
@@ -114,19 +119,32 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
 // MARK: - AppTransaction Environment Detection (iOS 16+)
 
-private extension SandboxEnvironmentDetector {
+internal extension SandboxEnvironmentDetector {
 
-    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    // This is only used on iOS 18+ because we observed that on iOS 16/17,
+    // prefetching the AppTransaction would sometimes cause the StoreKit daemon to freeze
+    // while running automated tests in some environments, which doesn't occur on iOS 18+.
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     func prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: StoreKit2TransactionFetcherType) {
+        guard self.appTransactionFetchTask.value == nil else {
+            // Prefetch is already in progress, don't prefetch again
+            return
+        }
+
         // Important: Do not use background priority on this task.
         // In testing, this caused `AppTransaction.shared` to sometimes
         // throw a cancellation error despite no explicit cancellation.
-        Task {
+        self.appTransactionFetchTask.value = Task {
             let environment = await transactionFetcher.appTransactionEnvironment
             self.cachedAppTransactionEnvironment.value = environment
+            self.appTransactionFetchTask.value = nil
         }
     }
 
+    func cancelInFlightAppTransactionPrefetch() {
+        self.appTransactionFetchTask.value?.cancel()
+        self.appTransactionFetchTask.value = nil
+    }
 }
 
 // MARK: - Legacy Receipt Path-Based Detection
