@@ -11,6 +11,12 @@ class MockStoreKit1Wrapper: StoreKit1Wrapper {
         super.init(observerMode: observerMode, diagnosticsTracker: nil)
     }
 
+    var mockCurrentStorefront: RevenueCat.Storefront? = .init(MockStorefront(countryCode: "USA"))
+
+    override var currentStorefront: RevenueCat.Storefront? {
+        return self.mockCurrentStorefront
+    }
+
     var payment: SKPayment?
     var addPaymentCallCount = 0
 
