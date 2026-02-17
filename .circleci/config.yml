@@ -868,14 +868,52 @@ jobs:
           destination: scan-test-output
       - slack-notify-on-fail
 
-  run-test-macos:
+  run-test-tvos-watchos-macos:
     executor:
       name: macos-executor
     steps:
       - checkout
       - install-dependencies
+
+      # --- tvOS ---
       - run:
-          name: Run tests
+          name: Run tvOS tests
+          command: bundle exec fastlane test_tvos
+          no_output_timeout: 5m
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/tvos
+          bundle_name: RevenueCat
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output-tvos
+
+      # --- watchOS ---
+      - run:
+          name: Run watchOS tests
+          command: bundle exec fastlane test_watchos
+          no_output_timeout: 5m
+          environment:
+            SCAN_PLATFORM: watchOS Simulator
+            SCAN_DEVICE: Apple Watch Series 10 (46mm) (11.5)
+            BUILD_SDK: watchsimulator
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/watchos
+          bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "watchos"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output-watchos
+
+      # --- macOS ---
+      - run:
+          name: Run macOS tests
           command: bundle exec fastlane mac test_macos
           no_output_timeout: 15m
       - compress_result_bundle:
@@ -889,7 +927,8 @@ jobs:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/xctest
-          destination: scan-test-output
+          destination: scan-test-output-macos
+
       - slack-notify-on-fail
 
   run-test-ios-26:
@@ -1037,54 +1076,6 @@ jobs:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-15"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-      - slack-notify-on-fail
-
-  run-test-tvos:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout
-      - install-dependencies
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_tvos
-          no_output_timeout: 5m
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/tvos
-          bundle_name: RevenueCat
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-      - slack-notify-on-fail
-
-  run-test-watchos:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout
-      - install-dependencies
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_watchos
-          no_output_timeout: 5m
-          environment:
-            SCAN_PLATFORM: watchOS Simulator
-            SCAN_DEVICE: Apple Watch Series 10 (46mm) (11.5)
-            BUILD_SDK: watchsimulator
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/watchos
-          bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "watchos"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -2094,13 +2085,7 @@ workflows:
       - run-test-ios-17:
           context:
             - slack-secrets
-      - run-test-macos:
-          context:
-            - slack-secrets
-      - run-test-tvos:
-          context:
-            - slack-secrets
-      - run-test-watchos:
+      - run-test-tvos-watchos-macos:
           context:
             - slack-secrets
       - spm-release-build-and-receipt-parser:
