@@ -1,5 +1,5 @@
 //
-//  ObserverModeStoreKit1PurchaseManager.swift
+//  StoreKit1PurchaseManager.swift
 //  RCTTester
 //
 
@@ -8,7 +8,7 @@ import RevenueCat
 import RevenueCatUI
 import StoreKit
 
-/// Purchase manager for observer mode with direct StoreKit 1 purchases.
+/// Purchase manager that makes purchases directly with StoreKit 1.
 ///
 /// In this mode:
 /// - `purchasesAreCompletedBy` is set to `.myApp`
@@ -17,7 +17,7 @@ import StoreKit
 /// - Purchases are made directly with SKPaymentQueue
 /// - RevenueCat observes transactions and syncs entitlements
 @MainActor
-final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
+final class StoreKit1PurchaseManager: NSObject, PurchaseManager {
 
     // MARK: - Properties
 
@@ -202,7 +202,7 @@ final class ObserverModeStoreKit1PurchaseManager: NSObject, PurchaseManager {
 
 // MARK: - SKPaymentTransactionObserver
 
-extension ObserverModeStoreKit1PurchaseManager: SKPaymentTransactionObserver {
+extension StoreKit1PurchaseManager: SKPaymentTransactionObserver {
 
     nonisolated func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         Task { @MainActor in
