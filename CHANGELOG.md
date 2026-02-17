@@ -1,3 +1,88 @@
+## 5.59.0
+## RevenueCatUI SDK
+### Paywall Components
+#### ✨ New Features
+* [SDK-4254] Add onPurchaseInitiated delegate method to PaywallViewController (#6257) via Toni Rico (@tonidero)
+### Paywallv2
+#### 🐞 Bugfixes
+* [Paywalls V2] Fix video performance in multi-page carousels (#6196) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Update CI to use Xcode 26.3 (#6258) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `e6454e3` to `afc9219` (#6253) via dependabot[bot] (@dependabot[bot])
+* Fix Xcode 15 warning for main actor-isolated background task calls (#6251) via Antonio Pallares (@ajpallares)
+* Bump faraday from 1.10.4 to 1.10.5 in /Tests/InstallationTests/CocoapodsInstallation (#6249) via dependabot[bot] (@dependabot[bot])
+* Bump faraday from 1.10.4 to 1.10.5 (#6250) via dependabot[bot] (@dependabot[bot])
+
+## 5.58.1
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* fix: improve video autoplay with thumbnail fallback and fade transition (#6186) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Add custom StoreKit config support to PaywallsTester (#6237) via Facundo Menzella (@facumenzella)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5951) via RevenueCat Git Bot (@RCGitBot)
+* Adds support for Compose Resources (#6239) via JayShortway (@JayShortway)
+* Include attribution data in POST /receipt when using SK2 in Observer mode (#6233) via Antonio Pallares (@ajpallares)
+
+## 5.58.0
+## RevenueCat SDK
+### ✨ New Features
+* [CEC Mode]: Introduce isPurchaseAllowedByRestoreBehavior() (#6192) via Will Taylor (@fire-at-will)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Fix product.currency_symbol to use product currency instead of locale (#6209) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Cache `presentedOfferingContext` when making a purchase from a paywall (#6228) via Antonio Pallares (@ajpallares)
+* Add XCFramework installation tests to the release checks (#6195) via Rick (@rickvdl)
+* Deprioritize debug health check to avoid blocking user-facing requests at startup (#6230) via Antonio Pallares (@ajpallares)
+
+## 5.57.2
+### 🔄 Other Changes
+* Make networkName nullable in ad event data types (#6229) via Pol Miro (@polmiro)
+* Remove networkName from AdFailedToLoad event (#6208) via Pol Miro (@polmiro)
+* Excluding xcarchive and separate dSYMs folder from XCFramework in order to reduce download size (#5967) via Rick (@rickvdl)
+
+## 5.57.1
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Make paywall font registration idempotent (#6193) via Facundo Menzella (@facumenzella)
+* fix: fixes video autoplay on first paywall open by removing broken stagedURL.publisher observation (#6114) @erenkulaksiz (#6185) via Facundo Menzella (@facumenzella)
+* [EXTERNAL] fix: listen willResignActiveNotification and didBecomeActiveNotification to autoplay the video (#6116) @erenkulaksiz (#6184) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Remove fallback url caching mechanism (#6188) via Toni Rico (@tonidero)
+* RCT Tester app Part 2 - Offerings + User management + Configuration persistence (#6189) via Antonio Pallares (@ajpallares)
+* RCT Tester app Part 1 - Tuist project + App setup (#6187) via Antonio Pallares (@ajpallares)
+* Fix `integration-tests-all` on CI (#6190) via Antonio Pallares (@ajpallares)
+* [Maestro] Improve e2e test stability (#6182) via Antonio Pallares (@ajpallares)
+
+## 5.57.0
+## RevenueCat SDK
+### ✨ New Features
+* Adds more ObjC compatibility (#5999) via JayShortway (@JayShortway)
+### 🐞 Bugfixes
+* Fix potential infinite recursion in MagicWeather (#6146) via Tarek M. Ben Lechhab (@bilqisium)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* feat: Add Custom Paywall Variables support (#6080) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Fix `backend-integration-tests-custom-entitlements` on CI (#6179) via Antonio Pallares (@ajpallares)
+* Only run 1 backend integration tests CI job to generate all snapshots (#6170) via Antonio Pallares (@ajpallares)
+* Autogenerate snapshots for more tests (#5958) via Antonio Pallares (@ajpallares)
+* Only consider source files for public enums Danger rule (#6156) via Antonio Pallares (@ajpallares)
+* Fix integration test (#6157) via Antonio Pallares (@ajpallares)
+* Fix API tests (#6155) via Antonio Pallares (@ajpallares)
+* Add troubleshooting link to the generic error message (#6152) via Engin Kurutepe (@ekurutepe)
+
 ## 5.56.1
 ## RevenueCatUI SDK
 ### 🐞 Bugfixes

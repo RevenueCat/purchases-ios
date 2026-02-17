@@ -605,6 +605,92 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testCancelEventClearsCachedPresentedOfferingContext() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        // Cache the presentedOfferingContext (as PurchaseHandler would do)
+        self.orchestrator.cachePresentedOfferingContext(
+            package.presentedOfferingContext,
+            productIdentifier: product.productIdentifier
+        )
+
+        // Cancel event clears the cached context for this product
+        self.orchestrator.track(paywallEvent: .cancel(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        ))
+
+        // Purchase without a package (so no new context is cached)
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // The cached context should have been cleared by the cancel event
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
+    func testPurchaseErrorEventClearsCachedPresentedOfferingContext() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        // Cache the presentedOfferingContext (as PurchaseHandler would do)
+        self.orchestrator.cachePresentedOfferingContext(
+            package.presentedOfferingContext,
+            productIdentifier: product.productIdentifier
+        )
+
+        // PurchaseError event clears the cached context for this product
+        self.orchestrator.track(paywallEvent: .purchaseError(
+            Self.paywallEventCreationData,
+            Self.paywallEventForPurchaseError
+        ))
+
+        // Purchase without a package (so no new context is cached)
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // The cached context should have been cleared by the purchaseError event
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
     func testPurchaseWithDifferentProductDoesNotIncludePaywallData() async throws {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 

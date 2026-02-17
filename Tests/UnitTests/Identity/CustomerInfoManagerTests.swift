@@ -102,6 +102,68 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         self.customerInfoMonitorDisposable?()
     }
 
+    func testConcurrentCacheWriteAndReadDoesNotDeadlock() throws {
+        // Regression test: DeviceCache was previously accessed while holding the Atomic<Data> lock.
+        // This caused a deadlock when a background thread held the lock during a slow UserDefaults
+        // write (which may synchronise to the main thread), while another thread was blocked trying
+        // to acquire the same lock to read cached customer info.
+
+        class BlockingDeviceCache: MockDeviceCache {
+            let enteredCache = DispatchSemaphore(value: 0)
+            let proceedWithCache = DispatchSemaphore(value: 0)
+
+            override func cache(customerInfo: Data, appUserID: String) {
+                enteredCache.signal()
+                proceedWithCache.wait()
+                super.cache(customerInfo: customerInfo, appUserID: appUserID)
+            }
+        }
+
+        let blockingCache = BlockingDeviceCache(systemInfo: self.mockSystemInfo)
+
+        let jsonData = try JSONEncoder.default.encode(self.mockCustomerInfo)
+        blockingCache.cachedCustomerInfo[Self.appUserID] = jsonData
+
+        let customerInfoManager = CustomerInfoManager(
+            offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            deviceCache: blockingCache,
+            backend: self.mockBackend,
+            transactionFetcher: self.mockTransationFetcher,
+            transactionPoster: self.mockTransactionPoster,
+            systemInfo: self.mockSystemInfo
+        )
+
+        // Start a cache write on a background thread.
+        // This will block inside deviceCache.cache(), simulating slow UserDefaults I/O.
+        DispatchQueue.global().async {
+            customerInfoManager.cache(customerInfo: self.mockCustomerInfo2, appUserID: Self.appUserID)
+        }
+
+        blockingCache.enteredCache.wait()
+
+        // Try to read cached customer info from another thread while the write is blocked.
+        // Before the fix, this would deadlock because both read and write paths acquired
+        // the Atomic<Data> lock, and the write held it while blocked inside deviceCache.
+        let readCompleted = DispatchSemaphore(value: 0)
+        var readResult: CustomerInfo?
+
+        DispatchQueue.global().async {
+            readResult = try? customerInfoManager.cachedCustomerInfo(appUserID: Self.appUserID)
+            readCompleted.signal()
+        }
+
+        let timedOut = readCompleted.wait(timeout: .now() + 3) == .timedOut
+
+        blockingCache.proceedWithCache.signal()
+
+        expect(timedOut).to(
+            beFalse(),
+            description: "Deadlock: reading cached info blocked while another thread was writing to cache"
+        )
+        expect(readResult).toNot(beNil())
+    }
+
     func testFetchAndCacheCustomerInfoAllowOfflineCustomerInfo() throws {
         self.mockOfflineEntitlementsManager.stubbedShouldComputeOfflineCustomerInfo = true
 

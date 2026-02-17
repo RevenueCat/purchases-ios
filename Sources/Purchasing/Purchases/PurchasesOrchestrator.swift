@@ -42,7 +42,7 @@ final class PurchasesOrchestrator {
     @objc weak var delegate: PurchasesOrchestratorDelegate?
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
-    private let presentedOfferingContextsByProductID: Atomic<[String: PresentedOfferingContext]> = .init([:])
+    private let presentedOfferingContextsByProductID: Atomic<[String: CachedPresentedOfferingContext]> = .init([:])
     private let purchaseInitiatedPaywall: Atomic<PaywallEvent?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
     private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
@@ -899,16 +899,25 @@ final class PurchasesOrchestrator {
     }
 
     func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
-        self.presentedOfferingContextsByProductID.modify { $0[productIdentifier] = context }
+        let cached = CachedPresentedOfferingContext(context: context, cacheDate: self.dateProvider.now())
+        self.presentedOfferingContextsByProductID.modify { $0[productIdentifier] = cached }
     }
 
     func track(paywallEvent: PaywallEvent) {
         switch paywallEvent {
         case .purchaseInitiated:
+            // The presentedOfferingContext is cached separately by `cachePresentedOfferingContext`,
+            // both when the purchase is initiated through the SDK's purchase method
+            // and when initiated from a paywall (via PurchaseHandler).
             self.cachePurchaseInitiatedPaywall(paywallEvent)
 
         case .cancel, .purchaseError:
             self.clearPurchaseInitiatedPaywall()
+            if let productId = paywallEvent.data.productId {
+                self.clearCachedPresentedOfferingContext(for: productId)
+            } else {
+                Logger.error(Strings.paywalls.missing_product_id_for_paywall_event)
+            }
 
         case .impression, .close, .exitOffer:
             break
@@ -1042,13 +1051,13 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
         // For observer mode. Should only come from calls to `restoreCompletedTransactions`,
         // which the SDK does not currently use.
         case .restored:
-            self.handlePurchasedTransaction(storeTransaction,
-                                            storefront: storeKit1Wrapper.currentStorefront,
-                                            restored: true)
+            self.handleSK1PurchasedTransaction(storeTransaction,
+                                               storefront: storeKit1Wrapper.currentStorefront,
+                                               restored: true)
         case .purchased:
-            self.handlePurchasedTransaction(storeTransaction,
-                                            storefront: storeKit1Wrapper.currentStorefront,
-                                            restored: false)
+            self.handleSK1PurchasedTransaction(storeTransaction,
+                                               storefront: storeKit1Wrapper.currentStorefront,
+                                               restored: false)
         case .purchasing:
             break
         case .failed:
@@ -1417,12 +1426,21 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
+        // Only attribute offering context and paywall data for transactions that are not known
+        // to be renewals. When the reason is `nil` (i.e. iOS < 17), we still attempt
+        // attribution because the product-ID and date matching in `getAndRemovePresentedOfferingContext`
+        // and `getAndRemovePurchaseInitiatedPaywall` will safely return nil for non-matching transactions,
+        // making the misattribution case extremely unlikely.
+        let isKnownRenewal = transaction.reason == .renewal
+        let offeringContext = isKnownRenewal ? nil : self.getAndRemovePresentedOfferingContext(for: transaction)
+        let paywall = isKnownRenewal ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
 
         let storefront = await self.storefront(from: transaction)
         let subscriberAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
-            presentedOfferingContext: nil,
+            presentedOfferingContext: offeringContext,
+            presentedPaywall: paywall,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
             storeCountry: storefront?.countryCode
@@ -1827,9 +1845,9 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
-                                    storefront: StorefrontType?,
-                                    restored: Bool) {
+    func handleSK1PurchasedTransaction(_ purchasedTransaction: StoreTransaction,
+                                       storefront: StorefrontType?,
+                                       restored: Bool) {
         // Don't attribute offering context or paywall data for restored transactions
         let offeringContext = restored ? nil : self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
         let paywall = restored ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: purchasedTransaction)
@@ -1903,17 +1921,33 @@ private extension PurchasesOrchestrator {
         self.purchaseInitiatedPaywall.value = nil
     }
 
-    func getAndRemovePresentedOfferingContext(for productIdentifier: String) -> PresentedOfferingContext? {
-        return self.presentedOfferingContextsByProductID.modify {
-            $0.removeValue(forKey: productIdentifier)
+    /// Wraps a `PresentedOfferingContext` with the date it was cached, used to verify
+    /// that the cached context corresponds to a specific transaction.
+    struct CachedPresentedOfferingContext {
+        let context: PresentedOfferingContext
+        let cacheDate: Date
+    }
+
+    func clearCachedPresentedOfferingContext(for productIdentifier: String) {
+        self.presentedOfferingContextsByProductID.modify { $0.removeValue(forKey: productIdentifier) }
+    }
+
+    func getAndRemovePresentedOfferingContext(for transaction: StoreTransactionType) -> PresentedOfferingContext? {
+        return self.presentedOfferingContextsByProductID.modify { cache in
+            guard let cached = cache[transaction.productIdentifier] else {
+                return nil
+            }
+
+            guard cached.cacheDate <= transaction.purchaseDate else {
+                return nil
+            }
+
+            cache.removeValue(forKey: transaction.productIdentifier)
+            return cached.context
         }
     }
 
-    func getAndRemovePresentedOfferingContext(for transaction: StoreTransaction) -> PresentedOfferingContext? {
-        return self.getAndRemovePresentedOfferingContext(for: transaction.productIdentifier)
-    }
-
-    func getAndRemovePurchaseInitiatedPaywall(for transaction: StoreTransaction) -> PaywallEvent? {
+    func getAndRemovePurchaseInitiatedPaywall(for transaction: StoreTransactionType) -> PaywallEvent? {
         return self.purchaseInitiatedPaywall.modify { cachedPaywall in
             guard let paywall = cachedPaywall else {
                 return nil
@@ -2161,6 +2195,34 @@ extension PurchasesOrchestrator {
         }
     }
 
+}
+
+// MARK: - isPurchaseAllowedByRestoreBehavior
+extension PurchasesOrchestrator {
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func isPurchaseAllowedByRestoreBehavior() async throws -> Bool {
+        guard self.systemInfo.storeKitVersion == .storeKit2 else {
+            throw ErrorUtils.featureNotSupportedWithStoreKit1Error()
+        }
+
+        guard let transaction = await self.transactionFetcher.oldestVerifiedTransaction,
+              let jwsRepresentation = transaction.jwsRepresentation else {
+            // If the user has never made a purchase, then the receipt can't be tied to another
+            // RevenueCat subscriber, and thus the purchase will be allowed
+            return true
+        }
+
+        let response = try await Async.call { completion in
+            self.backend.isPurchaseAllowedByRestoreBehavior(
+                appUserID: self.appUserID,
+                transactionJWS: jwsRepresentation,
+                isAppBackgrounded: self.systemInfo.isAppBackgroundedState,
+                completion: completion
+            )
+        }
+
+        return response.isPurchaseAllowedByRestoreBehavior
+    }
 }
 
 // MARK: - Async extensions

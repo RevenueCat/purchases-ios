@@ -182,6 +182,10 @@ final class Delegate: PaywallViewControllerDelegate {
     func paywallViewController(_ controller: PaywallViewController,
                                willPresentExitOfferController exitOfferController: PaywallViewController) {}
 
+    func paywallViewController(_ controller: PaywallViewController,
+                               didInitiatePurchaseWith package: Package,
+                               resume: @escaping (Bool) -> Void) {}
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)

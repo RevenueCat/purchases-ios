@@ -31,6 +31,9 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var firstVerifiedTransaction: StoreTransaction? { get async }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var oldestVerifiedTransaction: StoreTransaction? { get async }
+
     var appTransactionJWS: String? { get async }
 
     func appTransactionJWS(_ completionHandler: @escaping (String?) -> Void)
@@ -87,6 +90,20 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
             await StoreKit.Transaction.all
                 .compactMap { $0.verifiedStoreTransaction }
                 .first { _ in true }
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var oldestVerifiedTransaction: StoreTransaction? {
+        get async {
+            await StoreKit.Transaction.all
+                .compactMap { $0.verifiedStoreTransaction }
+                .extractValues()
+                // `Transaction.all` does not document iteration order.
+                // Although it appears to return newest-first in testing, we sort by `purchaseDate` here
+                // so `.first` is reliably the oldest transaction even if the order changes in a future OS version.
+                .sorted(by: { $0.purchaseDate < $1.purchaseDate })
+                .first
         }
     }
 

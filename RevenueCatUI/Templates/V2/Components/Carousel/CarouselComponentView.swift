@@ -214,10 +214,18 @@ private struct CarouselView<Content: View>: View {
                 )
             }
 
-            // Main horizontal “strip” of pages:
+            // Main horizontal "strip" of pages:
             HStack(alignment: self.pageAlignment, spacing: spacing) {
-                ForEach(data) { item in
+                ForEach(Array(data.enumerated()), id: \.element.id) { pageIndex, item in
                     item.view
+                        .environment(
+                            \.carouselState,
+                            CarouselState(
+                                activeIndex: index,
+                                pageIndex: pageIndex,
+                                originalCount: originalCount
+                            )
+                        )
                         .frame(width: cardWidth)
                 }
             }

@@ -9,7 +9,7 @@
 import Nimble
 import OHHTTPStubs
 import OHHTTPStubsSwift
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 import SnapshotTesting
 import StoreKit
 import StoreKitTest

@@ -30,7 +30,6 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
     func testTrackAdFailedToLoadStoresEvent() async throws {
         let failedData = AdFailedToLoad(
-            networkName: "AdMob",
             mediatorName: .appLovin,
             adFormat: .banner,
             placement: "home_screen",
@@ -51,7 +50,6 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             return
         }
 
-        expect(eventData.networkName) == "AdMob"
         expect(eventData.mediatorName) == .appLovin
         expect(eventData.adFormat) == .banner
         expect(eventData.placement) == "home_screen"

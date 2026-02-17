@@ -38,7 +38,10 @@ class TextComponentViewModel {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
-        self.text = try localizationProvider.localizedStrings.string(key: component.text)
+        self.text = (try? localizationProvider.localizedStrings.string(key: component.text)) ?? {
+            Logger.warning("Missing localization for text_lid '\(component.text)', using empty string.")
+            return ""
+        }()
 
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
             try LocalizedTextPartial.create(from: $0, using: localizationProvider.localizedStrings)
@@ -79,6 +82,7 @@ class TextComponentViewModel {
                 variableConfig: uiConfigProvider.variableConfig,
                 locale: self.localizationProvider.locale,
                 localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
                 promoOffer: promoOffer,
                 countdownTime: countdownTime,
                 customVariables: customVariables,
@@ -98,12 +102,14 @@ class TextComponentViewModel {
         apply(style)
     }
 
+    // swiftlint:disable:next function_parameter_count
     private static func processText(
         _ text: String,
         packageContext: PackageContext,
         variableConfig: UIConfig.VariableConfig,
         locale: Locale,
         localizations: [String: String],
+        isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer? = nil,
         countdownTime: CountdownTime? = nil,
         customVariables: [String: CustomVariableValue] = [:],
@@ -115,6 +121,7 @@ class TextComponentViewModel {
             variableConfig: variableConfig,
             locale: locale,
             localizations: localizations,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
             promoOffer: promoOffer,
             countdownTime: countdownTime,
             customVariables: customVariables,
@@ -131,12 +138,14 @@ class TextComponentViewModel {
         return processedWithV2AndV1
     }
 
+    // swiftlint:disable:next function_parameter_count
     private static func processTextV2(
         _ text: String,
         packageContext: PackageContext,
         variableConfig: UIConfig.VariableConfig,
         locale: Locale,
         localizations: [String: String],
+        isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer? = nil,
         countdownTime: CountdownTime? = nil,
         customVariables: [String: CustomVariableValue] = [:],
@@ -165,6 +174,7 @@ class TextComponentViewModel {
             with: pkg,
             locale: locale,
             localizations: localizations,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
             promoOffer: promoOffer,
             countdownTime: countdownTime
         )
