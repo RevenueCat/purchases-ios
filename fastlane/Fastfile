@@ -1582,8 +1582,8 @@ platform :ios do
     test_configuration = generate_snapshots ? "GenerateSnapshots" : "Default"
     test_without_building = options[:test_without_building] || false
 
-    fetch_snapshots
     unless test_without_building
+      fetch_snapshots
       replace_api_key_integration_tests
     end
 
@@ -1604,6 +1604,7 @@ platform :ios do
 
     if test_without_building
       scan_options[:test_without_building] = true
+      scan_options[:skip_package_dependencies_resolution] = true
     end
 
     success = false

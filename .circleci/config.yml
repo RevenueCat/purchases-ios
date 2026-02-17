@@ -588,6 +588,8 @@ commands:
           root: .
           paths:
             - scan_derived_data/Build/Products
+            - scan_derived_data/SourcePackages
+            - Tests/purchases-ios-snapshots
 
   checkout-with-minimal-permissions:
     steps:
