@@ -884,9 +884,9 @@ jobs:
           directory: fastlane/test_output/xctest/tvos
           bundle_name: RevenueCat
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/tvos
       - store_artifacts:
-          path: fastlane/test_output/xctest
+          path: fastlane/test_output/xctest/tvos
           destination: scan-test-output-tvos
 
       # --- watchOS ---
@@ -906,9 +906,9 @@ jobs:
           job: "create_snapshot_pr"
           version: "watchos"
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/watchos
       - store_artifacts:
-          path: fastlane/test_output/xctest
+          path: fastlane/test_output/xctest/watchos
           destination: scan-test-output-watchos
 
       # --- macOS ---
@@ -924,9 +924,9 @@ jobs:
           job: "create_snapshot_pr"
           version: "macos"
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/macos
       - store_artifacts:
-          path: fastlane/test_output/xctest
+          path: fastlane/test_output/xctest/macos
           destination: scan-test-output-macos
 
       - slack-notify-on-fail
