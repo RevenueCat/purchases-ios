@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        run-consolidated-tests
       ]
     default: default
   generate_snapshots:
@@ -1831,6 +1832,17 @@ jobs:
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
 workflows:
+
+  run-consolidated-tests:
+    when:
+      equal: [run-consolidated-tests, << pipeline.parameters.action >>]
+    jobs:
+      - run-test-tvos-watchos-macos:
+          context:
+            - slack-secrets
+      - spm-release-build-and-receipt-parser:
+          context:
+            - slack-secrets
 
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
