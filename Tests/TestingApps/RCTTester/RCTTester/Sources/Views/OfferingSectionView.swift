@@ -9,6 +9,7 @@ import RevenueCat
 struct OfferingSectionView: View {
 
     let offering: Offering
+    let purchaseManager: AnyPurchaseManager
     let onPresentPaywall: () -> Void
     let onShowMetadata: () -> Void
 
@@ -22,7 +23,7 @@ struct OfferingSectionView: View {
 
             // Packages with purchase buttons
             ForEach(offering.availablePackages, id: \.identifier) { package in
-                PackageRowView(package: package)
+                PackageRowView(package: package, purchaseManager: purchaseManager)
             }
 
             // Present Paywall button (if offering has a paywall)
@@ -73,6 +74,11 @@ private struct OfferingHeaderView: View {
 private struct PackageRowView: View {
 
     let package: Package
+    let purchaseManager: AnyPurchaseManager
+
+    @State private var isPurchasing = false
+    @State private var purchaseError: Error?
+    @State private var showError = false
 
     var body: some View {
         HStack {
@@ -88,14 +94,51 @@ private struct PackageRowView: View {
             Spacer()
 
             Button {
-                print("🚧 WIP: Purchase action for package '\(package.identifier)'")
+                Task {
+                    await performPurchase()
+                }
             } label: {
-                Text(package.storeProduct.localizedPriceString)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                if isPurchasing {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                } else {
+                    Text(package.storeProduct.localizedPriceString)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                }
             }
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.capsule)
+            .disabled(isPurchasing)
+        }
+        .alert("Purchase Error", isPresented: $showError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(purchaseError?.localizedDescription ?? "An unknown error occurred")
+        }
+    }
+
+    @MainActor
+    private func performPurchase() async {
+        isPurchasing = true
+        defer { isPurchasing = false }
+
+        let result = await purchaseManager.purchase(package: package)
+
+        switch result {
+        case .success(let customerInfo):
+            print("✅ Purchase successful! Active entitlements: \(customerInfo.entitlements.active.keys)")
+
+        case .userCancelled:
+            print("⚠️ Purchase cancelled by user")
+
+        case .pending:
+            print("⏳ Purchase pending approval (e.g., Ask to Buy)")
+
+        case .failure(let error):
+            print("❌ Purchase failed: \(error)")
+            purchaseError = error
+            showError = true
         }
     }
 }
@@ -190,6 +233,7 @@ private struct MetadataRow: View {
                 availablePackages: [],
                 webCheckoutUrl: nil
             ),
+            purchaseManager: AnyPurchaseManager(RevenueCatPurchaseManager()),
             onPresentPaywall: {},
             onShowMetadata: {}
         )
