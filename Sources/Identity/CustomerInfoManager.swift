@@ -22,19 +22,13 @@ class CustomerInfoManager {
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let operationDispatcher: OperationDispatcher
     private let backend: Backend
+    private let deviceCache: DeviceCache
     private let systemInfo: SystemInfo
     private let transactionFetcher: StoreKit2TransactionFetcherType
     private let transactionPoster: TransactionPosterType
 
     private var diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
-
-    /// Stored directly (not behind the `Atomic` lock) so that reads and writes to
-    /// `UserDefaults` never happen while holding the `data` lock.
-    /// This avoids a deadlock where the background thread holds the lock, writes to
-    /// `UserDefaults` (which may synchronise on the main thread), while the main thread
-    /// is blocked trying to acquire the same lock to read cached customer info.
-    private let deviceCache: DeviceCache
 
     /// Underlying synchronized data for in-memory-only mutable state.
     private let data: Atomic<Data>
