@@ -635,7 +635,7 @@ jobs:
           name: Check pods and deployment targets
           command: bundle exec fastlane check_pods
 
-  spm-release-build:
+  spm-release-build-and-receipt-parser:
     executor:
       name: macos-executor
     steps:
@@ -647,6 +647,10 @@ jobs:
       - run:
           name: SPM RevenueCatUI Release Build
           command: swift build -c release --target RevenueCatUI
+          no_output_timeout: 30m
+      - run:
+          name: SPM Receipt Parser
+          command: swift build -c release --target ReceiptParser
           no_output_timeout: 30m
       - slack-notify-on-fail
 
@@ -661,17 +665,6 @@ jobs:
       - run:
           name: API Tests
           command: bundle exec fastlane run_api_tests
-      - slack-notify-on-fail
-
-  spm-receipt-parser:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout
-      - run:
-          name: SPM Receipt Parser
-          command: swift build -c release --target ReceiptParser
-          no_output_timeout: 30m
       - slack-notify-on-fail
 
   spm-revenuecat-ui-ios-15:
@@ -2110,10 +2103,7 @@ workflows:
       - run-test-watchos:
           context:
             - slack-secrets
-      - spm-receipt-parser:
-          context:
-            - slack-secrets
-      - spm-release-build:
+      - spm-release-build-and-receipt-parser:
           context:
             - slack-secrets
       - spm-release-build-xcode-14:
