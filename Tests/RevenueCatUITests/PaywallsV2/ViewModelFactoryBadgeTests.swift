@@ -262,7 +262,8 @@ class ViewModelFactoryBadgeTests: TestCase {
             identifier: "test_offering",
             serverDescription: "Test Offering",
             metadata: [:],
-            availablePackages: []
+            availablePackages: [],
+            webCheckoutUrl: nil
         )
     }
 
