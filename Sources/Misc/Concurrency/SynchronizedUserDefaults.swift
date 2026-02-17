@@ -34,7 +34,7 @@ import Foundation
 /// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/5729
 internal final class SynchronizedUserDefaults {
 
-    private nonisolated(unsafe) let userDefaults: UserDefaults
+    private let userDefaults: UserDefaults
 
     init(userDefaults: UserDefaults) {
         self.userDefaults = userDefaults
@@ -58,7 +58,9 @@ internal final class SynchronizedUserDefaults {
 
 }
 
-extension SynchronizedUserDefaults: Sendable {}
+// `UserDefaults` is thread-safe per Apple docs and this class only holds an immutable reference,
+// so `@unchecked Sendable` is safe here. `nonisolated(unsafe)` requires Swift 5.10+.
+extension SynchronizedUserDefaults: @unchecked Sendable {}
 
 /// A `UserDefaults` wrapper that uses a lock to synchronize access.
 ///
