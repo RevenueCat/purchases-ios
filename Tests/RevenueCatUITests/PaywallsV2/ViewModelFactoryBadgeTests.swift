@@ -205,7 +205,7 @@ class ViewModelFactoryBadgeTests: TestCase {
     // MARK: - Helpers
 
     private static let black = PaywallComponent.ColorScheme(
-        light: .init(type: .hex, value: "#000000")
+        light: .hex("#000000")
     )
 
     @MainActor
