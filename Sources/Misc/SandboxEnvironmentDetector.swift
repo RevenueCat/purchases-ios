@@ -118,8 +118,10 @@ private extension SandboxEnvironmentDetector {
 
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     func prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: StoreKit2TransactionFetcherType) {
-        Task.detached(priority: .background) {
-
+        // Important: Do not use background priority on this task.
+        // In testing, this caused `AppTransaction.shared` to sometimes
+        // throw a cancellation error despite no explicit cancellation.
+        Task {
             let environment = await transactionFetcher.appTransactionEnvironment
             self.cachedAppTransactionEnvironment.value = environment
         }
