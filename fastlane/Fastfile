@@ -1563,30 +1563,52 @@ platform :ios do
     UI.success("\n✓ XCFramework integration test passed - XCFrameworkInstallationTests built successfully for all destinations")
   end
 
+  desc "Build BackendIntegrationTests scheme for testing (without running tests)"
+  lane :build_for_backend_integration_tests do
+    fetch_snapshots
+    replace_api_key_integration_tests
+
+    scan(
+      scheme: "BackendIntegrationTests",
+      derived_data_path: "scan_derived_data",
+      build_for_testing: true,
+      configuration: 'Debug',
+    )
+  end
+
   desc "Run BackendIntegrationTests"
   lane :backend_integration_tests do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
     test_configuration = generate_snapshots ? "GenerateSnapshots" : "Default"
+    test_without_building = options[:test_without_building] || false
 
     fetch_snapshots
-    replace_api_key_integration_tests
+    unless test_without_building
+      replace_api_key_integration_tests
+    end
+
+    scan_options = {
+      scheme: "BackendIntegrationTests",
+      ensure_devices_found: true,
+      derived_data_path: "scan_derived_data",
+      output_types: 'junit',
+      output_style: 'raw',
+      result_bundle: true,
+      testplan: options[:test_plan],
+      only_test_configurations: [test_configuration],
+      configuration: 'Debug',
+      output_directory: "fastlane/test_output/xctest/ios",
+      number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots,
+    }
+
+    if test_without_building
+      scan_options[:test_without_building] = true
+    end
 
     success = false
     begin
-      scan(
-        scheme: "BackendIntegrationTests",
-        ensure_devices_found: true,
-        derived_data_path: "scan_derived_data",
-        output_types: 'junit',
-        output_style: 'raw',
-        result_bundle: true,
-        testplan: options[:test_plan],
-        only_test_configurations: [test_configuration],
-        configuration: 'Debug',
-        output_directory: "fastlane/test_output/xctest/ios",
-        number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
-        fail_build: !generate_snapshots,
-      )
+      scan(scan_options)
       success = true
     rescue => exception
       raise exception

@@ -541,13 +541,21 @@ commands:
     parameters:
       test_plan:
         type: string
+      test_without_building:
+        type: boolean
+        default: false
     steps:
       - checkout
       - install-dependencies
       - update-spm-installation-commit
+      - when:
+          condition: << parameters.test_without_building >>
+          steps:
+            - attach_workspace:
+                at: .
       - run:
           name: Run backend_integration Tests
-          command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
+          command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>" test_without_building:<< parameters.test_without_building >>
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 16 (18.5)
@@ -563,6 +571,22 @@ commands:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+
+  build-for-integration-tests:
+    steps:
+      - checkout
+      - install-dependencies
+      - update-spm-installation-commit
+      - run:
+          name: Build for backend integration tests
+          command: bundle exec fastlane build_for_backend_integration_tests
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 16 (18.5)
+      - persist_to_workspace:
+          root: .
+          paths:
+            - scan_derived_data/Build/Products
 
   checkout-with-minimal-permissions:
     steps:
@@ -1147,36 +1171,63 @@ jobs:
           no_output_timeout: 30m
       - slack-notify-on-fail
 
+  prepare-integration-tests:
+    executor:
+      name: macos-executor
+    steps:
+      - build-for-integration-tests
+      - slack-notify-on-fail
+
   backend-integration-tests-SK1:
+    parameters:
+      test_without_building:
+        type: boolean
+        default: false
     executor:
       name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK1"
+          test_without_building: << parameters.test_without_building >>
       - slack-notify-on-fail
 
   backend-integration-tests-SK2:
+    parameters:
+      test_without_building:
+        type: boolean
+        default: false
     executor:
       name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
+          test_without_building: << parameters.test_without_building >>
       - slack-notify-on-fail
 
   backend-integration-tests-other:
+    parameters:
+      test_without_building:
+        type: boolean
+        default: false
     executor:
       name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Other"
+          test_without_building: << parameters.test_without_building >>
       - slack-notify-on-fail
 
   backend-integration-tests-offline:
+    parameters:
+      test_without_building:
+        type: boolean
+        default: false
     executor:
       name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
+          test_without_building: << parameters.test_without_building >>
       - slack-notify-on-fail
 
   backend-integration-tests-custom-entitlements:
@@ -2068,19 +2119,34 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+      - prepare-integration-tests:
+          context:
+            - slack-secrets
       - backend-integration-tests-SK1:
+          test_without_building: true
+          requires:
+            - prepare-integration-tests
           context:
             - slack-secrets
       - backend-integration-tests-SK2:
+          test_without_building: true
+          requires:
+            - prepare-integration-tests
           context:
             - slack-secrets
       - backend-integration-tests-custom-entitlements:
           context:
             - slack-secrets
       - backend-integration-tests-other:
+          test_without_building: true
+          requires:
+            - prepare-integration-tests
           context:
             - slack-secrets
       - backend-integration-tests-offline:
+          test_without_building: true
+          requires:
+            - prepare-integration-tests
           context:
             - slack-secrets
       - build-tv-watch-mac-and-visionos:
