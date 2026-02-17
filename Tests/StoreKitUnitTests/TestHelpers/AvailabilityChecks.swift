@@ -81,6 +81,13 @@ enum AvailabilityChecks {
         }
     }
 
+    /// Opposite of `iOS18APIAvailableOrSkipTest`.
+    static func iOS18APINotAvailableOrSkipTest() throws {
+        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+            throw XCTSkip("Test only for older devices")
+        }
+    }
+
     /// Opposite of `iOS26APIAvailableOrSkipTest`.
     static func iOS26APINotAvailableOrSkipTest() throws {
         if #available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, visionOS 26.0, *) {

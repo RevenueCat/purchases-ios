@@ -49,7 +49,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
     // MARK: - AppTransaction Environment Tests
 
     func testIsSandboxWhenAppTransactionEnvironmentIsSandbox() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
 
         let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .appStoreReceipt,
@@ -59,7 +59,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
     }
 
     func testIsSandboxWhenAppTransactionEnvironmentIsXcode() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
 
         let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .appStoreReceipt,
@@ -69,7 +69,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
     }
 
     func testIsNotSandboxWhenAppTransactionEnvironmentIsProduction() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
 
         let detector = await SandboxEnvironmentDetector.with(
             receiptURLResult: .sandboxReceipt,
@@ -79,7 +79,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
     }
 
     func testAppTransactionEnvironmentTakesPrecedenceOverReceiptPath() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
 
         // Receipt says sandbox, but AppTransaction says production
         let detector = await SandboxEnvironmentDetector.with(
@@ -135,7 +135,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
     // MARK: - Prefetch Pending Tests
 
     func testUsesReceiptPathBeforePrefetchCompletes() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
 
         let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledAppTransactionEnvironment(
             receiptURLResult: .sandboxReceipt,
@@ -153,7 +153,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
     }
 
     func testUsesAppTransactionAfterPrefetchCompletes() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
 
         let (detector, mockFetcher) = SandboxEnvironmentDetector.withStalledAppTransactionEnvironment(
             receiptURLResult: .appStoreReceipt,
@@ -181,8 +181,8 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(detector.isSandbox) == true
     }
 
-    func testAlwaysUsesReceiptValueOniOSVersionsBelow16() async throws {
-        try AvailabilityChecks.iOS16APINotAvailableOrSkipTest()
+    func testAlwaysUsesReceiptValueOniOSVersionsBelow18() async throws {
+        try AvailabilityChecks.iOS18APINotAvailableOrSkipTest()
 
         let detectorThatShouldBeSandbox = await SandboxEnvironmentDetector.with(
             receiptURLResult: .sandboxReceipt,
@@ -475,9 +475,8 @@ private extension SandboxEnvironmentDetector {
             transactionFetcher: mockTransactionFetcher
         )
 
-        // Wait for the async prefetch to complete. We only do this on iOS 16.0+ because that's where AppTransaction is
-        // available.
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+        // Wait for the async prefetch to complete.
+        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
             await expect(mockTransactionFetcher.appTransactionEnvironmentCalled.value).toEventually(beTrue())
         }
 
