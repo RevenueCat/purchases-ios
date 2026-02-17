@@ -125,8 +125,9 @@ struct AppContentView: View {
                 object: nil,
                 queue: .main
             ) { _ in
-                counter &+= 1
-                flag.toggle()
+                // Only read from SDK — do NOT write to UserDefaults (@AppStorage) here.
+                // Writing triggers another didChangeNotification, creating an unbounded
+                // feedback loop that starves the main queue (looks like a deadlock).
                 _ = Purchases.shared.cachedCustomerInfo
             }
         }
