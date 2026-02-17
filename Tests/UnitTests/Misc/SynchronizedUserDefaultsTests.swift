@@ -85,18 +85,15 @@ class SynchronizedUserDefaultsTests: TestCase {
         }
 
         let writeStarted = DispatchSemaphore(value: 0)
-        let canFinishWrite = DispatchSemaphore(value: 0)
         let writeCompleted = expectation(description: "Write completed")
 
         let syncDefaults = self.synchronizedUserDefaults!
         let key = self.testKey
 
-        // Background thread acquires the write lock, signals it has started,
-        // then waits for permission to finish.
+        // Background thread acquires the write lock and signals it has started.
         DispatchQueue.global().async {
             syncDefaults.write {
                 writeStarted.signal()
-                canFinishWrite.wait()
                 $0.set("value", forKey: key)
             }
             writeCompleted.fulfill()
@@ -105,18 +102,16 @@ class SynchronizedUserDefaultsTests: TestCase {
         // Wait until background thread is holding the lock.
         writeStarted.wait()
 
-        // Allow background to proceed and immediately try to read from main.
+        // Try to read from main while background holds the lock.
         // This creates the race condition that would deadlock with a naive lock implementation.
-        canFinishWrite.signal()
-
-        _ = self.synchronizedUserDefaults.read {
+        let value = self.synchronizedUserDefaults.read {
             $0.string(forKey: self.testKey)
         }
 
         // If we reach here without hanging, there's no deadlock.
         wait(for: [notificationExpectation, writeCompleted], timeout: 2.0)
 
-        expect(self.synchronizedUserDefaults.read { $0.string(forKey: self.testKey) }) == "value"
+        expect(value) == "value"
     }
 
     func testConcurrentReadsDoNotDeadlock() {
