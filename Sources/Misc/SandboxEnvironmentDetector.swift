@@ -121,22 +121,19 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
 internal extension SandboxEnvironmentDetector {
 
+    // This is only used on iOS 18+ because we observed that on iOS 16/17,
+    // prefetching the AppTransaction would sometimes cause the StoreKit daemon to freeze
+    // while running automated tests in some environments, which doesn't occur on iOS 18+.
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     func prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: StoreKit2TransactionFetcherType) {
-        // Important: Do not use background priority on this task.
-        // In testing, this caused `AppTransaction.shared` to sometimes
-        // throw a cancellation error despite no explicit cancellation.
-        //
-        // Additionally, this is only used on iOS 18+ because we observed that on iOS 16/17,
-        // prefetching the AppTransaction would sometimes cause the StoreKit daemon to freeze
-        // while running automated tests in some environments, which doesn't occur on iOS 18+.
-
-
         guard self.appTransactionFetchTask.value == nil else {
             // Prefetch is already in progress, don't prefetch again
             return
         }
 
+        // Important: Do not use background priority on this task.
+        // In testing, this caused `AppTransaction.shared` to sometimes
+        // throw a cancellation error despite no explicit cancellation.
         self.appTransactionFetchTask.value = Task {
             let environment = await transactionFetcher.appTransactionEnvironment
             self.cachedAppTransactionEnvironment.value = environment
