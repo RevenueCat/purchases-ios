@@ -1,5 +1,5 @@
 //
-//  ObserverModeThroughRevenueCatPurchaseManager.swift
+//  ThroughRevenueCatPurchaseManager.swift
 //  RCTTester
 //
 
@@ -8,7 +8,7 @@ import RevenueCat
 import RevenueCatUI
 import StoreKit
 
-/// Purchase manager for observer mode with RevenueCat purchase methods.
+/// Purchase manager that uses RevenueCat's purchase methods with manual transaction finishing.
 ///
 /// In this mode:
 /// - `purchasesAreCompletedBy` is set to `.myApp`
@@ -17,7 +17,7 @@ import StoreKit
 /// - After purchase, the app must manually finish the transaction
 /// - Works the same for both StoreKit 1 and StoreKit 2 (transaction finishing differs)
 @MainActor
-final class ObserverModeThroughRevenueCatPurchaseManager: PurchaseManager {
+final class ThroughRevenueCatPurchaseManager: PurchaseManager {
 
     // MARK: - PurchaseManager
 

@@ -108,14 +108,14 @@ extension AnyPurchaseManager {
         case .myApp:
             switch configuration.purchaseLogic {
             case .throughRevenueCat:
-                return AnyPurchaseManager(ObserverModeThroughRevenueCatPurchaseManager())
+                return AnyPurchaseManager(ThroughRevenueCatPurchaseManager())
 
             case .usingStoreKitDirectly:
                 switch configuration.storeKitVersion {
                 case .storeKit1:
-                    return AnyPurchaseManager(ObserverModeStoreKit1PurchaseManager())
+                    return AnyPurchaseManager(StoreKit1PurchaseManager())
                 case .storeKit2:
-                    return AnyPurchaseManager(ObserverModeStoreKit2PurchaseManager())
+                    return AnyPurchaseManager(StoreKit2PurchaseManager())
                 }
             }
         }
