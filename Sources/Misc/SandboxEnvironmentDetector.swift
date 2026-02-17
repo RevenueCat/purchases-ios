@@ -133,6 +133,7 @@ internal extension SandboxEnvironmentDetector {
         }
 
         self.appTransactionFetchTask.value = Task {
+            try? await Task.sleep(for: .seconds(3))
             let environment = await transactionFetcher.appTransactionEnvironment
             self.cachedAppTransactionEnvironment.value = environment
             self.appTransactionFetchTask.value = nil
