@@ -64,7 +64,7 @@ final class GestureCoordinatorHostView: UIView, UIGestureRecognizerDelegate {
         super.init(frame: frame)
     }
 
-    required override init?(coder: NSCoder) {
+    required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
 
@@ -79,7 +79,7 @@ final class GestureCoordinatorHostView: UIView, UIGestureRecognizerDelegate {
 
     func attachIfNeeded() {
         guard self.gestureContainerView == nil else { return }
-        guard let firstAncestorView = self.superview else { return }
+        guard self.superview != nil else { return }
         guard let window = self.window else { return }
 
         let containerView = window
