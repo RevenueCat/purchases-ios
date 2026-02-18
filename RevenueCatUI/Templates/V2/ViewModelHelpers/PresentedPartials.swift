@@ -13,7 +13,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if !os(tvOS) // For Paywalls V2
 
@@ -35,7 +35,7 @@ typealias PresentedOverrides<T: PresentedPartial> = [PresentedOverride<T>]
 /// Structure holding override configurations for a presentation state
 struct PresentedOverride<T: PresentedPartial> {
 
-    let conditions: [PaywallComponent.Condition]
+    let conditions: [PaywallComponent.ExtendedCondition]
     let properties: T?
 
 }
@@ -74,8 +74,9 @@ extension PresentedPartial {
         return presentedPartial
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     private static func shouldApply(
-        for conditions: [PaywallComponent.Condition],
+        for conditions: [PaywallComponent.ExtendedCondition],
         state: ComponentViewState,
         activeCondition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
@@ -100,6 +101,10 @@ extension PresentedPartial {
                 if state != .selected {
                     return false
                 }
+            case .introOfferCondition, .promoOfferCondition,
+                 .variableCondition, .selectedPackageCondition:
+                // These conditions require the full context - fall back to false in legacy method
+                return false
             case .unsupported:
                 return false
             }
@@ -113,7 +118,7 @@ extension PresentedPartial {
 private extension ScreenCondition {
 
     /// Returns applicable condition types based on current screen condition
-    var applicableConditions: [PaywallComponent.Condition] {
+    var applicableConditions: [PaywallComponent.ExtendedCondition] {
         switch self {
         case .compact: return [.compact]
         case .medium: return [.compact, .medium]
@@ -139,7 +144,7 @@ extension Array {
             let presentedPartial = try convert(partial.properties)
 
             return PresentedOverride(
-                conditions: partial.conditions,
+                conditions: partial.extendedConditions,
                 properties: presentedPartial
             )
         }
