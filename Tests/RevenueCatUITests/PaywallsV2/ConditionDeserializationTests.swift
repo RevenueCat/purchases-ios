@@ -248,6 +248,65 @@ class ConditionDeserializationTests: TestCase {
         expect(condition).to(equal(.unsupported))
     }
 
+    func testDecodeSelectedPackageWithUnknownOperator_FallsBackToUnsupported() throws {
+        let json = """
+        {"type": "selected_package", "operator": "contains", "packages": ["monthly"]}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
+    func testDecodeVariableWithUnknownOperator_FallsBackToUnsupported() throws {
+        let json = """
+        {"type": "variable", "operator": ">", "variable": "level", "value": 5}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
+    func testDecodeSelectedPackageWithWrongFieldType_FallsBackToUnsupported() throws {
+        // packages should be an array, not a string
+        let json = """
+        {"type": "selected_package", "operator": "in", "packages": "not_an_array"}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
+    func testDecodeVariableWithArrayValue_FallsBackToUnsupported() throws {
+        // value should be a primitive, not an array
+        let json = """
+        {"type": "variable", "operator": "=", "variable": "items", "value": [1, 2, 3]}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
+    func testDecodeVariableWithObjectValue_FallsBackToUnsupported() throws {
+        // value should be a primitive, not an object
+        let json = """
+        {"type": "variable", "operator": "=", "variable": "config", "value": {"nested": true}}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
+    func testDecodeEmptyJsonObject_FallsBackToUnsupported() throws {
+        let json = """
+        {}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
+    func testDecodeJsonWithoutTypeField_FallsBackToUnsupported() throws {
+        let json = """
+        {"no_type_field": true, "operator": "="}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
     // MARK: - Encoding Tests
 
     func testEncodeVariableCondition() throws {
