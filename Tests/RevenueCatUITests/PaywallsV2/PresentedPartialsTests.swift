@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 1/25/25.
 
 import Nimble
-import RevenueCat
+@_spi(Internal) import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
