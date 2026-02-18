@@ -22,7 +22,7 @@ public enum ExitOfferType: String, Codable, Sendable {
 }
 
 /// An event to be sent by the `RevenueCatUI` SDK.
-public enum PaywallEvent: FeatureEvent {
+public enum PaywallEvent {
 
     // swiftlint:disable type_name
 
@@ -33,25 +33,6 @@ public enum PaywallEvent: FeatureEvent {
 
     /// An identifier that represents a paywall session.
     public typealias SessionID = UUID
-
-    var feature: Feature {
-        return .paywalls
-    }
-
-    var eventDiscriminator: String? {
-        return nil
-    }
-
-    /// `purchaseInitiated` and `purchaseError` events are only used locally for attribution for now.
-    /// They should not be sent to the backend until the backend supports them.
-    var shouldStoreEvent: Bool {
-        switch self {
-        case .purchaseInitiated, .purchaseError:
-            return false
-        case .impression, .cancel, .close, .exitOffer:
-            return true
-        }
-    }
 
     /// A `PaywallView` was displayed.
     case impression(CreationData, Data)
@@ -70,6 +51,31 @@ public enum PaywallEvent: FeatureEvent {
 
     /// A purchase from the paywall failed with an error.
     case purchaseError(CreationData, Data)
+
+}
+
+@_spi(Internal) extension PaywallEvent: FeatureEvent {
+
+    /// Feature associated with paywall events.
+    @_spi(Internal) public var feature: Feature {
+        return .paywalls
+    }
+
+    /// No discriminator is needed for paywall events.
+    @_spi(Internal) public var eventDiscriminator: String? {
+        return nil
+    }
+
+    /// `purchaseInitiated` and `purchaseError` events are only used locally for attribution for now.
+    /// They should not be sent to the backend until the backend supports them.
+    @_spi(Internal) public var shouldStoreEvent: Bool {
+        switch self {
+        case .purchaseInitiated, .purchaseError:
+            return false
+        case .impression, .cancel, .close, .exitOffer:
+            return true
+        }
+    }
 
 }
 

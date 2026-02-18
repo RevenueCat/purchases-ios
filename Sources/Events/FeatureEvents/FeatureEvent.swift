@@ -11,9 +11,13 @@
 //
 //  Created by Cesar de la Vega on 6/11/24.
 
-protocol FeatureEvent: Encodable, Sendable {
+/// An internal event emitted by SDK features that can be stored/sent and also logged for debugging.
+@_spi(Internal) public protocol FeatureEvent: Encodable, Sendable {
 
+    /// Feature that emitted this event.
     var feature: Feature { get }
+
+    /// Optional discriminator used to route/store events (e.g. subtypes within a feature).
     var eventDiscriminator: String? { get }
 
     /// Whether this event should be stored and sent to the backend.
@@ -24,7 +28,7 @@ protocol FeatureEvent: Encodable, Sendable {
 
 }
 
-extension FeatureEvent {
+@_spi(Internal) public extension FeatureEvent {
 
     /// By default, all events should be stored.
     var shouldStoreEvent: Bool { true }

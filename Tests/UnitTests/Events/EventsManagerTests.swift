@@ -14,7 +14,7 @@
 import Foundation
 import Nimble
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 import XCTest
 
@@ -100,6 +100,49 @@ class EventsManagerTests: TestCase {
         await self.manager.track(featureEvent: event)
 
         await self.verifyEmptyStore()
+    }
+
+    // MARK: - EventsListener
+
+    func testTrackEventNotifiesListener() async throws {
+        let listener = MockEventsListener()
+        self.manager = self.createManager(eventsListener: listener)
+
+        let event: PaywallEvent = .impression(.random(), .random())
+        await self.manager.track(featureEvent: event)
+
+        expect(listener.trackedEvents).to(haveCount(1))
+        expect(listener.trackedEvents.first?.feature) == event.feature
+    }
+
+    func testTrackMultipleEventsNotifiesListenerForEach() async throws {
+        let listener = MockEventsListener()
+        self.manager = self.createManager(eventsListener: listener)
+
+        let event1: PaywallEvent = .impression(.random(), .random())
+        let event2: PaywallEvent = .close(.random(), .random())
+        await self.manager.track(featureEvent: event1)
+        await self.manager.track(featureEvent: event2)
+
+        expect(listener.trackedEvents).to(haveCount(2))
+    }
+
+    func testTrackNonStorableEventDoesNotNotifyListener() async throws {
+        let listener = MockEventsListener()
+        self.manager = self.createManager(eventsListener: listener)
+
+        let event: PaywallEvent = .purchaseInitiated(.random(), .random())
+        await self.manager.track(featureEvent: event)
+
+        expect(listener.trackedEvents).to(beEmpty())
+    }
+
+    func testTrackEventWithNoListenerDoesNotCrash() async throws {
+        let event: PaywallEvent = .impression(.random(), .random())
+        await self.manager.track(featureEvent: event)
+
+        let events = await self.store.storedEvents
+        expect(events).to(haveCount(1))
     }
 
     // MARK: - flushAllEvents
@@ -514,6 +557,18 @@ private extension EventsManagerTests {
                                    eventDiscriminator: nil))
     }
 
+    func createManager(eventsListener: EventsListener? = nil) -> EventsManager {
+        return .init(
+            internalAPI: self.api,
+            userProvider: self.userProvider,
+            store: self.store,
+            systemInfo: MockSystemInfo(finishTransactions: true),
+            eventsListener: eventsListener,
+            appSessionID: self.appSessionID,
+            adEventStore: nil
+        )
+    }
+
 }
 
 // MARK: - MockFeatureEventStore
@@ -554,6 +609,19 @@ private actor MockAdEventStore: AdEventStoreType {
 
     func clear(_ count: Int) {
         self.storedEvents.removeFirst(min(count, self.storedEvents.count))
+    }
+
+}
+
+// MARK: - MockEventsListener
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private final class MockEventsListener: EventsListener {
+
+    var trackedEvents: [FeatureEvent] = []
+
+    func onEventTracked(_ event: FeatureEvent) {
+        self.trackedEvents.append(event)
     }
 
 }
