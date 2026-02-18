@@ -316,15 +316,15 @@ extension PaywallComponent {
 
         // swiftlint:disable:next cyclomatic_complexity
         public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let rawValue = try container.decode(String.self, forKey: .type)
-
-            guard let conditionType = ConditionType(rawValue: rawValue) else {
-                self = .unsupported
-                return
-            }
-
             do {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let rawValue = try container.decode(String.self, forKey: .type)
+
+                guard let conditionType = ConditionType(rawValue: rawValue) else {
+                    self = .unsupported
+                    return
+                }
+
                 switch conditionType {
                 case .compact:
                     self = .compact
