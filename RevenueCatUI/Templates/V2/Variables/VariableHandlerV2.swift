@@ -744,7 +744,7 @@ extension VariablesV2 {
         return formatDiscountPrice(
             discount.price,
             package: package,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices,
             fallback: discount.localizedPriceString
         )
     }
@@ -770,7 +770,7 @@ extension VariablesV2 {
         return formatDiscountPrice(
             discount.pricePerDay?.decimalValue,
             package: package,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
         )
     }
 
@@ -795,7 +795,7 @@ extension VariablesV2 {
         return formatDiscountPrice(
             discount.pricePerWeek?.decimalValue,
             package: package,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
         )
     }
 
@@ -820,7 +820,7 @@ extension VariablesV2 {
         return formatDiscountPrice(
             discount.pricePerMonth?.decimalValue,
             package: package,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
         )
     }
 
@@ -845,7 +845,7 @@ extension VariablesV2 {
         return formatDiscountPrice(
             discount.pricePerYear?.decimalValue,
             package: package,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
         )
     }
 
