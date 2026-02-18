@@ -307,6 +307,9 @@ extension RevenueCat.Storefront {
   }
   #endif
 }
+extension Foundation.NSString {
+  public static let purchaseWasBackgroundedKey: Foundation.NSError.UserInfoKey
+}
 @_hasMissingDesignatedInitializers @objc(RCWinBackOffer) final public class WinBackOffer : ObjectiveC.NSObject, Swift.Sendable {
   @objc final public let discount: RevenueCat.StoreProductDiscount
   @objc deinit
