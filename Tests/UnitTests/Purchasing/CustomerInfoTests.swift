@@ -1033,14 +1033,16 @@ class BasicCustomerInfoTests: TestCase {
     func testIsLoadedFromCacheIsTrueAfterLoadedFromCache() {
         expect(self.customerInfo.isLoadedFromCache) == false
 
-        let cachedInfo = self.customerInfo.loadedFromCache()
+        let detector = MockSandboxEnvironmentDetector(isSandbox: false)
+        let cachedInfo = self.customerInfo.loadedFromCache(sandboxEnvironmentDetector: detector)
         expect(cachedInfo.isLoadedFromCache) == true
     }
 
     func testLoadedFromCacheIsIdempotent() {
-        let cachedInfo1 = self.customerInfo.loadedFromCache()
-        let cachedInfo2 = cachedInfo1.loadedFromCache()
-        let cachedInfo3 = cachedInfo2.loadedFromCache()
+        let detector = MockSandboxEnvironmentDetector(isSandbox: false)
+        let cachedInfo1 = self.customerInfo.loadedFromCache(sandboxEnvironmentDetector: detector)
+        let cachedInfo2 = cachedInfo1.loadedFromCache(sandboxEnvironmentDetector: detector)
+        let cachedInfo3 = cachedInfo2.loadedFromCache(sandboxEnvironmentDetector: detector)
 
         expect(cachedInfo1.isLoadedFromCache) == true
         expect(cachedInfo2.isLoadedFromCache) == true
@@ -1052,7 +1054,8 @@ class BasicCustomerInfoTests: TestCase {
     func testSameCustomerInfoWithDifferentCacheStatusAreEqual() {
         expect(self.customerInfo.isLoadedFromCache) == false
 
-        let cachedInfo = self.customerInfo.loadedFromCache()
+        let detector = MockSandboxEnvironmentDetector(isSandbox: false)
+        let cachedInfo = self.customerInfo.loadedFromCache(sandboxEnvironmentDetector: detector)
         expect(cachedInfo.isLoadedFromCache) == true
 
         expect(self.customerInfo) == cachedInfo

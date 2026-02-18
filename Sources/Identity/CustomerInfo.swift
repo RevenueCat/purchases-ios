@@ -402,15 +402,14 @@ extension CustomerInfo {
     }
 
     /// Creates a copy of this ``CustomerInfo`` setting the `isLoadedFromCache` flag  to `true`.
-    /// - Parameter sandboxEnvironmentDetector: If provided, replaces the detector on the returned copy.
+    /// - Parameter sandboxEnvironmentDetector: The detector to use for the returned copy.
     ///   Used after Codable decoding to inject the correct detector from the SDK's dependency chain.
     func loadedFromCache(
-        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType? = nil
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType
     ) -> Self {
         var copy = self.data
         copy.loadedFromCache = true
-        return .init(data: copy,
-                     sandboxEnvironmentDetector: sandboxEnvironmentDetector ?? self.sandboxEnvironmentDetector)
+        return .init(data: copy, sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
 }

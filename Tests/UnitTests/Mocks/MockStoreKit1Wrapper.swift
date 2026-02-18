@@ -8,7 +8,9 @@ import StoreKit
 
 class MockStoreKit1Wrapper: StoreKit1Wrapper {
     init(observerMode: Bool = false) {
-        super.init(observerMode: observerMode, diagnosticsTracker: nil)
+        super.init(observerMode: observerMode,
+                   sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
+                   diagnosticsTracker: nil)
     }
 
     var mockCurrentStorefront: RevenueCat.Storefront? = .init(MockStorefront(countryCode: "USA"))
