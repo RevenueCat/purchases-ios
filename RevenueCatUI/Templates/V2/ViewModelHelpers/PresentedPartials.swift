@@ -41,6 +41,7 @@ struct PresentedOverride<T: PresentedPartial> {
 }
 
 /// Context needed to evaluate conditions on component overrides.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ConditionContext {
 
     /// The identifier of the currently selected package, or nil if none is selected.
@@ -103,6 +104,7 @@ extension PresentedPartial {
     ///   - conditionContext: Additional context for evaluating new condition types
     ///   - presentedOverrides: Override configurations to apply
     /// - Returns: Configured partial component
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     // swiftlint:disable:next function_parameter_count
     static func buildPartial(
         state: ComponentViewState,
@@ -172,6 +174,7 @@ extension PresentedPartial {
         return true
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     // swiftlint:disable:next function_parameter_count
     private static func shouldApply(
         for conditions: [PaywallComponent.ExtendedCondition],
@@ -195,6 +198,7 @@ extension PresentedPartial {
         return true
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     // swiftlint:disable:next function_parameter_count
     private static func evaluateCondition(
         _ condition: PaywallComponent.ExtendedCondition,
@@ -213,20 +217,14 @@ extension PresentedPartial {
         case .selected:
             return state == .selected
 
-        // Legacy offer eligibility (no operator - assumes equals true)
-        case .introOffer:
-            return isEligibleForIntroOffer
-        case .promoOffer:
-            return isEligibleForPromoOffer
-
-        // Extended offer eligibility (with operator/value)
-        case .introOfferCondition(let condOp, let value):
+        // Offer eligibility (with operator/value)
+        case .introOffer(let condOp, let value):
             return evaluateBoolCondition(
                 actual: isEligibleForIntroOffer,
                 expected: value,
                 operator: condOp
             )
-        case .promoOfferCondition(let condOp, let value):
+        case .promoOffer(let condOp, let value):
             return evaluateBoolCondition(
                 actual: isEligibleForPromoOffer,
                 expected: value,
@@ -234,7 +232,7 @@ extension PresentedPartial {
             )
 
         // Variable condition
-        case .variableCondition(let condOp, let variable, let value):
+        case .variable(let condOp, let variable, let value):
             return evaluateVariableCondition(
                 variable: variable,
                 expectedValue: value,
@@ -243,7 +241,7 @@ extension PresentedPartial {
             )
 
         // Selected package condition
-        case .selectedPackageCondition(let condOp, let packages):
+        case .selectedPackage(let condOp, let packages):
             return evaluateSelectedPackageCondition(
                 packages: packages,
                 operator: condOp,
@@ -287,6 +285,7 @@ extension PresentedPartial {
         }
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     private static func evaluateVariableCondition(
         variable: String,
         expectedValue: PaywallComponent.ConditionValue,
@@ -308,41 +307,20 @@ extension PresentedPartial {
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     private static func matchesValue(
         actualValue: CustomVariableValue,
         expectedValue: PaywallComponent.ConditionValue
     ) -> Bool {
         switch expectedValue {
         case .string(let expected):
-            if case .string(let actual) = actualValue {
-                return actual == expected
-            }
-            return false
+            return actualValue.stringValue == expected
         case .bool(let expected):
-            // Note: CustomVariableValue doesn't have a bool case, so we check string representation
-            if case .string(let actual) = actualValue {
-                return (actual.lowercased() == "true") == expected
-            }
-            return false
+            return actualValue.boolValue == expected
         case .int(let expected):
-            switch actualValue {
-            case .int(let actual):
-                return actual == expected
-            case .double(let actual):
-                return actual == Double(expected)
-            default:
-                return false
-            }
+            return actualValue.doubleValue == Double(expected)
         case .double(let expected):
-            switch actualValue {
-            case .int(let actual):
-                return Double(actual) == expected
-            case .double(let actual):
-                return actual == expected
-            default:
-                return false
-            }
+            return actualValue.doubleValue == expected
         }
     }
 

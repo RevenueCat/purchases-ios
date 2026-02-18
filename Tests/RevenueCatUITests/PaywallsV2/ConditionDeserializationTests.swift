@@ -57,7 +57,7 @@ class ConditionDeserializationTests: TestCase {
     }
 
     func testDecodeLegacyIntroOfferCondition() throws {
-        // Legacy intro_offer is normalized to introOfferCondition(operator: .equals, value: true)
+        // Legacy intro_offer is normalized to introOffer(operator: .equals, value: true)
         let json = """
         {"type": "intro_offer"}
         """
@@ -66,7 +66,7 @@ class ConditionDeserializationTests: TestCase {
     }
 
     func testDecodeLegacyPromoOfferCondition() throws {
-        // Legacy promo_offer is normalized to promoOfferCondition(operator: .equals, value: true)
+        // Legacy promo_offer is normalized to promoOffer(operator: .equals, value: true)
         let json = """
         {"type": "promo_offer"}
         """
