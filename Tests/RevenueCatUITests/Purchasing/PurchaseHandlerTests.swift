@@ -32,7 +32,7 @@ class PurchaseHandlerTests: TestCase {
 
         expect(handler.purchaseResult).to(beNil())
         expect(handler.restoredCustomerInfo).to(beNil())
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
@@ -48,7 +48,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
         expect(handler.purchaseResult?.userCancelled) == false
         expect(handler.restoredCustomerInfo).to(beNil())
-        expect(handler.purchased) == true
+        expect(handler.hasPurchasedInSession) == true
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
@@ -60,7 +60,7 @@ class PurchaseHandlerTests: TestCase {
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
         expect(handler.purchaseResult?.userCancelled) == true
         expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
@@ -79,12 +79,253 @@ class PurchaseHandlerTests: TestCase {
         }
 
         expect(handler.purchaseResult).to(beNil())
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
         expect(handler.purchaseError).to(matchError(error))
         expect(handler.restoreError).to(beNil())
+    }
+
+    func testCancelEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+
+        let handler = PurchaseHandler(
+            purchases: MockPurchases { _ in
+                return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: true)
+            } restorePurchases: {
+                return TestData.customerInfo
+            } trackEvent: { event in
+                trackedEvents.modify { $0.append(event) }
+            } customerInfo: {
+                return TestData.customerInfo
+            }
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+        handler.trackPaywallImpression(eventData)
+
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        // Events are tracked asynchronously via Task.detached
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        let cancelEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .cancel = $0 { return true }
+            return false
+        }))
+        expect(cancelEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
+    }
+
+    func testCancelEventContainsProductIdentifierWhenCompletedByMyApp() async throws {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+
+        let handler = PurchaseHandler(
+            purchases: MockPurchases(
+                purchasesAreCompletedBy: .myApp
+            ) { _ in
+                return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+            } restorePurchases: {
+                return TestData.customerInfo
+            } trackEvent: { event in
+                trackedEvents.modify { $0.append(event) }
+            } customerInfo: {
+                return TestData.customerInfo
+            },
+            performPurchase: { _ in (userCancelled: true, error: nil) },
+            performRestore: { (success: true, error: nil) }
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+        handler.trackPaywallImpression(eventData)
+
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        // Events are tracked asynchronously via Task.detached
+        await expect(trackedEvents.value.contains(where: {
+            if case .cancel = $0 { return true }
+            return false
+        })).toEventually(beTrue(), timeout: .seconds(2))
+
+        let cancelEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .cancel = $0 { return true }
+            return false
+        }))
+        expect(cancelEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
+    }
+
+    func testPurchaseErrorEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
+        let error: ErrorCode = .storeProblemError
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+
+        let handler = PurchaseHandler(
+            purchases: MockPurchases { _ in
+                throw error
+            } restorePurchases: {
+                return TestData.customerInfo
+            } trackEvent: { event in
+                trackedEvents.modify { $0.append(event) }
+            } customerInfo: {
+                return TestData.customerInfo
+            }
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+        handler.trackPaywallImpression(eventData)
+
+        do {
+            _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+            fail("Expected error")
+        } catch {}
+
+        // Events are tracked asynchronously via Task.detached
+        await expect(trackedEvents.value.contains(where: {
+            if case .purchaseError = $0 { return true }
+            return false
+        })).toEventually(beTrue(), timeout: .seconds(2))
+
+        let errorEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .purchaseError = $0 { return true }
+            return false
+        }))
+        expect(errorEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
+    }
+
+    func testPurchaseErrorEventContainsProductIdentifierWhenCompletedByMyApp() async throws {
+        let purchaseError = NSError(domain: "test", code: 1)
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+
+        let handler = PurchaseHandler(
+            purchases: MockPurchases(
+                purchasesAreCompletedBy: .myApp
+            ) { _ in
+                return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+            } restorePurchases: {
+                return TestData.customerInfo
+            } trackEvent: { event in
+                trackedEvents.modify { $0.append(event) }
+            } customerInfo: {
+                return TestData.customerInfo
+            },
+            performPurchase: { _ in (userCancelled: false, error: purchaseError) },
+            performRestore: { (success: true, error: nil) }
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+        handler.trackPaywallImpression(eventData)
+
+        do {
+            _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+            fail("Expected error")
+        } catch {}
+
+        // Events are tracked asynchronously via Task.detached
+        await expect(trackedEvents.value.contains(where: {
+            if case .purchaseError = $0 { return true }
+            return false
+        })).toEventually(beTrue(), timeout: .seconds(2))
+
+        let errorEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .purchaseError = $0 { return true }
+            return false
+        }))
+        expect(errorEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
+    }
+
+    func testPurchaseCachesPresentedOfferingContextWhenCompletedByRevenueCat() async throws {
+        let mockPurchases = MockPurchases { _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+
+        let handler = PurchaseHandler(purchases: mockPurchases)
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+        handler.trackPaywallImpression(eventData)
+
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        let expectedProductId = TestData.packageWithIntroOffer.storeProduct.productIdentifier
+        let cachedContext = mockPurchases.cachedPresentedOfferingContextByProductID[expectedProductId]
+        expect(cachedContext).toNot(beNil())
+        expect(cachedContext?.offeringIdentifier)
+            == TestData.packageWithIntroOffer.presentedOfferingContext.offeringIdentifier
+    }
+
+    func testPurchaseCachesPresentedOfferingContextWhenCompletedByMyApp() async throws {
+        let mockPurchases = MockPurchases(
+            purchasesAreCompletedBy: .myApp
+        ) { _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+
+        let handler = PurchaseHandler(
+            purchases: mockPurchases,
+            performPurchase: { _ in (userCancelled: false, error: nil) },
+            performRestore: { (success: true, error: nil) }
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+        handler.trackPaywallImpression(eventData)
+
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        let expectedProductId = TestData.packageWithIntroOffer.storeProduct.productIdentifier
+        let cachedContext = mockPurchases.cachedPresentedOfferingContextByProductID[expectedProductId]
+        expect(cachedContext).toNot(beNil())
+        expect(cachedContext?.offeringIdentifier)
+            == TestData.packageWithIntroOffer.presentedOfferingContext.offeringIdentifier
     }
 
     func testInProgressPropertiesDuringPurchase() async throws {
@@ -191,7 +432,7 @@ class PurchaseHandlerTests: TestCase {
             expect(thrownError).to(matchError(error))
         }
         expect(handler.purchaseResult).to(beNil())
-        expect(handler.purchased) == false
+        expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.actionInProgress) == false
         expect(handler.restoreInProgress) == false

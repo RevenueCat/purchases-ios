@@ -41,35 +41,69 @@ struct APIKeyDashboardList: View {
     @State
     private var offeringToPresent: Offering?
 
+    @State
+    private var presentPaywallOffering: Offering?
+    
+    @State
+    private var isLoadingPaywall: Bool = false
+
+    @State
+    private var customVariables: [String: CustomVariableValue] = [:]
+
+    @State
+    private var isShowingVariablesEditor = false
+
+    @State
+    private var searchText = ""
+
     var body: some View {
-        NavigationView {
-            self.content
-                .navigationTitle("Live Paywalls")
-                #if !os(macOS)
-                .navigationBarTitleDisplayMode(.inline)
-                #endif
-                .toolbar {
-                    ToolbarItem(placement: .automatic) {
-                        Button {
-                            Task {
-                                await fetchOfferings()
+        ZStack {
+            NavigationView {
+                self.content
+                    .navigationTitle("Live Paywalls")
+                    #if !os(macOS)
+                    .navigationBarTitleDisplayMode(.inline)
+                    #endif
+                    .toolbar {
+                        ToolbarItem(placement: .automatic) {
+                            HStack(spacing: 16) {
+                                Button {
+                                    isShowingVariablesEditor = true
+                                } label: {
+                                    Image(systemName: "curlybraces")
+                                }
+
+                                Button {
+                                    Task {
+                                        await fetchOfferings()
+                                    }
+                                } label: {
+                                    Image(systemName: "arrow.clockwise")
+                                }
+                                #if !os(watchOS)
+                                .keyboardShortcut("r", modifiers: .shift)
+                                #endif
                             }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
                         }
-                        #if !os(watchOS)
-                        .keyboardShortcut("r", modifiers: .shift)
-                        #endif
                     }
-                }
-        }
-        .task {
-            await fetchOfferings()
-        }
-        // We keep this here for testing that the PaywallView is correctly
-        // disabling this refreshable action that is inherited by default
-        .refreshable {
-            await fetchOfferings()
+                    .sheet(isPresented: $isShowingVariablesEditor) {
+                        CustomVariablesEditorView(variables: $customVariables)
+                    }
+            }
+            .task {
+                await fetchOfferings()
+            }
+            .refreshable {
+                await fetchOfferings()
+            }
+            
+            if isLoadingPaywall {
+                Color.black.opacity(0.3)
+                    .edgesIgnoringSafeArea(.all)
+                SwiftUI.ProgressView()
+                    .scaleEffect(1.5)
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+            }
         }
     }
 
@@ -81,7 +115,7 @@ struct APIKeyDashboardList: View {
             let offerings = try await Purchases.shared.offerings()
                 .all
                 .map(\.value)
-                .sorted { $0.serverDescription > $1.serverDescription }
+                .sorted { $0.id < $1.id }
 
             if let presentedPaywall = presentedPaywall {
                 for offering in offerings {
@@ -138,57 +172,75 @@ struct APIKeyDashboardList: View {
         }
     }
 
-    private func offeringHasComponents(_ offering: Offering) -> Bool {
-        offering.paywallComponents != nil
+    private func filteredOfferings(for template: Template, in data: Data) -> [Offering] {
+        let offerings = data.offeringsBySection[template] ?? []
+        guard !searchText.isEmpty else { return offerings }
+        return offerings.filter {
+            $0.id.localizedCaseInsensitiveContains(searchText) ||
+            $0.serverDescription.localizedCaseInsensitiveContains(searchText)
+        }
     }
+
 
     @ViewBuilder
     private func list(with data: Data) -> some View {
         List {
             ForEach(data.sections, id: \.self) { template in
-                Section {
-                    ForEach(data.offeringsBySection[template]!, id: \.id) { offering in
-                        if offering.paywall != nil || offeringHasComponents(offering) {
-                            #if targetEnvironment(macCatalyst)
-                            NavigationLink(
-                                destination: PaywallPresenter(offering: offering,
-                                                              mode: .default,
-                                                              introEligility: .eligible,
-                                                              displayCloseButton: false),
-                                tag: PresentedPaywall(offering: offering, mode: .default),
-                                selection: self.$presentedPaywall
-                            ) {
-                                OfferButton(offering: offering) {}
-                                .contextMenu {
-                                    self.contextMenu(for: offering)
+                let offerings = filteredOfferings(for: template, in: data)
+                if !offerings.isEmpty {
+                    Section {
+                        ForEach(offerings, id: \.id) { offering in
+                            if offering.hasPaywall {
+                                #if targetEnvironment(macCatalyst)
+                                NavigationLink(
+                                    destination: PaywallPresenter(offering: offering,
+                                                                  mode: .default,
+                                                                  introEligility: .eligible,
+                                                                  displayCloseButton: false)
+                                        .customPaywallVariables(self.customVariables),
+                                    tag: PresentedPaywall(offering: offering, mode: .default),
+                                    selection: self.$presentedPaywall
+                                ) {
+                                    OfferButton(offering: offering) {}
+                                    .contextMenu {
+                                        self.contextMenu(for: offering)
+                                    }
                                 }
-                            }
-                            #else
-                            OfferButton(offering: offering) {
-                                self.presentedPaywall = .init(offering: offering, mode: .default)
-                            }
-                                #if !os(watchOS)
-                                .contextMenu {
-                                    self.contextMenu(for: offering)
+                                #else
+                                OfferButton(offering: offering) {
+                                    self.isLoadingPaywall = true
+                                    self.presentedPaywall = .init(offering: offering, mode: .default)
                                 }
+                                    #if !os(watchOS)
+                                    .contextMenu {
+                                        self.contextMenu(for: offering)
+                                    }
+                                    #endif
                                 #endif
-                            #endif
+                            } else {
+                                VStack(alignment: .leading) {
+                                    Text(offering.id)
+                                    Text(offering.serverDescription)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
-                        else {
-                            Text(offering.serverDescription)
-                        }
+                    } header: {
+                        Text(verbatim: template.description)
                     }
-                } header: {
-                    Text(verbatim: template.description)
                 }
             }
         }
+        .searchable(text: $searchText, prompt: "Search offerings")
         .sheet(item: self.$presentedPaywall) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
+                .customPaywallVariables(self.customVariables)
                 .onAppear {
+                    self.isLoadingPaywall = false
                     if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
                         print("Paywall V2 Error:", errorInfo.debugDescription)
                     }
@@ -200,14 +252,27 @@ struct APIKeyDashboardList: View {
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
+                .customPaywallVariables(self.customVariables)
                 .onAppear {
+                    self.isLoadingPaywall = false
                     if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
                         print("Paywall V2 Error:", errorInfo.debugDescription)
                     }
                 }
         }
         #endif
-                .presentPaywallIfNeededModifier(offering: $offeringToPresent)       
+                .presentPaywallIfNeededModifier(offering: $offeringToPresent)
+                .presentPaywall(offering: $presentPaywallOffering, onDismiss: { })
+                .onChange(of: offeringToPresent) { offering in
+                    if offering != nil {
+                        self.isLoadingPaywall = false
+                    }
+                }
+                .onChange(of: presentPaywallOffering) { offering in
+                    if offering != nil {
+                        self.isLoadingPaywall = false
+                    }
+                }
     }
 
     #if !os(watchOS)
@@ -222,6 +287,7 @@ struct APIKeyDashboardList: View {
     @ViewBuilder
     private func button(for selectedMode: PaywallTesterViewMode, offering: Offering) -> some View {
         Button {
+            self.isLoadingPaywall = true
             switch selectedMode {
             case .fullScreen:
                 self.presentedPaywallCover = .init(offering: offering, mode: selectedMode)
@@ -229,6 +295,8 @@ struct APIKeyDashboardList: View {
                 self.presentedPaywall = .init(offering: offering, mode: selectedMode)
             case .presentIfNeeded:
                 self.offeringToPresent = offering
+            case .presentPaywall:
+                self.presentPaywallOffering = offering
             }
         } label: {
             Text(selectedMode.name)
@@ -243,16 +311,22 @@ struct APIKeyDashboardList: View {
         var body: some View {
             Button(action: action) {
                 HStack {
-                    Text(self.offering.serverDescription)
+                    VStack(alignment: .leading) {
+                        Text(self.offering.id)
+                        Text(self.offering.serverDescription)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                     Spacer()
                     if let errorInfo = self.offering.paywallComponents?.data.errorInfo, !errorInfo.isEmpty {
                         Image(systemName: "exclamationmark.circle.fill")
                             .foregroundStyle(Color.red)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .contentShape(Rectangle())
         }
     }
 

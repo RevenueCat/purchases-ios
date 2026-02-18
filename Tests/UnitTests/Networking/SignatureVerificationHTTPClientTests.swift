@@ -22,25 +22,26 @@ import XCTest
 
 class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager, HTTPRequestTimeoutManager> {
 
-    private var userDefaultsSuiteName: String!
-    fileprivate var userDefaults: UserDefaults!
+    private var suiteName: String!
+    fileprivate var largeItemCache: SynchronizedLargeItemCache!
 
     override func setUpWithError() throws {
         // Note: these tests use the real `ETagManager` and `HTTPRequestTimeoutManager`
-        self.userDefaultsSuiteName = UUID().uuidString
-        self.userDefaults = .init(suiteName: self.userDefaultsSuiteName)!
-        self.eTagManager = ETagManager(userDefaults: self.userDefaults)
+        self.suiteName = UUID().uuidString
+        self.largeItemCache = SynchronizedLargeItemCache(
+            cache: FileManager.default,
+            basePath: self.suiteName
+        )
+        self.eTagManager = ETagManager(largeItemCache: largeItemCache)
         self.timeoutManager = HTTPRequestTimeoutManager(defaultTimeout: defaultTimeout.timeInterval)
 
         try super.setUpWithError()
     }
 
     override func tearDown() {
-        // Clean up to avoid leaving leftover data in the simulator
-        if let defaults = self.userDefaults, let suiteName = self.userDefaultsSuiteName {
-            defaults.removePersistentDomain(forName: suiteName)
-        }
-
+        largeItemCache.clear()
+        largeItemCache = nil
+        self.suiteName = nil
         super.tearDown()
     }
 
@@ -940,8 +941,9 @@ private extension BaseSignatureVerificationHTTPClientTests {
     }
 
     private func setETagCache(_ response: ETagManager.Response, for request: URLRequest) throws {
-        self.userDefaults.set(try response.jsonEncodedData,
-                              forKey: try XCTUnwrap(ETagManager.cacheKey(for: request)))
+        if let key = ETagManager.cacheKey(for: request) {
+            self.largeItemCache.set(codable: response, forKey: key)
+        }
     }
 
 }

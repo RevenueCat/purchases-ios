@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 class SubscriberAttributesManager {
 
     private let backend: Backend
@@ -105,6 +107,18 @@ class SubscriberAttributesManager {
 
     func setKochavaDeviceID(_ kochavaDeviceID: String?, appUserID: String) {
         setAttributionID(kochavaDeviceID, forNetworkID: .kochavaDeviceID, appUserID: appUserID)
+    }
+
+    func setSolarEngineDistinctId(_ solarEngineDistinctId: String?, appUserID: String) {
+        setAttributionID(solarEngineDistinctId, forNetworkID: .solarEngineDistinctId, appUserID: appUserID)
+    }
+
+    func setSolarEngineAccountId(_ solarEngineAccountId: String?, appUserID: String) {
+        setAttributionID(solarEngineAccountId, forNetworkID: .solarEngineAccountId, appUserID: appUserID)
+    }
+
+    func setSolarEngineVisitorId(_ solarEngineVisitorId: String?, appUserID: String) {
+        setAttributionID(solarEngineVisitorId, forNetworkID: .solarEngineVisitorId, appUserID: appUserID)
     }
 
     func setMixpanelDistinctID(_ mixpanelDistinctID: String?, appUserID: String) {

@@ -17,9 +17,4 @@
 "%d%% off" = "%d%% endirim";
 "Continue" = "Davam et";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} sınaq dövrünüzü başladın, sonra {{ total_price_and_per_month }}.";
-"then_price_per_period" = "sonra %@";
-"free_trial_period" = "%@ pulsuz";
-"pay_as_you_go_period" = "%@ %@ müddətində";
-"pay_up_front_period" = "%@ %@ üçün";
-"then_price_per_period" = "sonra %@";
 "Something went wrong" = "Nəsə səhv oldu";

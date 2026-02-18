@@ -13,6 +13,14 @@
 
 import Foundation
 
+/// The type of exit offer shown.
+public enum ExitOfferType: String, Codable, Sendable {
+
+    /// An exit offer shown when the user attempts to dismiss the paywall without interacting.
+    case dismiss
+
+}
+
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum PaywallEvent: FeatureEvent {
 
@@ -34,6 +42,17 @@ public enum PaywallEvent: FeatureEvent {
         return nil
     }
 
+    /// `purchaseInitiated` and `purchaseError` events are only used locally for attribution for now.
+    /// They should not be sent to the backend until the backend supports them.
+    var shouldStoreEvent: Bool {
+        switch self {
+        case .purchaseInitiated, .purchaseError:
+            return false
+        case .impression, .cancel, .close, .exitOffer:
+            return true
+        }
+    }
+
     /// A `PaywallView` was displayed.
     case impression(CreationData, Data)
 
@@ -42,6 +61,15 @@ public enum PaywallEvent: FeatureEvent {
 
     /// A `PaywallView` was closed.
     case close(CreationData, Data)
+
+    /// An exit offer is shown to the user.
+    case exitOffer(CreationData, Data, ExitOfferData)
+
+    /// A purchase was initiated from the paywall.
+    case purchaseInitiated(CreationData, Data)
+
+    /// A purchase from the paywall failed with an error.
+    case purchaseError(CreationData, Data)
 
 }
 
@@ -73,12 +101,18 @@ extension PaywallEvent {
     public struct Data {
 
         // swiftlint:disable missing_docs
+
+        public var paywallIdentifier: String?
         public var offeringIdentifier: String
         public var paywallRevision: Int
         public var sessionIdentifier: SessionID
         public var displayMode: PaywallViewMode
         public var localeIdentifier: String
         public var darkMode: Bool
+        var packageId: String?
+        var productId: String?
+        var errorCode: Int?
+        var errorMessage: String?
 
         #if !os(tvOS) // For Paywalls V2
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -91,6 +125,7 @@ extension PaywallEvent {
             darkMode: Bool
         ) {
             self.init(
+                paywallIdentifier: paywallComponentsData.id,
                 offeringIdentifier: offering.identifier,
                 paywallRevision: paywallComponentsData.revision,
                 sessionID: sessionID,
@@ -111,6 +146,7 @@ extension PaywallEvent {
             darkMode: Bool
         ) {
             self.init(
+                paywallIdentifier: paywall.id,
                 offeringIdentifier: offering.identifier,
                 paywallRevision: paywall.revision,
                 sessionID: sessionID,
@@ -122,20 +158,52 @@ extension PaywallEvent {
         // swiftlint:enable missing_docs
 
         init(
+            paywallIdentifier: String?,
             offeringIdentifier: String,
             paywallRevision: Int,
             sessionID: SessionID,
             displayMode: PaywallViewMode,
             localeIdentifier: String,
-            darkMode: Bool
+            darkMode: Bool,
+            packageId: String? = nil,
+            productId: String? = nil,
+            errorCode: Int? = nil,
+            errorMessage: String? = nil
         ) {
+            self.paywallIdentifier = paywallIdentifier
             self.offeringIdentifier = offeringIdentifier
             self.paywallRevision = paywallRevision
             self.sessionIdentifier = sessionID
             self.displayMode = displayMode
             self.localeIdentifier = localeIdentifier
             self.darkMode = darkMode
+            self.packageId = packageId
+            self.productId = productId
+            self.errorCode = errorCode
+            self.errorMessage = errorMessage
         }
+
+    }
+
+}
+
+extension PaywallEvent {
+
+    /// The data specific to an exit offer event.
+    public struct ExitOfferData {
+
+        // swiftlint:disable missing_docs
+        public var exitOfferType: ExitOfferType
+        public var exitOfferingIdentifier: String
+
+        public init(
+            exitOfferType: ExitOfferType,
+            exitOfferingIdentifier: String
+        ) {
+            self.exitOfferType = exitOfferType
+            self.exitOfferingIdentifier = exitOfferingIdentifier
+        }
+        // swiftlint:enable missing_docs
 
     }
 
@@ -149,6 +217,9 @@ extension PaywallEvent {
         case let .impression(creationData, _): return creationData
         case let .cancel(creationData, _): return creationData
         case let .close(creationData, _): return creationData
+        case let .exitOffer(creationData, _, _): return creationData
+        case let .purchaseInitiated(creationData, _): return creationData
+        case let .purchaseError(creationData, _): return creationData
         }
     }
 
@@ -158,13 +229,52 @@ extension PaywallEvent {
         case let .impression(_, data): return data
         case let .cancel(_, data): return data
         case let .close(_, data): return data
+        case let .exitOffer(_, data, _): return data
+        case let .purchaseInitiated(_, data): return data
+        case let .purchaseError(_, data): return data
+        }
+    }
+
+    /// - Returns: the underlying ``PaywallEvent/ExitOfferData-swift.struct`` for exit offer events, nil otherwise.
+    public var exitOfferData: ExitOfferData? {
+        switch self {
+        case .impression, .cancel, .close, .purchaseInitiated, .purchaseError: return nil
+        case let .exitOffer(_, _, exitOfferData): return exitOfferData
         }
     }
 
 }
 
-// MARK: - 
+// MARK: -
+
+extension PaywallEvent.Data {
+
+    /// Creates a copy of this data with purchase-related information.
+    @_spi(Internal)
+    public func withPurchaseInfo(
+        packageId: String?,
+        productId: String?,
+        errorCode: Int?,
+        errorMessage: String?
+    ) -> PaywallEvent.Data {
+        return PaywallEvent.Data(
+            paywallIdentifier: self.paywallIdentifier,
+            offeringIdentifier: self.offeringIdentifier,
+            paywallRevision: self.paywallRevision,
+            sessionID: self.sessionIdentifier,
+            displayMode: self.displayMode,
+            localeIdentifier: self.localeIdentifier,
+            darkMode: self.darkMode,
+            packageId: packageId,
+            productId: productId,
+            errorCode: errorCode,
+            errorMessage: errorMessage
+        )
+    }
+
+}
 
 extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
 extension PaywallEvent.Data: Equatable, Codable, Sendable {}
+extension PaywallEvent.ExitOfferData: Equatable, Codable, Sendable {}
 extension PaywallEvent: Equatable, Codable, Sendable {}

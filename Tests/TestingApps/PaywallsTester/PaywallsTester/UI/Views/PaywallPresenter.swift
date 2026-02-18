@@ -87,6 +87,9 @@ struct PaywallPresenter: View {
         case .presentIfNeeded:
             fatalError()
 
+        case .presentPaywall:
+            fatalError()
+
 #endif
         }
     }

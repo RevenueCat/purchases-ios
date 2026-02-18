@@ -103,6 +103,7 @@ extension HTTPRequest {
         case getVirtualCurrencies(appUserID: String)
         case postRedeemWebPurchase
         case postCreateTicket
+        case isPurchaseAllowedByRestoreBehavior(appUserID: String)
 
     }
 
@@ -187,7 +188,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
                 .appHealthReport,
-                .postCreateTicket:
+                .postCreateTicket,
+                .isPurchaseAllowedByRestoreBehavior:
             return true
 
         case .health,
@@ -212,7 +214,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
                 .appHealthReport,
-                .postCreateTicket:
+                .postCreateTicket,
+                .isPurchaseAllowedByRestoreBehavior:
             return true
         case .health,
              .appHealthReportAvailability:
@@ -230,7 +233,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
                 .appHealthReport,
-                .appHealthReportAvailability:
+                .appHealthReportAvailability,
+                .isPurchaseAllowedByRestoreBehavior:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -251,7 +255,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postReceiptData,
                 .getVirtualCurrencies,
                 .health,
-                .appHealthReportAvailability:
+                .appHealthReportAvailability,
+                .isPurchaseAllowedByRestoreBehavior:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -324,6 +329,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
+        case let .isPurchaseAllowedByRestoreBehavior(appUserID):
+            return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
         }
     }
 
@@ -379,7 +386,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postCreateTicket:
             return "post_create_ticket"
-
+        case .isPurchaseAllowedByRestoreBehavior:
+            return "post_restore_eligibility"
         }
     }
 

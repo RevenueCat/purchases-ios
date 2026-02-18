@@ -201,43 +201,75 @@ public typealias ProductIdentifier = String
                   sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
+    /// Initializes a ``CustomerInfo`` instance.
+    /// Useful for Unit testing purposes, since the other (internal) initializers require a backend response
+    public convenience init(
+        entitlements: EntitlementInfos,
+        expirationDatesByProductId: [String: Date] = [:],
+        purchaseDatesByProductId: [String: Date] = [:],
+        allPurchasedProductIds: Set<String> = [],
+        requestDate: Date,
+        firstSeen: Date,
+        originalAppUserId: String,
+        originalPurchaseDate: Date? = nil,
+        managementURL: URL? = nil
+    ) {
+        let response = CustomerInfoResponse(
+            subscriber: .init(
+                originalAppUserId: originalAppUserId,
+                firstSeen: firstSeen
+            ),
+            requestDate: requestDate,
+            rawData: [:]
+        )
+        let data = Contents(
+            response: response,
+            entitlementVerification: entitlements.verification,
+            schemaVersion: nil,
+            originalSource: .main
+        )
+
+        self.init(
+            data: data,
+            entitlements: entitlements,
+            nonSubscriptions: [],
+            requestDate: requestDate,
+            firstSeen: firstSeen,
+            originalAppUserId: originalAppUserId,
+            originalPurchaseDate: originalPurchaseDate,
+            originalApplicationVersion: nil,
+            managementURL: managementURL,
+            expirationDatesByProductId: expirationDatesByProductId,
+            purchaseDatesByProductId: purchaseDatesByProductId,
+            allPurchasedProductIdentifiers: allPurchasedProductIds,
+            subscriptionsByProductIdentifier: [:]
+        )
+    }
+
     /// Initializes a `CustomerInfo` creating a copy.
     convenience init(customerInfo: CustomerInfo,
                      sandboxEnvironmentDetector: SandboxEnvironmentDetector) {
         self.init(data: customerInfo.data, sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
-    fileprivate init(
+    // swiftlint:disable:next function_body_length
+    fileprivate convenience init(
         data: Contents,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
     ) {
         let response = data.response
         let subscriber = response.subscriber
 
-        self.data = data
-        self.entitlements = EntitlementInfos(
-            entitlements: subscriber.entitlements,
-            purchases: subscriber.allPurchasesByProductId,
-            requestDate: response.requestDate,
-            sandboxEnvironmentDetector: sandboxEnvironmentDetector,
-            verification: data.entitlementVerification
-        )
-        self.nonSubscriptions = TransactionsFactory.nonSubscriptionTransactions(
+        let nonSubscriptions = TransactionsFactory.nonSubscriptionTransactions(
             withSubscriptionsData: subscriber.nonSubscriptions
         )
-        self.requestDate = response.requestDate
-        self.firstSeen = subscriber.firstSeen
-        self.originalAppUserId = subscriber.originalAppUserId
-        self.originalPurchaseDate = subscriber.originalPurchaseDate
-        self.originalApplicationVersion = subscriber.originalApplicationVersion
-        self.managementURL = subscriber.managementUrl
+        let expirationDatesByProductId = Self.extractExpirationDates(subscriber)
+        let purchaseDatesByProductId = Self.extractPurchaseDates(subscriber)
 
-        self.expirationDatesByProductId = Self.extractExpirationDates(subscriber)
-        self.purchaseDatesByProductId = Self.extractPurchaseDates(subscriber)
-        self.allPurchasedProductIdentifiers = Set(self.expirationDatesByProductId.keys)
-            .union(self.nonSubscriptions.map { $0.productIdentifier })
+        let allPurchasedProductIdentifiers = Set(expirationDatesByProductId.keys)
+            .union(nonSubscriptions.map { $0.productIdentifier })
 
-        self.subscriptionsByProductIdentifier =
+        let subscriptionsByProductIdentifier =
         Dictionary(uniqueKeysWithValues: subscriber.subscriptions.map { (key, subscriptionData) in
             (key, SubscriptionInfo(
                 productIdentifier: key,
@@ -259,6 +291,58 @@ public typealias ProductIdentifier = String
                 displayName: subscriptionData.displayName
             ))
         })
+
+        self.init(
+            data: data,
+            entitlements: EntitlementInfos(
+                entitlements: subscriber.entitlements,
+                purchases: subscriber.allPurchasesByProductId,
+                requestDate: response.requestDate,
+                sandboxEnvironmentDetector: sandboxEnvironmentDetector,
+                verification: data.entitlementVerification
+            ),
+            nonSubscriptions: nonSubscriptions,
+            requestDate: response.requestDate,
+            firstSeen: subscriber.firstSeen,
+            originalAppUserId: subscriber.originalAppUserId,
+            originalPurchaseDate: subscriber.originalPurchaseDate,
+            originalApplicationVersion: subscriber.originalApplicationVersion,
+            managementURL: subscriber.managementUrl,
+            expirationDatesByProductId: expirationDatesByProductId,
+            purchaseDatesByProductId: purchaseDatesByProductId,
+            allPurchasedProductIdentifiers: allPurchasedProductIdentifiers,
+            subscriptionsByProductIdentifier: subscriptionsByProductIdentifier
+        )
+    }
+
+    fileprivate init(
+        data: Contents,
+        entitlements: EntitlementInfos,
+        nonSubscriptions: [NonSubscriptionTransaction],
+        requestDate: Date,
+        firstSeen: Date,
+        originalAppUserId: String,
+        originalPurchaseDate: Date?,
+        originalApplicationVersion: String?,
+        managementURL: URL?,
+        expirationDatesByProductId: [String: Date?],
+        purchaseDatesByProductId: [String: Date?],
+        allPurchasedProductIdentifiers: Set<String>,
+        subscriptionsByProductIdentifier: [String: SubscriptionInfo]
+    ) {
+        self.data = data
+        self.entitlements = entitlements
+        self.nonSubscriptions = nonSubscriptions
+        self.requestDate = requestDate
+        self.firstSeen = firstSeen
+        self.originalAppUserId = originalAppUserId
+        self.originalPurchaseDate = originalPurchaseDate
+        self.originalApplicationVersion = originalApplicationVersion
+        self.managementURL = managementURL
+        self.expirationDatesByProductId = expirationDatesByProductId
+        self.purchaseDatesByProductId = purchaseDatesByProductId
+        self.allPurchasedProductIdentifiers = allPurchasedProductIdentifiers
+        self.subscriptionsByProductIdentifier = subscriptionsByProductIdentifier
     }
 
     private let expirationDatesByProductId: [String: Date?]

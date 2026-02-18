@@ -18,14 +18,22 @@ final class CustomerAPI {
     typealias CustomerInfoResponseHandler = Backend.ResponseHandler<CustomerInfo>
     typealias SimpleResponseHandler = (BackendError?) -> Void
 
+    // swiftlint:disable:next type_name
+    typealias IsPurchaseAllowedByRestoreBehaviorResponseHandler =
+    Backend.ResponseHandler<IsPurchaseAllowedByRestoreBehaviorResponse>
+
     private let backendConfig: BackendConfiguration
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
+    private let isPurchaseAllowedByRestoreBehaviorCallbacksCache:
+    CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>
     private let attributionFetcher: AttributionFetcher
 
     init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
         self.backendConfig = backendConfig
         self.attributionFetcher = attributionFetcher
         self.customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>()
+        self.isPurchaseAllowedByRestoreBehaviorCallbacksCache =
+        CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>()
     }
 
     func getCustomerInfo(appUserID: String,
@@ -87,12 +95,44 @@ final class CustomerAPI {
         self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
     }
 
+    func isPurchaseAllowedByRestoreBehavior(
+        appUserID: String,
+        transactionJWS: String,
+        isAppBackgrounded: Bool,
+        completion: @escaping IsPurchaseAllowedByRestoreBehaviorResponseHandler
+    ) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let postData = PostIsPurchaseAllowedByRestoreBehaviorOperation.PostData(
+            transactionJWS: transactionJWS
+        )
+        let factory = PostIsPurchaseAllowedByRestoreBehaviorOperation.createFactory(
+            configuration: config,
+            postData: postData,
+            isPurchaseAllowedByRestoreBehaviorCallbackCache: self.isPurchaseAllowedByRestoreBehaviorCallbacksCache
+        )
+        let callback = IsPurchaseAllowedByRestoreBehaviorCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.isPurchaseAllowedByRestoreBehaviorCallbacksCache.add(callback)
+
+        self.backendConfig.addCacheableOperation(
+            with: factory,
+            delay: .default(forBackgroundedApp: isAppBackgrounded),
+            cacheStatus: cacheStatus
+        )
+    }
+
     // swiftlint:disable function_parameter_count
     func post(receipt: EncodedAppleReceipt,
               productData: ProductRequestData?,
               transactionData: PurchasedTransactionData,
+              postReceiptSource: PostReceiptSource,
               observerMode: Bool,
+              originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
               appTransaction: String?,
+              associatedTransactionId: String?,
+              sdkOriginated: Bool = false,
+              appUserID: String,
+              containsAttributionData: Bool,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         var subscriberAttributesToPost: SubscriberAttribute.Dictionary?
 
@@ -107,15 +147,21 @@ final class CustomerAPI {
         }
 
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: transactionData.appUserID)
+                                                                appUserID: appUserID)
 
         let postData = PostReceiptDataOperation.PostData(
             transactionData: transactionData.withAttributesToPost(subscriberAttributesToPost),
+            postReceiptSource: postReceiptSource,
+            appUserID: appUserID,
             productData: productData,
             receipt: receipt,
             observerMode: observerMode,
+            purchaseCompletedBy: originalPurchaseCompletedBy,
             testReceiptIdentifier: self.backendConfig.systemInfo.testReceiptIdentifier,
-            appTransaction: appTransaction
+            appTransaction: appTransaction,
+            transactionId: associatedTransactionId,
+            containsAttributionData: containsAttributionData,
+            sdkOriginated: sdkOriginated
         )
         let factory = PostReceiptDataOperation.createFactory(
             configuration: config,

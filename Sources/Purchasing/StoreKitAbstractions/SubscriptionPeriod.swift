@@ -271,5 +271,5 @@ fileprivate extension SubscriptionPeriod.Unit {
 
 // MARK: - Encodable
 
-extension SubscriptionPeriod.Unit: Encodable { }
-extension SubscriptionPeriod: Encodable { }
+extension SubscriptionPeriod.Unit: Codable { }
+extension SubscriptionPeriod: Codable { }

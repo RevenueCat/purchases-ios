@@ -307,6 +307,36 @@ public extension Attribution {
     }
 
     /**
+     * Subscriber attribute associated with the Solar Engine Distinct ID for the user.
+     * Recommended for the RevenueCat Solar Engine integration.
+     *
+     * - Parameter solarEngineDistinctId: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setSolarEngineDistinctId(_ solarEngineDistinctId: String?) {
+        self.subscriberAttributesManager.setSolarEngineDistinctId(solarEngineDistinctId, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the Solar Engine Account ID for the user.
+     * Recommended for the RevenueCat Solar Engine integration.
+     *
+     * - Parameter solarEngineAccountId: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setSolarEngineAccountId(_ solarEngineAccountId: String?) {
+        self.subscriberAttributesManager.setSolarEngineAccountId(solarEngineAccountId, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the Solar Engine Visitor ID for the user.
+     * Recommended for the RevenueCat Solar Engine integration.
+     *
+     * - Parameter solarEngineVisitorId: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setSolarEngineVisitorId(_ solarEngineVisitorId: String?) {
+        self.subscriberAttributesManager.setSolarEngineVisitorId(solarEngineVisitorId, appUserID: appUserID)
+    }
+
+    /**
      * Subscriber attribute associated with the Mixpanel Distinct ID for the user.
      * Optional for the RevenueCat Mixpanel integration.
      *
@@ -550,6 +580,28 @@ extension Attribution {
 
     func markAdServicesTokenAsSynced(_ token: String, appUserID: String) {
         self.attributionPoster.markAdServicesToken(token, asSyncedFor: appUserID)
+    }
+
+    func markSyncedIfNeeded(
+        subscriberAttributes: SubscriberAttribute.Dictionary?,
+        adServicesToken: String?,
+        appUserID: String,
+        error: BackendError?
+    ) {
+        if let error = error {
+            guard error.successfullySynced else { return }
+
+            if let attributeErrors = (error as NSError).subscriberAttributesErrors, !attributeErrors.isEmpty {
+                Logger.error(Strings.attribution.subscriber_attributes_error(
+                    errors: attributeErrors
+                ))
+            }
+        }
+
+        self.markAttributesAsSynced(subscriberAttributes, appUserID: appUserID)
+        if let adServicesToken = adServicesToken {
+            self.markAdServicesTokenAsSynced(adServicesToken, appUserID: appUserID)
+        }
     }
 
 }
