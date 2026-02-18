@@ -54,7 +54,7 @@ class ToPresentedOverridesTests: TestCase {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [.compact], properties: .init()),
             .init(extendedConditions: [.medium, .selected], properties: .init()),
-            .init(extendedConditions: [.introOffer], properties: .init())
+            .init(extendedConditions: [.introOffer(operator: .equals, value: true)], properties: .init())
         ]
 
         expect(overrides.containsUnsupportedConditions()).to(beFalse())
@@ -69,13 +69,13 @@ class ToPresentedOverridesTests: TestCase {
     func testContainsUnsupportedConditions_WithNewConditionTypes_ReturnsFalse() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [
-                .selectedPackageCondition(operator: .in, packages: ["monthly"])
+                .selectedPackage(operator: .in, packages: ["monthly"])
             ], properties: .init()),
             .init(extendedConditions: [
-                .variableCondition(operator: .equals, variable: "plan", value: .string("premium"))
+                .variable(operator: .equals, variable: "plan", value: .string("premium"))
             ], properties: .init()),
             .init(extendedConditions: [
-                .introOfferCondition(operator: .equals, value: true)
+                .introOffer(operator: .equals, value: true)
             ], properties: .init())
         ]
 
