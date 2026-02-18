@@ -40,6 +40,26 @@ struct PresentedOverride<T: PresentedPartial> {
 
 }
 
+/// Context needed to evaluate conditions on component overrides.
+struct ConditionContext {
+
+    /// The identifier of the currently selected package, or nil if none is selected.
+    let selectedPackageId: String?
+
+    /// Custom variables provided by the developer for condition evaluation.
+    let customVariables: [String: CustomVariableValue]
+
+    /// Creates a context with the given parameters.
+    init(
+        selectedPackageId: String? = nil,
+        customVariables: [String: CustomVariableValue] = [:]
+    ) {
+        self.selectedPackageId = selectedPackageId
+        self.customVariables = customVariables
+    }
+
+}
+
 extension PresentedPartial {
 
     /// Builds a partial component based on current state and conditions
@@ -67,6 +87,44 @@ extension PresentedPartial {
             activeCondition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer
+        ) {
+            presentedPartial = Self.combine(presentedPartial, with: presentedOverride.properties)
+        }
+
+        return presentedPartial
+    }
+
+    /// Builds a partial component based on current state, conditions, and condition context.
+    /// - Parameters:
+    ///   - state: Current view state (selected/unselected)
+    ///   - condition: Current screen condition (compact/medium/expanded)
+    ///   - isEligibleForIntroOffer: Whether the user is eligible for an intro offer
+    ///   - isEligibleForPromoOffer: Whether the user is eligible for a promo offer
+    ///   - conditionContext: Additional context for evaluating new condition types
+    ///   - presentedOverrides: Override configurations to apply
+    /// - Returns: Configured partial component
+    // swiftlint:disable:next function_parameter_count
+    static func buildPartial(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        conditionContext: ConditionContext,
+        with presentedOverrides: PresentedOverrides<Self>?
+    ) -> Self? {
+        guard let presentedOverrides else {
+            return nil
+        }
+
+        var presentedPartial: Self?
+
+        for presentedOverride in presentedOverrides where self.shouldApply(
+            for: presentedOverride.conditions,
+            state: state,
+            activeCondition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext
         ) {
             presentedPartial = Self.combine(presentedPartial, with: presentedOverride.properties)
         }
@@ -112,6 +170,180 @@ extension PresentedPartial {
         }
 
         return true
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    private static func shouldApply(
+        for conditions: [PaywallComponent.ExtendedCondition],
+        state: ComponentViewState,
+        activeCondition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        conditionContext: ConditionContext
+    ) -> Bool {
+        // All conditions must be true (AND logic)
+        for condition in conditions where !evaluateCondition(
+            condition,
+            state: state,
+            activeCondition: activeCondition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext
+        ) {
+            return false
+        }
+        return true
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    private static func evaluateCondition(
+        _ condition: PaywallComponent.ExtendedCondition,
+        state: ComponentViewState,
+        activeCondition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        conditionContext: ConditionContext
+    ) -> Bool {
+        switch condition {
+        // Screen size conditions
+        case .compact, .medium, .expanded:
+            return activeCondition.applicableConditions.contains(condition)
+
+        // Selection state
+        case .selected:
+            return state == .selected
+
+        // Legacy offer eligibility (no operator - assumes equals true)
+        case .introOffer:
+            return isEligibleForIntroOffer
+        case .promoOffer:
+            return isEligibleForPromoOffer
+
+        // Extended offer eligibility (with operator/value)
+        case .introOfferCondition(let condOp, let value):
+            return evaluateBoolCondition(
+                actual: isEligibleForIntroOffer,
+                expected: value,
+                operator: condOp
+            )
+        case .promoOfferCondition(let condOp, let value):
+            return evaluateBoolCondition(
+                actual: isEligibleForPromoOffer,
+                expected: value,
+                operator: condOp
+            )
+
+        // Variable condition
+        case .variableCondition(let condOp, let variable, let value):
+            return evaluateVariableCondition(
+                variable: variable,
+                expectedValue: value,
+                operator: condOp,
+                customVariables: conditionContext.customVariables
+            )
+
+        // Selected package condition
+        case .selectedPackageCondition(let condOp, let packages):
+            return evaluateSelectedPackageCondition(
+                packages: packages,
+                operator: condOp,
+                selectedPackageId: conditionContext.selectedPackageId
+            )
+
+        // Unknown/unsupported conditions never match
+        case .unsupported:
+            return false
+        }
+    }
+
+    private static func evaluateSelectedPackageCondition(
+        packages: [String],
+        operator condOp: PaywallComponent.ArrayOperator,
+        selectedPackageId: String?
+    ) -> Bool {
+        guard let selectedPackageId else {
+            // No selection - condition doesn't match
+            return false
+        }
+
+        switch condOp {
+        case .in:
+            return packages.contains(selectedPackageId)
+        case .notIn:
+            return !packages.contains(selectedPackageId)
+        }
+    }
+
+    private static func evaluateBoolCondition(
+        actual: Bool,
+        expected: Bool,
+        operator condOp: PaywallComponent.EqualityOperator
+    ) -> Bool {
+        switch condOp {
+        case .equals:
+            return actual == expected
+        case .notEquals:
+            return actual != expected
+        }
+    }
+
+    private static func evaluateVariableCondition(
+        variable: String,
+        expectedValue: PaywallComponent.ConditionValue,
+        operator condOp: PaywallComponent.EqualityOperator,
+        customVariables: [String: CustomVariableValue]
+    ) -> Bool {
+        guard let actualValue = customVariables[variable] else {
+            // Variable not found - condition doesn't match
+            return false
+        }
+
+        let matches = matchesValue(actualValue: actualValue, expectedValue: expectedValue)
+
+        switch condOp {
+        case .equals:
+            return matches
+        case .notEquals:
+            return !matches
+        }
+    }
+
+    // swiftlint:disable:next cyclomatic_complexity
+    private static func matchesValue(
+        actualValue: CustomVariableValue,
+        expectedValue: PaywallComponent.ConditionValue
+    ) -> Bool {
+        switch expectedValue {
+        case .string(let expected):
+            if case .string(let actual) = actualValue {
+                return actual == expected
+            }
+            return false
+        case .bool(let expected):
+            // Note: CustomVariableValue doesn't have a bool case, so we check string representation
+            if case .string(let actual) = actualValue {
+                return (actual.lowercased() == "true") == expected
+            }
+            return false
+        case .int(let expected):
+            switch actualValue {
+            case .int(let actual):
+                return actual == expected
+            case .double(let actual):
+                return actual == Double(expected)
+            default:
+                return false
+            }
+        case .double(let expected):
+            switch actualValue {
+            case .int(let actual):
+                return Double(actual) == expected
+            case .double(let actual):
+                return actual == expected
+            default:
+                return false
+            }
+        }
     }
 
 }
