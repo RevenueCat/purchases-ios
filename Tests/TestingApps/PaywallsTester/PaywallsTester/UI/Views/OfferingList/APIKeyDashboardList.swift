@@ -54,7 +54,7 @@ struct APIKeyDashboardList: View {
     private var isShowingVariablesEditor = false
 
     @State
-    private var searchText = ""
+    private var searchText = Constants.sandboxPaywallSearch
 
     var body: some View {
         ZStack {
