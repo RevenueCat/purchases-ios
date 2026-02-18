@@ -203,7 +203,7 @@ commands:
             echo "xcodes:<< parameters.install_xcodes >>" >> .homebrew-deps
       - restore_cache:
           keys:
-            - homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
+            - v2-homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
       - when:
           condition: << parameters.install_xcbeautify >>
           steps:
@@ -220,10 +220,10 @@ commands:
             - install-brew-dependency:
                 dependency_name: "xcodes"
       - save_cache:
-          key: homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
+          key: v2-homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
           paths:
-            - /usr/local/Cellar/xcbeautify/
-            - /usr/local/Cellar/xcodes/
+            - /opt/homebrew/Cellar/xcbeautify/
+            - /opt/homebrew/Cellar/xcodes/
             - /Users/$USER/Library/Caches/Homebrew/
 
   install-brew-dependency:
@@ -248,16 +248,40 @@ commands:
   install-xcbeautify-for-xcode14:
     description: "Installs xcbeautify 1.6.0 using Mint"
     steps:
+      - restore_cache:
+          keys:
+            - mint-xcbeautify-1.6.0-{{ arch }}
       - run:
           name: Install xcbeautify using Mint
-          command: mint install cpisciotta/xcbeautify@1.6.0
+          command: |
+            if which xcbeautify > /dev/null 2>&1; then
+                echo "xcbeautify already installed, skipping."
+                exit 0
+            fi
+            mint install cpisciotta/xcbeautify@1.6.0
+      - save_cache:
+          key: mint-xcbeautify-1.6.0-{{ arch }}
+          paths:
+            - ~/.mint
 
   install-xcbeautify-for-xcode15:
     description: "Installs xcbeautify 2.30.1 using Mint"
     steps:
+      - restore_cache:
+          keys:
+            - mint-xcbeautify-2.30.1-{{ arch }}
       - run:
           name: Install xcbeautify 2.30.1 using Mint
-          command: mint install cpisciotta/xcbeautify@2.30.1
+          command: |
+            if which xcbeautify > /dev/null 2>&1; then
+                echo "xcbeautify already installed, skipping."
+                exit 0
+            fi
+            mint install cpisciotta/xcbeautify@2.30.1
+      - save_cache:
+          key: mint-xcbeautify-2.30.1-{{ arch }}
+          paths:
+            - ~/.mint
 
   install-rubydocker-dependencies:
     steps:
