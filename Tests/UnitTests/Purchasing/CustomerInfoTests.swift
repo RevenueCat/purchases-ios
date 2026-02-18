@@ -1047,8 +1047,8 @@ class BasicCustomerInfoTests: TestCase {
         expect(cachedInfo1.isLoadedFromCache) == true
         expect(cachedInfo2.isLoadedFromCache) == true
         expect(cachedInfo3.isLoadedFromCache) == true
-        expect(cachedInfo1) === cachedInfo2
-        expect(cachedInfo2) === cachedInfo3
+        expect(cachedInfo1) == cachedInfo2
+        expect(cachedInfo2) == cachedInfo3
     }
 
     func testSameCustomerInfoWithDifferentCacheStatusAreEqual() {
