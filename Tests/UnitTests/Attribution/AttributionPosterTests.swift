@@ -38,7 +38,7 @@ class BaseAttributionPosterTests: TestCase {
 
         let userID = "userID"
         let systemInfo = MockSystemInfo(finishTransactions: false)
-        systemInfo.stubbedIsSandbox = SandboxEnvironmentDetector().isSandbox
+        systemInfo.stubbedIsSandbox = false
         self.deviceCache = MockDeviceCache(systemInfo: systemInfo,
                                            userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
         self.deviceCache.cache(appUserID: userID)

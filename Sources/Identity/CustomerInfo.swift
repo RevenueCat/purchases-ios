@@ -358,12 +358,6 @@ public typealias ProductIdentifier = String
 
 extension CustomerInfo {
 
-    /// Creates a copy of this ``CustomerInfo`` replacing the sandbox environment detector.
-    /// Used after Codable decoding to inject the correct detector from the SDK's dependency chain.
-    func copy(with sandboxEnvironmentDetector: SandboxEnvironmentDetectorType) -> CustomerInfo {
-        return .init(data: self.data, sandboxEnvironmentDetector: sandboxEnvironmentDetector)
-    }
-
     var subscriber: CustomerInfoResponse.Subscriber {
         return self.data.response.subscriber
     }
@@ -408,12 +402,17 @@ extension CustomerInfo {
     }
 
     /// Creates a copy of this ``CustomerInfo`` setting the `isLoadedFromCache` flag  to `true`.
-    func loadedFromCache() -> Self {
+    /// - Parameter sandboxEnvironmentDetector: If provided, replaces the detector on the returned copy.
+    ///   Used after Codable decoding to inject the correct detector from the SDK's dependency chain.
+    func loadedFromCache(
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType? = nil
+    ) -> Self {
         guard !self.isLoadedFromCache else { return self }
 
         var copy = self.data
         copy.loadedFromCache = true
-        return .init(data: copy, sandboxEnvironmentDetector: self.sandboxEnvironmentDetector)
+        return .init(data: copy,
+                     sandboxEnvironmentDetector: sandboxEnvironmentDetector ?? self.sandboxEnvironmentDetector)
     }
 
 }
