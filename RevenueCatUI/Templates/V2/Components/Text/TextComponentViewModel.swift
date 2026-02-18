@@ -73,21 +73,22 @@ class TextComponentViewModel {
         let partial = localizedPartial?.partial
         let text = localizedPartial?.text ?? self.text
 
+        let config = TextProcessingConfig(
+            packageContext: packageContext,
+            variableConfig: uiConfigProvider.variableConfig,
+            locale: self.localizationProvider.locale,
+            localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer,
+            countdownTime: countdownTime,
+            customVariables: customVariables,
+            defaultCustomVariables: uiConfigProvider.defaultCustomVariables
+        )
+
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? self.component.visible ?? true,
-            text: Self.processText(
-                text,
-                packageContext: packageContext,
-                variableConfig: uiConfigProvider.variableConfig,
-                locale: self.localizationProvider.locale,
-                localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
-                isEligibleForIntroOffer: isEligibleForIntroOffer,
-                promoOffer: promoOffer,
-                countdownTime: countdownTime,
-                customVariables: customVariables,
-                defaultCustomVariables: uiConfigProvider.defaultCustomVariables
-            ),
+            text: Self.processText(text, config: config),
             fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
             color: partial?.color ?? self.component.color,
@@ -102,81 +103,57 @@ class TextComponentViewModel {
         apply(style)
     }
 
-    // swiftlint:disable:next function_parameter_count
-    private static func processText(
-        _ text: String,
-        packageContext: PackageContext,
-        variableConfig: UIConfig.VariableConfig,
-        locale: Locale,
-        localizations: [String: String],
-        isEligibleForIntroOffer: Bool,
-        promoOffer: PromotionalOffer? = nil,
-        countdownTime: CountdownTime? = nil,
-        customVariables: [String: CustomVariableValue] = [:],
-        defaultCustomVariables: [String: CustomVariableValue] = [:]
-    ) -> String {
-        let processedWithV2 = Self.processTextV2(
-            text,
-            packageContext: packageContext,
-            variableConfig: variableConfig,
-            locale: locale,
-            localizations: localizations,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            promoOffer: promoOffer,
-            countdownTime: countdownTime,
-            customVariables: customVariables,
-            defaultCustomVariables: defaultCustomVariables
-        )
+    private struct TextProcessingConfig {
+        let packageContext: PackageContext
+        let variableConfig: UIConfig.VariableConfig
+        let locale: Locale
+        let localizations: [String: String]
+        let isEligibleForIntroOffer: Bool
+        let promoOffer: PromotionalOffer?
+        let countdownTime: CountdownTime?
+        let customVariables: [String: CustomVariableValue]
+        let defaultCustomVariables: [String: CustomVariableValue]
+    }
 
-        // Note: This is temporary while in closed beta and shortly after
+    private static func processText(_ text: String, config: TextProcessingConfig) -> String {
+        let processedWithV2 = Self.processTextV2(text, config: config)
+
         let processedWithV2AndV1 = Self.processTextV1(
             processedWithV2,
-            packageContext: packageContext,
-            locale: locale
+            packageContext: config.packageContext,
+            locale: config.locale
         )
 
         return processedWithV2AndV1
     }
 
-    // swiftlint:disable:next function_parameter_count
-    private static func processTextV2(
-        _ text: String,
-        packageContext: PackageContext,
-        variableConfig: UIConfig.VariableConfig,
-        locale: Locale,
-        localizations: [String: String],
-        isEligibleForIntroOffer: Bool,
-        promoOffer: PromotionalOffer? = nil,
-        countdownTime: CountdownTime? = nil,
-        customVariables: [String: CustomVariableValue] = [:],
-        defaultCustomVariables: [String: CustomVariableValue] = [:]
-    ) -> String {
-        let pkg = packageContext.package
+    private static func processTextV2(_ text: String, config: TextProcessingConfig) -> String {
+        let pkg = config.packageContext.package
 
         let discount = pkg.flatMap { package in
             Self.discount(
                 from: package.storeProduct.pricePerMonth?.doubleValue,
-                relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
+                relativeTo: config.packageContext.variableContext.mostExpensivePricePerMonth
             )
         }
 
         let handler = VariableHandlerV2(
-            variableCompatibilityMap: variableConfig.variableCompatibilityMap,
-            functionCompatibilityMap: variableConfig.functionCompatibilityMap,
+            variableCompatibilityMap: config.variableConfig.variableCompatibilityMap,
+            functionCompatibilityMap: config.variableConfig.functionCompatibilityMap,
             discountRelativeToMostExpensivePerMonth: discount,
-            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices,
-            customVariables: customVariables,
-            defaultCustomVariables: defaultCustomVariables
+            showZeroDecimalPlacePrices: config.packageContext.variableContext.showZeroDecimalPlacePrices,
+            customVariables: config.customVariables,
+            defaultCustomVariables: config.defaultCustomVariables
         )
 
         return handler.processVariables(
             in: text,
             with: pkg,
-            locale: locale,
-            localizations: localizations,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            promoOffer: promoOffer,
-            countdownTime: countdownTime
+            locale: config.locale,
+            localizations: config.localizations,
+            isEligibleForIntroOffer: config.isEligibleForIntroOffer,
+            promoOffer: config.promoOffer,
+            countdownTime: config.countdownTime
         )
     }
 

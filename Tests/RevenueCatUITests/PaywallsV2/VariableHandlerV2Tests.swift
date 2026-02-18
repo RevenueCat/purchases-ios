@@ -1202,6 +1202,88 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
         expect(resultWithoutZeroDecimal).to(equal("$60.00/year"))
     }
 
+    // MARK: - Discount Zero Decimal Place Tests
+
+    func testOfferPriceRespectsZeroDecimalPlacePrices() {
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOfferPayUpFrontWholeDollar,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithZeroDecimal).to(equal("$2"))
+
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOfferPayUpFrontWholeDollar,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$2.00"))
+    }
+
+    func testOfferPricePerMonthRespectsZeroDecimalPlacePrices() {
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.offer_price_per_month }}",
+            with: TestData.packageWithIntroOfferPayUpFrontWholeDollar,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithZeroDecimal).to(equal("$2"))
+
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.offer_price_per_month }}",
+            with: TestData.packageWithIntroOfferPayUpFrontWholeDollar,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$2.00"))
+    }
+
+    func testOfferPriceNonWholeNumberUnaffectedByZeroDecimalFlag() {
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithZeroDecimal).to(equal("$1.99"))
+
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$1.99"))
+    }
+
+    func testOfferPriceFallbackRespectsZeroDecimalPlacePrices() {
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(resultWithZeroDecimal).to(equal("$60"))
+
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$60.00"))
+    }
+
     func testNonWholeNumberPricesAreUnaffected() {
         // Non-whole number prices should show decimals regardless of flag
         let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
