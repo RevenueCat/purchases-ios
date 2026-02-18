@@ -780,6 +780,53 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(entitlement2.isActiveInCurrentEnvironment) == false
     }
 
+    func testLoadedFromCacheReplacesDetectorEvenIfAlreadyCached() throws {
+        let appUserID = "myUser"
+        self.mockSystemInfo.stubbedIsSandbox = true
+
+        let info = try CustomerInfo(data: [
+            "request_date": "2099-04-01T10:30:42Z",
+            "subscriber": [
+                "original_app_user_id": appUserID,
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [
+                    "product_a": [
+                        "purchase_date": "2099-03-27T06:24:50Z",
+                        "expires_date": "2099-05-27T06:24:50Z",
+                        "period_type": "normal",
+                        "is_sandbox": true,
+                        "original_purchase_date": "2022-04-12T00:03:28Z",
+                        "store": "app_store",
+                        "ownership_type": "PURCHASED",
+                        "store_transaction_id": "1"
+                    ]
+                ] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "entitlements": [
+                    "pro": [
+                        "product_identifier": "product_a",
+                        "purchase_date": "2099-03-27T06:24:50Z",
+                        "expires_date": "2099-05-27T06:24:50Z"
+                    ]
+                ] as [String: Any]
+            ] as [String: Any]
+        ], sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true))
+
+        let encodedData = try info.jsonEncodedData
+        self.mockDeviceCache.cachedCustomerInfo[appUserID] = encodedData
+
+        let firstLoad = try XCTUnwrap(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID))
+        expect(firstLoad.isLoadedFromCache) == true
+        expect(firstLoad.entitlements["pro"]?.isActiveInCurrentEnvironment) == true
+
+        self.mockSystemInfo.stubbedIsSandbox = false
+        self.mockDeviceCache.cachedCustomerInfo[appUserID] = encodedData
+
+        let secondLoad = try XCTUnwrap(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID))
+        expect(secondLoad.isLoadedFromCache) == true
+        expect(secondLoad.entitlements["pro"]?.isActiveInCurrentEnvironment) == false
+    }
+
 }
 
 class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {

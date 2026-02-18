@@ -407,8 +407,6 @@ extension CustomerInfo {
     func loadedFromCache(
         sandboxEnvironmentDetector: SandboxEnvironmentDetectorType? = nil
     ) -> Self {
-        guard !self.isLoadedFromCache else { return self }
-
         var copy = self.data
         copy.loadedFromCache = true
         return .init(data: copy,

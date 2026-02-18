@@ -573,7 +573,7 @@ private extension CustomerInfoManager {
 
 // MARK: - For UI Preview mode
 
-extension CustomerInfoManager {
+private extension CustomerInfoManager {
 
     /// Generates a dummy `CustomerInfo` with hardcoded information exclusively for UI Preview mode.
     func createPreviewCustomerInfo() -> CustomerInfo {
