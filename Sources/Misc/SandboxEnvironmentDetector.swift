@@ -24,7 +24,7 @@ protocol SandboxEnvironmentDetectorType: Sendable {
 
 /// Object used to detect the sandbox environment
 ///
-/// On iOS 16+, this attempts to use `AppTransaction.environment` for more reliable detection.
+/// On iOS 18+, this attempts to use `AppTransaction.environment` for more reliable detection.
 /// On older OS versions (and in case of failure to retrieve), it falls back to checking the receipt file path.
 final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
@@ -35,7 +35,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
     private let appTransactionFetchTask: Atomic<Task<Void, Never>?>
 
-    /// Cached environment from `AppTransaction` (iOS 16+).
+    /// Cached environment from `AppTransaction` (iOS 18+).
     /// This is populated asynchronously and used for more reliable sandbox detection.
     private let cachedAppTransactionEnvironment: Atomic<StoreEnvironment?> = .init(nil)
 
@@ -77,7 +77,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
             return true
         }
 
-        // On iOS 16+, prefer the cached AppTransaction environment if available.
+        // On iOS 18+, prefer the cached AppTransaction environment if available.
         // This is more reliable than the receipt path-based detection.
         if let cachedEnvironment = self.cachedAppTransactionEnvironment.value {
             return cachedEnvironment != .production
@@ -96,7 +96,7 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
 }
 
-// MARK: - AppTransaction Environment Detection (iOS 16+)
+// MARK: - AppTransaction Environment Detection (iOS 18+)
 
 internal extension SandboxEnvironmentDetector {
 
