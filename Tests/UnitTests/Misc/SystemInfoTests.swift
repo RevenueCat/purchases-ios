@@ -18,6 +18,7 @@ class SystemInfoTests: TestCase {
         let platformInfo = Purchases.PlatformInfo(flavor: flavor, version: "foo")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: false,
+                                    sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.platformFlavor) == flavor
     }
@@ -27,6 +28,7 @@ class SystemInfoTests: TestCase {
         let platformInfo = Purchases.PlatformInfo(flavor: "foo", version: flavorVersion)
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: false,
+                                    sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.platformFlavorVersion) == flavorVersion
     }
@@ -35,6 +37,7 @@ class SystemInfoTests: TestCase {
         var finishTransactions = false
         var systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: finishTransactions,
+                                    sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
@@ -43,6 +46,7 @@ class SystemInfoTests: TestCase {
 
         systemInfo = SystemInfo(platformInfo: nil,
                                 finishTransactions: finishTransactions,
+                                sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                 preferredLocalesProvider: .mock())
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
@@ -85,6 +89,7 @@ class SystemInfoTests: TestCase {
                                                               locales: ["fr_FR", "de_DE", "en_US"])
         let info = SystemInfo(platformInfo: nil,
                               finishTransactions: false,
+                              sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                               preferredLocalesProvider: localesProvider)
         expect(info.preferredLocales).to(equal(["es_ES", "fr_FR", "de_DE", "en_US"]))
     }
@@ -94,6 +99,7 @@ class SystemInfoTests: TestCase {
                                                               locales: ["fr_FR", "de_DE", "en_US"])
         let info = SystemInfo(platformInfo: nil,
                               finishTransactions: false,
+                              sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                               preferredLocalesProvider: localesProvider)
         expect(info.preferredLocales).to(equal(["fr_FR", "de_DE", "en_US"]))
     }
@@ -197,6 +203,7 @@ private extension SystemInfo {
     static var `default`: SystemInfo {
         return .init(platformInfo: nil,
                      finishTransactions: true,
+                     sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                      preferredLocalesProvider: .mock())
     }
 

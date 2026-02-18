@@ -58,6 +58,7 @@ class BaseBackendTests: TestCase {
         self.systemInfo =  SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
             storefrontProvider: MockStorefrontProvider(),
             storeKitVersion: storeKitVersion,
             responseVerificationMode: self.responseVerificationMode,

@@ -30,6 +30,7 @@ class MockSystemInfo: SystemInfo {
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
+                  sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                   storeKitVersion: storeKitVersion,
                   apiKeyValidationResult: apiKeyValidationResult,
                   responseVerificationMode: responseVerificationMode,

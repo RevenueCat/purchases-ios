@@ -184,7 +184,7 @@ class SystemInfo {
          finishTransactions: Bool,
          operationDispatcher: OperationDispatcher = .default,
          bundle: Bundle = .main,
-         sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector(),
+         sandboxEnvironmentDetector: SandboxEnvironmentDetectorType,
          storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKitVersion: StoreKitVersion = .default,
          apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
