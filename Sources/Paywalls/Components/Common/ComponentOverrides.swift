@@ -222,8 +222,7 @@ extension PaywallComponent {
     /// Internal condition type that preserves full type information including associated values.
     /// This is used internally for condition evaluation while the public `Condition` type
     /// maintains API stability.
-    @_spi(Internal)
-    public enum ExtendedCondition: Codable, Sendable, Hashable, Equatable {
+    @_spi(Internal) public enum ExtendedCondition: Codable, Sendable, Hashable, Equatable {
 
         // MARK: - Screen size conditions (legacy)
         case compact
