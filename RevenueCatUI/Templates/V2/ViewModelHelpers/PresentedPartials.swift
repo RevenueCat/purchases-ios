@@ -293,14 +293,19 @@ extension PresentedPartial {
         actualValue: CustomVariableValue,
         expectedValue: PaywallComponent.ConditionValue
     ) -> Bool {
+        // Type-strict comparison: the actual value must be of the same type as expected
         switch expectedValue {
         case .string(let expected):
+            guard actualValue.isString else { return false }
             return actualValue.stringValue == expected
         case .bool(let expected):
+            guard actualValue.isBool else { return false }
             return actualValue.boolValue == expected
         case .int(let expected):
+            guard actualValue.isNumber else { return false }
             return actualValue.doubleValue == Double(expected)
         case .double(let expected):
+            guard actualValue.isNumber else { return false }
             return actualValue.doubleValue == expected
         }
     }
