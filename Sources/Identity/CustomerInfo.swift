@@ -186,6 +186,7 @@ public typealias ProductIdentifier = String
     // MARK: -
 
     private let data: Contents
+    private let sandboxEnvironmentDetector: SandboxEnvironmentDetectorType
 
     /// Initializes a `CustomerInfo` with the underlying data in the current schema version
     convenience init(response: CustomerInfoResponse,
@@ -231,6 +232,7 @@ public typealias ProductIdentifier = String
 
         self.init(
             data: data,
+            sandboxEnvironmentDetector: SandboxEnvironmentDetector(),
             entitlements: entitlements,
             nonSubscriptions: [],
             requestDate: requestDate,
@@ -255,7 +257,7 @@ public typealias ProductIdentifier = String
     // swiftlint:disable:next function_body_length
     fileprivate convenience init(
         data: Contents,
-        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector.default
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType
     ) {
         let response = data.response
         let subscriber = response.subscriber
@@ -294,6 +296,7 @@ public typealias ProductIdentifier = String
 
         self.init(
             data: data,
+            sandboxEnvironmentDetector: sandboxEnvironmentDetector,
             entitlements: EntitlementInfos(
                 entitlements: subscriber.entitlements,
                 purchases: subscriber.allPurchasesByProductId,
@@ -317,6 +320,7 @@ public typealias ProductIdentifier = String
 
     fileprivate init(
         data: Contents,
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType,
         entitlements: EntitlementInfos,
         nonSubscriptions: [NonSubscriptionTransaction],
         requestDate: Date,
@@ -331,6 +335,7 @@ public typealias ProductIdentifier = String
         subscriptionsByProductIdentifier: [String: SubscriptionInfo]
     ) {
         self.data = data
+        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.entitlements = entitlements
         self.nonSubscriptions = nonSubscriptions
         self.requestDate = requestDate
@@ -393,16 +398,18 @@ extension CustomerInfo {
         var copy = self.data
         copy.entitlementVerification = entitlementVerification
         copy.originalSource = originalSource ?? .main
-        return .init(data: copy)
+        return .init(data: copy, sandboxEnvironmentDetector: self.sandboxEnvironmentDetector)
     }
 
     /// Creates a copy of this ``CustomerInfo`` setting the `isLoadedFromCache` flag  to `true`.
-    func loadedFromCache() -> Self {
-        guard !self.isLoadedFromCache else { return self }
-
+    /// - Parameter sandboxEnvironmentDetector: The detector to use for the returned copy.
+    ///   Used after Codable decoding to inject the correct detector from the SDK's dependency chain.
+    func loadedFromCache(
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType
+    ) -> Self {
         var copy = self.data
         copy.loadedFromCache = true
-        return .init(data: copy)
+        return .init(data: copy, sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
 }
@@ -426,7 +433,8 @@ extension CustomerInfo: Codable {
     // swiftlint:disable:next missing_docs
     public convenience init(from decoder: Decoder) throws {
         do {
-            self.init(data: try Contents(from: decoder))
+            self.init(data: try Contents(from: decoder),
+                      sandboxEnvironmentDetector: SandboxEnvironmentDetector())
         } catch {
             throw ErrorUtils.customerInfoError(error: error)
         }
@@ -447,7 +455,7 @@ extension CustomerInfo: HTTPResponseBody {
 
         var copy = self.data
         copy.response.requestDate = newRequestDate
-        return .init(data: copy)
+        return .init(data: copy, sandboxEnvironmentDetector: self.sandboxEnvironmentDetector)
     }
 
 }

@@ -20,7 +20,10 @@ class MockOfflineCustomerInfoCreator: OfflineCustomerInfoCreator {
             purchasedProductsFetcher: MockPurchasedProductsFetcher(),
             productEntitlementMappingFetcher: MockProductEntitlementMappingFetcher(),
             tracker: nil,
-            creator: { CustomerInfo(from: $0, mapping: $1, userID: $2) }
+            creator: {
+                CustomerInfo(from: $0, mapping: $1, userID: $2,
+                             sandboxEnvironmentDetector: MockSandboxEnvironmentDetector())
+            }
         )
     }
 

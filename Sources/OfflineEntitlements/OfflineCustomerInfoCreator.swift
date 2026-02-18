@@ -43,7 +43,8 @@ class OfflineCustomerInfoCreator {
         with purchasedProductsFetcher: PurchasedProductsFetcherType?,
         productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
         tracker: DiagnosticsTrackerType?,
-        observerMode: Bool
+        observerMode: Bool,
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType
     ) -> OfflineCustomerInfoCreator? {
         guard let fetcher = purchasedProductsFetcher, !observerMode else {
             Logger.debug(Strings.offlineEntitlements.offline_entitlements_not_available)
@@ -52,18 +53,21 @@ class OfflineCustomerInfoCreator {
 
         return .init(purchasedProductsFetcher: fetcher,
                      productEntitlementMappingFetcher: productEntitlementMappingFetcher,
-                     tracker: tracker)
+                     tracker: tracker,
+                     sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
     convenience init(purchasedProductsFetcher: PurchasedProductsFetcherType,
                      productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
-                     tracker: DiagnosticsTrackerType?) {
+                     tracker: DiagnosticsTrackerType?,
+                     sandboxEnvironmentDetector: SandboxEnvironmentDetectorType) {
         self.init(
             purchasedProductsFetcher: purchasedProductsFetcher,
             productEntitlementMappingFetcher: productEntitlementMappingFetcher,
             tracker: tracker,
             creator: { products, mapping, userID in
-                CustomerInfo(from: products, mapping: mapping, userID: userID)
+                CustomerInfo(from: products, mapping: mapping, userID: userID,
+                             sandboxEnvironmentDetector: sandboxEnvironmentDetector)
             }
         )
     }

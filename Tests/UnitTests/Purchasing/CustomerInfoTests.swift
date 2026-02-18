@@ -1033,29 +1033,70 @@ class BasicCustomerInfoTests: TestCase {
     func testIsLoadedFromCacheIsTrueAfterLoadedFromCache() {
         expect(self.customerInfo.isLoadedFromCache) == false
 
-        let cachedInfo = self.customerInfo.loadedFromCache()
+        let detector = MockSandboxEnvironmentDetector(isSandbox: false)
+        let cachedInfo = self.customerInfo.loadedFromCache(sandboxEnvironmentDetector: detector)
         expect(cachedInfo.isLoadedFromCache) == true
     }
 
     func testLoadedFromCacheIsIdempotent() {
-        let cachedInfo1 = self.customerInfo.loadedFromCache()
-        let cachedInfo2 = cachedInfo1.loadedFromCache()
-        let cachedInfo3 = cachedInfo2.loadedFromCache()
+        let detector = MockSandboxEnvironmentDetector(isSandbox: false)
+        let cachedInfo1 = self.customerInfo.loadedFromCache(sandboxEnvironmentDetector: detector)
+        let cachedInfo2 = cachedInfo1.loadedFromCache(sandboxEnvironmentDetector: detector)
+        let cachedInfo3 = cachedInfo2.loadedFromCache(sandboxEnvironmentDetector: detector)
 
         expect(cachedInfo1.isLoadedFromCache) == true
         expect(cachedInfo2.isLoadedFromCache) == true
         expect(cachedInfo3.isLoadedFromCache) == true
-        expect(cachedInfo1) === cachedInfo2
-        expect(cachedInfo2) === cachedInfo3
+        expect(cachedInfo1) == cachedInfo2
+        expect(cachedInfo2) == cachedInfo3
     }
 
     func testSameCustomerInfoWithDifferentCacheStatusAreEqual() {
         expect(self.customerInfo.isLoadedFromCache) == false
 
-        let cachedInfo = self.customerInfo.loadedFromCache()
+        let detector = MockSandboxEnvironmentDetector(isSandbox: false)
+        let cachedInfo = self.customerInfo.loadedFromCache(sandboxEnvironmentDetector: detector)
         expect(cachedInfo.isLoadedFromCache) == true
 
         expect(self.customerInfo) == cachedInfo
+    }
+
+    func testLoadedFromCacheReplacesDetector() throws {
+        let sandboxDetector = MockSandboxEnvironmentDetector(isSandbox: true)
+        let info = try CustomerInfo(data: [
+            "request_date": "2099-04-01T10:30:42Z",
+            "subscriber": [
+                "original_app_user_id": "user",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [
+                    "product_a": [
+                        "purchase_date": "2099-03-27T06:24:50Z",
+                        "expires_date": "2099-05-27T06:24:50Z",
+                        "period_type": "normal",
+                        "is_sandbox": true,
+                        "original_purchase_date": "2022-04-12T00:03:28Z",
+                        "store": "app_store",
+                        "store_transaction_id": "1"
+                    ]
+                ] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "entitlements": [
+                    "pro": [
+                        "product_identifier": "product_a",
+                        "purchase_date": "2099-03-27T06:24:50Z",
+                        "expires_date": "2099-05-27T06:24:50Z"
+                    ]
+                ] as [String: Any]
+            ] as [String: Any]
+        ], sandboxEnvironmentDetector: sandboxDetector)
+
+        expect(info.entitlements["pro"]?.isActiveInCurrentEnvironment) == true
+
+        let productionDetector = MockSandboxEnvironmentDetector(isSandbox: false)
+        let reloaded = info.loadedFromCache(sandboxEnvironmentDetector: productionDetector)
+
+        expect(reloaded.isLoadedFromCache) == true
+        expect(reloaded.entitlements["pro"]?.isActiveInCurrentEnvironment) == false
     }
 
 }

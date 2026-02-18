@@ -313,7 +313,7 @@ extension PeriodType: DefaultValueProvider {
             verification: verification
         )
         self.rawData = [:]
-        self.sandboxEnvironmentDetector = SandboxEnvironmentDetector.default
+        self.sandboxEnvironmentDetector = SandboxEnvironmentDetector()
     }
 
     // MARK: -

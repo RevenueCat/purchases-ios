@@ -23,7 +23,7 @@ extension CustomerInfo {
         from purchasedSK2Products: [PurchasedSK2Product],
         mapping: ProductEntitlementMapping,
         userID: String,
-        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector.default
+        sandboxEnvironmentDetector: SandboxEnvironmentDetectorType
     ) {
         let subscriber = CustomerInfoResponse.Subscriber(
             originalAppUserId: userID,

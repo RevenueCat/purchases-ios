@@ -29,7 +29,8 @@ class OfflineCustomerInfoCreatorTests: TestCase {
 
         self.creator = .init(purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
                              productEntitlementMappingFetcher: self.mockProductEntitlementMappingFetcher,
-                             tracker: self.mockDiagnosticsTracker)
+                             tracker: self.mockDiagnosticsTracker,
+                             sandboxEnvironmentDetector: MockSandboxEnvironmentDetector())
     }
 
     func testTrackEnteredOfflineEntitlementsModeOnSuccessfulCreation() async throws {
@@ -140,7 +141,8 @@ class CreateOfflineCustomerInfoCreatorTests: TestCase {
                 with: nil,
                 productEntitlementMappingFetcher: MockProductEntitlementMappingFetcher(),
                 tracker: nil,
-                observerMode: false
+                observerMode: false,
+                sandboxEnvironmentDetector: MockSandboxEnvironmentDetector()
             )
         ).to(beNil())
     }
@@ -151,7 +153,8 @@ class CreateOfflineCustomerInfoCreatorTests: TestCase {
                 with: MockPurchasedProductsFetcher(),
                 productEntitlementMappingFetcher: MockProductEntitlementMappingFetcher(),
                 tracker: nil,
-                observerMode: true
+                observerMode: true,
+                sandboxEnvironmentDetector: MockSandboxEnvironmentDetector()
             )
         ).to(beNil())
     }
@@ -162,7 +165,8 @@ class CreateOfflineCustomerInfoCreatorTests: TestCase {
                 with: MockPurchasedProductsFetcher(),
                 productEntitlementMappingFetcher: MockProductEntitlementMappingFetcher(),
                 tracker: nil,
-                observerMode: false
+                observerMode: false,
+                sandboxEnvironmentDetector: MockSandboxEnvironmentDetector()
             )
         ).toNot(beNil())
     }

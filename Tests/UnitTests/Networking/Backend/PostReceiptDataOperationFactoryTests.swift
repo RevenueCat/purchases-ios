@@ -27,6 +27,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         let systemInfo = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
             storefrontProvider: MockStorefrontProvider(),
             storeKitVersion: .default,
             responseVerificationMode: .disabled,
