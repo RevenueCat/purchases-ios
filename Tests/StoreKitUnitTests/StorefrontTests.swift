@@ -68,6 +68,7 @@ class StorefrontTests: StoreKitConfigTestCase {
 
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: false,
+                                    sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                     preferredLocalesProvider: .mock())
         let storefront = try XCTUnwrap(systemInfo.storefront)
 

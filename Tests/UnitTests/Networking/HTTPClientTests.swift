@@ -1437,6 +1437,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
+                                    sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                     preferredLocalesProvider: .mock())
 
         self.client = self.createClient(systemInfo)
@@ -1477,6 +1478,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
+                                    sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
@@ -1498,6 +1500,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: true,
+                                                   sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                                    preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
@@ -1511,6 +1514,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let headerName = "X-UI-Preview-Mode"
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
+                                    sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                     dangerousSettings: .init(uiPreviewMode: true),
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
@@ -1535,6 +1539,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let headerName = "X-UI-Preview-Mode"
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
+                                    sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                     dangerousSettings: .init(uiPreviewMode: false),
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
@@ -1607,6 +1612,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: false,
+                                                   sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                                    preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
@@ -2111,6 +2117,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .allServersDown)
@@ -2152,6 +2159,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: nil)
@@ -2189,6 +2197,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .init { _ in
