@@ -347,6 +347,19 @@ extension Array {
         }
     }
 
+    /// Checks if any component override contains unsupported conditions.
+    /// - Returns: `true` if any condition is unsupported, `false` otherwise
+    func containsUnsupportedConditions<T: PaywallPartialComponent>() -> Bool
+    where Element == PaywallComponent.ComponentOverride<T> {
+        for override in self {
+            for condition in override.extendedConditions where condition == .unsupported {
+                Logger.warning(Strings.paywall_contains_unsupported_condition)
+                return true
+            }
+        }
+        return false
+    }
+
 }
 
 #endif
