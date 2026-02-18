@@ -30,147 +30,52 @@ When implementing features or debugging, check these repos for reference and pat
 - Changing return types
 - Modifying behavior in ways that break existing integrations
 
+**Do NOT add new `public enum` types.** This SDK does not use library evolution mode, so all Swift types are `@frozen` by default. This means adding a new case to an existing `public enum` is a **source-breaking change** — any consumer with an exhaustive `switch` will fail to compile. Use structs with static constants or other patterns instead when exposing new option sets or categories.
+
 The `Tests/APITesters/` targets run in CI to catch unintended API changes. The `api/*.swiftinterface` files track the public API surface. **If API tests fail, you've likely broken the public API.**
+
+### Objective-C Compatibility
+
+Many core SDK classes are exposed to Objective-C and must stay compatible. Key rules:
+
+- **`NSObject` subclasses** (`Purchases`, `CustomerInfo`, `EntitlementInfo`, `StoreProduct`, `StoreTransaction`, etc.) must remain `@objc`-compatible. Don't add Swift-only types (e.g., generics, `async` without a completion-handler wrapper, Swift enums without `@objc`, default parameter values) to their public API without providing an Obj-C equivalent.
+- **`@objc(RC...)` prefixed names** are used for Obj-C class names (e.g., `@objc(RCPurchases)`, `@objc(RCCustomerInfo)`). Don't remove or change these.
+- **New public properties/methods** on `@objc`-exposed classes must be marked `@objc` unless there's a deliberate reason to exclude them (document why).
+- **Enums** exposed to Obj-C use `@objc` with `Int` raw values. Swift-only enums with associated values or string raw values can't be used from Obj-C.
+- **Both Swift and Obj-C API testers exist** in `Tests/APITesters/`. When modifying public API on an `@objc` class, update both `SwiftAPITester` and `ObjcAPITester` targets.
+- **Don't break existing Obj-C callers** — if a method is currently callable from Obj-C, it must remain so.
 
 ## Common Development Commands
 
-### Building and Testing
+Quick reference for the most common operations:
+
 ```bash
-# Build using Swift Package Manager
-swift build
-
-# Run unit tests using Swift Package Manager
-swift test
-
-# Build using Xcode (recommended for full project)
-xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCat -destination 'platform=iOS Simulator,name=iPhone 15'
-
-# Run unit tests via Xcode
-xcodebuild test -workspace RevenueCat.xcworkspace -scheme RevenueCat -destination 'platform=iOS Simulator,name=iPhone 15'
-
-# Generate Tuist workspace (for full project with examples)
-tuist generate
-
-# Build Tuist workspace
-xcodebuild -workspace RevenueCat-Tuist.xcworkspace -scheme RevenueCat -destination 'platform=iOS Simulator,name=iPhone 15'
+swift build                        # Build via SPM
+swift test                         # Run unit tests via SPM
+tuist generate                     # Generate Tuist workspace (preferred)
+swiftlint                          # Run linter
+swiftlint --fix                    # Auto-fix lint issues
+bundle exec fastlane test_ios      # Run iOS tests via Fastlane
+bundle exec fastlane run_api_tests # Verify public API surface
 ```
 
-### Code Quality and Analysis
-```bash
-# Run SwiftLint
-swiftlint
-
-# Run SwiftLint with auto-correct
-swiftlint --fix
-
-# Setup development environment (installs SwiftLint, links pre-commit hooks)
-bundle exec fastlane setup_dev
-```
-
-### Fastlane Commands
-```bash
-# Setup development environment
-bundle exec fastlane setup_dev
-
-# Run iOS tests
-bundle exec fastlane test_ios
-
-# Run tvOS tests
-bundle exec fastlane test_tvos
-
-# Run watchOS tests
-bundle exec fastlane test_watchos
-
-# Run macOS tests
-bundle exec fastlane mac test_macos
-
-# Run RevenueCatUI tests
-bundle exec fastlane test_revenuecatui
-
-# Run API tests (builds APITester targets to verify public API)
-bundle exec fastlane run_api_tests
-
-# Run backend integration tests
-bundle exec fastlane backend_integration_tests
-
-# Fetch snapshot repositories
-bundle exec fastlane fetch_snapshots
-```
-
-### Snapshot Testing
-```bash
-# Generate RevenueCat snapshots (triggers CircleCI job)
-bundle exec fastlane generate_snapshots_RC
-
-# Generate RevenueCatUI snapshots (triggers CircleCI job)
-bundle exec fastlane generate_snapshots_RCUI
-
-# Locally generate snapshots (set environment variable)
-CIRCLECI_TESTS_GENERATE_SNAPSHOTS=true bundle exec fastlane test_ios
-CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS=true bundle exec fastlane test_revenuecatui
-```
+For the full set of build, test, Tuist, and Fastlane commands, see:
+- **`Contributing/CONTRIBUTING.md`** — environment setup, workflow, style guide
+- **`Contributing/DEVELOPMENT.md`** — Tuist workspace generation, targets, troubleshooting
+- **`fastlane/README.md`** — complete list of available Fastlane lanes
 
 ## Project Architecture
 
-### Code Structure
-```
-purchases-ios/
-├── Sources/                  # Core RevenueCat SDK source code
-├── RevenueCatUI/             # SwiftUI Paywalls & Customer Center module
-├── Tests/                    # All test targets
-│   ├── UnitTests/            # Core SDK unit tests
-│   ├── RevenueCatUITests/    # UI snapshot and unit tests
-│   ├── StoreKitUnitTests/    # StoreKit-specific tests
-│   ├── BackendIntegrationTests/ # Backend integration tests
-│   ├── APITesters/           # API surface verification
-│   └── TestingApps/          # Test applications
-├── Examples/                 # Sample applications
-│   ├── MagicWeather/         # UIKit sample
-│   ├── MagicWeatherSwiftUI/  # SwiftUI sample
-│   └── ...
-├── Projects/                 # Tuist-managed projects
-├── api/                      # Public API .swiftinterface files
-├── fastlane/                 # CI/CD automation
-├── Tuist/                    # Tuist configuration and helpers
-├── Contributing/             # Contributing guides and style guide
-└── scripts/                  # Build and utility scripts
-```
-
 ### Module Structure
+
 This is a multi-target Swift project supporting iOS, macOS, tvOS, watchOS, and visionOS:
 
-- **`RevenueCat`** (`Sources/`) - Core SDK containing main API, business logic, networking, StoreKit abstractions
-- **`RevenueCat_CustomEntitlementComputation`** (`CustomEntitlementComputation/` → symlink to `Sources/`) - Custom entitlement computation variant (same source with `ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION` flag)
-- **`ReceiptParser`** (`LocalReceiptParsing/` → symlink to `Sources/LocalReceiptParsing/`) - Local receipt parsing library
-- **`RevenueCatUI`** (`RevenueCatUI/`) - SwiftUI module for paywalls and customer center (depends on `RevenueCat`)
+- **`RevenueCat`** (`Sources/`) — Core SDK: API, business logic, networking, StoreKit abstractions
+- **`RevenueCat_CustomEntitlementComputation`** (`CustomEntitlementComputation/` → symlink to `Sources/`) — Same source with `ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION` flag
+- **`ReceiptParser`** (`LocalReceiptParsing/` → symlink to `Sources/LocalReceiptParsing/`) — Local receipt parsing library
+- **`RevenueCatUI`** (`RevenueCatUI/`) — SwiftUI paywalls and customer center (depends on `RevenueCat`)
 
-### Source Directory Structure
-```
-Sources/
-├── Ads/                    # Ad attribution handling
-├── Attribution/            # Attribution tracking
-├── Caching/                # Local caching and persistence
-├── CodableExtensions/      # JSON encoding/decoding helpers
-├── CustomerCenter/         # Customer center functionality
-├── DeepLink/               # Deep link handling
-├── Diagnostics/            # SDK diagnostics
-├── Error Handling/         # Error types and handling
-├── Events/                 # Event tracking
-├── FoundationExtensions/   # Foundation type extensions
-├── Identity/               # User identity management
-├── LocalReceiptParsing/    # Receipt parsing
-├── Logging/                # Logging infrastructure
-├── Misc/                   # Miscellaneous utilities
-├── Networking/             # HTTP client and API communication
-├── OfflineEntitlements/    # Offline entitlement support
-├── Paywalls/               # Paywall data models
-├── Purchasing/             # Core purchasing logic (Purchases class lives here)
-├── Security/               # Security utilities
-├── SubscriberAttributes/   # Subscriber attributes
-├── Support/                # Support utilities
-├── Virtual Currencies/     # Virtual currency support
-└── WebPurchaseRedemption/  # Web purchase redemption
-```
+Key top-level directories: `Sources/`, `RevenueCatUI/`, `Tests/`, `Examples/`, `Projects/`, `api/`, `fastlane/`, `Tuist/`, `Contributing/`, `scripts/`. Explore the filesystem directly for current subdirectory layout.
 
 ### Key Architectural Patterns
 
@@ -179,60 +84,34 @@ Sources/
 - **Delegate Pattern**: `PurchasesDelegate` for event callbacks
 - **Manager Pattern**: `IdentityManager`, `SubscriberAttributesManager`, `EventsManager`
 - **Backend/Cache Layer**: `Backend` for networking, `DeviceCache` for local storage
+- **StoreKit 1 / StoreKit 2 dual implementation**: The SDK maintains parallel code paths in `Sources/Purchasing/StoreKit1/` and `Sources/Purchasing/StoreKit2/`, with shared abstractions in `Sources/Purchasing/StoreKitAbstractions/`. Bug fixes or behavior changes often need to be applied to both paths. Always check whether the other StoreKit implementation is affected.
 
 #### RevenueCatUI Module
 - **SwiftUI-based**: Modern declarative UI
 - **MVVM Pattern**: ViewModels with SwiftUI views
 - **Main Components**: `PaywallView`, `CustomerCenterView`
 
+### Thread Safety
+
+The SDK is heavily concurrent — StoreKit callbacks, delegate calls, caching, and network responses can all arrive on different threads. See **`Contributing/ThreadSafety.md`** for the full guide. Key primitives:
+
+- **`Lock`** / **`Lock(.recursive)`** — low-level synchronization for critical sections
+- **`Atomic<T>`** — thread-safe wrapper for mutable state
+- **`SynchronizedUserDefaults`** — thread-safe `UserDefaults` access (used by `DeviceCache`)
+
+When modifying internal state, use these primitives. Don't introduce bare property access to shared mutable state without synchronization.
+
 ### API Annotations
-- **`@_spi(Internal)`** - APIs that are public only to be accessible by other modules or hybrid SDKs, not intended for external developer use
-- **`@available`** - Platform availability annotations for StoreKit 2 and other iOS version-specific features
+- **`@_spi(Internal)`** — APIs that are public only to be accessible by other modules or hybrid SDKs, not intended for external developer use
+- **`@available`** — platform availability annotations for StoreKit 2 and other iOS version-specific features
 
-## Testing Framework
+## Testing
 
-### Technologies Used
-- **XCTest** - Primary testing framework
-- **Nimble** - Fluent assertions and matchers
-- **swift-snapshot-testing** - Snapshot testing for UI
-- **OHHTTPStubs** - Network stubbing (via Tuist dependencies)
-
-### Test Structure
-```
-Tests/
-├── APITesters/              # API surface verification tests
-├── BackendIntegrationTests/ # Backend integration tests
-├── InstallationTests/       # Installation verification (Carthage, CocoaPods, SPM)
-├── ReceiptParserTests/      # Receipt parser unit tests
-├── RevenueCatUITests/       # RevenueCatUI snapshot and unit tests
-├── StoreKitUnitTests/       # StoreKit-specific unit tests
-├── TestPlans/               # Xcode test plans
-├── TestingApps/             # Test applications
-│   ├── PaywallsTester/      # Paywall testing app
-│   ├── PurchaseTesterSwiftUI/ # Purchase tester (SwiftUI)
-│   └── ...
-└── UnitTests/               # Core SDK unit tests
-```
-
-### Running Tests
-- **Unit Tests**: Select "All Tests" scheme in Xcode and press `Cmd+U`
-- **Specific Test Plans**: Use test plans in `Tests/TestPlans/` directory
-- **CI Test Plans**: `CI-RevenueCat`, `CI-RevenueCat-Snapshots`, `CI-RevenueCatUI`
+Tests use **XCTest**, **Nimble**, **swift-snapshot-testing**, and **OHHTTPStubs**. Test targets live under `Tests/` — explore subdirectories directly for the current layout.
 
 ## Development Workflow
 
-### Environment Setup
-1. Install mise: `brew install mise`
-2. Run `mise install` in project root (installs Tuist and SwiftLint)
-3. Run `bundle install` for Fastlane
-4. Run `bundle exec fastlane setup_dev` to link pre-commit hooks
-5. Copy `Local.xcconfig.SAMPLE` to `Local.xcconfig` and configure API keys
-
-### Code Quality
-- **SwiftLint**: Static code analysis with custom rules (`.swiftlint.yml`)
-- **Pre-commit Hook**: Runs SwiftLint before each commit
-- **API Compatibility**: Swift interface files in `api/` directory track public API changes
-- **Style Guide**: See `Contributing/SwiftStyleGuide.swift`
+For environment setup, see **`Contributing/CONTRIBUTING.md`**. For code style, see **`Contributing/SwiftStyleGuide.swift`**.
 
 ### Main Entry Points
 - **`Purchases`** class: Primary SDK entry point (`Sources/Purchasing/Purchases/Purchases.swift`)
@@ -253,73 +132,22 @@ Tests/
 - **Carthage**: Supported via XCFramework
 
 ### Tuist Project Management
-The project uses **Tuist** for managing the Xcode workspace with examples and test apps.
 
-**Basic Commands:**
-```bash
-# Generate workspace (required before building with Tuist)
-tuist generate
-
-# Clean generated files
-tuist clean
-
-# Edit project configuration
-tuist edit
-```
-
-**Configuration Files:**
-- `Workspace.swift` - Defines which projects to include in the workspace
-- `Tuist.swift` - Global Tuist configuration
-- `Tuist/` directory - Contains Package.swift for SPM dependencies and project helpers
-
-**Environment Variables:**
-- `TUIST_RC_LOCAL=true` - Include local RevenueCat/RevenueCatUI projects (default for local dev)
-- `TUIST_RC_LOCAL=false` - Use SPM dependency (for load shedder tests)
-- `TUIST_INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS=true` - Include XCFramework installation tests
-
-**Projects Included (via `Workspace.swift`):**
-- `Examples/rc-maestro/` - Maestro E2E test app
-- `Examples/MagicWeather/` - UIKit sample app
-- `Examples/MagicWeatherSwiftUI/` - SwiftUI sample app
-- `Examples/testCustomEntitlementsComputation/` - Custom entitlement computation sample
-- `Examples/PurchaseTester/` - Legacy purchase tester
-- `Projects/PaywallsTester/` - Paywall testing app
-- `Projects/APITesters/` - API surface verification
-- `Projects/PaywallValidationTester/` - Paywall validation tests
-- `Projects/BinarySizeTest/` - SDK binary size measurement
-- `Projects/RCTTester/` - Additional testing app
+The project uses **Tuist** for managing the Xcode workspace. See **`Contributing/DEVELOPMENT.md`** for full Tuist commands, environment variables, and troubleshooting.
 
 ### Target Specifications
 - **Minimum Deployment**: iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, visionOS 1.0
 - **Swift**: 5.9+
 - **Xcode**: 15.0+
 
+These minimums are enforced at compile time. Concretely:
+- **Don't use APIs unavailable on the minimum target** without an `@available` check and a fallback path (e.g., `AttributedString` is iOS 15+, Swift concurrency back-deployment requires iOS 13+ but some features need iOS 15+).
+- **StoreKit 2** is iOS 15+ — all SK2 code paths must be gated with `@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)` or equivalent.
+- **Never assume the latest OS** — CI tests run on multiple OS versions, and customers run the SDK on older devices.
+
 ## Development Notes
 
-### Snapshot Testing
-- Snapshots stored in external repository: `purchases-ios-snapshots`
-- Commit hash tracked in `Tests/purchases-ios-snapshots-commit`
-- Run `bundle exec fastlane fetch_snapshots` before running snapshot tests locally
-- RevenueCatUI snapshots use `swift-snapshot-testing` library
-
-### Sample Applications
-- **MagicWeather**: UIKit sample app
-- **MagicWeatherSwiftUI**: SwiftUI sample app
-- **PurchaseTester**: Purchase flow testing
-- **PaywallsTester**: Paywall UI testing
-- **testCustomEntitlementsComputation**: Custom entitlement computation sample
-
-### Pre-commit Hook
-The pre-commit hook (`scripts/pre-commit.sh`) runs SwiftLint on staged files. Set up via:
-```bash
-bundle exec fastlane setup_dev
-```
-
-### Release Process
-- **Fastlane**: Automated release management
-- **Version Management**: Centralized in `.version` file
-- **Publishing**: CocoaPods, SPM, Carthage (XCFramework)
-- **Documentation**: DocC for API docs
+For snapshot testing, sample applications, pre-commit hooks, and release process details, see the docs in **`Contributing/`** (in particular `CONTRIBUTING.md`, `DEVELOPMENT.md`, and `RELEASING.md`).
 
 ### Important Files
 - `.version` - Current SDK version
@@ -336,19 +164,13 @@ bundle exec fastlane setup_dev
 
 ## Guardrails
 
-- **Don't invent APIs or file paths** — verify they exist
-- **Don't remove code you don't understand** — ask for context
+- **Don't invent APIs or file paths** — verify they exist before referencing them
+- **Don't remove code you don't understand** — ask for context first
 - **Don't make large refactors** unless explicitly requested
-- **Keep diffs minimal** — preserve existing formatting
+- **Keep diffs minimal** — only touch what's necessary, preserve existing formatting
 - **Don't break the public API** — if API tests fail, investigate why
-- **Check Android SDK** when unsure about cross-platform implementation details
+- **Fix root causes** — don't add workarounds or suppress errors without understanding the underlying issue
+- **Verify changes build** — run `swift build` or the relevant Fastlane lane before considering work done
 - **Run SwiftLint** before committing (`swiftlint` or `swiftlint --fix`)
 - **Follow the style guide** in `Contributing/SwiftStyleGuide.swift`
-
-## Core Principles
-
-- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
-- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
-- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
-- **Test Your Work**: Always verify changes work before marking done.
-- **Cross-Platform Consistency**: Check Android SDK for patterns when implementing new features.
+- **Check Android SDK** when unsure about cross-platform implementation details — new features should follow existing patterns across SDKs
