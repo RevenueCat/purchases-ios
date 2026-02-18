@@ -238,7 +238,7 @@ class CustomerInfoManager {
 
     func cachedCustomerInfo(appUserID: String) throws -> CustomerInfo? {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            return Self.createPreviewCustomerInfo()
+            return self.createPreviewCustomerInfo()
         }
 
         let cachedCustomerInfoData = self.deviceCache.cachedCustomerInfoData(appUserID: appUserID)
@@ -248,7 +248,7 @@ class CustomerInfoManager {
             let info: CustomerInfo = try JSONDecoder.default.decode(jsonData: customerInfoData)
 
             if info.schemaVersionIsCompatible {
-                return info.loadedFromCache()
+                return info.copy(with: self.systemInfo).loadedFromCache()
             } else {
                 let msg = Strings.customerInfo.cached_customerinfo_incompatible_schema.description
                 throw ErrorUtils.customerInfoError(withMessage: msg)
@@ -419,7 +419,7 @@ private extension CustomerInfoManager {
                                      isAppBackgrounded: Bool,
                                      completion: @escaping @Sendable (CustomerInfoDataResult) -> Void) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            let previewCustomerInfo = Self.createPreviewCustomerInfo()
+            let previewCustomerInfo = self.createPreviewCustomerInfo()
             completion(CustomerInfoDataResult(result: .success(previewCustomerInfo)))
             return
         }
@@ -576,7 +576,7 @@ private extension CustomerInfoManager {
 extension CustomerInfoManager {
 
     /// Generates a dummy `CustomerInfo` with hardcoded information exclusively for UI Preview mode.
-    static func createPreviewCustomerInfo() -> CustomerInfo {
+    func createPreviewCustomerInfo() -> CustomerInfo {
         let previewSubscriber = CustomerInfoResponse.Subscriber(
             originalAppUserId: IdentityManager.uiPreviewModeAppUserID,
             firstSeen: Date(),
@@ -589,7 +589,7 @@ extension CustomerInfoManager {
                                                                rawData: [:])
         let previewCustomerInfo = CustomerInfo(response: previewCustomerInfoResponse,
                                                entitlementVerification: .verified,
-                                               sandboxEnvironmentDetector: SandboxEnvironmentDetector.default,
+                                               sandboxEnvironmentDetector: self.systemInfo,
                                                httpResponseOriginalSource: .mainServer)
         return previewCustomerInfo
     }

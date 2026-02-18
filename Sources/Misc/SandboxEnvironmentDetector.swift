@@ -50,12 +50,13 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
     ///   - receiptFetcher: The receipt fetcher for macOS receipt parsing.
     ///   - macAppStoreDetector: Detector for macOS App Store detection.
     ///   - transactionFetcher: The transaction fetcher used to get `AppTransaction` environment.
+    ///     If `nil`, only receipt-path-based detection is used.
     init(
         bundle: Bundle = .main,
         isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator,
         receiptFetcher: LocalReceiptFetcherType = LocalReceiptFetcher(),
         macAppStoreDetector: MacAppStoreDetector? = nil,
-        transactionFetcher: StoreKit2TransactionFetcherType
+        transactionFetcher: StoreKit2TransactionFetcherType? = nil
     ) {
         self.bundle = .init(bundle)
         self.isRunningInSimulator = isRunningInSimulator
@@ -63,19 +64,10 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.macAppStoreDetector = macAppStoreDetector
         self.appTransactionFetchTask = Atomic(nil)
 
-        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
-            // Start fetching the AppTransaction environment asynchronously.
-            // The result will be cached and used by `isSandbox` once available.
+        if let transactionFetcher,
+           #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
             self.prefetchAppTransactionEnvironmentIfAvailable(transactionFetcher: transactionFetcher)
         }
-    }
-
-    private init() {
-        self.bundle = .init(Bundle.main)
-        self.isRunningInSimulator = SystemInfo.isRunningInSimulator
-        self.receiptFetcher = LocalReceiptFetcher()
-        self.macAppStoreDetector = nil
-        self.appTransactionFetchTask = nil
     }
 
     var isSandbox: Bool {
@@ -98,21 +90,6 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         let isSandboxBasedOnReceiptPath = self.getIsSandboxBasedOnReceiptPath()
         self.cachedIsSandboxBasedOnReceiptPath.value = isSandboxBasedOnReceiptPath
         return isSandboxBasedOnReceiptPath
-    }
-
-    // MARK: - Default Instance
-
-    /// The default sandbox environment detector.
-    ///
-    /// By default, this uses a simplified `SandboxEnvironmentDetector` that only relies on
-    /// the legacy receipt path detection. When the SDK is initialized via `Purchases.configure()`,
-    /// this is replaced with a full `SandboxEnvironmentDetector` that includes
-    /// `AppTransaction`-based detection on iOS 16+.
-    private static let _default: Atomic<SandboxEnvironmentDetectorType> = .init(SandboxEnvironmentDetector())
-
-    static var `default`: SandboxEnvironmentDetectorType {
-        get { _default.value }
-        set { _default.value = newValue }
     }
 
 }

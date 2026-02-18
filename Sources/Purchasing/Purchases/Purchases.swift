@@ -369,8 +369,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let sandboxEnvironmentDetector = injectedSandboxEnvironmentDetector
         ?? SandboxEnvironmentDetector(transactionFetcher: transactionFetcher)
 
-        SandboxEnvironmentDetector.default = sandboxEnvironmentDetector
-
         let systemInfo = SystemInfo(
             platformInfo: platformInfo,
             finishTransactions: !observerMode,
@@ -408,7 +406,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 with: purchasedProductsFetcher,
                 productEntitlementMappingFetcher: deviceCache,
                 tracker: diagnosticsTracker,
-                observerMode: observerMode
+                observerMode: observerMode,
+                sandboxEnvironmentDetector: sandboxEnvironmentDetector
             ),
             diagnosticsTracker: diagnosticsTracker
         )
@@ -859,7 +858,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     static func clearSingleton() {
         self.purchases.modify { purchases in
             purchases?.delegate = nil
-            SandboxEnvironmentDetector.default.cancelInFlightAppTransactionPrefetch()
+            purchases?.systemInfo.cancelInFlightAppTransactionPrefetch()
             purchases = nil
         }
     }

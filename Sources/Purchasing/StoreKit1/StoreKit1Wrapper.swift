@@ -71,7 +71,7 @@ class StoreKit1Wrapper: NSObject {
     init(paymentQueue: SKPaymentQueue = .default(),
          operationDispatcher: OperationDispatcher = .default,
          observerMode: Bool,
-         sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector.default,
+         sandboxEnvironmentDetector: SandboxEnvironmentDetectorType = SandboxEnvironmentDetector(),
          diagnosticsTracker: DiagnosticsTrackerType?) {
         self.paymentQueue = paymentQueue
         self.operationDispatcher = operationDispatcher
