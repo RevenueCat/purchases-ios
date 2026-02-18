@@ -22,7 +22,9 @@ import SwiftUI
 /// ```swift
 /// PaywallView()
 ///     .customPaywallVariables([
-///         "player_name": .string("John")
+///         "player_name": .string("John"),
+///         "level": .number(42),
+///         "is_premium": .bool(true)
 ///     ])
 /// ```
 ///
@@ -51,12 +53,12 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
     }
 
     /// Creates a numeric value.
-    internal static func number(_ value: Double) -> CustomVariableValue {
+    public static func number(_ value: Double) -> CustomVariableValue {
         CustomVariableValue(.number(value))
     }
 
     /// Creates a boolean value.
-    internal static func bool(_ value: Bool) -> CustomVariableValue {
+    public static func bool(_ value: Bool) -> CustomVariableValue {
         CustomVariableValue(.bool(value))
     }
 
