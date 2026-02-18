@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 10/26/24.
 //
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs file_length
 
 import Foundation
 
@@ -66,6 +66,10 @@ public extension PaywallComponent {
 
     /// Public condition type for component overrides.
     /// New condition types not recognized by this SDK version will decode as `.unsupported`.
+    ///
+    /// - Note: The custom `Codable` implementation below is kept for backwards compatibility,
+    ///   but is not actually used in practice. `ComponentOverride` always decodes conditions
+    ///   as `ExtendedCondition` internally, then exposes them via `toCondition()`.
     enum Condition: String, Codable, Sendable, Hashable, Equatable {
 
         case compact
