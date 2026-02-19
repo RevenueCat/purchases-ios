@@ -37,10 +37,10 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
 
     func testSubsequentPurchaseProductCallsOnlyCallPurchaseUIOnce() async {
 
-        let canProceed = Atomic<Bool>(false)
-
         #if compiler(>=5.9)
         let expectation = self.expectation(description: "All purchase product calls happened")
+        #else
+        let canProceed = Atomic<Bool>(false)
         #endif
 
         mockSimulatedStorePurchaseUI.stubbedPurchaseResult.value = {
