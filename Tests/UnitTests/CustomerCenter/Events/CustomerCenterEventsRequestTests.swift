@@ -92,6 +92,31 @@ class CustomerCenterFeatureEventsRequestTests: TestCase {
         expect(requestEvent.timestamp).to(equal(expectedTimestamp))
     }
 
+    func testCustomerCenterRequestTimestampPreservesMilliseconds() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.890)
+        let creationData = CustomerCenterEventCreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let event = CustomerCenterEvent.impression(creationData, Self.eventData)
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .customerCenter,
+                appSessionID: UUID(),
+                eventDiscriminator: CustomerCenterEventDiscriminator.lifecycle.rawValue
+            )
+        )
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+        let requestEvent = try XCTUnwrap(
+            FeatureEventsRequest.CustomerCenterEventBaseRequest.createBase(from: deserialized)
+        )
+
+        expect(requestEvent.timestamp).to(equal(1_694_029_328_890))
+    }
+
     // MARK: - Milliseconds Precision Tests
 
     func testCustomerCenterEventImpressionPreservesMillisecondsInCreationDate() throws {

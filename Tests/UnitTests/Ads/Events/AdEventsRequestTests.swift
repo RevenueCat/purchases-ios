@@ -112,6 +112,27 @@ class AdFeatureEventsRequestTests: TestCase {
         expect(requestEvent.timestamp).to(equal(expectedTimestamp))
     }
 
+    func testAdRequestTimestampPreservesMilliseconds() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.123)
+        let creationData = AdEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let event = AdEvent.displayed(creationData, Self.eventData)
+        let storedEvent = try XCTUnwrap(
+            StoredAdEvent(
+                event: event,
+                userID: "test-user",
+                appSessionID: UUID()
+            )
+        )
+        let serialized = try StoredAdEventSerializer.encode(storedEvent)
+        let deserialized = try StoredAdEventSerializer.decode(serialized)
+        let requestEvent = try XCTUnwrap(AdEventsRequest.AdEventRequest(storedEvent: deserialized))
+
+        expect(requestEvent.timestamp).to(equal(1_694_029_328_123))
+    }
+
     // MARK: - Milliseconds Precision Tests
 
     func testAdEventPreservesMillisecondsInCreationDate() throws {

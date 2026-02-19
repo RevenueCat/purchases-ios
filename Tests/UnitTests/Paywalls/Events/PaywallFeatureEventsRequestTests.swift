@@ -95,6 +95,29 @@ class PaywallFeatureEventsRequestTests: TestCase {
         expect(requestEvent.timestamp).to(equal(expectedTimestamp))
     }
 
+    func testPaywallRequestTimestampPreservesMilliseconds() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.234)
+        let creationData = PaywallEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let event = PaywallEvent.impression(creationData, Self.eventData)
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .paywalls,
+                appSessionID: UUID(),
+                eventDiscriminator: nil
+            )
+        )
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: deserialized))
+
+        expect(requestEvent.timestamp).to(equal(1_694_029_328_234))
+    }
+
     // MARK: - Milliseconds Precision Tests
 
     func testPaywallEventImpressionPreservesMillisecondsInCreationDate() throws {
