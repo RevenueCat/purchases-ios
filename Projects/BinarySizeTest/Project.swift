@@ -46,13 +46,13 @@ extension BinarySizeTestIntegrationMethod {
         switch self {
         case .localSource:
             return [
-                .project(target: "RevenueCat", path: .relativeToRoot("Projects/RevenueCat")),
-                .project(target: "RevenueCatUI", path: .relativeToRoot("Projects/RevenueCatUI"))
+                .revenueCat,
+                .revenueCatUI
             ]
         case .spm:
             return [
-                .revenueCatLocal,
-                .revenueCatUILocal
+                .package(product: "RevenueCat", type: .runtime),
+                .package(product: "RevenueCatUI", type: .runtime)
             ]
         case .cocoapods:
             return []

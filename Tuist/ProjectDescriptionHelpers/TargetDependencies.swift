@@ -53,82 +53,76 @@ extension TargetDependency {
         }
     }
 
-    // RevenueCat
+    // MARK: - RevenueCat
 
-    /// Returns the remote RevenueCat Swift Package Manager dependency
+    /// RevenueCat as a native Xcode SPM package dependency (used for both local and remote SPM modes)
     static var revenueCatSwiftPackageDependency: TargetDependency {
         .package(product: "RevenueCat", type: .runtime)
     }
 
-    /// Returns the remote RevenueCat dependency as Tuist's XcodeProj-based dependency
+    /// RevenueCat as a Tuist-managed XcodeProj dependency (resolved via Tuist/Package.swift)
     static var revenueCatRemoteXcodeProjectDependency: TargetDependency {
         .external(name: "RevenueCat")
     }
 
-    /// Returns the Xcode project RevenueCat dependency
-    /// - Returns: A TargetDependency for RevenueCat from Xcode project
+    /// RevenueCat as a local Tuist project target dependency
     static var revenueCatXcodeProjectDependency: TargetDependency {
         .project(
             target: "RevenueCat",
             path: .relativeToRoot("Projects/RevenueCat"))
     }
 
-    // RevenueCatUI
+    // MARK: - RevenueCatUI
 
-    /// Returns the remote RevenueCat Swift Package Manager dependency
+    /// RevenueCatUI as a native Xcode SPM package dependency (used for both local and remote SPM modes)
     static var revenueCatUISwiftPackageDependency: TargetDependency {
         .package(product: "RevenueCatUI", type: .runtime)
     }
 
-    /// Returns the remote RevenueCat dependency as Tuist's XcodeProj-based dependency
+    /// RevenueCatUI as a Tuist-managed XcodeProj dependency (resolved via Tuist/Package.swift)
     static var revenueCatUIRemoteXcodeProjectDependency: TargetDependency {
         .external(name: "RevenueCatUI")
     }
 
-    /// Returns the Xcode project RevenueCatUI dependency
-    /// - Returns: A TargetDependency for RevenueCat from Xcode project
+    /// RevenueCatUI as a local Tuist project target dependency
     static var revenueCatUIXcodeProjectDependency: TargetDependency {
         .project(
             target: "RevenueCatUI",
             path: .relativeToRoot("Projects/RevenueCatUI"))
     }
 
-    // Custom Entitlement Computation
+    // MARK: - Custom Entitlement Computation
 
-    /// Returns the remote RevenueCat dependency with custom entitlement computation enabled
-    /// as Swift Package Manager dependency
+    /// RevenueCat_CustomEntitlementComputation as a native Xcode SPM package dependency
     static var revenueCatCustomEntitlementComputationSwiftPackageDependency: TargetDependency {
         .package(product: "RevenueCat_CustomEntitlementComputation", type: .runtime)
     }
 
-    /// Returns the remote RevenueCat dependency with custom entitlement computation enabled
-    /// as Tuist's XcodeProj-based dependency
+    /// RevenueCat_CustomEntitlementComputation as a Tuist-managed XcodeProj dependency
     static var revenueCatCustomEntitlementComputationRemoteXcodeProjectDependency: TargetDependency {
         .external(name: "RevenueCat_CustomEntitlementComputation")
     }
 
-    /// Returns the Xcode project RevenueCat dependency with custom entitlement computation enabled
-    /// - Returns: A TargetDependency for RevenueCat from Xcode project
+    /// RevenueCat_CustomEntitlementComputation as a local Tuist project target dependency
     static var revenueCatCustomEntitlementComputationXcodeProjectDependency: TargetDependency {
         .project(
             target: "RevenueCat_CustomEntitlementComputation",
             path: .relativeToRoot("Projects/RevenueCat"))
     }
 
-    // Receipt Parser
+    // MARK: - Receipt Parser
 
-    /// Returns the remote ReceiptParser dependency as Swift Package Manager dependency
+    /// ReceiptParser as a native Xcode SPM package dependency
     static var receiptParserSwiftPackageDependency: TargetDependency {
         .package(product: "ReceiptParser", type: .runtime)
     }
 
-    /// Returns the remote ReceiptParser dependency as Tuist's XcodeProj-based dependency
+    /// ReceiptParser as a Tuist-managed XcodeProj dependency
     static var receiptParserRemoteXcodeProjectDependency: TargetDependency {
         .external(name: "ReceiptParser")
     }
 
-    /// Returns the Xcode project ReceiptParser dependency
-    /// - Returns: A TargetDependency for ReceiptParser from Xcode project
+    /// ReceiptParser as a local Tuist project target dependency
     static var receiptParserXcodeProjectDependency: TargetDependency {
         .project(
             target: "ReceiptParser",

@@ -1,31 +1,6 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-// MARK: - Shared Constants
-
-func allDestinations(macWithiPadDesign: Bool) -> Destinations {
-    let destinations: [Destination?] = [
-        .iPhone,
-        .iPad,
-        .mac,
-        macWithiPadDesign ? .macWithiPadDesign : nil,
-        .macCatalyst,
-        .appleWatch,
-        .appleTv,
-        .appleVision,
-        .appleVisionWithiPadDesign
-    ]
-    return Set(destinations.compactMap { $0 })
-}
-
-let allDeploymentTargets: DeploymentTargets = .multiplatform(
-    iOS: "13.0",
-    macOS: "11.0",
-    watchOS: "7.0",
-    tvOS: "14.0",
-    visionOS: "1.3"
-)
-
 // MARK: - Project Definition
 
 let project = Project(
@@ -60,10 +35,10 @@ let project = Project(
 
         .target(
             name: "ReceiptParserTests",
-            destinations: allDestinations(macWithiPadDesign: false),
+            destinations: .allPlatforms(macWithiPadDesign: false),
             product: .unitTests,
             bundleId: "com.revenuecat.ReceiptParserTests",
-            deploymentTargets: allDeploymentTargets,
+            deploymentTargets: .revenueCatInternal,
             infoPlist: .default,
             sources: [
                 "../../Tests/ReceiptParserTests/**/*.swift"
@@ -80,7 +55,7 @@ let project = Project(
         // MARK: – Unit Tests Host App
         .target(
             name: "UnitTestsHostApp",
-            destinations: allDestinations(macWithiPadDesign: true),
+            destinations: .allPlatforms(macWithiPadDesign: true),
             product: .app,
             bundleId: "com.revenuecat.StoreKitUnitTestsHostApp",
             deploymentTargets: .multiplatform(
@@ -101,10 +76,10 @@ let project = Project(
         // MARK: – StoreKit Unit Tests
         .target(
             name: "StoreKitUnitTests",
-            destinations: allDestinations(macWithiPadDesign: true),
+            destinations: .allPlatforms(macWithiPadDesign: true),
             product: .unitTests,
             bundleId: "com.revenuecat.StoreKitUnitTests",
-            deploymentTargets: allDeploymentTargets,
+            deploymentTargets: .revenueCatInternal,
             infoPlist: .default,
             sources: [
                 "../../Tests/StoreKitUnitTests/**/*.swift",
@@ -133,7 +108,7 @@ let project = Project(
         // MARK: – BackendIntegrationTests Host App
         .target(
             name: "BackendIntegrationTestsHostApp",
-            destinations: allDestinations(macWithiPadDesign: true),
+            destinations: .allPlatforms(macWithiPadDesign: true),
             product: .app,
             bundleId: "com.revenuecat.StoreKitTestApp",
             deploymentTargets: .multiplatform(
@@ -159,9 +134,9 @@ let project = Project(
 
         .target(
             name: "BackendCustomEntitlementsIntegrationTests",
-            destinations: allDestinations(macWithiPadDesign: true),
+            destinations: .allPlatforms(macWithiPadDesign: true),
             product: .unitTests,
-            bundleId: "com.revenuecat.BackendIntBackendCustomEntitlementsIntegrationTestsegrationTests",
+            bundleId: "com.revenuecat.BackendCustomEntitlementsIntegrationTests",
             deploymentTargets: .iOS("16.0"),
             infoPlist: .default,
             sources: [
@@ -198,7 +173,7 @@ let project = Project(
 
         .target(
             name: "BackendIntegrationTests",
-            destinations: allDestinations(macWithiPadDesign: true),
+            destinations: .allPlatforms(macWithiPadDesign: true),
             product: .unitTests,
             bundleId: "com.revenuecat.BackendIntegrationTests",
             deploymentTargets: .iOS("16.0"),
@@ -284,9 +259,9 @@ let project = Project(
         ),
 
         .scheme(
-            name: "ReceiptParser",
+            name: "ReceiptParserTests",
             shared: true,
-            buildAction: .buildAction(targets: ["ReceiptParser"]),
+            buildAction: .buildAction(targets: ["ReceiptParserTests"]),
             testAction: .targets([
                 .testableTarget(target: .init(stringLiteral: "ReceiptParserTests"))
             ]),

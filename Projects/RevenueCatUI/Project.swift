@@ -35,9 +35,6 @@ let project = Project(
             name: "RevenueCatUI",
             shared: true,
             buildAction: .buildAction(targets: ["RevenueCatUI"]),
-            testAction: .targets([
-                .testableTarget(target: .init(stringLiteral: "RevenueCatUITests"))
-            ]),
             runAction: .runAction(configuration: "Debug"),
             archiveAction: .archiveAction(configuration: "Release"),
             profileAction: .profileAction(configuration: "Release"),

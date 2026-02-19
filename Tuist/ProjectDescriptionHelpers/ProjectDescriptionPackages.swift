@@ -3,11 +3,12 @@ import ProjectDescription
 extension Array<ProjectDescription.Package> {
 
     public static var projectPackages: [ProjectDescription.Package] {
-        if Environment.dependencyMode == .localSwiftPackage {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage:
             return [.package(path: "../..")]
-        } else if Environment.dependencyMode == .remoteSwiftPackage {
+        case .remoteSwiftPackage:
             return [.package(url: "https://github.com/RevenueCat/purchases-ios", .branch("main"))]
-        } else {
+        case .localXcodeProject, .remoteXcodeProject:
             return []
         }
     }

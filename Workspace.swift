@@ -12,11 +12,20 @@ var projects: [Path] = [
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",
     "./Projects/RevenueCatTests",
-    "./Projects/RevenueCat",
-    "./Projects/RevenueCatUI",
     "./Projects/BinarySizeTest",
     "./Projects/RCTTester"
 ]
+
+// Include RevenueCat/RevenueCatUI Tuist projects only when not using remote dependencies.
+// In remote modes (remoteXcodeProject), the external `purchases-ios` package provides these
+// targets and including the local projects would cause duplicate framework names.
+switch Environment.dependencyMode {
+case .localSwiftPackage, .localXcodeProject:
+    projects.append("./Projects/RevenueCat")
+    projects.append("./Projects/RevenueCatUI")
+case .remoteSwiftPackage, .remoteXcodeProject:
+    break
+}
 
 // Only include XCFrameworkInstallationTests when explicitly enabled via environment variable
 // This allows tuist generate to run before xcframeworks are created in CI

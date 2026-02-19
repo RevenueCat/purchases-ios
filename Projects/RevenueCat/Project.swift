@@ -1,31 +1,6 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-// MARK: - Shared Constants
-
-func allDestinations(macWithiPadDesign: Bool) -> Destinations {
-    let destinations: [Destination?] = [
-        .iPhone,
-        .iPad,
-        .mac,
-        macWithiPadDesign ? .macWithiPadDesign : nil,
-        .macCatalyst,
-        .appleWatch,
-        .appleTv,
-        .appleVision,
-        .appleVisionWithiPadDesign
-    ]
-    return Set(destinations.compactMap { $0 })
-}
-
-let allDeploymentTargets: DeploymentTargets = .multiplatform(
-    iOS: "13.0",
-    macOS: "11.0",
-    watchOS: "7.0",
-    tvOS: "14.0",
-    visionOS: "1.3"
-)
-
 // MARK: - Project Definition
 
 let project = Project(
@@ -61,10 +36,10 @@ let project = Project(
 
         .target(
             name: "RevenueCat_CustomEntitlementComputation",
-            destinations: allDestinations(macWithiPadDesign: true),
+            destinations: .allPlatforms(macWithiPadDesign: true),
             product: .framework,
             bundleId: "com.revenuecat.RevenueCatCustomEntitlementComputation",
-            deploymentTargets: allDeploymentTargets,
+            deploymentTargets: .revenueCatInternal,
             infoPlist: "../../Sources/Info.plist",
             sources: [
                 .glob(
@@ -88,10 +63,10 @@ let project = Project(
         // MARK: – Receipt Parser
         .target(
             name: "ReceiptParser",
-            destinations: allDestinations(macWithiPadDesign: false),
+            destinations: .allPlatforms(macWithiPadDesign: false),
             product: .framework,
             bundleId: "com.revenuecat.ReceiptParser",
-            deploymentTargets: allDeploymentTargets,
+            deploymentTargets: .revenueCatInternal,
             infoPlist: .default,
             sources: [
                 "../../Sources/LocalReceiptParsing/**/*.swift"
@@ -117,9 +92,6 @@ let project = Project(
             name: "ReceiptParser",
             shared: true,
             buildAction: .buildAction(targets: ["ReceiptParser"]),
-            testAction: .targets([
-                .testableTarget(target: .init(stringLiteral: "ReceiptParserTests"))
-            ]),
             runAction: .runAction(configuration: "Debug")
         )
     ]
