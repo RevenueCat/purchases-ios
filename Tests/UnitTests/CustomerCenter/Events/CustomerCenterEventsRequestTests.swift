@@ -75,10 +75,10 @@ class CustomerCenterFeatureEventsRequestTests: TestCase {
     // MARK: - Milliseconds Precision Tests
 
     func testCustomerCenterEventImpressionPreservesMillisecondsInCreationDate() throws {
-        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.890)
+        let timeIntervalWithMilliseconds: TimeInterval = 1694029328.890
         let creationData = CustomerCenterEventCreationData(
             id: UUID(),
-            date: dateWithMilliseconds
+            date: Date(timeIntervalSince1970: 1694029328.890)
         )
         let eventData = CustomerCenterEvent.Data(
             locale: Locale(identifier: "en_US"),
@@ -105,7 +105,7 @@ class CustomerCenterFeatureEventsRequestTests: TestCase {
         let decodedEvent = try JSONDecoder.default.decode(CustomerCenterEvent.self, from: jsonData)
 
         expect(decodedEvent.creationData.date.timeIntervalSince1970)
-            .to(equal(dateWithMilliseconds.timeIntervalSince1970))
+            .to(equal(timeIntervalWithMilliseconds))
     }
 
     func testCustomerCenterAnswerSubmittedEventPreservesMillisecondsInCreationDate() throws {
