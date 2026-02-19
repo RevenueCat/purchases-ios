@@ -112,7 +112,8 @@ class EventsManagerTests: TestCase {
         await self.manager.track(featureEvent: event)
 
         expect(listener.trackedEvents).to(haveCount(1))
-        expect(listener.trackedEvents.first?.feature) == event.feature
+        expect(listener.trackedEvents.first?["discriminator"] as? String) == "paywalls"
+        expect(listener.trackedEvents.first?["type"] as? String) == "paywall_impression"
     }
 
     func testTrackMultipleEventsNotifiesListenerForEach() async throws {
@@ -618,9 +619,9 @@ private actor MockAdEventStore: AdEventStoreType {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private final class MockEventsListener: EventsListener {
 
-    var trackedEvents: [FeatureEvent] = []
+    var trackedEvents: [[String: Any]] = []
 
-    func onEventTracked(_ event: FeatureEvent) {
+    func onEventTracked(_ event: [String: Any]) {
         self.trackedEvents.append(event)
     }
 

@@ -21,8 +21,8 @@ import UIKit
 /// This is an internal debug API for monitoring events tracked by RevenueCatUI.
 @_spi(Internal) public protocol EventsListener: AnyObject {
     /// Called when a feature event is tracked.
-    /// - Parameter event: The tracked feature event.
-    func onEventTracked(_ event: FeatureEvent)
+    /// - Parameter event: A dictionary representation of the tracked event.
+    func onEventTracked(_ event: [String: Any])
 }
 
 protocol EventsManagerType {
@@ -96,7 +96,7 @@ actor EventsManager: EventsManagerType {
         }
         await self.store.store(event)
 
-        self.eventsListener?.onEventTracked(featureEvent)
+        self.eventsListener?.onEventTracked(featureEvent.toMap())
     }
 
     func track(adEvent: AdEvent) async {
