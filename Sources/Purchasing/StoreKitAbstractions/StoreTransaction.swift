@@ -42,7 +42,10 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var transactionIdentifier: String { self.transaction.transactionIdentifier }
     @objc public var quantity: Int { self.transaction.quantity }
     @objc public var storefront: Storefront? { self.transaction.storefront }
-    @objc internal var jwsRepresentation: String? { self.transaction.jwsRepresentation }
+    /// The JWS representation of this transaction. Only available in Objective-C.
+    /// - Note: In Swift, use StoreKit 2's `Transaction.jwsRepresentation` directly.
+    @available(swift, obsoleted: 1.0, message: "Use StoreKit 2's Transaction.jwsRepresentation directly")
+    @objc public var jwsRepresentation: String? { self.transaction.jwsRepresentation }
     internal var environment: StoreEnvironment? { self.transaction.environment }
     internal var reason: TransactionReason? { self.transaction.reason }
 
