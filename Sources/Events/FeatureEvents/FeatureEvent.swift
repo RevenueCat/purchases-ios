@@ -36,7 +36,6 @@ extension FeatureEvent {
 extension FeatureEvent {
 
     /// Converts this event into a dictionary suitable for hybrid SDK consumption.
-    /// Matches the structure of `FeatureEventMapper.toMap()` in purchases-hybrid-common (Android).
     func toMap() -> [String: Any] {
         switch self {
         case let event as PaywallEvent:
