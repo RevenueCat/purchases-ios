@@ -64,6 +64,11 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
         self.macAppStoreDetector = macAppStoreDetector
         self.appTransactionFetchTask = Atomic(nil)
 
+        #if DEBUG
+        let hasStoreKitConfig = Self.detectStoreKitConfigurationFile(bundle: bundle)
+        print("[SandboxEnvironmentDetector] StoreKit config file detected: \(hasStoreKitConfig)")
+        #endif
+
         if let transactionFetcher,
            #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
             // Start fetching the AppTransaction environment asynchronously.
@@ -96,6 +101,92 @@ final class SandboxEnvironmentDetector: SandboxEnvironmentDetectorType {
 
 }
 
+// MARK: - StoreKit Configuration File Detection (temporary)
+
+#if DEBUG
+private extension SandboxEnvironmentDetector {
+
+    /// Attempts to detect whether a StoreKit configuration file is active on the simulator
+    /// by checking the file system path where Xcode places the config.
+    ///
+    /// When a StoreKit config is set in the scheme, Xcode writes it to:
+    /// `{Containers}/Shared/AppGroup/{uuid}/Documents/Persistence/Octane/{bundleId}/Configuration.storekit/`
+    /// inside the `group.com.apple.storekit` app group container.
+    static func detectStoreKitConfigurationFile(bundle: Bundle) -> Bool {
+        let fileManager = FileManager.default
+
+        guard let bundleId = bundle.bundleIdentifier else {
+            print("[SandboxEnvironmentDetector] No bundle identifier found, cannot check for StoreKit config")
+            return false
+        }
+        print("[SandboxEnvironmentDetector] Bundle identifier: \(bundleId)")
+
+        // Derive the Containers root from the home directory.
+        // NSHomeDirectory() on the simulator returns:
+        //   .../CoreSimulator/Devices/{device}/data/Containers/Data/Application/{app-uuid}
+        // We navigate up 3 levels to reach .../data/Containers/
+        let homeDir = NSHomeDirectory()
+        // Navigate up 3 levels: {app-uuid} -> Application -> Data -> Containers
+        let containersRoot = URL(fileURLWithPath: homeDir)
+            .deletingLastPathComponent() // remove {app-uuid}
+            .deletingLastPathComponent() // remove Application
+            .deletingLastPathComponent() // remove Data
+            .path
+
+        let appGroupDir = (containersRoot as NSString).appendingPathComponent("Shared/AppGroup")
+        print("[SandboxEnvironmentDetector] Looking for app groups in: \(appGroupDir)")
+
+        guard let appGroupContents = try? fileManager.contentsOfDirectory(atPath: appGroupDir) else {
+            print("[SandboxEnvironmentDetector] Could not enumerate Shared/AppGroup directory")
+            return false
+        }
+        print("[SandboxEnvironmentDetector] Found \(appGroupContents.count) app group containers")
+
+        for groupUUID in appGroupContents {
+            let groupPath = (appGroupDir as NSString).appendingPathComponent(groupUUID)
+
+            // Check the metadata plist to see if this is the StoreKit app group
+            let metadataPlist = (groupPath as NSString)
+                .appendingPathComponent(".com.apple.mobile_container_manager.metadata.plist")
+
+            if let plistData = fileManager.contents(atPath: metadataPlist),
+               let plist = try? PropertyListSerialization.propertyList(
+                from: plistData, options: [], format: nil
+               ) as? [String: Any],
+               let identifier = plist["MCMMetadataIdentifier"] as? String {
+                print("[SandboxEnvironmentDetector] App group '\(groupUUID)' has identifier: \(identifier)")
+
+                if identifier == "group.com.apple.storekit" {
+                    print("[SandboxEnvironmentDetector] StoreKit app group found at: \(groupPath)")
+
+                    // Look for any *.storekit file under Octane/{bundleId}/
+                    let bundleOctanePath = (groupPath as NSString)
+                        .appendingPathComponent("Documents/Persistence/Octane/\(bundleId)")
+                    print("[SandboxEnvironmentDetector] Looking for .storekit files in: \(bundleOctanePath)")
+
+                    guard let bundleContents = try? fileManager
+                        .contentsOfDirectory(atPath: bundleOctanePath) else {
+                        print("[SandboxEnvironmentDetector] Bundle Octane directory does not exist")
+                        return false
+                    }
+                    print("[SandboxEnvironmentDetector] Bundle Octane contents: \(bundleContents)")
+
+                    let storekitEntries = bundleContents.filter { $0.hasSuffix(".storekit") }
+                    let found = !storekitEntries.isEmpty
+                    print("[SandboxEnvironmentDetector] .storekit entries: \(storekitEntries)")
+                    print("[SandboxEnvironmentDetector] StoreKit config file detected: \(found)")
+                    return found
+                }
+            }
+        }
+
+        print("[SandboxEnvironmentDetector] No 'group.com.apple.storekit' app group found")
+        return false
+    }
+
+}
+#endif
+
 // MARK: - AppTransaction Environment Detection (iOS 18+)
 
 internal extension SandboxEnvironmentDetector {
@@ -113,7 +204,12 @@ internal extension SandboxEnvironmentDetector {
         // Important: Do not use background priority on this task.
         // In testing, this caused `AppTransaction.shared` to sometimes
         // throw a cancellation error despite no explicit cancellation.
-        self.appTransactionFetchTask.value = Task {
+        self.appTransactionFetchTask.value = Task(priority: .background) {
+            if SKPaymentQueue.canMakePayments() {
+                print("SandboxEnvironmentDetector: SKPaymentQueue.canMakePayments: true")
+            } else {
+                print("SandboxEnvironmentDetector: SKPaymentQueue.canMakePayments: false")
+            }
             let environment = await transactionFetcher.appTransactionEnvironment
             self.cachedAppTransactionEnvironment.value = environment
             self.appTransactionFetchTask.value = nil
