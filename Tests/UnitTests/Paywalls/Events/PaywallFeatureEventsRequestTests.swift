@@ -82,6 +82,19 @@ class PaywallFeatureEventsRequestTests: TestCase {
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
+    func testPaywallEventWithoutMillisecondPrecisionIsParsed() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let legacySerialized = serialized.replacingOccurrences(of: ".000Z", with: "Z")
+        let deserialized = try StoredFeatureEventSerializer.decode(legacySerialized)
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: deserialized))
+        let expectedTimestamp: UInt64 = 1_694_029_328_000
+
+        expect(requestEvent.timestamp).to(equal(expectedTimestamp))
+    }
+
     // MARK: - Milliseconds Precision Tests
 
     func testPaywallEventImpressionPreservesMillisecondsInCreationDate() throws {

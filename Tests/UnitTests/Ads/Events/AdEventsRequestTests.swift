@@ -99,6 +99,19 @@ class AdFeatureEventsRequestTests: TestCase {
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
+    func testAdEventWithoutMillisecondPrecisionIsParsed() throws {
+        let event = AdEvent.displayed(Self.eventCreationData, Self.eventData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let serialized = try StoredAdEventSerializer.encode(storedEvent)
+        let legacySerialized = serialized.replacingOccurrences(of: ".000Z", with: "Z")
+        let deserialized = try StoredAdEventSerializer.decode(legacySerialized)
+
+        let requestEvent = try XCTUnwrap(AdEventsRequest.AdEventRequest(storedEvent: deserialized))
+        let expectedTimestamp: UInt64 = 1_694_029_328_000
+
+        expect(requestEvent.timestamp).to(equal(expectedTimestamp))
+    }
+
     // MARK: - Milliseconds Precision Tests
 
     func testAdEventPreservesMillisecondsInCreationDate() throws {

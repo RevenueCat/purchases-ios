@@ -72,6 +72,26 @@ class CustomerCenterFeatureEventsRequestTests: TestCase {
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
+    func testCustomerCenterEventWithoutMillisecondPrecisionIsParsed() throws {
+        let event = CustomerCenterEvent.impression(Self.eventCreationData, Self.eventData)
+        let eventDiscriminator: String = CustomerCenterEventDiscriminator.lifecycle.rawValue
+        let storedEvent: StoredFeatureEvent = try XCTUnwrap(.init(event: event,
+                                                                  userID: Self.userID,
+                                                                  feature: .customerCenter,
+                                                                  appSessionID: Self.appSessionID,
+                                                                  eventDiscriminator: eventDiscriminator))
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let legacySerialized = serialized.replacingOccurrences(of: ".000Z", with: "Z")
+        let deserialized = try StoredFeatureEventSerializer.decode(legacySerialized)
+
+        let requestEvent = try XCTUnwrap(
+            FeatureEventsRequest.CustomerCenterEventBaseRequest.createBase(from: deserialized)
+        )
+        let expectedTimestamp: UInt64 = 1_694_029_328_000
+
+        expect(requestEvent.timestamp).to(equal(expectedTimestamp))
+    }
+
     // MARK: - Milliseconds Precision Tests
 
     func testCustomerCenterEventImpressionPreservesMillisecondsInCreationDate() throws {
