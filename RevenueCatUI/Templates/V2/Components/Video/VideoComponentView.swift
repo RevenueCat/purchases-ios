@@ -107,9 +107,7 @@ struct VideoComponentView: View {
                                 // Recreate player when becoming playable again (carousel navigation).
                                 // swiftlint:disable:next todo
                                 // TODO: Add cachedURL back to .id() once we find a way to swap
-                                // video URLs without visual glitches. Currently, iOS AVPlayer
-                                // causes visible stuttering when replacing items mid-playback,
-                                // so the high-res version is only used on next paywall open.
+                                // video URLs without visual glitches.
                                 .id(playerRefreshToggle),
                                 size: size,
                                 with: style
@@ -120,59 +118,52 @@ struct VideoComponentView: View {
                     .onAppear {
                         let fileRepository = FileRepository.shared
 
-                        let resumeDownloadOfFullResolutionVideo: () -> Void = {
-                            Task(priority: .userInitiated) {
-                                do {
-                                    // If the low res and normal resolution files were not yet found on disk
-                                    // then we attempt to finish the download by calling the following method.
-                                    // this method will share the async task that the cacheprewarming started
-                                    // if it didn't error out, expediting the download time and reducing the memory
-                                    // footprint of paywalls
-                                    let url = try await fileRepository
-                                        .generateOrGetCachedFileURL(
-                                            for: viewData.url,
-                                            withChecksum: viewData.checksum
-                                        )
-                                    guard url != cachedURL, !Task.isCancelled else { return }
-                                    await MainActor.run {
-                                        self.cachedURL = url
-                                        self.imageSource = nil
-                                    }
-                                } catch {
-                                    await MainActor.run {
-                                        self.cachedURL = viewData.url
-                                        self.imageSource = nil
-                                    }
-                                }
-                            }
-                        }
-
-                        let fullResCachedURL = fileRepository.getCachedFileURL(
+                        // If full-res video is already cached, use it immediately
+                        if let fullResCachedURL = fileRepository.getCachedFileURL(
                             for: viewData.url,
                             withChecksum: viewData.checksum
-                        )
-
-                        if let cachedURL = fullResCachedURL {
-                            self.cachedURL = cachedURL
-                            // If we have a cached video, no need to display a fallback image
+                        ) {
+                            self.cachedURL = fullResCachedURL
                             self.imageSource = nil
-                        } else if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
-                            let lowResCachedURL = fileRepository.getCachedFileURL(
-                                for: lowResUrl,
-                                withChecksum: viewData.lowResChecksum
-                            )
-                            self.cachedURL = lowResCachedURL ?? lowResUrl
+                            return
+                        }
 
-                            if lowResCachedURL == nil {
-                                // Display the fallback image while loading takes place
-                                self.imageSource = viewModel.imageSource
+                        // Not cached — show fallback image while downloading
+                        self.imageSource = viewModel.imageSource
+
+                        Task(priority: .userInitiated) {
+                            async let highRes = try? fileRepository
+                                .generateOrGetCachedFileURL(
+                                    for: viewData.url,
+                                    withChecksum: viewData.checksum
+                                )
+                            async let lowRes: URL? = {
+                                guard let lowResUrl = viewData.lowResUrl,
+                                      lowResUrl != viewData.url else {
+                                    return nil
+                                }
+                                return try? await fileRepository
+                                    .generateOrGetCachedFileURL(
+                                        for: lowResUrl,
+                                        withChecksum: viewData.lowResChecksum
+                                    )
+                            }()
+
+                            let highResURL = await highRes
+                            guard !Task.isCancelled else { return }
+
+                            if let highResURL {
+                                await MainActor.run {
+                                    self.cachedURL = highResURL
+                                    self.imageSource = nil
+                                }
+                            } else if let lowResURL = await lowRes {
+                                await MainActor.run {
+                                    self.cachedURL = lowResURL
+                                    self.imageSource = nil
+                                }
                             }
 
-                            resumeDownloadOfFullResolutionVideo()
-                        } else {
-                            // Display the fallback image while loading takes place
-                            self.imageSource = viewModel.imageSource
-                            resumeDownloadOfFullResolutionVideo()
                         }
                     }
                     .applyMediaWidth(size: style.size)
