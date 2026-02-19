@@ -19,8 +19,7 @@ parameters:
         update_paywall_templates,
         record_paywall_screenshots,
         tuist,
-        deploy_rct_tester,
-        run-ios-15-tests
+        deploy_rct_tester
       ]
     default: default
   generate_snapshots:
@@ -2207,12 +2206,3 @@ workflows:
       - emerge_binary_size_analysis:
           context:
             - slack-secrets
-
-  # Temporary workflow to run only iOS 15 test jobs.
-  # Trigger with action: run-ios-15-tests
-  ios-15-tests-only:
-    when:
-      equal: [run-ios-15-tests, << pipeline.parameters.action >>]
-    jobs:
-      - run-test-ios-15
-      - spm-revenuecat-ui-ios-15
