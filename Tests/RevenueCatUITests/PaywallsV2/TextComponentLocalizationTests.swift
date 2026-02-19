@@ -14,6 +14,7 @@
 import Nimble
 import RevenueCat
 @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2
@@ -35,17 +36,29 @@ class TextComponentLocalizationTests: TestCase {
 
         let localizations: PaywallComponent.LocalizationDictionary = [:] // Empty
 
-        // When/Then: Creating TextComponentViewModel should NOT throw
-        expect {
-            try TextComponentViewModel(
-                localizationProvider: LocalizationProvider(
-                    locale: .current,
-                    localizedStrings: localizations
-                ),
-                uiConfigProvider: try Self.createUIConfigProvider(),
-                component: textComponent
-            )
-        }.toNot(throwError())
+        // When: Creating TextComponentViewModel should NOT throw
+        let viewModel = try TextComponentViewModel(
+            localizationProvider: LocalizationProvider(
+                locale: .current,
+                localizedStrings: localizations
+            ),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            component: textComponent
+        )
+
+        // Then: The text should be an empty string
+        var capturedText: String?
+        _ = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            packageContext: PackageContext(package: nil, variableContext: .init()),
+            isEligibleForIntroOffer: false,
+            promoOffer: nil
+        ) { style -> EmptyView in
+            capturedText = style.text
+            return EmptyView()
+        }
+        expect(capturedText).to(equal(""))
 
         // Verify warning was logged
         self.logger.verifyMessageWasLogged(
