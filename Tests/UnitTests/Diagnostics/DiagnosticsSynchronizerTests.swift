@@ -36,7 +36,7 @@ class DiagnosticsSynchronizerTests: TestCase {
         self.fileHandler = try Self.createWithTemporaryFile()
         self.handler = .init(self.fileHandler)
         self.tracker = MockDiagnosticsTracker()
-        self.userDefaultsSuiteName = "DiagnosticsSynchronizerTests.\(UUID().uuidString)"
+        self.userDefaultsSuiteName = "DiagnosticsSynchronizerTests.\(self.name).\(UUID().uuidString)"
         self.userDefaults = UserDefaults(suiteName: self.userDefaultsSuiteName)
         self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.synchronizer = .init(internalAPI: self.api,

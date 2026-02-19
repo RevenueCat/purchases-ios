@@ -40,7 +40,7 @@ class BaseAttributionPosterTests: TestCase {
         let userID = "userID"
         let systemInfo = MockSystemInfo(finishTransactions: false)
         systemInfo.stubbedIsSandbox = BundleSandboxEnvironmentDetector.default.isSandbox
-        self.userDefaultsSuiteName = "AttributionPosterTests.\(UUID().uuidString)"
+        self.userDefaultsSuiteName = "AttributionPosterTests.\(self.name).\(UUID().uuidString)"
         self.userDefaults = UserDefaults(suiteName: self.userDefaultsSuiteName)
         self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.deviceCache = MockDeviceCache(systemInfo: systemInfo,

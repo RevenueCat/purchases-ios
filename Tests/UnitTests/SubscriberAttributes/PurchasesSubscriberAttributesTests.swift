@@ -75,7 +75,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.userDefaultsSuiteName = "PurchasesSubscriberAttributesTests.\(UUID().uuidString)"
+        self.userDefaultsSuiteName = "PurchasesSubscriberAttributesTests.\(self.name).\(UUID().uuidString)"
         self.userDefaults = UserDefaults(suiteName: self.userDefaultsSuiteName)
         self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.clock = TestClock()
