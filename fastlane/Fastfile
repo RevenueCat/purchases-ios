@@ -1435,25 +1435,27 @@ platform :ios do
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
     query = options[:query] || ""
     env_vars = options[:env_vars] || {}
-    
+
     Dir.chdir(project_root) do
-      # Use tuist directly (assumes it's in PATH, which is set by install-tuist step in CI)
-      tuist_binary = 'tuist'
-      
+      tuist_binary = `which tuist 2>/dev/null`.strip
+      if tuist_binary.empty?
+        UI.user_error!("tuist not found in PATH. Install it with `mise install` or run the `revenuecat/install-tuist` CI step.")
+      end
+
       # Build environment variable exports for TUIST_ prefixed variables
       env_exports = []
       env_vars.each do |var_name, var_value|
         tuist_var_name = "TUIST_#{var_name}"
         env_exports << "export #{tuist_var_name}=#{var_value}"
       end
-      
+
       # Build tuist command
       tuist_cmd = "#{tuist_binary} install && #{tuist_binary} generate"
       if query && !query.empty?
         tuist_cmd += " #{query}"
       end
       tuist_cmd += " --no-open"
-      
+
       # Run tuist generate
       if env_exports.any?
         sh("#{env_exports.join(' && ')} && #{tuist_cmd}")
@@ -1461,37 +1463,37 @@ platform :ios do
         sh(tuist_cmd)
       end
     end
-    
+
     # Verify workspace was generated
     workspace_path = File.join(project_root, "RevenueCat-Tuist.xcworkspace")
     unless File.directory?(workspace_path)
       UI.user_error!("Tuist workspace not found at #{workspace_path}")
     end
-    
+
     UI.success("✓ Tuist workspace generated successfully")
   end
 
   desc "Test XCFramework integration by building XCFrameworkInstallationTests app"
   lane :xcframework_installation_tests do |options|
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
-    
+
     # Extract xcframework zip files to the root of the project
     xcframework_zips = [
       "RevenueCat.xcframework.zip",
       "RevenueCatUI.xcframework.zip"
     ]
-    
+
     xcframework_zips.each do |zip_file|
       zip_path = File.join(project_root, zip_file)
       unless File.exist?(zip_path)
         UI.user_error!("XCFramework zip not found: #{zip_path}")
       end
-      
+
       UI.message("Extracting #{zip_file} to project root...")
       Dir.chdir(project_root) do
         sh("unzip", "-o", "-q", zip_file)
       end
-      
+
       # Verify the xcframework was extracted
       xcframework_name = zip_file.gsub(".zip", "")
       xcframework_path = File.join(project_root, xcframework_name)
@@ -1500,13 +1502,13 @@ platform :ios do
       end
       UI.success("✓ Extracted #{xcframework_name}")
     end
-    
+
     # Generate Tuist workspace with XCFrameworkInstallationTests included
     UI.message("Generating Tuist workspace with XCFrameworkInstallationTests...")
     tuist_generate(env_vars: { "INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS" => "true" })
-    
+
     workspace_path = File.join(project_root, "RevenueCat-Tuist.xcworkspace")
-    
+
     # Build for each destination to verify xcframework integration
     # These destinations match the platforms exported in the xcframework:
     # iOS, macOS, Mac Catalyst, watchOS, visionOS
@@ -1544,7 +1546,7 @@ platform :ios do
         description: "visionOS Device"
       }
     ]
-    
+
     # Build for each destination
     UI.message("\nBuilding XCFrameworkInstallationTests for #{destinations.length} destination(s)...")
     destinations.each_with_index do |dest_info, index|
@@ -1559,7 +1561,7 @@ platform :ios do
       )
       UI.success("✓ Built successfully for #{dest_info[:description]}")
     end
-    
+
     UI.success("\n✓ XCFramework integration test passed - XCFrameworkInstallationTests built successfully for all destinations")
   end
 
@@ -1927,6 +1929,87 @@ platform :ios do
         UI.message("Dry run mode enabled. Skipping upload to TestFlight")
     end
 
+  end
+
+  desc "Deploy RCT Tester to TestFlight"
+  lane :deploy_rct_tester do
+    project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+    bundle_id = "com.revenuecat.rcttester"
+    provisioning_profile_name = "match AppStore #{bundle_id}"
+
+    # Build release notes with SDK version and optional commit hash
+    sdk_version = current_version_number
+    if sdk_version.include?("SNAPSHOT")
+      commit_hash = `git rev-parse --short HEAD`.strip
+      changelog = "SDK version: #{sdk_version} (commit: #{commit_hash})"
+    else
+      changelog = "SDK version: #{sdk_version}"
+    end
+
+    UI.message("RCT Tester release notes: #{changelog}")
+
+    rct_tester_root = "#{project_root}/Tests/TestingApps/RCTTester"
+
+    # Write CI.xcconfig with the API key before generating the Tuist workspace.
+    # Global.xcconfig (used by all Tuist projects) optionally includes CI.xcconfig,
+    # so the key must be present before project generation.
+    api_key = ENV['RCT_TESTER_REVENUECAT_API_KEY'] || ""
+    if api_key.empty?
+      UI.user_error!("RCT_TESTER_REVENUECAT_API_KEY environment variable is required")
+    end
+
+    xcconfig_path = "#{project_root}/CI.xcconfig"
+    File.write(xcconfig_path, [
+      "// Auto-generated for RCT Tester deployment. Do not commit to VCS.",
+      "REVENUECAT_API_KEY = #{api_key}"
+    ].join("\n"))
+    UI.success("Created CI.xcconfig with REVENUECAT_API_KEY")
+
+    # Generate the Tuist workspace (must happen after CI.xcconfig is written)
+    tuist_generate(query: "RCTTester")
+
+    workspace_path = "#{project_root}/RevenueCat-Tuist.xcworkspace"
+
+    xcodeproj_path = "#{project_root}/Projects/RCTTester/RCTTester.xcodeproj"
+
+    # Fetch certificates and provisioning profiles, and increment build number.
+    # increment_build_number modifies the generated .xcodeproj directly,
+    # which is the only reliable way to set the build number for Tuist projects.
+    Dir.chdir("#{rct_tester_root}/fastlane") do
+      match(readonly: true, platform: "ios")
+      increment_build_number(
+        build_number: latest_testflight_build_number(app_identifier: bundle_id, platform: 'ios') + 1,
+        xcodeproj: xcodeproj_path,
+      )
+    end
+
+    build_ios_app(
+      workspace: workspace_path,
+      scheme: "RCTTester - Live Config",
+      destination: "generic/platform=ios",
+      xcodebuild_formatter: '',
+      export_method: 'app-store',
+      xcargs: "CODE_SIGN_STYLE=Manual " \
+              "DEVELOPMENT_TEAM=8SXR2327BM " \
+              "CODE_SIGN_IDENTITY='Apple Distribution' " \
+              "PROVISIONING_PROFILE_SPECIFIER='#{provisioning_profile_name}'",
+      export_options: {
+        signingStyle: "manual",
+        manageAppVersionAndBuildNumber: false,
+        provisioningProfiles: {
+          bundle_id => provisioning_profile_name,
+        }
+      }
+    )
+
+    # Wait 20 minutes for the build to be processed by Apple otherwise fail
+    wait_processing_timeout_duration_in_seconds = 60 * 20
+
+    upload_to_testflight(
+      changelog: changelog,
+      app_identifier: bundle_id,
+      wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
+    )
   end
 
   desc "Clones or updates snapshots repo"
