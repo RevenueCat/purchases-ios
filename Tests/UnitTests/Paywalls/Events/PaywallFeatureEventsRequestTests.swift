@@ -82,6 +82,119 @@ class PaywallFeatureEventsRequestTests: TestCase {
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
+    // MARK: - Milliseconds Precision Tests
+
+    func testPaywallEventImpressionPreservesMillisecondsInCreationDate() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.234)
+        let creationData = PaywallEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: "test_paywall",
+            offeringIdentifier: "offering_1",
+            paywallRevision: 5,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false
+        )
+        let event = PaywallEvent.impression(creationData, eventData)
+
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .paywalls,
+                appSessionID: UUID(),
+                eventDiscriminator: nil
+            )
+        )
+
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(dateWithMilliseconds.timeIntervalSince1970))
+    }
+
+    func testPaywallEventClosePreservesMillisecondsInCreationDate() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.567)
+        let creationData = PaywallEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: "test_paywall",
+            offeringIdentifier: "offering_1",
+            paywallRevision: 5,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false
+        )
+        let event = PaywallEvent.close(creationData, eventData)
+
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .paywalls,
+                appSessionID: UUID(),
+                eventDiscriminator: nil
+            )
+        )
+
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(dateWithMilliseconds.timeIntervalSince1970))
+    }
+
+    func testPaywallEventCancelPreservesMillisecondsInCreationDate() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.891)
+        let creationData = PaywallEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: "test_paywall",
+            offeringIdentifier: "offering_1",
+            paywallRevision: 5,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false
+        )
+        let event = PaywallEvent.cancel(creationData, eventData)
+
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .paywalls,
+                appSessionID: UUID(),
+                eventDiscriminator: nil
+            )
+        )
+
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(dateWithMilliseconds.timeIntervalSince1970))
+    }
+
     // MARK: -
 
 }
