@@ -78,7 +78,7 @@ class CustomerCenterFeatureEventsRequestTests: TestCase {
         let timeIntervalWithMilliseconds: TimeInterval = 1694029328.890
         let creationData = CustomerCenterEventCreationData(
             id: UUID(),
-            date: Date(timeIntervalSince1970: 1694029328.890)
+            date: Date(timeIntervalSince1970: timeIntervalWithMilliseconds)
         )
         let eventData = CustomerCenterEvent.Data(
             locale: Locale(identifier: "en_US"),
