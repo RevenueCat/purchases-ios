@@ -44,17 +44,10 @@ private extension JSONEncoder {
         encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.dateEncodingStrategy = .custom { date, encoder in
             var container = encoder.singleValueContainer()
-            try container.encode(JSONEncoder.iso8601WithFractionalSeconds.string(from: date))
+            try container.encode(JSONDecoder.iso8601WithFractionalSeconds.string(from: date))
         }
 
         return encoder
-    }()
-
-    static let iso8601WithFractionalSeconds: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-
-        return formatter
     }()
 
 }
