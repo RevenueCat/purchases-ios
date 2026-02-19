@@ -116,6 +116,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     private weak var privateDelegate: PurchasesDelegate?
+
+    /// Listener for receiving tracked feature events as dictionaries.
+    /// Set this to monitor events tracked by RevenueCatUI features (paywalls, customer center).
+    @_spi(Internal) public var eventsListener: EventsListener? {
+        get { self.eventsManager?.eventsListener }
+        set { self.eventsManager?.eventsListener = newValue }
+    }
+
     private let operationDispatcher: OperationDispatcher
 
     /**
