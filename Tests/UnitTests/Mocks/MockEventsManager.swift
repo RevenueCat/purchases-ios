@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 9/6/23.
 
 import Foundation
-@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 actor MockEventsManager: EventsManagerType {
