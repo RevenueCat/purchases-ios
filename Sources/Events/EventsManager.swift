@@ -25,7 +25,9 @@ import UIKit
     func onEventTracked(_ event: [String: Any])
 }
 
-protocol EventsManagerType {
+protocol EventsManagerType: AnyObject {
+
+    var eventsListener: EventsListener? { get set }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(featureEvent: FeatureEvent) async
@@ -56,7 +58,12 @@ actor EventsManager: EventsManagerType {
     private let store: FeatureEventStoreType
     private var appSessionID: UUID
     private let systemInfo: SystemInfo
-    private weak var eventsListener: EventsListener?
+    private let _eventsListener = Atomic<EventsListener?>(nil)
+
+    nonisolated var eventsListener: EventsListener? {
+        get { self._eventsListener.value }
+        set { self._eventsListener.value = newValue }
+    }
 
     private let adEventStore: AdEventStoreType?
     private var adFlushInProgress = false
@@ -68,7 +75,6 @@ actor EventsManager: EventsManagerType {
         userProvider: CurrentUserProvider,
         store: FeatureEventStoreType,
         systemInfo: SystemInfo,
-        eventsListener: EventsListener? = nil,
         appSessionID: UUID = SystemInfo.appSessionID,
         adEventStore: AdEventStoreType? = nil
     ) {
@@ -76,7 +82,6 @@ actor EventsManager: EventsManagerType {
         self.userProvider = userProvider
         self.store = store
         self.systemInfo = systemInfo
-        self.eventsListener = eventsListener
         self.appSessionID = appSessionID
         self.adEventStore = adEventStore
     }
@@ -95,7 +100,6 @@ actor EventsManager: EventsManagerType {
             return
         }
         await self.store.store(event)
-
         self.eventsListener?.onEventTracked(featureEvent.toMap())
     }
 

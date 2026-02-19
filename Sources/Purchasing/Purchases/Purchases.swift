@@ -116,6 +116,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     private weak var privateDelegate: PurchasesDelegate?
+
+    /// Listener for receiving tracked feature events as dictionaries.
+    /// Set this to monitor events tracked by RevenueCatUI features (paywalls, customer center).
+    @_spi(Internal) public var eventsListener: EventsListener? {
+        get { self.eventsManager?.eventsListener }
+        set { self.eventsManager?.eventsListener = newValue }
+    }
+
     private let operationDispatcher: OperationDispatcher
 
     /**
@@ -325,8 +333,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
-                     automaticDeviceIdentifierCollectionEnabled: Bool = true,
-                     eventsListener: EventsListener?
+                     automaticDeviceIdentifierCollectionEnabled: Bool = true
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -491,7 +498,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         applicationSupportDirectory: applicationSupportDirectory
                     ),
                     systemInfo: systemInfo,
-                    eventsListener: eventsListener,
                     adEventStore: adEventStore
                 )
                 Logger.verbose(Strings.paywalls.event_manager_initialized)
@@ -1623,8 +1629,7 @@ public extension Purchases {
                   showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
                   diagnosticsEnabled: configuration.diagnosticsEnabled,
                   preferredLocale: configuration.preferredLocale,
-                  automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
-                  eventsListener: configuration.eventsListener
+                  automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled
         )
     }
 
@@ -1892,8 +1897,7 @@ public extension Purchases {
         showStoreMessagesAutomatically: Bool,
         diagnosticsEnabled: Bool,
         preferredLocale: String?,
-        automaticDeviceIdentifierCollectionEnabled: Bool = true,
-        eventsListener: EventsListener? = nil
+        automaticDeviceIdentifierCollectionEnabled: Bool = true
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -1910,8 +1914,7 @@ public extension Purchases {
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
                   diagnosticsEnabled: diagnosticsEnabled,
                   preferredLocale: preferredLocale,
-                  automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled,
-                  eventsListener: eventsListener)
+                  automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled)
         )
     }
 

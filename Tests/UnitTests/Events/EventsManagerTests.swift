@@ -14,7 +14,7 @@
 import Foundation
 import Nimble
 
-@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCat
 
 import XCTest
 
@@ -102,48 +102,42 @@ class EventsManagerTests: TestCase {
         await self.verifyEmptyStore()
     }
 
-    // MARK: - EventsListener
+    // MARK: - toMap
 
-    func testTrackEventNotifiesListener() async throws {
-        let listener = MockEventsListener()
-        self.manager = self.createManager(eventsListener: listener)
-
+    func testPaywallImpressionToMap() {
         let event: PaywallEvent = .impression(.random(), .random())
-        await self.manager.track(featureEvent: event)
+        let map = event.toMap()
 
-        expect(listener.trackedEvents).to(haveCount(1))
-        expect(listener.trackedEvents.first?["discriminator"] as? String) == "paywalls"
-        expect(listener.trackedEvents.first?["type"] as? String) == "paywall_impression"
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_impression"
+        expect(map["id"] as? String) == event.creationData.id.uuidString
+        expect(map["offering_id"] as? String) == event.data.offeringIdentifier
+        expect(map["session_id"] as? String) == event.data.sessionIdentifier.uuidString
     }
 
-    func testTrackMultipleEventsNotifiesListenerForEach() async throws {
-        let listener = MockEventsListener()
-        self.manager = self.createManager(eventsListener: listener)
+    func testPaywallCloseToMap() {
+        let event: PaywallEvent = .close(.random(), .random())
+        let map = event.toMap()
 
-        let event1: PaywallEvent = .impression(.random(), .random())
-        let event2: PaywallEvent = .close(.random(), .random())
-        await self.manager.track(featureEvent: event1)
-        await self.manager.track(featureEvent: event2)
-
-        expect(listener.trackedEvents).to(haveCount(2))
+        expect(map["type"] as? String) == "paywall_close"
     }
 
-    func testTrackNonStorableEventDoesNotNotifyListener() async throws {
-        let listener = MockEventsListener()
-        self.manager = self.createManager(eventsListener: listener)
+    func testPaywallCancelToMap() {
+        let event: PaywallEvent = .cancel(.random(), .random())
+        let map = event.toMap()
 
-        let event: PaywallEvent = .purchaseInitiated(.random(), .random())
-        await self.manager.track(featureEvent: event)
-
-        expect(listener.trackedEvents).to(beEmpty())
+        expect(map["type"] as? String) == "paywall_cancel"
     }
 
-    func testTrackEventWithNoListenerDoesNotCrash() async throws {
-        let event: PaywallEvent = .impression(.random(), .random())
-        await self.manager.track(featureEvent: event)
+    func testPaywallExitOfferToMap() {
+        let exitOfferData = PaywallEvent.ExitOfferData(
+            exitOfferType: .dismiss,
+            exitOfferingIdentifier: "exit_offering"
+        )
+        let event: PaywallEvent = .exitOffer(.random(), .random(), exitOfferData)
+        let map = event.toMap()
 
-        let events = await self.store.storedEvents
-        expect(events).to(haveCount(1))
+        expect(map["type"] as? String) == "paywall_exit_offer"
     }
 
     // MARK: - flushAllEvents
@@ -558,18 +552,6 @@ private extension EventsManagerTests {
                                    eventDiscriminator: nil))
     }
 
-    func createManager(eventsListener: EventsListener? = nil) -> EventsManager {
-        return .init(
-            internalAPI: self.api,
-            userProvider: self.userProvider,
-            store: self.store,
-            systemInfo: MockSystemInfo(finishTransactions: true),
-            eventsListener: eventsListener,
-            appSessionID: self.appSessionID,
-            adEventStore: nil
-        )
-    }
-
 }
 
 // MARK: - MockFeatureEventStore
@@ -610,19 +592,6 @@ private actor MockAdEventStore: AdEventStoreType {
 
     func clear(_ count: Int) {
         self.storedEvents.removeFirst(min(count, self.storedEvents.count))
-    }
-
-}
-
-// MARK: - MockEventsListener
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private final class MockEventsListener: EventsListener {
-
-    var trackedEvents: [[String: Any]] = []
-
-    func onEventTracked(_ event: [String: Any]) {
-        self.trackedEvents.append(event)
     }
 
 }

@@ -56,7 +56,6 @@ import Foundation
     let preferredLocale: String?
     let automaticDeviceIdentifierCollectionEnabled: Bool
     internal let diagnosticsEnabled: Bool
-    weak var eventsListener: EventsListener?
 
     private init(with builder: Builder) {
         self.apiKey = builder.apiKey
@@ -73,7 +72,6 @@ import Foundation
         self.diagnosticsEnabled = builder.diagnosticsEnabled
         self.preferredLocale = builder.preferredLocale
         self.automaticDeviceIdentifierCollectionEnabled = builder.automaticDeviceIdentifierCollectionEnabled
-        self.eventsListener = builder.eventsListener
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -116,7 +114,6 @@ import Foundation
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
-        private(set) weak var eventsListener: EventsListener?
         private(set) var storeKitVersion: StoreKitVersion = .default
 
         /// The preferred locale for the requests.
@@ -232,12 +229,6 @@ import Foundation
         /// Set `platformInfo`.
         @objc public func with(platformInfo: Purchases.PlatformInfo) -> Builder {
             self.platformInfo = platformInfo
-            return self
-        }
-
-        /// Sets an internal events listener used for debugging.
-        @_spi(Internal) public func with(eventsListener: EventsListener?) -> Builder {
-            self.eventsListener = eventsListener
             return self
         }
 
