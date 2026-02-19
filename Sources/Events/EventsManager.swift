@@ -17,7 +17,17 @@ import Foundation
 import UIKit
 #endif
 
-protocol EventsManagerType {
+/// Listener for receiving tracked feature events.
+/// This is an internal debug API for monitoring events tracked by RevenueCatUI.
+@_spi(Internal) public protocol EventsListener: AnyObject {
+    /// Called when a feature event is tracked.
+    /// - Parameter event: A dictionary representation of the tracked event.
+    func onEventTracked(_ event: [String: Any])
+}
+
+protocol EventsManagerType: AnyObject {
+
+    var eventsListener: EventsListener? { get set }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(featureEvent: FeatureEvent) async
@@ -48,6 +58,12 @@ actor EventsManager: EventsManagerType {
     private let store: FeatureEventStoreType
     private var appSessionID: UUID
     private let systemInfo: SystemInfo
+    private let _eventsListener = Atomic<EventsListener?>(nil)
+
+    nonisolated var eventsListener: EventsListener? {
+        get { self._eventsListener.value }
+        set { self._eventsListener.value = newValue }
+    }
 
     private let adEventStore: AdEventStoreType?
     private var adFlushInProgress = false
@@ -71,7 +87,6 @@ actor EventsManager: EventsManagerType {
     }
 
     func track(featureEvent: FeatureEvent) async {
-        // Some events are only used locally for attribution and should not be sent to the server.
         guard featureEvent.shouldStoreEvent else {
             return
         }
@@ -85,6 +100,7 @@ actor EventsManager: EventsManagerType {
             return
         }
         await self.store.store(event)
+        self.eventsListener?.onEventTracked(featureEvent.toMap())
     }
 
     func track(adEvent: AdEvent) async {
