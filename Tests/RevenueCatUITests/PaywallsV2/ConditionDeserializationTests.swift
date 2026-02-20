@@ -62,7 +62,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "intro_offer"}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.introOfferCondition(operator: .equals, value: true)))
+        expect(condition).to(equal(.introOffer(operator: .equals, value: true)))
     }
 
     func testDecodeLegacyPromoOfferCondition() throws {
@@ -71,7 +71,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "promo_offer"}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.promoOfferCondition(operator: .equals, value: true)))
+        expect(condition).to(equal(.promoOffer(operator: .equals, value: true)))
     }
 
     // MARK: - Extended Intro Offer Condition Tests
@@ -81,7 +81,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "intro_offer", "operator": "=", "value": true}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.introOfferCondition(operator: .equals, value: true)))
+        expect(condition).to(equal(.introOffer(operator: .equals, value: true)))
     }
 
     func testDecodeExtendedIntroOfferConditionEqualsFalse() throws {
@@ -89,7 +89,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "intro_offer", "operator": "=", "value": false}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.introOfferCondition(operator: .equals, value: false)))
+        expect(condition).to(equal(.introOffer(operator: .equals, value: false)))
     }
 
     func testDecodeExtendedIntroOfferConditionNotEquals() throws {
@@ -97,7 +97,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "intro_offer", "operator": "!=", "value": true}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.introOfferCondition(operator: .notEquals, value: true)))
+        expect(condition).to(equal(.introOffer(operator: .notEquals, value: true)))
     }
 
     // MARK: - Extended Promo Offer Condition Tests
@@ -107,7 +107,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "promo_offer", "operator": "=", "value": true}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.promoOfferCondition(operator: .equals, value: true)))
+        expect(condition).to(equal(.promoOffer(operator: .equals, value: true)))
     }
 
     func testDecodeExtendedPromoOfferConditionEqualsFalse() throws {
@@ -115,7 +115,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "promo_offer", "operator": "=", "value": false}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.promoOfferCondition(operator: .equals, value: false)))
+        expect(condition).to(equal(.promoOffer(operator: .equals, value: false)))
     }
 
     // MARK: - Variable Condition Tests
@@ -125,7 +125,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "variable", "operator": "=", "variable": "user_tier", "value": "premium"}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.variableCondition(
+        expect(condition).to(equal(.variable(
             operator: .equals,
             variable: "user_tier",
             value: .string("premium")
@@ -137,7 +137,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "variable", "operator": "!=", "variable": "is_vip", "value": true}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.variableCondition(
+        expect(condition).to(equal(.variable(
             operator: .notEquals,
             variable: "is_vip",
             value: .bool(true)
@@ -149,7 +149,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "variable", "operator": "=", "variable": "level", "value": 5}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.variableCondition(
+        expect(condition).to(equal(.variable(
             operator: .equals,
             variable: "level",
             value: .int(5)
@@ -161,7 +161,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "variable", "operator": "=", "variable": "score", "value": 3.14}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.variableCondition(
+        expect(condition).to(equal(.variable(
             operator: .equals,
             variable: "score",
             value: .double(3.14)
@@ -175,7 +175,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "selected_package", "operator": "in", "packages": ["monthly", "annual"]}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.selectedPackageCondition(
+        expect(condition).to(equal(.selectedPackage(
             operator: .in,
             packages: ["monthly", "annual"]
         )))
@@ -186,7 +186,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "selected_package", "operator": "not in", "packages": ["trial"]}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.selectedPackageCondition(
+        expect(condition).to(equal(.selectedPackage(
             operator: .notIn,
             packages: ["trial"]
         )))
@@ -225,7 +225,7 @@ class ConditionDeserializationTests: TestCase {
         {"type": "variable", "operator": "=", "variable": "plan", "value": "premium", "description": "Check plan"}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.variableCondition(
+        expect(condition).to(equal(.variable(
             operator: .equals,
             variable: "plan",
             value: .string("premium")
@@ -312,7 +312,7 @@ class ConditionDeserializationTests: TestCase {
     // MARK: - Encoding Tests
 
     func testEncodeVariableCondition() throws {
-        let condition = PaywallComponent.ExtendedCondition.variableCondition(
+        let condition = PaywallComponent.ExtendedCondition.variable(
             operator: .equals,
             variable: "plan",
             value: .string("premium")
@@ -326,7 +326,7 @@ class ConditionDeserializationTests: TestCase {
     }
 
     func testEncodeSelectedPackageCondition() throws {
-        let condition = PaywallComponent.ExtendedCondition.selectedPackageCondition(
+        let condition = PaywallComponent.ExtendedCondition.selectedPackage(
             operator: .in,
             packages: ["monthly", "annual"]
         )
@@ -349,13 +349,13 @@ class ConditionDeserializationTests: TestCase {
 
     func testExtendedConditionToPublicCondition_Extended() throws {
         // Extended intro/promo offer conditions map to their legacy equivalents
-        let introCondition = PaywallComponent.ExtendedCondition.introOfferCondition(
+        let introCondition = PaywallComponent.ExtendedCondition.introOffer(
             operator: .equals,
             value: true
         )
         expect(introCondition.toCondition()).to(equal(.introOffer))
 
-        let promoCondition = PaywallComponent.ExtendedCondition.promoOfferCondition(
+        let promoCondition = PaywallComponent.ExtendedCondition.promoOffer(
             operator: .notEquals,
             value: false
         )
@@ -364,14 +364,14 @@ class ConditionDeserializationTests: TestCase {
 
     func testExtendedConditionToPublicCondition_NewTypes() throws {
         // New condition types map to .unsupported in public API
-        let variableCondition = PaywallComponent.ExtendedCondition.variableCondition(
+        let variableCondition = PaywallComponent.ExtendedCondition.variable(
             operator: .equals,
             variable: "plan",
             value: .string("premium")
         )
         expect(variableCondition.toCondition()).to(equal(.unsupported))
 
-        let packageCondition = PaywallComponent.ExtendedCondition.selectedPackageCondition(
+        let packageCondition = PaywallComponent.ExtendedCondition.selectedPackage(
             operator: .in,
             packages: ["monthly"]
         )

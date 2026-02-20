@@ -93,17 +93,17 @@ extension PresentedPartial {
                 if state != .selected {
                     return false
                 }
-            case .introOfferCondition(let condOp, let value):
+            case .introOffer(let condOp, let value):
                 let matches = (condOp == .equals) == (isEligibleForIntroOffer == value)
                 if !matches {
                     return false
                 }
-            case .promoOfferCondition(let condOp, let value):
+            case .promoOffer(let condOp, let value):
                 let matches = (condOp == .equals) == (isEligibleForPromoOffer == value)
                 if !matches {
                     return false
                 }
-            case .variableCondition, .selectedPackageCondition:
+            case .variable, .selectedPackage:
                 // These conditions require the full context - fall back to false in legacy method
                 return false
             case .unsupported:

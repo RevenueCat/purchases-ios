@@ -238,12 +238,12 @@ extension PaywallComponent {
 
         // MARK: - Offer eligibility (with operator/value)
         // Note: Legacy conditions without operator/value are normalized to (operator: .equals, value: true)
-        case introOfferCondition(operator: EqualityOperator, value: Bool)
-        case promoOfferCondition(operator: EqualityOperator, value: Bool)
+        case introOffer(operator: EqualityOperator, value: Bool)
+        case promoOffer(operator: EqualityOperator, value: Bool)
 
         // MARK: - V0 Conditional configurability conditions
-        case variableCondition(operator: EqualityOperator, variable: String, value: ConditionValue)
-        case selectedPackageCondition(operator: ArrayOperator, packages: [String])
+        case variable(operator: EqualityOperator, variable: String, value: ConditionValue)
+        case selectedPackage(operator: ArrayOperator, packages: [String])
 
         // MARK: - Fallback for unknown conditions
         case unsupported
@@ -256,9 +256,9 @@ extension PaywallComponent {
             case .medium: return .medium
             case .expanded: return .expanded
             case .selected: return .selected
-            case .introOfferCondition: return .introOffer
-            case .promoOfferCondition: return .promoOffer
-            case .variableCondition, .selectedPackageCondition, .unsupported: return .unsupported
+            case .introOffer: return .introOffer
+            case .promoOffer: return .promoOffer
+            case .variable, .selectedPackage, .unsupported: return .unsupported
             }
         }
 
@@ -270,8 +270,8 @@ extension PaywallComponent {
             case .medium: self = .medium
             case .expanded: self = .expanded
             case .selected: self = .selected
-            case .introOffer: self = .introOfferCondition(operator: .equals, value: true)
-            case .promoOffer: self = .promoOfferCondition(operator: .equals, value: true)
+            case .introOffer: self = .introOffer(operator: .equals, value: true)
+            case .promoOffer: self = .promoOffer(operator: .equals, value: true)
             case .unsupported: self = .unsupported
             }
         }
@@ -288,20 +288,20 @@ extension PaywallComponent {
                 try container.encode(ConditionType.expanded.rawValue, forKey: .type)
             case .selected:
                 try container.encode(ConditionType.selected.rawValue, forKey: .type)
-            case .introOfferCondition(let condOp, let value):
+            case .introOffer(let condOp, let value):
                 try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(value, forKey: .value)
-            case .promoOfferCondition(let condOp, let value):
+            case .promoOffer(let condOp, let value):
                 try container.encode(ConditionType.promoOffer.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(value, forKey: .value)
-            case .variableCondition(let condOp, let variable, let value):
+            case .variable(let condOp, let variable, let value):
                 try container.encode(ConditionType.variable.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(variable, forKey: .variable)
                 try container.encode(value, forKey: .value)
-            case .selectedPackageCondition(let condOp, let packages):
+            case .selectedPackage(let condOp, let packages):
                 try container.encode(ConditionType.selectedPackage.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(packages, forKey: .packages)
@@ -333,21 +333,21 @@ extension PaywallComponent {
                     // Check for extended form (with operator/value), otherwise normalize legacy
                     let condOp = try container.decodeIfPresent(EqualityOperator.self, forKey: .operator) ?? .equals
                     let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
-                    self = .introOfferCondition(operator: condOp, value: value)
+                    self = .introOffer(operator: condOp, value: value)
                 case .promoOffer:
                     // Check for extended form (with operator/value), otherwise normalize legacy
                     let condOp = try container.decodeIfPresent(EqualityOperator.self, forKey: .operator) ?? .equals
                     let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
-                    self = .promoOfferCondition(operator: condOp, value: value)
+                    self = .promoOffer(operator: condOp, value: value)
                 case .variable:
                     let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
                     let variable = try container.decode(String.self, forKey: .variable)
                     let value = try container.decode(ConditionValue.self, forKey: .value)
-                    self = .variableCondition(operator: condOp, variable: variable, value: value)
+                    self = .variable(operator: condOp, variable: variable, value: value)
                 case .selectedPackage:
                     let condOp = try container.decode(ArrayOperator.self, forKey: .operator)
                     let packages = try container.decode([String].self, forKey: .packages)
-                    self = .selectedPackageCondition(operator: condOp, packages: packages)
+                    self = .selectedPackage(operator: condOp, packages: packages)
                 }
             } catch {
                 // If decoding fails for a known type (e.g., malformed value), fall back to unsupported
