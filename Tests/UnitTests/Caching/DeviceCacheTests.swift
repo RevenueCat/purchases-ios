@@ -939,7 +939,7 @@ class DeviceCacheTests: TestCase {
         // Create local DeviceCache with FileManager
         let deviceCache = DeviceCache(
             systemInfo: self.systemInfo,
-            userDefaults: self.mockUserDefaults,
+            userDefaults: self.makeIsolatedUserDefaults(),
             cache: fileManager
         )
 
@@ -999,7 +999,7 @@ class DeviceCacheTests: TestCase {
         // Create local DeviceCache with FileManager
         let deviceCache = DeviceCache(
             systemInfo: self.systemInfo,
-            userDefaults: self.mockUserDefaults,
+            userDefaults: self.makeIsolatedUserDefaults(),
             cache: fileManager
         )
 
@@ -1046,7 +1046,7 @@ class DeviceCacheTests: TestCase {
         // Create local DeviceCache with fileManager
         let deviceCache = DeviceCache(
             systemInfo: self.systemInfo,
-            userDefaults: self.mockUserDefaults,
+            userDefaults: self.makeIsolatedUserDefaults(),
             cache: fileManager
         )
 
@@ -1081,6 +1081,11 @@ class DeviceCacheTests: TestCase {
         XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
 
         // Call clearCaches
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
         deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: newUserID)
 
         // Verify only the offerings file is deleted, other file remains
@@ -1109,6 +1114,11 @@ class DeviceCacheTests: TestCase {
         XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
 
         // Call clearOfferingsCache
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
         deviceCache.clearOfferingsCache(appUserID: appUserID)
 
         // Verify only the offerings file is deleted, other file remains
@@ -1141,7 +1151,7 @@ class DeviceCacheTests: TestCase {
         // Create DeviceCache instance
         let deviceCache = DeviceCache(
             systemInfo: self.systemInfo,
-            userDefaults: self.mockUserDefaults,
+            userDefaults: self.makeIsolatedUserDefaults(),
             cache: fileManager
         )
 
@@ -1198,6 +1208,20 @@ private extension DeviceCacheTests {
             userDefaults: self.mockUserDefaults,
             cache: self.mockFileCache
         )
+    }
+
+    func makeIsolatedUserDefaults(file: StaticString = #fileID,
+                                  function: StaticString = #function,
+                                  line: UInt = #line) -> UserDefaults {
+        let suiteName = "DeviceCacheTests.\(file).\(function).\(line).\(UUID().uuidString)"
+        let userDefaults = UserDefaults(suiteName: suiteName)!
+        userDefaults.removePersistentDomain(forName: suiteName)
+        self.addTeardownBlock {
+            userDefaults.removePersistentDomain(forName: suiteName)
+            userDefaults.removeSuite(named: suiteName)
+        }
+
+        return userDefaults
     }
 
     static func createSampleOfferings() throws -> Offerings {

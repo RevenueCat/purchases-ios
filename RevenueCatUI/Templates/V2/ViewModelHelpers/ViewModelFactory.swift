@@ -503,7 +503,9 @@ struct ViewModelFactory {
             )
         }
 
-        let badgeViewModels = try component.badge?.stack.components.map { component in
+        let badgeSource = component.badge
+            ?? component.overrides?.lazy.compactMap(\.properties.badge).first
+        let badgeViewModels = try badgeSource?.stack.components.map { component in
             try self.toViewModel(
                 component: component,
                 packageValidator: packageValidator,

@@ -461,6 +461,7 @@ extension View {
 private struct PresentingPaywallModifier: ViewModifier {
 
     @Environment(\.scenePhase) var scenePhase
+    @Environment(\.customPaywallVariables) private var customPaywallVariables
 
     private struct Data: Identifiable {
         var customerInfo: CustomerInfo
@@ -745,6 +746,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCache
             )
         )
+        .customPaywallVariables(self.customPaywallVariables)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
@@ -796,6 +798,8 @@ private struct PresentingPaywallModifier: ViewModifier {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 private struct PresentingPaywallBindingModifier: ViewModifier {
+
+    @Environment(\.customPaywallVariables) private var customPaywallVariables
 
     @Binding var offering: Offering?
 
@@ -949,6 +953,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCache
             )
         )
+        .customPaywallVariables(self.customPaywallVariables)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }

@@ -7,6 +7,8 @@ import Foundation
 
 class MockUserDefaults: UserDefaults {
 
+    private let lock = NSLock()
+
     var stringForKeyCalledValue: String?
     var setObjectForKeyCalledValue: String?
     var setObjectForKeyCallCount: Int = 0
@@ -20,42 +22,58 @@ class MockUserDefaults: UserDefaults {
     var mockValues: [String: Any] = [:]
 
     override func string(forKey defaultName: String) -> String? {
-        stringForKeyCalledValue = defaultName
-        return mockValues[defaultName] as? String
+        return self.lock.perform {
+            self.stringForKeyCalledValue = defaultName
+            return self.mockValues[defaultName] as? String
+        }
     }
 
     override func removeObject(forKey defaultName: String) {
-        removeObjectForKeyCalledValues.append(defaultName)
-        mockValues.removeValue(forKey: defaultName)
+        self.lock.perform {
+            self.removeObjectForKeyCalledValues.append(defaultName)
+            self.mockValues.removeValue(forKey: defaultName)
+        }
     }
 
     override func set(_ value: Any?, forKey defaultName: String) {
-        setObjectForKeyCallCount += 1
-        setObjectForKeyCalledValue = defaultName
-        mockValues[defaultName] = value
+        self.lock.perform {
+            self.setObjectForKeyCallCount += 1
+            self.setObjectForKeyCalledValue = defaultName
+            self.mockValues[defaultName] = value
+        }
     }
 
     override func data(forKey defaultName: String) -> Data? {
-        dataForKeyCalledValue = defaultName
-        return mockValues[defaultName] as? Data
+        return self.lock.perform {
+            self.dataForKeyCalledValue = defaultName
+            return self.mockValues[defaultName] as? Data
+        }
     }
 
     override func object(forKey defaultName: String) -> Any? {
-        objectForKeyCalledValue = defaultName
-        return mockValues[defaultName]
+        return self.lock.perform {
+            self.objectForKeyCalledValue = defaultName
+            return self.mockValues[defaultName]
+        }
     }
 
     override func set(_ value: Bool, forKey defaultName: String) {
-        setValueForKeyCalledValue = defaultName
-        mockValues[defaultName] = value
+        self.lock.perform {
+            self.setValueForKeyCalledValue = defaultName
+            self.mockValues[defaultName] = value
+        }
     }
 
     override func dictionary(forKey defaultName: String) -> [String: Any]? {
-        dictionaryForKeyCalledValue = defaultName
-        return mockValues[defaultName] as? [String: Any]
+        return self.lock.perform {
+            self.dictionaryForKeyCalledValue = defaultName
+            return self.mockValues[defaultName] as? [String: Any]
+        }
     }
 
-    override func dictionaryRepresentation() -> [String: Any] { mockValues }
+    override func dictionaryRepresentation() -> [String: Any] {
+        self.lock.perform { self.mockValues }
+    }
 
     override func synchronize() -> Bool {
         // Nothing to do
@@ -64,6 +82,20 @@ class MockUserDefaults: UserDefaults {
     }
 
     override func removePersistentDomain(forName domainName: String) {
-        mockValues = [:]
+        self.lock.perform {
+            self.mockValues = [:]
+        }
     }
+}
+
+private extension NSLock {
+
+    @discardableResult
+    func perform<T>(_ block: () throws -> T) rethrows -> T {
+        self.lock()
+        defer { self.unlock() }
+
+        return try block()
+    }
+
 }
