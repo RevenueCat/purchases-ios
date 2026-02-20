@@ -165,7 +165,6 @@ extension PresentedPartial {
         isEligibleForPromoOffer: Bool,
         conditionContext: ConditionContext
     ) -> Bool {
-        // All conditions must be true (AND logic)
         for condition in conditions where !evaluateCondition(
             condition,
             state: state,
@@ -274,8 +273,7 @@ extension PresentedPartial {
         customVariables: [String: CustomVariableValue]
     ) -> Bool {
         guard let actualValue = customVariables[variable] else {
-            // Variable not found - condition doesn't match
-            return false
+            return condOp == .notEquals
         }
 
         let matches = matchesValue(actualValue: actualValue, expectedValue: expectedValue)
@@ -293,20 +291,17 @@ extension PresentedPartial {
         actualValue: CustomVariableValue,
         expectedValue: PaywallComponent.ConditionValue
     ) -> Bool {
-        // Type-strict comparison: the actual value must be of the same type as expected
-        switch expectedValue {
-        case .string(let expected):
-            guard actualValue.isString else { return false }
-            return actualValue.stringValue == expected
-        case .bool(let expected):
-            guard actualValue.isBool else { return false }
-            return actualValue.boolValue == expected
-        case .int(let expected):
-            guard actualValue.isNumber else { return false }
-            return actualValue.doubleValue == Double(expected)
-        case .double(let expected):
-            guard actualValue.isNumber else { return false }
-            return actualValue.doubleValue == expected
+        switch (expectedValue, actualValue.storage) {
+        case (.string(let expected), .string(let actual)):
+            return actual == expected
+        case (.bool(let expected), .bool(let actual)):
+            return actual == expected
+        case (.int(let expected), .number(let actual)):
+            return actual == Double(expected)
+        case (.double(let expected), .number(let actual)):
+            return actual == expected
+        default:
+            return false
         }
     }
 
