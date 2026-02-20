@@ -134,7 +134,6 @@ extension PresentedPartial {
         return presentedPartial
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     private static func shouldApply(
         for conditions: [PaywallComponent.ExtendedCondition],
         state: ComponentViewState,
@@ -142,36 +141,18 @@ extension PresentedPartial {
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool
     ) -> Bool {
-        // Early return when any condition evaluates to false
-        for condition in conditions {
-            switch condition {
-            case .compact, .medium, .expanded:
-                if !activeCondition.applicableConditions.contains(condition) {
-                    return false
-                }
-            case .selected:
-                if state != .selected {
-                    return false
-                }
-            case .introOffer(let condOp, let value):
-                let matches = (condOp == .equals) == (isEligibleForIntroOffer == value)
-                if !matches {
-                    return false
-                }
-            case .promoOffer(let condOp, let value):
-                let matches = (condOp == .equals) == (isEligibleForPromoOffer == value)
-                if !matches {
-                    return false
-                }
-            case .variable, .selectedPackage:
-                // These conditions require the full context - fall back to false in legacy method
-                return false
-            case .unsupported:
-                return false
-            }
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            return shouldApply(
+                for: conditions,
+                state: state,
+                activeCondition: activeCondition,
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                conditionContext: ConditionContext()
+            )
+        } else {
+            return false
         }
-
-        return true
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
