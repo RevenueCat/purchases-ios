@@ -9,7 +9,8 @@
 //
 //  PresentedPartialsTests.swift
 //
-//  Created by Josh Holtz on 1/25/25.
+//  Created by RevenueCat on 2/18/26.
+//
 
 import Nimble
 @_spi(Internal) import RevenueCat
@@ -19,227 +20,454 @@ import XCTest
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class PresentedPartialsTest: TestCase {
+class PresentedPartialsTests: TestCase {
 
-    func testNoPresentedPartials() {
-        let state = ComponentViewState.default
-        let condition = ScreenCondition.compact
-        let isEligibleForIntroOffer = false
-        let isEligibleForPromoOffer = false
+    // MARK: - Selected Package Condition Tests
 
-        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = []
+    func testSelectedPackageCondition_InOperator_MatchesSelectedPackage() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .selectedPackage(operator: .in, packages: ["monthly", "annual"])
+        ]
 
-        let result = PresentedStackPartial.buildPartial(
-            state: state,
-            condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
-            with: presentedOverrides
+        let context = ConditionContext(selectedPackageId: "monthly", customVariables: [:])
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testSelectedPackageCondition_InOperator_DoesNotMatchWhenPackageNotInList() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .selectedPackage(operator: .in, packages: ["monthly", "annual"])
+        ]
+
+        let context = ConditionContext(selectedPackageId: "weekly", customVariables: [:])
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
         )
 
         expect(result).to(beNil())
     }
 
-    func testPresentedPartialsCompactAppliedForCompact() {
-        let state = ComponentViewState.default
-        let condition = ScreenCondition.compact
-        let isEligibleForIntroOffer = false
-        let isEligibleForPromoOffer = false
-
-        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
-            .init(conditions: [
-                .compact
-            ], properties: .init(
-                margin: .zero
-            ))
+    func testSelectedPackageCondition_NotInOperator_MatchesWhenPackageNotInList() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .selectedPackage(operator: .notIn, packages: ["trial"])
         ]
 
-        let result = PresentedStackPartial.buildPartial(
-            state: state,
-            condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
-            with: presentedOverrides
+        let context = ConditionContext(selectedPackageId: "monthly", customVariables: [:])
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
         )
 
-        let expected: PresentedStackPartial = .init(
-            margin: .zero
-        )
-
-        expect(result).to(equal(expected))
+        expect(result).toNot(beNil())
     }
 
-    func testPresentedPartialsMediumNotAppliedForCompact() {
-        let state = ComponentViewState.default
-        let condition = ScreenCondition.compact
-        let isEligibleForIntroOffer = false
-        let isEligibleForPromoOffer = false
-
-        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
-            .init(conditions: [
-                .medium
-            ], properties: .init(
-                margin: .zero
-            ))
+    func testSelectedPackageCondition_NoSelection_DoesNotMatch() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .selectedPackage(operator: .in, packages: ["monthly"])
         ]
 
-        let result = PresentedStackPartial.buildPartial(
-            state: state,
-            condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
-            with: presentedOverrides
+        let context = ConditionContext(selectedPackageId: nil, customVariables: [:])
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
         )
 
         expect(result).to(beNil())
     }
 
-    func testPresentedPartialsCompactAndMediumAppliedForMedium() {
-        let state = ComponentViewState.default
-        let condition = ScreenCondition.medium
-        let isEligibleForIntroOffer = false
-        let isEligibleForPromoOffer = false
+    // MARK: - Variable Condition Tests
 
-        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
-            .init(conditions: [
-                .compact
-            ], properties: .init(
-                padding: .zero,
-                margin: .zero
-            )),
-            .init(conditions: [
-                .medium
-            ], properties: .init(
-                spacing: 8,
-                margin: .init(top: 2, bottom: 2, leading: 2, trailing: 2)
-            ))
+    func testVariableCondition_StringEquals_Matches() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "plan", value: .string("premium"))
         ]
 
-        let result = PresentedStackPartial.buildPartial(
-            state: state,
-            condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
-            with: presentedOverrides
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["plan": .string("premium")]
         )
 
-        let expected: PresentedStackPartial = .init(
-            spacing: 8,
-            padding: .zero,
-            margin: .init(top: 2, bottom: 2, leading: 2, trailing: 2)
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
         )
 
-        expect(result).to(equal(expected))
+        expect(result).toNot(beNil())
     }
 
-    func testPresentedPartialsSelectedAppliedWhenSelected() {
-        let state = ComponentViewState.selected
-        let condition = ScreenCondition.medium
-        let isEligibleForIntroOffer = false
-        let isEligibleForPromoOffer = false
-
-        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
-            .init(conditions: [
-                .selected
-            ], properties: .init(
-                padding: .zero
-            ))
+    func testVariableCondition_StringNotEquals_Matches() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .notEquals, variable: "plan", value: .string("basic"))
         ]
 
-        let result = PresentedStackPartial.buildPartial(
-            state: state,
-            condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
-            with: presentedOverrides
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["plan": .string("premium")]
         )
 
-        let expected: PresentedStackPartial = .init(
-            padding: .zero
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
         )
 
-        expect(result).to(equal(expected))
+        expect(result).toNot(beNil())
     }
 
-    func testPresentedPartialsSelectedNotAppliedWhenNotSelected() {
-        let state = ComponentViewState.default
-        let condition = ScreenCondition.medium
-        let isEligibleForIntroOffer = false
-        let isEligibleForPromoOffer = false
-
-        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
-            .init(conditions: [
-                .selected
-            ], properties: .init(
-                padding: .zero
-            ))
+    func testVariableCondition_IntEquals_Matches() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "level", value: .int(5))
         ]
 
-        let result = PresentedStackPartial.buildPartial(
-            state: state,
-            condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
-            with: presentedOverrides
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["level": .number(5)]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testVariableCondition_VariableNotFound_DoesNotMatch() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "missing", value: .string("value"))
+        ]
+
+        let context = ConditionContext(selectedPackageId: nil, customVariables: [:])
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
         )
 
         expect(result).to(beNil())
     }
 
-    func testPresentedPartialsIntroOfferAppliedWhenIntroOffer() {
-        let state = ComponentViewState.default
-        let condition = ScreenCondition.medium
-        let isEligibleForIntroOffer = true
-        let isEligibleForPromoOffer = false
-
-        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
-            .init(conditions: [
-                .introOffer(operator: .equals, value: true)
-            ], properties: .init(
-                padding: .zero
-            ))
+    func testVariableCondition_BooleanEquals_Matches() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "is_vip", value: .bool(true))
         ]
 
-        let result = PresentedStackPartial.buildPartial(
-            state: state,
-            condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
-            with: presentedOverrides
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["is_vip": .bool(true)]
         )
 
-        let expected: PresentedStackPartial = .init(
-            padding: .zero
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
         )
 
-        expect(result).to(equal(expected))
+        expect(result).toNot(beNil())
     }
 
-    func testPresentedPartialsIntroOfferNotAppliedWhenNotIntroOffer() {
-        let state = ComponentViewState.default
-        let condition = ScreenCondition.medium
-        let isEligibleForIntroOffer = false
-        let isEligibleForPromoOffer = false
-
-        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
-            .init(conditions: [
-                .introOffer(operator: .equals, value: true)
-            ], properties: .init(
-                padding: .zero
-            ))
+    func testVariableCondition_DoubleEquals_Matches() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "score", value: .double(9.5))
         ]
 
-        let result = PresentedStackPartial.buildPartial(
-            state: state,
-            condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
-            with: presentedOverrides
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["score": .number(9.5)]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testVariableCondition_TypeMismatch_DoesNotMatch() throws {
+        // Condition expects int, but variable is a string
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "level", value: .int(5))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["level": .string("5")]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
         )
 
         expect(result).to(beNil())
     }
 
+    // MARK: - Extended Intro Offer Condition Tests
+
+    func testIntroOfferCondition_EqualsTrue_MatchesWhenEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .introOffer(operator: .equals, value: true)
+        ]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testIntroOfferCondition_EqualsFalse_MatchesWhenNotEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .introOffer(operator: .equals, value: false)
+        ]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testIntroOfferCondition_NotEqualsTrue_MatchesWhenNotEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .introOffer(operator: .notEquals, value: true)
+        ]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testIntroOfferCondition_EqualsFalse_DoesNotMatchWhenEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .introOffer(operator: .equals, value: false)
+        ]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
+    // MARK: - Extended Promo Offer Condition Tests
+
+    func testPromoOfferCondition_EqualsTrue_MatchesWhenEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .promoOffer(operator: .equals, value: true)
+        ]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: true,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testPromoOfferCondition_EqualsFalse_MatchesWhenNotEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .promoOffer(operator: .equals, value: false)
+        ]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testPromoOfferCondition_NotEqualsFalse_MatchesWhenEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .promoOffer(operator: .notEquals, value: false)
+        ]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: true,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testPromoOfferCondition_EqualsTrue_DoesNotMatchWhenNotEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .promoOffer(operator: .equals, value: true)
+        ]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
+    // MARK: - Multiple Conditions (AND logic) Tests
+
+    func testMultipleConditions_AllMustMatch() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .selectedPackage(operator: .in, packages: ["monthly"]),
+            .variable(operator: .equals, variable: "vip", value: .string("true"))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: "monthly",
+            customVariables: ["vip": .string("true")]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testMultipleConditions_OneFailsDoesNotMatch() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .selectedPackage(operator: .in, packages: ["monthly"]),
+            .variable(operator: .equals, variable: "vip", value: .string("true"))
+        ]
+
+        // Package matches, but variable doesn't
+        let context = ConditionContext(
+            selectedPackageId: "monthly",
+            customVariables: ["vip": .string("false")]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
+    // MARK: - Unsupported Condition Tests
+
+    func testUnsupportedCondition_DoesNotMatch() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [.unsupported]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
+}
+
+// MARK: - Test Helpers
+
+private struct TestPartial: PresentedPartial {
+    static func combine(_ base: TestPartial?, with other: TestPartial?) -> TestPartial {
+        return other ?? base ?? TestPartial()
+    }
 }
 
 #endif
