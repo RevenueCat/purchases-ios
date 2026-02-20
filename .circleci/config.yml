@@ -1865,7 +1865,6 @@ jobs:
   generate-swiftinterface:
     executor:
       name: macos-executor
-      xcode_version: "16.3.0"
     steps:
       - checkout
       - install-dependencies
