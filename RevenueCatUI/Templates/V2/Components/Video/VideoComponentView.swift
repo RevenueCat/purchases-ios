@@ -118,7 +118,7 @@ struct VideoComponentView: View {
                     .onAppear {
                         let fileRepository = FileRepository.shared
 
-                        // If full-res video is already cached, use it immediately
+                        // 1. High-res cached → use immediately
                         if let fullResCachedURL = fileRepository.getCachedFileURL(
                             for: viewData.url,
                             withChecksum: viewData.checksum
@@ -128,42 +128,40 @@ struct VideoComponentView: View {
                             return
                         }
 
-                        // Not cached — show fallback image while downloading
-                        self.imageSource = viewModel.imageSource
-
-                        Task(priority: .userInitiated) {
-                            async let highRes = try? fileRepository
-                                .generateOrGetCachedFileURL(
+                        // 2. Low-res cached → use immediately, cache high-res in background
+                        if let lowResUrl = viewData.lowResUrl,
+                           lowResUrl != viewData.url,
+                           let lowResCachedURL = fileRepository.getCachedFileURL(
+                               for: lowResUrl,
+                               withChecksum: viewData.lowResChecksum
+                           ) {
+                            self.cachedURL = lowResCachedURL
+                            self.imageSource = nil
+                            Task(priority: .utility) {
+                                _ = try? await fileRepository.generateOrGetCachedFileURL(
                                     for: viewData.url,
                                     withChecksum: viewData.checksum
                                 )
-                            async let lowRes: URL? = {
-                                guard let lowResUrl = viewData.lowResUrl,
-                                      lowResUrl != viewData.url else {
-                                    return nil
-                                }
-                                return try? await fileRepository
-                                    .generateOrGetCachedFileURL(
-                                        for: lowResUrl,
-                                        withChecksum: viewData.lowResChecksum
-                                    )
-                            }()
-
-                            let highResURL = await highRes
-                            guard !Task.isCancelled else { return }
-
-                            if let highResURL {
-                                await MainActor.run {
-                                    self.cachedURL = highResURL
-                                    self.imageSource = nil
-                                }
-                            } else if let lowResURL = await lowRes {
-                                await MainActor.run {
-                                    self.cachedURL = lowResURL
-                                    self.imageSource = nil
-                                }
                             }
+                            return
+                        }
 
+                        // 3. Nothing cached → stream remote URL, cache in background
+                        self.cachedURL = viewData.url
+                        self.imageSource = viewModel.imageSource
+
+                        Task(priority: .utility) {
+                            _ = try? await fileRepository.generateOrGetCachedFileURL(
+                                for: viewData.url,
+                                withChecksum: viewData.checksum
+                            )
+                            if let lowResUrl = viewData.lowResUrl,
+                               lowResUrl != viewData.url {
+                                _ = try? await fileRepository.generateOrGetCachedFileURL(
+                                    for: lowResUrl,
+                                    withChecksum: viewData.lowResChecksum
+                                )
+                            }
                         }
                     }
                     .applyMediaWidth(size: style.size)
