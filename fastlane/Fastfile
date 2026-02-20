@@ -1230,6 +1230,13 @@ platform :ios do
     )
   end
 
+  desc "Trigger CircleCI job to generate and update baseline swiftinterface files"
+  lane :trigger_generate_swiftinterface do
+    generate_snapshots(
+      pipeline: "generate_swiftinterface"
+    )
+  end
+
   private_lane :build_release do |options|
     platform = options[:platform]
     scheme = options[:scheme] || 'RevenueCat'
@@ -1277,6 +1284,51 @@ platform :ios do
       base_branch: ENV["CIRCLE_BRANCH"],
       files_to_add: "../*/__Snapshots__/*"
      )
+  end
+
+  desc "Creates a new PR after new swiftinterface baseline files were generated"
+  lane :create_swiftinterface_pr do
+    base_branch = ENV["CIRCLE_BRANCH"]
+    build_number = ENV["CIRCLE_BUILD_NUM"]
+    branch_name = "generated_swiftinterface/#{base_branch}-#{build_number}"
+
+    # Copy generated files to the api/ directory
+    ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
+      src = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
+      dst = "../api/revenuecat-api#{platform[:suffix]}.swiftinterface"
+
+      if File.exist?(src)
+        FileUtils.cp(src, dst)
+        UI.success("Updated #{dst}")
+      else
+        UI.error("Missing generated file: #{src}")
+      end
+    end
+
+    file_count = sh("git diff --numstat ../api/*.swiftinterface | wc -l").strip.to_i
+
+    if file_count == 0
+      UI.important("No swiftinterface changes to commit")
+    else
+      sh("git", "checkout", "-b", branch_name)
+      sh("git", "add", "../api/*.swiftinterface")
+      sh("git", "commit", "-m", "[skip ci] Update baseline swiftinterface files")
+      sh("git", "push", "origin", branch_name)
+
+      circle_user = ENV["CIRCLE_USERNAME"]
+      branch_link = "https://github.com/RevenueCat/purchases-ios/tree/#{base_branch}"
+      body = "Requested by @#{circle_user} for [#{base_branch}](#{branch_link})"
+
+      create_pull_request(
+        repo: "revenuecat/#{REPO_NAME}",
+        title: "Update baseline swiftinterface files for `#{base_branch}`",
+        body: body,
+        base: base_branch,
+        api_token: ENV["GITHUB_TOKEN"],
+        head: branch_name,
+        labels: ["pr:other"]
+      )
+    end
   end
 
   desc "Creates a new PR on purchases-ios-snapshots after new snapshot files were generated"

@@ -68,9 +68,7 @@ class DeviceCache {
     private let _cachedAppUserID: Atomic<String?>
     private let _cachedLegacyAppUserID: Atomic<String?>
 
-    private var userDefaultsObserver: NSObjectProtocol?
-
-    private var offeringsCachePreferredLocales: [String] = []
+    private let offeringsCachePreferredLocales: Atomic<[String]> = .init([])
 
     private let migrationLock = Lock(.nonRecursive)
 
@@ -225,7 +223,7 @@ class DeviceCache {
         // during the get offerings request, before this cache method gets called.
         // For the cache we need the preferred locales that were used in the request.
         self.cacheInMemory(offerings: offerings)
-        self.offeringsCachePreferredLocales = preferredLocales
+        self.offeringsCachePreferredLocales.value = preferredLocales
 
         let key = CacheKey.offerings(appUserID).rawValue
         if self.largeItemCache.set(codable: offerings.contents, forKey: key) {
@@ -241,7 +239,7 @@ class DeviceCache {
 
     func clearOfferingsCache(appUserID: String) {
         self.offeringsCachedObject.clearCache()
-        self.offeringsCachePreferredLocales = []
+        self.offeringsCachePreferredLocales.value = []
         self.largeItemCache.removeObject(forKey: CacheKey.offerings(appUserID).rawValue)
 
         // Delete old offerings file from documents directory if it exists
@@ -255,12 +253,12 @@ class DeviceCache {
                                                            isSandbox: self.systemInfo.isSandbox)
         ) ||
         // Locale-based staleness
-        self.offeringsCachePreferredLocales != self.systemInfo.preferredLocales
+        self.offeringsCachePreferredLocales.value != self.systemInfo.preferredLocales
     }
 
     func forceOfferingsCacheStale() {
         self.offeringsCachedObject.clearCacheTimestamp()
-        self.offeringsCachePreferredLocales = []
+        self.offeringsCachePreferredLocales.value = []
     }
 
     func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {

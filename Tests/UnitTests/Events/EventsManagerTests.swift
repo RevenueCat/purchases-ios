@@ -14,7 +14,7 @@
 import Foundation
 import Nimble
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 import XCTest
 
@@ -100,6 +100,164 @@ class EventsManagerTests: TestCase {
         await self.manager.track(featureEvent: event)
 
         await self.verifyEmptyStore()
+    }
+
+    // MARK: - toMap (Paywall Events)
+
+    func testPaywallImpressionToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let event: PaywallEvent = .impression(creationData, data)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_impression"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["offering_id"] as? String) == data.offeringIdentifier
+        expect(map["paywall_revision"] as? Int) == data.paywallRevision
+        expect(map["session_id"] as? String) == data.sessionIdentifier.uuidString
+        expect(map["display_mode"] as? String) == data.displayMode.identifier
+        expect(map["locale"] as? String) == data.localeIdentifier
+        expect(map["dark_mode"] as? Bool) == data.darkMode
+    }
+
+    func testPaywallCloseToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let event: PaywallEvent = .close(creationData, data)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_close"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["offering_id"] as? String) == data.offeringIdentifier
+        expect(map["paywall_revision"] as? Int) == data.paywallRevision
+        expect(map["session_id"] as? String) == data.sessionIdentifier.uuidString
+        expect(map["display_mode"] as? String) == data.displayMode.identifier
+        expect(map["locale"] as? String) == data.localeIdentifier
+        expect(map["dark_mode"] as? Bool) == data.darkMode
+    }
+
+    func testPaywallCancelToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let event: PaywallEvent = .cancel(creationData, data)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_cancel"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["session_id"] as? String) == data.sessionIdentifier.uuidString
+    }
+
+    func testPaywallExitOfferToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let exitOfferData = PaywallEvent.ExitOfferData(
+            exitOfferType: .dismiss,
+            exitOfferingIdentifier: "exit_offering"
+        )
+        let event: PaywallEvent = .exitOffer(creationData, data, exitOfferData)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_exit_offer"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["session_id"] as? String) == data.sessionIdentifier.uuidString
+    }
+
+    func testPaywallPurchaseInitiatedToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let event: PaywallEvent = .purchaseInitiated(creationData, data)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_purchase_initiated"
+    }
+
+    func testPaywallPurchaseErrorToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let event: PaywallEvent = .purchaseError(creationData, data)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_purchase_error"
+    }
+
+    // MARK: - toMap (Customer Center Events)
+
+    func testCustomerCenterImpressionToMap() {
+        let creationData = CustomerCenterEventCreationData()
+        let data = CustomerCenterEvent.Data(
+            locale: Locale(identifier: "en_US"),
+            darkMode: true,
+            isSandbox: false,
+            displayMode: .fullScreen
+        )
+        let event: CustomerCenterEvent = .impression(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "customer_center"
+        expect(map["type"] as? String) == "customer_center_impression"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["dark_mode"] as? Bool) == true
+        expect(map["locale"] as? String) == "en_US"
+        expect(map["display_mode"] as? String) == "full_screen"
+    }
+
+    func testCustomerCenterAnswerSubmittedToMap() {
+        let creationData = CustomerCenterEventCreationData()
+        let data = CustomerCenterAnswerSubmittedEvent.Data(
+            locale: Locale(identifier: "es_ES"),
+            darkMode: false,
+            isSandbox: true,
+            displayMode: .sheet,
+            path: .cancel,
+            url: URL(string: "https://example.com"),
+            surveyOptionID: "option_1",
+            revisionID: 42
+        )
+        let event: CustomerCenterAnswerSubmittedEvent = .answerSubmitted(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "customer_center"
+        expect(map["type"] as? String) == "customer_center_survey_option_chosen"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["dark_mode"] as? Bool) == false
+        expect(map["locale"] as? String) == "es_ES"
+        expect(map["display_mode"] as? String) == "sheet"
+        expect(map["survey_option_id"] as? String) == "option_1"
+        expect(map["path"] as? String) == "CANCEL"
+        expect(map["revision_id"] as? Int) == 42
+        expect(map["url"] as? String) == "https://example.com"
+    }
+
+    func testCustomerCenterAnswerSubmittedToMapWithNilUrl() {
+        let creationData = CustomerCenterEventCreationData()
+        let data = CustomerCenterAnswerSubmittedEvent.Data(
+            locale: Locale(identifier: "en_US"),
+            darkMode: true,
+            isSandbox: false,
+            displayMode: .fullScreen,
+            path: .refundRequest,
+            url: nil,
+            surveyOptionID: "option_2",
+            revisionID: 1
+        )
+        let event: CustomerCenterAnswerSubmittedEvent = .answerSubmitted(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["url"]).to(beNil())
+        expect(map["survey_option_id"] as? String) == "option_2"
+        expect(map["path"] as? String) == "REFUND_REQUEST"
     }
 
     // MARK: - flushAllEvents

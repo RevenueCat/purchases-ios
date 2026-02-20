@@ -99,6 +99,146 @@ class AdFeatureEventsRequestTests: TestCase {
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
+    func testAdEventWithoutMillisecondPrecisionIsParsed() throws {
+        let event = AdEvent.displayed(Self.eventCreationData, Self.eventData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let serialized = try StoredAdEventSerializer.encode(storedEvent)
+        let legacySerialized = serialized.replacingOccurrences(of: ".000Z", with: "Z")
+        let deserialized = try StoredAdEventSerializer.decode(legacySerialized)
+
+        let requestEvent = try XCTUnwrap(AdEventsRequest.AdEventRequest(storedEvent: deserialized))
+        let expectedTimestamp: UInt64 = 1_694_029_328_000
+
+        expect(requestEvent.timestamp).to(equal(expectedTimestamp))
+    }
+
+    func testAdRequestTimestampPreservesMilliseconds() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.123)
+        let creationData = AdEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let event = AdEvent.displayed(creationData, Self.eventData)
+        let storedEvent = try XCTUnwrap(
+            StoredAdEvent(
+                event: event,
+                userID: "test-user",
+                appSessionID: UUID()
+            )
+        )
+        let serialized = try StoredAdEventSerializer.encode(storedEvent)
+        let deserialized = try StoredAdEventSerializer.decode(serialized)
+        let requestEvent = try XCTUnwrap(AdEventsRequest.AdEventRequest(storedEvent: deserialized))
+
+        expect(requestEvent.timestamp).to(equal(1_694_029_328_123))
+    }
+
+    // MARK: - Milliseconds Precision Tests
+
+    func testAdEventPreservesMillisecondsInCreationDate() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.123)
+        let creationData = AdEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let eventData = AdDisplayed(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .banner,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+        let event = AdEvent.displayed(creationData, eventData)
+
+        let storedEvent = try XCTUnwrap(
+            StoredAdEvent(
+                event: event,
+                userID: "test-user",
+                appSessionID: UUID()
+            )
+        )
+
+        let serialized = try StoredAdEventSerializer.encode(storedEvent)
+        let deserialized = try StoredAdEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(AdEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(dateWithMilliseconds.timeIntervalSince1970))
+    }
+
+    func testAdEventRevenuePreservesMillisecondsInCreationDate() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.456)
+        let creationData = AdEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let eventData = AdRevenue(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .banner,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-456",
+            revenueMicros: 1500000,
+            currency: "USD",
+            precision: .exact
+        )
+        let event = AdEvent.revenue(creationData, eventData)
+
+        let storedEvent = try XCTUnwrap(
+            StoredAdEvent(
+                event: event,
+                userID: "test-user",
+                appSessionID: UUID()
+            )
+        )
+
+        let serialized = try StoredAdEventSerializer.encode(storedEvent)
+        let deserialized = try StoredAdEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(AdEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(dateWithMilliseconds.timeIntervalSince1970))
+    }
+
+    func testAdEventFailedToLoadPreservesMillisecondsInCreationDate() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.789)
+        let creationData = AdEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let eventData = AdFailedToLoad(
+            mediatorName: .appLovin,
+            adFormat: .banner,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            mediatorErrorCode: 3
+        )
+        let event = AdEvent.failedToLoad(creationData, eventData)
+
+        let storedEvent = try XCTUnwrap(
+            StoredAdEvent(
+                event: event,
+                userID: "test-user",
+                appSessionID: UUID()
+            )
+        )
+
+        let serialized = try StoredAdEventSerializer.encode(storedEvent)
+        let deserialized = try StoredAdEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(AdEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(dateWithMilliseconds.timeIntervalSince1970))
+    }
+
     // MARK: -
 
 }

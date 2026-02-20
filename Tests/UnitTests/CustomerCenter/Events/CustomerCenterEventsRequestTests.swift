@@ -72,6 +72,129 @@ class CustomerCenterFeatureEventsRequestTests: TestCase {
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
+    func testCustomerCenterEventWithoutMillisecondPrecisionIsParsed() throws {
+        let event = CustomerCenterEvent.impression(Self.eventCreationData, Self.eventData)
+        let eventDiscriminator: String = CustomerCenterEventDiscriminator.lifecycle.rawValue
+        let storedEvent: StoredFeatureEvent = try XCTUnwrap(.init(event: event,
+                                                                  userID: Self.userID,
+                                                                  feature: .customerCenter,
+                                                                  appSessionID: Self.appSessionID,
+                                                                  eventDiscriminator: eventDiscriminator))
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let legacySerialized = serialized.replacingOccurrences(of: ".000Z", with: "Z")
+        let deserialized = try StoredFeatureEventSerializer.decode(legacySerialized)
+
+        let requestEvent = try XCTUnwrap(
+            FeatureEventsRequest.CustomerCenterEventBaseRequest.createBase(from: deserialized)
+        )
+        let expectedTimestamp: UInt64 = 1_694_029_328_000
+
+        expect(requestEvent.timestamp).to(equal(expectedTimestamp))
+    }
+
+    func testCustomerCenterRequestTimestampPreservesMilliseconds() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.890)
+        let creationData = CustomerCenterEventCreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let event = CustomerCenterEvent.impression(creationData, Self.eventData)
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .customerCenter,
+                appSessionID: UUID(),
+                eventDiscriminator: CustomerCenterEventDiscriminator.lifecycle.rawValue
+            )
+        )
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+        let requestEvent = try XCTUnwrap(
+            FeatureEventsRequest.CustomerCenterEventBaseRequest.createBase(from: deserialized)
+        )
+
+        expect(requestEvent.timestamp).to(equal(1_694_029_328_890))
+    }
+
+    // MARK: - Milliseconds Precision Tests
+
+    func testCustomerCenterEventImpressionPreservesMillisecondsInCreationDate() throws {
+        let timeIntervalWithMilliseconds: TimeInterval = 1694029328.890
+        let creationData = CustomerCenterEventCreationData(
+            id: UUID(),
+            date: Date(timeIntervalSince1970: timeIntervalWithMilliseconds)
+        )
+        let eventData = CustomerCenterEvent.Data(
+            locale: Locale(identifier: "en_US"),
+            darkMode: false,
+            isSandbox: true,
+            displayMode: .sheet
+        )
+        let event = CustomerCenterEvent.impression(creationData, eventData)
+
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .customerCenter,
+                appSessionID: UUID(),
+                eventDiscriminator: CustomerCenterEventDiscriminator.lifecycle.rawValue
+            )
+        )
+
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(CustomerCenterEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(timeIntervalWithMilliseconds))
+    }
+
+    func testCustomerCenterAnswerSubmittedEventPreservesMillisecondsInCreationDate() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.999)
+        let creationData = CustomerCenterEventCreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let eventData = CustomerCenterAnswerSubmittedEvent.Data(
+            locale: Locale(identifier: "en_US"),
+            darkMode: false,
+            isSandbox: true,
+            displayMode: .sheet,
+            path: .cancel,
+            url: URL(string: "https://example.com"),
+            surveyOptionID: "survey-123",
+            additionalContext: "test context",
+            revisionID: 1
+        )
+        let event = CustomerCenterAnswerSubmittedEvent.answerSubmitted(creationData, eventData)
+
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .customerCenter,
+                appSessionID: UUID(),
+                eventDiscriminator: CustomerCenterEventDiscriminator.answerSubmitted.rawValue
+            )
+        )
+
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(
+            CustomerCenterAnswerSubmittedEvent.self,
+            from: jsonData
+        )
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(dateWithMilliseconds.timeIntervalSince1970))
+    }
+
     // MARK: -
 
     private static let eventCreationData: CustomerCenterEventCreationData = .init(
