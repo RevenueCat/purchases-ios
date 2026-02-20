@@ -702,7 +702,7 @@ jobs:
   spm-revenuecat-ui-ios-15:
     executor:
       name: macos-executor
-      xcode_version: "14.3.1"
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
@@ -711,6 +711,8 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
       - update-spm-installation-commit
+      - install-runtime:
+          runtime-name: iOS 15.5
       - run:
           name: SPM RevenueCatUI Tests
           command: bundle exec fastlane test_revenuecatui
