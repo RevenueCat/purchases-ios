@@ -31,7 +31,8 @@ class BaseAttributionPosterTests: TestCase {
         finishTransactions: true
     )
 
-    let userDefaultsSuiteName = "testUserDefaults"
+    var userDefaultsSuiteName: String!
+    var userDefaults: UserDefaults!
 
     override func setUp() {
         super.setUp()
@@ -39,8 +40,11 @@ class BaseAttributionPosterTests: TestCase {
         let userID = "userID"
         let systemInfo = MockSystemInfo(finishTransactions: false)
         systemInfo.stubbedIsSandbox = BundleSandboxEnvironmentDetector.default.isSandbox
+        self.userDefaultsSuiteName = "AttributionPosterTests.\(self.name).\(UUID().uuidString)"
+        self.userDefaults = UserDefaults(suiteName: self.userDefaultsSuiteName)
+        self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.deviceCache = MockDeviceCache(systemInfo: systemInfo,
-                                           userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
+                                           userDefaults: self.userDefaults)
         self.deviceCache.cache(appUserID: userID)
         self.backend = MockBackend()
         self.attributionFetcher = MockAttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
@@ -74,8 +78,10 @@ class BaseAttributionPosterTests: TestCase {
     }
 
     override func tearDown() {
-        UserDefaults.standard.removePersistentDomain(forName: userDefaultsSuiteName)
-        UserDefaults.standard.synchronize()
+        if let suiteName = self.userDefaultsSuiteName {
+            self.userDefaults?.removePersistentDomain(forName: suiteName)
+            self.userDefaults?.removeSuite(named: suiteName)
+        }
         resetAttributionStaticProperties()
         super.tearDown()
     }

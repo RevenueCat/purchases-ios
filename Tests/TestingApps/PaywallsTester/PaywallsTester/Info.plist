@@ -48,6 +48,8 @@
 	<string>$(REVENUECAT_PROXY_URL_HOST)</string>
 	<key>REVENUECAT_PROXY_URL_SCHEME</key>
 	<string>$(REVENUECAT_PROXY_URL_SCHEME)</string>
+	<key>SANDBOX_PAYWALL_SEARCH</key>
+	<string>$(SANDBOX_PAYWALL_SEARCH)</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
