@@ -28,7 +28,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
-    func testTrackAdFailedToLoadStoresEvent() async throws {
+    func testTrackAdFailedToLoadStoresEvent() async {
         let failedData = AdFailedToLoad(
             mediatorName: .appLovin,
             adFormat: .banner,
@@ -39,11 +39,9 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         self.purchases.adTracker.trackAdFailedToLoad(failedData)
 
-        await self.yield() // Wait for async Task to complete
+        await expect { await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
-        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
-
-        expect(trackedEvents).to(haveCount(1))
+        let trackedEvents = await self.mockEventsManager.trackedAdEvents
 
         guard case let .failedToLoad(_, eventData) = trackedEvents.first else {
             fail("Expected AdEvent.failedToLoad but got \(String(describing: trackedEvents.first))")
@@ -57,7 +55,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.mediatorErrorCode?.intValue) == 3
     }
 
-    func testTrackAdLoadedStoresEvent() async throws {
+    func testTrackAdLoadedStoresEvent() async {
         let loadedData = AdLoaded(
             networkName: "AdMob",
             mediatorName: .appLovin,
@@ -69,11 +67,9 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         self.purchases.adTracker.trackAdLoaded(loadedData)
 
-        await self.yield() // Wait for async Task to complete
+        await expect { await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
-        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
-
-        expect(trackedEvents).to(haveCount(1))
+        let trackedEvents = await self.mockEventsManager.trackedAdEvents
 
         guard case let .loaded(_, eventData) = trackedEvents.first else {
             fail("Expected AdEvent.loaded but got \(String(describing: trackedEvents.first))")
@@ -88,7 +84,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.impressionId) == "impression-123"
     }
 
-    func testTrackAdDisplayedStoresEvent() async throws {
+    func testTrackAdDisplayedStoresEvent() async {
         let displayedData = AdDisplayed(
             networkName: "AdMob",
             mediatorName: .appLovin,
@@ -100,11 +96,9 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         self.purchases.adTracker.trackAdDisplayed(displayedData)
 
-        await self.yield() // Wait for async Task to complete
+        await expect { await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
-        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
-
-        expect(trackedEvents).to(haveCount(1))
+        let trackedEvents = await self.mockEventsManager.trackedAdEvents
 
         guard case let .displayed(_, eventData) = trackedEvents.first else {
             fail("Expected AdEvent.displayed but got \(String(describing: trackedEvents.first))")
@@ -119,7 +113,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.impressionId) == "impression-123"
     }
 
-    func testTrackAdOpenedStoresEvent() async throws {
+    func testTrackAdOpenedStoresEvent() async {
         let openedData = AdOpened(
             networkName: "AdMob",
             mediatorName: .appLovin,
@@ -131,11 +125,9 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         self.purchases.adTracker.trackAdOpened(openedData)
 
-        await self.yield() // Wait for async Task to complete
+        await expect { await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
-        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
-
-        expect(trackedEvents).to(haveCount(1))
+        let trackedEvents = await self.mockEventsManager.trackedAdEvents
 
         guard case let .opened(_, eventData) = trackedEvents.first else {
             fail("Expected AdEvent.opened but got \(String(describing: trackedEvents.first))")
@@ -150,7 +142,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.impressionId) == "impression-123"
     }
 
-    func testTrackAdRevenueStoresEvent() async throws {
+    func testTrackAdRevenueStoresEvent() async {
         let revenueData = AdRevenue(
             networkName: "AdMob",
             mediatorName: .appLovin,
@@ -165,11 +157,9 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         self.purchases.adTracker.trackAdRevenue(revenueData)
 
-        await self.yield() // Wait for async Task to complete
+        await expect { await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
-        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
-
-        expect(trackedEvents).to(haveCount(1))
+        let trackedEvents = await self.mockEventsManager.trackedAdEvents
 
         guard case let .revenue(_, eventData) = trackedEvents.first else {
             fail("Expected AdEvent.revenue but got \(String(describing: trackedEvents.first))")
