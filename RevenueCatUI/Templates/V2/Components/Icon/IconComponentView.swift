@@ -115,7 +115,8 @@ struct IconComponentView_Previews: PreviewProvider {
         // Default
         VStack {
             IconComponentView(
-                viewModel: .init(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
@@ -146,7 +147,8 @@ struct IconComponentView_Previews: PreviewProvider {
         // Default - Background
         VStack {
             IconComponentView(
-                viewModel: .init(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
