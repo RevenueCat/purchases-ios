@@ -330,13 +330,19 @@ extension Array {
     /// Converts component overrides to presented overrides
     /// - Parameter convert: Conversion function to apply
     /// - Returns: Presented overrides with converted components
+    /// - Throws: `PaywallError.unsupportedCondition` if any override contains unsupported conditions
     func toPresentedOverrides<
         T: PaywallPartialComponent,
         P: PresentedPartial
     >(
         convert: (T) throws -> P
-    ) rethrows -> PresentedOverrides<P>
+    ) throws -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
+        // Check for unsupported conditions first - triggers fallback to default paywall
+        if self.containsUnsupportedConditions() {
+            throw PaywallError.unsupportedCondition
+        }
+
         return try self.compactMap { partial in
             let presentedPartial = try convert(partial.properties)
 

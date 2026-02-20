@@ -30,7 +30,9 @@ extension PaywallComponent.Background {
         case .image(let image, let fitMode, let colorScheme):
             return .image(image, fitMode, colorScheme?.asDisplayable(uiConfigProvider: uiConfigProvider))
         case let .video(video, image, loop, mute, fitMode, colorScheme):
-            let viewModel = VideoComponentViewModel(
+            // Video backgrounds created here have no overrides, so this won't fail in practice.
+            // Using try? as a safety measure since SwiftUI view bodies can't throw.
+            guard let viewModel = try? VideoComponentViewModel(
                 localizationProvider: localizationProvider ?? .init(locale: .current, localizedStrings: .init()),
                 uiConfigProvider: uiConfigProvider,
                 component: .init(
@@ -40,7 +42,10 @@ extension PaywallComponent.Background {
                     muteAudio: mute,
                     fitMode: fitMode
                 )
-            )
+            ) else {
+                // Fallback to image if video fails (unlikely for backgrounds)
+                return .image(image, fitMode, colorScheme?.asDisplayable(uiConfigProvider: uiConfigProvider))
+            }
             return .video(viewModel, colorScheme?.asDisplayable(uiConfigProvider: uiConfigProvider))
         }
     }
