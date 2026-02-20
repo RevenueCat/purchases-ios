@@ -28,6 +28,9 @@ parameters:
   generate_revenuecatui_snapshots:
     default: false
     type: boolean
+  generate_swiftinterface:
+    default: false
+    type: boolean
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
@@ -102,6 +105,7 @@ aliases:
         ignore: /.*/
       branches:
         only: main
+  swiftinterface-xcode-version: &swiftinterface-xcode-version "26.2"
 commands:
   slack-notify-on-fail:
     steps:
@@ -1841,7 +1845,7 @@ jobs:
   check-api-changes:
     executor:
       name: macos-executor
-      xcode_version: "16.3.0"
+      xcode_version: *swiftinterface-xcode-version
     steps:
       - checkout
       - install-dependencies
@@ -1883,6 +1887,24 @@ jobs:
           destination: revenuecat-api-visionos.swiftinterface
       - slack-notify-on-fail
 
+  generate-swiftinterface:
+    executor:
+      name: macos-executor
+      xcode_version: *swiftinterface-xcode-version
+    steps:
+      - checkout
+      - install-dependencies
+      - revenuecat/setup-git-credentials
+      - run:
+          name: Generate swiftinterface files
+          command: |
+            bundle exec fastlane ios generate_swiftinterface
+      - run:
+          name: Update baseline swiftinterface files
+          command: |
+            bundle exec fastlane ios create_swiftinterface_pr
+      - slack-notify-on-fail
+
   deploy-to-spm:
     docker:
       - image: cimg/base:stable
@@ -1915,6 +1937,13 @@ jobs:
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
 workflows:
+
+  generate-swiftinterface:
+    when: << pipeline.parameters.generate_swiftinterface >>
+    jobs:
+      - generate-swiftinterface:
+          context:
+            - slack-secrets-ios
 
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
@@ -1951,6 +1980,7 @@ workflows:
             equal: [bump, << pipeline.parameters.action >>]
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
+        - not: << pipeline.parameters.generate_swiftinterface >>
     jobs:
       - lint
       - check-api-changes:
