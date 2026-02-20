@@ -105,6 +105,7 @@ aliases:
         ignore: /.*/
       branches:
         only: main
+  swiftinterface-xcode-version: &swiftinterface-xcode-version "16.4"
 commands:
   slack-notify-on-fail:
     steps:
@@ -1820,7 +1821,7 @@ jobs:
   check-api-changes:
     executor:
       name: macos-executor
-      xcode_version: "16.3.0"
+      xcode_version: *swiftinterface-xcode-version
     steps:
       - checkout
       - install-dependencies
@@ -1865,6 +1866,7 @@ jobs:
   generate-swiftinterface:
     executor:
       name: macos-executor
+      xcode_version: *swiftinterface-xcode-version
     steps:
       - checkout
       - install-dependencies
