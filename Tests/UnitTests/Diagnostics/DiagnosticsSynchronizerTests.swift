@@ -24,7 +24,8 @@ class DiagnosticsSynchronizerTests: TestCase {
     fileprivate var handler: DiagnosticsFileHandler!
     fileprivate var tracker: MockDiagnosticsTracker!
     fileprivate var synchronizer: DiagnosticsSynchronizer!
-    fileprivate var userDefaults: MockUserDefaults!
+    fileprivate var userDefaults: UserDefaults!
+    fileprivate var userDefaultsSuiteName: String!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -35,11 +36,22 @@ class DiagnosticsSynchronizerTests: TestCase {
         self.fileHandler = try Self.createWithTemporaryFile()
         self.handler = .init(self.fileHandler)
         self.tracker = MockDiagnosticsTracker()
-        self.userDefaults = .init()
+        self.userDefaultsSuiteName = "DiagnosticsSynchronizerTests.\(self.name).\(UUID().uuidString)"
+        self.userDefaults = UserDefaults(suiteName: self.userDefaultsSuiteName)
+        self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.synchronizer = .init(internalAPI: self.api,
                                   handler: self.handler,
                                   tracker: self.tracker,
                                   userDefaults: .init(userDefaults: self.userDefaults))
+    }
+
+    override func tearDownWithError() throws {
+        if let suiteName = self.userDefaultsSuiteName {
+            self.userDefaults?.removePersistentDomain(forName: suiteName)
+            self.userDefaults?.removeSuite(named: suiteName)
+        }
+
+        try super.tearDownWithError()
     }
 
     // MARK: - syncDiagnosticsIfNeeded
@@ -146,7 +158,7 @@ class DiagnosticsSynchronizerTests: TestCase {
 
         self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
 
-        self.userDefaults.mockValues = [cacheKey: 1]
+        let mockUserDefaults = self.configureSynchronizerWithMockUserDefaults(initialValues: [cacheKey: 1])
 
         do {
             try await self.synchronizer.syncDiagnosticsIfNeeded()
@@ -154,8 +166,8 @@ class DiagnosticsSynchronizerTests: TestCase {
             fail("Should have errored")
         } catch {
             await self.verifyEmptyStore()
-            expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
-            expect(self.userDefaults.mockValues[cacheKey]).to(beNil())
+            expect(mockUserDefaults.removeObjectForKeyCalledValues) == [cacheKey]
+            expect(mockUserDefaults.mockValues[cacheKey]).to(beNil())
         }
     }
 
@@ -168,7 +180,7 @@ class DiagnosticsSynchronizerTests: TestCase {
 
         self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
 
-        self.userDefaults.mockValues = [cacheKey: 1]
+        let mockUserDefaults = self.configureSynchronizerWithMockUserDefaults(initialValues: [cacheKey: 1])
 
         do {
             try await self.synchronizer.syncDiagnosticsIfNeeded()
@@ -176,8 +188,8 @@ class DiagnosticsSynchronizerTests: TestCase {
             fail("Should have errored")
         } catch {
             await self.verifyEmptyStore()
-            expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
-            expect(self.userDefaults.mockValues[cacheKey]).to(beNil())
+            expect(mockUserDefaults.removeObjectForKeyCalledValues) == [cacheKey]
+            expect(mockUserDefaults.mockValues[cacheKey]).to(beNil())
         }
     }
 
@@ -190,7 +202,7 @@ class DiagnosticsSynchronizerTests: TestCase {
 
         self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
 
-        self.userDefaults.mockValues = [cacheKey: 1]
+        let mockUserDefaults = self.configureSynchronizerWithMockUserDefaults(initialValues: [cacheKey: 1])
 
         do {
             try await self.synchronizer.syncDiagnosticsIfNeeded()
@@ -198,8 +210,8 @@ class DiagnosticsSynchronizerTests: TestCase {
             fail("Should have errored")
         } catch {
             await verifyNonEmptyStore()
-            expect(self.userDefaults.removeObjectForKeyCalledValues).to(beEmpty())
-            expect(self.userDefaults.mockValues[cacheKey] as? Int) == 2
+            expect(mockUserDefaults.removeObjectForKeyCalledValues).to(beEmpty())
+            expect(mockUserDefaults.mockValues[cacheKey] as? Int) == 2
         }
     }
 
@@ -212,7 +224,7 @@ class DiagnosticsSynchronizerTests: TestCase {
 
         self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
 
-        self.userDefaults.mockValues = [cacheKey: 1]
+        _ = self.configureSynchronizerWithMockUserDefaults(initialValues: [cacheKey: 1])
 
         try? await self.synchronizer.syncDiagnosticsIfNeeded()
 
@@ -229,7 +241,7 @@ class DiagnosticsSynchronizerTests: TestCase {
 
         self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
 
-        self.userDefaults.mockValues = [cacheKey: 3]
+        let mockUserDefaults = self.configureSynchronizerWithMockUserDefaults(initialValues: [cacheKey: 3])
 
         do {
             try await self.synchronizer.syncDiagnosticsIfNeeded()
@@ -237,7 +249,7 @@ class DiagnosticsSynchronizerTests: TestCase {
             fail("Should have errored")
         } catch {
             await self.verifyEmptyStore()
-            expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
+            expect(mockUserDefaults.removeObjectForKeyCalledValues) == [cacheKey]
         }
     }
 
@@ -250,7 +262,7 @@ class DiagnosticsSynchronizerTests: TestCase {
 
         self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
 
-        self.userDefaults.mockValues = [cacheKey: 3]
+        _ = self.configureSynchronizerWithMockUserDefaults(initialValues: [cacheKey: 3])
 
         try? await self.synchronizer.syncDiagnosticsIfNeeded()
 
@@ -267,17 +279,19 @@ class DiagnosticsSynchronizerTests: TestCase {
 
         self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
 
+        let mockUserDefaults = self.configureSynchronizerWithMockUserDefaults(initialValues: [:])
+
         try? await self.synchronizer.syncDiagnosticsIfNeeded()
         try? await self.synchronizer.syncDiagnosticsIfNeeded()
         try? await self.synchronizer.syncDiagnosticsIfNeeded()
         await self.verifyEvents([event])
 
-        expect(self.userDefaults.mockValues[cacheKey] as? Int) == 3
+        expect(mockUserDefaults.mockValues[cacheKey] as? Int) == 3
 
         try? await self.synchronizer.syncDiagnosticsIfNeeded()
 
         await self.verifyEmptyStore()
-        expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
+        expect(mockUserDefaults.removeObjectForKeyCalledValues) == [cacheKey]
     }
 
     func testSyncMultipleEventsWithInvalidEvent() async throws {
@@ -309,6 +323,19 @@ class DiagnosticsSynchronizerTests: TestCase {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension DiagnosticsSynchronizerTests {
+
+    @discardableResult
+    func configureSynchronizerWithMockUserDefaults(initialValues: [String: Any]) -> MockUserDefaults {
+        let mockUserDefaults = MockUserDefaults()
+        mockUserDefaults.mockValues = initialValues
+
+        self.synchronizer = .init(internalAPI: self.api,
+                                  handler: self.handler,
+                                  tracker: self.tracker,
+                                  userDefaults: .init(userDefaults: mockUserDefaults))
+
+        return mockUserDefaults
+    }
 
     func storeEvent(timestamp: Date = eventTimestamp1) async -> DiagnosticsEvent {
         let event = DiagnosticsEvent(name: .httpRequestPerformed,

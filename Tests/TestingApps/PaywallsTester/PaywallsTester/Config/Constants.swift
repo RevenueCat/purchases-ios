@@ -35,4 +35,12 @@ enum Constants {
         }
         return "\(scheme)//\(host)"
     }()
+
+    /*
+     To set a default search term for the Sandbox Paywalls tab, add it in your local.xcconfig file like this:
+     SANDBOX_PAYWALL_SEARCH = your-search-term
+     */
+    static let sandboxPaywallSearch: String = {
+        Bundle.main.object(forInfoDictionaryKey: "SANDBOX_PAYWALL_SEARCH") as? String ?? ""
+    }()
 }
