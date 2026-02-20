@@ -53,12 +53,12 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
     }
 
     /// Creates a numeric value.
-    public static func number(_ value: Double) -> CustomVariableValue {
+    static func number(_ value: Double) -> CustomVariableValue {
         CustomVariableValue(.number(value))
     }
 
     /// Creates a boolean value.
-    public static func bool(_ value: Bool) -> CustomVariableValue {
+    static func bool(_ value: Bool) -> CustomVariableValue {
         CustomVariableValue(.bool(value))
     }
 
