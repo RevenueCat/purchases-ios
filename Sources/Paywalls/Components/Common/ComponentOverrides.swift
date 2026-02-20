@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 10/26/24.
 //
-// swiftlint:disable missing_docs file_length
+// swiftlint:disable missing_docs
 
 import Foundation
 
@@ -236,11 +236,8 @@ extension PaywallComponent {
         // MARK: - Selection state
         case selected
 
-        // MARK: - Offer eligibility (legacy - no operator/value)
-        case introOffer
-        case promoOffer
-
-        // MARK: - Extended offer eligibility (with operator/value)
+        // MARK: - Offer eligibility (with operator/value)
+        // Note: Legacy conditions without operator/value are normalized to (operator: .equals, value: true)
         case introOfferCondition(operator: EqualityOperator, value: Bool)
         case promoOfferCondition(operator: EqualityOperator, value: Bool)
 
@@ -259,26 +256,26 @@ extension PaywallComponent {
             case .medium: return .medium
             case .expanded: return .expanded
             case .selected: return .selected
-            case .introOffer, .introOfferCondition: return .introOffer
-            case .promoOffer, .promoOfferCondition: return .promoOffer
+            case .introOfferCondition: return .introOffer
+            case .promoOfferCondition: return .promoOffer
             case .variableCondition, .selectedPackageCondition, .unsupported: return .unsupported
             }
         }
 
         /// Creates an ExtendedCondition from a public Condition.
+        /// Legacy intro/promo offer conditions are normalized to the extended form.
         public init(from condition: Condition) {
             switch condition {
             case .compact: self = .compact
             case .medium: self = .medium
             case .expanded: self = .expanded
             case .selected: self = .selected
-            case .introOffer: self = .introOffer
-            case .promoOffer: self = .promoOffer
+            case .introOffer: self = .introOfferCondition(operator: .equals, value: true)
+            case .promoOffer: self = .promoOfferCondition(operator: .equals, value: true)
             case .unsupported: self = .unsupported
             }
         }
 
-        // swiftlint:disable:next cyclomatic_complexity
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -289,10 +286,6 @@ extension PaywallComponent {
                 try container.encode(ConditionType.medium.rawValue, forKey: .type)
             case .expanded:
                 try container.encode(ConditionType.expanded.rawValue, forKey: .type)
-            case .introOffer:
-                try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
-            case .promoOffer:
-                try container.encode(ConditionType.promoOffer.rawValue, forKey: .type)
             case .selected:
                 try container.encode(ConditionType.selected.rawValue, forKey: .type)
             case .introOfferCondition(let condOp, let value):
@@ -317,7 +310,6 @@ extension PaywallComponent {
             }
         }
 
-        // swiftlint:disable:next cyclomatic_complexity
         public init(from decoder: Decoder) throws {
             do {
                 let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -338,23 +330,15 @@ extension PaywallComponent {
                 case .selected:
                     self = .selected
                 case .introOffer:
-                    // Check for extended form (with operator/value)
-                    if let condOp = try container.decodeIfPresent(EqualityOperator.self, forKey: .operator),
-                       let value = try container.decodeIfPresent(Bool.self, forKey: .value) {
-                        self = .introOfferCondition(operator: condOp, value: value)
-                    } else {
-                        // Legacy form (no operator/value)
-                        self = .introOffer
-                    }
+                    // Check for extended form (with operator/value), otherwise normalize legacy
+                    let condOp = try container.decodeIfPresent(EqualityOperator.self, forKey: .operator) ?? .equals
+                    let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
+                    self = .introOfferCondition(operator: condOp, value: value)
                 case .promoOffer:
-                    // Check for extended form (with operator/value)
-                    if let condOp = try container.decodeIfPresent(EqualityOperator.self, forKey: .operator),
-                       let value = try container.decodeIfPresent(Bool.self, forKey: .value) {
-                        self = .promoOfferCondition(operator: condOp, value: value)
-                    } else {
-                        // Legacy form (no operator/value)
-                        self = .promoOffer
-                    }
+                    // Check for extended form (with operator/value), otherwise normalize legacy
+                    let condOp = try container.decodeIfPresent(EqualityOperator.self, forKey: .operator) ?? .equals
+                    let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
+                    self = .promoOfferCondition(operator: condOp, value: value)
                 case .variable:
                     let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
                     let variable = try container.decode(String.self, forKey: .variable)

@@ -57,19 +57,21 @@ class ConditionDeserializationTests: TestCase {
     }
 
     func testDecodeLegacyIntroOfferCondition() throws {
+        // Legacy intro_offer is normalized to introOfferCondition(operator: .equals, value: true)
         let json = """
         {"type": "intro_offer"}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.introOffer))
+        expect(condition).to(equal(.introOfferCondition(operator: .equals, value: true)))
     }
 
     func testDecodeLegacyPromoOfferCondition() throws {
+        // Legacy promo_offer is normalized to promoOfferCondition(operator: .equals, value: true)
         let json = """
         {"type": "promo_offer"}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.promoOffer))
+        expect(condition).to(equal(.promoOfferCondition(operator: .equals, value: true)))
     }
 
     // MARK: - Extended Intro Offer Condition Tests
@@ -343,8 +345,6 @@ class ConditionDeserializationTests: TestCase {
         expect(PaywallComponent.ExtendedCondition.medium.toCondition()).to(equal(.medium))
         expect(PaywallComponent.ExtendedCondition.expanded.toCondition()).to(equal(.expanded))
         expect(PaywallComponent.ExtendedCondition.selected.toCondition()).to(equal(.selected))
-        expect(PaywallComponent.ExtendedCondition.introOffer.toCondition()).to(equal(.introOffer))
-        expect(PaywallComponent.ExtendedCondition.promoOffer.toCondition()).to(equal(.promoOffer))
     }
 
     func testExtendedConditionToPublicCondition_Extended() throws {
