@@ -53,7 +53,6 @@ class TestCase: XCTestCase {
     }
 
     override func invokeTest() {
-        #if swift(>=5.9)
         if SnapshotTests.shouldRecordSnapshots {
             withSnapshotTesting(record: .all) {
                 super.invokeTest()
@@ -63,12 +62,6 @@ class TestCase: XCTestCase {
                 super.invokeTest()
             }
         }
-        #else
-        let previousRecordMode = isRecording
-        isRecording = SnapshotTests.shouldRecordSnapshots
-        defer { isRecording = previousRecordMode }
-        super.invokeTest()
-        #endif
     }
 
     @MainActor
@@ -84,9 +77,7 @@ class TestCase: XCTestCase {
 
 private enum SnapshotTests {
     static var shouldRecordSnapshots: Bool {
-        let value = ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"]?.lowercased()
-
-        return value == "1" || value == "true"
+        return ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
     }
 }
 
