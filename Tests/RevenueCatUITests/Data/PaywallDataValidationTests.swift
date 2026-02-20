@@ -293,7 +293,7 @@ private extension PaywallDataValidationTests {
         #endif
 
         assertSnapshot(
-            matching: paywall.withTestAssetBaseURL,
+            of: paywall.withTestAssetBaseURL,
             as: .formattedJson,
             file: file,
             testName: test,

@@ -33,8 +33,6 @@ class TestCase: XCTestCase {
     @MainActor
     override class func setUp() {
         XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
-
-        SnapshotTests.updateSnapshotsIfNeeded()
     }
 
     @MainActor
@@ -49,6 +47,25 @@ class TestCase: XCTestCase {
         self.initializeLogger()
     }
 
+    override func invokeTest() {
+        #if swift(>=5.9)
+        if SnapshotTests.shouldRecordSnapshots {
+            withSnapshotTesting(record: .all) {
+                super.invokeTest()
+            }
+        } else {
+            withSnapshotTesting(record: .never) {
+                super.invokeTest()
+            }
+        }
+        #else
+        let previousRecordMode = isRecording
+        isRecording = SnapshotTests.shouldRecordSnapshots
+        defer { isRecording = previousRecordMode }
+        super.invokeTest()
+        #endif
+    }
+
     @MainActor
     override func tearDown() {
         self.logger = nil
@@ -61,15 +78,11 @@ class TestCase: XCTestCase {
 }
 
 private enum SnapshotTests {
+    static var shouldRecordSnapshots: Bool {
+        let value = ProcessInfo.processInfo
+            .environment["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"]?
+            .lowercased()
 
-    private static var environmentVariableChecked = false
-
-    static func updateSnapshotsIfNeeded() {
-        guard !Self.environmentVariableChecked else { return }
-
-        if ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "1" {
-            isRecording = true
-        }
+        return value == "1" || value == "true"
     }
-
 }

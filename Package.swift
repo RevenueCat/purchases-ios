@@ -50,7 +50,7 @@ var dependencies: [Package.Dependency] = [
     // SST requires iOS 13 starting from version 1.13.0
     .package(
         url: "https://github.com/pointfreeco/swift-snapshot-testing",
-        revision: "26ed3a2b4a2df47917ca9b790a57f91285b923fb"
+        exact: "1.18.9"
     )
 ]
 if shouldIncludeDocCPlugin {

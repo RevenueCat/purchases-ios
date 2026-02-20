@@ -106,7 +106,7 @@ class MockHTTPClient: HTTPClient {
             self.calls.append(call)
 
             if self.shouldAssertSnapshot {
-                assertSnapshot(matching: call,
+                assertSnapshot(of: call,
                                as: .formattedJson,
                                file: self.sourceTestFile,
                                testName: CurrentTestCaseTracker.osVersionAndTestName)
