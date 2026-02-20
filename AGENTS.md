@@ -155,6 +155,29 @@ For snapshot testing, sample applications, pre-commit hooks, and release process
 - `CI.xcconfig` - CI-specific configuration
 - `api/*.swiftinterface` - Public API surface tracking
 
+### Pull Request Labels
+
+When creating a pull request, **always add one of these labels** to categorize the change. These labels determine automatic version bumps and changelog generation:
+
+| Label | When to Use |
+|-------|-------------|
+| `pr:feat` | New user-facing features or enhancements |
+| `pr:fix` | Bug fixes |
+| `pr:other` | Internal changes, refactors, CI, docs, or anything that shouldn't trigger a release |
+
+**Additional scope labels** (add alongside the primary label above):
+- `pr:RevenueCatUI` — Changes specific to the RevenueCatUI module (paywalls, customer center)
+- `feat:Paywalls_V2` — Changes related to Paywalls V2 (requires `pr:RevenueCatUI` as well)
+- `feat:Customer Center` — Changes related to Customer Center (requires `pr:RevenueCatUI` as well)
+
+## Code Review Guidelines
+
+When reviewing a pull request:
+
+1. **Check for linked specs** — If the PR description contains a link to `https://github.com/RevenueCat/sdk-specs`, fetch and read the spec before reviewing the code. The spec defines the expected behavior and requirements.
+2. **Verify the implementation matches the spec** — Ensure the code implements what the spec describes, including edge cases and error handling.
+3. **Check cross-platform consistency** — If the spec applies to multiple platforms, verify the implementation follows patterns from other SDKs (especially purchases-android).
+
 ## When the Task is Ambiguous
 
 1. Search for similar existing implementation in this repo first

@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		030890812D2B764D0069677B /* VariableHandlerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030890802D2B76450069677B /* VariableHandlerV2.swift */; };
 		030890842D2B77E70069677B /* VariableHandlerV2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */; };
+		FACD00022F61A1230073D2DE /* TextComponentLocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD00012F61A1230073D2DE /* TextComponentLocalizationTests.swift */; };
+		FACD00042F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD00032F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift */; };
 		030F918A2D55C1D20085103F /* LocaleFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F91892D55C1AB0085103F /* LocaleFinder.swift */; };
 		030F918C2D55C9DC0085103F /* LocaleFinderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F918B2D55C9D80085103F /* LocaleFinderTests.swift */; };
 		030F93B32D5ED90B0085103F /* ProgressViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */; };
@@ -1535,6 +1537,8 @@
 /* Begin PBXFileReference section */
 		030890802D2B76450069677B /* VariableHandlerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2.swift; sourceTree = "<group>"; };
 		030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2Tests.swift; sourceTree = "<group>"; };
+		FACD00012F61A1230073D2DE /* TextComponentLocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextComponentLocalizationTests.swift; sourceTree = "<group>"; };
+		FACD00032F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactoryBadgeTests.swift; sourceTree = "<group>"; };
 		030F91892D55C1AB0085103F /* LocaleFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinder.swift; sourceTree = "<group>"; };
 		030F918B2D55C9D80085103F /* LocaleFinderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinderTests.swift; sourceTree = "<group>"; };
 		030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewModifier.swift; sourceTree = "<group>"; };
@@ -3035,6 +3039,8 @@
 		030890822D2B77DD0069677B /* PaywallsV2 */ = {
 			isa = PBXGroup;
 			children = (
+				FACD00012F61A1230073D2DE /* TextComponentLocalizationTests.swift */,
+				FACD00032F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift */,
 				FD4253DD2F1DBD7E0073D2DE /* FileImageLoaderTests.swift */,
 				57BFCD0F2EEB1234009E5844 /* TabsPackageSelectionResolverTests.swift */,
 				57BFCD0A2EEB0E56009E5844 /* TabsPackageInheritanceTests.swift */,
@@ -8096,6 +8102,8 @@
 				887A63422C1D177800E1A461 /* ImageLoaderTests.swift in Sources */,
 				887A63432C1D177800E1A461 /* LocalizationTests.swift in Sources */,
 				030890842D2B77E70069677B /* VariableHandlerV2Tests.swift in Sources */,
+				FACD00022F61A1230073D2DE /* TextComponentLocalizationTests.swift in Sources */,
+				FACD00042F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift in Sources */,
 				DBD2432F2EBDF4BC0066AC6F /* PromotionalOfferViewTests.swift in Sources */,
 				577782B52D9182A200F97EB4 /* CustomerCenterActionWrapperTests.swift in Sources */,
 				03C06FC52D4553C000600693 /* PresentedPartialsTests.swift in Sources */,
