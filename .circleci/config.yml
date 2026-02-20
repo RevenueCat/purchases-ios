@@ -719,6 +719,10 @@ jobs:
             DEVICE: iPhone 13,OS=15.5
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          job: "create_snapshot_pr"
+          version: "revenuecatui-15"
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-15"
       - compress_result_bundle:
@@ -753,6 +757,10 @@ jobs:
           no_output_timeout: 5m
           environment:
             DEVICE: iPhone 14,OS=16.4
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          job: "create_snapshot_pr"
+          version: "revenuecatui-16"
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -791,6 +799,10 @@ jobs:
             DEVICE: iPhone 15 Pro,OS=17.5
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          job: "create_snapshot_pr"
+          version: "revenuecatui-17"
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-17"
       - compress_result_bundle:
@@ -824,6 +836,10 @@ jobs:
           no_output_timeout: 15m
           environment:
             DEVICE: iPhone 16,OS=18.5
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          job: "create_snapshot_pr"
+          version: "revenuecatui-18"
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -861,6 +877,10 @@ jobs:
             DEVICE: iPhone 17,OS=26.2
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          job: "create_snapshot_pr"
+          version: "revenuecatui-26"
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-26"
       - compress_result_bundle:
@@ -890,6 +910,10 @@ jobs:
             PLATFORM: watchOS Simulator
             DEVICE: Apple Watch Series 10 (46mm),OS=11.5
             BUILD_SDK: watchsimulator
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          job: "create_snapshot_pr"
+          version: "revenuecatui-watchos"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -1914,6 +1938,7 @@ workflows:
       - run-revenuecat-ui-ios-17
       - run-revenuecat-ui-ios-18
       - run-revenuecat-ui-ios-26
+      - spm-revenuecat-ui-watchos
 
   build-test:
     when:
