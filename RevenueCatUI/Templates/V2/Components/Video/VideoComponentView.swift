@@ -106,8 +106,8 @@ struct VideoComponentView: View {
                                 )
                                 // Recreate player when becoming playable again (carousel navigation).
                                 // swiftlint:disable:next todo
-                                // TODO: Add cachedURL back to .id() once we find a way to swap
-                                // video URLs without visual glitches.
+                                // TODO: Add cachedURL back to .id() once AVPlayer can swap
+                                // URLs mid-playback without visible stuttering.
                                 .id(playerRefreshToggle),
                                 size: size,
                                 with: style
@@ -138,10 +138,14 @@ struct VideoComponentView: View {
                             self.cachedURL = lowResCachedURL
                             self.imageSource = nil
                             Task(priority: .utility) {
-                                _ = try? await fileRepository.generateOrGetCachedFileURL(
-                                    for: viewData.url,
-                                    withChecksum: viewData.checksum
-                                )
+                                do {
+                                    _ = try await fileRepository.generateOrGetCachedFileURL(
+                                        for: viewData.url,
+                                        withChecksum: viewData.checksum
+                                    )
+                                } catch {
+                                    Logger.warning(Strings.video_failed_to_cache(viewData.url, error))
+                                }
                             }
                             return
                         }
@@ -150,17 +154,30 @@ struct VideoComponentView: View {
                         self.cachedURL = viewData.url
                         self.imageSource = viewModel.imageSource
 
+                        // Cache both resolutions as a failsafe: if the high-res
+                        // download fails or is canceled, the low-res version is
+                        // available as a fallback on next open.
                         Task(priority: .utility) {
-                            _ = try? await fileRepository.generateOrGetCachedFileURL(
-                                for: viewData.url,
-                                withChecksum: viewData.checksum
-                            )
+                            do {
+                                _ = try await fileRepository.generateOrGetCachedFileURL(
+                                    for: viewData.url,
+                                    withChecksum: viewData.checksum
+                                )
+                            } catch {
+                                Logger.warning(Strings.video_failed_to_cache(viewData.url, error))
+                            }
                             if let lowResUrl = viewData.lowResUrl,
                                lowResUrl != viewData.url {
-                                _ = try? await fileRepository.generateOrGetCachedFileURL(
-                                    for: lowResUrl,
-                                    withChecksum: viewData.lowResChecksum
-                                )
+                                do {
+                                    _ = try await fileRepository.generateOrGetCachedFileURL(
+                                        for: lowResUrl,
+                                        withChecksum: viewData.lowResChecksum
+                                    )
+                                } catch {
+                                    Logger.warning(
+                                        Strings.video_failed_to_cache(lowResUrl, error)
+                                    )
+                                }
                             }
                         }
                     }
