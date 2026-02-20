@@ -24,49 +24,51 @@ class ToPresentedOverridesTests: TestCase {
 
     // MARK: - Unsupported Condition Detection Tests
 
-    func testContainsUnsupportedConditions_WithUnsupportedCondition_ReturnsTrue() throws {
+    // MARK: - Array hasUnsupportedCondition Tests
+
+    func testHasUnsupportedCondition_WithUnsupportedCondition_ReturnsTrue() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [.unsupported], properties: .init())
         ]
 
-        expect(overrides.containsUnsupportedConditions()).to(beTrue())
+        expect(overrides.hasUnsupportedCondition()).to(beTrue())
     }
 
-    func testContainsUnsupportedConditions_WithUnsupportedConditionAmongOthers_ReturnsTrue() throws {
+    func testHasUnsupportedCondition_WithUnsupportedConditionAmongOthers_ReturnsTrue() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [.compact, .unsupported, .selected], properties: .init())
         ]
 
-        expect(overrides.containsUnsupportedConditions()).to(beTrue())
+        expect(overrides.hasUnsupportedCondition()).to(beTrue())
     }
 
-    func testContainsUnsupportedConditions_WithMultipleOverrides_OneHasUnsupported_ReturnsTrue() throws {
+    func testHasUnsupportedCondition_WithMultipleOverrides_OneHasUnsupported_ReturnsTrue() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [.compact], properties: .init()),
             .init(extendedConditions: [.unsupported], properties: .init()),
             .init(extendedConditions: [.medium], properties: .init())
         ]
 
-        expect(overrides.containsUnsupportedConditions()).to(beTrue())
+        expect(overrides.hasUnsupportedCondition()).to(beTrue())
     }
 
-    func testContainsUnsupportedConditions_WithSupportedConditions_ReturnsFalse() throws {
+    func testHasUnsupportedCondition_WithSupportedConditions_ReturnsFalse() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [.compact], properties: .init()),
             .init(extendedConditions: [.medium, .selected], properties: .init()),
             .init(extendedConditions: [.introOffer(operator: .equals, value: true)], properties: .init())
         ]
 
-        expect(overrides.containsUnsupportedConditions()).to(beFalse())
+        expect(overrides.hasUnsupportedCondition()).to(beFalse())
     }
 
-    func testContainsUnsupportedConditions_WithEmptyOverrides_ReturnsFalse() throws {
+    func testHasUnsupportedCondition_WithEmptyOverrides_ReturnsFalse() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = []
 
-        expect(overrides.containsUnsupportedConditions()).to(beFalse())
+        expect(overrides.hasUnsupportedCondition()).to(beFalse())
     }
 
-    func testContainsUnsupportedConditions_WithNewConditionTypes_ReturnsFalse() throws {
+    func testHasUnsupportedCondition_WithNewConditionTypes_ReturnsFalse() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [
                 .selectedPackage(operator: .in, packages: ["monthly"])
@@ -79,7 +81,54 @@ class ToPresentedOverridesTests: TestCase {
             ], properties: .init())
         ]
 
-        expect(overrides.containsUnsupportedConditions()).to(beFalse())
+        expect(overrides.hasUnsupportedCondition()).to(beFalse())
+    }
+
+    // MARK: - Recursive containsUnsupportedConditions Tests
+
+    func testStackWithUnsupportedCondition_ReturnsTrue() throws {
+        let stack = PaywallComponent.StackComponent(
+            components: [],
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ]
+        )
+
+        expect(stack.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testStackWithNestedUnsupportedCondition_ReturnsTrue() throws {
+        let innerText = PaywallComponent.TextComponent(
+            text: "text_1",
+            color: .init(light: .hex("#000000")),
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ]
+        )
+        let stack = PaywallComponent.StackComponent(
+            components: [.text(innerText)]
+        )
+
+        expect(stack.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testStackWithNoUnsupportedConditions_ReturnsFalse() throws {
+        let stack = PaywallComponent.StackComponent(
+            components: [],
+            overrides: [
+                .init(extendedConditions: [.compact], properties: .init())
+            ]
+        )
+
+        expect(stack.containsUnsupportedConditions()).to(beFalse())
+    }
+
+    func testComponentWithNoOverrides_ReturnsFalse() throws {
+        let component = PaywallComponent.text(
+            .init(text: "text_1", color: .init(light: .hex("#000000")))
+        )
+
+        expect(component.containsUnsupportedConditions()).to(beFalse())
     }
 
 }
