@@ -61,16 +61,47 @@ extension CustomerInfo {
     }
 
     static func extractPurchaseDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
-        return Dictionary(
-                    uniqueKeysWithValues: subscriber
-                        .allPurchasesByProductId
-                        .lazy
-                        .map { productID, purchase in
-                            let key = Self.extractProductIDAndBasePlan(from: productID, purchase: purchase)
-                            let value = purchase.purchaseDate
-                            return (key, value)
-                        }
+        struct PurchaseDateCandidate {
+            let date: Date?
+            let hasSubscriptionMetadata: Bool
+            let originalProductID: String
+        }
+
+        func preferred(_ lhs: PurchaseDateCandidate, _ rhs: PurchaseDateCandidate) -> PurchaseDateCandidate {
+            switch (lhs.date, rhs.date) {
+            case (.some, .none):
+                return lhs
+            case (.none, .some):
+                return rhs
+            case let (.some(lhsDate), .some(rhsDate)):
+                if lhsDate != rhsDate {
+                    return lhsDate > rhsDate ? lhs : rhs
+                }
+            case (.none, .none):
+                break
+            }
+
+            if lhs.hasSubscriptionMetadata != rhs.hasSubscriptionMetadata {
+                return lhs.hasSubscriptionMetadata ? lhs : rhs
+            }
+
+            return lhs.originalProductID <= rhs.originalProductID ? lhs : rhs
+        }
+
+        let merged = Dictionary(
+            subscriber.allPurchasesByProductId.map { productID, purchase in
+                let key = Self.extractProductIDAndBasePlan(from: productID, purchase: purchase)
+                let candidate = PurchaseDateCandidate(
+                    date: purchase.purchaseDate,
+                    hasSubscriptionMetadata: purchase.expiresDate != nil || purchase.productPlanIdentifier != nil,
+                    originalProductID: productID
                 )
+                return (key, candidate)
+            },
+            uniquingKeysWith: preferred
+        )
+
+        return merged.mapValues(\.date)
     }
 
 }
