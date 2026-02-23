@@ -47,9 +47,10 @@ let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "tr
 
 var dependencies: [Package.Dependency] = [
     .package(url: "https://github.com/quick/nimble", exact: "13.7.1"),
+    // SST requires iOS 13 starting from version 1.13.0
     .package(
         url: "https://github.com/pointfreeco/swift-snapshot-testing",
-        exact: "1.18.9"
+        revision: "26ed3a2b4a2df47917ca9b790a57f91285b923fb"
     )
 ]
 if shouldIncludeDocCPlugin {
@@ -120,7 +121,8 @@ let package = Package(
                 resources: [
                     // Note: these have to match the values in RevenueCatUI.podspec
                     .copy("Resources/background.jpg"),
-                    .process("Resources/icons.xcassets")
+                    .process("Resources/icons.xcassets"),
+                    .process("Resources/Media.xcassets")
                 ],
                 swiftSettings: ciCompilerFlags + additionalCompilerFlags),
         .testTarget(name: "RevenueCatUITests",
