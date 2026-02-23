@@ -1078,17 +1078,15 @@ jobs:
   run-test-ios-15:
     executor:
       name: macos-executor
-      xcode_version: "15.4.0"
+      xcode_version: "14.3.1"
 
     steps:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-      - install-xcbeautify-for-xcode15
+      - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 15.5
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
