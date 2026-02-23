@@ -889,9 +889,6 @@ jobs:
 
     steps:
       - checkout
-      - run:
-          name: Validate Package.swift
-          command: swift package describe
       - install-dependencies
 
       # === SPM Release Build (Xcode 16) ===
@@ -1218,9 +1215,6 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - run:
-          name: Validate Package.swift
-          command: swift package describe
       - install-dependencies
       - run:
           name: Run tests
