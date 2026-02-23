@@ -1446,6 +1446,17 @@ jobs:
           command: bundle exec fastlane push_revenuecatui_pod
           no_output_timeout: 30m
 
+  cocoapods-token-keepalive:
+    docker:
+      - image: cimg/ruby:3.3
+    resource_class: small
+    steps:
+      - run:
+          name: Refresh CocoaPods trunk session
+          command: |
+            gem install cocoapods --no-document
+            pod trunk me
+
   prepare-next-version:
     executor:
       name: macos-executor
@@ -2322,6 +2333,14 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+
+  daily-cocoapods-token-keepalive:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["cocoapods_token_keepalive", << pipeline.schedule.name >>]
+    jobs:
+      - cocoapods-token-keepalive
 
   manual-trigger-bump:
     when:
