@@ -38,7 +38,7 @@ class CustomerCenterFeatureEventsRequestTests: TestCase {
             FeatureEventsRequest.CustomerCenterEventBaseRequest.createBase(from: storedEvent)
         )
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
     func testCanInitFromDeserializedEvent() throws {
@@ -69,7 +69,7 @@ class CustomerCenterFeatureEventsRequestTests: TestCase {
         let requestEvent =
         try XCTUnwrap(FeatureEventsRequest.CustomerCenterEventBaseRequest.createBase(from: deserializedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
     func testCustomerCenterEventWithoutMillisecondPrecisionIsParsed() throws {

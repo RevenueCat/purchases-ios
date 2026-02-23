@@ -263,24 +263,24 @@ class CustomerInfoEncodingTests: BaseHTTPResponseTest {
     }
 
     func testEncoding() {
-        assertSnapshot(matching: self.customerInfo, as: .backwardsCompatibleFormattedJson)
+        assertSnapshot(of: self.customerInfo, as: .backwardsCompatibleFormattedJson)
     }
 
     func testEncodingWithVerifiedResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .verified,
-                                                        httpResponseOriginalSource: .mainServer),
+        assertSnapshot(of: self.customerInfo.copy(with: .verified,
+                                                  httpResponseOriginalSource: .mainServer),
                        as: .backwardsCompatibleFormattedJson)
     }
 
     func testEncodingWithFailedVerificationResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .failed,
-                                                        httpResponseOriginalSource: .mainServer),
+        assertSnapshot(of: self.customerInfo.copy(with: .failed,
+                                                  httpResponseOriginalSource: .mainServer),
                        as: .backwardsCompatibleFormattedJson)
     }
 
     func testEncodingLoadShedderResponse() throws {
-        assertSnapshot(matching: self.customerInfo.copy(with: .failed,
-                                                        httpResponseOriginalSource: .loadShedder),
+        assertSnapshot(of: self.customerInfo.copy(with: .failed,
+                                                  httpResponseOriginalSource: .loadShedder),
                        as: .backwardsCompatibleFormattedJson)
     }
 
