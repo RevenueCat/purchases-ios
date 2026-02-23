@@ -61,9 +61,6 @@ extension CustomerInfo {
     }
 
     static func extractPurchaseDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
-        // We map each raw purchase key through `extractProductIDAndBasePlan`.
-        // Different source keys can collapse to the same mapped key (for example, base-plan and already-composed IDs),
-        // so we keep the best candidate per mapped key instead of crashing on duplicates.
         struct PurchaseDateCandidate {
             let purchaseDate: Date?
             let hasGoogleStyleProductID: Bool
