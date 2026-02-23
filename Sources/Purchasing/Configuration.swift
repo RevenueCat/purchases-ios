@@ -183,7 +183,7 @@ import Foundation
         /**
          * Set `purchasesAreCompletedBy`.
          * - Parameter purchasesAreCompletedBy: Set this to ``PurchasesAreCompletedBy/myApp``
-         * if you have your own IAP implementation and want to use only RevenueCat's backend. 
+         * if you have your own IAP implementation and want to use only RevenueCat's backend.
          * Default is ``PurchasesAreCompletedBy/revenueCat``.
          * - Parameter storeKitVersion: Set the StoreKit version you're using to make purchases.
          */
@@ -280,7 +280,7 @@ import Foundation
         /// Enabling diagnostics will send some performance and debugging information from the SDK to our servers.
         /// Examples of this information include response times, cache hits or error codes.
         /// This information will be anonymous so it can't be traced back to the end-user
-        /// 
+        ///
         /// Defaults to `false`
         ///
         @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

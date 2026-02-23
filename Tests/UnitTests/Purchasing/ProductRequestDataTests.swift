@@ -1,4 +1,5 @@
 import Nimble
+import SnapshotTesting
 import XCTest
 
 @testable import RevenueCat
@@ -217,7 +218,7 @@ private extension ProductRequestDataTests {
                   testName: String = #function,
                   line: UInt = #line) {
         assertSnapshot(
-            matching: data,
+            of: data,
             as: .formattedJson,
             testName: testName,
             line: line

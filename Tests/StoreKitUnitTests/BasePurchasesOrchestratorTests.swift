@@ -210,7 +210,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             diagnosticsTracker: self.mockDiagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             eventsManager: self.eventsManager,
-            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
+            dateProvider: self.mockDateProvider)
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
 

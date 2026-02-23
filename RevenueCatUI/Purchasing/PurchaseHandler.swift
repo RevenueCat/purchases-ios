@@ -281,7 +281,7 @@ extension PurchaseHandler {
             }
 
             if result.userCancelled {
-                self.trackCancelledPurchase()
+                self.trackCancelledPurchase(package: package)
             } else {
                 // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
                 // sees the correct state when the sheet dismisses
@@ -323,7 +323,7 @@ extension PurchaseHandler {
         let result = await externalPurchaseMethod(package)
 
         if result.userCancelled {
-            self.trackCancelledPurchase()
+            self.trackCancelledPurchase(package: package)
         }
 
         if let error = result.error {
@@ -459,13 +459,19 @@ extension PurchaseHandler {
 
     /// - Returns: whether the event was tracked
     @discardableResult
-    fileprivate func trackCancelledPurchase() -> Bool {
+    fileprivate func trackCancelledPurchase(package: Package) -> Bool {
         guard let data = self.eventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
 
-        self.track(.cancel(.init(), data))
+        let cancelData = data.withPurchaseInfo(
+            packageId: package.identifier,
+            productId: package.storeProduct.productIdentifier,
+            errorCode: nil,
+            errorMessage: nil
+        )
+        self.track(.cancel(.init(), cancelData))
         return true
     }
 
@@ -487,6 +493,11 @@ extension PurchaseHandler {
             errorMessage: nil
         )
         self.track(.purchaseInitiated(.init(), purchaseData))
+        self.purchases.cachePresentedOfferingContext(
+            package.presentedOfferingContext,
+            productIdentifier: package.storeProduct.productIdentifier
+        )
+
         return true
     }
 
@@ -630,6 +641,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func track(paywallEvent: PaywallEvent) async {}
+
+    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {}
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {}

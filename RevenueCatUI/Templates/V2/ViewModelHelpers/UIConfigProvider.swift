@@ -34,6 +34,35 @@ final class UIConfigProvider {
         return self.uiConfig.variableConfig
     }
 
+    /// Returns the default values for custom variables defined in the dashboard.
+    /// Keys are variable names (without the `custom.` prefix), values are typed `CustomVariableValue`.
+    var defaultCustomVariables: [String: CustomVariableValue] {
+        return self.uiConfig.customVariables.compactMapValues { definition in
+            Self.parseCustomVariableValue(type: definition.type, defaultValue: definition.defaultValue)
+        }
+    }
+
+    /// Parses a custom variable definition into a typed `CustomVariableValue`.
+    /// The backend sends types: "string", "number", "boolean" with validated default values.
+    private static func parseCustomVariableValue(type: String, defaultValue: String) -> CustomVariableValue? {
+        switch type {
+        case "string":
+            return .string(defaultValue)
+        case "number":
+            guard let doubleValue = Double(defaultValue) else {
+                Logger.warning(Strings.paywall_custom_variable_invalid_number(value: defaultValue))
+                return .string(defaultValue)
+            }
+            return .number(doubleValue)
+        case "boolean":
+            // Backend validates that defaultValue is exactly "true" or "false"
+            return .bool(defaultValue == "true")
+        default:
+            Logger.warning(Strings.paywall_custom_variable_unknown_type(type: type))
+            return .string(defaultValue)
+        }
+    }
+
     func getColor(for name: String) -> PaywallComponent.ColorScheme? {
         return self.uiConfig.app.colors[name]
     }

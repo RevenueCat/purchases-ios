@@ -1618,6 +1618,9 @@
 
       }
     },
+    "custom_variables" : {
+
+    },
     "localizations" : {
       "en_US" : {
         "annual" : "annual",

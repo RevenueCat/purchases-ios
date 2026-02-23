@@ -28,7 +28,6 @@ class AdEventTests: TestCase {
 
     func testAdFailedToLoadEqualityWithDifferentAdFormat() {
         let event1 = AdFailedToLoad(
-            networkName: "AdMob",
             mediatorName: .appLovin,
             adFormat: .banner,
             placement: "home_screen",
@@ -37,7 +36,6 @@ class AdEventTests: TestCase {
         )
 
         let event2 = AdFailedToLoad(
-            networkName: "AdMob",
             mediatorName: .appLovin,
             adFormat: .interstitial,
             placement: "home_screen",
@@ -50,7 +48,6 @@ class AdEventTests: TestCase {
 
     func testAdFailedToLoadEqualityWithSameProperties() {
         let event1 = AdFailedToLoad(
-            networkName: "AdMob",
             mediatorName: .appLovin,
             adFormat: .banner,
             placement: "home_screen",
@@ -59,7 +56,6 @@ class AdEventTests: TestCase {
         )
 
         let event2 = AdFailedToLoad(
-            networkName: "AdMob",
             mediatorName: .appLovin,
             adFormat: .banner,
             placement: "home_screen",
