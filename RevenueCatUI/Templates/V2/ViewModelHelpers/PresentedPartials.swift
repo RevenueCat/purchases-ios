@@ -334,7 +334,7 @@ extension Array {
     ) throws -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
         // Check for unsupported conditions first - triggers fallback to default paywall
-        if self.containsUnsupportedConditions() {
+        if self.hasUnsupportedCondition() {
             throw PaywallError.unsupportedCondition
         }
 
@@ -359,40 +359,41 @@ extension Array {
 
 extension PaywallComponent {
 
+    // swiftlint:disable:next cyclomatic_complexity
     func containsUnsupportedConditions() -> Bool {
         switch self {
-        case .text(let c):
-            return c.overrides?.hasUnsupportedCondition() == true
-        case .image(let c):
-            return c.overrides?.hasUnsupportedCondition() == true
-        case .icon(let c):
-            return c.overrides?.hasUnsupportedCondition() == true
-        case .video(let c):
-            return c.overrides?.hasUnsupportedCondition() == true
-        case .stack(let c):
-            return c.containsUnsupportedConditions()
-        case .button(let c):
-            return c.stack.containsUnsupportedConditions()
-        case .package(let c):
-            return c.stack.containsUnsupportedConditions()
-        case .purchaseButton(let c):
-            return c.stack.containsUnsupportedConditions()
-        case .stickyFooter(let c):
-            return c.stack.containsUnsupportedConditions()
-        case .timeline(let c):
-            return c.containsUnsupportedConditions()
-        case .tabs(let c):
-            return c.containsUnsupportedConditions()
+        case .text(let component):
+            return component.overrides?.hasUnsupportedCondition() == true
+        case .image(let component):
+            return component.overrides?.hasUnsupportedCondition() == true
+        case .icon(let component):
+            return component.overrides?.hasUnsupportedCondition() == true
+        case .video(let component):
+            return component.overrides?.hasUnsupportedCondition() == true
+        case .stack(let component):
+            return component.containsUnsupportedConditions()
+        case .button(let component):
+            return component.stack.containsUnsupportedConditions()
+        case .package(let component):
+            return component.stack.containsUnsupportedConditions()
+        case .purchaseButton(let component):
+            return component.stack.containsUnsupportedConditions()
+        case .stickyFooter(let component):
+            return component.stack.containsUnsupportedConditions()
+        case .timeline(let component):
+            return component.containsUnsupportedConditions()
+        case .tabs(let component):
+            return component.containsUnsupportedConditions()
         case .tabControl:
             return false
-        case .tabControlButton(let c):
-            return c.stack.containsUnsupportedConditions()
+        case .tabControlButton(let component):
+            return component.stack.containsUnsupportedConditions()
         case .tabControlToggle:
             return false
-        case .carousel(let c):
-            return c.containsUnsupportedConditions()
-        case .countdown(let c):
-            return c.containsUnsupportedConditions()
+        case .carousel(let component):
+            return component.containsUnsupportedConditions()
+        case .countdown(let component):
+            return component.containsUnsupportedConditions()
         }
     }
 
