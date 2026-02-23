@@ -1282,7 +1282,7 @@ platform :ios do
       version: options[:version],
       repo: "revenuecat/#{REPO_NAME}",
       base_branch: ENV["CIRCLE_BRANCH"],
-      files_to_add: "../*/__Snapshots__/*"
+      files_to_add: "../**/__Snapshots__/**"
      )
   end
 
