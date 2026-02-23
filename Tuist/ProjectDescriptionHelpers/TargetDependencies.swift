@@ -56,6 +56,27 @@ extension TargetDependency {
         )
     }
 
+    /// Returns a RevenueCatAdMob dependency that can be either local or external
+    /// - Returns: A TargetDependency for RevenueCatAdMob
+    public static var revenueCatAdMob: TargetDependency {
+        if Environment.local {
+            .project(
+                target: "RevenueCatAdMob",
+                path: .relativeToRoot("Projects/RevenueCatAdMob")
+            )
+        } else {
+            .revenueCatAdMobLocal
+        }
+    }
+
+    /// Returns a local RevenueCatAdMob dependency from SPM
+    /// - Returns: A TargetDependency for RevenueCatAdMob from external source
+    public static var revenueCatAdMobLocal: TargetDependency {
+        .external(
+            name: "RevenueCatAdMob"
+        )
+    }
+
     /// Returns a ReceiptParser dependency
     /// - Returns: A TargetDependency for ReceiptParser
     public static var receiptparser: TargetDependency {

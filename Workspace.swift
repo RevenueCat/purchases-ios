@@ -6,6 +6,7 @@ var projects: [Path] = [
     "./Examples/rc-maestro/",
     "./Examples/MagicWeather/",
     "./Examples/MagicWeatherSwiftUI/",
+    "./Examples/AdMobIntegrationSample/",
     "./Examples/testCustomEntitlementsComputation/",
     "./Examples/PurchaseTester/",
     "./Projects/PaywallsTester",
@@ -25,6 +26,7 @@ if Environment.includeXCFrameworkInstallationTests {
 if Environment.local {
     projects.append("./Projects/RevenueCat")
     projects.append("./Projects/RevenueCatUI")
+    projects.append("./Projects/RevenueCatAdMob")
 } else {
     // Needs 3.0.0 of Purchases.
     // Only when TUIST_RC_LOCAL=false tuist generate
