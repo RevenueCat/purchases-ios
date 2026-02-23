@@ -55,7 +55,7 @@ class DiagnosticsEventEncodingTests: TestCase {
     )
 
     func testEncoding() {
-        assertSnapshot(matching: self.exampleEvent, as: .backwardsCompatibleFormattedJson)
+        assertSnapshot(of: self.exampleEvent, as: .backwardsCompatibleFormattedJson)
     }
 
     func testReencoding() {
