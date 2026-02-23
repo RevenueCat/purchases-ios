@@ -508,6 +508,7 @@ private final class HostWindowObserverView: NSView {
         }
 
         if let host = paywallWindow.sheetParent {
+            self.sheetParentObservation = nil
             self.observeHostFrame(host)
         } else {
             self.sheetParentObservation = paywallWindow.observe(
