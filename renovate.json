@@ -1,0 +1,13 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>RevenueCat/renovate"],
+  "packageRules": [
+    {
+      "matchPackageNames": ["swift-package-manager-google-mobile-ads"],
+      "matchManagers": ["swift"],
+      "matchPaths": ["RevenueCatAdMob/**"],
+      "enabled": true,
+      "groupName": "google-mobile-ads"
+    }
+  ]
+}
