@@ -615,21 +615,6 @@ commands:
           fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
 
 jobs:
-  validate-package-swift:
-    parameters:
-      xcode_version:
-        type: string
-      mac_os_executor_name:
-        type: string
-    executor:
-      name: << parameters.mac_os_executor_name >>
-      xcode_version: << parameters.xcode_version >>
-    steps:
-      - checkout
-      - run:
-          name: Validate Package.swift
-          command: swift package describe
-
   pod-lib-lint:
     executor:
       name: macos-executor
@@ -712,17 +697,11 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
       - update-spm-installation-commit
-
-      # === SPM Release Builds (Xcode 15) ===
-      - run:
-          name: SPM Release Build (Xcode 15)
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
+      # === SPM RevenueCatUI Release Build (Xcode 15) ===
       - run:
           name: SPM RevenueCatUI Release Build (Xcode 15)
           command: swift build -c release --target RevenueCatUI
           no_output_timeout: 5m
-
       # === RevenueCatUI iOS 16 tests ===
       - run:
           name: SPM RevenueCatUI Tests
@@ -961,6 +940,9 @@ jobs:
 
     steps:
       - checkout
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
       - install-dependencies
 
       # === SPM Release Build (Xcode 26) ===
@@ -997,6 +979,9 @@ jobs:
 
     steps:
       - checkout
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
       - install-dependencies
 
       # === SPM Release Build (Xcode 16) ===
@@ -1065,13 +1050,59 @@ jobs:
           destination: scan-test-output-ios-17
       - slack-notify-on-fail
 
-  run-test-ios-16-15-and-14:
+  run-test-ios-16:
+    executor:
+      name: macos-executor
+      xcode_version: "15.4.0"
+
+    steps:
+      - checkout
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
+      - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
+      - install-xcbeautify-for-xcode15
+      - update-spm-installation-commit
+
+      # === SPM Release Build (Xcode 15) ===
+      - run:
+          name: SPM Release Build (Xcode 15)
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+
+      # === iOS 16 tests ===
+      - run:
+          name: Run iOS 16 tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 14 (16.4)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "ios-16"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output-ios-16
+      - slack-notify-on-fail
+
+  run-test-ios-15-and-14:
     executor:
       name: macos-executor
       xcode_version: "14.3.1"
 
     steps:
       - checkout
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
@@ -1086,7 +1117,7 @@ jobs:
           no_output_timeout: 30m
 
       # Start iOS 14.5 runtime download in the background so it can proceed
-      # while iOS 16 and 15 tests run.
+      # while iOS 15 tests run.
       - run:
           name: Start iOS 14.5 runtime installation (background)
           command: |
@@ -1103,37 +1134,6 @@ jobs:
             } &
             disown
             echo "Started iOS 14.5 runtime installation in background"
-
-      # === iOS 16 tests ===
-      - run:
-          name: Run iOS 16 tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 14 (16.4)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - run:
-          name: Preserve iOS 16 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
-            if [ -f RevenueCat.xcresult.tar.gz ]; then
-              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS16.xcresult.tar.gz
-            fi
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-16"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output-ios-16
-      - run:
-          name: Clean test output before iOS 15 run
-          command: rm -rf fastlane/test_output
 
       # === iOS 15 tests ===
       - run:
@@ -1215,6 +1215,9 @@ jobs:
       name: macos-executor
     steps:
       - checkout
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
       - install-dependencies
       - run:
           name: Run tests
@@ -2020,7 +2023,8 @@ workflows:
     jobs:
       - run-test-ios-26
       - run-test-ios-18-and-17
-      - run-test-ios-16-15-and-14
+      - run-test-ios-16
+      - run-test-ios-15-and-14
       - run-test-tvos-and-macos
       - run-test-watchos
       - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
@@ -2067,10 +2071,6 @@ workflows:
       - check-api-changes:
           context:
             - slack-secrets-ios
-      - validate-package-swift:
-          name: validate-package-swift-5.8
-          xcode_version: "14.3.1"
-          mac_os_executor_name: macos-executor
       - run-test-ios-26
       - pod-lib-lint
       - run-revenuecat-ui-ios-26
@@ -2118,7 +2118,12 @@ workflows:
             - slack-secrets
 
       # Older iOS Version Tests
-      - run-test-ios-16-15-and-14:
+      - run-test-ios-16:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-test-ios-15-and-14:
           requires:
             - approve-full-tests
           context:
@@ -2212,7 +2217,6 @@ workflows:
             # Reduced Test Suite
             - lint
             - check-api-changes
-            - validate-package-swift-5.8
             - run-test-ios-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
@@ -2225,7 +2229,8 @@ workflows:
             - backend-integration-tests-custom-entitlements
             - backend-integration-tests-other
             - backend-integration-tests-offline
-            - run-test-ios-16-15-and-14
+            - run-test-ios-16
+            - run-test-ios-15-and-14
             - run-test-ios-18-and-17
             - run-test-tvos-and-macos
             - run-test-watchos
@@ -2427,7 +2432,10 @@ workflows:
       - docs-build:
           context:
             - slack-secrets
-      - run-test-ios-16-15-and-14:
+      - run-test-ios-16:
+          context:
+            - slack-secrets
+      - run-test-ios-15-and-14:
           context:
             - slack-secrets
       - run-test-ios-18-and-17:
@@ -2471,10 +2479,6 @@ workflows:
           context:
             - slack-secrets
       - lint
-      - validate-package-swift:
-          name: validate-package-swift-5.8
-          xcode_version: "14.3.1"
-          mac_os_executor_name: macos-executor
       - run-test-ios-26
       - pod-lib-lint
       - run-revenuecat-ui-ios-26
@@ -2488,7 +2492,6 @@ workflows:
             - check-api-changes
             - run-all-maestro-e2e-tests
             - lint
-            - validate-package-swift-5.8
             - run-test-ios-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
@@ -2500,7 +2503,8 @@ workflows:
             - backend-integration-tests-offline
             - build-tv-watch-mac-and-visionos
             - docs-build
-            - run-test-ios-16-15-and-14
+            - run-test-ios-16
+            - run-test-ios-15-and-14
             - run-test-ios-18-and-17
             - run-test-tvos-and-macos
             - run-test-watchos
