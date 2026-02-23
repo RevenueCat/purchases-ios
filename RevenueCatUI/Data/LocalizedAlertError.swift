@@ -23,7 +23,7 @@ struct LocalizedAlertError: LocalizedError {
     }
 
     var errorDescription: String? {
-        if self.underlyingError is ErrorCode {
+        if self.underlyingError is ErrorCode || self.isExternalPurchaseError {
             return "Error"
         } else {
             return "\(self.underlyingError.domain) \(self.underlyingError.code)"
@@ -33,6 +33,8 @@ struct LocalizedAlertError: LocalizedError {
     var failureReason: String? {
         if let errorCode = self.underlyingError as? ErrorCode {
             return "Error \(self.underlyingError.code): \(errorCode.description)"
+        } else if let paywallError = self.externalPurchaseError {
+            return paywallError.description
         } else {
             return self.underlyingError.localizedDescription
         }
@@ -40,6 +42,20 @@ struct LocalizedAlertError: LocalizedError {
 
     var recoverySuggestion: String? {
         self.underlyingError.localizedRecoverySuggestion
+    }
+
+    private var isExternalPurchaseError: Bool {
+        return self.externalPurchaseError != nil
+    }
+
+    private var externalPurchaseError: PaywallError? {
+        guard let paywallError = self.underlyingError as? PaywallError else { return nil }
+        switch paywallError {
+        case .externalPurchaseFailed, .externalRestoreFailed:
+            return paywallError
+        default:
+            return nil
+        }
     }
 
 }

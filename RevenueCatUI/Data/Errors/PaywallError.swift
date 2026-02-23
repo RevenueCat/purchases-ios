@@ -33,6 +33,12 @@ enum PaywallError: Error {
     /// when ``purchasesAreCompletedBy`` is ``.revenueCat``
     case purchaseAndRestoreDefinedForRevenueCat
 
+    /// An error occurred during an external purchase.
+    case externalPurchaseFailed
+
+    /// An error occurred during an external restore.
+    case externalRestoreFailed
+
 }
 
 extension PaywallError: CustomNSError, CustomStringConvertible {
@@ -61,6 +67,10 @@ extension PaywallError: CustomNSError, CustomStringConvertible {
             "the Paywall has purchase/restore blocks defined. These will NOT be executed. " +
             "Please set purchasesAreCompletedBy to .myApp if you wish to run these blocks " +
             "instead of RevenueCat's purchase/restore code."
+        case .externalPurchaseFailed:
+            return "An error occurred during the purchase. Please try again."
+        case .externalRestoreFailed:
+            return "An error occurred while restoring purchases. Please try again."
         }
     }
 
