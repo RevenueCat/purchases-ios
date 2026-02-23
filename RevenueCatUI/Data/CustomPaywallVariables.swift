@@ -108,6 +108,24 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
         }
     }
 
+    /// Returns `true` if this value was created as a string.
+    internal var isString: Bool {
+        if case .string = storage { return true }
+        return false
+    }
+
+    /// Returns `true` if this value was created as a number.
+    internal var isNumber: Bool {
+        if case .number = storage { return true }
+        return false
+    }
+
+    /// Returns `true` if this value was created as a boolean.
+    internal var isBool: Bool {
+        if case .bool = storage { return true }
+        return false
+    }
+
 }
 
 // MARK: - ExpressibleByStringLiteral
