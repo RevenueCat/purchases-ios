@@ -22,6 +22,7 @@ struct TestStoreTransaction: StoreTransactionType {
 
     let jwsRepresentation: String? = nil
     let environment: StoreEnvironment? = nil
+    let reason: TransactionReason? = nil
 
     func finish(_ wrapper: any PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         // no-op

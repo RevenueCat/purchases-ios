@@ -45,6 +45,12 @@ enum OfferingStrings {
     case overriding_package(old: String, new: String)
     case known_issue_ios_18_4_simulator_products_not_found
 
+    // Custom Variables
+    case ui_config_no_custom_variables
+    case ui_config_custom_variables_decoded(keys: [String])
+    case ui_config_custom_variables_decode_error(error: Error)
+    case ui_config_custom_variables_status(keyPresent: Bool, count: Int, keys: [String])
+
 }
 
 extension OfferingStrings: LogMessage {
@@ -172,6 +178,20 @@ extension OfferingStrings: LogMessage {
             "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version with " +
             "your simulator." +
             "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
+
+        case .ui_config_no_custom_variables:
+            return "UIConfig decoded with no custom_variables. " +
+            "If you expected default custom variables, ensure they are configured in the RevenueCat dashboard."
+
+        case .ui_config_custom_variables_decoded(let keys):
+            return "UIConfig decoded with custom_variables: \(keys)"
+
+        case .ui_config_custom_variables_decode_error(let error):
+            return "Failed to decode custom_variables from UIConfig: \(error.localizedDescription)"
+
+        case .ui_config_custom_variables_status(let keyPresent, let count, let keys):
+            // swiftlint:disable:next line_length
+            return "UIConfig custom_variables - key present in JSON: \(keyPresent), decoded count: \(count), keys: \(keys)"
         }
     }
 

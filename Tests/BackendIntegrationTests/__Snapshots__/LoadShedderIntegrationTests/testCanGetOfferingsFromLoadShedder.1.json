@@ -1588,6 +1588,9 @@
 
       }
     },
+    "custom_variables" : {
+
+    },
     "localizations" : {
       "ar_SA" : {
         "annual" : "سنوي",
