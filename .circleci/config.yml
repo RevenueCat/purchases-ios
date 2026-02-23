@@ -663,6 +663,7 @@ jobs:
       - run:
           name: Check pods and deployment targets
           command: bundle exec fastlane check_pods
+      - slack-notify-on-fail
 
   spm-release-build:
     executor:
@@ -856,6 +857,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
+      - slack-notify-on-fail
 
   run-revenuecat-ui-ios-26:
     executor:
@@ -895,6 +897,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
+      - slack-notify-on-fail
 
   spm-revenuecat-ui-watchos:
     executor:
@@ -977,6 +980,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+      - slack-notify-on-fail
 
   run-test-ios-18:
     executor:
@@ -1004,6 +1008,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+      - slack-notify-on-fail
 
   run-test-ios-17:
     executor:
@@ -1761,6 +1766,7 @@ jobs:
       - run:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
+      - slack-notify-on-fail
 
   emerge_binary_size_analysis:
     executor:
@@ -2474,12 +2480,24 @@ workflows:
           name: validate-package-swift-5.8
           xcode_version: "14.3.1"
           mac_os_executor_name: macos-executor
-      - run-test-ios-26
-      - run-test-ios-18
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-26
-      - run-revenuecat-ui-ios-18
-      - emerge_purchases_ui_snapshot_tests
+      - run-test-ios-26:
+          context:
+            - slack-secrets
+      - run-test-ios-18:
+          context:
+            - slack-secrets
+      - pod-lib-lint:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-26:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-18:
+          context:
+            - slack-secrets
+      - emerge_purchases_ui_snapshot_tests:
+          context:
+            - slack-secrets
 
       # =============================================================
       # Summary gate: all tests passed
