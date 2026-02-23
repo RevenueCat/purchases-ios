@@ -19,8 +19,7 @@ parameters:
         update_paywall_templates,
         record_paywall_screenshots,
         tuist,
-        deploy_rct_tester,
-        test-all-unified
+        deploy_rct_tester
       ]
     default: default
   generate_snapshots:
@@ -2526,13 +2525,3 @@ workflows:
             - approve-release
           <<: *release-branches
 
-  # TEMPORARY: Remove before merging.
-  test-all-unified:
-    when:
-      equal: [test-all-unified, << pipeline.parameters.action >>]
-    jobs:
-      - run-test-ios-16-15-and-14
-      - run-test-ios-18-and-17
-      - run-test-ios-26
-      - run-test-tvos-and-macos
-      - run-revenuecat-ui-ios-18-and-17
