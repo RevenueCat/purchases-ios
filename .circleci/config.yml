@@ -2018,11 +2018,21 @@ workflows:
           name: validate-package-swift-5.8
           xcode_version: "14.3.1"
           mac_os_executor_name: macos-executor
-      - run-test-ios-26
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-26
-      - emerge_purchases_ui_snapshot_tests
-      - emerge_binary_size_analysis
+      - run-test-ios-26:
+          context:
+            - slack-secrets
+      - pod-lib-lint:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-26:
+          context:
+            - slack-secrets
+      - emerge_purchases_ui_snapshot_tests:
+          context:
+            - slack-secrets
+      - emerge_binary_size_analysis:
+          context:
+            - slack-secrets
       - build-tv-watch-mac-and-visionos:
           context:
             - slack-secrets
