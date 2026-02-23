@@ -2114,6 +2114,8 @@ workflows:
       - run-revenuecat-ui-ios-18:
           requires:
             - approve-full-tests
+          context:
+            - slack-secrets
       - spm-revenuecat-ui-ios-15:
           requires:
             - approve-full-tests
