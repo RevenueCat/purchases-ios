@@ -2011,7 +2011,9 @@ workflows:
       - run-revenuecat-ui-ios-26
       - emerge_purchases_ui_snapshot_tests
       - emerge_binary_size_analysis
-      - build-tv-watch-mac-and-visionos
+      - build-tv-watch-mac-and-visionos:
+          context:
+            - slack-secrets
 
       # =============================================================
       # Hold gate for the Full Test Suite
