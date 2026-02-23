@@ -395,7 +395,7 @@ fileprivate extension TimelineComponentViewModel {
                     component: descriptionComponent
                 )
             }
-            return TimelineItemViewModel(
+            return try TimelineItemViewModel(
                 component: item,
                 title: try TextComponentViewModel(
                     localizationProvider: localizationProvider,
@@ -403,7 +403,7 @@ fileprivate extension TimelineComponentViewModel {
                     component: item.title
                 ),
                 description: description,
-                icon: IconComponentViewModel(
+                icon: try IconComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: item.icon
@@ -411,7 +411,7 @@ fileprivate extension TimelineComponentViewModel {
             )
         }
 
-        self.init(
+        try self.init(
             component: component,
             items: models,
             uiConfigProvider: uiConfigProvider

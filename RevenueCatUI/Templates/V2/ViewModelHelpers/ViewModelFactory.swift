@@ -106,7 +106,7 @@ struct ViewModelFactory {
             )
         case .icon(let component):
             return .icon(
-                IconComponentViewModel(
+                try IconComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component
@@ -247,7 +247,7 @@ struct ViewModelFactory {
                         component: descriptionComponent
                     )
                 }
-                return TimelineItemViewModel(
+                return try TimelineItemViewModel(
                     component: item,
                     title: try TextComponentViewModel(
                         localizationProvider: localizationProvider,
@@ -255,7 +255,7 @@ struct ViewModelFactory {
                         component: item.title
                     ),
                     description: description,
-                    icon: IconComponentViewModel(
+                    icon: try IconComponentViewModel(
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
                         component: item.icon
@@ -264,7 +264,7 @@ struct ViewModelFactory {
             }
 
             return .timeline(
-                TimelineComponentViewModel(
+                try TimelineComponentViewModel(
                     component: component,
                     items: models,
                     uiConfigProvider: uiConfigProvider
@@ -359,7 +359,7 @@ struct ViewModelFactory {
             }
 
             return .tabs(
-                TabsComponentViewModel(
+                try TabsComponentViewModel(
                     component: component,
                     controlStackViewModel: controlStackViewModel,
                     tabViewModels: tabViewModels,
@@ -415,7 +415,7 @@ struct ViewModelFactory {
             }
 
             return .carousel(
-                CarouselComponentViewModel(
+                try CarouselComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component,
@@ -424,7 +424,7 @@ struct ViewModelFactory {
             )
         case .video(let component):
             return .video(
-                VideoComponentViewModel(
+                try VideoComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component
@@ -523,7 +523,7 @@ struct ViewModelFactory {
         // This is only used with ZStack children that aren't the background
         let shouldApplySafeAreaInset = component == firstItemIgnoresSafeAreaInfo?.parentZStack
 
-        return StackComponentViewModel(
+        return try StackComponentViewModel(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,

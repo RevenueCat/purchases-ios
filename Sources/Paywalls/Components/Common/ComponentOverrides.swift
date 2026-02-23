@@ -67,9 +67,8 @@ public extension PaywallComponent {
     /// Public condition type for component overrides.
     /// New condition types not recognized by this SDK version will decode as `.unsupported`.
     ///
-    /// - Note: The custom `Codable` implementation below is kept for backwards compatibility,
-    ///   but is not actually used in practice. `ComponentOverride` always decodes conditions
-    ///   as `ExtendedCondition` internally, then exposes them via `toCondition()`.
+    /// `ComponentOverride` decodes conditions as `ExtendedCondition` internally
+    /// and exposes them via `toCondition()`. This enum is not directly decoded from JSON.
     enum Condition: String, Codable, Sendable, Hashable, Equatable {
 
         case compact
@@ -78,74 +77,7 @@ public extension PaywallComponent {
         case introOffer = "intro_offer"
         case promoOffer = "promo_offer"
         case selected
-
-        // For unknown cases
         case unsupported
-
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-
-            switch self {
-            case .compact:
-                try container.encodeIfPresent(ConditionType.compact.rawValue, forKey: .type)
-            case .medium:
-                try container.encode(ConditionType.medium.rawValue, forKey: .type)
-            case .expanded:
-                try container.encode(ConditionType.expanded.rawValue, forKey: .type)
-            case .introOffer:
-                try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
-            case .promoOffer:
-                try container.encode(ConditionType.promoOffer.rawValue, forKey: .type)
-            case .selected:
-                try container.encode(ConditionType.selected.rawValue, forKey: .type)
-            case .unsupported:
-                // Encode a default value for unsupported
-                try container.encode(Self.unsupported.rawValue, forKey: .type)
-            }
-        }
-
-        public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let rawValue = try container.decode(String.self, forKey: .type)
-
-            if let conditionType = ConditionType(rawValue: rawValue) {
-                switch conditionType {
-                case .compact:
-                    self = .compact
-                case .medium:
-                    self = .medium
-                case .expanded:
-                    self = .expanded
-                case .introOffer:
-                    self = .introOffer
-                case .promoOffer:
-                    self = .promoOffer
-                case .selected:
-                    self = .selected
-                }
-            } else {
-                self = .unsupported
-            }
-        }
-
-        // swiftlint:disable:next nesting
-        private enum CodingKeys: String, CodingKey {
-
-            case type
-
-        }
-
-        // swiftlint:disable:next nesting
-        private enum ConditionType: String, Decodable {
-
-            case compact
-            case medium
-            case expanded
-            case introOffer = "intro_offer"
-            case promoOffer = "promo_offer"
-            case selected
-
-        }
 
     }
 

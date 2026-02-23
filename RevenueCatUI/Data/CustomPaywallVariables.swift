@@ -22,7 +22,9 @@ import SwiftUI
 /// ```swift
 /// PaywallView()
 ///     .customPaywallVariables([
-///         "player_name": .string("John")
+///         "player_name": .string("John"),
+///         "level": .number(42),
+///         "is_premium": .bool(true)
 ///     ])
 /// ```
 ///
@@ -33,13 +35,13 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct CustomVariableValue: Sendable, Equatable, Hashable {
 
-    private enum Storage: Sendable, Equatable, Hashable {
+    enum Storage: Sendable, Equatable, Hashable {
         case string(String)
         case number(Double)
         case bool(Bool)
     }
 
-    private let storage: Storage
+    let storage: Storage
 
     private init(_ storage: Storage) {
         self.storage = storage
@@ -51,12 +53,12 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
     }
 
     /// Creates a numeric value.
-    internal static func number(_ value: Double) -> CustomVariableValue {
+    static func number(_ value: Double) -> CustomVariableValue {
         CustomVariableValue(.number(value))
     }
 
     /// Creates a boolean value.
-    internal static func bool(_ value: Bool) -> CustomVariableValue {
+    static func bool(_ value: Bool) -> CustomVariableValue {
         CustomVariableValue(.bool(value))
     }
 

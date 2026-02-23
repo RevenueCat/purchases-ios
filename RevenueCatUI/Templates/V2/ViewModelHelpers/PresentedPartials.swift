@@ -165,7 +165,6 @@ extension PresentedPartial {
         isEligibleForPromoOffer: Bool,
         conditionContext: ConditionContext
     ) -> Bool {
-        // All conditions must be true (AND logic)
         for condition in conditions where !evaluateCondition(
             condition,
             state: state,
@@ -274,8 +273,7 @@ extension PresentedPartial {
         customVariables: [String: CustomVariableValue]
     ) -> Bool {
         guard let actualValue = customVariables[variable] else {
-            // Variable not found - condition doesn't match
-            return false
+            return condOp == .notEquals
         }
 
         let matches = matchesValue(actualValue: actualValue, expectedValue: expectedValue)
@@ -330,13 +328,19 @@ extension Array {
     /// Converts component overrides to presented overrides
     /// - Parameter convert: Conversion function to apply
     /// - Returns: Presented overrides with converted components
+    /// - Throws: `PaywallError.unsupportedCondition` if any override contains unsupported conditions
     func toPresentedOverrides<
         T: PaywallPartialComponent,
         P: PresentedPartial
     >(
         convert: (T) throws -> P
-    ) rethrows -> PresentedOverrides<P>
+    ) throws -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
+        // Check for unsupported conditions first - triggers fallback to default paywall
+        if self.hasUnsupportedCondition() {
+            throw PaywallError.unsupportedCondition
+        }
+
         return try self.compactMap { partial in
             let presentedPartial = try convert(partial.properties)
 
@@ -345,6 +349,103 @@ extension Array {
                 properties: presentedPartial
             )
         }
+    }
+
+    func hasUnsupportedCondition<T: PaywallPartialComponent>() -> Bool
+    where Element == PaywallComponent.ComponentOverride<T> {
+        contains { $0.extendedConditions.contains(.unsupported) }
+    }
+
+}
+
+// MARK: - Unsupported Condition Validation
+
+extension PaywallComponent {
+
+    // swiftlint:disable:next cyclomatic_complexity
+    func containsUnsupportedConditions() -> Bool {
+        switch self {
+        case .text(let component):
+            return component.overrides?.hasUnsupportedCondition() == true
+        case .image(let component):
+            return component.overrides?.hasUnsupportedCondition() == true
+        case .icon(let component):
+            return component.overrides?.hasUnsupportedCondition() == true
+        case .video(let component):
+            return component.overrides?.hasUnsupportedCondition() == true
+        case .stack(let component):
+            return component.containsUnsupportedConditions()
+        case .button(let component):
+            return component.stack.containsUnsupportedConditions()
+        case .package(let component):
+            return component.stack.containsUnsupportedConditions()
+        case .purchaseButton(let component):
+            return component.stack.containsUnsupportedConditions()
+        case .stickyFooter(let component):
+            return component.stack.containsUnsupportedConditions()
+        case .timeline(let component):
+            return component.containsUnsupportedConditions()
+        case .tabs(let component):
+            return component.containsUnsupportedConditions()
+        case .tabControl:
+            return false
+        case .tabControlButton(let component):
+            return component.stack.containsUnsupportedConditions()
+        case .tabControlToggle:
+            return false
+        case .carousel(let component):
+            return component.containsUnsupportedConditions()
+        case .countdown(let component):
+            return component.containsUnsupportedConditions()
+        }
+    }
+
+}
+
+extension PaywallComponent.StackComponent {
+
+    func containsUnsupportedConditions() -> Bool {
+        (overrides?.hasUnsupportedCondition() == true) ||
+        components.contains(where: { $0.containsUnsupportedConditions() })
+    }
+
+}
+
+extension PaywallComponent.TimelineComponent {
+
+    func containsUnsupportedConditions() -> Bool {
+        (overrides?.hasUnsupportedCondition() == true) ||
+        items.contains(where: { $0.overrides?.hasUnsupportedCondition() == true })
+    }
+
+}
+
+extension PaywallComponent.TabsComponent {
+
+    func containsUnsupportedConditions() -> Bool {
+        (overrides?.hasUnsupportedCondition() == true) ||
+        tabs.contains(where: { $0.stack.containsUnsupportedConditions() }) ||
+        control.stack.containsUnsupportedConditions()
+    }
+
+}
+
+extension PaywallComponent.CarouselComponent {
+
+    func containsUnsupportedConditions() -> Bool {
+        (overrides?.hasUnsupportedCondition() == true) ||
+        pages.contains(where: { $0.containsUnsupportedConditions() })
+    }
+
+}
+
+extension PaywallComponent.CountdownComponent {
+
+    func containsUnsupportedConditions() -> Bool {
+        (overrides?.hasUnsupportedCondition() == true) ||
+        countdownStack.containsUnsupportedConditions() ||
+        (endStack?.containsUnsupportedConditions() == true) ||
+        (fallback?.containsUnsupportedConditions() == true)
     }
 
 }
