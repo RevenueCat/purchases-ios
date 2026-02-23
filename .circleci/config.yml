@@ -947,7 +947,7 @@ jobs:
           destination: scan-test-output-macos
       - slack-notify-on-fail
 
-  run-test-ios-18-and-26:
+  run-test-ios-26:
     executor:
       name: macos-executor
       xcode_version: "26.3"
@@ -972,14 +972,6 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
-      - run:
-          name: Preserve iOS 26 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
-            if [ -f RevenueCat.xcresult.tar.gz ]; then
-              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS26.xcresult.tar.gz
-            fi
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
@@ -989,6 +981,50 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-26
+      - slack-notify-on-fail
+
+  run-test-ios-17-and-18:
+    executor:
+      name: macos-executor
+      xcode_version: "16.4"
+
+    steps:
+      - checkout
+      - install-dependencies
+
+      # === SPM Release Build (Xcode 16) ===
+      - run:
+          name: SPM Release Build (Xcode 16)
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+
+      # === iOS 17 tests ===
+      - run:
+          name: Run iOS 17 tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 15m
+          environment:
+            SCAN_DEVICE: iPhone 15 (17.5)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - run:
+          name: Preserve iOS 17 result bundle
+          when: always
+          command: |
+            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
+            if [ -f RevenueCat.xcresult.tar.gz ]; then
+              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS17.xcresult.tar.gz
+            fi
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "ios-17"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output-ios-17
       - run:
           name: Clean test output before iOS 18 run
           command: rm -rf fastlane/test_output
@@ -999,7 +1035,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 16 (18.6)
+            SCAN_DEVICE: iPhone 16 (18.5)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -1022,86 +1058,7 @@ jobs:
           destination: scan-test-output-ios-18
       - slack-notify-on-fail
 
-  run-test-ios-16-and-17:
-    executor:
-      name: macos-executor
-      xcode_version: "15.4.0"
-
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-          install_mint: true
-      - install-xcbeautify-for-xcode15
-      - update-spm-installation-commit
-
-      # === SPM Release Build (Xcode 15) ===
-      - run:
-          name: SPM Release Build (Xcode 15)
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
-
-      # === iOS 17 tests ===
-      - run:
-          name: Run iOS 17 tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 15m
-          environment:
-            SCAN_DEVICE: iPhone 15 (17.5.0)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - run:
-          name: Preserve iOS 17 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
-            if [ -f RevenueCat.xcresult.tar.gz ]; then
-              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS17.xcresult.tar.gz
-            fi
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-17"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output-ios-17
-      - run:
-          name: Clean test output before iOS 16 run
-          command: rm -rf fastlane/test_output
-
-      # === iOS 16 tests ===
-      - run:
-          name: Run iOS 16 tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 14 (16.4)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - run:
-          name: Preserve iOS 16 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
-            if [ -f RevenueCat.xcresult.tar.gz ]; then
-              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS16.xcresult.tar.gz
-            fi
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-16"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output-ios-16
-      - slack-notify-on-fail
-
-  run-test-ios-14-and-15:
+  run-test-ios-14-15-and-16:
     executor:
       name: macos-executor
       xcode_version: "14.3.1"
@@ -1122,7 +1079,7 @@ jobs:
           no_output_timeout: 30m
 
       # Start iOS 14.5 runtime download in the background so it can proceed
-      # while iOS 15 tests run.
+      # while iOS 15 and 16 tests run.
       - run:
           name: Start iOS 14.5 runtime installation (background)
           command: |
@@ -1167,6 +1124,37 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-15
+      - run:
+          name: Clean test output before iOS 16 run
+          command: rm -rf fastlane/test_output
+
+      # === iOS 16 tests ===
+      - run:
+          name: Run iOS 16 tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 14 (16.4)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - run:
+          name: Preserve iOS 16 result bundle
+          when: always
+          command: |
+            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
+            if [ -f RevenueCat.xcresult.tar.gz ]; then
+              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS16.xcresult.tar.gz
+            fi
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "ios-16"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output-ios-16
       - run:
           name: Clean test output before iOS 14 run
           command: rm -rf fastlane/test_output
@@ -2023,9 +2011,9 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
-      - run-test-ios-18-and-26
-      - run-test-ios-16-and-17
-      - run-test-ios-14-and-15
+      - run-test-ios-26
+      - run-test-ios-17-and-18
+      - run-test-ios-14-15-and-16
       - run-test-tvos-and-macos
       - run-test-watchos
       - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
@@ -2076,7 +2064,7 @@ workflows:
           name: validate-package-swift-5.8
           xcode_version: "14.3.1"
           mac_os_executor_name: macos-executor
-      - run-test-ios-18-and-26
+      - run-test-ios-26
       - pod-lib-lint
       - run-revenuecat-ui-ios-26
       - emerge_purchases_ui_snapshot_tests
@@ -2123,12 +2111,12 @@ workflows:
             - slack-secrets
 
       # Older iOS Version Tests
-      - run-test-ios-14-and-15:
+      - run-test-ios-14-15-and-16:
           requires:
             - approve-full-tests
           context:
             - slack-secrets
-      - run-test-ios-16-and-17:
+      - run-test-ios-17-and-18:
           requires:
             - approve-full-tests
           context:
@@ -2218,7 +2206,7 @@ workflows:
             - lint
             - check-api-changes
             - validate-package-swift-5.8
-            - run-test-ios-18-and-26
+            - run-test-ios-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
@@ -2230,8 +2218,8 @@ workflows:
             - backend-integration-tests-custom-entitlements
             - backend-integration-tests-other
             - backend-integration-tests-offline
-            - run-test-ios-14-and-15
-            - run-test-ios-16-and-17
+            - run-test-ios-14-15-and-16
+            - run-test-ios-17-and-18
             - run-test-tvos-and-macos
             - run-test-watchos
             - spm-revenuecat-ui-ios-15
@@ -2432,10 +2420,10 @@ workflows:
       - docs-build:
           context:
             - slack-secrets
-      - run-test-ios-14-and-15:
+      - run-test-ios-14-15-and-16:
           context:
             - slack-secrets
-      - run-test-ios-16-and-17:
+      - run-test-ios-17-and-18:
           context:
             - slack-secrets
       - run-test-tvos-and-macos:
@@ -2480,7 +2468,7 @@ workflows:
           name: validate-package-swift-5.8
           xcode_version: "14.3.1"
           mac_os_executor_name: macos-executor
-      - run-test-ios-18-and-26
+      - run-test-ios-26
       - pod-lib-lint
       - run-revenuecat-ui-ios-26
       - emerge_purchases_ui_snapshot_tests
@@ -2494,7 +2482,7 @@ workflows:
             - run-all-maestro-e2e-tests
             - lint
             - validate-package-swift-5.8
-            - run-test-ios-18-and-26
+            - run-test-ios-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
@@ -2505,8 +2493,8 @@ workflows:
             - backend-integration-tests-offline
             - build-tv-watch-mac-and-visionos
             - docs-build
-            - run-test-ios-14-and-15
-            - run-test-ios-16-and-17
+            - run-test-ios-14-15-and-16
+            - run-test-ios-17-and-18
             - run-test-tvos-and-macos
             - run-test-watchos
             - spm-receipt-parser
@@ -2543,8 +2531,8 @@ workflows:
     when:
       equal: [test-all-unified, << pipeline.parameters.action >>]
     jobs:
-      - run-test-ios-14-and-15
-      - run-test-ios-16-and-17
-      - run-test-ios-18-and-26
+      - run-test-ios-14-15-and-16
+      - run-test-ios-17-and-18
+      - run-test-ios-26
       - run-test-tvos-and-macos
       - run-revenuecat-ui-ios-17-and-18
