@@ -64,6 +64,27 @@ class CustomerInfoActiveDatesTests: BaseHTTPResponseTest {
         expect(purchaseDates.count) == 2
     }
 
+    func testExtractPurchaseDatesForDuplicateMappedKeyWithEqualDatesPrefersGoogleStyleProductID() {
+        var purchaseWithPlan = Self.makeSubscription(purchaseDate: .init(timeIntervalSince1970: 1000))
+        purchaseWithPlan.productPlanIdentifier = "monthly"
+
+        let googleStyleRawIDPurchase = Self.makeSubscription(purchaseDate: .init(timeIntervalSince1970: 1000))
+        let iosStyleSubscription = Self.makeSubscription(purchaseDate: .init(timeIntervalSince1970: 1500))
+
+        let subscriber = Self.makeSubscriber(
+            subscriptions: [
+                "pro": purchaseWithPlan,
+                "pro:monthly": googleStyleRawIDPurchase,
+                "pro_ios": iosStyleSubscription
+            ]
+        )
+
+        let purchaseDates = CustomerInfo.extractPurchaseDates(subscriber)
+        expect(purchaseDates["pro:monthly"]) == .init(timeIntervalSince1970: 1000)
+        expect(purchaseDates["pro"]).to(beNil())
+        expect(purchaseDates["pro_ios"]) == .init(timeIntervalSince1970: 1500)
+    }
+
     func testExtractPurchaseDatesConsidersNonSubscriptionsWhenMappedKeyCollides() {
         var googleStyleSubscription = Self.makeSubscription(purchaseDate: .init(timeIntervalSince1970: 1000))
         googleStyleSubscription.productPlanIdentifier = "monthly"

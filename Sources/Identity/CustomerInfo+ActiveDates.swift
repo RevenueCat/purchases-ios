@@ -61,14 +61,24 @@ extension CustomerInfo {
     }
 
     static func extractPurchaseDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
+        // We map each raw purchase key through `extractProductIDAndBasePlan`.
+        // Different source keys can collapse to the same mapped key (for example, base-plan and already-composed IDs),
+        // so we keep the best candidate per mapped key instead of crashing on duplicates.
         struct PurchaseDateCandidate {
-            let date: Date?
+            let purchaseDate: Date?
+            let hasGoogleStyleProductID: Bool
             let hasSubscriptionMetadata: Bool
             let originalProductID: String
         }
 
-        func preferred(_ lhs: PurchaseDateCandidate, _ rhs: PurchaseDateCandidate) -> PurchaseDateCandidate {
-            switch (lhs.date, rhs.date) {
+        func preferredCandidate(_ lhs: PurchaseDateCandidate, _ rhs: PurchaseDateCandidate) -> PurchaseDateCandidate {
+            // We determine a preferred purchase candidate if there is a conflict by looking at:
+            // 1. Prefer a non-nil purchase date over a nil purchase date.
+            // 2. If both dates exist, keep the most recent date.
+            // 3. If dates are tied, prefer Google-style raw product IDs (`product:plan`).
+            // 4. If still tied, prefer subscription-like data (expires date / base-plan metadata present).
+            // 5. Final deterministic tiebreaker by original product ID in alphabetical order.
+            switch (lhs.purchaseDate, rhs.purchaseDate) {
             case (.some, .none):
                 return lhs
             case (.none, .some):
@@ -81,6 +91,10 @@ extension CustomerInfo {
                 break
             }
 
+            if lhs.hasGoogleStyleProductID != rhs.hasGoogleStyleProductID {
+                return lhs.hasGoogleStyleProductID ? lhs : rhs
+            }
+
             if lhs.hasSubscriptionMetadata != rhs.hasSubscriptionMetadata {
                 return lhs.hasSubscriptionMetadata ? lhs : rhs
             }
@@ -88,20 +102,24 @@ extension CustomerInfo {
             return lhs.originalProductID <= rhs.originalProductID ? lhs : rhs
         }
 
+        // Here, we use `uniquingKeysWith` instead of `uniqueKeysWithValues` to avoid
+        // crashes when `extractProductIDAndBasePlan()` returns multiple products with the
+        // same product ID, which can happen with Google subscriptions with base plans
         let merged = Dictionary(
             subscriber.allPurchasesByProductId.map { productID, purchase in
                 let key = Self.extractProductIDAndBasePlan(from: productID, purchase: purchase)
                 let candidate = PurchaseDateCandidate(
-                    date: purchase.purchaseDate,
+                    purchaseDate: purchase.purchaseDate,
+                    hasGoogleStyleProductID: productID.contains(":"),
                     hasSubscriptionMetadata: purchase.expiresDate != nil || purchase.productPlanIdentifier != nil,
                     originalProductID: productID
                 )
                 return (key, candidate)
             },
-            uniquingKeysWith: preferred
+            uniquingKeysWith: preferredCandidate
         )
 
-        return merged.mapValues(\.date)
+        return merged.mapValues(\.purchaseDate)
     }
 
 }
