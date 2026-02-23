@@ -1355,6 +1355,8 @@ platform :ios do
       branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
     end
 
+    original_branch = sh("git", "rev-parse", "--abbrev-ref", "HEAD").strip
+
     sh("git", "checkout", "-b", branch_name)
     sh("git", "add", options[:files_to_add])
 
@@ -1380,6 +1382,8 @@ platform :ios do
         labels: ["test"]
       )
     end
+
+    sh("git", "checkout", original_branch)
   end
 
   desc "Creates RevenueCat-Swift.h for a new release"
