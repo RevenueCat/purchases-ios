@@ -712,10 +712,18 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
       - update-spm-installation-commit
+
+      # === SPM Release Builds (Xcode 15) ===
       - run:
-          name: SPM RevenueCatUI Release Build
+          name: SPM Release Build (Xcode 15)
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+      - run:
+          name: SPM RevenueCatUI Release Build (Xcode 15)
           command: swift build -c release --target RevenueCatUI
           no_output_timeout: 5m
+
+      # === RevenueCatUI iOS 16 tests ===
       - run:
           name: SPM RevenueCatUI Tests
           command: bundle exec fastlane test_revenuecatui
