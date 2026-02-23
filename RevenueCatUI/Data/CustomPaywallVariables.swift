@@ -108,9 +108,6 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
         }
     }
 
-
-
-
 }
 
 // MARK: - ExpressibleByStringLiteral
