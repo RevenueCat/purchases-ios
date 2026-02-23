@@ -2334,8 +2334,11 @@ workflows:
             - e2e-tests
             - slack-secrets
 
-  # TODO: revert this — temporary trigger for testing on branches
   daily-cocoapods-token-keepalive:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["cocoapods_token_keepalive", << pipeline.schedule.name >>]
     jobs:
       - cocoapods-token-keepalive
 
