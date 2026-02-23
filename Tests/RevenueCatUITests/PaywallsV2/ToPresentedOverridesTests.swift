@@ -131,6 +131,64 @@ class ToPresentedOverridesTests: TestCase {
         expect(component.containsUnsupportedConditions()).to(beFalse())
     }
 
+    // MARK: - toPresentedOverrides Throwing Tests
+
+    func testToPresentedOverrides_WithUnsupportedCondition_ThrowsUnsupportedConditionError() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.unsupported], properties: .init())
+        ]
+
+        expect {
+            try overrides.toPresentedOverrides { $0 }
+        }.to(throwError(PaywallError.unsupportedCondition))
+    }
+
+    func testToPresentedOverrides_WithUnsupportedConditionAmongOthers_ThrowsUnsupportedConditionError() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact, .unsupported, .selected], properties: .init())
+        ]
+
+        expect {
+            try overrides.toPresentedOverrides { $0 }
+        }.to(throwError(PaywallError.unsupportedCondition))
+    }
+
+    func testToPresentedOverrides_WithMultipleOverrides_OneHasUnsupported_ThrowsUnsupportedConditionError() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [.unsupported], properties: .init()),
+            .init(extendedConditions: [.medium], properties: .init())
+        ]
+
+        expect {
+            try overrides.toPresentedOverrides { $0 }
+        }.to(throwError(PaywallError.unsupportedCondition))
+    }
+
+    func testToPresentedOverrides_WithSupportedConditions_SucceedsAndReturnsOverrides() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [.medium, .selected], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides { $0 }
+
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
+        expect(result[1].conditions).to(equal([
+            PaywallComponent.ExtendedCondition.medium,
+            PaywallComponent.ExtendedCondition.selected
+        ]))
+    }
+
+    func testToPresentedOverrides_WithEmptyOverrides_SucceedsAndReturnsEmptyArray() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = []
+
+        let result = try overrides.toPresentedOverrides { $0 }
+
+        expect(result).to(beEmpty())
+    }
+
 }
 
 #endif
