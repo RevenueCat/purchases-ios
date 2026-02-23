@@ -677,6 +677,10 @@ jobs:
           name: SPM RevenueCatUI Release Build
           command: swift build -c release --target RevenueCatUI
           no_output_timeout: 30m
+      - run:
+          name: SPM RevenueCatAdMob Release Build
+          command: cd RevenueCatAdMob && swift build -c release --target RevenueCatAdMob
+          no_output_timeout: 30m
       - slack-notify-on-fail
 
   api-tests:
@@ -690,6 +694,44 @@ jobs:
       - run:
           name: API Tests
           command: bundle exec fastlane run_api_tests
+      - slack-notify-on-fail
+
+  revenuecat-admob-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "16.4"
+    steps:
+      - checkout
+      - install-dependencies
+      - tuist-generate-workspace
+      - run:
+          name: RevenueCatAdMob unit tests
+          command: >
+            xcodebuild test
+            -workspace RevenueCat-Tuist.xcworkspace
+            -scheme RevenueCatAdMob
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5'
+            -resultBundlePath /tmp/RevenueCatAdMobTestResults.xcresult
+          no_output_timeout: 10m
+      - slack-notify-on-fail
+
+  revenuecat-admob-tests-v11:
+    executor:
+      name: macos-executor
+      xcode_version: "16.4"
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: RevenueCatAdMob v11 compatibility tests
+          command: |
+            cp RevenueCatAdMob/Support/Package-swift-5.8.swift RevenueCatAdMob/Package.swift
+            cd RevenueCatAdMob && xcodebuild test \
+              -scheme RevenueCatAdMob \
+              -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
+              -only-testing:RevenueCatAdMobTests/RCAdMobAPISurfaceTests \
+              -resultBundlePath /tmp/RevenueCatAdMobV11TestResults.xcresult
+          no_output_timeout: 10m
       - slack-notify-on-fail
 
   spm-receipt-parser:
@@ -1374,6 +1416,9 @@ jobs:
       - store_artifacts:
           path: RevenueCatUI.xcframework.zip
           destination: RevenueCatUI.xcframework.zip
+      - store_artifacts:
+          path: RevenueCatAdMob.xcframework.zip
+          destination: RevenueCatAdMob.xcframework.zip
       - slack-notify-on-fail
 
   docs-build:
@@ -1444,6 +1489,18 @@ jobs:
       - run:
           name: Deploy new version
           command: bundle exec fastlane push_revenuecatui_pod
+          no_output_timeout: 30m
+
+  push-revenuecatadmob-pod:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - install-bundle-dependencies
+      - trust-github-key
+      - run:
+          name: Deploy new version
+          command: bundle exec fastlane push_revenuecatadmob_pod
           no_output_timeout: 30m
 
   cocoapods-token-keepalive:
@@ -2254,6 +2311,10 @@ workflows:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
+      - push-revenuecatadmob-pod:
+          requires:
+            - push-revenuecatui-pod
+          <<: *release-tags
       - deploy-to-spm:
           requires:
             - make-release
@@ -2477,6 +2538,12 @@ workflows:
           context:
             - slack-secrets
       - api-tests:
+          context:
+            - slack-secrets
+      - revenuecat-admob-tests:
+          context:
+            - slack-secrets
+      - revenuecat-admob-tests-v11:
           context:
             - slack-secrets
       - deploy-purchase-tester:
