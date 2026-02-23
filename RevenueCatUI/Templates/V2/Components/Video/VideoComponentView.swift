@@ -137,16 +137,7 @@ struct VideoComponentView: View {
                            ) {
                             self.cachedURL = lowResCachedURL
                             self.imageSource = nil
-                            Task(priority: .utility) {
-                                do {
-                                    _ = try await fileRepository.generateOrGetCachedFileURL(
-                                        for: viewData.url,
-                                        withChecksum: viewData.checksum
-                                    )
-                                } catch {
-                                    Logger.warning(Strings.video_failed_to_cache(viewData.url, error))
-                                }
-                            }
+                            cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
                             return
                         }
 
@@ -157,28 +148,13 @@ struct VideoComponentView: View {
                         // Cache both resolutions as a failsafe: if the high-res
                         // download fails or is canceled, the low-res version is
                         // available as a fallback on next open.
-                        Task(priority: .utility) {
-                            do {
-                                _ = try await fileRepository.generateOrGetCachedFileURL(
-                                    for: viewData.url,
-                                    withChecksum: viewData.checksum
-                                )
-                            } catch {
-                                Logger.warning(Strings.video_failed_to_cache(viewData.url, error))
-                            }
-                            if let lowResUrl = viewData.lowResUrl,
-                               lowResUrl != viewData.url {
-                                do {
-                                    _ = try await fileRepository.generateOrGetCachedFileURL(
-                                        for: lowResUrl,
-                                        withChecksum: viewData.lowResChecksum
-                                    )
-                                } catch {
-                                    Logger.warning(
-                                        Strings.video_failed_to_cache(lowResUrl, error)
-                                    )
-                                }
-                            }
+                        cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
+                        if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
+                            cacheVideo(
+                                fileRepository: fileRepository,
+                                url: lowResUrl,
+                                checksum: viewData.lowResChecksum
+                            )
                         }
                     }
                     .applyMediaWidth(size: style.size)
@@ -226,6 +202,21 @@ struct VideoComponentView: View {
             return (style.widthDark ?? style.widthLight, style.heightDark ?? style.heightLight)
         @unknown default:
             return (style.widthLight, style.heightLight)
+        }
+    }
+
+    private func cacheVideo(fileRepository: FileRepository, url: URL, checksum: Checksum?) {
+        Task(priority: .utility) {
+            do {
+                _ = try await fileRepository.generateOrGetCachedFileURL(
+                    for: url,
+                    withChecksum: checksum
+                )
+            } catch {
+                Logger.warning(
+                    Strings.video_failed_to_cache(url, error)
+                )
+            }
         }
     }
 
