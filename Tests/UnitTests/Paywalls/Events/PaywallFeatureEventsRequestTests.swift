@@ -31,7 +31,7 @@ class PaywallFeatureEventsRequestTests: TestCase {
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
         let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
     func testCancelEvent() throws {
@@ -39,7 +39,7 @@ class PaywallFeatureEventsRequestTests: TestCase {
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
         let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
     func testCloseEvent() throws {
@@ -47,7 +47,7 @@ class PaywallFeatureEventsRequestTests: TestCase {
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
         let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
     func testCanInitFromDeserializedEvent() throws {
@@ -79,7 +79,7 @@ class PaywallFeatureEventsRequestTests: TestCase {
 
         let requestEvent = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: deserializedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
     func testPaywallEventWithoutMillisecondPrecisionIsParsed() throws {
