@@ -61,7 +61,6 @@ executors:
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
-      FORCE_RERUN_TESTS: << pipeline.parameters.force_rerun_tests >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
   macos-executor-large:
@@ -76,7 +75,6 @@ executors:
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
-      FORCE_RERUN_TESTS: << pipeline.parameters.force_rerun_tests >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
 
@@ -543,21 +541,27 @@ commands:
       test-name:
         type: string
     steps:
-      - restore_cache:
-          name: "Restore cache: << parameters.test-name >>"
-          keys:
-            - test-run-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
+      - unless:
+          condition: << pipeline.parameters.force_rerun_tests >>
+          steps:
+            - restore_cache:
+                name: "Restore cache: << parameters.test-name >>"
+                keys:
+                  - test-run-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
 
   save-test-run-cache:
     parameters:
       test-name:
         type: string
     steps:
-      - save_cache:
-          name: "Save cache: << parameters.test-name >>"
-          key: test-run-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
-          paths:
-            - /tmp/cache/test-run-<< parameters.test-name >>
+      - unless:
+          condition: << pipeline.parameters.force_rerun_tests >>
+          steps:
+            - save_cache:
+                name: "Save cache: << parameters.test-name >>"
+                key: test-run-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
+                paths:
+                  - /tmp/cache/test-run-<< parameters.test-name >>
 
   run-test-with-cache:
     description: "Run a test with caching. Skips if already passed for this commit. Never fails the step; use report-test-result to surface failures."
@@ -571,6 +575,9 @@ commands:
       no-output-timeout:
         type: string
         default: "5m"
+      force-rerun:
+        type: boolean
+        default: << pipeline.parameters.force_rerun_tests >>
     steps:
       - restore-test-run-cache:
           test-name: << parameters.test-name >>
@@ -580,8 +587,9 @@ commands:
           command: |
             CACHE_DIR="/tmp/cache/test-run-<< parameters.test-name >>"
             STATUS_FILE="/tmp/test_status/<< parameters.test-name >>"
+            FORCE_RERUN="<< parameters.force-rerun >>"
 
-            if [ "$FORCE_RERUN_TESTS" != "true" ] && [ -f "$CACHE_DIR/SUCCESS" ]; then
+            if [ "$FORCE_RERUN" != "true" ] && [ -f "$CACHE_DIR/SUCCESS" ]; then
               echo "===== SKIPPED ====="
               echo "Test already passed for this commit."
               cat "$CACHE_DIR/SUCCESS"
@@ -589,7 +597,7 @@ commands:
               exit 0
             fi
 
-            if [ "$FORCE_RERUN_TESTS" = "true" ]; then
+            if [ "$FORCE_RERUN" = "true" ]; then
               echo "force_rerun_tests is enabled — ignoring cache"
             fi
 
@@ -603,7 +611,7 @@ commands:
             set -e
 
             if [ $EXIT_CODE -eq 0 ]; then
-              if [ "$FORCE_RERUN_TESTS" != "true" ]; then
+              if [ "$FORCE_RERUN" != "true" ]; then
                 mkdir -p "$CACHE_DIR"
                 echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
               fi
@@ -1345,7 +1353,7 @@ jobs:
       - run:
           name: Start iOS 14.5 runtime installation (background)
           command: |
-            if [ "$FORCE_RERUN_TESTS" != "true" ] && [ -f "/tmp/cache/test-run-ios-14/SUCCESS" ]; then
+            if [ -f "/tmp/cache/test-run-ios-14/SUCCESS" ]; then
               echo "iOS 14 tests cached, skipping runtime installation"
               touch /tmp/ios14_runtime_ready
               exit 0
