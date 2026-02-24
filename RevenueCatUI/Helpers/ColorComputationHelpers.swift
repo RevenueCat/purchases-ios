@@ -95,7 +95,7 @@ private func relativeLuminance(of color: Color) -> Double {
 ///
 /// - Parameter value: sRGB color component value (0-1).
 /// - Returns: Linear RGB value (0-1).
-private func linearize(_ value: Double) -> Double {
+func linearize(_ value: Double) -> Double {
     if value <= WCAGConstants.linearizationThreshold {
         return value / WCAGConstants.linearDivisor
     } else {
