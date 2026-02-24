@@ -1967,14 +1967,14 @@ workflows:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
       - run-test-ios-26
-      - run-test-ios-18
-      - run-test-ios-17
-      - run-test-ios-16
-      - run-test-ios-15
-      - run-test-ios-14
-      - run-test-macos
-      - run-test-watchos
-      - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
+      # - run-test-ios-18
+      # - run-test-ios-17
+      # - run-test-ios-16
+      # - run-test-ios-15
+      # - run-test-ios-14
+      # - run-test-macos
+      # - run-test-watchos
+      # - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
 
 
   generate_revenuecatui_snapshots:
