@@ -31,6 +31,9 @@ parameters:
   generate_swiftinterface:
     default: false
     type: boolean
+  force_rerun_tests:
+    default: false
+    type: boolean
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
@@ -58,6 +61,7 @@ executors:
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
+      FORCE_RERUN_TESTS: << pipeline.parameters.force_rerun_tests >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
   macos-executor-large:
@@ -72,6 +76,7 @@ executors:
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
+      FORCE_RERUN_TESTS: << pipeline.parameters.force_rerun_tests >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
 
@@ -576,12 +581,16 @@ commands:
             CACHE_DIR="/tmp/cache/test-run-<< parameters.test-name >>"
             STATUS_FILE="/tmp/test_status/<< parameters.test-name >>"
 
-            if [ -f "$CACHE_DIR/SUCCESS" ]; then
+            if [ "$FORCE_RERUN_TESTS" != "true" ] && [ -f "$CACHE_DIR/SUCCESS" ]; then
               echo "===== SKIPPED ====="
               echo "Test already passed for this commit."
               cat "$CACHE_DIR/SUCCESS"
               echo "SKIPPED" > "$STATUS_FILE"
               exit 0
+            fi
+
+            if [ "$FORCE_RERUN_TESTS" = "true" ]; then
+              echo "force_rerun_tests is enabled — ignoring cache"
             fi
 
             echo "STARTED" > "$STATUS_FILE"
@@ -594,8 +603,10 @@ commands:
             set -e
 
             if [ $EXIT_CODE -eq 0 ]; then
-              mkdir -p "$CACHE_DIR"
-              echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
+              if [ "$FORCE_RERUN_TESTS" != "true" ]; then
+                mkdir -p "$CACHE_DIR"
+                echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
+              fi
               echo "PASSED" > "$STATUS_FILE"
             else
               rm -rf "$CACHE_DIR"
@@ -1334,7 +1345,7 @@ jobs:
       - run:
           name: Start iOS 14.5 runtime installation (background)
           command: |
-            if [ -f "/tmp/cache/test-run-ios-14/SUCCESS" ]; then
+            if [ "$FORCE_RERUN_TESTS" != "true" ] && [ -f "/tmp/cache/test-run-ios-14/SUCCESS" ]; then
               echo "iOS 14 tests cached, skipping runtime installation"
               touch /tmp/ios14_runtime_ready
               exit 0
