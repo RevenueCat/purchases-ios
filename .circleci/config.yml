@@ -470,8 +470,9 @@ commands:
 
             if [ -f "$CACHE_DIR/SUCCESS" ]; then
               echo "===== SKIPPED ====="
-              echo "Test already passed for this commit."
+              echo "This test already passed for this commit in a previous run of this job:"
               cat "$CACHE_DIR/SUCCESS"
+              echo "To force all tests to re-run, trigger the pipeline with force_rerun_tests=true."
               echo "SKIPPED" > "$STATUS_FILE"
               exit 0
             fi
@@ -587,8 +588,9 @@ commands:
 
             if [ -f "$CACHE_DIR/SUCCESS" ]; then
               echo "===== SKIPPED ====="
-              echo "Test already passed for this commit."
+              echo "This test already passed for this commit in a previous run of this job:"
               cat "$CACHE_DIR/SUCCESS"
+              echo "To force all tests to re-run, trigger the pipeline with force_rerun_tests=true."
               echo "SKIPPED" > "$STATUS_FILE"
               exit 0
             fi
