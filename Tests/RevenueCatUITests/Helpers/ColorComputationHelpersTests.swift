@@ -19,12 +19,6 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ColorComputationHelpersTests: TestCase {
 
-    #if os(watchOS)
-    let toleranceRGBExtraction = 0.05
-    #else
-    let toleranceRGBExtraction = 0.01
-    #endif
-
     // MARK: - linearize tests
 
     func testLinearizeZeroReturnsZero() {
@@ -62,50 +56,50 @@ class ColorComputationHelpersTests: TestCase {
 
     func testExtractRGBComponentsFromWhite() {
         let rgb = extractRGBComponents(from: .white)
-        expect(rgb.0).to(beCloseTo(1.0, within: toleranceRGBExtraction))
-        expect(rgb.1).to(beCloseTo(1.0, within: toleranceRGBExtraction))
-        expect(rgb.2).to(beCloseTo(1.0, within: toleranceRGBExtraction))
+        expect(rgb.0).to(beCloseTo(1.0, within: 0.01))
+        expect(rgb.1).to(beCloseTo(1.0, within: 0.01))
+        expect(rgb.2).to(beCloseTo(1.0, within: 0.01))
     }
 
     func testExtractRGBComponentsFromBlack() {
         let rgb = extractRGBComponents(from: .black)
-        expect(rgb.0).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.1).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.2).to(beCloseTo(0.0, within: toleranceRGBExtraction))
+        expect(rgb.0).to(beCloseTo(0.0, within: 0.01))
+        expect(rgb.1).to(beCloseTo(0.0, within: 0.01))
+        expect(rgb.2).to(beCloseTo(0.0, within: 0.01))
     }
 
     func testExtractRGBComponentsFromPureRed() {
         // Use explicit RGB color since SwiftUI .red is a system color
         let pureRed = Color(red: 1.0, green: 0.0, blue: 0.0)
         let rgb = extractRGBComponents(from: pureRed)
-        expect(rgb.0).to(beCloseTo(1.0, within: toleranceRGBExtraction))
-        expect(rgb.1).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.2).to(beCloseTo(0.0, within: toleranceRGBExtraction))
+        expect(rgb.0).to(beCloseTo(1.0, within: 0.01))
+        expect(rgb.1).to(beCloseTo(0.0, within: 0.01))
+        expect(rgb.2).to(beCloseTo(0.0, within: 0.01))
     }
 
     func testExtractRGBComponentsFromPureGreen() {
         let pureGreen = Color(red: 0.0, green: 1.0, blue: 0.0)
         let rgb = extractRGBComponents(from: pureGreen)
-        expect(rgb.0).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.1).to(beCloseTo(1.0, within: toleranceRGBExtraction))
-        expect(rgb.2).to(beCloseTo(0.0, within: toleranceRGBExtraction))
+        expect(rgb.0).to(beCloseTo(0.0, within: 0.01))
+        expect(rgb.1).to(beCloseTo(1.0, within: 0.01))
+        expect(rgb.2).to(beCloseTo(0.0, within: 0.01))
     }
 
     func testExtractRGBComponentsFromPureBlue() {
         let pureBlue = Color(red: 0.0, green: 0.0, blue: 1.0)
         let rgb = extractRGBComponents(from: pureBlue)
-        expect(rgb.0).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.1).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.2).to(beCloseTo(1.0, within: toleranceRGBExtraction))
+        expect(rgb.0).to(beCloseTo(0.0, within: 0.01))
+        expect(rgb.1).to(beCloseTo(0.0, within: 0.01))
+        expect(rgb.2).to(beCloseTo(1.0, within: 0.01))
     }
 
     func testExtractRGBComponentsFromCustomColor() {
         // Create a custom color with known RGB values
         let color = Color(red: 0.5, green: 0.25, blue: 0.75)
         let rgb = extractRGBComponents(from: color)
-        expect(rgb.0).to(beCloseTo(0.5, within: toleranceRGBExtraction))
-        expect(rgb.1).to(beCloseTo(0.25, within: toleranceRGBExtraction))
-        expect(rgb.2).to(beCloseTo(0.75, within: toleranceRGBExtraction))
+        expect(rgb.0).to(beCloseTo(0.5, within: 0.01))
+        expect(rgb.1).to(beCloseTo(0.25, within: 0.01))
+        expect(rgb.2).to(beCloseTo(0.75, within: 0.01))
     }
 
     // MARK: - selectColorWithBestContrast tests
@@ -113,9 +107,9 @@ class ColorComputationHelpersTests: TestCase {
     func testSelectColorWithBestContrastEmptyArrayReturnsBlack() {
         let result = selectColorWithBestContrast(from: [], againstColor: .white)
         let rgb = extractRGBComponents(from: result)
-        expect(rgb.0).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.1).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.2).to(beCloseTo(0.0, within: toleranceRGBExtraction))
+        expect(rgb.0).to(beCloseTo(0.0, within: 0.01))
+        expect(rgb.1).to(beCloseTo(0.0, within: 0.01))
+        expect(rgb.2).to(beCloseTo(0.0, within: 0.01))
     }
 
     func testSelectColorWithBestContrastWhiteVsBlackOnWhiteBackground() {
@@ -124,9 +118,9 @@ class ColorComputationHelpersTests: TestCase {
         let result = selectColorWithBestContrast(from: colors, againstColor: .white)
         let rgb = extractRGBComponents(from: result)
         // Should select black
-        expect(rgb.0).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.1).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.2).to(beCloseTo(0.0, within: toleranceRGBExtraction))
+        expect(rgb.0).to(beCloseTo(0.0, within: 0.01))
+        expect(rgb.1).to(beCloseTo(0.0, within: 0.01))
+        expect(rgb.2).to(beCloseTo(0.0, within: 0.01))
     }
 
     func testSelectColorWithBestContrastWhiteVsBlackOnBlackBackground() {
@@ -135,16 +129,15 @@ class ColorComputationHelpersTests: TestCase {
         let result = selectColorWithBestContrast(from: colors, againstColor: .black)
         let rgb = extractRGBComponents(from: result)
         // Should select white
-        expect(rgb.0).to(beCloseTo(1.0, within: toleranceRGBExtraction))
-        expect(rgb.1).to(beCloseTo(1.0, within: toleranceRGBExtraction))
-        expect(rgb.2).to(beCloseTo(1.0, within: toleranceRGBExtraction))
+        expect(rgb.0).to(beCloseTo(1.0, within: 0.01))
+        expect(rgb.1).to(beCloseTo(1.0, within: 0.01))
+        expect(rgb.2).to(beCloseTo(1.0, within: 0.01))
     }
 
     func testSelectColorWithBestContrastSingleColorReturnsIt() {
         let colors: [Color] = [.red]
         let result = selectColorWithBestContrast(from: colors, againstColor: .white)
-        let rgb = extractRGBComponents(from: result)
-        expect(rgb.0).to(beCloseTo(1.0, within: toleranceRGBExtraction))
+        expect(result).to(equal(.red))
     }
 
     func testSelectColorWithBestContrastOnGrayBackground() {
@@ -154,27 +147,20 @@ class ColorComputationHelpersTests: TestCase {
         let colors: [Color] = [.white, .black]
         let result = selectColorWithBestContrast(from: colors, againstColor: gray)
 
-        // Either black or white is acceptable - just verify we get one of them
-        let rgb = extractRGBComponents(from: result)
-        let isBlackOrWhite = (rgb.0 < 0.1 && rgb.1 < 0.1 && rgb.2 < 0.1) ||
-                             (rgb.0 > 0.9 && rgb.1 > 0.9 && rgb.2 > 0.9)
-        expect(isBlackOrWhite).to(beTrue())
+        expect([.black, .white]).to(contain(result))
     }
 
     func testSelectColorWithBestContrastMultipleColors() {
         // Given dark background, lighter colors should win
         let darkBackground = Color(red: 0.1, green: 0.1, blue: 0.1)
+        let lightGray = Color(red: 0.9, green: 0.9, blue: 0.9)
         let colors: [Color] = [
             Color(red: 0.2, green: 0.2, blue: 0.2), // Dark gray - low contrast
-            Color(red: 0.9, green: 0.9, blue: 0.9), // Light gray - high contrast
+            lightGray,
             Color(red: 0.5, green: 0.5, blue: 0.5)  // Mid gray - medium contrast
         ]
         let result = selectColorWithBestContrast(from: colors, againstColor: darkBackground)
-        let rgb = extractRGBComponents(from: result)
-        // Should select the light gray (0.9, 0.9, 0.9)
-        expect(rgb.0).to(beCloseTo(0.9, within: 0.05))
-        expect(rgb.1).to(beCloseTo(0.9, within: 0.05))
-        expect(rgb.2).to(beCloseTo(0.9, within: 0.05))
+        expect(result).to(equal(lightGray))
     }
 
     // MARK: - WCAG Contrast Ratio Verification
@@ -189,11 +175,7 @@ class ColorComputationHelpersTests: TestCase {
             Color(red: 0.2, green: 0.2, blue: 0.2)
         ]
         let result = selectColorWithBestContrast(from: colors, againstColor: .white)
-        let rgb = extractRGBComponents(from: result)
-        // Should select pure black
-        expect(rgb.0).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.1).to(beCloseTo(0.0, within: toleranceRGBExtraction))
-        expect(rgb.2).to(beCloseTo(0.0, within: toleranceRGBExtraction))
+        expect(result).to(equal(.black))
     }
 
     // MARK: - WCAGConstants validation
