@@ -138,6 +138,12 @@ func extractRGBComponents(from color: Color) -> (Double, Double, Double) {
         return (0, 0, 0)
     }
     return (Double(rgbColor.redComponent), Double(rgbColor.greenComponent), Double(rgbColor.blueComponent))
+    #elseif os(watchOS)
+    let uiColor = UIColor(color)
+    guard let components = uiColor.cgColor.components, components.count >= 3 else {
+        return (0, 0, 0)
+    }
+    return (Double(components[0]), Double(components[1]), Double(components[2]))
     #elseif canImport(UIKit)
     let uiColor = UIColor(color)
     var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
