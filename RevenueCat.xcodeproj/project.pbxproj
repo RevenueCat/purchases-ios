@@ -72,6 +72,7 @@
 		164681D12E6B577600854AA5 /* VideoPlayerViewUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681CC2E6B577600854AA5 /* VideoPlayerViewUIView.swift */; };
 		164681D22E6B577600854AA5 /* VideoComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681C92E6B577600854AA5 /* VideoComponentViewModel.swift */; };
 		164933242E5808BE00CE43A9 /* PaywallTransitionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */; };
+		1699BD602EEFBF74002001FB /* AppIconDetailProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1699BD5F2EEFBF74002001FB /* AppIconDetailProvider.swift */; };
 		1699BC342EEB4DFD002001FB /* ColorComputationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1699BC332EEB4DFD002001FB /* ColorComputationHelpers.swift */; };
 		1699BC382EEB4EFA002001FB /* AppStyleExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1699BC372EEB4EFA002001FB /* AppStyleExtractor.swift */; };
 		1699BD622EEFC3FF002001FB /* AppStyleExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1699BD612EEFC3FF002001FB /* AppStyleExtractorTests.swift */; };
@@ -1610,6 +1611,7 @@
 		1699BC6C2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockUnderlyingSynchronizedFileCache.swift; sourceTree = "<group>"; };
 		1699BC372EEB4EFA002001FB /* AppStyleExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStyleExtractor.swift; sourceTree = "<group>"; };
 		1699BD612EEFC3FF002001FB /* AppStyleExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStyleExtractorTests.swift; sourceTree = "<group>"; };
+		1699BD5F2EEFBF74002001FB /* AppIconDetailProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconDetailProvider.swift; sourceTree = "<group>"; };
 		1699BC332EEB4DFD002001FB /* ColorComputationHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorComputationHelpers.swift; sourceTree = "<group>"; };
 		16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransition.swift; sourceTree = "<group>"; };
 		16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallAnimation.swift; sourceTree = "<group>"; };
@@ -5584,9 +5586,18 @@
 			path = UIKit;
 			sourceTree = "<group>";
 		};
+		1699BD5C2EEFBEEC002001FB /* DefaultPaywall */ = {
+			isa = PBXGroup;
+			children = (
+				1699BD5F2EEFBF74002001FB /* AppIconDetailProvider.swift */,
+			);
+			path = DefaultPaywall;
+			sourceTree = "<group>";
+		};
 		887A605F2C1D037000E1A461 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				1699BD5C2EEFBEEC002001FB /* DefaultPaywall */,
 				88A543DE2C37A45B0039C6A5 /* TemplatePackageSetting.swift */,
 				887A60532C1D037000E1A461 /* AsyncButton.swift */,
 				887A60542C1D037000E1A461 /* DebugErrorView.swift */,
@@ -7873,6 +7884,7 @@
 				0354AA4C2D4029C300F9E330 /* TabControlToggleComponentView.swift in Sources */,
 				1DEF758A2ECF0EFE00614CB2 /* CreateTicketView.swift in Sources */,
 				1699BC342EEB4DFD002001FB /* ColorComputationHelpers.swift in Sources */,
+				1699BD602EEFBF74002001FB /* AppIconDetailProvider.swift in Sources */,
 				0354AA4D2D4029C300F9E330 /* TabControlComponentView.swift in Sources */,
 				887A60C22C1D037000E1A461 /* ErrorDisplay.swift in Sources */,
 				887A60692C1D037000E1A461 /* IntroEligibilityViewModel.swift in Sources */,
