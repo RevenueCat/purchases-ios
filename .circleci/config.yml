@@ -31,6 +31,9 @@ parameters:
   generate_swiftinterface:
     default: false
     type: boolean
+  force_rerun_tests:
+    default: false
+    type: boolean
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
@@ -467,8 +470,9 @@ commands:
 
             if [ -f "$CACHE_DIR/SUCCESS" ]; then
               echo "===== SKIPPED ====="
-              echo "Test already passed for this commit."
+              echo "This test already passed for this commit in a previous run of this job:"
               cat "$CACHE_DIR/SUCCESS"
+              echo "To force all tests to re-run, trigger the pipeline with force_rerun_tests=true."
               echo "SKIPPED" > "$STATUS_FILE"
               exit 0
             fi
@@ -566,9 +570,15 @@ commands:
       no-output-timeout:
         type: string
         default: "5m"
+      force-rerun:
+        type: boolean
+        default: << pipeline.parameters.force_rerun_tests >>
     steps:
-      - restore-test-run-cache:
-          test-name: << parameters.test-name >>
+      - unless:
+          condition: << parameters.force-rerun >>
+          steps:
+            - restore-test-run-cache:
+                test-name: << parameters.test-name >>
       - run:
           name: "<< parameters.display-name >>"
           no_output_timeout: << parameters.no-output-timeout >>
@@ -578,8 +588,9 @@ commands:
 
             if [ -f "$CACHE_DIR/SUCCESS" ]; then
               echo "===== SKIPPED ====="
-              echo "Test already passed for this commit."
+              echo "This test already passed for this commit in a previous run of this job:"
               cat "$CACHE_DIR/SUCCESS"
+              echo "To force all tests to re-run, trigger the pipeline with force_rerun_tests=true."
               echo "SKIPPED" > "$STATUS_FILE"
               exit 0
             fi
@@ -601,8 +612,11 @@ commands:
               rm -rf "$CACHE_DIR"
               echo "FAILED" > "$STATUS_FILE"
             fi
-      - save-test-run-cache:
-          test-name: << parameters.test-name >>
+      - unless:
+          condition: << parameters.force-rerun >>
+          steps:
+            - save-test-run-cache:
+                test-name: << parameters.test-name >>
 
   report-test-result:
     description: "Report pass/fail status of a test run"
