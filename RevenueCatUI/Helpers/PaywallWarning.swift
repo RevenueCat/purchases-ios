@@ -44,7 +44,7 @@ enum PaywallWarning {
         case .missingTierName(let tier):
             return "Tier \(tier) is missing a name"
         case .invalidTemplate:
-            return "Unkown Template"
+            return "Unknown Template"
         case .invalidVariables:
             return "Unrecognized variables"
         case .invalidIcons:
@@ -83,7 +83,7 @@ enum PaywallWarning {
 
     var helpURL: URL? {
         switch self {
-        case .noPaywall, .missingTierName, .missingTier, .missingTiers:
+        case .noPaywall, .missingLocalization, .missingTierName, .missingTier, .missingTiers:
             return URL(string: "https://www.revenuecat.com/docs/tools/paywalls")
         case .noOffering:
             return URL(string: "https://www.revenuecat.com/docs/offerings/overview")
