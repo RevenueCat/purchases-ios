@@ -129,22 +129,20 @@ private func contrastRatio(luminance1: Double, luminance2: Double) -> Double {
 /// - Returns: A tuple of (red, green, blue) values in the range 0-1.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 func extractRGBComponents(from color: Color) -> (Double, Double, Double) {
-    var result = (0.0, 0.0, 0.0)
     #if os(macOS)
     let nsColor = NSColor(color)
     guard let rgbColor = nsColor.usingColorSpace(.deviceRGB) else {
         return (0, 0, 0)
     }
-    result = (Double(rgbColor.redComponent), Double(rgbColor.greenComponent), Double(rgbColor.blueComponent))
+    return (Double(rgbColor.redComponent), Double(rgbColor.greenComponent), Double(rgbColor.blueComponent))
     #elseif canImport(UIKit)
     let uiColor = UIColor(color)
     var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
     uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-    result = (Double(red), Double(green), Double(blue))
+    return (Double(red), Double(green), Double(blue))
     #else
     return (0, 0, 0)
     #endif
-    return result
 }
 
 /// Constants defined by WCAG 2.1 for calculating relative luminance and contrast ratios.
@@ -210,18 +208,18 @@ enum ColorExtractionConstants {
     /// Range: 0 (fully transparent) to 255 (fully opaque).
     static let minimumAlphaThreshold: UInt8 = 128
 
-    /// Minimum combined RGB brightness for a color to be considered.
+    /// Minimum combined RGB brightness for a pixel to be considered.
     /// Filters out very dark colors (near-black) that aren't visually distinctive.
-    /// Calculated as: quantizedR + quantizedG + quantizedB.
-    /// Value of 30 ≈ RGB(10,10,10) after quantization, very dark gray.
+    /// Calculated as: red + green + blue from raw (unquantized) 0-255 pixel values.
+    /// Value of 30 ≈ RGB(10,10,10), very dark gray.
+    /// Range: 0 (pure black) to 765 (pure white).
     static let minimumBrightnessThreshold = 30
 
-    /// Maximum combined RGB brightness for a color to be considered.
+    /// Maximum combined RGB brightness for a pixel to be considered.
     /// Filters out very bright colors (near-white) that aren't visually distinctive.
-    /// Calculated as: quantizedR + quantizedG + quantizedB.
-    /// Value of 720 ≈ RGB(240,240,240) after quantization, very light gray.
-    /// Maximum possible value would be 224*3 = 672 for quantized, but we use 720
-    /// to account for the actual max of 255*3 = 765.
+    /// Calculated as: red + green + blue from raw (unquantized) 0-255 pixel values.
+    /// Value of 720 ≈ RGB(240,240,240), very light gray.
+    /// Range: 0 (pure black) to 765 (pure white).
     static let maximumBrightnessThreshold = 720
 
     /// Minimum Euclidean distance between colors in RGB space (normalized 0-1).
