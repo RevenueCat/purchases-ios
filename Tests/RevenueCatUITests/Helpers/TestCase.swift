@@ -73,6 +73,6 @@ class TestCase: XCTestCase {
 private enum SnapshotTests {
     static var shouldRecordSnapshots: Bool {
         return ProcessInfo.processInfo
-            .environment["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
+            .environment["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "1"
     }
 }
