@@ -329,7 +329,7 @@ extension PurchaseHandler {
         if let error = result.error {
             self.trackPurchaseError(package: package, error: error)
             self.purchaseError = error
-            throw PaywallError.externalPurchaseFailed
+            throw PaywallError.externalPurchaseFailed(underlyingError: error)
         }
 
         let resultInfo: PurchaseResultData = (transaction: nil,
@@ -411,7 +411,7 @@ extension PurchaseHandler {
 
         if let error = result.error {
             self.restoreError = error
-            throw PaywallError.externalRestoreFailed
+            throw PaywallError.externalRestoreFailed(underlyingError: error)
         }
 
         let customerInfo = try await self.purchases.customerInfo()
