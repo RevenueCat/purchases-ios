@@ -95,7 +95,7 @@ private func relativeLuminance(of color: Color) -> Double {
 ///
 /// - Parameter value: sRGB color component value (0-1).
 /// - Returns: Linear RGB value (0-1).
-func linearize(_ value: Double) -> Double {
+private func linearize(_ value: Double) -> Double {
     if value <= WCAGConstants.linearizationThreshold {
         return value / WCAGConstants.linearDivisor
     } else {
@@ -124,6 +124,9 @@ private func contrastRatio(luminance1: Double, luminance2: Double) -> Double {
 }
 
 /// Extracts RGB components from a SwiftUI `Color` using platform-specific APIs.
+///
+/// If attempting to use this function for For non-RGB-convertible UIColors (e.g., some dynamic/system/extended colors)
+/// `getRed` can fail and return 0
 ///
 /// - Parameter color: The SwiftUI `Color` to extract components from.
 /// - Returns: A tuple of (red, green, blue) values in the range 0-1.
