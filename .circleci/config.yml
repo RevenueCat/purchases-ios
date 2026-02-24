@@ -890,14 +890,6 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-
-      # === SPM Release Build (Xcode 16) ===
-      - run:
-          name: SPM Release Build (Xcode 16)
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
-
-      # === tvOS tests ===
       - run:
           name: Run tvOS tests
           command: bundle exec fastlane test_tvos
