@@ -77,7 +77,7 @@ class TestCase: XCTestCase {
 
 private enum SnapshotTests {
     static var shouldRecordSnapshots: Bool {
-        return ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+        return ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1"
     }
 }
 
