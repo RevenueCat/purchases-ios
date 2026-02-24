@@ -541,27 +541,21 @@ commands:
       test-name:
         type: string
     steps:
-      - unless:
-          condition: << pipeline.parameters.force_rerun_tests >>
-          steps:
-            - restore_cache:
-                name: "Restore cache: << parameters.test-name >>"
-                keys:
-                  - test-run-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
+      - restore_cache:
+          name: "Restore cache: << parameters.test-name >>"
+          keys:
+            - test-run-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
 
   save-test-run-cache:
     parameters:
       test-name:
         type: string
     steps:
-      - unless:
-          condition: << pipeline.parameters.force_rerun_tests >>
-          steps:
-            - save_cache:
-                name: "Save cache: << parameters.test-name >>"
-                key: test-run-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
-                paths:
-                  - /tmp/cache/test-run-<< parameters.test-name >>
+      - save_cache:
+          name: "Save cache: << parameters.test-name >>"
+          key: test-run-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
+          paths:
+            - /tmp/cache/test-run-<< parameters.test-name >>
 
   run-test-with-cache:
     description: "Run a test with caching. Skips if already passed for this commit. Never fails the step; use report-test-result to surface failures."
@@ -579,26 +573,24 @@ commands:
         type: boolean
         default: << pipeline.parameters.force_rerun_tests >>
     steps:
-      - restore-test-run-cache:
-          test-name: << parameters.test-name >>
+      - unless:
+          condition: << parameters.force-rerun >>
+          steps:
+            - restore-test-run-cache:
+                test-name: << parameters.test-name >>
       - run:
           name: "<< parameters.display-name >>"
           no_output_timeout: << parameters.no-output-timeout >>
           command: |
             CACHE_DIR="/tmp/cache/test-run-<< parameters.test-name >>"
             STATUS_FILE="/tmp/test_status/<< parameters.test-name >>"
-            FORCE_RERUN="<< parameters.force-rerun >>"
 
-            if [ "$FORCE_RERUN" != "true" ] && [ -f "$CACHE_DIR/SUCCESS" ]; then
+            if [ -f "$CACHE_DIR/SUCCESS" ]; then
               echo "===== SKIPPED ====="
               echo "Test already passed for this commit."
               cat "$CACHE_DIR/SUCCESS"
               echo "SKIPPED" > "$STATUS_FILE"
               exit 0
-            fi
-
-            if [ "$FORCE_RERUN" = "true" ]; then
-              echo "force_rerun_tests is enabled — ignoring cache"
             fi
 
             echo "STARTED" > "$STATUS_FILE"
@@ -611,17 +603,18 @@ commands:
             set -e
 
             if [ $EXIT_CODE -eq 0 ]; then
-              if [ "$FORCE_RERUN" != "true" ]; then
-                mkdir -p "$CACHE_DIR"
-                echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
-              fi
+              mkdir -p "$CACHE_DIR"
+              echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
               echo "PASSED" > "$STATUS_FILE"
             else
               rm -rf "$CACHE_DIR"
               echo "FAILED" > "$STATUS_FILE"
             fi
-      - save-test-run-cache:
-          test-name: << parameters.test-name >>
+      - unless:
+          condition: << parameters.force-rerun >>
+          steps:
+            - save-test-run-cache:
+                test-name: << parameters.test-name >>
 
   report-test-result:
     description: "Report pass/fail status of a test run"
