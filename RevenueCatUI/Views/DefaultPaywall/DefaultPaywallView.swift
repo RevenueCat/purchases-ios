@@ -34,7 +34,7 @@ struct DefaultPaywallView: View {
         self.handler = handler
         self.warning = warning
         self.appName = appName
-        self.appIconDetailProvider = iconDetailProvider
+        self._appIconDetailProvider = StateObject(wrappedValue: iconDetailProvider)
         if let packages = offering?.availablePackages, !packages.isEmpty {
             self.selected = packages.first
             self.products = packages
@@ -52,7 +52,7 @@ struct DefaultPaywallView: View {
 
     @Environment(\.colorScheme) var colorScheme
 
-    @ObservedObject var appIconDetailProvider: AppIconDetailProvider
+    @StateObject var appIconDetailProvider: AppIconDetailProvider
 
     // MARK: - Colors
 
@@ -61,7 +61,7 @@ struct DefaultPaywallView: View {
             return .accentColor
         }
 
-        return selectColorWithBestContrast(
+        return ColorComputationHelpers.selectColorWithBestContrast(
             from: appIconDetailProvider.foundColors,
             againstColor: colorScheme == .dark ? .black : .white
         )
@@ -72,7 +72,7 @@ struct DefaultPaywallView: View {
             return .white
         }
 
-        return selectColorWithBestContrast(
+        return ColorComputationHelpers.selectColorWithBestContrast(
             from: appIconDetailProvider.foundColors + [colorScheme == .dark ? .black : .white],
             againstColor: iconColor
         )
@@ -160,7 +160,11 @@ struct DefaultPaywallView: View {
                     let purchaseButton = Button {
                         if let selected {
                             Task(priority: .userInitiated) {
-                                try await handler.purchase(package: selected)
+                                do {
+                                    _ = try await handler.purchase(package: selected)
+                                } catch {
+                                    // PurchaseHandler tracks the error internally
+                                }
                             }
                         }
                     } label: {
@@ -183,7 +187,11 @@ struct DefaultPaywallView: View {
 
                     let restoreButton = Button {
                         Task(priority: .userInitiated) {
-                            try await handler.restorePurchases()
+                            do {
+                                _ = try await handler.restorePurchases()
+                            } catch {
+                                // PurchaseHandler tracks the error internally
+                            }
                         }
                     } label: {
                         Text("Restore Purchases")
