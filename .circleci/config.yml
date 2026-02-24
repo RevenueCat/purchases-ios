@@ -488,6 +488,7 @@ commands:
               echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
               echo "PASSED" > "$STATUS_FILE"
             else
+              rm -rf "$CACHE_DIR"
               echo "FAILED" > "$STATUS_FILE"
             fi
       - save-installation-test-cache:
@@ -528,6 +529,116 @@ commands:
                 ;;
               *)
                 echo "Installation Test: << parameters.display-name >> UNKNOWN STATUS: $STATUS"
+                exit 1
+                ;;
+            esac
+
+  restore-test-run-cache:
+    parameters:
+      test-name:
+        type: string
+    steps:
+      - restore_cache:
+          name: "Restore cache: << parameters.test-name >>"
+          keys:
+            - test-run-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
+
+  save-test-run-cache:
+    parameters:
+      test-name:
+        type: string
+    steps:
+      - save_cache:
+          name: "Save cache: << parameters.test-name >>"
+          key: test-run-<< parameters.test-name >>-{{ arch }}-macos-{{ checksum ".macos_version" }}-{{ .Revision }}
+          paths:
+            - /tmp/cache/test-run-<< parameters.test-name >>
+
+  run-test-with-cache:
+    description: "Run a test with caching. Skips if already passed for this commit. Never fails the step; use report-test-result to surface failures."
+    parameters:
+      test-name:
+        type: string
+      display-name:
+        type: string
+      test-command:
+        type: string
+      no-output-timeout:
+        type: string
+        default: "5m"
+    steps:
+      - restore-test-run-cache:
+          test-name: << parameters.test-name >>
+      - run:
+          name: "<< parameters.display-name >>"
+          no_output_timeout: << parameters.no-output-timeout >>
+          command: |
+            CACHE_DIR="/tmp/cache/test-run-<< parameters.test-name >>"
+            STATUS_FILE="/tmp/test_status/<< parameters.test-name >>"
+
+            if [ -f "$CACHE_DIR/SUCCESS" ]; then
+              echo "===== SKIPPED ====="
+              echo "Test already passed for this commit."
+              cat "$CACHE_DIR/SUCCESS"
+              echo "SKIPPED" > "$STATUS_FILE"
+              exit 0
+            fi
+
+            echo "STARTED" > "$STATUS_FILE"
+            set +e
+            (
+              set -e
+              << parameters.test-command >>
+            )
+            EXIT_CODE=$?
+            set -e
+
+            if [ $EXIT_CODE -eq 0 ]; then
+              mkdir -p "$CACHE_DIR"
+              echo "Passed in CircleCI job: ${CIRCLE_BUILD_URL}" > "$CACHE_DIR/SUCCESS"
+              echo "PASSED" > "$STATUS_FILE"
+            else
+              rm -rf "$CACHE_DIR"
+              echo "FAILED" > "$STATUS_FILE"
+            fi
+      - save-test-run-cache:
+          test-name: << parameters.test-name >>
+
+  report-test-result:
+    description: "Report pass/fail status of a test run"
+    parameters:
+      test-name:
+        type: string
+      display-name:
+        type: string
+    steps:
+      - run:
+          name: "Result: << parameters.display-name >>"
+          when: always
+          command: |
+            STATUS_FILE="/tmp/test_status/<< parameters.test-name >>"
+            if [ ! -f "$STATUS_FILE" ]; then
+              echo "Test: << parameters.display-name >> DID NOT RUN (previous step failure)"
+              exit 1
+            fi
+            STATUS=$(cat "$STATUS_FILE")
+            case "$STATUS" in
+              PASSED)
+                echo "Test: << parameters.display-name >> PASSED"
+                ;;
+              SKIPPED)
+                echo "Test: << parameters.display-name >> SKIPPED (cached)"
+                ;;
+              FAILED)
+                echo "Test: << parameters.display-name >> FAILED"
+                exit 1
+                ;;
+              STARTED)
+                echo "Test: << parameters.display-name >> DID NOT COMPLETE (likely killed by timeout)"
+                exit 1
+                ;;
+              *)
+                echo "Test: << parameters.display-name >> UNKNOWN STATUS: $STATUS"
                 exit 1
                 ;;
             esac
@@ -738,19 +849,26 @@ jobs:
           install_xcbeautify: false
       - update-spm-installation-commit
 
-      # === SPM RevenueCatUI Release Build (Xcode 16) ===
+      # Initialize test status tracking
       - run:
-          name: SPM RevenueCatUI Release Build (Xcode 16)
-          command: swift build -c release --target RevenueCatUI
-          no_output_timeout: 5m
+          name: Initialize test tracking
+          command: mkdir -p /tmp/test_status
+
+      # === SPM RevenueCatUI Release Build (Xcode 16) ===
+      - run-test-with-cache:
+          test-name: spm-build-revenuecatui-xcode-16
+          display-name: "SPM RevenueCatUI Release Build (Xcode 16)"
+          test-command: swift build -c release --target RevenueCatUI
+          no-output-timeout: "5m"
 
       # === RevenueCatUI iOS 18 tests ===
-      - run:
-          name: Run RevenueCatUI iOS 18 tests
-          command: bundle exec fastlane test_revenuecatui
-          no_output_timeout: 15m
-          environment:
-            DEVICE: iPhone 16,OS=18.5
+      - run-test-with-cache:
+          test-name: revenuecatui-18
+          display-name: "Run RevenueCatUI iOS 18 tests"
+          no-output-timeout: "15m"
+          test-command: |
+            export DEVICE='iPhone 16,OS=18.5'
+            bundle exec fastlane test_revenuecatui
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -780,12 +898,13 @@ jobs:
           command: rm -rf fastlane/test_output
 
       # === RevenueCatUI iOS 17 tests ===
-      - run:
-          name: Run RevenueCatUI iOS 17 tests
-          command: bundle exec fastlane test_revenuecatui
-          no_output_timeout: 15m
-          environment:
-            DEVICE: iPhone 15 Pro,OS=17.5
+      - run-test-with-cache:
+          test-name: revenuecatui-17
+          display-name: "Run RevenueCatUI iOS 17 tests"
+          no-output-timeout: "15m"
+          test-command: |
+            export DEVICE='iPhone 15 Pro,OS=17.5'
+            bundle exec fastlane test_revenuecatui
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -810,6 +929,17 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output-revenuecatui-17
+
+      # === Results ===
+      - report-test-result:
+          test-name: spm-build-revenuecatui-xcode-16
+          display-name: "SPM RevenueCatUI Release Build (Xcode 16)"
+      - report-test-result:
+          test-name: revenuecatui-18
+          display-name: "RevenueCatUI iOS 18 tests"
+      - report-test-result:
+          test-name: revenuecatui-17
+          display-name: "RevenueCatUI iOS 17 tests"
       - slack-notify-on-fail
 
   run-revenuecat-ui-ios-26:
@@ -890,10 +1020,25 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+
+      # Initialize test status tracking
       - run:
-          name: Run tvOS tests
-          command: bundle exec fastlane test_tvos
-          no_output_timeout: 5m
+          name: Initialize test tracking
+          command: mkdir -p /tmp/test_status
+
+      # === SPM Release Build (Xcode 16) ===
+      - run-test-with-cache:
+          test-name: spm-build-xcode-16-tvos-macos
+          display-name: "SPM Release Build (Xcode 16)"
+          test-command: swift build -c release --target RevenueCat
+          no-output-timeout: "30m"
+
+      # === tvOS tests ===
+      - run-test-with-cache:
+          test-name: tvos
+          display-name: "Run tvOS tests"
+          no-output-timeout: "5m"
+          test-command: bundle exec fastlane test_tvos
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/tvos
           bundle_name: RevenueCat
@@ -911,10 +1056,11 @@ jobs:
           command: rm -rf fastlane/test_output
 
       # === macOS tests ===
-      - run:
-          name: Run macOS tests
-          command: bundle exec fastlane mac test_macos
-          no_output_timeout: 15m
+      - run-test-with-cache:
+          test-name: macos
+          display-name: "Run macOS tests"
+          no-output-timeout: "15m"
+          test-command: bundle exec fastlane mac test_macos
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/macos
           bundle_name: RevenueCat
@@ -927,6 +1073,17 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-macos
+
+      # === Results ===
+      - report-test-result:
+          test-name: spm-build-xcode-16-tvos-macos
+          display-name: "SPM Release Build (Xcode 16)"
+      - report-test-result:
+          test-name: tvos
+          display-name: "tvOS tests"
+      - report-test-result:
+          test-name: macos
+          display-name: "macOS tests"
       - slack-notify-on-fail
 
   run-test-ios-26:
@@ -941,19 +1098,26 @@ jobs:
           command: swift package describe
       - install-dependencies
 
-      # === SPM Release Build (Xcode 26) ===
+      # Initialize test status tracking
       - run:
-          name: SPM Release Build (Xcode 26)
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
+          name: Initialize test tracking
+          command: mkdir -p /tmp/test_status
+
+      # === SPM Release Build (Xcode 26) ===
+      - run-test-with-cache:
+          test-name: spm-build-xcode-26
+          display-name: "SPM Release Build (Xcode 26)"
+          test-command: swift build -c release --target RevenueCat
+          no-output-timeout: "30m"
 
       # === iOS 26 tests ===
-      - run:
-          name: Run iOS 26 tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 15m
-          environment:
-            SCAN_DEVICE: iPhone 17 (26.2)
+      - run-test-with-cache:
+          test-name: ios-26
+          display-name: "Run iOS 26 tests"
+          no-output-timeout: "15m"
+          test-command: |
+            export SCAN_DEVICE='iPhone 17 (26.2)'
+            bundle exec fastlane test_ios
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -966,6 +1130,14 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-26
+
+      # === Results ===
+      - report-test-result:
+          test-name: spm-build-xcode-26
+          display-name: "SPM Release Build (Xcode 26)"
+      - report-test-result:
+          test-name: ios-26
+          display-name: "iOS 26 tests"
       - slack-notify-on-fail
 
   run-test-ios-18-and-17:
@@ -980,19 +1152,26 @@ jobs:
           command: swift package describe
       - install-dependencies
 
-      # === SPM Release Build (Xcode 16) ===
+      # Initialize test status tracking
       - run:
-          name: SPM Release Build (Xcode 16)
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
+          name: Initialize test tracking
+          command: mkdir -p /tmp/test_status
+
+      # === SPM Release Build (Xcode 16) ===
+      - run-test-with-cache:
+          test-name: spm-build-xcode-16-ios-18-17
+          display-name: "SPM Release Build (Xcode 16)"
+          test-command: swift build -c release --target RevenueCat
+          no-output-timeout: "30m"
 
       # === iOS 18 tests ===
-      - run:
-          name: Run iOS 18 tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 15m
-          environment:
-            SCAN_DEVICE: iPhone 16 (18.5)
+      - run-test-with-cache:
+          test-name: ios-18
+          display-name: "Run iOS 18 tests"
+          no-output-timeout: "15m"
+          test-command: |
+            export SCAN_DEVICE='iPhone 16 (18.5)'
+            bundle exec fastlane test_ios
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -1018,12 +1197,13 @@ jobs:
           command: rm -rf fastlane/test_output
 
       # === iOS 17 tests ===
-      - run:
-          name: Run iOS 17 tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 15m
-          environment:
-            SCAN_DEVICE: iPhone 15 (17.5)
+      - run-test-with-cache:
+          test-name: ios-17
+          display-name: "Run iOS 17 tests"
+          no-output-timeout: "15m"
+          test-command: |
+            export SCAN_DEVICE='iPhone 15 (17.5)'
+            bundle exec fastlane test_ios
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -1044,6 +1224,17 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-17
+
+      # === Results ===
+      - report-test-result:
+          test-name: spm-build-xcode-16-ios-18-17
+          display-name: "SPM Release Build (Xcode 16)"
+      - report-test-result:
+          test-name: ios-18
+          display-name: "iOS 18 tests"
+      - report-test-result:
+          test-name: ios-17
+          display-name: "iOS 17 tests"
       - slack-notify-on-fail
 
   run-test-ios-16:
@@ -1062,19 +1253,26 @@ jobs:
       - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
 
-      # === SPM Release Build (Xcode 15) ===
+      # Initialize test status tracking
       - run:
-          name: SPM Release Build (Xcode 15)
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
+          name: Initialize test tracking
+          command: mkdir -p /tmp/test_status
+
+      # === SPM Release Build (Xcode 15) ===
+      - run-test-with-cache:
+          test-name: spm-build-xcode-15
+          display-name: "SPM Release Build (Xcode 15)"
+          test-command: swift build -c release --target RevenueCat
+          no-output-timeout: "30m"
 
       # === iOS 16 tests ===
-      - run:
-          name: Run iOS 16 tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 14 (16.4)
+      - run-test-with-cache:
+          test-name: ios-16
+          display-name: "Run iOS 16 tests"
+          no-output-timeout: "5m"
+          test-command: |
+            export SCAN_DEVICE='iPhone 14 (16.4)'
+            bundle exec fastlane test_ios
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -1087,6 +1285,14 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-16
+
+      # === Results ===
+      - report-test-result:
+          test-name: spm-build-xcode-15
+          display-name: "SPM Release Build (Xcode 15)"
+      - report-test-result:
+          test-name: ios-16
+          display-name: "iOS 16 tests"
       - slack-notify-on-fail
 
   run-test-ios-15-and-14:
@@ -1106,17 +1312,33 @@ jobs:
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
 
-      # === SPM Release Build (Xcode 14) ===
+      # Initialize test status tracking
       - run:
-          name: SPM Release Build (Xcode 14)
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
+          name: Initialize test tracking
+          command: mkdir -p /tmp/test_status
+
+      # === SPM Release Build (Xcode 14) ===
+      - run-test-with-cache:
+          test-name: spm-build-xcode-14
+          display-name: "SPM Release Build (Xcode 14)"
+          test-command: swift build -c release --target RevenueCat
+          no-output-timeout: "30m"
+
+      # Restore iOS 14 cache early so the background download can be skipped
+      # if those tests already passed for this commit.
+      - restore-test-run-cache:
+          test-name: ios-14
 
       # Start iOS 14.5 runtime download in the background so it can proceed
-      # while iOS 15 tests run.
+      # while iOS 15 tests run. Skips if iOS 14 tests are already cached.
       - run:
           name: Start iOS 14.5 runtime installation (background)
           command: |
+            if [ -f "/tmp/cache/test-run-ios-14/SUCCESS" ]; then
+              echo "iOS 14 tests cached, skipping runtime installation"
+              touch /tmp/ios14_runtime_ready
+              exit 0
+            fi
             {
               echo "=== Available runtimes ===" > /tmp/ios14_runtime_install.log
               xcodes runtimes >> /tmp/ios14_runtime_install.log 2>&1
@@ -1132,12 +1354,12 @@ jobs:
             echo "Started iOS 14.5 runtime installation in background"
 
       # === iOS 15 tests ===
-      - run:
-          name: Run iOS 15 tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 13 (15.5)
+      - run-test-with-cache:
+          test-name: ios-15
+          display-name: "Run iOS 15 tests"
+          test-command: |
+            export SCAN_DEVICE='iPhone 13 (15.5)'
+            bundle exec fastlane test_ios
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -1167,6 +1389,10 @@ jobs:
           name: Wait for iOS 14.5 runtime installation
           no_output_timeout: 30m
           command: |
+            if [ -f "/tmp/cache/test-run-ios-14/SUCCESS" ]; then
+              echo "iOS 14 tests cached, skipping runtime wait"
+              exit 0
+            fi
             echo "Waiting for iOS 14.5 runtime installation to complete..."
             while [ ! -f /tmp/ios14_runtime_ready ] && [ ! -f /tmp/ios14_runtime_failed ]; do
               sleep 10
@@ -1178,12 +1404,12 @@ jobs:
               exit 1
             fi
             echo "iOS 14.5 runtime is ready"
-      - run:
-          name: Run iOS 14 tests
-          command: bundle exec fastlane test_ios skip_sk_tests:true
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 12 (14.5)
+      - run-test-with-cache:
+          test-name: ios-14
+          display-name: "Run iOS 14 tests"
+          test-command: |
+            export SCAN_DEVICE='iPhone 12 (14.5)'
+            bundle exec fastlane test_ios skip_sk_tests:true
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -1204,6 +1430,17 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-14
+
+      # === Results ===
+      - report-test-result:
+          test-name: spm-build-xcode-14
+          display-name: "SPM Release Build (Xcode 14)"
+      - report-test-result:
+          test-name: ios-15
+          display-name: "iOS 15 tests"
+      - report-test-result:
+          test-name: ios-14
+          display-name: "iOS 14 tests"
       - slack-notify-on-fail
 
   run-test-watchos:
