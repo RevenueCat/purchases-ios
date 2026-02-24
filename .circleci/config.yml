@@ -31,9 +31,6 @@ parameters:
   generate_swiftinterface:
     default: false
     type: boolean
-  run_watchos_tests:
-    default: true
-    type: boolean
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
@@ -1988,12 +1985,6 @@ workflows:
       - run-revenuecat-ui-ios-17
       - run-revenuecat-ui-ios-18
       - run-revenuecat-ui-ios-26
-      - spm-revenuecat-ui-watchos
-
-  run-watchos-tests:
-    when: << pipeline.parameters.run_watchos_tests >>
-    jobs:
-      - run-test-watchos
       - spm-revenuecat-ui-watchos
 
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
