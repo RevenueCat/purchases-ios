@@ -104,7 +104,7 @@ struct CustomVariablesEditorView: View {
     private var addVariableSection: some View {
         Section {
             TextField("Variable name", text: $newVariableName)
-                #if !os(watchOS)
+                #if os(iOS) || os(tvOS) || os(visionOS)
                 .textInputAutocapitalization(.never)
                 #endif
                 .autocorrectionDisabled()
