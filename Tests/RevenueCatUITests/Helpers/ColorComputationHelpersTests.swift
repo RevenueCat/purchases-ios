@@ -137,8 +137,7 @@ class ColorComputationHelpersTests: TestCase {
     func testSelectColorWithBestContrastSingleColorReturnsIt() {
         let colors: [Color] = [.red]
         let result = selectColorWithBestContrast(from: colors, againstColor: .white)
-        let rgb = extractRGBComponents(from: result)
-        expect(rgb.0).to(beCloseTo(1.0, within: 0.01))
+        expect(result).to(equal(.red))
     }
 
     func testSelectColorWithBestContrastOnGrayBackground() {
@@ -148,27 +147,20 @@ class ColorComputationHelpersTests: TestCase {
         let colors: [Color] = [.white, .black]
         let result = selectColorWithBestContrast(from: colors, againstColor: gray)
 
-        // Either black or white is acceptable - just verify we get one of them
-        let rgb = extractRGBComponents(from: result)
-        let isBlackOrWhite = (rgb.0 < 0.1 && rgb.1 < 0.1 && rgb.2 < 0.1) ||
-                             (rgb.0 > 0.9 && rgb.1 > 0.9 && rgb.2 > 0.9)
-        expect(isBlackOrWhite).to(beTrue())
+        expect([.black, .white]).to(contain(result))
     }
 
     func testSelectColorWithBestContrastMultipleColors() {
         // Given dark background, lighter colors should win
         let darkBackground = Color(red: 0.1, green: 0.1, blue: 0.1)
+        let lightGray = Color(red: 0.9, green: 0.9, blue: 0.9)
         let colors: [Color] = [
             Color(red: 0.2, green: 0.2, blue: 0.2), // Dark gray - low contrast
-            Color(red: 0.9, green: 0.9, blue: 0.9), // Light gray - high contrast
+            lightGray,
             Color(red: 0.5, green: 0.5, blue: 0.5)  // Mid gray - medium contrast
         ]
         let result = selectColorWithBestContrast(from: colors, againstColor: darkBackground)
-        let rgb = extractRGBComponents(from: result)
-        // Should select the light gray (0.9, 0.9, 0.9)
-        expect(rgb.0).to(beCloseTo(0.9, within: 0.05))
-        expect(rgb.1).to(beCloseTo(0.9, within: 0.05))
-        expect(rgb.2).to(beCloseTo(0.9, within: 0.05))
+        expect(result).to(equal(lightGray))
     }
 
     // MARK: - WCAG Contrast Ratio Verification
@@ -183,11 +175,7 @@ class ColorComputationHelpersTests: TestCase {
             Color(red: 0.2, green: 0.2, blue: 0.2)
         ]
         let result = selectColorWithBestContrast(from: colors, againstColor: .white)
-        let rgb = extractRGBComponents(from: result)
-        // Should select pure black
-        expect(rgb.0).to(beCloseTo(0.0, within: 0.01))
-        expect(rgb.1).to(beCloseTo(0.0, within: 0.01))
-        expect(rgb.2).to(beCloseTo(0.0, within: 0.01))
+        expect(result).to(equal(.black))
     }
 
     // MARK: - WCAGConstants validation
