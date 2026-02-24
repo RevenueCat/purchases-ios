@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  AppDetails.swift
+//  AppStyleExtractor.swift
 //
 //  Created by Jacob Zivan Rakidzich on 12/11/25.
 
@@ -89,7 +89,7 @@ enum AppStyleExtractor {
     /// 4. Sorts colors by frequency (most common first)
     /// 5. Removes colors that are too similar to already-selected colors
     ///
-    /// - Parameter completion: Closure called on the main thread with an array of up to 4 prominent `Color` values.
+    /// - Parameter completion: Closure called on the main thread with an array of up to 2 prominent `Color` values.
     static func getProminentColorsFromAppIcon(
         image: CGImage? = getPlatformAppIconCGImage(),
         completion: @escaping ([Color]) -> Void
@@ -107,7 +107,7 @@ enum AppStyleExtractor {
     /// This is an async wrapper around `getProminentColorsFromAppIcon(completion:)`.
     /// See that method for details on the extraction algorithm.
     ///
-    /// - Returns: An array of up to 4 prominent `Color` values from the app icon.
+    /// - Returns: An array of up to 2 prominent `Color` values from the app icon.
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     static func getProminentColorsFromAppIcon(image: CGImage? = getPlatformAppIconCGImage()) async -> [Color] {
         await withCheckedContinuation { continuation in
@@ -272,27 +272,8 @@ enum AppStyleExtractor {
         return cgImage
     }
 
-    /// Extracts RGB components from a SwiftUI `Color`.
-    ///
-    /// Uses platform-specific APIs to convert the color to RGB values.
-    ///
-    /// - Parameter color: The SwiftUI `Color` to extract components from.
-    /// - Returns: A tuple of (red, green, blue) values in the range 0-1.
     private static func extractRGB(from color: Color) -> (Double, Double, Double) {
-        var result = (0.0, 0.0, 0.0)
-        #if os(macOS)
-        let nsColor = NSColor(color)
-        guard let rgbColor = nsColor.usingColorSpace(.deviceRGB) else {
-            return (0, 0, 0)
-        }
-        result = (Double(rgbColor.redComponent), Double(rgbColor.greenComponent), Double(rgbColor.blueComponent))
-        #else
-        let uiColor = UIColor(color)
-        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        result = (Double(red), Double(green), Double(blue))
-        #endif
-        return result
+        return ColorComputationHelpers.extractRGBComponents(from: color)
     }
 
     /// Calculates the Euclidean distance between two colors in RGB space.

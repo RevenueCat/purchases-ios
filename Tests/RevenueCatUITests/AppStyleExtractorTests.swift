@@ -63,7 +63,7 @@ class AppStyleExtractorTests: TestCase {
             for index2 in (index + 1)..<colors.count {
                 let distance = colorDistance(colors[index], colors[index2])
                 expect(distance).to(beGreaterThan(ColorExtractionConstants.minimumColorDistance),
-                                    description: "Colors at indices \(index) and \(index) should be distinct")
+                                    description: "Colors at indices \(index) and \(index2) should be distinct")
             }
         }
     }
@@ -113,8 +113,8 @@ class AppStyleExtractorTests: TestCase {
     // MARK: - Helpers
 
     private func colorDistance(_ color1: Color, _ color2: Color) -> Double {
-        let rgb1 = extractRGBComponents(from: color1)
-        let rgb2 = extractRGBComponents(from: color2)
+        let rgb1 = ColorComputationHelpers.extractRGBComponents(from: color1)
+        let rgb2 = ColorComputationHelpers.extractRGBComponents(from: color2)
 
         let dred = rgb1.0 - rgb2.0
         let dgreen = rgb1.1 - rgb2.1
@@ -136,10 +136,10 @@ private func containColorNear(_ expectedColor: Color, tolerance: Double = 0.3) -
             )
         }
 
-        let expectedRGB = extractRGBComponents(from: expectedColor)
+        let expectedRGB = ColorComputationHelpers.extractRGBComponents(from: expectedColor)
 
         for color in colors {
-            let actualRGB = extractRGBComponents(from: color)
+            let actualRGB = ColorComputationHelpers.extractRGBComponents(from: color)
             let distance = sqrt(
                 pow(actualRGB.0 - expectedRGB.0, 2) +
                 pow(actualRGB.1 - expectedRGB.1, 2) +
