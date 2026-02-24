@@ -19,8 +19,7 @@ parameters:
         update_paywall_templates,
         record_paywall_screenshots,
         tuist,
-        deploy_rct_tester,
-        test-all-unified
+        deploy_rct_tester
       ]
     default: default
   generate_snapshots:
@@ -727,21 +726,6 @@ commands:
           fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
 
 jobs:
-  validate-package-swift:
-    parameters:
-      xcode_version:
-        type: string
-      mac_os_executor_name:
-        type: string
-    executor:
-      name: << parameters.mac_os_executor_name >>
-      xcode_version: << parameters.xcode_version >>
-    steps:
-      - checkout
-      - run:
-          name: Validate Package.swift
-          command: swift package describe
-
   pod-lib-lint:
     executor:
       name: macos-executor
@@ -824,10 +808,12 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
       - update-spm-installation-commit
+      # === SPM RevenueCatUI Release Build (Xcode 15) ===
       - run:
-          name: SPM RevenueCatUI Release Build
+          name: SPM RevenueCatUI Release Build (Xcode 15)
           command: swift build -c release --target RevenueCatUI
           no_output_timeout: 5m
+      # === RevenueCatUI iOS 16 tests ===
       - run:
           name: SPM RevenueCatUI Tests
           command: bundle exec fastlane test_revenuecatui
@@ -852,7 +838,7 @@ jobs:
           destination: scan-test-output
       - slack-notify-on-fail
 
-  run-revenuecat-ui-ios-17-and-18:
+  run-revenuecat-ui-ios-18-and-17:
     executor:
       name: macos-executor
       xcode_version: "16.4"
@@ -874,42 +860,6 @@ jobs:
           display-name: "SPM RevenueCatUI Release Build (Xcode 16)"
           test-command: swift build -c release --target RevenueCatUI
           no-output-timeout: "5m"
-
-      # === RevenueCatUI iOS 17 tests ===
-      - run-test-with-cache:
-          test-name: revenuecatui-17
-          display-name: "Run RevenueCatUI iOS 17 tests"
-          no-output-timeout: "15m"
-          test-command: |
-            export DEVICE='iPhone 15 Pro,OS=17.5'
-            bundle exec fastlane test_revenuecatui
-      - compress_result_bundle:
-          directory: fastlane/test_output
-          bundle_name: revenuecatui
-      - run:
-          name: Preserve RevenueCatUI iOS 17 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output 2>/dev/null || exit 0
-            if [ -f revenuecatui.xcresult.tar.gz ]; then
-              mv revenuecatui.xcresult.tar.gz revenuecatui-iOS17.xcresult.tar.gz
-            fi
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshot_pr"
-          version: "revenuecatui-17"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
-          version: "revenuecatui-17"
-      - store_test_results:
-          path: fastlane/test_output/revenuecatui/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: scan-test-output-revenuecatui-17
-      - run:
-          name: Clean test output before RevenueCatUI iOS 18 run
-          command: rm -rf fastlane/test_output
 
       # === RevenueCatUI iOS 18 tests ===
       - run-test-with-cache:
@@ -943,17 +893,53 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output-revenuecatui-18
+      - run:
+          name: Clean test output before RevenueCatUI iOS 17 run
+          command: rm -rf fastlane/test_output
+
+      # === RevenueCatUI iOS 17 tests ===
+      - run-test-with-cache:
+          test-name: revenuecatui-17
+          display-name: "Run RevenueCatUI iOS 17 tests"
+          no-output-timeout: "15m"
+          test-command: |
+            export DEVICE='iPhone 15 Pro,OS=17.5'
+            bundle exec fastlane test_revenuecatui
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecatui
+      - run:
+          name: Preserve RevenueCatUI iOS 17 result bundle
+          when: always
+          command: |
+            cd fastlane/test_output 2>/dev/null || exit 0
+            if [ -f revenuecatui.xcresult.tar.gz ]; then
+              mv revenuecatui.xcresult.tar.gz revenuecatui-iOS17.xcresult.tar.gz
+            fi
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          job: "create_snapshot_pr"
+          version: "revenuecatui-17"
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          job: "create_snapshots_repo_pr"
+          version: "revenuecatui-17"
+      - store_test_results:
+          path: fastlane/test_output/revenuecatui/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output-revenuecatui-17
 
       # === Results ===
       - report-test-result:
           test-name: spm-build-revenuecatui-xcode-16
           display-name: "SPM RevenueCatUI Release Build (Xcode 16)"
       - report-test-result:
-          test-name: revenuecatui-17
-          display-name: "RevenueCatUI iOS 17 tests"
-      - report-test-result:
           test-name: revenuecatui-18
           display-name: "RevenueCatUI iOS 18 tests"
+      - report-test-result:
+          test-name: revenuecatui-17
+          display-name: "RevenueCatUI iOS 17 tests"
       - slack-notify-on-fail
 
   run-revenuecat-ui-ios-26:
@@ -1056,6 +1042,10 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/tvos
           bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "tvos"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -1096,13 +1086,16 @@ jobs:
           display-name: "macOS tests"
       - slack-notify-on-fail
 
-  run-test-ios-18-and-26:
+  run-test-ios-26:
     executor:
       name: macos-executor
       xcode_version: "26.3"
 
     steps:
       - checkout
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
       - install-dependencies
 
       # Initialize test status tracking
@@ -1128,14 +1121,6 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
-      - run:
-          name: Preserve iOS 26 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
-            if [ -f RevenueCat.xcresult.tar.gz ]; then
-              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS26.xcresult.tar.gz
-            fi
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
@@ -1145,9 +1130,39 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-26
+
+      # === Results ===
+      - report-test-result:
+          test-name: spm-build-xcode-26
+          display-name: "SPM Release Build (Xcode 26)"
+      - report-test-result:
+          test-name: ios-26
+          display-name: "iOS 26 tests"
+      - slack-notify-on-fail
+
+  run-test-ios-18-and-17:
+    executor:
+      name: macos-executor
+      xcode_version: "16.4"
+
+    steps:
+      - checkout
       - run:
-          name: Clean test output before iOS 18 run
-          command: rm -rf fastlane/test_output
+          name: Validate Package.swift
+          command: swift package describe
+      - install-dependencies
+
+      # Initialize test status tracking
+      - run:
+          name: Initialize test tracking
+          command: mkdir -p /tmp/test_status
+
+      # === SPM Release Build (Xcode 16) ===
+      - run-test-with-cache:
+          test-name: spm-build-xcode-16
+          display-name: "SPM Release Build (Xcode 16)"
+          test-command: swift build -c release --target RevenueCat
+          no-output-timeout: "30m"
 
       # === iOS 18 tests ===
       - run-test-with-cache:
@@ -1155,7 +1170,7 @@ jobs:
           display-name: "Run iOS 18 tests"
           no-output-timeout: "15m"
           test-command: |
-            export SCAN_DEVICE='iPhone 16 (18.6)'
+            export SCAN_DEVICE='iPhone 16 (18.5)'
             bundle exec fastlane test_ios
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
@@ -1177,43 +1192,9 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-18
-
-      # === Results ===
-      - report-test-result:
-          test-name: spm-build-xcode-26
-          display-name: "SPM Release Build (Xcode 26)"
-      - report-test-result:
-          test-name: ios-26
-          display-name: "iOS 26 tests"
-      - report-test-result:
-          test-name: ios-18
-          display-name: "iOS 18 tests"
-      - slack-notify-on-fail
-
-  run-test-ios-16-and-17:
-    executor:
-      name: macos-executor
-      xcode_version: "15.4.0"
-
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-          install_mint: true
-      - install-xcbeautify-for-xcode15
-      - update-spm-installation-commit
-
-      # Initialize test status tracking
       - run:
-          name: Initialize test tracking
-          command: mkdir -p /tmp/test_status
-
-      # === SPM Release Build (Xcode 15) ===
-      - run-test-with-cache:
-          test-name: spm-build-xcode-15
-          display-name: "SPM Release Build (Xcode 15)"
-          test-command: swift build -c release --target RevenueCat
-          no-output-timeout: "30m"
+          name: Clean test output before iOS 17 run
+          command: rm -rf fastlane/test_output
 
       # === iOS 17 tests ===
       - run-test-with-cache:
@@ -1221,7 +1202,7 @@ jobs:
           display-name: "Run iOS 17 tests"
           no-output-timeout: "15m"
           test-command: |
-            export SCAN_DEVICE='iPhone 15 (17.5.0)'
+            export SCAN_DEVICE='iPhone 15 (17.5)'
             bundle exec fastlane test_ios
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
@@ -1243,9 +1224,46 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-17
+
+      # === Results ===
+      - report-test-result:
+          test-name: spm-build-xcode-16
+          display-name: "SPM Release Build (Xcode 16)"
+      - report-test-result:
+          test-name: ios-18
+          display-name: "iOS 18 tests"
+      - report-test-result:
+          test-name: ios-17
+          display-name: "iOS 17 tests"
+      - slack-notify-on-fail
+
+  run-test-ios-16:
+    executor:
+      name: macos-executor
+      xcode_version: "15.4.0"
+
+    steps:
+      - checkout
       - run:
-          name: Clean test output before iOS 16 run
-          command: rm -rf fastlane/test_output
+          name: Validate Package.swift
+          command: swift package describe
+      - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
+      - install-xcbeautify-for-xcode15
+      - update-spm-installation-commit
+
+      # Initialize test status tracking
+      - run:
+          name: Initialize test tracking
+          command: mkdir -p /tmp/test_status
+
+      # === SPM Release Build (Xcode 15) ===
+      - run-test-with-cache:
+          test-name: spm-build-xcode-15
+          display-name: "SPM Release Build (Xcode 15)"
+          test-command: swift build -c release --target RevenueCat
+          no-output-timeout: "30m"
 
       # === iOS 16 tests ===
       - run-test-with-cache:
@@ -1258,14 +1276,6 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
-      - run:
-          name: Preserve iOS 16 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
-            if [ -f RevenueCat.xcresult.tar.gz ]; then
-              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS16.xcresult.tar.gz
-            fi
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
@@ -1281,20 +1291,20 @@ jobs:
           test-name: spm-build-xcode-15
           display-name: "SPM Release Build (Xcode 15)"
       - report-test-result:
-          test-name: ios-17
-          display-name: "iOS 17 tests"
-      - report-test-result:
           test-name: ios-16
           display-name: "iOS 16 tests"
       - slack-notify-on-fail
 
-  run-test-ios-14-and-15:
+  run-test-ios-15-and-14:
     executor:
       name: macos-executor
       xcode_version: "14.3.1"
 
     steps:
       - checkout
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
@@ -2236,9 +2246,10 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
-      - run-test-ios-18-and-26
-      - run-test-ios-16-and-17
-      - run-test-ios-14-and-15
+      - run-test-ios-26
+      - run-test-ios-18-and-17
+      - run-test-ios-16
+      - run-test-ios-15-and-14
       - run-test-tvos-and-macos
       - run-test-watchos
       - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
@@ -2249,7 +2260,7 @@ workflows:
     jobs:
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
-      - run-revenuecat-ui-ios-17-and-18
+      - run-revenuecat-ui-ios-18-and-17
       - run-revenuecat-ui-ios-26
       - spm-revenuecat-ui-watchos
 
@@ -2285,11 +2296,7 @@ workflows:
       - check-api-changes:
           context:
             - slack-secrets-ios
-      - validate-package-swift:
-          name: validate-package-swift-5.8
-          xcode_version: "14.3.1"
-          mac_os_executor_name: macos-executor
-      - run-test-ios-18-and-26
+      - run-test-ios-26
       - pod-lib-lint
       - run-revenuecat-ui-ios-26
       - emerge_purchases_ui_snapshot_tests
@@ -2336,12 +2343,17 @@ workflows:
             - slack-secrets
 
       # Older iOS Version Tests
-      - run-test-ios-14-and-15:
+      - run-test-ios-16:
           requires:
             - approve-full-tests
           context:
             - slack-secrets
-      - run-test-ios-16-and-17:
+      - run-test-ios-15-and-14:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-test-ios-18-and-17:
           requires:
             - approve-full-tests
           context:
@@ -2360,7 +2372,7 @@ workflows:
             - slack-secrets
 
       # RevenueCatUI Tests
-      - run-revenuecat-ui-ios-17-and-18:
+      - run-revenuecat-ui-ios-18-and-17:
           requires:
             - approve-full-tests
           context:
@@ -2430,8 +2442,7 @@ workflows:
             # Reduced Test Suite
             - lint
             - check-api-changes
-            - validate-package-swift-5.8
-            - run-test-ios-18-and-26
+            - run-test-ios-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
@@ -2443,13 +2454,14 @@ workflows:
             - backend-integration-tests-custom-entitlements
             - backend-integration-tests-other
             - backend-integration-tests-offline
-            - run-test-ios-14-and-15
-            - run-test-ios-16-and-17
+            - run-test-ios-16
+            - run-test-ios-15-and-14
+            - run-test-ios-18-and-17
             - run-test-tvos-and-macos
             - run-test-watchos
             - spm-revenuecat-ui-ios-15
             - spm-revenuecat-ui-ios-16
-            - run-revenuecat-ui-ios-17-and-18
+            - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
             - installation-tests-all-but-carthage
             - installation-tests-carthage
@@ -2645,10 +2657,13 @@ workflows:
       - docs-build:
           context:
             - slack-secrets
-      - run-test-ios-14-and-15:
+      - run-test-ios-16:
           context:
             - slack-secrets
-      - run-test-ios-16-and-17:
+      - run-test-ios-15-and-14:
+          context:
+            - slack-secrets
+      - run-test-ios-18-and-17:
           context:
             - slack-secrets
       - run-test-tvos-and-macos:
@@ -2666,7 +2681,7 @@ workflows:
       - spm-revenuecat-ui-ios-16:
           context:
             - slack-secrets
-      - run-revenuecat-ui-ios-17-and-18:
+      - run-revenuecat-ui-ios-18-and-17:
           context:
             - slack-secrets
       - spm-revenuecat-ui-watchos:
@@ -2689,11 +2704,7 @@ workflows:
           context:
             - slack-secrets
       - lint
-      - validate-package-swift:
-          name: validate-package-swift-5.8
-          xcode_version: "14.3.1"
-          mac_os_executor_name: macos-executor
-      - run-test-ios-18-and-26
+      - run-test-ios-26
       - pod-lib-lint
       - run-revenuecat-ui-ios-26
       - emerge_purchases_ui_snapshot_tests
@@ -2706,8 +2717,7 @@ workflows:
             - check-api-changes
             - run-all-maestro-e2e-tests
             - lint
-            - validate-package-swift-5.8
-            - run-test-ios-18-and-26
+            - run-test-ios-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
@@ -2718,14 +2728,15 @@ workflows:
             - backend-integration-tests-offline
             - build-tv-watch-mac-and-visionos
             - docs-build
-            - run-test-ios-14-and-15
-            - run-test-ios-16-and-17
+            - run-test-ios-16
+            - run-test-ios-15-and-14
+            - run-test-ios-18-and-17
             - run-test-tvos-and-macos
             - run-test-watchos
             - spm-receipt-parser
             - spm-revenuecat-ui-ios-15
             - spm-revenuecat-ui-ios-16
-            - run-revenuecat-ui-ios-17-and-18
+            - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
             - installation-tests-all-but-carthage
             - installation-tests-carthage
@@ -2751,13 +2762,3 @@ workflows:
             - approve-release
           <<: *release-branches
 
-  # TEMPORARY: Remove before merging.
-  test-all-unified:
-    when:
-      equal: [test-all-unified, << pipeline.parameters.action >>]
-    jobs:
-      - run-test-ios-14-and-15
-      - run-test-ios-16-and-17
-      - run-test-ios-18-and-26
-      - run-test-tvos-and-macos
-      - run-revenuecat-ui-ios-17-and-18

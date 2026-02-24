@@ -155,7 +155,8 @@ public final class PaywallFooterViewController: PaywallViewController {
         shouldBlockTouchEvents: Bool = false,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
-        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil,
+        promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         super.init(content: content,
                    fonts: fonts,
@@ -163,7 +164,8 @@ public final class PaywallFooterViewController: PaywallViewController {
                    shouldBlockTouchEvents: false,
                    performPurchase: nil,
                    performRestore: nil,
-                   dismissRequestedHandler: dismissRequestedHandler)
+                   dismissRequestedHandler: dismissRequestedHandler,
+                   promoOfferCache: promoOfferCache)
     }
 
     // swiftlint:disable:next missing_docs
