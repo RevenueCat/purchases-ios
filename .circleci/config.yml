@@ -1028,7 +1028,7 @@ jobs:
 
       # === SPM Release Build (Xcode 16) ===
       - run-test-with-cache:
-          test-name: spm-build-xcode-16
+          test-name: spm-build-xcode-16-tvos-macos
           display-name: "SPM Release Build (Xcode 16)"
           test-command: swift build -c release --target RevenueCat
           no-output-timeout: "30m"
@@ -1076,7 +1076,7 @@ jobs:
 
       # === Results ===
       - report-test-result:
-          test-name: spm-build-xcode-16
+          test-name: spm-build-xcode-16-tvos-macos
           display-name: "SPM Release Build (Xcode 16)"
       - report-test-result:
           test-name: tvos
@@ -1159,7 +1159,7 @@ jobs:
 
       # === SPM Release Build (Xcode 16) ===
       - run-test-with-cache:
-          test-name: spm-build-xcode-16
+          test-name: spm-build-xcode-16-ios-18-17
           display-name: "SPM Release Build (Xcode 16)"
           test-command: swift build -c release --target RevenueCat
           no-output-timeout: "30m"
@@ -1227,7 +1227,7 @@ jobs:
 
       # === Results ===
       - report-test-result:
-          test-name: spm-build-xcode-16
+          test-name: spm-build-xcode-16-ios-18-17
           display-name: "SPM Release Build (Xcode 16)"
       - report-test-result:
           test-name: ios-18
@@ -1323,6 +1323,11 @@ jobs:
           display-name: "SPM Release Build (Xcode 14)"
           test-command: swift build -c release --target RevenueCat
           no-output-timeout: "30m"
+
+      # Restore iOS 14 cache early so the background download can be skipped
+      # if those tests already passed for this commit.
+      - restore-test-run-cache:
+          test-name: ios-14
 
       # Start iOS 14.5 runtime download in the background so it can proceed
       # while iOS 15 tests run. Skips if iOS 14 tests are already cached.
