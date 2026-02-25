@@ -1165,7 +1165,6 @@ jobs:
       # === iOS 14 tests ===
       - run:
           name: Wait for iOS 14.5 runtime installation
-          no_output_timeout: 30m
           command: |
             MAX_WAIT=1800  # 30 minutes
             ELAPSED=0
