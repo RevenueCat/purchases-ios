@@ -259,8 +259,79 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         mockStoreKit2TransactionListener?.mockTransaction = .init(existingTransaction.underlyingTransaction)
         mockStoreKit2TransactionListener?.mockJWSToken = existingTransaction.jwsRepresentation
 
-        // Cached info has no active subscriptions — simulates a different RC user.
+        // Cached info has no purchases — simulates a different RC user.
         self.customerInfoManager.stubbedCachedCustomerInfoResult = .emptyInfo
+
+        let (_, _, userCancelled) = try await orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+
+        expect(userCancelled) == false
+        expect(self.backend.invokedPostReceiptData) == true
+    }
+
+    func testPurchaseAllowsExpiredSubscriptionRePurchase() async throws {
+        let product = try await self.fetchSk2Product()
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let existingTransaction = try await self.simulateAnyPurchase(
+            product: product,
+            finishTransaction: true
+        )
+
+        mockStoreKit2TransactionListener?.mockTransaction = .init(existingTransaction.underlyingTransaction)
+        mockStoreKit2TransactionListener?.mockJWSToken = existingTransaction.jwsRepresentation
+
+        // Subscription is expired — user should be able to re-subscribe.
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = try CustomerInfo(data: [
+            "request_date": "2099-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
+                "subscriptions": [
+                    StoreKitConfigTestCase.productID: [
+                        "expires_date": "2020-01-01T00:00:00Z",
+                        "purchase_date": "2019-07-17T00:05:54Z"
+                    ]
+                ],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2019-07-17T00:05:54Z"
+            ] as [String: Any]
+        ])
+
+        let (_, _, userCancelled) = try await orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+
+        expect(userCancelled) == false
+        expect(self.backend.invokedPostReceiptData) == true
+    }
+
+    func testPurchaseAllowsThroughWhenCachedCustomerInfoIsNil() async throws {
+        let product = try await self.fetchSk2Product()
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let existingTransaction = try await self.simulateAnyPurchase(
+            product: product,
+            finishTransaction: true
+        )
+
+        mockStoreKit2TransactionListener?.mockTransaction = .init(existingTransaction.underlyingTransaction)
+        mockStoreKit2TransactionListener?.mockJWSToken = existingTransaction.jwsRepresentation
+
+        // No cached customer info — cold start scenario.
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = nil
 
         let (_, _, userCancelled) = try await orchestrator.purchase(
             sk2Product: product,

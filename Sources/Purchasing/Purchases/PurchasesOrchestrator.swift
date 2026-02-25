@@ -908,7 +908,7 @@ final class PurchasesOrchestrator {
     /// Returns `nil` (allowing the purchase through) when:
     /// - There is no existing transaction
     /// - The existing transaction is unfinished (receipt may not have been posted yet)
-    /// - The current user doesn't have this product active (e.g., after switching RC accounts)
+    /// - The current user hasn't purchased this product (e.g., after switching RC accounts)
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private func finishedTransactionID(for product: SK2Product) async -> String? {
         guard let latestResult = await product.latestTransaction,
@@ -930,7 +930,9 @@ final class PurchasesOrchestrator {
         // If the current user doesn't have this product active, the receipt needs
         // to be posted for them (e.g., after switching RC accounts on the same Apple ID).
         let cachedInfo = try? self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID)
-        if cachedInfo?.activeSubscriptions.contains(product.id) != true {
+        let productOwnedByCurrentUser = cachedInfo?.activeSubscriptions.contains(product.id) == true
+            || cachedInfo?.nonSubscriptions.contains(where: { $0.productIdentifier == product.id }) == true
+        if !productOwnedByCurrentUser {
             return nil
         }
 
