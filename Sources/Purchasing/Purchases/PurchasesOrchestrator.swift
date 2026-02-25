@@ -764,6 +764,8 @@ final class PurchasesOrchestrator {
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
 
+            // Promotional and win-back offers are for existing subscribers,
+            // so SK2 returning the same transaction is expected — skip the check.
             let isOfferPurchase = promotionalOffer != nil || winBackOffer != nil
             let existingTransactionID = isOfferPurchase
                 ? nil
@@ -915,14 +917,18 @@ final class PurchasesOrchestrator {
         }
 
         let transactionID = String(verified.id)
+
+        // If the transaction hasn't been finished, the receipt may not have been
+        // posted yet (e.g., server was down). Allow retries in that case.
         let unfinishedIDs = Set(
             await self.transactionFetcher.unfinishedVerifiedTransactions.map(\.transactionIdentifier)
         )
-
         if unfinishedIDs.contains(transactionID) {
             return nil
         }
 
+        // If the current user doesn't have this product active, the receipt needs
+        // to be posted for them (e.g., after switching RC accounts on the same Apple ID).
         let cachedInfo = try? self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID)
         if cachedInfo?.activeSubscriptions.contains(product.id) != true {
             return nil
