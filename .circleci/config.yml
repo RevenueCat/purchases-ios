@@ -2261,6 +2261,7 @@ workflows:
             equal: [bump, << pipeline.parameters.action >>]
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
+        - not: << pipeline.parameters.generate_swiftinterface >>
         - not:
             matches:
               pattern: "^(main|release/.*)$"
