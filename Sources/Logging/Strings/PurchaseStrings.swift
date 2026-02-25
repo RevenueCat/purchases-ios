@@ -393,13 +393,8 @@ extension PurchaseStrings: LogMessage {
     }
 
     var category: String { return "purchases" }
-
 }
 
 private extension SKPaymentTransactionObserver {
-
-    var debugName: String {
-        return Strings.objectDescription(self)
-    }
-
+    var debugName: String { return Strings.objectDescription(self) }
 }

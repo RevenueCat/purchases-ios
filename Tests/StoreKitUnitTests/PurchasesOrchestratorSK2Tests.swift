@@ -736,6 +736,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+        self.testSession.clearTransactions()
 
         let product = try await self.fetchSk2Product()
         _ = try await self.orchestrator.purchase(
@@ -785,6 +786,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.attribution.enableAdServicesAttributionTokenCollection()
 
         mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+        self.testSession.clearTransactions()
 
         let product = try await self.fetchSk2Product()
         _ = try await self.orchestrator.purchase(
