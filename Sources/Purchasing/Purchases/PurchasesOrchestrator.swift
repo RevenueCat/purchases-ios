@@ -764,7 +764,10 @@ final class PurchasesOrchestrator {
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
 
-            let existingTransactionID = await self.finishedTransactionID(for: sk2Product)
+            let isOfferPurchase = promotionalOffer != nil || winBackOffer != nil
+            let existingTransactionID = isOfferPurchase
+                ? nil
+                : await self.finishedTransactionID(for: sk2Product)
 
             result = try await self.purchase(sk2Product, options)
 
