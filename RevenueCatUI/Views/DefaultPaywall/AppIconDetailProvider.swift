@@ -11,6 +11,7 @@
 //
 //  Created by Jacob Zivan Rakidzich on 12/14/25.
 
+import Combine // needed for watchos to compile and build -> @Published
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
