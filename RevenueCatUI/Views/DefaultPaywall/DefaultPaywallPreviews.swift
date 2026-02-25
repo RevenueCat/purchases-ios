@@ -54,7 +54,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailprovider()
+            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailProvider()
         )
         .background(Color.white)
         .previewDisplayName("Fallback Paywall R/G")
@@ -63,7 +63,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailprovider()
+            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailProvider()
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -73,7 +73,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.blueGreen.toAppIconDetailprovider()
+            iconDetailProvider: DualColorImageGenerator.blueGreen.toAppIconDetailProvider()
         )
         .background(Color.white)
         .previewDisplayName("Fallback Paywall B/G")
@@ -82,7 +82,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.blueGreen.toAppIconDetailprovider()
+            iconDetailProvider: DualColorImageGenerator.blueGreen.toAppIconDetailProvider()
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -92,7 +92,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailprovider()
+            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailProvider()
         )
         .background(Color.white)
         .previewDisplayName("Fallback Paywall P/O")
@@ -101,7 +101,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             handler: .mock(),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailprovider()
+            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailProvider()
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -112,7 +112,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .missingLocalization,
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailprovider()
+            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailProvider()
         )
         .background(Color.white)
         .accentColor(.yellow)
@@ -123,7 +123,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .missingLocalization,
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailprovider()
+            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailProvider()
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
@@ -135,7 +135,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .noPaywall("WAT"),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailprovider()
+            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailProvider()
         )
         .background(Color.white)
         .accentColor(.yellow)
@@ -146,7 +146,7 @@ struct DefaultPaywallPreviews: PreviewProvider {
             warning: .noPaywall("WAT"),
             offering: offering,
             appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailprovider()
+            iconDetailProvider: DualColorImageGenerator.purpleOrange.toAppIconDetailProvider()
         )
         .background(Color.black)
         .environment(\.colorScheme, .dark)

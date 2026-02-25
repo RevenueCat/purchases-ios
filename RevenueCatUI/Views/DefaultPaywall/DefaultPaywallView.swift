@@ -22,6 +22,7 @@ import UIKit
 #endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
 struct DefaultPaywallView: View {
 
     init(
@@ -29,12 +30,12 @@ struct DefaultPaywallView: View {
         warning: PaywallWarning? = nil,
         offering: Offering?,
         appName: String = AppStyleExtractor.getAppName(),
-        iconDetailProvider: AppIconDetailProvider = AppIconDetailProvider()
+        iconDetailProvider: AppIconDetailProvider? = nil
     ) {
         self.handler = handler
         self.warning = warning
         self.appName = appName
-        self._appIconDetailProvider = StateObject(wrappedValue: iconDetailProvider)
+        self._appIconDetailProvider = StateObject(wrappedValue: iconDetailProvider ?? AppIconDetailProvider())
         if let packages = offering?.availablePackages, !packages.isEmpty {
             self.selected = packages.first
             self.products = packages
