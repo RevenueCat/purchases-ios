@@ -64,6 +64,9 @@ struct OfferingSectionView: View {
                     Button("PaywallView") {
                         onPresentPaywall(.paywallView)
                     }
+                    Button("CustomPaywallView") {
+                        onPresentPaywall(.customPaywallView)
+                    }
                 } label: {
                     Label("Present Paywall", systemImage: "rectangle.on.rectangle")
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -127,6 +130,10 @@ enum PaywallPresentationType {
 
     /// Present a `PaywallView(offering:)` directly in a sheet.
     case paywallView
+
+    /// Present a `CustomPaywallView` that mirrors the customer's pattern
+    /// (loading → PaywallView with interceptor callbacks).
+    case customPaywallView
 }
 
 // MARK: - StoreView Sheet Type

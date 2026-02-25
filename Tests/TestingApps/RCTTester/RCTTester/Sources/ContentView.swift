@@ -4,7 +4,7 @@
 //
 
 import SwiftUI
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 struct ContentView: View {
 
@@ -66,9 +66,21 @@ struct ContentView: View {
         }
 
         Purchases.configure(with: builder.build())
+        Purchases.shared.eventsListener = RCTTesterEventsListener()
 
         // Create the appropriate PurchaseManager based on configuration
         purchaseManager = .create(for: configuration)
+    }
+}
+
+// MARK: - Events Listener
+
+private final class RCTTesterEventsListener: EventsListener {
+
+    func onEventTracked(_ event: [String: Any]) {
+        let type = event["type"] as? String ?? "unknown"
+        let offering = event["offering_id"] as? String ?? "n/a"
+        print("[PaywallTracker][RC Event] \(type) — offering: \(offering) — full: \(event)")
     }
 }
 

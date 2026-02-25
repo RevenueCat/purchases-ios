@@ -23,6 +23,7 @@ struct OfferingsListView: View {
     @State private var offeringForPaywall: Offering?
     @State private var paywallIfNeededPresentation: PaywallIfNeededPresentation?
     @State private var offeringForPaywallView: Offering?
+    @State private var offeringForCustomPaywallView: Offering?
     @State private var offeringForMetadata: Offering?
     @State private var storeViewPresentation: StoreViewPresentation?
     @State private var showingStoreViewUnavailableAlert = false
@@ -74,6 +75,8 @@ struct OfferingsListView: View {
                                         )
                                     case .paywallView:
                                         offeringForPaywallView = offering
+                                    case .customPaywallView:
+                                        offeringForCustomPaywallView = offering
                                     }
                                 },
                                 onShowMetadata: {
@@ -130,6 +133,7 @@ struct OfferingsListView: View {
                 performRestore: purchaseManager.myAppPurchaseLogic?.performRestore
             )
         }
+        .modifier(CustomPaywallSheetModifier(offering: $offeringForCustomPaywallView))
         .sheet(item: $offeringForMetadata) { offering in
             OfferingMetadataView(offering: offering)
         }
@@ -238,6 +242,53 @@ private struct StoreViewSheetModifier: ViewModifier {
                 }
         } else {
             content
+        }
+    }
+}
+
+// MARK: - Custom Paywall Sheet
+
+/// Encapsulates the `@available(iOS 17.0, *)` sheet presentation for `CustomPaywallView`.
+private struct CustomPaywallSheetModifier: ViewModifier {
+
+    @Binding var offering: Offering?
+
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content
+                .fullScreenCover(item: $offering) { offering in
+                    CustomPaywallSheetContent(
+                        offeringIdentifier: offering.identifier,
+                        onDismiss: { self.offering = nil }
+                    )
+                }
+        } else {
+            content
+        }
+    }
+}
+
+@available(iOS 17.0, *)
+private struct CustomPaywallSheetContent: View {
+
+    let offeringIdentifier: String
+    let onDismiss: () -> Void
+
+    @State private var viewModel: CustomPaywallViewModel?
+
+    var body: some View {
+        Group {
+            if let viewModel {
+                CustomPaywallView(viewModel: viewModel)
+            }
+        }
+        .onAppear {
+            if viewModel == nil {
+                viewModel = CustomPaywallViewModel(
+                    offeringIdentifier: offeringIdentifier,
+                    onDismiss: onDismiss
+                )
+            }
         }
     }
 }
