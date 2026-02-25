@@ -764,6 +764,10 @@ final class PurchasesOrchestrator {
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
 
+            let existingTransactionID = await sk2Product.latestTransaction
+                .flatMap { $0.verifiedTransaction }
+                .map { String($0.id) }
+
             result = try await self.purchase(sk2Product, options)
 
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
@@ -782,6 +786,15 @@ final class PurchasesOrchestrator {
                     throw ErrorUtils.purchaseCancelledError()
                 }
             case let .successfulVerifiedTransaction(verifiedTransaction):
+                if verifiedTransaction.transactionIdentifier == existingTransactionID {
+                    Logger.warn(
+                        Strings.purchase.sk2_purchase_returned_existing_transaction(
+                            productID: sk2Product.id
+                        )
+                    )
+                    throw ErrorUtils.productAlreadyPurchasedError()
+                }
+
                 userCancelled = false
                 transaction = verifiedTransaction
             }

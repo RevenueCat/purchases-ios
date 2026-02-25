@@ -86,6 +86,7 @@ enum PurchaseStrings {
     case payment_queue_wrapper_delegate_call_sk1_enabled
     case restorepurchases_called_with_allow_sharing_appstore_account_false
     case sk2_observer_mode_error_processing_transaction(Error)
+    case sk2_purchase_returned_existing_transaction(productID: String)
 
     case unable_to_find_root_view_controller_for_simulated_purchase
     case invalid_quantity(quantity: Int)
@@ -354,6 +355,10 @@ extension PurchaseStrings: LogMessage {
             "Are you sure you want to do this?"
         case let .sk2_observer_mode_error_processing_transaction(error):
             return "RevenueCat could not process transaction completed by your app: \(error)"
+
+        case let .sk2_purchase_returned_existing_transaction(productID):
+            return "StoreKit 2 purchase for '\(productID)' returned the existing transaction. " +
+            "Product is already active for this user."
 
         case .unable_to_find_root_view_controller_for_simulated_purchase:
             return "Unable to find root view controller to present Test Store purchase alert."
