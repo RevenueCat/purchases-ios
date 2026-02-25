@@ -156,7 +156,7 @@ struct PreviewAppIcon {
     let image: Image
     let cgImage: CGImage
 
-    func toAppIconDetailprovider() -> AppIconDetailProvider {
+    @MainActor func toAppIconDetailProvider() -> AppIconDetailProvider {
         .init(image: image, foundColors: AppStyleExtractor.extractProminentColorsForPreview(image: cgImage))
     }
 }

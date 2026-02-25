@@ -22,7 +22,9 @@ import SwiftUI
 /// This enum contains static methods for retrieving information about the current app,
 /// including its name, icon, and prominent colors from the icon.
 ///
-/// All methods work across iOS, macOS, and tvOS platforms.
+/// Icon extraction works on iOS, macOS, and tvOS. On watchOS, app icons are
+/// system-managed asset catalog entries with no runtime API to load them,
+/// so icon-related methods return empty/nil fallbacks.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum AppStyleExtractor {
 
@@ -69,7 +71,7 @@ enum AppStyleExtractor {
         var image = Image("")
         #if os(macOS)
         image = Image(nsImage: NSApplication.shared.applicationIconImage)
-        #else
+        #elseif !os(watchOS)
         if let uiImage = UIImage(named: appIconName()) {
             image = Image(uiImage: uiImage)
         }
@@ -265,7 +267,7 @@ enum AppStyleExtractor {
             var rect = NSRect(x: 0, y: 0, width: nsImage.size.width, height: nsImage.size.height)
             cgImage = nsImage.cgImage(forProposedRect: &rect, context: nil, hints: nil)
         }
-        #else
+        #elseif !os(watchOS)
         guard let uiImage = UIImage(named: appIconName()) else { return nil }
         cgImage = uiImage.cgImage
         #endif
