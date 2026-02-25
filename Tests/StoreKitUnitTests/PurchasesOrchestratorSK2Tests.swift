@@ -129,6 +129,23 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         mockStoreKit2TransactionListener?.mockTransaction = .init(existingTransaction.underlyingTransaction)
         mockStoreKit2TransactionListener?.mockJWSToken = existingTransaction.jwsRepresentation
 
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = try CustomerInfo(data: [
+            "request_date": "2099-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
+                "subscriptions": [
+                    StoreKitConfigTestCase.productID: [
+                        "expires_date": "2099-08-16T10:30:42Z",
+                        "purchase_date": "2019-07-17T00:05:54Z"
+                    ]
+                ],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2019-07-17T00:05:54Z"
+            ] as [String: Any]
+        ])
+
         do {
             _ = try await orchestrator.purchase(
                 sk2Product: product,

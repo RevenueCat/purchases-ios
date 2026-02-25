@@ -897,8 +897,13 @@ final class PurchasesOrchestrator {
         #endif
     }
 
-    /// Returns the transaction ID of the product's latest transaction only if it has already been finished.
-    /// Unfinished transactions indicate receipts that haven't been posted yet, so retries should be allowed.
+    /// Returns the transaction ID of the product's latest transaction only when the product
+    /// has already been fully processed for the current user.
+    ///
+    /// Returns `nil` (allowing the purchase through) when:
+    /// - There is no existing transaction
+    /// - The existing transaction is unfinished (receipt may not have been posted yet)
+    /// - The current user doesn't have this product active (e.g., after switching RC accounts)
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private func finishedTransactionID(for product: SK2Product) async -> String? {
         guard let latestResult = await product.latestTransaction,
@@ -912,6 +917,11 @@ final class PurchasesOrchestrator {
         )
 
         if unfinishedIDs.contains(transactionID) {
+            return nil
+        }
+
+        let cachedInfo = try? self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID)
+        if cachedInfo?.activeSubscriptions.contains(product.id) != true {
             return nil
         }
 
