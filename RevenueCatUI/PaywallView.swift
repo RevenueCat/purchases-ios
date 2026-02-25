@@ -358,31 +358,27 @@ public struct PaywallView: View {
                 )
             }
         } else {
+            let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
+                countries: offering.paywall?.zeroDecimalPlaceCountries
+            )
+
+            let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
+                locale: purchaseHandler.preferredLocaleOverride ?? .current
+            )
             if let error {
-                DefaultPaywallView(handler: purchaseHandler, warning: .from(error: error), offering: offering)
-                    .preference(key: PurchaseInProgressPreferenceKey.self,
-                                value: self.purchaseHandler.packageBeingPurchased)
-                    .preference(key: PurchasedResultPreferenceKey.self,
-                                value: .init(data: self.purchaseHandler.purchaseResult))
-                    .preference(key: RestoredCustomerInfoPreferenceKey.self,
-                                value: self.purchaseHandler.restoredCustomerInfo)
-                    .preference(key: RestoreInProgressPreferenceKey.self,
-                                value: self.purchaseHandler.restoreInProgress)
-                    .preference(key: PurchaseErrorPreferenceKey.self,
-                                value: self.purchaseHandler.purchaseError as NSError?)
-                    .preference(key: RestoreErrorPreferenceKey.self,
-                                value: self.purchaseHandler.restoreError as NSError?)
+                defaultPaywall(
+                    purchaseHandler: purchaseHandler,
+                    offering: offering,
+                    error: error
+                )
             } else {
                 #if os(macOS)
-                DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
+                defaultPaywall(
+                    purchaseHandler: purchaseHandler,
+                    offering: offering,
+                    error: Offering.PaywallValidationError.invalidTemplate("Legacy paywalls are unsupported on macOS.")
+                )
                 #else
-                let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
-                    countries: offering.paywall?.zeroDecimalPlaceCountries
-                )
-
-                let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
-                    locale: purchaseHandler.preferredLocaleOverride ?? .current
-                )
                 LoadedOfferingPaywallView(
                     offering: offering,
                     activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
@@ -399,6 +395,36 @@ public struct PaywallView: View {
                 #endif
             }
         }
+    }
+
+    func defaultPaywall(purchaseHandler: PurchaseHandler, offering: Offering, error: Error?) -> some View {
+        let view: DefaultPaywallView
+        if let error {
+            view = DefaultPaywallView(
+                handler: purchaseHandler,
+                warning: .from(error: error),
+                offering: offering
+            )
+        } else {
+            view = DefaultPaywallView(
+                handler: purchaseHandler,
+                offering: offering
+            )
+        }
+
+        return view
+            .preference(key: PurchaseInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.packageBeingPurchased)
+            .preference(key: PurchasedResultPreferenceKey.self,
+                        value: .init(data: self.purchaseHandler.purchaseResult))
+            .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                        value: self.purchaseHandler.restoredCustomerInfo)
+            .preference(key: RestoreInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.restoreInProgress)
+            .preference(key: PurchaseErrorPreferenceKey.self,
+                        value: self.purchaseHandler.purchaseError as NSError?)
+            .preference(key: RestoreErrorPreferenceKey.self,
+                        value: self.purchaseHandler.restoreError as NSError?)
     }
 
     // MARK: -
