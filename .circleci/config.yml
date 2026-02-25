@@ -1167,10 +1167,19 @@ jobs:
           name: Wait for iOS 14.5 runtime installation
           no_output_timeout: 30m
           command: |
+            MAX_WAIT=1800  # 30 minutes
+            ELAPSED=0
             echo "Waiting for iOS 14.5 runtime installation to complete..."
             while [ ! -f /tmp/ios14_runtime_ready ] && [ ! -f /tmp/ios14_runtime_failed ]; do
+              if [ $ELAPSED -ge $MAX_WAIT ]; then
+                echo "Timed out after ${MAX_WAIT}s waiting for iOS 14.5 runtime installation."
+                echo "Installation log:"
+                cat /tmp/ios14_runtime_install.log 2>/dev/null || echo "(no log found)"
+                exit 1
+              fi
               sleep 10
-              echo "Still waiting... ($(date))"
+              ELAPSED=$((ELAPSED + 10))
+              echo "Still waiting... ${ELAPSED}s elapsed ($(date))"
             done
             if [ -f /tmp/ios14_runtime_failed ]; then
               echo "iOS 14.5 runtime installation failed:"
