@@ -14,20 +14,21 @@
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
+
 final class AppIconDetailProvider: ObservableObject {
 
     let image: Image
-    @Published var foundColors: [Color]
+    @MainActor @Published var foundColors: [Color] = []
 
     init() {
         image = AppStyleExtractor.getAppIcon()
         let appIconCGImage: CGImage? = AppStyleExtractor.getPlatformAppIconCGImage()
-        foundColors = []
 
         if let appIconCGImage {
-            AppStyleExtractor.getProminentColorsFromAppIcon(image: appIconCGImage) {
-                self.foundColors = $0
+            AppStyleExtractor.getProminentColorsFromAppIcon(image: appIconCGImage) { colors in
+                Task(priority: .userInitiated) { @MainActor in
+                    self.foundColors = colors
+                }
             }
         }
     }
@@ -35,6 +36,7 @@ final class AppIconDetailProvider: ObservableObject {
     #if DEBUG
     // For emerge snapshot tests to render correctly, we need scan the image on the main thread
     // so there is no delay between initial render and the found colors being applied to the view
+    @MainActor
     init(
         image: Image,
         foundColors: [Color]
