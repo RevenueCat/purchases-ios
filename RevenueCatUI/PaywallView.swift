@@ -233,11 +233,8 @@ public struct PaywallView: View {
                                      purchaseHandler: self.purchaseHandler)
                     .transition(Self.transition)
                 } else {
-                    #if os(macOS)
-                    DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
-                    #else
-                    LoadingPaywallView(mode: self.mode,
-                                       displayCloseButton: self.displayCloseButton)
+                    DefaultPaywallView(handler: purchaseHandler, offering: nil)
+                        .redacted(reason: .placeholder)
                         .transition(Self.transition)
                         .task {
                             do {
@@ -256,7 +253,6 @@ public struct PaywallView: View {
                                 self.error = error
                             }
                         }
-                    #endif
                 }
             } else {
                 DebugErrorView("Purchases has not been configured.", releaseBehavior: .fatalError)
@@ -362,44 +358,46 @@ public struct PaywallView: View {
                 )
             }
         } else {
-            #if os(macOS)
-            DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
-            #else
-            // For V1 paywalls, use zeroDecimalPlaceCountries from PaywallData
-            let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
-                countries: offering.paywall?.zeroDecimalPlaceCountries
-            )
-
-            let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
-                locale: purchaseHandler.preferredLocaleOverride ?? .current
-            )
-
-            let paywallView = LoadedOfferingPaywallView(
-                offering: offering,
-                activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
-                paywall: paywall,
-                template: template,
-                mode: self.mode,
-                fonts: fonts,
-                displayCloseButton: self.displayCloseButton,
-                introEligibility: checker,
-                purchaseHandler: purchaseHandler,
-                locale: displayedLocale,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-            )
-
             if let error {
-                DebugErrorView(
-                    "\(error.description)\n" +
-                    "You can fix this by editing the paywall in the RevenueCat dashboard.\n" +
-                    "The displayed paywall contains default configuration.\n" +
-                    "This error will be hidden in production.",
-                    replacement: paywallView
-                )
+                DefaultPaywallView(handler: purchaseHandler, warning: .from(error: error), offering: offering)
+                    .preference(key: PurchaseInProgressPreferenceKey.self,
+                                value: self.purchaseHandler.packageBeingPurchased)
+                    .preference(key: PurchasedResultPreferenceKey.self,
+                                value: .init(data: self.purchaseHandler.purchaseResult))
+                    .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                                value: self.purchaseHandler.restoredCustomerInfo)
+                    .preference(key: RestoreInProgressPreferenceKey.self,
+                                value: self.purchaseHandler.restoreInProgress)
+                    .preference(key: PurchaseErrorPreferenceKey.self,
+                                value: self.purchaseHandler.purchaseError as NSError?)
+                    .preference(key: RestoreErrorPreferenceKey.self,
+                                value: self.purchaseHandler.restoreError as NSError?)
             } else {
-                paywallView
+                #if os(macOS)
+                DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
+                #else
+                let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
+                    countries: offering.paywall?.zeroDecimalPlaceCountries
+                )
+
+                let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
+                    locale: purchaseHandler.preferredLocaleOverride ?? .current
+                )
+                LoadedOfferingPaywallView(
+                    offering: offering,
+                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+                    paywall: paywall,
+                    template: template,
+                    mode: self.mode,
+                    fonts: fonts,
+                    displayCloseButton: self.displayCloseButton,
+                    introEligibility: checker,
+                    purchaseHandler: purchaseHandler,
+                    locale: displayedLocale,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+                #endif
             }
-            #endif
         }
     }
 

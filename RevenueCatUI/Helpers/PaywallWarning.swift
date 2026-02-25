@@ -116,4 +116,11 @@ enum PaywallWarning {
             return .invalidIcons(set)
         }
     }
+
+    static func from(error: Error) -> PaywallWarning? {
+        if let error = error as? Offering.PaywallValidationError {
+            return from(error)
+        }
+        return nil
+    }
 }
