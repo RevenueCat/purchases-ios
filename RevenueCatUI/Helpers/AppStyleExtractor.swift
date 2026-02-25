@@ -194,8 +194,8 @@ enum AppStyleExtractor {
             let quantizedG = (green / quantizationDivisor) * quantizationDivisor
             let quantizedB = (blue / quantizationDivisor) * quantizationDivisor
 
-            // Calculate simple brightness as sum of RGB components
-            let brightness = Int(quantizedR) + Int(quantizedG) + Int(quantizedB)
+            // Calculate simple brightness as sum of RGB components (using raw values for accurate thresholding)
+            let brightness = Int(red) + Int(green) + Int(blue)
 
             // Skip very dark (near-black) and very bright (near-white) colors
             if brightness < ColorExtractionConstants.minimumBrightnessThreshold ||
