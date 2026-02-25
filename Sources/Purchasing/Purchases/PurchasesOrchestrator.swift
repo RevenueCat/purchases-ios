@@ -764,9 +764,7 @@ final class PurchasesOrchestrator {
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
 
-            let existingTransactionID = await sk2Product.latestTransaction
-                .flatMap { $0.verifiedTransaction }
-                .map { String($0.id) }
+            let existingTransactionID = await self.finishedTransactionID(for: sk2Product)
 
             result = try await self.purchase(sk2Product, options)
 
@@ -897,6 +895,27 @@ final class PurchasesOrchestrator {
         #else
         return try await product.purchase(options: options)
         #endif
+    }
+
+    /// Returns the transaction ID of the product's latest transaction only if it has already been finished.
+    /// Unfinished transactions indicate receipts that haven't been posted yet, so retries should be allowed.
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func finishedTransactionID(for product: SK2Product) async -> String? {
+        guard let latestResult = await product.latestTransaction,
+              let verified = latestResult.verifiedTransaction else {
+            return nil
+        }
+
+        let transactionID = String(verified.id)
+        let unfinishedIDs = Set(
+            await self.transactionFetcher.unfinishedVerifiedTransactions.map(\.transactionIdentifier)
+        )
+
+        if unfinishedIDs.contains(transactionID) {
+            return nil
+        }
+
+        return transactionID
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

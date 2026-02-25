@@ -51,6 +51,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                               webCheckoutUrl: nil)
         mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
         mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
+        // Clear the test session so Product.latestTransaction returns nil.
+        // Otherwise the already-subscribed detection sees the simulated transaction
+        // and throws productAlreadyPurchasedError.
         self.testSession.clearTransactions()
 
         _ = try await orchestrator.purchase(sk2Product: product,
