@@ -32,7 +32,7 @@ func haveValidSnapshot<Value>(
         }
 
         guard let errorMessage = verifySnapshot(
-            matching: value,
+            of: value,
             as: strategy,
             named: name,
             record: recording,
