@@ -65,6 +65,16 @@ struct DefaultPaywallPreviews: PreviewProvider {
             appName: "RevenueCat",
             iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailProvider()
         )
+        .background(Color.white)
+        .previewDisplayName("Fallback Paywall Spanish (Buttons only)")
+        .environment(\.locale, .init(identifier: "es-es"))
+
+        DefaultPaywallView(
+            handler: .mock(),
+            offering: offering,
+            appName: "RevenueCat",
+            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailProvider()
+        )
         .background(Color.black)
         .environment(\.colorScheme, .dark)
         .previewDisplayName("Fallback Paywall R/G Dark")
