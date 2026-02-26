@@ -50,6 +50,7 @@ final class GestureCoordinatorHostView: UIView, UIGestureRecognizerDelegate {
 
     private weak var gestureContainerView: UIView?
     private weak var attachedWindow: UIWindow?
+    private var didConfigureScrollViews: Bool = false
 
     private lazy var panGesture: UIPanGestureRecognizer = {
         let gesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
@@ -78,24 +79,29 @@ final class GestureCoordinatorHostView: UIView, UIGestureRecognizerDelegate {
     }
 
     func attachIfNeeded() {
-        guard self.gestureContainerView == nil else { return }
         guard self.superview != nil else { return }
         guard let window = self.window else { return }
 
-        let containerView = window
-
-        containerView.addGestureRecognizer(self.panGesture)
-        self.gestureContainerView = containerView
-        self.attachedWindow = window
-
-        let carouselFrameInWindow = self.convert(self.bounds, to: window)
-        let candidateScrollViews = self.findAllScrollViews(in: window).filter { scrollView in
-            let frameInWindow = scrollView.convert(scrollView.bounds, to: window)
-            return frameInWindow.intersects(carouselFrameInWindow)
+        // Step 1: Attach the gesture recognizer to the window (once).
+        if self.gestureContainerView == nil {
+            window.addGestureRecognizer(self.panGesture)
+            self.gestureContainerView = window
+            self.attachedWindow = window
         }
 
-        for scrollView in candidateScrollViews {
-            scrollView.panGestureRecognizer.require(toFail: self.panGesture)
+        // Step 2: Configure scroll views only after layout has produced a non-zero frame,
+        // so the intersection test can correctly find overlapping scroll views.
+        if !didConfigureScrollViews, self.bounds.height > 0 {
+            let carouselFrameInWindow = self.convert(self.bounds, to: window)
+            let candidateScrollViews = self.findAllScrollViews(in: window).filter { scrollView in
+                let frameInWindow = scrollView.convert(scrollView.bounds, to: window)
+                return frameInWindow.intersects(carouselFrameInWindow)
+            }
+
+            for scrollView in candidateScrollViews {
+                scrollView.panGestureRecognizer.require(toFail: self.panGesture)
+            }
+            self.didConfigureScrollViews = true
         }
     }
 
@@ -110,30 +116,6 @@ final class GestureCoordinatorHostView: UIView, UIGestureRecognizerDelegate {
         }
 
         return result
-    }
-
-    private func findInteractiveAncestor(startingAt view: UIView) -> UIView? {
-        var currentView: UIView? = view
-        while let view = currentView {
-            if view.isUserInteractionEnabled {
-                return view
-            }
-            currentView = view.superview
-        }
-
-        return nil
-    }
-
-    private func findAncestorScrollView(startingAt view: UIView) -> UIScrollView? {
-        var currentView = view.superview
-        while let view = currentView {
-            if let scrollView = view as? UIScrollView {
-                return scrollView
-            }
-            currentView = view.superview
-        }
-
-        return nil
     }
 
     // swiftlint:disable:next cyclomatic_complexity
