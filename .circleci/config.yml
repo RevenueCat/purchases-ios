@@ -2562,13 +2562,6 @@ workflows:
             - approve-release
           <<: *release-branches
 
-      # =============================================================
-      # Final gate: required GitHub status check for PRs into main.
-      # On release branches. Gates on tagging so it stays pending
-      # until the release is approved and tagged.
-      # Auto-merge is enabled separately by the deploy-tag workflow
-      # after all deploys succeed.
-      # =============================================================
       - all-tasks-passed:
           requires:
             - tag-release-branch
