@@ -51,6 +51,7 @@ struct DefaultPaywallView: View {
     @State private var selected: Package?
 
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.locale) var locale
 
     @StateObject var appIconDetailProvider: AppIconDetailProvider
 
@@ -168,7 +169,8 @@ struct DefaultPaywallView: View {
                             }
                         }
                     } label: {
-                        Text("Purchase")
+                        Text(Localization.localizedBundle(locale)
+                            .localizedString(forKey: "Purchase", value: nil, table: nil))
                             .bold()
                             .frame(maxWidth: .infinity, alignment: .center)
                             .foregroundStyle(foregroundOnAccentColor)
@@ -194,7 +196,8 @@ struct DefaultPaywallView: View {
                             }
                         }
                     } label: {
-                        Text("Restore Purchases")
+                        Text(Localization.localizedBundle(locale)
+                            .localizedString(forKey: "Restore purchases", value: nil, table: nil))
                     }
                         .padding(.top, 8)
 
