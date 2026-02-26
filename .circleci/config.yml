@@ -2001,14 +2001,35 @@ jobs:
           name: Trigger RC App Pipeline
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
+  all-tests-succeeded:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - run:
+          name: All tests succeeded
+          command: echo "All tests succeeded"
+
+  enable-auto-merge-release-pr:
+    docker:
+      - image: cimg/ruby:3.2.0
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - install-rubydocker-dependencies
+      - run:
+          name: Enable auto-merge on release PR
+          command: bundle exec fastlane run enable_auto_merge_for_pr repo_name:purchases-ios branch:release/$(cat .version)
+
   all-tasks-passed:
     docker:
       - image: cimg/base:stable
     resource_class: small
     steps:
       - run:
-          name: All tests passed
-          command: echo "All tests passed"
+          name: All tasks passed
+          command: echo "All tasks passed"
 
 workflows:
 
@@ -2252,28 +2273,25 @@ workflows:
       not:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
-      - make-release:
-          <<: *release-tags
       - push-revenuecat-pod:
-          requires:
-            - make-release
           <<: *release-tags
       - push-revenuecatui-pod:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
       - deploy-to-spm:
-          requires:
-            - make-release
           <<: *release-tags
       - docs-deploy:
-          requires:
-            - make-release
           <<: *release-tags
       - deploy-purchase-tester:
           dry_run: false
+          <<: *release-tags
+      - make-release:
           requires:
-            - make-release
+            - push-revenuecatui-pod
+            - deploy-to-spm
+            - docs-deploy
+            - deploy-purchase-tester
           <<: *release-tags
       - deploy-rct-tester:
           dry_run: false
@@ -2283,6 +2301,12 @@ workflows:
       - bump-sdk-in-rc-mobile-app:
           requires:
             - make-release
+          <<: *release-tags
+      - enable-auto-merge-release-pr:
+          requires:
+            - make-release
+            - deploy-rct-tester
+            - bump-sdk-in-rc-mobile-app
           <<: *release-tags
 
   snapshot-bump:
@@ -2486,9 +2510,9 @@ workflows:
       - emerge_purchases_ui_snapshot_tests
 
       # =============================================================
-      # Summary gate: all tests passed
+      # All tests gate for release branches
       # =============================================================
-      - all-tasks-passed:
+      - all-tests-succeeded:
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
@@ -2521,9 +2545,9 @@ workflows:
             - emerge_binary_size_analysis
 
       # =============================================================
-      # Release tagging: only on release branches
-      # Requires both release-checks and all-tasks-passed before
-      # the hold can be approved.
+      # Release tagging: only on release branches.
+      # The approve-release hold gates tagging until a maintainer
+      # manually approves.
       # =============================================================
       - release-checks:
           <<: *release-branches
@@ -2531,10 +2555,22 @@ workflows:
           type: approval
           requires:
             - release-checks
-            - all-tasks-passed
+            - all-tests-succeeded
           <<: *release-branches
       - tag-release-branch:
           requires:
             - approve-release
+          <<: *release-branches
+
+      # =============================================================
+      # Final gate: required GitHub status check for PRs into main.
+      # On release branches. Gates on tagging so it stays pending
+      # until the release is approved and tagged.
+      # Auto-merge is enabled separately by the deploy-tag workflow
+      # after all deploys succeed.
+      # =============================================================
+      - all-tasks-passed:
+          requires:
+            - tag-release-branch
           <<: *release-branches
 
