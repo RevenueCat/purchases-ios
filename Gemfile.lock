@@ -6,8 +6,7 @@ GIT
 
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: 8144b7bf5adaa8c91a88b1493cad21e6cd926c2e
-  branch: pallares/enable-auto-merge-action
+  revision: ea6276ccc9fa140d0fab6ca464cbb5e5fe59ce83
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
       nokogiri
