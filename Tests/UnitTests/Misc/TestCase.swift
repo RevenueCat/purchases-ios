@@ -38,8 +38,6 @@ class TestCase: XCTestCase {
     @MainActor
     override class func setUp() {
         XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
-
-        SnapshotTests.updateSnapshotsIfNeeded()
     }
 
     @MainActor
@@ -54,6 +52,18 @@ class TestCase: XCTestCase {
         self.initializeLogger()
     }
 
+    override func invokeTest() {
+        if SnapshotTests.shouldRecordSnapshots {
+            withSnapshotTesting(record: .all) {
+                super.invokeTest()
+            }
+        } else {
+            withSnapshotTesting(record: .never) {
+                super.invokeTest()
+            }
+        }
+    }
+
     @MainActor
     override func tearDown() {
         self.logger = nil
@@ -66,17 +76,9 @@ class TestCase: XCTestCase {
 }
 
 private enum SnapshotTests {
-
-    private static var environmentVariableChecked = false
-
-    static func updateSnapshotsIfNeeded() {
-        guard !Self.environmentVariableChecked else { return }
-
-        if ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1" {
-            isRecording = true
-        }
+    static var shouldRecordSnapshots: Bool {
+        return ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1"
     }
-
 }
 
 extension ForceServerErrorStrategy {

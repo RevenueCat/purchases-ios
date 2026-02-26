@@ -174,7 +174,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let receivedOfferings = try await self.purchases.offerings()
 
         expect(receivedOfferings.all).toNot(beEmpty())
-        assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
+        assertSnapshot(of: receivedOfferings.response, as: .formattedJson)
 
         self.logger.verifyMessageWasLogged(Strings.offering.vending_offerings_cache_from_memory,
                                            level: .debug)
