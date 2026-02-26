@@ -76,6 +76,7 @@ public extension PaywallComponent {
         case expanded
         case introOffer = "intro_offer"
         case promoOffer = "promo_offer"
+        case multipleIntroOffers = "multiple_intro_offers"
         case selected
         case unsupported
 
@@ -172,6 +173,8 @@ extension PaywallComponent {
         // Note: Legacy conditions without operator/value are normalized to (operator: .equals, value: true)
         case introOffer(operator: EqualityOperator, value: Bool)
         case promoOffer(operator: EqualityOperator, value: Bool)
+        // Multiple intro offers condition - supported in Android, always evaluates to false on iOS
+        case multipleIntroOffers
 
         // MARK: - V0 Conditional configurability conditions
         case variable(operator: EqualityOperator, variable: String, value: ConditionValue)
@@ -190,6 +193,7 @@ extension PaywallComponent {
             case .selected: return .selected
             case .introOffer: return .introOffer
             case .promoOffer: return .promoOffer
+            case .multipleIntroOffers: return .multipleIntroOffers
             case .variable, .selectedPackage, .unsupported: return .unsupported
             }
         }
@@ -204,6 +208,7 @@ extension PaywallComponent {
             case .selected: self = .selected
             case .introOffer: self = .introOffer(operator: .equals, value: true)
             case .promoOffer: self = .promoOffer(operator: .equals, value: true)
+            case .multipleIntroOffers: self = .multipleIntroOffers
             case .unsupported: self = .unsupported
             }
         }
@@ -228,6 +233,8 @@ extension PaywallComponent {
                 try container.encode(ConditionType.promoOffer.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(value, forKey: .value)
+            case .multipleIntroOffers:
+                try container.encode(ConditionType.multipleIntroOffers.rawValue, forKey: .type)
             case .variable(let condOp, let variable, let value):
                 try container.encode(ConditionType.variable.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
@@ -242,6 +249,7 @@ extension PaywallComponent {
             }
         }
 
+        // swiftlint:disable:next cyclomatic_complexity
         public init(from decoder: Decoder) throws {
             do {
                 let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -272,6 +280,8 @@ extension PaywallComponent {
                     let condOp = try container.decodeIfPresent(EqualityOperator.self, forKey: .operator) ?? .equals
                     let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
                     self = .promoOffer(operator: condOp, value: value)
+                case .multipleIntroOffers:
+                    self = .multipleIntroOffers
                 case .variable:
                     let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
                     let variable = try container.decode(String.self, forKey: .variable)
@@ -307,6 +317,7 @@ extension PaywallComponent {
             case expanded
             case introOffer = "intro_offer"
             case promoOffer = "promo_offer"
+            case multipleIntroOffers = "multiple_intro_offers"
             case selected
             case variable
             case selectedPackage = "selected_package"

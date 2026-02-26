@@ -211,6 +211,10 @@ extension PresentedPartial {
                 operator: condOp
             )
 
+        // Multiple intro offers - supported in Android, always evaluates to false on iOS
+        case .multipleIntroOffers:
+            return false
+
         // Variable condition
         case .variable(let condOp, let variable, let value):
             return evaluateVariableCondition(
