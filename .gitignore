@@ -97,3 +97,6 @@ Examples/**/xcshareddata/**
 .swiftpm/xcode/xcshareddata/xcschemes/ReceiptParser.xcscheme
 .swiftpm/xcode/xcshareddata/xcschemes/RevenueCat_CustomEntitlementComputation.xcscheme
 Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.storekit
+
+# Claude Code
+.claude/
