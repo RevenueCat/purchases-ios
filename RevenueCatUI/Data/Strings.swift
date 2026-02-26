@@ -101,6 +101,7 @@ enum Strings {
 
     // Video
     case video_failed_to_set_audio_session_category(Error)
+    case video_failed_to_cache(URL, Error)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -340,6 +341,8 @@ extension Strings: CustomStringConvertible {
 
         case .video_failed_to_set_audio_session_category(let error):
             return "Failed to set audio session category: \(error)"
+        case .video_failed_to_cache(let url, let error):
+            return "Failed to cache video at \(url): \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"

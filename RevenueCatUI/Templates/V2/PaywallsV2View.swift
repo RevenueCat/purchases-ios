@@ -130,7 +130,8 @@ struct PaywallsV2View: View {
         onDismiss: @escaping () -> Void,
         fallbackContent: FallbackContent,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
-        colorScheme: ColorScheme
+        colorScheme: ColorScheme,
+        promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -143,7 +144,7 @@ struct PaywallsV2View: View {
         self.purchaseHandler = purchaseHandler
         self.onDismiss = onDismiss
         self.fallbackContent = fallbackContent
-        self._paywallPromoOfferCache = .init(wrappedValue: PaywallPromoOfferCache(
+        self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
         self._introOfferEligibilityContext = .init(

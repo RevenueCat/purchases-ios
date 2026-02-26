@@ -72,11 +72,8 @@ struct ButtonComponentView: View {
                 )
             }
             .withTransition(viewModel.component.transition)
-            .applyIf(self.shouldBeDisabled, apply: { view in
-                view
-                    .disabled(true)
-                    .opacity(0.35)
-            })
+            .disabled(self.shouldBeDisabled)
+            .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 SafariView(url: self.inAppBrowserURL!)
