@@ -2020,7 +2020,7 @@ jobs:
       - install-rubydocker-dependencies
       - run:
           name: Enable auto-merge on release PR
-          command: bundle exec fastlane run enable_auto_merge_for_pr repo_name:purchases-ios branch:release/$(cat .version)
+          command: bundle exec fastlane run enable_auto_merge_for_pr repo_name:purchases-ios branch:release/$(cat .version | tr -d '\n')
 
   all-tasks-passed:
     docker:
