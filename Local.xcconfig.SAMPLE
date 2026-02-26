@@ -39,6 +39,10 @@
 
 // Because two slashes are interpreted as a comment in this file, the scheme and host need to be set separately
 
+// Set a default search term for the Sandbox Paywalls tab in PaywallsTester (without quotes!):
+// If set, the app will automatically open to the Sandbox Paywalls tab with this search term pre-filled.
+// SANDBOX_PAYWALL_SEARCH = your-search-term
+
 // The following configuration options can be used when running the E2E tests through the Tuist generated Maestro project
 // REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = primary_backend_down / never
 // REVENUECAT_API_HOST = custom-api-host.revenuecat.com

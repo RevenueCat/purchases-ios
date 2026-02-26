@@ -83,6 +83,88 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(self.notificationCenter.observers).to(haveCount(4))
     }
 
+    // MARK: - Cached Transaction Metadata Sync
+
+    func testApplicationDidBecomeActiveSyncsCachedTransactionMetadata() async throws {
+        let transactionId = "cached_transaction_1"
+        let metadata = createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
+
+        self.mockLocalTransactionMetadataStore.storeMetadata(metadata, forTransactionId: transactionId)
+        self.backend.postReceiptResult = .success(
+            try CustomerInfo(data: Self.emptyCustomerInfoData)
+        )
+
+        // Fire the applicationDidBecomeActive notification
+        self.notificationCenter.fireNotifications()
+
+        // Verify that the backend was called to post the cached metadata
+        await expect(self.backend.postReceiptDataCalled).toEventually(beTrue())
+        expect(self.backend.postedAssociatedTransactionIds).to(contain(transactionId))
+    }
+
+    func testApplicationDidBecomeActiveSyncsMultipleCachedTransactions() async throws {
+        let transactionId1 = "cached_transaction_1"
+        let transactionId2 = "cached_transaction_2"
+        let metadata1 = createCachedMetadata(transactionId: transactionId1, productIdentifier: "product_1")
+        let metadata2 = createCachedMetadata(transactionId: transactionId2, productIdentifier: "product_2")
+
+        self.mockLocalTransactionMetadataStore.storeMetadata(metadata1, forTransactionId: transactionId1)
+        self.mockLocalTransactionMetadataStore.storeMetadata(metadata2, forTransactionId: transactionId2)
+        self.backend.postReceiptResult = .success(
+            try CustomerInfo(data: Self.emptyCustomerInfoData)
+        )
+
+        // Fire the applicationDidBecomeActive notification
+        self.notificationCenter.fireNotifications()
+
+        // Wait for backend to be invoked twice
+        await expect(self.backend.postReceiptDataCallCount).toEventually(equal(2))
+
+        // Verify both transactions were posted
+        expect(self.backend.postedAssociatedTransactionIds).to(contain(transactionId1))
+        expect(self.backend.postedAssociatedTransactionIds).to(contain(transactionId2))
+    }
+
+    func testApplicationDidBecomeActiveDoesNotPostWhenNoCachedMetadata() async {
+        // No metadata stored
+
+        // Fire the applicationDidBecomeActive notification
+        self.notificationCenter.fireNotifications()
+
+        // Give some time for any async operations to complete
+        try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
+
+        // Backend should not have been called for receipt posting with an associated transaction ID
+        let postedWithTransactionId = self.backend.postedAssociatedTransactionIds.compactMap { $0 }
+        expect(postedWithTransactionId).to(beEmpty())
+    }
+
+    private func createCachedMetadata(
+        transactionId: String,
+        productIdentifier: String
+    ) -> LocalTransactionMetadata {
+        return LocalTransactionMetadata(
+            transactionId: transactionId,
+            productData: ProductRequestData(
+                productIdentifier: productIdentifier,
+                paymentMode: nil,
+                currencyCode: "USD",
+                storeCountry: "US",
+                price: 9.99,
+                normalDuration: nil,
+                introDuration: nil,
+                introDurationType: nil,
+                introPrice: nil,
+                subscriptionGroup: nil,
+                discounts: nil
+            ),
+            transactionData: PurchasedTransactionData(),
+            encodedAppleReceipt: .receipt("test_receipt_\(transactionId)".asData),
+            originalPurchasesAreCompletedBy: .revenueCat,
+            sdkOriginated: true
+        )
+    }
+
     // See https://github.com/RevenueCat/purchases-ios/issues/2410
     func testDelegateWithGetCustomerInfoCallDoesNotDeadlock() throws {
         final class GetCustomerInfoPurchasesDelegate: NSObject, PurchasesDelegate {

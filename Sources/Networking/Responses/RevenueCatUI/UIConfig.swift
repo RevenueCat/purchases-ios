@@ -112,16 +112,85 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
     }
 
+    /// Definition of a custom variable as configured in the RevenueCat dashboard.
+    public struct CustomVariableDefinition: Codable, Equatable, Sendable {
+
+        /// The type of the variable: "string", "boolean", or "number".
+        public let type: String
+
+        /// The default value for this variable (always stored as a string).
+        public let defaultValue: String
+
+        public init(type: String, defaultValue: String) {
+            self.type = type
+            self.defaultValue = defaultValue
+        }
+
+        // Note: Using camelCase rawValues because JSONDecoder.default uses .convertFromSnakeCase
+        // JSON "default_value" → converted to "defaultValue" → matches CodingKey .defaultValue
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case defaultValue
+        }
+
+    }
+
     public var app: AppConfig
     public var localizations: [String: [String: String]]
     public var variableConfig: VariableConfig
 
+    /// Custom variables defined in the RevenueCat dashboard.
+    /// Keys are variable names, values contain type and default value.
+    public var customVariables: [String: CustomVariableDefinition]
+
+    // Note: CodingKeys use camelCase rawValues (the default) because JSONDecoder.default
+    // uses .convertFromSnakeCase which converts JSON keys before matching against CodingKeys.
+    // JSON "custom_variables" → converted to "customVariables" → matches CodingKey .customVariables
+    private enum CodingKeys: String, CodingKey {
+        case app
+        case localizations
+        case variableConfig
+        case customVariables
+    }
+
     public init(app: AppConfig,
                 localizations: [String: [String: String]],
-                variableConfig: VariableConfig) {
+                variableConfig: VariableConfig,
+                customVariables: [String: CustomVariableDefinition] = [:]) {
         self.app = app
         self.localizations = localizations
         self.variableConfig = variableConfig
+        self.customVariables = customVariables
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.app = try container.decode(AppConfig.self, forKey: .app)
+        self.localizations = try container.decode([String: [String: String]].self, forKey: .localizations)
+        self.variableConfig = try container.decodeIfPresent(
+            VariableConfig.self,
+            forKey: .variableConfig
+        ) ?? VariableConfig(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+
+        // Try to decode custom_variables with detailed error logging
+        do {
+            self.customVariables = try container.decodeIfPresent(
+                [String: CustomVariableDefinition].self,
+                forKey: .customVariables
+            ) ?? [:]
+        } catch {
+            Logger.error(Strings.offering.ui_config_custom_variables_decode_error(error: error))
+            self.customVariables = [:]
+        }
+
+        // Debug logging for custom variables
+        let hasCustomVariablesKey = container.contains(.customVariables)
+        Logger.debug(Strings.offering.ui_config_custom_variables_status(
+            keyPresent: hasCustomVariablesKey,
+            count: self.customVariables.count,
+            keys: Array(self.customVariables.keys)
+        ))
     }
 
 }

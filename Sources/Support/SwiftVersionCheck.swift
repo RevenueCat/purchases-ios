@@ -13,7 +13,7 @@
 
 import Foundation
 
-#if swift(<5.7)
+#if swift(<5.8)
 // See https://xcodereleases.com and https://swiftversion.net
-#error("RevenueCat requires Xcode 14.0 with Swift 5.7 to compile.")
+#error("RevenueCat requires Xcode 14.3.1 with Swift 5.8 to compile.")
 #endif

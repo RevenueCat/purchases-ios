@@ -12,13 +12,7 @@
 //  Created by Andrés Boedo on 31/8/21.
 
 import Foundation
-
-#if swift(<5.8)
-// `Product.PurchaseResult` is not `Sendable` in Xcode 14.2
-@preconcurrency import StoreKit
-#else
 import StoreKit
-#endif
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 protocol StoreKit2TransactionListenerDelegate: AnyObject, Sendable {
@@ -56,8 +50,11 @@ protocol StoreKit2TransactionListenerType: Sendable {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
 
-    /// Similar to ``PurchaseResultData`` but with an optional `CustomerInfo`
-    typealias ResultData = (userCancelled: Bool, transaction: StoreTransaction?)
+    /// Result of handling a `Product.PurchaseResult`
+    enum ResultData {
+        case userCancelled
+        case successfulVerifiedTransaction(StoreTransaction)
+    }
     typealias TransactionResult = StoreKit.VerificationResult<StoreKit.Transaction>
 
     private(set) var taskHandle: Task<Void, Never>?
@@ -130,11 +127,11 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
         case let .success(verificationResult):
             let transaction = try await self.handle(transactionResult: verificationResult,
                                                     fromTransactionUpdate: fromTransactionUpdate)
-            return (false, transaction)
+            return .successfulVerifiedTransaction(transaction)
         case .pending:
             throw ErrorUtils.paymentDeferredError()
         case .userCancelled:
-            return (true, nil)
+            return .userCancelled
         @unknown default:
             throw ErrorUtils.storeProblemError(
                 withMessage: Strings.purchase.unknown_purchase_result(result: String(describing: purchaseResult))

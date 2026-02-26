@@ -39,7 +39,15 @@ import Foundation
         self.networkService = networkService
         self.fileManager = fileManager
 
-        self.cacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: basePath)
+        self.cacheURL = fileManager.createCacheDirectoryIfNeeded(
+            basePath: basePath,
+            /*
+             In order to use the app specific directory structure the existing
+             cached files will have to be moved first.
+             Until that happens we'll keep using the existing 'RevenueCat' directory
+            */
+            inAppSpecificDirectory: false
+        )
     }
 
     /// Create a file repository

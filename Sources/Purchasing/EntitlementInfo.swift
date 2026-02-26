@@ -14,6 +14,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 /**
  Enum of supported stores
  */
@@ -51,6 +53,9 @@ import Foundation
 
     /// For entitlements granted via the Test Store.
     @objc(RCTestStore) case testStore = 10
+
+    /// For entitlements granted via the Galaxy Store.
+    @objc(RCGalaxy) case galaxy = 11
 
 }
 

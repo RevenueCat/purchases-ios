@@ -68,13 +68,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
+    var userDefaultsSuiteName: String!
 
     var purchases: Purchases!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        self.userDefaultsSuiteName = "PurchasesSubscriberAttributesTests.\(self.name).\(UUID().uuidString)"
+        self.userDefaults = UserDefaults(suiteName: self.userDefaultsSuiteName)
+        self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.clock = TestClock()
         self.systemInfo = MockSystemInfo(finishTransactions: true, clock: self.clock)
 
@@ -136,7 +139,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             backend: self.mockBackend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
-            operationDispatcher: self.mockOperationDispatcher
+            operationDispatcher: self.mockOperationDispatcher,
+            localTransactionMetadataStore: MockLocalTransactionMetadataStore()
         )
 
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
@@ -172,7 +176,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         self.purchases?.delegate = nil
         self.purchases = nil
-        UserDefaults().removePersistentDomain(forName: "TestDefaults")
+        if let suiteName = self.userDefaultsSuiteName {
+            self.userDefaults?.removePersistentDomain(forName: suiteName)
+            self.userDefaults?.removeSuite(named: suiteName)
+        }
 
         super.tearDown()
     }
@@ -218,6 +225,13 @@ class PurchasesSubscriberAttributesTests: TestCase {
             backend: self.mockBackend,
             identityManager: self.mockIdentityManager
         )
+        let transactionMetadataSyncHelper = TransactionMetadataSyncHelper(
+            customerInfoManager: customerInfoManager,
+            attribution: attribution,
+            currentUserProvider: mockIdentityManager,
+            operationDispatcher: mockOperationDispatcher,
+            transactionPoster: self.transactionPoster
+        )
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,
@@ -247,7 +261,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               storeMessagesHelper: self.mockStoreMessagesHelper,
                               diagnosticsTracker: nil,
                               virtualCurrencyManager: self.mockVirtualCurrencyManager,
-                              healthManager: healthManager)
+                              healthManager: healthManager,
+                              transactionMetadataSyncHelper: transactionMetadataSyncHelper)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
