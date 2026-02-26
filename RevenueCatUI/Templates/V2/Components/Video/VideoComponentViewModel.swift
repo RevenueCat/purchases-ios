@@ -76,14 +76,20 @@ class VideoComponentViewModel {
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
     ) -> some View {
+        let conditionContext = ConditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: [:]
+        )
         let localizedPartial = LocalizedVideoPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial

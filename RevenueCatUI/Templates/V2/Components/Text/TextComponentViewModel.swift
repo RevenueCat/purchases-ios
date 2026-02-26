@@ -63,11 +63,16 @@ class TextComponentViewModel {
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
+        let conditionContext = ConditionContext(
+            selectedPackageId: packageContext.package?.identifier,
+            customVariables: customVariables
+        )
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial

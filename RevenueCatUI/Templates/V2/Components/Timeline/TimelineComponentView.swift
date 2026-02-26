@@ -55,7 +55,8 @@ struct TimelineComponentView: View {
             ),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
-            )
+            ),
+            selectedPackageId: self.packageContext.package?.identifier
         ) { style in
             if style.visible {
                 timeline(style: style)
@@ -77,7 +78,8 @@ struct TimelineComponentView: View {
                     ),
                     isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                         for: self.packageContext.package
-                    )
+                    ),
+                    selectedPackageId: self.packageContext.package?.identifier
                 ) { itemStyle in
                     if itemStyle.visible {
                         timelineRow(itemStyle: itemStyle, style: style)
@@ -102,7 +104,8 @@ struct TimelineComponentView: View {
                         ),
                         isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                             for: self.packageContext.package
-                        )
+                        ),
+                        selectedPackageId: self.packageContext.package?.identifier
                     ) { itemStyle in
                         if itemStyle.visible {
                             let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil

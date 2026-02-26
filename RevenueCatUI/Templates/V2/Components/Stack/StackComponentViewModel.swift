@@ -54,25 +54,30 @@ class StackComponentViewModel {
         )
     }
 
-    @ViewBuilder
     // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
-        colorScheme: ColorScheme,
-        @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
-    ) -> some View {
+        selectedPackageId: String?,
+        colorScheme: ColorScheme
+    ) -> StackComponentStyle {
+        let conditionContext = ConditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: [:]
+        )
+
         let partial = PresentedStackPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
 
-        let style = StackComponentStyle(
+        return StackComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             badgeViewModels: self.badgeViewModels,
             visible: partial?.visible ?? self.component.visible ?? true,
@@ -90,7 +95,27 @@ class StackComponentViewModel {
             overflow: partial?.overflow ?? self.component.overflow,
             colorScheme: colorScheme
         )
+    }
 
+    @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
+    func styles(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        colorScheme: ColorScheme,
+        @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
+    ) -> some View {
+        let style = styles(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: selectedPackageId,
+            colorScheme: colorScheme
+        )
         apply(style)
     }
 

@@ -50,14 +50,20 @@ class CarouselComponentViewModel {
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (CarouselComponentStyle) -> some View
     ) -> some View {
+        let conditionContext = ConditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: [:]
+        )
         let partial = PresentedCarouselPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
 

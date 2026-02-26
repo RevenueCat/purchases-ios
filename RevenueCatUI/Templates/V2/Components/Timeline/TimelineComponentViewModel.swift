@@ -44,18 +44,25 @@ class TimelineComponentViewModel {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
         @ViewBuilder apply: @escaping (TimelineComponentStyle) -> some View
     ) -> some View {
+        let conditionContext = ConditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: [:]
+        )
         let partial = PresentedTimelinePartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
 
@@ -99,18 +106,25 @@ class TimelineItemViewModel {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
         @ViewBuilder apply: @escaping (TimelineItemStyle) -> some View
     ) -> some View {
+        let conditionContext = ConditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: [:]
+        )
         let partial = PresentedTimelineItemPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
 
