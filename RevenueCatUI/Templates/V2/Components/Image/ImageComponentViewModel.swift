@@ -54,11 +54,12 @@ class ImageComponentViewModel {
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
         colorScheme: ColorScheme
     ) -> ImageComponentStyle {
         let conditionContext = ConditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: [:]
+            customVariables: customVariables
         )
 
         let localizedPartial = LocalizedImagePartial.buildPartial(
@@ -95,6 +96,7 @@ class ImageComponentViewModel {
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (ImageComponentStyle) -> some View
     ) -> some View {
@@ -104,6 +106,7 @@ class ImageComponentViewModel {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
             colorScheme: colorScheme
         )
         apply(style)

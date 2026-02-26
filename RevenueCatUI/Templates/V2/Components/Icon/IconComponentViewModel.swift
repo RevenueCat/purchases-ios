@@ -93,12 +93,13 @@ class IconComponentViewModel {
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (IconComponentStyle) -> some View
     ) -> some View {
         let conditionContext = ConditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: [:]
+            customVariables: customVariables
         )
         let partial = PresentedIconPartial.buildPartial(
             state: state,

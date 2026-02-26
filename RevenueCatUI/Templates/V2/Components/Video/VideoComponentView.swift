@@ -41,6 +41,9 @@ struct VideoComponentView: View {
     @Environment(\.carouselState)
     private var carouselState
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
     @State var size: CGSize = .zero
 
     @State private var cachedURL: URL?
@@ -67,6 +70,7 @@ struct VideoComponentView: View {
                     for: self.packageContext.package
                 ),
                 selectedPackageId: self.packageContext.package?.identifier,
+                customVariables: self.customVariables,
                 colorScheme: colorScheme
             ) { style in
                 if style.visible {

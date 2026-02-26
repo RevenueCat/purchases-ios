@@ -51,11 +51,12 @@ class TimelineComponentViewModel {
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
         @ViewBuilder apply: @escaping (TimelineComponentStyle) -> some View
     ) -> some View {
         let conditionContext = ConditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: [:]
+            customVariables: customVariables
         )
         let partial = PresentedTimelinePartial.buildPartial(
             state: state,
@@ -113,11 +114,12 @@ class TimelineItemViewModel {
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
         @ViewBuilder apply: @escaping (TimelineItemStyle) -> some View
     ) -> some View {
         let conditionContext = ConditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: [:]
+            customVariables: customVariables
         )
         let partial = PresentedTimelineItemPartial.buildPartial(
             state: state,

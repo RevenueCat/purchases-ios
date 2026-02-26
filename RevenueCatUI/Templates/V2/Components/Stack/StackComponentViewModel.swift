@@ -61,11 +61,12 @@ class StackComponentViewModel {
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
         colorScheme: ColorScheme
     ) -> StackComponentStyle {
         let conditionContext = ConditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: [:]
+            customVariables: customVariables
         )
 
         let partial = PresentedStackPartial.buildPartial(
@@ -105,6 +106,7 @@ class StackComponentViewModel {
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
     ) -> some View {
@@ -114,6 +116,7 @@ class StackComponentViewModel {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
             colorScheme: colorScheme
         )
         apply(style)

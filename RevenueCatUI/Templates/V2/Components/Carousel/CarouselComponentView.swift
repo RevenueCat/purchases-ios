@@ -39,6 +39,9 @@ struct CarouselComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
 
@@ -55,6 +58,7 @@ struct CarouselComponentView: View {
                 for: self.packageContext.package
             ),
             selectedPackageId: self.packageContext.package?.identifier,
+            customVariables: self.customVariables,
             colorScheme: colorScheme
         ) { style in
             if style.visible {

@@ -40,6 +40,9 @@ struct TimelineComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
     internal init(viewModel: TimelineComponentViewModel) {
         self.viewModel = viewModel
     }
@@ -56,7 +59,8 @@ struct TimelineComponentView: View {
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
             ),
-            selectedPackageId: self.packageContext.package?.identifier
+            selectedPackageId: self.packageContext.package?.identifier,
+            customVariables: self.customVariables
         ) { style in
             if style.visible {
                 timeline(style: style)
@@ -79,7 +83,8 @@ struct TimelineComponentView: View {
                     isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                         for: self.packageContext.package
                     ),
-                    selectedPackageId: self.packageContext.package?.identifier
+                    selectedPackageId: self.packageContext.package?.identifier,
+                    customVariables: self.customVariables
                 ) { itemStyle in
                     if itemStyle.visible {
                         timelineRow(itemStyle: itemStyle, style: style)
@@ -105,7 +110,8 @@ struct TimelineComponentView: View {
                         isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                             for: self.packageContext.package
                         ),
-                        selectedPackageId: self.packageContext.package?.identifier
+                        selectedPackageId: self.packageContext.package?.identifier,
+                        customVariables: self.customVariables
                     ) { itemStyle in
                         if itemStyle.visible {
                             let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil

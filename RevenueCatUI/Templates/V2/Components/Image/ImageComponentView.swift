@@ -38,6 +38,9 @@ struct ImageComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
     let viewModel: ImageComponentViewModel
 
     @State var size: CGSize?
@@ -53,6 +56,7 @@ struct ImageComponentView: View {
                 for: self.packageContext.package
             ),
             selectedPackageId: self.packageContext.package?.identifier,
+            customVariables: self.customVariables,
             colorScheme: colorScheme
         ) { style in
             if style.visible {

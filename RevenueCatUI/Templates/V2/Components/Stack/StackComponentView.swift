@@ -39,6 +39,9 @@ struct StackComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -72,6 +75,7 @@ struct StackComponentView: View {
                 for: self.packageContext.package
             ),
             selectedPackageId: self.packageContext.package?.identifier,
+            customVariables: self.customVariables,
             colorScheme: colorScheme
         ) { style in
             if style.visible {

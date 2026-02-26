@@ -38,6 +38,9 @@ struct IconComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
     let viewModel: IconComponentViewModel
 
     var body: some View {
@@ -51,6 +54,7 @@ struct IconComponentView: View {
                 for: self.packageContext.package
             ),
             selectedPackageId: self.packageContext.package?.identifier,
+            customVariables: self.customVariables,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
