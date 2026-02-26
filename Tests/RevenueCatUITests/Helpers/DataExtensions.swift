@@ -78,7 +78,7 @@ extension PaywallData {
 
     var withLocalImages: Self {
         var copy = self
-        copy.assetBaseURL = URL(fileURLWithPath: Bundle.module.bundlePath)
+        copy.assetBaseURL = URL(fileURLWithPath: Bundle.revenueCatUI.bundlePath)
         copy.config.images = .init(header: "header.heic",
                                    background: "background.heic",
                                    icon: "header.heic")

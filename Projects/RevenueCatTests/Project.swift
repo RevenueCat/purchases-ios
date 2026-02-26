@@ -266,6 +266,16 @@ let project = Project(
                 .testableTarget(target: .init(stringLiteral: "ReceiptParserTests"))
             ]),
             runAction: .runAction(configuration: "Debug")
+        ),
+
+        .scheme(
+            name: "RevenueCatUITests",
+            shared: true,
+            buildAction: .buildAction(targets: ["RevenueCatUITests"]),
+            testAction: .targets([
+                .testableTarget(target: .init(stringLiteral: "RevenueCatUITests"))
+            ]),
+            runAction: .runAction(configuration: "Debug")
         )
     ]
 )
