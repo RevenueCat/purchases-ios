@@ -248,6 +248,7 @@ extension PaywallComponent {
                 let rawValue = try container.decode(String.self, forKey: .type)
 
                 guard let conditionType = ConditionType(rawValue: rawValue) else {
+                    Logger.warn(Strings.paywalls.unrecognized_condition_type(rawValue))
                     self = .unsupported
                     return
                 }

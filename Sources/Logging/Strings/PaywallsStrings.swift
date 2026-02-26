@@ -62,6 +62,10 @@ enum PaywallsStrings {
     case background_task_failed(String)
     case background_task_unavailable
 
+    // MARK: - Conditions
+
+    case unrecognized_condition_type(String)
+
 }
 
 extension PaywallsStrings: LogMessage {
@@ -173,6 +177,10 @@ extension PaywallsStrings: LogMessage {
             return "Background task failed to start: \(taskName)"
         case .background_task_unavailable:
             return "Background tasks unavailable (app extension or no UIApplication access)"
+
+        case let .unrecognized_condition_type(conditionType):
+            return "Paywall contains unrecognized condition type '\(conditionType)'. " +
+            "Please update to the latest SDK version."
 
         }
     }
