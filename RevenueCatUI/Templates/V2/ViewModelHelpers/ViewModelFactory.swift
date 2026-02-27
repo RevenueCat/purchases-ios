@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -300,7 +300,7 @@ struct ViewModelFactory {
                 overflow: nil,
                 overrides: component.overrides.map { overrides in
                     overrides.map { override in
-                        return .init(conditions: override.conditions, properties: .init(
+                        return .init(extendedConditions: override.extendedConditions, properties: .init(
                             visible: override.properties.visible,
                             dimension: nil,
                             size: override.properties.size,

@@ -12,7 +12,7 @@
 //  Created by Facundo Menzella on 2/16/26.
 
 import Nimble
-import RevenueCat
+@_spi(Internal) import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -200,6 +200,53 @@ class ViewModelFactoryBadgeTests: TestCase {
 
         // Then: badgeViewModels should be populated
         expect(viewModel.badgeViewModels).toNot(beEmpty())
+    }
+
+    @MainActor
+    func testTabsOverrideWithSelectedPackageCondition_DoesNotThrowUnsupportedCondition() throws {
+        let tabs = PaywallComponent.TabsComponent(
+            control: .init(
+                type: .buttons,
+                stack: .init(
+                    components: [
+                        .tabControlButton(.init(
+                            tabId: "tab_1",
+                            stack: .init(components: [])
+                        ))
+                    ]
+                )
+            ),
+            tabs: [
+                .init(
+                    id: "tab_1",
+                    stack: .init(components: [])
+                )
+            ],
+            overrides: [
+                .init(
+                    extendedConditions: [
+                        .selectedPackage(operator: .in, packages: ["annual"])
+                    ],
+                    properties: .init(visible: false)
+                )
+            ]
+        )
+
+        let factory = ViewModelFactory()
+        let packageValidator = PackageValidator()
+
+        expect {
+            _ = try factory.toViewModel(
+                component: .tabs(tabs),
+                packageValidator: packageValidator,
+                firstItemIgnoresSafeAreaInfo: nil,
+                purchaseButtonCollector: nil,
+                offering: Self.mockOffering,
+                localizationProvider: .init(locale: .current, localizedStrings: [:]),
+                uiConfigProvider: try Self.createUIConfigProvider(),
+                colorScheme: .light
+            )
+        }.toNot(throwError(PaywallError.unsupportedCondition))
     }
 
     // MARK: - Helpers
