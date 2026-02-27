@@ -2010,18 +2010,6 @@ jobs:
           name: All tests succeeded
           command: echo "All tests succeeded"
 
-  enable-auto-merge-release-pr:
-    docker:
-      - image: cimg/ruby:3.2.0
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
-    steps:
-      - checkout
-      - install-rubydocker-dependencies
-      - run:
-          name: Enable auto-merge on release PR
-          command: bundle exec fastlane run enable_auto_merge_for_pr repo_name:purchases-ios branch:release/$(cat .version | tr -d '\n')
-
   all-tasks-passed:
     docker:
       - image: cimg/base:stable
@@ -2302,7 +2290,8 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
-      - enable-auto-merge-release-pr:
+      - revenuecat/enable-auto-merge-release-pr:
+          repo_name: purchases-ios
           requires:
             - make-release
             - deploy-rct-tester
