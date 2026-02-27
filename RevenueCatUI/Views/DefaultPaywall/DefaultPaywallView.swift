@@ -28,12 +28,12 @@ struct DefaultPaywallView: View {
         handler: PurchaseHandler,
         warning: PaywallWarning? = nil,
         offering: Offering?,
-        appName: String = AppStyleExtractor.getAppName(),
+        applicationName: String = AppStyleExtractor.getAppName(),
         iconDetailProvider: AppIconDetailProvider = AppIconDetailProvider()
     ) {
         self.handler = handler
         self.warning = warning
-        self.appName = appName
+        self.appName = applicationName
         self._appIconDetailProvider = StateObject(wrappedValue: iconDetailProvider)
         if let packages = offering?.availablePackages, !packages.isEmpty {
             self.selected = packages.first
