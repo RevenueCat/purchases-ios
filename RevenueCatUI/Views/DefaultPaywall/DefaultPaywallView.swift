@@ -152,6 +152,7 @@ struct DefaultPaywallView: View {
                     )
                 }
             }
+            .scrollableIfNecessary()
         }
         .padding()
         .safeAreaInset(edge: .bottom) {
