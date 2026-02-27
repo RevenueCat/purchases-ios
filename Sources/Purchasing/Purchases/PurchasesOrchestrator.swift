@@ -764,12 +764,20 @@ final class PurchasesOrchestrator {
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
 
-            // Promotional and win-back offers are for existing subscribers,
-            // so SK2 returning the same transaction is expected — skip the check.
-            let isOfferPurchase = promotionalOffer != nil || winBackOffer != nil
+            // Promotional and win-back offers are for existing subscribers, so SK2
+            // returning the same transaction is expected. Skip the already-subscribed
+            // duplicate-transaction detection to avoid false positives on valid offer purchases.
+            let isOfferPurchase = promotionalOffer != nil
+                || winBackOffer != nil
+                || promotionalOfferOptions != nil
             let existingTransactionID = isOfferPurchase
                 ? nil
-                : await self.finishedTransactionID(for: sk2Product)
+                : await SK2AlreadySubscribedDetector.alreadyPurchasedTransactionID(
+                    for: sk2Product,
+                    transactionFetcher: self.transactionFetcher,
+                    customerInfoManager: self.customerInfoManager,
+                    appUserID: self.appUserID
+                )
 
             result = try await self.purchase(sk2Product, options)
 
@@ -900,43 +908,6 @@ final class PurchasesOrchestrator {
         #else
         return try await product.purchase(options: options)
         #endif
-    }
-
-    /// Returns the transaction ID of the product's latest transaction only when the product
-    /// has already been fully processed for the current user.
-    ///
-    /// Returns `nil` (allowing the purchase through) when:
-    /// - There is no existing transaction
-    /// - The existing transaction is unfinished (receipt may not have been posted yet)
-    /// - The current user hasn't purchased this product (e.g., after switching RC accounts)
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func finishedTransactionID(for product: SK2Product) async -> String? {
-        guard let latestResult = await product.latestTransaction,
-              let verified = latestResult.verifiedTransaction else {
-            return nil
-        }
-
-        let transactionID = String(verified.id)
-
-        // If the transaction hasn't been finished, the receipt may not have been
-        // posted yet (e.g., server was down). Allow retries in that case.
-        let unfinishedIDs = Set(
-            await self.transactionFetcher.unfinishedVerifiedTransactions.map(\.transactionIdentifier)
-        )
-        if unfinishedIDs.contains(transactionID) {
-            return nil
-        }
-
-        // If the current user doesn't have this product active, the receipt needs
-        // to be posted for them (e.g., after switching RC accounts on the same Apple ID).
-        let cachedInfo = try? self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID)
-        let productOwnedByCurrentUser = cachedInfo?.activeSubscriptions.contains(product.id) == true
-            || cachedInfo?.nonSubscriptions.contains(where: { $0.productIdentifier == product.id }) == true
-        if !productOwnedByCurrentUser {
-            return nil
-        }
-
-        return transactionID
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
