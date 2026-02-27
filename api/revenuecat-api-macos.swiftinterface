@@ -440,6 +440,7 @@ extension RevenueCat.Attribution {
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
   @objc final public func setAppsFlyerConversionData(_ data: [Swift.AnyHashable : Any]?)
+  @objc final public func setAppstackAttributionParams(_ data: [Swift.AnyHashable : Any]?)
   #endif
 }
 extension RevenueCat.Attribution : @unchecked Swift.Sendable {

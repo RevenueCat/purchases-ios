@@ -109,6 +109,35 @@ func checkAttributionAPI() {
     #endif
 
     checkSetAppsFlyerConversionDataAPI()
+    checkSetAppstackAttributionParamsAPI()
+}
+
+func checkSetAppstackAttributionParamsAPI() {
+    attribution.setAppstackAttributionParams(nil)
+
+    let anyHashableDict: [AnyHashable: Any] = [:]
+    attribution.setAppstackAttributionParams(anyHashableDict)
+
+    let optionalAnyHashableDict: [AnyHashable: Any]? = [:]
+    attribution.setAppstackAttributionParams(optionalAnyHashableDict)
+
+    let stringAnyDict: [String: Any] = [:]
+    attribution.setAppstackAttributionParams(stringAnyDict)
+
+    let stringStringDict: [String: String] = [:]
+    attribution.setAppstackAttributionParams(stringStringDict as [AnyHashable: Any])
+
+    let stringOptionalStringDict: [String: String?] = [:]
+    attribution.setAppstackAttributionParams(stringOptionalStringDict.mapValues { $0 as Any } as [AnyHashable: Any])
+
+    let stringIntDict: [String: Int] = [:]
+    attribution.setAppstackAttributionParams(stringIntDict as [AnyHashable: Any])
+
+    let stringOptionalIntDict: [String: Int?] = [:]
+    attribution.setAppstackAttributionParams(stringOptionalIntDict.mapValues { $0 as Any } as [AnyHashable: Any])
+
+    let nsDictionary: NSDictionary = [:]
+    attribution.setAppstackAttributionParams(nsDictionary as? [AnyHashable: Any])
 }
 
 func checkSetAppsFlyerConversionDataAPI() {
