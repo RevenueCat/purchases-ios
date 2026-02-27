@@ -9,6 +9,10 @@ on:
   schedule:
     - cron: "0 * * * *"
 
+permissions:
+  issues: read
+  id-token: write
+
 jobs:
   notify:
     uses: revenuecat/sdk-github-workflows/.github/workflows/issue-notifications.yml@v2

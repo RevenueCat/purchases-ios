@@ -11,6 +11,12 @@ on:
   pull_request_review:
     types: [submitted]
 
+permissions:
+  issues: read
+  pull-requests: read
+  id-token: write
+  contents: read
+
 jobs:
   claude:
     uses: revenuecat/sdk-github-workflows/.github/workflows/claude.yml@v5
