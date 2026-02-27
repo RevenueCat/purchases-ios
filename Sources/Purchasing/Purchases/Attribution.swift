@@ -507,6 +507,33 @@ public extension Attribution {
         self.subscriberAttributesManager.setAppsFlyerConversionData(data, appUserID: appUserID)
     }
 
+    /**
+     * Sets attribution data from Appstack's attribution params.
+     *
+     * Pass the dictionary received from `AppstackAttributionSdk.shared.getAttributionParams()` directly.
+     * The SDK extracts relevant attribution info and sets the appropriate subscriber attributes. Note
+     * that this method will never unset any attributes, even if passed `nil`. To unset an attribute,
+     * call the individual setter with a `nil` value.
+     *
+     * The following RevenueCat attributes will be set based on the Appstack data:
+     * - `$appstackId`: From `appstack_id` (also triggers device identifier collection)
+     * - `$mediaSource` and custom `appstack_adnetwork`: From `appstack_adnetwork`
+     * - `$campaign` and custom `appstack_campaign`: From `appstack_campaign`
+     * - `$adGroup` and custom `appstack_adset`: From `appstack_adset`
+     * - `$ad` and custom `appstack_ad`: From `appstack_ad`
+     * - `$keyword` and custom `appstack_keywords`: From `appstack_keywords`
+     * - Custom `fbclid`: From `fbclid`
+     * - Custom `gclid`: From `gclid`
+     * - Custom `wbraid`: From `wbraid`
+     * - Custom `gbraid`: From `gbraid`
+     * - Custom `ttclid`: From `ttclid`
+     *
+     * - Parameter data: The attribution params from `AppstackAttributionSdk.shared.getAttributionParams()`.
+     */
+    @objc func setAppstackAttributionParams(_ data: [AnyHashable: Any]?) {
+        self.subscriberAttributesManager.setAppstackAttributionParams(data, appUserID: appUserID)
+    }
+
 }
 
 #endif

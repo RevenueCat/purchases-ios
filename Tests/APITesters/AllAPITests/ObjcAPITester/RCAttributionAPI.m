@@ -78,6 +78,9 @@
     [a setAppsFlyerConversionData:nil];
     NSDictionary *dict = @{};
     [a setAppsFlyerConversionData:dict];
+    [a setAppstackAttributionParams:nil];
+    NSDictionary *appstackDict = @{};
+    [a setAppstackAttributionParams:appstackDict];
 }
 
 @end
