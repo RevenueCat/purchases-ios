@@ -32,14 +32,15 @@ struct DefaultPaywallView: View {
         iconDetailProvider: AppIconDetailProvider = AppIconDetailProvider()
     ) {
         self.handler = handler
-        self.warning = warning
         self.appName = appName
+        self._warning = .init(initialValue: warning)
         self._appIconDetailProvider = StateObject(wrappedValue: iconDetailProvider)
         if let packages = offering?.availablePackages, !packages.isEmpty {
-            self.selected = packages.first
-            self.products = packages
+            self._selected = .init(initialValue: packages.first)
+            self._products = .init(initialValue: packages)
         } else {
-            self.products = []
+            self._selected = .init(initialValue: nil)
+            self._products = .init(initialValue: [])
         }
     }
 
