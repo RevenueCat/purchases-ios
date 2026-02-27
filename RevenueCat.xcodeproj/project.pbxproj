@@ -43,6 +43,7 @@
 		03C06FC72D46742D00600693 /* PaywallCarouselComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C06FC62D46742600600693 /* PaywallCarouselComponent.swift */; };
 		03C06FCA2D479C7400600693 /* CarouselComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C06FC92D479C6D00600693 /* CarouselComponentView.swift */; };
 		03C06FCC2D479C7C00600693 /* CarouselComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C06FCB2D479C7600600693 /* CarouselComponentViewModel.swift */; };
+		03C06FD12F4C110000600693 /* ScrollViewGestureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C06FD02F4C110000600693 /* ScrollViewGestureCoordinator.swift */; };
 		03C72F6D2D32CDFB00297FEC /* FamilySharingTogglePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */; };
 		03C72F8D2D3311E300297FEC /* DisplayableColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F8C2D3311D500297FEC /* DisplayableColor.swift */; };
 		03C72FBE2D34949600297FEC /* PaywallIconComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72FBD2D34949600297FEC /* PaywallIconComponent.swift */; };
@@ -1584,6 +1585,7 @@
 		03C06FC62D46742600600693 /* PaywallCarouselComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallCarouselComponent.swift; sourceTree = "<group>"; };
 		03C06FC92D479C6D00600693 /* CarouselComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselComponentView.swift; sourceTree = "<group>"; };
 		03C06FCB2D479C7600600693 /* CarouselComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselComponentViewModel.swift; sourceTree = "<group>"; };
+		03C06FD02F4C110000600693 /* ScrollViewGestureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollViewGestureCoordinator.swift; sourceTree = "<group>"; };
 		03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySharingTogglePreview.swift; sourceTree = "<group>"; };
 		03C72F8C2D3311D500297FEC /* DisplayableColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayableColor.swift; sourceTree = "<group>"; };
 		03C72FBD2D34949600297FEC /* PaywallIconComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallIconComponent.swift; sourceTree = "<group>"; };
@@ -3131,6 +3133,7 @@
 			children = (
 				03C06FC92D479C6D00600693 /* CarouselComponentView.swift */,
 				03C06FCB2D479C7600600693 /* CarouselComponentViewModel.swift */,
+				03C06FD02F4C110000600693 /* ScrollViewGestureCoordinator.swift */,
 			);
 			path = Carousel;
 			sourceTree = "<group>";
@@ -7884,6 +7887,7 @@
 				778360792CCA85E4000785B8 /* StickyFooterComponentViewModel.swift in Sources */,
 				2C7457482CEA66AB004ACE52 /* ComponentsView.swift in Sources */,
 				03C06FCA2D479C7400600693 /* CarouselComponentView.swift in Sources */,
+				03C06FD12F4C110000600693 /* ScrollViewGestureCoordinator.swift in Sources */,
 				03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */,
 				887A60862C1D037000E1A461 /* FooterHidingModifier.swift in Sources */,
 				1DEF75932ECF130500614CB2 /* EmailValidator.swift in Sources */,
