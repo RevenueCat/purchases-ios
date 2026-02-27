@@ -38,6 +38,7 @@ Pod::Spec.new do |s|
        # Note: these have to match the values in Package.swift
        'RevenueCatUI/Resources/background.jpg',
        'RevenueCatUI/Resources/icons.xcassets',
+       'RevenueCatUI/Resources/Media.xcassets'
     ]
   }
   
