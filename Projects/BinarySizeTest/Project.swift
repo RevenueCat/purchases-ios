@@ -46,8 +46,8 @@ extension BinarySizeTestIntegrationMethod {
         switch self {
         case .localSource:
             return [
-                .revenueCat,
-                .revenueCatUI
+                .project(target: "RevenueCat", path: .relativeToRoot("Projects/RevenueCat")),
+                .project(target: "RevenueCatUI", path: .relativeToRoot("Projects/RevenueCatUI"))
             ]
         case .spm:
             return [
