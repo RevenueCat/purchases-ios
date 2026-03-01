@@ -809,6 +809,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         #endif
 
         self.purchasesOrchestrator.delegate = self
+        self.attribution.delegate = self
 
         // Don't update caches or run health checks in the background to avoid too many users
         // hitting the backend concurrently when launched through a notification at the same time.
@@ -1967,6 +1968,24 @@ extension Purchases: PurchasesOrchestratorDelegate {
         self.delegate?.shouldShowPriceConsent ?? true
     }
 #endif
+
+}
+
+// MARK: AttributionDelegate
+
+extension Purchases: AttributionDelegate {
+
+    func attribution(didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
+                     forUserID userID: String) {
+        // No-op: attributes have been synced, no additional action needed here.
+    }
+
+    func attribution(
+        _ attribution: Attribution,
+        requestsSyncAttributesAndOfferingsWithCompletion completion: @escaping (Offerings?, PublicError?) -> Void
+    ) {
+        self.syncAttributesAndOfferingsIfNeeded(completion: completion)
+    }
 
 }
 

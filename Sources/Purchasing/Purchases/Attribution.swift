@@ -508,7 +508,8 @@ public extension Attribution {
     }
 
     /**
-     * Sets attribution data from Appstack's attribution params.
+     * Sets attribution data from Appstack's attribution params, then syncs attributes and fetches
+     * fresh offerings so that Appstack-based targeting is applied before the callback returns.
      *
      * Pass the dictionary received from `AppstackAttributionSdk.shared.getAttributionParams()` directly.
      * The SDK extracts relevant attribution info and sets the appropriate subscriber attributes. Note
@@ -529,9 +530,35 @@ public extension Attribution {
      * - Custom `ttclid`: From `ttclid`
      *
      * - Parameter data: The attribution params from `AppstackAttributionSdk.shared.getAttributionParams()`.
+     * - Parameter completion: Called with the fresh ``Offerings`` (targeted with Appstack data) or an error.
      */
-    @objc func setAppstackAttributionParams(_ data: [AnyHashable: Any]?) {
+    @objc func setAppstackAttributionParams(
+        _ data: [AnyHashable: Any]?,
+        completion: @escaping (Offerings?, PublicError?) -> Void
+    ) {
         self.subscriberAttributesManager.setAppstackAttributionParams(data, appUserID: appUserID)
+        self.delegate?.attribution(self, requestsSyncAttributesAndOfferingsWithCompletion: completion)
+    }
+
+    /**
+     * Sets attribution data from Appstack's attribution params, then syncs attributes and fetches
+     * fresh offerings so that Appstack-based targeting is applied before this method returns.
+     *
+     * - Parameter data: The attribution params from `AppstackAttributionSdk.shared.getAttributionParams()`.
+     * - Returns: Fresh ``Offerings`` targeted with the Appstack attribution data, or `nil` if none are configured.
+     * - Throws: A ``PublicError`` if the sync or offerings fetch fails.
+     */
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func setAppstackAttributionParams(_ data: [AnyHashable: Any]?) async throws -> Offerings? {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.setAppstackAttributionParams(data) { offerings, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: offerings)
+                }
+            }
+        }
     }
 
 }
@@ -637,5 +664,10 @@ protocol AttributionDelegate: AnyObject, Sendable {
 
     func attribution(didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
                      forUserID userID: String)
+
+    func attribution(
+        _ attribution: Attribution,
+        requestsSyncAttributesAndOfferingsWithCompletion completion: @escaping (Offerings?, PublicError?) -> Void
+    )
 
 }
