@@ -78,9 +78,9 @@
     [a setAppsFlyerConversionData:nil];
     NSDictionary *dict = @{};
     [a setAppsFlyerConversionData:dict];
-    [a setAppstackAttributionParams:nil];
+    [a setAppstackAttributionParams:nil completion:^(RCOfferings *offerings, NSError *error) {}];
     NSDictionary *appstackDict = @{};
-    [a setAppstackAttributionParams:appstackDict];
+    [a setAppstackAttributionParams:appstackDict completion:^(RCOfferings *offerings, NSError *error) {}];
 }
 
 @end
