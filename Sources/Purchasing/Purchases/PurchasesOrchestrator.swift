@@ -793,7 +793,7 @@ final class PurchasesOrchestrator {
                 if let expirationDate = transaction.sk2Transaction?.expirationDate,
                    expirationDate < self.dateProvider.now() {
                     Logger.appleWarning(
-                        StoreKitStrings.sk_purchase_did_not_error_but_expiration_date_is_in_past(
+                        StoreKitStrings.sk2_purchase_did_not_error_but_expiration_date_is_in_past(
                             expirationDate: expirationDate
                         )
                     )
