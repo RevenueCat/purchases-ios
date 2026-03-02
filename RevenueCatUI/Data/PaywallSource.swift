@@ -25,6 +25,6 @@ struct PaywallSource: RawRepresentable, Hashable, Sendable, ExpressibleByStringL
 extension PaywallSource {
 
     /// Source identifier used when the paywall originated from Customer Center.
-    static let customerCenter: PaywallSource = "presented_from_customer_center"
+    static let customerCenter: PaywallSource = "customer_center"
 
 }
