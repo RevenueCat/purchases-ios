@@ -887,6 +887,64 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(notificationCount) == 1
     }
 
+    func testSK2PurchaseLogsWarningIfNoErrorsReturnedAndPurchaseDateIsMoreThanOneWeekAgo() async throws {
+        let mockTransaction = try await self.simulateAnyPurchase()
+        let now = mockTransaction.underlyingTransaction.purchaseDate.addingTimeInterval(8 * 24 * 60 * 60)   // 8 days
+        self.mockDateProvider = MockDateProvider(stubbedNow: now)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction.underlyingTransaction)
+        let product = try await self.fetchSk2Product()
+
+        self.logger.clearMessages()
+
+        let (transaction, _, _) = try await self.orchestrator.purchase(sk2Product: product,
+                                                                        package: nil,
+                                                                        promotionalOffer: nil,
+                                                                        winBackOffer: nil,
+                                                                        introductoryOfferEligibilityJWS: nil,
+                                                                        promotionalOfferOptions: nil)
+        let purchaseDate = try XCTUnwrap(transaction?.purchaseDate)
+
+        self.logger.verifyMessageWasLogged(
+            StoreKitStrings.sk_purchase_successful_but_purchase_date_is_more_than_one_week_ago(
+                purchaseDate: purchaseDate
+            ),
+            level: .warn
+        )
+    }
+
+    func testSK2PurchaseDoesNotLogWarningIfNoErrorsReturnedAndPurchaseDateIsLessThanOneWeekAgo() async throws {
+        let mockTransaction = try await self.simulateAnyPurchase()
+        let now = mockTransaction.underlyingTransaction.purchaseDate.addingTimeInterval(6 * 24 * 60 * 60)   // 6 days
+        self.mockDateProvider = MockDateProvider(stubbedNow: now)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction.underlyingTransaction)
+        let product = try await self.fetchSk2Product()
+
+        self.logger.clearMessages()
+
+        let (transaction, _, _) = try await self.orchestrator.purchase(sk2Product: product,
+                                                                        package: nil,
+                                                                        promotionalOffer: nil,
+                                                                        winBackOffer: nil,
+                                                                        introductoryOfferEligibilityJWS: nil,
+                                                                        promotionalOfferOptions: nil)
+        let purchaseDate = try XCTUnwrap(transaction?.purchaseDate)
+
+        self.logger.verifyMessageWasNotLogged(
+            StoreKitStrings.sk_purchase_successful_but_purchase_date_is_more_than_one_week_ago(
+                purchaseDate: purchaseDate
+            ),
+            level: .warn
+        )
+    }
+
     func testSK2TransactionListenerDoesNotFinishTransactionIfPostingReceiptFails() async throws {
         self.setUpStoreKit2Listener()
 

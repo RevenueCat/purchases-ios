@@ -2156,7 +2156,9 @@ private extension PurchasesOrchestrator {
         let now = dateProvider.now()
         let purchaseDateMS = transaction.purchaseDate.millisecondsSince1970
         let oneWeekMS: UInt64 = 604_800_000
-        let oneWeekAgo = now.millisecondsSince1970 - oneWeekMS
+        let nowMS = now.millisecondsSince1970
+        // Clamp at 0 to avoid `UInt64` underflow when `now` is less than one week after epoch.
+        let oneWeekAgo = nowMS >= oneWeekMS ? nowMS - oneWeekMS : 0
 
         if purchaseDateMS < oneWeekAgo {
             Logger.appleWarning(
