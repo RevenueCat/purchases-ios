@@ -887,6 +887,70 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(notificationCount) == 1
     }
 
+    func testSK2PurchaseLogsWarningIfNoErrorsReturnedAndTransactionExpirationDateIsInPast() async throws {
+        let mockTransaction = try await self.simulateAnyPurchase()
+        let expirationDate = try XCTUnwrap(mockTransaction.underlyingTransaction.expirationDate)
+        let now = expirationDate.addingTimeInterval(60)
+        self.mockDateProvider = MockDateProvider(stubbedNow: now)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction.underlyingTransaction)
+        let product = try await self.fetchSk2Product()
+
+        self.logger.clearMessages()
+
+        let (transaction, _, _) = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+        let returnedExpirationDate = try XCTUnwrap(transaction?.sk2Transaction?.expirationDate)
+
+        self.logger.verifyMessageWasLogged(
+            StoreKitStrings.sk2_purchase_did_not_error_but_expiration_date_is_in_past(
+                expirationDate: returnedExpirationDate
+            ),
+            level: .warn
+        )
+    }
+
+    func testSK2PurchaseDoesNotLogWarningIfNoErrorsReturnedAndTransactionExpirationDateIsInFuture() async throws {
+        let mockTransaction = try await self.simulateAnyPurchase()
+        let expirationDate = try XCTUnwrap(mockTransaction.underlyingTransaction.expirationDate)
+        let now = expirationDate.addingTimeInterval(-60)
+        self.mockDateProvider = MockDateProvider(stubbedNow: now)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction.underlyingTransaction)
+        let product = try await self.fetchSk2Product()
+
+        self.logger.clearMessages()
+
+        let (transaction, _, _) = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+        let returnedExpirationDate = try XCTUnwrap(transaction?.sk2Transaction?.expirationDate)
+
+        self.logger.verifyMessageWasNotLogged(
+            StoreKitStrings.sk2_purchase_did_not_error_but_expiration_date_is_in_past(
+                expirationDate: returnedExpirationDate
+            ),
+            level: .warn
+        )
+    }
+
     func testSK2TransactionListenerDoesNotFinishTransactionIfPostingReceiptFails() async throws {
         self.setUpStoreKit2Listener()
 
@@ -1861,7 +1925,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(params.purchaseResult) == .verified
         expect(params.storefront) == "USA"
 
-        expect(self.mockDateProvider.invokedNowCount) == 2
+        expect(self.mockDateProvider.invokedNowCount) == 3
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
