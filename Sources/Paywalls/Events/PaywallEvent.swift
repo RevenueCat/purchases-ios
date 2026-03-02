@@ -170,28 +170,6 @@ extension PaywallEvent {
 
 }
 
-extension PaywallEvent {
-
-    /// Returns a copy of the paywall event with its data `source` replaced.
-    func withSource(_ source: String?) -> PaywallEvent {
-        switch self {
-        case let .impression(creationData, data):
-            var updated = data
-            updated.source = source
-            return .impression(creationData, updated)
-        case let .cancel(creationData, data):
-            var updated = data
-            updated.source = source
-            return .cancel(creationData, updated)
-        case let .close(creationData, data):
-            var updated = data
-            updated.source = source
-            return .close(creationData, updated)
-        }
-    }
-
-}
-
 // MARK: - 
 
 extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}

@@ -179,7 +179,7 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         fatalError("Should not be able to purchase")
     }
 
-    func track(paywallEvent: PaywallEvent, source: PaywallSource?) async {
+    func track(paywallEvent: PaywallEvent) async {
         // Ignoring events from loading paywall view
     }
 

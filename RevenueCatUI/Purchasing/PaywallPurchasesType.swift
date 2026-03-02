@@ -42,7 +42,7 @@ protocol PaywallPurchasesType: Sendable {
     func customerInfo() async throws -> CustomerInfo
 
     @Sendable
-    func track(paywallEvent: PaywallEvent, source: PaywallSource?) async
+    func track(paywallEvent: PaywallEvent) async
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache()
@@ -58,11 +58,4 @@ protocol PaywallPurchasesType: Sendable {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension Purchases: PaywallPurchasesType {
-
-    @Sendable
-    func track(paywallEvent: PaywallEvent, source: PaywallSource?) async {
-        await self.track(paywallEvent: paywallEvent, source: source?.rawValue)
-    }
-
-}
+extension Purchases: PaywallPurchasesType {}

@@ -460,10 +460,8 @@ extension PurchaseHandler {
 private extension PurchaseHandler {
 
     func track(_ event: PaywallEvent) {
-        let source = event.data.source.map { PaywallSource(rawValue: $0) }
-
-        Task.detached(priority: .background) { [purchases = self.purchases, event, source] in
-            await purchases.track(paywallEvent: event, source: source)
+        Task.detached(priority: .background) { [purchases = self.purchases, event] in
+            await purchases.track(paywallEvent: event)
         }
     }
 
@@ -506,7 +504,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         throw ErrorCode.configurationError
     }
 
-    func track(paywallEvent: PaywallEvent, source: PaywallSource?) async {}
+    func track(paywallEvent: PaywallEvent) async {}
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {}
