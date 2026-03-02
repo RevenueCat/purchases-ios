@@ -328,8 +328,7 @@ private final class AsyncPurchaseHandler {
 
     init() {
         self.purchaseHandler = .init(
-            purchases: MockPurchases(
-                purchase: { [weak instance = self] _ in
+            purchases: MockPurchases { [weak instance = self] _ in
                 let instance = try XCTUnwrap(instance)
 
                 await instance.createAndWaitForContinuation()
@@ -339,22 +338,19 @@ private final class AsyncPurchaseHandler {
                     customerInfo: TestData.customerInfo,
                     userCancelled: false
                 )
-            },
-                restorePurchases: { [weak instance = self] in
+            } restorePurchases: { [weak instance = self] in
                 let instance = try XCTUnwrap(instance)
                 await instance.createAndWaitForContinuation()
 
                 return TestData.customerInfo
-            },
-                trackEvent: { event in
+            } trackEvent: { event in
                 Logger.debug("Tracking event: \(event)")
-            },
-                customerInfo: { [weak instance = self] in
+            } customerInfo: { [weak instance = self] in
                 let instance = try XCTUnwrap(instance)
                 await instance.createAndWaitForContinuation()
 
                 return TestData.customerInfo
-            })
+            }
         )
     }
 
