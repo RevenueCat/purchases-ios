@@ -912,7 +912,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let returnedExpirationDate = try XCTUnwrap(transaction?.sk2Transaction?.expirationDate)
 
         self.logger.verifyMessageWasLogged(
-            StoreKitStrings.sk_purchase_successful_but_expiration_date_is_in_past(
+            StoreKitStrings.sk_purchase_did_not_error_but_expiration_date_is_in_past(
                 expirationDate: returnedExpirationDate
             ),
             level: .warn
@@ -944,7 +944,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let returnedExpirationDate = try XCTUnwrap(transaction?.sk2Transaction?.expirationDate)
 
         self.logger.verifyMessageWasNotLogged(
-            StoreKitStrings.sk_purchase_successful_but_expiration_date_is_in_past(
+            StoreKitStrings.sk_purchase_did_not_error_but_expiration_date_is_in_past(
                 expirationDate: returnedExpirationDate
             ),
             level: .warn
