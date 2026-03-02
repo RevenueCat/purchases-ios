@@ -2297,8 +2297,6 @@ workflows:
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
-            equal: ["release-train", << pipeline.schedule.name >>]
-        - not:
             equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - prepare-next-version:
@@ -2341,7 +2339,7 @@ workflows:
     when:
       and:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ["maestro_e2e_tests", << pipeline.schedule.name >>]
+        - equal: ["daily-maestro-e2e-tests", << pipeline.schedule.name >>]
     jobs:
       - run-all-maestro-e2e-tests:
           context:
@@ -2402,7 +2400,7 @@ workflows:
     when:
       and:
         - not:
-            equal: ["release-train", << pipeline.schedule.name >>]
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
             equal: [bump, << pipeline.parameters.action >>]
         - not:
