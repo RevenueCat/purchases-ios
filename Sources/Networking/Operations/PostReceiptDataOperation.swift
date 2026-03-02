@@ -209,7 +209,7 @@ extension PostReceiptDataOperation.PostData {
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingContext?.offeringIdentifier,
             presentedPlacementIdentifier: data.presentedOfferingContext?.placementIdentifier,
-            presentedOfferingSource: data.presentedPaywall?.data.source?.rawValue,
+            presentedOfferingSource: data.presentedOfferingSource?.rawValue,
             appliedTargetingRule: data.presentedOfferingContext?.targetingContext.flatMap {
                 .init(revision: $0.revision, ruleId: $0.ruleId)
             },

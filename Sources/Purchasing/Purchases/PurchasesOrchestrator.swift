@@ -907,7 +907,7 @@ final class PurchasesOrchestrator {
     /// Caches a purchase source for a product that may be purchased outside a paywall
     /// (e.g. a promotional offer from Customer Center).
     func cachePurchaseSource(_ source: PurchaseSource, productIdentifier: String) {
-        let cached = CachedPurchaseSource(source: source.rawValue, cacheDate: self.dateProvider.now())
+        let cached = CachedPurchaseSource(source: source, cacheDate: self.dateProvider.now())
         self.purchaseSourcesByProductID.modify { $0[productIdentifier] = cached }
     }
 
@@ -1942,7 +1942,7 @@ private extension PurchasesOrchestrator {
     }
 
     struct CachedPurchaseSource {
-        let source: String
+        let source: PurchaseSource
         let cacheDate: Date
     }
 
@@ -1969,7 +1969,7 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func getAndRemoveCachedPurchaseSource(for transaction: StoreTransactionType) -> String? {
+    func getAndRemoveCachedPurchaseSource(for transaction: StoreTransactionType) -> PurchaseSource? {
         return self.purchaseSourcesByProductID.modify { cache in
             guard let cached = cache[transaction.productIdentifier] else {
                 return nil
