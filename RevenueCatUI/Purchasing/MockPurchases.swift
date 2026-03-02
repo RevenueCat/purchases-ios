@@ -101,44 +101,30 @@ extension PaywallPurchasesType {
         purchase: @escaping (@escaping MockPurchases.PurchaseBlock) -> MockPurchases.PurchaseBlock,
         restore: @escaping (@escaping MockPurchases.RestoreBlock) -> MockPurchases.RestoreBlock
     ) -> PaywallPurchasesType {
-        return MockPurchases(
-            purchase: { package in
-                try await purchase(self.purchase(package:))(package)
-            },
-            restorePurchases: {
-                try await restore(self.restorePurchases)()
-            },
-            trackEvent: { event in
-                await self.track(paywallEvent: event)
-            },
-            customerInfo: {
-                try await self.customerInfo()
-            }
-        )
+        return MockPurchases { package in
+            try await purchase(self.purchase(package:))(package)
+        } restorePurchases: {
+            try await restore(self.restorePurchases)()
+        } trackEvent: { event in
+            await self.track(paywallEvent: event)
+        } customerInfo: {
+            try await self.customerInfo()
+        }
     }
 
     /// Creates a copy of this `PaywallPurchasesType` wrapping `trackEvent`.
     func map(
         trackEvent: @escaping (@escaping MockPurchases.TrackEventBlock) -> MockPurchases.TrackEventBlock
     ) -> PaywallPurchasesType {
-        let trackBlock: MockPurchases.TrackEventBlock = { event in
-            await self.track(paywallEvent: event)
+        return MockPurchases { package in
+            try await self.purchase(package: package)
+        } restorePurchases: {
+            try await self.restorePurchases()
+        } trackEvent: { event in
+            await trackEvent(self.track(paywallEvent:))(event)
+        } customerInfo: {
+            try await self.customerInfo()
         }
-
-        return MockPurchases(
-            purchase: { package in
-                try await self.purchase(package: package)
-            },
-            restorePurchases: {
-                try await self.restorePurchases()
-            },
-            trackEvent: { event in
-                await trackEvent(trackBlock)(event)
-            },
-            customerInfo: {
-                try await self.customerInfo()
-            }
-        )
     }
 
 }
