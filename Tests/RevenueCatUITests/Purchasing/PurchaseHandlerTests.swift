@@ -226,7 +226,7 @@ class PurchaseHandlerTests: TestCase {
         let impressionExpectation = expectation(description: "Impression tracked")
         let closeExpectation = expectation(description: "Close tracked")
 
-        let source = PaywallSource(rawValue: "test_source")
+        let source = PaywallSource.customerCenter
         var trackedEvents: [PaywallEvent] = []
 
         let handler = PurchaseHandler(
@@ -280,7 +280,7 @@ class PurchaseHandlerTests: TestCase {
 
         expect(trackedEvents).to(haveCount(2))
         trackedEvents.forEach { event in
-            expect(event.data.source) == source.rawValue
+            expect(event.data.source) == source
         }
     }
 

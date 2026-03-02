@@ -381,12 +381,9 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = customerInfo
     }
 
-    /// Stores the last paywall impression (including its optional source) so follow-up events can reuse it.
     func trackPaywallImpression(_ eventData: PaywallEvent.Data, source: PaywallSource?) {
         var updatedEventData = eventData
-        if let source {
-            updatedEventData.source = source.rawValue
-        }
+        updatedEventData.source = source
 
         self.eventData = updatedEventData
         self.track(.impression(.init(), updatedEventData))

@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 class BaseBackendPostReceiptDataTests: BaseBackendTests {
 
@@ -511,7 +511,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
             date: .init(timeIntervalSince1970: 1694029328)
         )
-        let paywallSource = "presented_from_customer_center"
+        let paywallSource: PaywallSource = .customerCenter
         let paywallEventData: PaywallEvent.Data = .init(
             offeringIdentifier: offeringIdentifier,
             paywallRevision: 5,
@@ -535,7 +535,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
                                  presentedPaywall: .impression(paywallEventCreationData, paywallEventData),
-                                 presentedOfferingSource: paywallSource,
+                                 presentedOfferingSource: paywallSource.rawValue,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)

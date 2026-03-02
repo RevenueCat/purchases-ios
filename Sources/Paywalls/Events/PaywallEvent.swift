@@ -79,9 +79,30 @@ extension PaywallEvent {
         public var displayMode: PaywallViewMode
         public var localeIdentifier: String
         public var darkMode: Bool
-        public var source: String?
+        @_spi(Internal) public var source: PaywallSource?
 
         #if !os(tvOS) // For Paywalls V2
+        @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+        @available(*, deprecated, message: "Use the @_spi(Internal) init with source parameter instead.")
+        public init(
+            offering: Offering,
+            paywallComponentsData: PaywallComponentsData,
+            sessionID: SessionID,
+            displayMode: PaywallViewMode,
+            locale: Locale,
+            darkMode: Bool
+        ) {
+            self.init(
+                offeringIdentifier: offering.identifier,
+                paywallRevision: paywallComponentsData.revision,
+                sessionID: sessionID,
+                displayMode: displayMode,
+                localeIdentifier: locale.identifier,
+                darkMode: darkMode
+            )
+        }
+
+        @_spi(Internal)
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
         public init(
             offering: Offering,
@@ -90,7 +111,7 @@ extension PaywallEvent {
             displayMode: PaywallViewMode,
             locale: Locale,
             darkMode: Bool,
-            source: String? = nil
+            source: PaywallSource?
         ) {
             self.init(
                 offeringIdentifier: offering.identifier,
@@ -105,6 +126,27 @@ extension PaywallEvent {
         #endif
 
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+        @available(*, deprecated, message: "Use the @_spi(Internal) init with source parameter instead.")
+        public init(
+            offering: Offering,
+            paywall: PaywallData,
+            sessionID: SessionID,
+            displayMode: PaywallViewMode,
+            locale: Locale,
+            darkMode: Bool
+        ) {
+            self.init(
+                offeringIdentifier: offering.identifier,
+                paywallRevision: paywall.revision,
+                sessionID: sessionID,
+                displayMode: displayMode,
+                localeIdentifier: locale.identifier,
+                darkMode: darkMode
+            )
+        }
+
+        @_spi(Internal)
+        @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
         public init(
             offering: Offering,
             paywall: PaywallData,
@@ -112,7 +154,7 @@ extension PaywallEvent {
             displayMode: PaywallViewMode,
             locale: Locale,
             darkMode: Bool,
-            source: String? = nil
+            source: PaywallSource?
         ) {
             self.init(
                 offeringIdentifier: offering.identifier,
@@ -133,7 +175,7 @@ extension PaywallEvent {
             displayMode: PaywallViewMode,
             localeIdentifier: String,
             darkMode: Bool,
-            source: String? = nil
+            source: PaywallSource? = nil
         ) {
             self.offeringIdentifier = offeringIdentifier
             self.paywallRevision = paywallRevision

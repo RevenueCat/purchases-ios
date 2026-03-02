@@ -184,7 +184,7 @@ extension PostReceiptDataOperation.PostData {
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingContext?.offeringIdentifier,
             presentedPlacementIdentifier: data.presentedOfferingContext?.placementIdentifier,
-            presentedOfferingSource: data.presentedPaywall?.data.source,
+            presentedOfferingSource: data.presentedPaywall?.data.source?.rawValue,
             appliedTargetingRule: data.presentedOfferingContext?.targetingContext.flatMap {
                 .init(revision: $0.revision, ruleId: $0.ruleId)
             },
@@ -211,7 +211,7 @@ private extension PurchasedTransactionData {
                      displayMode: paywall.data.displayMode,
                      darkMode: paywall.data.darkMode,
                      localeIdentifier: paywall.data.localeIdentifier,
-                     source: paywall.data.source)
+                     source: paywall.data.source?.rawValue)
     }
 
 }

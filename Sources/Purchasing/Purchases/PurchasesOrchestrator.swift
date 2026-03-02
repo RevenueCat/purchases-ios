@@ -1764,7 +1764,7 @@ private extension PurchasesOrchestrator {
                 appUserID: self.appUserID,
                 presentedOfferingContext: offeringContext,
                 presentedPaywall: paywall,
-                presentedOfferingSource: paywall?.data.source,
+                presentedOfferingSource: paywall?.data.source?.rawValue,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
                 storefront: storefront,

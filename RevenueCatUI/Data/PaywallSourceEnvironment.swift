@@ -7,6 +7,7 @@
 
 #if canImport(SwiftUI)
 
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS)
