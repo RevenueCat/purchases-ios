@@ -510,7 +510,6 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
             date: .init(timeIntervalSince1970: 1694029328)
         )
-        let paywallSource: PaywallSource = .customerCenter
         let paywallEventData: PaywallEvent.Data = .init(
             offeringIdentifier: offeringIdentifier,
             paywallRevision: 5,
@@ -518,7 +517,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
             darkMode: true,
-            source: paywallSource
+            source: .customerCenter
         )
 
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
