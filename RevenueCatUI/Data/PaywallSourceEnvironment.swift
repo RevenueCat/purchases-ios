@@ -22,7 +22,7 @@ private struct PaywallSourceKey: EnvironmentKey {
 extension EnvironmentValues {
 
     /// The optional paywall source available in the current environment.
-    @_spi(Internal) public var paywallSource: PaywallSource? {
+    var paywallSource: PaywallSource? {
         get { self[PaywallSourceKey.self] }
         set { self[PaywallSourceKey.self] = newValue }
     }
@@ -32,7 +32,7 @@ extension EnvironmentValues {
 extension View {
 
     /// Associates the provided paywall source with this view hierarchy so downstream paywall presentations can read it.
-    @_spi(Internal) public func paywallSource(_ source: PaywallSource?) -> some View {
+    func paywallSource(_ source: PaywallSource?) -> some View {
         self.environment(\.paywallSource, source)
     }
 

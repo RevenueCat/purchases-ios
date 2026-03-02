@@ -14,7 +14,7 @@
 import Combine
 import Nimble
 @testable import RevenueCat
-@testable @_spi(Internal) import RevenueCatUI
+@testable import RevenueCatUI
 import XCTest
 
 #if !os(macOS)
