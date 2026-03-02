@@ -1856,6 +1856,7 @@ private extension PurchasesOrchestrator {
             let transactionData: PurchasedTransactionData = .init(
                 presentedOfferingContext: offeringContext,
                 presentedPaywall: paywall,
+                presentedOfferingSource: paywall?.data.source?.rawValue,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
                 storeCountry: storefront?.countryCode

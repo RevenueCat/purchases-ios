@@ -56,11 +56,12 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `subscriberAttributesByKey`
 		/// - `sdkOriginated`
         /// - `transactionId` (only if there is attribution data, to always post receipts with attribution data)
+        let presentedOfferingSource = postData.presentedOfferingSource ?? ""
         let cacheKey =
         """
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.hash)
         -\(postData.productData?.cacheKey ?? "")
-        -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
+        -\(postData.presentedOfferingIdentifier ?? "")-\(presentedOfferingSource)-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
         -\(postData.sdkOriginated)
         -\(postData.containsAttributionData ? (postData.transactionId ?? "") : "")
@@ -138,6 +139,7 @@ extension PostReceiptDataOperation {
         let productData: ProductRequestData?
         let presentedOfferingIdentifier: String?
         let presentedPlacementIdentifier: String?
+        let presentedOfferingSource: String?
         let appliedTargetingRule: AppliedTargetingRule?
         let paywall: Paywall?
 
@@ -207,6 +209,7 @@ extension PostReceiptDataOperation.PostData {
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingContext?.offeringIdentifier,
             presentedPlacementIdentifier: data.presentedOfferingContext?.placementIdentifier,
+            presentedOfferingSource: data.presentedPaywall?.data.source?.rawValue,
             appliedTargetingRule: data.presentedOfferingContext?.targetingContext.flatMap {
                 .init(revision: $0.revision, ruleId: $0.ruleId)
             },
@@ -303,6 +306,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case presentedPlacementIdentifier
         case appliedTargetingRule
         case paywall
+        case presentedOfferingSource = "presented_offering_source"
         case testReceiptIdentifier = "test_receipt_identifier"
         case appTransaction = "app_transaction"
         case transactionId = "transaction_id"
@@ -334,6 +338,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
         try container.encodeIfPresent(self.paywall, forKey: .paywall)
         try container.encodeIfPresent(self.purchaseCompletedBy?.name, forKey: .purchaseCompletedBy)
+        try container.encodeIfPresent(self.presentedOfferingSource, forKey: .presentedOfferingSource)
 
         try container.encodeIfPresent(
             self.subscriberAttributesByKey
