@@ -102,9 +102,8 @@ extension PaywallEvent {
             )
         }
 
-        @_spi(Internal)
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-        public init(
+        @_spi(Internal) public init(
             offering: Offering,
             paywallComponentsData: PaywallComponentsData,
             sessionID: SessionID,
@@ -145,9 +144,8 @@ extension PaywallEvent {
             )
         }
 
-        @_spi(Internal)
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-        public init(
+        @_spi(Internal) public init(
             offering: Offering,
             paywall: PaywallData,
             sessionID: SessionID,
