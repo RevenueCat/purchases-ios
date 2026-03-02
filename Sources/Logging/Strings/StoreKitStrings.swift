@@ -103,6 +103,7 @@ enum StoreKitStrings {
 
     case sk2_sync_purchases_no_transaction_or_apptransaction_found
 
+    case sk_purchase_successful_but_purchase_date_is_more_than_one_week_ago(purchaseDate: Date)
 }
 
 extension StoreKitStrings: LogMessage {
@@ -245,6 +246,15 @@ extension StoreKitStrings: LogMessage {
 
         case .sk2_sync_purchases_no_transaction_or_apptransaction_found:
             return "Couldn't find previous transactions or an AppTransaction."
+
+        case .sk_purchase_successful_but_purchase_date_is_more_than_one_week_ago(let purchaseDate):
+            let isoFormatter = ISO8601DateFormatter()
+            let iso8601PurchaseDate = isoFormatter.string(from: purchaseDate)
+            return """
+                StoreKit did not raise any errors while processing the purchase, but the transaction returned by 
+                StoreKit has a purchase date that is more than one week in the past. This is likely a problem with 
+                StoreKit. Purchase date: \(iso8601PurchaseDate)
+                """
         }
     }
 
