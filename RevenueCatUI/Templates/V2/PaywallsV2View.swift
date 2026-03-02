@@ -268,7 +268,8 @@ struct PaywallsV2View: View {
             sessionID: .init(),
             displayMode: .fullScreen,
             locale: .current,
-            darkMode: self.colorScheme == .dark
+            darkMode: self.colorScheme == .dark,
+            source: self.paywallSource
         )
     }
 
