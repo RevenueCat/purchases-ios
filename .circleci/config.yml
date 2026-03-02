@@ -1736,6 +1736,12 @@ jobs:
       - trust-github-key
       - install-rubydocker-dependencies
       - run:
+          name: Check Release PR is approved
+          command: |
+            echo "Verifying that the release PR has been approved by an org member with write permissions."
+            echo "This check prevents tagging a release before the PR is properly reviewed."
+            bundle exec fastlane run validate_pr_approved
+      - run:
           name: Tag branch
           command: bundle exec fastlane tag_current_branch
 
