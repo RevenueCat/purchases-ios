@@ -1861,7 +1861,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(params.purchaseResult) == .verified
         expect(params.storefront) == "USA"
 
-        expect(self.mockDateProvider.invokedNowCount) == 2
+        expect(self.mockDateProvider.invokedNowCount) == 3
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
