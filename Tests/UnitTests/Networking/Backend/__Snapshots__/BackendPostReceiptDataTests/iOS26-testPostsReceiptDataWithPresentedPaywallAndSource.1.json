@@ -1,12 +1,13 @@
 {
   "headers" : {
     "Authorization" : "Bearer asharedsecret",
+    "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
     "X-Client-Build-Version" : "12345",
     "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
     "X-Client-Version" : "17.0.0",
     "X-Is-Backgrounded" : "false",
     "X-Is-Debug-Build" : "true",
-    "X-Is-Sandbox" : "false",
+    "X-Is-Sandbox" : "true",
     "X-Observer-Mode-Enabled" : "false",
     "X-Platform" : "iOS",
     "X-Platform-Device" : "arm64",
@@ -41,7 +42,8 @@
         "locale" : "en_US",
         "paywall_id" : "test_paywall_id",
         "revision" : 5,
-        "session_id" : "73616D70-6C65-2073-7472-696E67000000"
+        "session_id" : "73616D70-6C65-2073-7472-696E67000000",
+        "source" : "customer_center"
       },
       "presented_offering_identifier" : "a_offering",
       "price" : "10.98",

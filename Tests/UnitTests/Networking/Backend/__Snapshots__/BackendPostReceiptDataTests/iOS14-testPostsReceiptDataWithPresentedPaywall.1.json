@@ -42,8 +42,7 @@
         "locale" : "en_US",
         "paywall_id" : "test_paywall_id",
         "revision" : 5,
-        "session_id" : "73616D70-6C65-2073-7472-696E67000000",
-        "source" : "customer_center"
+        "session_id" : "73616D70-6C65-2073-7472-696E67000000"
       },
       "presented_offering_identifier" : "a_offering",
       "price" : "10.98",
