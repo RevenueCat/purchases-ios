@@ -480,7 +480,6 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: context,
                                  presentedPaywall: nil,
-                                 presentedOfferingSource: "marketing_automation",
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
@@ -535,7 +534,6 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
                                  presentedPaywall: .impression(paywallEventCreationData, paywallEventData),
-                                 presentedOfferingSource: paywallSource.rawValue,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
