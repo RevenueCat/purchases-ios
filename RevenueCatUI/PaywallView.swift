@@ -64,9 +64,6 @@ public struct PaywallView: View {
     @Environment(\.dismiss)
     private var dismiss
 
-    @Environment(\.paywallSource)
-    private var paywallSource
-
     /// Create a view to display the paywall in `Offerings.current`.
     ///
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
@@ -577,8 +574,7 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear {
-                self.purchaseHandler.trackPaywallImpression(self.createEventData(),
-                                                            source: self.paywallSource)
+                self.purchaseHandler.trackPaywallImpression(self.createEventData())
             }
             .onDisappear {
                 self.purchaseHandler.trackPaywallClose()

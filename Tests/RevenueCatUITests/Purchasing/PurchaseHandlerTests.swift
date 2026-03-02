@@ -213,7 +213,7 @@ class PurchaseHandlerTests: TestCase {
         let result1 = handler.trackPaywallClose()
         expect(result1) == false
 
-        handler.trackPaywallImpression(eventData, source: nil)
+        handler.trackPaywallImpression(eventData)
 
         let result2 = handler.trackPaywallClose()
         expect(result2) == true
@@ -266,10 +266,11 @@ class PurchaseHandlerTests: TestCase {
             sessionID: .init(),
             displayMode: .fullScreen,
             locale: .init(identifier: "en_US"),
-            darkMode: false
+            darkMode: false,
+            source: source
         )
 
-        handler.trackPaywallImpression(eventData, source: source)
+        handler.trackPaywallImpression(eventData)
 
         await fulfillment(of: [impressionExpectation], timeout: 1.0)
 

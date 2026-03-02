@@ -381,12 +381,9 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = customerInfo
     }
 
-    func trackPaywallImpression(_ eventData: PaywallEvent.Data, source: PaywallSource?) {
-        var updatedEventData = eventData
-        updatedEventData.source = source
-
-        self.eventData = updatedEventData
-        self.track(.impression(.init(), updatedEventData))
+    func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
+        self.eventData = eventData
+        self.track(.impression(.init(), eventData))
     }
 
     /// - Returns: whether the event was tracked

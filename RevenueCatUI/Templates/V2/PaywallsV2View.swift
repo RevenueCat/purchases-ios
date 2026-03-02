@@ -194,8 +194,7 @@ struct PaywallsV2View: View {
                     .disabled(self.purchaseHandler.actionInProgress)
                     .onAppear {
                         self.purchaseHandler.trackPaywallImpression(
-                            self.createEventData(),
-                            source: self.paywallSource
+                            self.createEventData()
                         )
                     }
                     .onDisappear {
