@@ -887,9 +887,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(notificationCount) == 1
     }
 
-    func testSK2PurchaseLogsWarningIfNoErrorsReturnedAndPurchaseDateIsMoreThanOneWeekAgo() async throws {
+    func testSK2PurchaseLogsWarningIfNoErrorsReturnedAndTransactionExpirationDateIsInPast() async throws {
         let mockTransaction = try await self.simulateAnyPurchase()
-        let now = mockTransaction.underlyingTransaction.purchaseDate.addingTimeInterval(8 * 24 * 60 * 60)   // 8 days
+        let expirationDate = try XCTUnwrap(mockTransaction.underlyingTransaction.expirationDate)
+        let now = expirationDate.addingTimeInterval(60)
         self.mockDateProvider = MockDateProvider(stubbedNow: now)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
@@ -908,19 +909,20 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             introductoryOfferEligibilityJWS: nil,
             promotionalOfferOptions: nil
         )
-        let purchaseDate = try XCTUnwrap(transaction?.purchaseDate)
+        let returnedExpirationDate = try XCTUnwrap(transaction?.sk2Transaction?.expirationDate)
 
         self.logger.verifyMessageWasLogged(
-            StoreKitStrings.sk_purchase_successful_but_purchase_date_is_more_than_one_week_ago(
-                purchaseDate: purchaseDate
+            StoreKitStrings.sk_purchase_successful_but_expiration_date_is_in_past(
+                expirationDate: returnedExpirationDate
             ),
             level: .warn
         )
     }
 
-    func testSK2PurchaseDoesNotLogWarningIfNoErrorsReturnedAndPurchaseDateIsLessThanOneWeekAgo() async throws {
+    func testSK2PurchaseDoesNotLogWarningIfNoErrorsReturnedAndTransactionExpirationDateIsInFuture() async throws {
         let mockTransaction = try await self.simulateAnyPurchase()
-        let now = mockTransaction.underlyingTransaction.purchaseDate.addingTimeInterval(6 * 24 * 60 * 60)   // 6 days
+        let expirationDate = try XCTUnwrap(mockTransaction.underlyingTransaction.expirationDate)
+        let now = expirationDate.addingTimeInterval(-60)
         self.mockDateProvider = MockDateProvider(stubbedNow: now)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
@@ -939,11 +941,11 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             introductoryOfferEligibilityJWS: nil,
             promotionalOfferOptions: nil
         )
-        let purchaseDate = try XCTUnwrap(transaction?.purchaseDate)
+        let returnedExpirationDate = try XCTUnwrap(transaction?.sk2Transaction?.expirationDate)
 
         self.logger.verifyMessageWasNotLogged(
-            StoreKitStrings.sk_purchase_successful_but_purchase_date_is_more_than_one_week_ago(
-                purchaseDate: purchaseDate
+            StoreKitStrings.sk_purchase_successful_but_expiration_date_is_in_past(
+                expirationDate: returnedExpirationDate
             ),
             level: .warn
         )

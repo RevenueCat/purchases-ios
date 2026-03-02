@@ -103,7 +103,7 @@ enum StoreKitStrings {
 
     case sk2_sync_purchases_no_transaction_or_apptransaction_found
 
-    case sk_purchase_successful_but_purchase_date_is_more_than_one_week_ago(purchaseDate: Date)
+    case sk_purchase_successful_but_expiration_date_is_in_past(expirationDate: Date)
 }
 
 extension StoreKitStrings: LogMessage {
@@ -247,12 +247,12 @@ extension StoreKitStrings: LogMessage {
         case .sk2_sync_purchases_no_transaction_or_apptransaction_found:
             return "Couldn't find previous transactions or an AppTransaction."
 
-        case .sk_purchase_successful_but_purchase_date_is_more_than_one_week_ago(let purchaseDate):
+        case .sk_purchase_successful_but_expiration_date_is_in_past(let expirationDate):
             let isoFormatter = ISO8601DateFormatter()
-            let iso8601PurchaseDate = isoFormatter.string(from: purchaseDate)
+            let iso8601ExpirationDate = isoFormatter.string(from: expirationDate)
             return "StoreKit did not raise any errors while processing the purchase, but the transaction returned by " +
-            "StoreKit contains a purchase date that is more than one week in the past. This is likely an issue with " +
-            "StoreKit. Purchase date: \(iso8601PurchaseDate)"
+            "StoreKit contains an expiration date that is in the past. This is likely an issue with " +
+            "StoreKit. Expiration date: \(iso8601ExpirationDate)"
         }
     }
 

@@ -789,7 +789,16 @@ final class PurchasesOrchestrator {
             let customerInfo: CustomerInfo
 
             if let transaction = transaction {
-                logWarningIfPurchaseDateIsMoreThanOneWeekAgo(for: transaction)
+
+                if let expirationDate = transaction.sk2Transaction?.expirationDate,
+                   expirationDate < self.dateProvider.now() {
+                    Logger.appleWarning(
+                        StoreKitStrings.sk_purchase_successful_but_expiration_date_is_in_past(
+                            expirationDate: expirationDate
+                        )
+                    )
+                }
+                
                 customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
                 self.postFeatureEventsIfNeeded()
             } else {
@@ -2146,26 +2155,6 @@ private extension PurchasesOrchestrator {
             return .sk2receipt(await self.transactionFetcher.fetchReceipt(containing: transaction))
         } else {
             return .jws(jwsRepresentation)
-        }
-    }
-
-    private func logWarningIfPurchaseDateIsMoreThanOneWeekAgo(
-        for transaction: StoreTransaction
-    ) {
-        // Calculating one week ago manually allows us to avoid the overhead of fetching the current Calendar
-        let now = dateProvider.now()
-        let purchaseDateMS = transaction.purchaseDate.millisecondsSince1970
-        let oneWeekMS: UInt64 = 604_800_000
-        let nowMS = now.millisecondsSince1970
-        // Clamp at 0 to avoid `UInt64` underflow when `now` is less than one week after epoch.
-        let oneWeekAgo = nowMS >= oneWeekMS ? nowMS - oneWeekMS : 0
-
-        if purchaseDateMS < oneWeekAgo {
-            Logger.appleWarning(
-                StoreKitStrings.sk_purchase_successful_but_purchase_date_is_more_than_one_week_ago(
-                    purchaseDate: transaction.purchaseDate
-                )
-            )
         }
     }
 
