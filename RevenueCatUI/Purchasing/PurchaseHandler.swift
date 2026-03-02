@@ -454,7 +454,7 @@ extension PurchaseHandler {
 private extension PurchaseHandler {
 
     func track(_ event: PaywallEvent) {
-        Task.detached(priority: .background) { [purchases = self.purchases, event] in
+        Task.detached(priority: .background) { [purchases = self.purchases] in
             await purchases.track(paywallEvent: event)
         }
     }
