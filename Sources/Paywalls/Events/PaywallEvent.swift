@@ -117,7 +117,7 @@ extension PaywallEvent {
 
         #if !os(tvOS) // For Paywalls V2
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-        @available(*, deprecated, message: "Use the @_spi(Internal) init with source parameter instead.")
+        @available(*, deprecated, message: "This initializer will be removed in a future version.")
         public init(
             offering: Offering,
             paywallComponentsData: PaywallComponentsData,
@@ -161,7 +161,7 @@ extension PaywallEvent {
         #endif
 
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-        @available(*, deprecated, message: "Use the @_spi(Internal) init with source parameter instead.")
+        @available(*, deprecated, message: "This initializer will be removed in a future version.")
         public init(
             offering: Offering,
             paywall: PaywallData,
