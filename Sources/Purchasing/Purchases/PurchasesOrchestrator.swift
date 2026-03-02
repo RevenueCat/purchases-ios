@@ -798,7 +798,7 @@ final class PurchasesOrchestrator {
                         )
                     )
                 }
-                
+
                 customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
                 self.postFeatureEventsIfNeeded()
             } else {
