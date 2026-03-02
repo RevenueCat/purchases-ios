@@ -250,11 +250,9 @@ extension StoreKitStrings: LogMessage {
         case .sk_purchase_successful_but_purchase_date_is_more_than_one_week_ago(let purchaseDate):
             let isoFormatter = ISO8601DateFormatter()
             let iso8601PurchaseDate = isoFormatter.string(from: purchaseDate)
-            return """
-                StoreKit did not raise any errors while processing the purchase, but the transaction returned by 
-                StoreKit has a purchase date that is more than one week in the past. This is likely a problem with 
-                StoreKit. Purchase date: \(iso8601PurchaseDate)
-                """
+            return "StoreKit did not raise any errors while processing the purchase, but the transaction returned by " +
+            "StoreKit contains a purchase date that is more than one week in the past. This is likely an issue with " +
+            "StoreKit. Purchase date: \(iso8601PurchaseDate)"
         }
     }
 

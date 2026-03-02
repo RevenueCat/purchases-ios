@@ -2155,12 +2155,12 @@ private extension PurchasesOrchestrator {
         // Calculating one week ago manually allows us to avoid the overhead of fetching the current Calendar
         let now = dateProvider.now()
         let purchaseDateMS = transaction.purchaseDate.millisecondsSince1970
-        let one_week_in_ms: UInt64 = 604_800_000
-        let oneWeekAgo = now.millisecondsSince1970 - one_week_in_ms
+        let oneWeekMS: UInt64 = 604_800_000
+        let oneWeekAgo = now.millisecondsSince1970 - oneWeekMS
 
         if purchaseDateMS < oneWeekAgo {
             Logger.appleWarning(
-                StoreKitStrings.sk2_purchase_successful_but_purchase_date_is_more_than_one_week_ago(
+                StoreKitStrings.sk_purchase_successful_but_purchase_date_is_more_than_one_week_ago(
                     purchaseDate: transaction.purchaseDate
                 )
             )
