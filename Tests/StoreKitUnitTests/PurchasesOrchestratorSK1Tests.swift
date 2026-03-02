@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKit
 import XCTest
 
@@ -689,6 +689,66 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
         ).to(beNil())
+    }
+
+    func testCachePurchaseSourceIsIncludedInReceiptPost() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        self.orchestrator.cachePurchaseSource(.customerCenter, productIdentifier: product.productIdentifier)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        let transactionData = self.backend.invokedPostReceiptDataParameters?.transactionData
+        expect(transactionData?.presentedOfferingContext).to(beNil())
+        expect(transactionData?.presentedOfferingSource) == "customer_center"
+    }
+
+    func testCachePurchaseSourceAndOfferingContextAreIndependent() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        // Cache both independently
+        self.orchestrator.cachePresentedOfferingContext(
+            package.presentedOfferingContext,
+            productIdentifier: product.productIdentifier
+        )
+        self.orchestrator.cachePurchaseSource(.customerCenter, productIdentifier: product.productIdentifier)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        let transactionData = self.backend.invokedPostReceiptDataParameters?.transactionData
+        expect(transactionData?.presentedOfferingContext?.offeringIdentifier) == "offering"
+        expect(transactionData?.presentedOfferingSource) == "customer_center"
     }
 
     func testPurchaseWithDifferentProductDoesNotIncludePaywallData() async throws {

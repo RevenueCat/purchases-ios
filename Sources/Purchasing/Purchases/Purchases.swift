@@ -2073,6 +2073,15 @@ extension Purchases {
         )
     }
 
+    /// Caches a purchase source for a product that may be purchased outside a paywall
+    /// (e.g. a promotional offer from Customer Center).
+    @_spi(Internal) public func cachePurchaseSource(_ source: PurchaseSource, productIdentifier: String) {
+        self.purchasesOrchestrator.cachePurchaseSource(
+            source,
+            productIdentifier: productIdentifier
+        )
+    }
+
     // swiftlint:disable missing_docs
     @_spi(Internal) public var preferredLocales: [String] {
         return self.systemInfo.preferredLocales

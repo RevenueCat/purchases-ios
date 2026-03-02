@@ -60,6 +60,8 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         product: StoreProduct,
         promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData {
+        Purchases.shared.cachePurchaseSource(.customerCenter, productIdentifier: product.productIdentifier)
+
         if let promotionalOffer = promotionalOffer {
             return try await Purchases.shared.purchase(
                 product: product,

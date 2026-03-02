@@ -43,6 +43,7 @@ final class PurchasesOrchestrator {
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let presentedOfferingContextsByProductID: Atomic<[String: CachedPresentedOfferingContext]> = .init([:])
+    private let purchaseSourcesByProductID: Atomic<[String: CachedPurchaseSource]> = .init([:])
     private let purchaseInitiatedPaywall: Atomic<PaywallEvent?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
     private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
@@ -903,6 +904,13 @@ final class PurchasesOrchestrator {
         self.presentedOfferingContextsByProductID.modify { $0[productIdentifier] = cached }
     }
 
+    /// Caches a purchase source for a product that may be purchased outside a paywall
+    /// (e.g. a promotional offer from Customer Center).
+    func cachePurchaseSource(_ source: PurchaseSource, productIdentifier: String) {
+        let cached = CachedPurchaseSource(source: source.rawValue, cacheDate: self.dateProvider.now())
+        self.purchaseSourcesByProductID.modify { $0[productIdentifier] = cached }
+    }
+
     func track(paywallEvent: PaywallEvent) {
         switch paywallEvent {
         case .purchaseInitiated:
@@ -915,6 +923,7 @@ final class PurchasesOrchestrator {
             self.clearPurchaseInitiatedPaywall()
             if let productId = paywallEvent.data.productId {
                 self.clearCachedPresentedOfferingContext(for: productId)
+                self.clearCachedPurchaseSource(for: productId)
             } else {
                 Logger.error(Strings.paywalls.missing_product_id_for_paywall_event)
             }
@@ -1433,6 +1442,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         // making the misattribution case extremely unlikely.
         let isKnownRenewal = transaction.reason == .renewal
         let offeringContext = isKnownRenewal ? nil : self.getAndRemovePresentedOfferingContext(for: transaction)
+        let cachedSource = isKnownRenewal ? nil : self.getAndRemoveCachedPurchaseSource(for: transaction)
         let paywall = isKnownRenewal ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
 
         let storefront = await self.storefront(from: transaction)
@@ -1441,6 +1451,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let transactionData: PurchasedTransactionData = .init(
             presentedOfferingContext: offeringContext,
             presentedPaywall: paywall,
+            presentedOfferingSource: cachedSource,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
             storeCountry: storefront?.countryCode
@@ -1850,13 +1861,14 @@ private extension PurchasesOrchestrator {
                                        restored: Bool) {
         // Don't attribute offering context or paywall data for restored transactions
         let offeringContext = restored ? nil : self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
+        let cachedSource = restored ? nil : self.getAndRemoveCachedPurchaseSource(for: purchasedTransaction)
         let paywall = restored ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: purchasedTransaction)
         let unsyncedAttributes = self.unsyncedAttributes
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
                 presentedOfferingContext: offeringContext,
                 presentedPaywall: paywall,
-                presentedOfferingSource: paywall?.data.source?.rawValue,
+                presentedOfferingSource: cachedSource,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
                 storeCountry: storefront?.countryCode
@@ -1929,8 +1941,17 @@ private extension PurchasesOrchestrator {
         let cacheDate: Date
     }
 
+    struct CachedPurchaseSource {
+        let source: String
+        let cacheDate: Date
+    }
+
     func clearCachedPresentedOfferingContext(for productIdentifier: String) {
         self.presentedOfferingContextsByProductID.modify { $0.removeValue(forKey: productIdentifier) }
+    }
+
+    func clearCachedPurchaseSource(for productIdentifier: String) {
+        self.purchaseSourcesByProductID.modify { $0.removeValue(forKey: productIdentifier) }
     }
 
     func getAndRemovePresentedOfferingContext(for transaction: StoreTransactionType) -> PresentedOfferingContext? {
@@ -1945,6 +1966,21 @@ private extension PurchasesOrchestrator {
 
             cache.removeValue(forKey: transaction.productIdentifier)
             return cached.context
+        }
+    }
+
+    func getAndRemoveCachedPurchaseSource(for transaction: StoreTransactionType) -> String? {
+        return self.purchaseSourcesByProductID.modify { cache in
+            guard let cached = cache[transaction.productIdentifier] else {
+                return nil
+            }
+
+            guard cached.cacheDate <= transaction.purchaseDate else {
+                return nil
+            }
+
+            cache.removeValue(forKey: transaction.productIdentifier)
+            return cached.source
         }
     }
 
@@ -2236,12 +2272,14 @@ extension PurchasesOrchestrator {
         _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
+        let cachedSource = self.getAndRemoveCachedPurchaseSource(for: transaction)
         let paywall = self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
             presentedOfferingContext: offeringContext,
             presentedPaywall: paywall,
+            presentedOfferingSource: cachedSource,
             unsyncedAttributes: unsyncedAttributes,
             metadata: metadata,
             aadAttributionToken: adServicesToken,

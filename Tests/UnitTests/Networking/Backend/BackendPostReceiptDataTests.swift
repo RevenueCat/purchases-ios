@@ -655,7 +655,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               transactionData: .init(
                                  presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
                                  presentedPaywall: .impression(paywallEventCreationData, paywallEventData),
-                                 presentedOfferingSource: paywallSource.rawValue,
+                                 presentedOfferingSource: PaywallSource.customerCenter.rawValue,
                                  unsyncedAttributes: nil,
                                  storeCountry: nil
                               ),
