@@ -492,7 +492,7 @@ class PurchaseHandlerTests: TestCase {
                         impressionExpectation.fulfill()
                     case .close:
                         closeExpectation.fulfill()
-                    case .cancel:
+                    case .cancel, .exitOffer, .purchaseInitiated, .purchaseError:
                         break
                     }
                 }
