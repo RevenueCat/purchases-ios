@@ -28,7 +28,7 @@ extension EventsRequest {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
-        var source: String?
+        var source: PaywallSource?
 
     }
 
@@ -68,7 +68,7 @@ extension EventsRequest.PaywallEvent {
                 displayMode: data.displayMode,
                 darkMode: data.darkMode,
                 localeIdentifier: data.localeIdentifier,
-                source: data.source?.rawValue
+                source: data.source
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
