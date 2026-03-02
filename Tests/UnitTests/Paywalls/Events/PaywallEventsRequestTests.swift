@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import SnapshotTesting
 import XCTest
 
@@ -81,6 +81,14 @@ class PaywallEventsRequestTests: TestCase {
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
+    func testImpressionEventWithSource() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithSource)
+        let storedEvent = try Self.createStoredEvent(from: event)
+        let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(matching: requestEvent, as: .formattedJson)
+    }
+
     // MARK: -
 
 }
@@ -108,6 +116,16 @@ private extension PaywallEventsRequestTests {
         displayMode: .fullScreen,
         localeIdentifier: "es_ES",
         darkMode: true
+    )
+
+    static let eventDataWithSource: PaywallEvent.Data = .init(
+        offeringIdentifier: "offering",
+        paywallRevision: 0,
+        sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
+        displayMode: .fullScreen,
+        localeIdentifier: "es_ES",
+        darkMode: true,
+        source: .customerCenter
     )
 
     static let userID = "Jack Shepard"
