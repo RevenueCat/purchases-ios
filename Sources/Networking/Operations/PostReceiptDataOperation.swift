@@ -152,7 +152,7 @@ extension PostReceiptDataOperation {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
-        var source: String?
+        var source: PaywallSource?
 
     }
 
@@ -208,7 +208,7 @@ private extension PurchasedTransactionData {
                      displayMode: paywall.data.displayMode,
                      darkMode: paywall.data.darkMode,
                      localeIdentifier: paywall.data.localeIdentifier,
-                     source: paywall.data.source?.rawValue)
+                     source: paywall.data.source)
     }
 
 }
