@@ -39,6 +39,10 @@ enum StoreKitStrings {
 
     case sk2_purchasing_added_winback_offer_option(String)
 
+    case sk2_purchasing_added_custom_introductory_offer_eligibility_jws
+
+    case sk2_purchasing_added_custom_promotional_offer_jws(offerID: String)
+
     case sk2_purchasing_added_uuid_option(UUID)
 
     case sk2_unknown_product_type(String)
@@ -66,6 +70,8 @@ enum StoreKitStrings {
     case sk2_observing_purchase_intents
 
     case sk2_unknown_environment(String)
+
+    case sk2_unknown_transaction_reason(String)
 
     case sk2_error_encoding_receipt(Error)
 
@@ -139,6 +145,12 @@ extension StoreKitStrings: LogMessage {
         case let .sk2_purchasing_added_winback_offer_option(winBackOfferID):
             return "Adding Product.PurchaseOption for win-back offer with ID '\(winBackOfferID)'"
 
+        case .sk2_purchasing_added_custom_introductory_offer_eligibility_jws:
+            return "Adding Product.PurchaseOption for developer-provided introductoryOfferEligibilityJWS"
+
+        case let .sk2_purchasing_added_custom_promotional_offer_jws(offerID):
+            return "Adding Product.PurchaseOption for developer-provided promotionalOfferJWS with offer ID '\(offerID)'"
+
         case let .sk2_purchasing_added_uuid_option(uuid):
             return "Adding Product.PurchaseOption for .appAccountToken '\(uuid)'"
 
@@ -188,6 +200,9 @@ extension StoreKitStrings: LogMessage {
 
         case let .sk2_unknown_environment(environment):
             return "Unrecognized StoreKit Environment: \(environment)"
+
+        case let .sk2_unknown_transaction_reason(reason):
+            return "Unrecognized StoreKit Transaction Reason: \(reason)"
 
         case let .sk2_error_encoding_receipt(error):
             return "Error encoding SK2 receipt: '\(error)'"

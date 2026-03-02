@@ -66,6 +66,9 @@ fastlane/.env
 # Local build settings
 Local.xcconfig
 
+# CI Build settings
+CI.xcconfig
+
 # Gets created when Cursor is used with the sswg Swift extension
 /.index-build/
 
@@ -93,3 +96,7 @@ Examples/**/xcshareddata/**
 # We can't avoid the whole folder yet because RC and RCUI need to be tested through the package, rather than the workspace
 .swiftpm/xcode/xcshareddata/xcschemes/ReceiptParser.xcscheme
 .swiftpm/xcode/xcshareddata/xcschemes/RevenueCat_CustomEntitlementComputation.xcscheme
+Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.storekit
+
+# Claude Code
+.claude/

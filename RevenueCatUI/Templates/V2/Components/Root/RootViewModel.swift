@@ -28,15 +28,35 @@ class RootViewModel {
     let stackViewModel: StackComponentViewModel
     let stickyFooterViewModel: StickyFooterComponentViewModel?
     let firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?
+    let localizationProvider: LocalizationProvider
 
     init(
         stackViewModel: StackComponentViewModel,
         stickyFooterViewModel: StickyFooterComponentViewModel?,
-        firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?
+        firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?,
+        localizationProvider: LocalizationProvider
     ) {
         self.stackViewModel = stackViewModel
         self.stickyFooterViewModel = stickyFooterViewModel
         self.firstItemIgnoresSafeAreaInfo = firstItemIgnoresSafeAreaInfo
+        self.localizationProvider = localizationProvider
+    }
+
+    var frameAlignment: Alignment {
+        switch stackViewModel.component.dimension {
+        case .vertical(let horizontalAlignment, let distribution):
+            return Alignment(
+                horizontal: horizontalAlignment.frameAlignment.horizontal,
+                vertical: distribution.verticalFrameAlignment.vertical
+            )
+        case .horizontal(let verticalAlignment, let distribution):
+            return Alignment(
+                horizontal: distribution.horizontalFrameAlignment.horizontal,
+                vertical: verticalAlignment.frameAlignment.vertical
+            )
+        case .zlayer(let alignment):
+            return alignment.stackAlignment
+        }
     }
 
 }

@@ -40,7 +40,14 @@ struct ActiveSubscriptionButtonsView: View {
                         withActiveProductId: viewModel.purchaseInformation?.productIdentifier)
                 }, label: {
                     if self.viewModel.loadingPath?.id == path.id {
-                        TintedProgressView()
+                        if #available(iOS 26.0, *) {
+                            TintedProgressView()
+                                .padding()
+                        } else {
+                            TintedProgressView()
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                        }
                     } else {
                         if #available(iOS 26.0, *) {
                             CompatibilityLabeledContent(path.title)
@@ -60,17 +67,13 @@ struct ActiveSubscriptionButtonsView: View {
                 }
             }
         }
-        .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
+        .applyIfLet(appearance.tintColor(colorScheme: colorScheme), apply: { $0.tint($1)})
         #if compiler(>=5.9)
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
                           : UIColor.secondarySystemBackground),
                     in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
         #endif
-    }
-
-    private var tintColor: Color? {
-        Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
     }
 }
 

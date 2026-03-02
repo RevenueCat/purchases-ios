@@ -53,8 +53,7 @@ public struct PaywallView: View {
     @State
     private var error: NSError?
 
-//    @StateObject
-//    private var defaultPaywallPromoOfferCache = PaywallPromoOfferCache()
+    private var promoOfferCache: PaywallPromoOfferCache?
 
     private var initializationError: NSError?
 
@@ -63,6 +62,9 @@ public struct PaywallView: View {
 
     @Environment(\.dismiss)
     private var dismiss
+
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     /// Create a view to display the paywall in `Offerings.current`.
     ///
@@ -166,6 +168,7 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
         self.useDraftPaywall = configuration.useDraftPaywall
+        self.promoOfferCache = configuration.promoOfferCache
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
@@ -288,11 +291,14 @@ public struct PaywallView: View {
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
-        let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
-            countries: offering.paywall?.zeroDecimalPlaceCountries
-        )
-
         if let paywallComponents = useDraftPaywall ? offering.draftPaywallComponents : offering.paywallComponents {
+            // For V2 paywalls, prefer zeroDecimalPlaceCountries from paywallComponents
+            let zeroDecimalPlaceCountries = paywallComponents.data.zeroDecimalPlaceCountries
+            let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
+                countries: zeroDecimalPlaceCountries.isEmpty
+                    ? offering.paywall?.zeroDecimalPlaceCountries
+                    : zeroDecimalPlaceCountries
+            )
 
             // For fallback view or footer
             let paywall: PaywallData = .createDefault(with: offering.availablePackages,
@@ -350,13 +356,20 @@ public struct PaywallView: View {
                         if Purchases.isConfigured {
                             Purchases.shared.failedToLoadFontWithConfig(fontConfig)
                         }
-                    }
+                    },
+                    colorScheme: colorScheme,
+                    promoOfferCache: self.promoOfferCache
                 )
             }
         } else {
             #if os(macOS)
             DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
             #else
+            // For V1 paywalls, use zeroDecimalPlaceCountries from PaywallData
+            let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
+                countries: offering.paywall?.zeroDecimalPlaceCountries
+            )
+
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
                 locale: purchaseHandler.preferredLocaleOverride ?? .current
             )
@@ -573,14 +586,10 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onAppear {
-                self.purchaseHandler.trackPaywallImpression(self.createEventData())
-            }
-            .onDisappear {
-                self.purchaseHandler.trackPaywallClose()
-            }
-            .onChangeOf(self.purchaseHandler.purchased) { purchased in
-                if purchased {
+            .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
+            .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
+                if hasPurchased {
                     guard let onRequestedDismissal = self.onRequestedDismissal else {
                         if self.mode.isFullScreen {
                             Logger.debug(Strings.dismissing_paywall)

@@ -15,7 +15,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 @MainActor
 class PurchasesWinBackOfferTests: BasePurchasesTests {

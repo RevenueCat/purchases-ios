@@ -14,6 +14,10 @@
 import RevenueCat
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -34,7 +38,10 @@ class TextComponentViewModel {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
-        self.text = try localizationProvider.localizedStrings.string(key: component.text)
+        self.text = (try? localizationProvider.localizedStrings.string(key: component.text)) ?? {
+            Logger.warning("Missing localization for text_lid '\(component.text)', using empty string.")
+            return ""
+        }()
 
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
             try LocalizedTextPartial.create(from: $0, using: localizationProvider.localizedStrings)
@@ -51,29 +58,37 @@ class TextComponentViewModel {
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?,
+        countdownTime: CountdownTime? = nil,
+        customVariables: [String: CustomVariableValue] = [:],
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
+        let isEligibleForPromoOffer = promoOffer != nil
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: promoOffer != nil,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
         let text = localizedPartial?.text ?? self.text
 
+        let config = TextProcessingConfig(
+            packageContext: packageContext,
+            variableConfig: uiConfigProvider.variableConfig,
+            locale: self.localizationProvider.locale,
+            localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer,
+            countdownTime: countdownTime,
+            customVariables: customVariables,
+            defaultCustomVariables: uiConfigProvider.defaultCustomVariables
+        )
+
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? self.component.visible ?? true,
-            text: Self.processText(
-                text,
-                packageContext: packageContext,
-                variableConfig: uiConfigProvider.variableConfig,
-                locale: self.localizationProvider.locale,
-                localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
-                promoOffer: promoOffer
-            ),
+            text: Self.processText(text, config: config),
             fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
             color: partial?.color ?? self.component.color,
@@ -88,68 +103,65 @@ class TextComponentViewModel {
         apply(style)
     }
 
-    private static func processText(
-        _ text: String,
-        packageContext: PackageContext,
-        variableConfig: UIConfig.VariableConfig,
-        locale: Locale,
-        localizations: [String: String],
-        promoOffer: PromotionalOffer? = nil
-    ) -> String {
-        let processedWithV2 = Self.processTextV2(
-            text,
-            packageContext: packageContext,
-            variableConfig: variableConfig,
-            locale: locale,
-            localizations: localizations,
-            promoOffer: promoOffer
-        )
-        // Note: This is temporary while in closed beta and shortly after
+    private struct TextProcessingConfig {
+        let packageContext: PackageContext
+        let variableConfig: UIConfig.VariableConfig
+        let locale: Locale
+        let localizations: [String: String]
+        let isEligibleForIntroOffer: Bool
+        let promoOffer: PromotionalOffer?
+        let countdownTime: CountdownTime?
+        let customVariables: [String: CustomVariableValue]
+        let defaultCustomVariables: [String: CustomVariableValue]
+    }
+
+    private static func processText(_ text: String, config: TextProcessingConfig) -> String {
+        let processedWithV2 = Self.processTextV2(text, config: config)
+
         let processedWithV2AndV1 = Self.processTextV1(
             processedWithV2,
-            packageContext: packageContext,
-            locale: locale
+            packageContext: config.packageContext,
+            locale: config.locale
         )
 
         return processedWithV2AndV1
     }
 
-    private static func processTextV2(
-        _ text: String,
-        packageContext: PackageContext,
-        variableConfig: UIConfig.VariableConfig,
-        locale: Locale,
-        localizations: [String: String],
-        promoOffer: PromotionalOffer? = nil
-    ) -> String {
-        guard let package = packageContext.package else {
-            return text
+    private static func processTextV2(_ text: String, config: TextProcessingConfig) -> String {
+        let pkg = config.packageContext.package
+
+        let discount = pkg.flatMap { package in
+            Self.discount(
+                from: package.storeProduct.pricePerMonth?.doubleValue,
+                relativeTo: config.packageContext.variableContext.mostExpensivePricePerMonth
+            )
         }
 
-        let discount = Self.discount(
-            from: package.storeProduct.pricePerMonth?.doubleValue,
-            relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
-        )
-
         let handler = VariableHandlerV2(
-            variableCompatibilityMap: variableConfig.variableCompatibilityMap,
-            functionCompatibilityMap: variableConfig.functionCompatibilityMap,
+            variableCompatibilityMap: config.variableConfig.variableCompatibilityMap,
+            functionCompatibilityMap: config.variableConfig.functionCompatibilityMap,
             discountRelativeToMostExpensivePerMonth: discount,
-            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices
+            showZeroDecimalPlacePrices: config.packageContext.variableContext.showZeroDecimalPlacePrices,
+            customVariables: config.customVariables,
+            defaultCustomVariables: config.defaultCustomVariables
         )
 
         return handler.processVariables(
             in: text,
-            with: package,
-            locale: locale,
-            localizations: localizations,
-            promoOffer: promoOffer
+            with: pkg,
+            locale: config.locale,
+            localizations: config.localizations,
+            isEligibleForIntroOffer: config.isEligibleForIntroOffer,
+            promoOffer: config.promoOffer,
+            countdownTime: config.countdownTime
         )
     }
 
-    private static func processTextV1(_ text: String,
-                                      packageContext: PackageContext,
-                                      locale: Locale) -> String {
+    private static func processTextV1(
+        _ text: String,
+        packageContext: PackageContext,
+        locale: Locale
+    ) -> String {
         guard let package = packageContext.package else {
             return text
         }
@@ -278,7 +290,23 @@ enum GenericFont: String {
 
     case serif, monospace, sansSerif = "sans-serif"
 
-    func makeFont(fontSize: CGFloat) -> Font {
+    func makeFont(fontSize: CGFloat, useDynamicType: Bool = true) -> Font {
+        #if canImport(UIKit)
+        if useDynamicType {
+            // Scale the font size using UIFontMetrics. The view should observe
+            // @Environment(\.dynamicTypeSize) to trigger rebuilds when Dynamic Type changes,
+            // which will cause this method to be called again with the new scaled size.
+            let scaledSize = UIFontMetrics.default.scaledValue(for: fontSize)
+            return self.makeStaticFont(fontSize: scaledSize)
+        }
+
+        return self.makeStaticFont(fontSize: fontSize)
+        #else
+        return self.makeStaticFont(fontSize: fontSize)
+        #endif
+    }
+
+    private func makeStaticFont(fontSize: CGFloat) -> Font {
         switch self {
         case .serif:
             return Font.system(size: fontSize, weight: .regular, design: .serif)
@@ -286,6 +314,32 @@ enum GenericFont: String {
             return Font.system(size: fontSize, weight: .regular, design: .monospaced)
         case .sansSerif:
             return Font.system(size: fontSize, weight: .regular, design: .default)
+        }
+    }
+
+    /// Maps a font size to an appropriate `Font.TextStyle` for Dynamic Type scaling.
+    ///
+    /// The mapping is arbitrary and used only for scaling purposes. The exact text style
+    /// doesn't need to match Apple's defaults precisely since it only determines
+    /// how the font scales relative to the user's Dynamic Type setting.
+    static func textStyle(for fontSize: CGFloat) -> Font.TextStyle {
+        switch fontSize {
+        case 34...:
+            return .largeTitle
+        case 28..<34:
+            return .title
+        case 24..<28:
+            return .title2
+        case 20..<24:
+            return .title3
+        case 17..<20:
+            return .headline
+        case 15..<17:
+            return .body
+        case 13..<15:
+            return .callout
+        default:
+            return .footnote
         }
     }
 

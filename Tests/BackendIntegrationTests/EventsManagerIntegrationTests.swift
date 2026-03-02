@@ -89,10 +89,10 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
     }
 
     private func flushAndVerify(eventsCount: Int) async throws {
-        _ = try await Purchases.shared.flushPaywallEvents(count: 2)
+        _ = try await Purchases.shared.flushPaywallEvents(count: eventsCount)
 
         self.logger.verifyMessageWasLogged(
-            Strings.paywalls.event_flush_starting(count: 2)
+            Strings.paywalls.event_flush_starting(count: eventsCount)
         )
 
         self.logger.verifyMessageWasLogged(
@@ -113,6 +113,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
     )
 
     static let eventData: PaywallEvent.Data = .init(
+        paywallIdentifier: "test_paywall_id",
         offeringIdentifier: "offering",
         paywallRevision: 0,
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,

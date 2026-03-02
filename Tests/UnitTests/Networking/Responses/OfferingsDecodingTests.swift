@@ -15,7 +15,7 @@ import Nimble
 @_spi(Internal) @testable import RevenueCat
 import XCTest
 
-class OfferingsDecodingTests: BaseHTTPResponseTest {
+final class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     private var response: OfferingsResponse!
 
@@ -27,7 +27,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     func testDecodesAllOfferings() throws {
         expect(self.response.currentOfferingId) == "default"
-        expect(self.response.offerings).to(haveCount(6))
+        expect(self.response.offerings).to(haveCount(8))
     }
 
     func testDecodesFirstOffering() throws {
@@ -103,6 +103,53 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     func testEncoding() throws {
         expect(try self.response.encodeAndDecode()) == self.response
+    }
+
+}
+
+class OfferingsContentsDecodingTests: BaseHTTPResponseTest {
+
+    // In previous versions of the SDK, the OfferingsResponse object was being saved into the `DeviceCache`.
+    // This test ensures that decoding from that cache representation still works correctly.
+    func testDecodingFromResponseDecodesToOfferingsContentsCorrectly() throws {
+        let contents: Offerings.Contents = try Self.decodeFixture("Offerings")
+        let response: OfferingsResponse = try Self.decodeFixture("Offerings")
+
+        expect(contents.response) == response
+        expect(contents.originalSource) == .main // Default value
+    }
+
+    func testEncodingAndDecodingOfferingsContentsWithOriginalSourceMain() throws {
+        let response: OfferingsResponse = try Self.decodeFixture("Offerings")
+        let offeringsContents = Offerings.Contents(response: response,
+                                                   httpResponseOriginalSource: .mainServer)
+
+        let encodedData = try JSONEncoder().encode(offeringsContents)
+        let decodedContents = try JSONDecoder().decode(Offerings.Contents.self, from: encodedData)
+
+        expect(decodedContents.originalSource) == .main
+    }
+
+    func testEncodingAndDecodingOfferingsContentsWithOriginalSourceFallbackUrl() throws {
+        let response: OfferingsResponse = try Self.decodeFixture("Offerings")
+        let offeringsContents = Offerings.Contents(response: response,
+                                                   httpResponseOriginalSource: .fallbackUrl)
+
+        let encodedData = try JSONEncoder().encode(offeringsContents)
+        let decodedContents = try JSONDecoder().decode(Offerings.Contents.self, from: encodedData)
+
+        expect(decodedContents.originalSource) == .fallbackUrl
+    }
+
+    func testEncodingAndDecodingOfferingsContentsWithOriginalSourceLoadShedder() throws {
+        let response: OfferingsResponse = try Self.decodeFixture("Offerings")
+        let offeringsContents = Offerings.Contents(response: response,
+                                                   httpResponseOriginalSource: .loadShedder)
+
+        let encodedData = try JSONEncoder().encode(offeringsContents)
+        let decodedContents = try JSONDecoder().decode(Offerings.Contents.self, from: encodedData)
+
+        expect(decodedContents.originalSource) == .loadShedder
     }
 
 }

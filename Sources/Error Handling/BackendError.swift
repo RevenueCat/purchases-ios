@@ -30,6 +30,7 @@ enum BackendError: Error, Equatable {
     case purchaseBelongsToOtherUser
     case expiredWebRedemptionToken(obfuscatedEmail: String)
     case unsupportedInUIPreviewMode(Source)
+    case missingTransactionJWS(Source)
 
 }
 
@@ -39,6 +40,12 @@ extension BackendError {
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
         return .missingAppUserID(.init(file: file, function: function, line: line))
+    }
+
+    static func missingTransactionJWS(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .missingTransactionJWS(.init(file: file, function: function, line: line))
     }
 
     static func emptySubscriberAttributes(
@@ -95,6 +102,11 @@ extension BackendError: PurchasesErrorConvertible {
             return ErrorUtils.missingAppUserIDError(fileName: source.file,
                                                     functionName: source.function,
                                                     line: source.line)
+
+        case let .missingTransactionJWS(source):
+            return ErrorUtils.storeProblemError(fileName: source.file,
+                                                functionName: source.function,
+                                                line: source.line)
 
         case let .emptySubscriberAttributes(source):
             return ErrorUtils.emptySubscriberAttributesError(fileName: source.file,
@@ -194,7 +206,8 @@ extension BackendError {
              .invalidWebRedemptionToken,
              .purchaseBelongsToOtherUser,
              .expiredWebRedemptionToken,
-             .unsupportedInUIPreviewMode:
+             .unsupportedInUIPreviewMode,
+             .missingTransactionJWS:
             return nil
         }
     }
@@ -217,7 +230,8 @@ extension BackendError {
                 .invalidWebRedemptionToken,
                 .purchaseBelongsToOtherUser,
                 .expiredWebRedemptionToken,
-                .unsupportedInUIPreviewMode:
+                .unsupportedInUIPreviewMode,
+                .missingTransactionJWS:
             return nil
 
         case let .unexpectedBackendResponse(error, _, _):
@@ -281,5 +295,19 @@ extension BackendError.UnexpectedBackendResponseError: DescribableError {
 extension BackendError {
 
     typealias Source = ErrorSource
+
+}
+
+extension BackendError {
+
+    /// Whether to fall back to cached offerings in case of this error when fetching offerings.
+    var shouldFallBackToCachedOfferings: Bool {
+        switch self {
+        case .networkError(let networkError):
+            return networkError.shouldFallBackToCachedOfferings
+        default:
+            return true
+        }
+    }
 
 }

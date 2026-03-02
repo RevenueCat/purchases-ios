@@ -158,11 +158,7 @@ struct FeedbackSurveyButtonsView: View {
             }
             .disabled(self.loadingOption != nil)
         }
-        .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
-    }
-
-    private var tintColor: Color? {
-        Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
+        .applyIfLet(appearance.tintColor(colorScheme: colorScheme), apply: { $0.tint($1)})
     }
 }
 

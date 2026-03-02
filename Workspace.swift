@@ -10,8 +10,17 @@ var projects: [Path] = [
     "./Examples/PurchaseTester/",
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
-    "./Projects/PaywallValidationTester"
+    "./Projects/PaywallValidationTester",
+    "./Projects/BinarySizeTest",
+    "./Projects/RCTTester"
 ]
+
+// Only include XCFrameworkInstallationTests when explicitly enabled via environment variable
+// This allows tuist generate to run before xcframeworks are created in CI
+// Set TUIST_INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS=true to include it
+if Environment.includeXCFrameworkInstallationTests {
+    projects.append("./Projects/XCFrameworkInstallationTests")
+}
 
 if Environment.local {
     projects.append("./Projects/RevenueCat")
@@ -27,7 +36,9 @@ var additionalFiles: [FileElement] = [
     .glob(pattern: "Tests/TestPlans/**/*.xctestplan"),
     .glob(pattern: "Tests/RevenueCatUITests/TestPlans/**/*.xctestplan")
 ]
-if FileManager.default.fileExists(atPath: "Local.xcconfig") {
+if FileManager.default.fileExists(atPath: "CI.xcconfig") {
+    additionalFiles.append(.glob(pattern: "CI.xcconfig"))
+} else if FileManager.default.fileExists(atPath: "Local.xcconfig") {
     additionalFiles.append(.glob(pattern: "Local.xcconfig"))
 }
 

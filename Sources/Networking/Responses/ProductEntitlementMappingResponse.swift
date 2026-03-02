@@ -15,7 +15,7 @@ import Foundation
 
 /// Response from product entitlement mapping endpoint
 /// - Seealso: `ProductEntitlementMapping`
-struct ProductEntitlementMappingResponse {
+struct ProductEntitlementMappingResponse: Equatable {
 
     var products: [String: Product]
 
@@ -23,7 +23,7 @@ struct ProductEntitlementMappingResponse {
 
 extension ProductEntitlementMappingResponse {
 
-    struct Product {
+    struct Product: Equatable {
 
         var identifier: String
         var entitlements: [String]

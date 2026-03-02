@@ -17,6 +17,7 @@ class MockSystemInfo: SystemInfo {
     var stubbedIsSandbox: Bool?
     var stubbedIsDebugBuild: Bool?
     var stubbedStorefront: StorefrontType?
+    var stubbedApiKeyValidationResult: Configuration.APIKeyValidationResult?
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
@@ -98,6 +99,11 @@ class MockSystemInfo: SystemInfo {
 
     override var storefront: StorefrontType? {
         return self.stubbedStorefront
+    }
+
+    override var apiKeyValidationResult: Configuration.APIKeyValidationResult {
+        get { return self.stubbedApiKeyValidationResult ?? super.apiKeyValidationResult }
+        set { super.apiKeyValidationResult = newValue }
     }
 }
 

@@ -50,6 +50,7 @@ public struct TestStoreProduct {
 
     public var localizedTitle: String
     public var price: Decimal
+    public var currencyCode: String?
     public var localizedPriceString: String
     public var localizedPricePerDay: String?
     public var localizedPricePerWeek: String?
@@ -65,6 +66,8 @@ public struct TestStoreProduct {
     public var discounts: [StoreProductDiscount]
     public var locale: Locale
 
+    // swiftlint:disable:next line_length
+    @available(*, deprecated, message: "Use init(localizedTitle:price:currencyCode:localizedPriceString:productIdentifier:productType:localizedDescription:subscriptionGroupIdentifier:subscriptionPeriod:isFamilyShareable:introductoryDiscount:discounts:locale:) instead")
     public init(
         localizedTitle: String,
         price: Decimal,
@@ -81,6 +84,54 @@ public struct TestStoreProduct {
     ) {
         self.localizedTitle = localizedTitle
         self.price = price
+        self.currencyCode = locale.rc_currencyCode
+        self.localizedPriceString = localizedPriceString
+        self.productIdentifier = productIdentifier
+        self.productType = productType
+        self.localizedDescription = localizedDescription
+        self.subscriptionGroupIdentifier = subscriptionGroupIdentifier
+        self.subscriptionPeriod = subscriptionPeriod
+        self.isFamilyShareable = isFamilyShareable
+        self.introductoryDiscount = introductoryDiscount?.toStoreProductDiscount()
+        self.discounts = discounts.map { $0.toStoreProductDiscount() }
+        self.locale = locale
+    }
+
+    /// Creates a new ``TestStoreProduct``.
+    ///
+    /// - Parameters:
+    ///   - localizedTitle: The localized title of the product
+    ///   - price: The price of the product
+    ///   - currencyCode: The currency code (e.g., "USD", "EUR").
+    ///   - localizedPriceString: The localized price string (e.g., "$3.99")
+    ///   - productIdentifier: The product identifier
+    ///   - productType: The type of product
+    ///   - localizedDescription: The localized description
+    ///   - subscriptionGroupIdentifier: Optional subscription group identifier
+    ///   - subscriptionPeriod: Optional subscription period
+    ///   - isFamilyShareable: Whether the product is family shareable
+    ///   - introductoryDiscount: Optional introductory discount
+    ///   - discounts: Array of discounts
+    ///   - locale: The locale that should be used when formatting prices.
+    ///             It is important that this matches with the price strings passed (e.g. localizedPriceString)
+    public init(
+        localizedTitle: String,
+        price: Decimal,
+        currencyCode: String,
+        localizedPriceString: String,
+        productIdentifier: String,
+        productType: StoreProduct.ProductType,
+        localizedDescription: String,
+        subscriptionGroupIdentifier: String? = nil,
+        subscriptionPeriod: SubscriptionPeriod? = nil,
+        isFamilyShareable: Bool = false,
+        introductoryDiscount: TestStoreProductDiscount? = nil,
+        discounts: [TestStoreProductDiscount] = [],
+        locale: Locale
+    ) {
+        self.localizedTitle = localizedTitle
+        self.price = price
+        self.currencyCode = currencyCode
         self.localizedPriceString = localizedPriceString
         self.productIdentifier = productIdentifier
         self.productType = productType
@@ -103,10 +154,6 @@ public struct TestStoreProduct {
 extension TestStoreProduct: StoreProductType {
 
     internal var productCategory: StoreProduct.ProductCategory { return self.productType.productCategory }
-
-    internal var currencyCode: String? {
-        return self.locale.rc_currencyCode
-    }
 
     internal var priceFormatter: NumberFormatter? {
         return self.currencyCode.map {

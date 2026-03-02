@@ -154,4 +154,9 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     func offerings() async throws -> Offerings {
         throw offeringsError
     }
+
+    var createTicketResult: Result<Bool, Error> = .success(true)
+    func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
+        return try createTicketResult.get()
+    }
 }

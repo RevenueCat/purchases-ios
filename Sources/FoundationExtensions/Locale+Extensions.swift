@@ -13,9 +13,16 @@
 
 import Foundation
 
-extension Locale {
+@_spi(Internal)
+public extension Locale {
 
-    // swiftlint:disable:next identifier_name
+    /// Returns true if the language component of the Locale is equal to the one of self
+    func matchesLanguage(_ rhs: Locale) -> Bool {
+        self.removingRegion == rhs.removingRegion
+    }
+
+    // swiftlint:disable identifier_name
+    /// The code of the currency used by the locale.
     var rc_currencyCode: String? {
         #if swift(>=5.9)
         // `Locale.currencyCode` is deprecated
@@ -29,7 +36,7 @@ extension Locale {
         #endif
     }
 
-    // swiftlint:disable:next identifier_name
+    /// The language code that identifies the locale's language.
     var rc_languageCode: String? {
         #if swift(>=5.9)
         // `Locale.languageCode` is deprecated
@@ -42,6 +49,7 @@ extension Locale {
         return self.languageCode
         #endif
     }
+    // swiftlint:enable identifier_name
 
     /// - Returns: the same locale as `self` but removing its region.
     var removingRegion: Self? {

@@ -81,7 +81,10 @@ class IdentityManagerTests: TestCase {
     }
 
     func testConfigureDoesNotInvalidateCachesIfVerificationIsDisabled() {
-        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(with: .notRequested)
+        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(
+            with: .notRequested,
+            httpResponseOriginalSource: .mainServer
+        )
         self.mockBackend.stubbedSignatureVerificationEnabled = false
         self.create(appUserID: "nacho")
 
@@ -101,7 +104,10 @@ class IdentityManagerTests: TestCase {
     }
 
     func testConfigureDoesNotInvalidateCachesIfCachedUserIsVerified() {
-        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(with: .verified)
+        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(
+            with: .verified,
+            httpResponseOriginalSource: .mainServer
+        )
         self.mockBackend.stubbedSignatureVerificationEnabled = true
         self.create(appUserID: "nacho")
 
@@ -111,7 +117,10 @@ class IdentityManagerTests: TestCase {
     }
 
     func testConfigureInvalidesCacheIfVerificationIsEnabledButCachedUserIsNotVerified() throws {
-        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(with: .notRequested)
+        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(
+            with: .notRequested,
+            httpResponseOriginalSource: .mainServer
+        )
         self.mockBackend.stubbedSignatureVerificationEnabled = true
         self.create(appUserID: "nacho")
 

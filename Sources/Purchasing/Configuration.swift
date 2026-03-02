@@ -183,7 +183,7 @@ import Foundation
         /**
          * Set `purchasesAreCompletedBy`.
          * - Parameter purchasesAreCompletedBy: Set this to ``PurchasesAreCompletedBy/myApp``
-         * if you have your own IAP implementation and want to use only RevenueCat's backend. 
+         * if you have your own IAP implementation and want to use only RevenueCat's backend.
          * Default is ``PurchasesAreCompletedBy/revenueCat``.
          * - Parameter storeKitVersion: Set the StoreKit version you're using to make purchases.
          */
@@ -280,7 +280,7 @@ import Foundation
         /// Enabling diagnostics will send some performance and debugging information from the SDK to our servers.
         /// Examples of this information include response times, cache hits or error codes.
         /// This information will be anonymous so it can't be traced back to the end-user
-        /// 
+        ///
         /// Defaults to `false`
         ///
         @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -422,17 +422,7 @@ extension Configuration {
     private static func validate(apiKey: String) -> APIKeyValidationResult {
         if apiKey.hasPrefix(simulatedStoreKeyPrefix) {
             // Simulated Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
-
-            #if DEBUG
             return .simulatedStore
-            #else
-            // In release builds, we intentionally crash to prevent submitting an app with a Test Store API key.
-            //
-            // Also note that developing with a Test Store API key isn't supported when adding the SDK dependency
-            // as an XCFramework, since the XCFramework is built using the Release configuration.
-            fatalError("[RevenueCat]: Test Store API key used in Release build. Please configure the App Store " +
-                       " app on the RevenueCat dashboard and use its corresponding Apple API key before releasing.")
-            #endif
         }
 
         if applePlatformKeyPrefixes.contains(where: { prefix in apiKey.hasPrefix(prefix) }) {
@@ -474,4 +464,34 @@ extension Configuration {
 
     }
 
+}
+
+extension Configuration.APIKeyValidationResult {
+
+    func checkForSimulatedStoreAPIKeyInRelease(systemInfo: SystemInfo, apiKey: String) {
+        #if !DEBUG
+        guard self == .simulatedStore, !systemInfo.dangerousSettings.uiPreviewMode else {
+            return
+        }
+
+        let redactedApiKey = apiKey.asRedactedAPIKey
+
+        // In release builds, we intentionally crash to prevent submitting an app with a Test Store API key.
+        //
+        // Also note that developing with a Test Store API key isn't supported when adding the SDK dependency
+        // as an XCFramework, since the XCFramework is built using the Release configuration.
+        Task {
+            let errorMessage = "[RevenueCat]: Test Store API key used in Release build: \(redactedApiKey). " +
+            "Please configure the App Store app on the RevenueCat dashboard and use its corresponding Apple API key " +
+            "before releasing. Visit https://rev.cat/sdk-test-store to learn more."
+
+            Logger.error(errorMessage)
+
+            let uiHelper = DefaultSimulatedStorePurchaseUI(systemInfo: systemInfo)
+            await uiHelper.showTestKeyInReleaseAlert(redactedApiKey: redactedApiKey)
+
+            fatalError(errorMessage)
+        }
+        #endif
+    }
 }

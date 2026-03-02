@@ -108,15 +108,11 @@ extension View {
 
     @ViewBuilder
     func scrollBounceBehaviorBasedOnSize() -> some View {
-        #if swift(>=5.8)
         if #available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *) {
             self.scrollBounceBehavior(.basedOnSize)
         } else {
             self
         }
-        #else
-        self
-        #endif
     }
 
     @ViewBuilder
@@ -140,8 +136,56 @@ extension View {
 
     /// Equivalent to `scrollableIfNecessary` except that it's always scrollable on iOS 15
     /// to work around issues with that iOS 15 implementation in some instances.
+    ///
+    /// fillContent: true means that the view will try to fill the space available.
+    /// fillContent: false means that the view will try to fit in the space available.
     @ViewBuilder
-    func scrollableIfNecessaryWhenAvailable(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
+    func scrollableIfNecessaryWhenAvailable(
+        _ axis: Axis = .vertical,
+        fillContent: Bool,
+        alignment: Alignment
+    ) -> some View {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            if fillContent {
+                // For FILL content: use ViewThatFits to avoid scrolling when possible
+                // and to be able to fill the space available and align the content
+                ViewThatFits(in: axis.scrollViewAxis) {
+                    // When content is short: expand to fill space with alignment
+                    self
+                        .frame(
+                            maxWidth: axis == .horizontal ? .infinity : nil,
+                            maxHeight: axis == .vertical ? .infinity : nil,
+                            alignment: alignment
+                        )
+
+                    // When content is too long: scroll it
+                    ScrollView(axis.scrollViewAxis) {
+                        self
+                    }
+                    .scrollBounceBehaviorBasedOnSize()
+                }
+            } else {
+                // For FIT content: just use ScrollView (sizes naturally, scrolls if needed)
+                ScrollView(axis.scrollViewAxis) {
+                    self
+                }
+                .scrollBounceBehaviorBasedOnSize()
+            }
+        } else {
+            self
+                .centeredContent(axis)
+                .scrollable(if: true)
+        }
+    }
+
+    /// Equivalent to `scrollableIfNecessary` except that it's always scrollable on iOS 15
+    /// to work around issues with that iOS 15 implementation in some instances.
+    /// This function should be used by v1 paywalls since it doesn't respect fit/fill configurations
+    @ViewBuilder
+    func scrollableIfNecessaryWhenAvailableForV1(
+        _ axis: Axis = .vertical,
+        enabled: Bool = true
+    ) -> some View {
         if enabled {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 ViewThatFits(in: axis.scrollViewAxis) {
@@ -150,6 +194,7 @@ extension View {
                     ScrollView(axis.scrollViewAxis) {
                         self
                     }
+                    .scrollBounceBehaviorBasedOnSize()
                 }
             } else {
                 self
@@ -257,6 +302,7 @@ private struct ScrollableIfNecessaryModifier: ViewModifier {
                 )
         }
         .scrollable(self.axis.scrollViewAxis, if: self.overflowing)
+        .scrollBounceBehaviorBasedOnSize()
     }
 
 }

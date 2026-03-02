@@ -19,31 +19,6 @@ class MockDeviceCache: DeviceCache {
     var invokedUpdateKey: Bool = false
     var invokedUpdateKeyParameters: [(key: String, newValue: Any)] = []
 
-    override func update<Key: DeviceCacheKeyType, Value: Codable>(
-        key: Key,
-        default defaultValue: Value,
-        updater: @Sendable (inout Value) -> Void
-    ) {
-        // swiftlint:disable:next force_cast
-        var value = (self.stubbedUpdateValues.popFirst() as! Value?) ?? defaultValue
-        updater(&value)
-
-        self.invokedUpdateKey = true
-        self.invokedUpdateKeyParameters.append((key: key.rawValue, newValue: value))
-    }
-
-    var stubbedValueForKey: [Any] = []
-    var invokedValueForKey: Bool = false
-    var invokedValueForKeyParameters: [String] = []
-
-    override func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
-        self.invokedValueForKey = true
-        self.invokedValueForKeyParameters.append(key.rawValue)
-
-        // swiftlint:disable:next force_cast
-        return self.stubbedValueForKey.popFirst() as! Value?
-    }
-
     // MARK: appUserID
 
     var stubbedAppUserID: String?
@@ -140,8 +115,11 @@ class MockDeviceCache: DeviceCache {
         self.clearCachedOfferingsCount += 1
     }
 
-    override func cachedOfferingsResponseData(appUserID: String) -> Data? {
-        return self.stubbedCachedOfferingsData
+    override func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
+        if let stubbedCachedOfferingsData {
+            return try? JSONDecoder.default.decode(Offerings.Contents.self, from: stubbedCachedOfferingsData)
+        }
+        return nil
     }
 
     override func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {

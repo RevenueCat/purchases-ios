@@ -18,6 +18,7 @@ enum PaywallTesterViewMode {
     @available(macOS, unavailable, message: "Legacy paywalls are unavailable on macOS")
     case condensedFooter
     case presentIfNeeded
+    case presentPaywall
 }
 
 internal extension PaywallTesterViewMode {
@@ -26,24 +27,26 @@ internal extension PaywallTesterViewMode {
 
     static var allCases: [PaywallTesterViewMode] {
         #if os(watchOS)
-        return [.fullScreen]
+        return [.fullScreen, .presentPaywall]
         #elseif os(macOS)
         return [.fullScreen,
                 .sheet,
-                .presentIfNeeded]
+                .presentIfNeeded,
+                .presentPaywall]
         #else
         return [
             .fullScreen,
             .sheet,
             .footer,
             .condensedFooter,
-            .presentIfNeeded
+            .presentIfNeeded,
+            .presentPaywall
         ]
         #endif
     }
     
     var isAvailableOnExamples: Bool {
-        return self != .presentIfNeeded
+        return self != .presentIfNeeded && self != .presentPaywall
     }
 
     var mode: PaywallViewMode {
@@ -55,6 +58,7 @@ internal extension PaywallTesterViewMode {
         case .condensedFooter: return .condensedFooter
         #endif
         case .presentIfNeeded: return .fullScreen
+        case .presentPaywall: return .fullScreen
         }
     }
 
@@ -67,6 +71,7 @@ internal extension PaywallTesterViewMode {
         case .condensedFooter: return "ruler"
         case .presentIfNeeded: return "signpost.right.and.left"
         #endif
+        case .presentPaywall: return "rectangle.portrait.and.arrow.forward"
         }
     }
 
@@ -84,6 +89,8 @@ internal extension PaywallTesterViewMode {
         case .presentIfNeeded:
             return "Present If Needed"
         #endif
+        case .presentPaywall:
+            return "Present Paywall"
         }
     }
 

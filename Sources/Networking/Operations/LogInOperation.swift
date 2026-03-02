@@ -86,7 +86,8 @@ private extension LogInOperation {
         let result: Result<(info: CustomerInfo, created: Bool), BackendError> = result
             .map { response in
                 (
-                    response.body.copy(with: response.verificationResult),
+                    response.body.copy(with: response.verificationResult,
+                                       httpResponseOriginalSource: response.originalSource),
                     created: response.httpStatusCode == .createdSuccess
                 )
             }
@@ -104,7 +105,8 @@ extension LogInOperation {
 
     struct Body: Encodable {
 
-        // These need to be explicit for `contentForSignature`
+        // Note: These keys need to be explicitly declared using snake_case
+        // because the CodingKeys are also used for request signing via `contentForSignature`.
         // swiftlint:disable:next nesting
         fileprivate enum CodingKeys: String, CodingKey {
             case appUserID = "app_user_id"

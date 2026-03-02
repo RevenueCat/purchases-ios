@@ -40,11 +40,16 @@ struct FlexHStack: View {
     }
 
     var body: some View {
-        HStack(alignment: self.alignment, spacing: self.spacing) {
+        HStack(alignment: self.alignment, spacing: 0) {
             switch justifyContent {
             case .start:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
+                    if index < self.componentViewModels.count - 1 {
+                        if let spacing = self.spacing {
+                            Spacer().frame(width: spacing)
+                        }
+                    }
                 }
                 Spacer(minLength: 0)
 
@@ -52,6 +57,11 @@ struct FlexHStack: View {
                 Spacer(minLength: 0)
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
+                    if index < self.componentViewModels.count - 1 {
+                        if let spacing = self.spacing {
+                            Spacer().frame(width: spacing)
+                        }
+                    }
                 }
                 Spacer(minLength: 0)
 
@@ -59,29 +69,52 @@ struct FlexHStack: View {
                 Spacer(minLength: 0)
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
+                    if index < self.componentViewModels.count - 1 {
+                        if let spacing = self.spacing {
+                            Spacer().frame(width: spacing)
+                        }
+                    }
                 }
 
             case .spaceBetween:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                     if index < self.componentViewModels.count - 1 {
+                        if let spacing = self.spacing {
+                            Spacer().frame(width: spacing)
+                        }
                         Spacer(minLength: 0)
                     }
                 }
 
             case .spaceAround:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
-                    Spacer(minLength: 0)
+                    if index == 0 {
+                        FlexSpacer(weight: 1)
+                    }
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
-                    Spacer(minLength: 0)
+                    if index < self.componentViewModels.count - 1 {
+                        if let spacing = self.spacing {
+                            Spacer().frame(width: spacing)
+                        }
+                        FlexSpacer(weight: 2)
+                    } else {
+                        FlexSpacer(weight: 1)
+                    }
                 }
 
             case .spaceEvenly:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
-                    Spacer(minLength: 0)
+                    FlexSpacer(weight: 1)
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
+                    if index < self.componentViewModels.count - 1 {
+                        if let spacing = self.spacing {
+                            Spacer().frame(width: spacing)
+                        }
+                    } else {
+                        FlexSpacer(weight: 1)
+                    }
                 }
-                Spacer(minLength: 0)
             }
         }
     }

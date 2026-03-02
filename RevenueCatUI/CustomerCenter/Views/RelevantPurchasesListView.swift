@@ -35,6 +35,9 @@ struct RelevantPurchasesListView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
+    @Environment(\.supportInformation)
+    private var supportInformation
+
     @StateObject
     private var viewModel: RelevantPurchasesListViewModel
 
@@ -93,6 +96,7 @@ struct RelevantPurchasesListView: View {
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
+                .environment(\.supportInformation, supportInformation)
             }
             .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
@@ -222,6 +226,11 @@ struct RelevantPurchasesListView: View {
             } label: {
                 CompatibilityLabeledContent(localization[.seeAllPurchases]) {
                     Image(systemName: "chevron.forward")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 12, height: 12)
+                        .foregroundStyle(.secondary)
+                        .font(Font.system(size: 12, weight: .bold))
                 }
                 .padding()
                 #if compiler(>=5.9)
@@ -231,12 +240,18 @@ struct RelevantPurchasesListView: View {
                             in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
                 #endif
             }
+            .tint(appearance.tintColor(colorScheme: colorScheme))
         } else {
             Button {
                 viewModel.showAllPurchases = true
             } label: {
                 CompatibilityLabeledContent(localization[.seeAllPurchases]) {
                     Image(systemName: "chevron.forward")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 12, height: 12)
+                        .foregroundStyle(.secondary)
+                        .font(Font.system(size: 12, weight: .bold))
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
@@ -247,6 +262,7 @@ struct RelevantPurchasesListView: View {
                             in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
                 #endif
             }
+            .tint(appearance.tintColor(colorScheme: colorScheme))
         }
     }
 

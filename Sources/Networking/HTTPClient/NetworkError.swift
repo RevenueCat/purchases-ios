@@ -249,6 +249,15 @@ extension NetworkError {
         return self.errorStatusCode?.isServerError == true
     }
 
+    /// Whether to fall back to cached offerings in case of this error when fetching offerings.
+    var shouldFallBackToCachedOfferings: Bool {
+        if let errorStatusCode {
+            return errorStatusCode.isServerError
+        } else {
+            return true
+        }
+    }
+
 }
 
 extension NetworkError {

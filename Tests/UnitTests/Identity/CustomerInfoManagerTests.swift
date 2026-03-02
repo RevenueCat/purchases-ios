@@ -102,6 +102,68 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         self.customerInfoMonitorDisposable?()
     }
 
+    func testConcurrentCacheWriteAndReadDoesNotDeadlock() throws {
+        // Regression test: DeviceCache was previously accessed while holding the Atomic<Data> lock.
+        // This caused a deadlock when a background thread held the lock during a slow UserDefaults
+        // write (which may synchronise to the main thread), while another thread was blocked trying
+        // to acquire the same lock to read cached customer info.
+
+        class BlockingDeviceCache: MockDeviceCache {
+            let enteredCache = DispatchSemaphore(value: 0)
+            let proceedWithCache = DispatchSemaphore(value: 0)
+
+            override func cache(customerInfo: Data, appUserID: String) {
+                enteredCache.signal()
+                proceedWithCache.wait()
+                super.cache(customerInfo: customerInfo, appUserID: appUserID)
+            }
+        }
+
+        let blockingCache = BlockingDeviceCache(systemInfo: self.mockSystemInfo)
+
+        let jsonData = try JSONEncoder.default.encode(self.mockCustomerInfo)
+        blockingCache.cachedCustomerInfo[Self.appUserID] = jsonData
+
+        let customerInfoManager = CustomerInfoManager(
+            offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            deviceCache: blockingCache,
+            backend: self.mockBackend,
+            transactionFetcher: self.mockTransationFetcher,
+            transactionPoster: self.mockTransactionPoster,
+            systemInfo: self.mockSystemInfo
+        )
+
+        // Start a cache write on a background thread.
+        // This will block inside deviceCache.cache(), simulating slow UserDefaults I/O.
+        DispatchQueue.global().async {
+            customerInfoManager.cache(customerInfo: self.mockCustomerInfo2, appUserID: Self.appUserID)
+        }
+
+        blockingCache.enteredCache.wait()
+
+        // Try to read cached customer info from another thread while the write is blocked.
+        // Before the fix, this would deadlock because both read and write paths acquired
+        // the Atomic<Data> lock, and the write held it while blocked inside deviceCache.
+        let readCompleted = DispatchSemaphore(value: 0)
+        var readResult: CustomerInfo?
+
+        DispatchQueue.global().async {
+            readResult = try? customerInfoManager.cachedCustomerInfo(appUserID: Self.appUserID)
+            readCompleted.signal()
+        }
+
+        let timedOut = readCompleted.wait(timeout: .now() + 3) == .timedOut
+
+        blockingCache.proceedWithCache.signal()
+
+        expect(timedOut).to(
+            beFalse(),
+            description: "Deadlock: reading cached info blocked while another thread was writing to cache"
+        )
+        expect(readResult).toNot(beNil())
+    }
+
     func testFetchAndCacheCustomerInfoAllowOfflineCustomerInfo() throws {
         self.mockOfflineEntitlementsManager.stubbedShouldComputeOfflineCustomerInfo = true
 
@@ -504,53 +566,62 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(receivedCustomerInfo).toNot(beNil())
     }
 
-    func testCacheCustomerInfoStoresCorrectly() {
+    func testCacheCustomerInfoStoresCorrectly() throws {
         let appUserID = "myUser"
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
 
-        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == mockCustomerInfo
+        let catchedCustomerInfo = try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        expect(catchedCustomerInfo) == mockCustomerInfo
+        expect(catchedCustomerInfo?.isLoadedFromCache) == true
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
-    func testCachesCustomerInfoWithVerifiedEntitlements() {
+    func testCachesCustomerInfoWithVerifiedEntitlements() throws {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .verified)
+        let info = self.mockCustomerInfo.copy(with: .verified, httpResponseOriginalSource: .mainServer)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
-        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
+        let catchedCustomerInfo = try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        expect(catchedCustomerInfo) == info
+        expect(catchedCustomerInfo?.isLoadedFromCache) == true
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
-    func testCachesCustomerInfoWithEntitlementVerificationNotRequested() {
+    func testCachesCustomerInfoWithEntitlementVerificationNotRequested() throws {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .notRequested)
+        let info = self.mockCustomerInfo.copy(with: .notRequested, httpResponseOriginalSource: .mainServer)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
-        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
+        let catchedCustomerInfo = try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        expect(catchedCustomerInfo) == info
+        expect(catchedCustomerInfo?.isLoadedFromCache) == true
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
-    func testCachesCustomerInfoWithFailedVerification() {
+    func testCachesCustomerInfoWithFailedVerification() throws {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .failed)
+        let info = self.mockCustomerInfo.copy(with: .failed, httpResponseOriginalSource: .mainServer)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
-        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
+        let catchedCustomerInfo = try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        expect(catchedCustomerInfo) == info
+        expect(catchedCustomerInfo?.isLoadedFromCache) == true
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
     func testDoesNotCacheCustomerInfoWithLocalEntitlements() throws {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice)
+        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
         expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)).to(beNil())
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 0
         expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == true
+        expect(info.originalSource) == .offlineEntitlements
 
         self.logger.verifyMessageWasLogged(Strings.customerInfo.not_caching_offline_customer_info, level: .debug)
     }
@@ -559,6 +630,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
         expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
         expect(self.customerInfoManagerLastCustomerInfoChange) == (old: nil, new: self.mockCustomerInfo)
+        expect(self.mockCustomerInfo.isLoadedFromCache) == false
     }
 
     func testCacheCustomerInfoSendsMultipleUpdatesIfChange() throws {
@@ -581,16 +653,17 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testCacheCustomerInfoSendsToDelegateWhenComputedOnDevice() {
-        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice)
+        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: "myUser")
         expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
         expect(self.customerInfoManagerLastCustomerInfoChange) == (old: nil, new: info)
+        expect(info.originalSource) == .offlineEntitlements
     }
 
     func testCacheCustomerInfoSendsToDelegateAfterCachingComputedOnDevice() {
-        let info1 = self.mockCustomerInfo.copy(with: .verifiedOnDevice)
-        let info2 = self.mockCustomerInfo2.copy(with: .verifiedOnDevice)
+        let info1 = self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
+        let info2 = self.mockCustomerInfo2.copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
 
         self.customerInfoManager.cache(customerInfo: info1, appUserID: info1.originalAppUserId)
         self.customerInfoManager.cache(customerInfo: info2, appUserID: info2.originalAppUserId)
@@ -614,6 +687,46 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
 
         expect(self.customerInfoManager.lastSentCustomerInfo) === self.mockCustomerInfo
+    }
+
+    // MARK: - Cache loading with source properties
+
+    func testCachedCustomerInfoHasIsLoadedFromCacheTrue() throws {
+        let appUserID = "myUser"
+        let originalInfo = self.mockCustomerInfo.copy(with: .verified, httpResponseOriginalSource: .mainServer)
+        expect(originalInfo.isLoadedFromCache) == false
+
+        self.customerInfoManager.cache(customerInfo: originalInfo, appUserID: appUserID)
+
+        let cachedInfo = try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        expect(cachedInfo) == originalInfo
+        expect(cachedInfo?.isLoadedFromCache) == true
+    }
+
+    func testCachedCustomerInfoPreservesOriginalSourceMain() throws {
+        let appUserID = "myUser"
+        let mainInfo = self.mockCustomerInfo.copy(with: .verified, httpResponseOriginalSource: .mainServer)
+        expect(mainInfo.originalSource) == .main
+
+        self.customerInfoManager.cache(customerInfo: mainInfo, appUserID: appUserID)
+
+        let cachedInfo = try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        expect(cachedInfo) == mainInfo
+        expect(cachedInfo?.isLoadedFromCache).to(beTrue())
+        expect(cachedInfo?.originalSource) == .main
+    }
+
+    func testCachedCustomerInfoPreservesOriginalSourceLoadShedder() throws {
+        let appUserID = "myUser"
+        let loadShedderInfo = self.mockCustomerInfo.copy(with: .verified, httpResponseOriginalSource: .loadShedder)
+        expect(loadShedderInfo.originalSource) == .loadShedder
+
+        self.customerInfoManager.cache(customerInfo: loadShedderInfo, appUserID: appUserID)
+
+        let cachedLoadShedderInfo = try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        expect(cachedLoadShedderInfo) == loadShedderInfo
+        expect(cachedLoadShedderInfo?.isLoadedFromCache).to(beTrue())
+        expect(cachedLoadShedderInfo?.originalSource) == .loadShedder
     }
 
 }
@@ -647,6 +760,7 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
                                                                      fetchPolicy: .fromCacheOnly)
 
         expect(result) == self.mockCustomerInfo
+        expect(result.isLoadedFromCache) == true
         expect(self.mockBackend.invokedGetSubscriberData) == false
     }
 
@@ -659,6 +773,7 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
                                                                      fetchPolicy: .fromCacheOnly)
 
         expect(result) == self.mockCustomerInfo
+        expect(result.isLoadedFromCache) == true
         expect(self.mockBackend.invokedGetSubscriberData) == false
     }
 
@@ -687,6 +802,7 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
                                                                      trackDiagnostics: false,
                                                                      fetchPolicy: .cachedOrFetched)
         expect(result) == self.mockCustomerInfo
+        expect(result.isLoadedFromCache) == true
         expect(self.mockBackend.invokedGetSubscriberData) == false
     }
 
@@ -740,6 +856,7 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
                                                                      trackDiagnostics: false,
                                                                      fetchPolicy: .notStaleCachedOrFetched)
         expect(result) == self.mockCustomerInfo
+        expect(result.isLoadedFromCache) == true
         expect(self.mockBackend.invokedGetSubscriberData) == false
     }
 
@@ -811,6 +928,18 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
                                                                      trackDiagnostics: false,
                                                                      fetchPolicy: .fetchCurrent)
         expect(result) == self.mockRefreshedCustomerInfo
+        expect(result.isLoadedFromCache) == false
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+    }
+
+    func testFreshCustomerInfoHasIsLoadedFromCacheFalse() async throws {
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     trackDiagnostics: false,
+                                                                     fetchPolicy: .fetchCurrent)
+
+        expect(result.isLoadedFromCache) == false
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
     }
 

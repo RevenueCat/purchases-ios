@@ -2,8 +2,33 @@
   "configurations" : [
     {
       "id" : "62C79EF4-8071-439C-B693-34F1E57211FC",
-      "name" : "Configuration 1",
+      "name" : "Default",
       "options" : {
+        "testTimeoutsEnabled" : true
+      }
+    },
+    {
+      "id" : "4515B8E2-2D30-43D1-9F7C-F5B8123F2F0A",
+      "name" : "GenerateSnapshots",
+      "options" : {
+        "environmentVariableEntries" : [
+          {
+            "key" : "RCMockAdServicesToken",
+            "value" : "G9i5hC8lQJeGOfmS+MFycll"
+          },
+          {
+            "key" : "CIRCLECI_TESTS_GENERATE_SNAPSHOTS",
+            "value" : "1"
+          },
+          {
+            "key" : "RCRunningTests",
+            "value" : "1"
+          },
+          {
+            "key" : "RCRunningIntegrationTests",
+            "value" : "1"
+          }
+        ],
         "testTimeoutsEnabled" : true
       }
     }
@@ -39,9 +64,57 @@
     {
       "skippedTests" : [
         "BaseBackendIntegrationTests",
+        "BaseLoadShedderStoreKitIntegrationTests",
+        "BaseLoadShedderStoreKitIntegrationTests\/testCanGetOfferings()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testCanPurchaseConsumablePackage()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testCanPurchaseNonConsumablePackage()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testCanPurchaseSubsPackage()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testOfferingsComeFromLoadShedder()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testProductEntitlementMapping()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testProductEntitlementMappingComesFromLoadShedder()",
         "BaseOfflineStoreKitIntegrationTests",
+        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests",
+        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testCanGetOfferings()",
+        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testCanPurchaseConsumablePackage()",
+        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testCanPurchaseNonConsumablePackage()",
+        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testCanPurchaseSubsPackage()",
+        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testOfferingsComeFromLoadShedder()",
+        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testProductEntitlementMapping()",
+        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testProductEntitlementMappingComesFromLoadShedder()",
         "LoadShedderStoreKit1IntegrationTests",
+        "LoadShedderStoreKit1IntegrationTestsUsEast1",
+        "LoadShedderStoreKit1IntegrationTestsUsEast1\/testCanGetOfferings()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast1\/testCanPurchaseConsumablePackage()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast1\/testCanPurchaseNonConsumablePackage()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast1\/testCanPurchaseSubsPackage()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast1\/testOfferingsComeFromLoadShedder()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast1\/testProductEntitlementMapping()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast1\/testProductEntitlementMappingComesFromLoadShedder()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast2",
+        "LoadShedderStoreKit1IntegrationTestsUsEast2\/testCanGetOfferings()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast2\/testCanPurchaseConsumablePackage()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast2\/testCanPurchaseNonConsumablePackage()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast2\/testCanPurchaseSubsPackage()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast2\/testOfferingsComeFromLoadShedder()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast2\/testProductEntitlementMapping()",
+        "LoadShedderStoreKit1IntegrationTestsUsEast2\/testProductEntitlementMappingComesFromLoadShedder()",
         "LoadShedderStoreKit2IntegrationTests",
+        "LoadShedderStoreKit2IntegrationTestsUsEast1",
+        "LoadShedderStoreKit2IntegrationTestsUsEast1\/testCanGetOfferings()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast1\/testCanPurchaseConsumablePackage()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast1\/testCanPurchaseNonConsumablePackage()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast1\/testCanPurchaseSubsPackage()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast1\/testOfferingsComeFromLoadShedder()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast1\/testProductEntitlementMapping()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast1\/testProductEntitlementMappingComesFromLoadShedder()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast2",
+        "LoadShedderStoreKit2IntegrationTestsUsEast2\/testCanGetOfferings()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast2\/testCanPurchaseConsumablePackage()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast2\/testCanPurchaseNonConsumablePackage()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast2\/testCanPurchaseSubsPackage()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast2\/testOfferingsComeFromLoadShedder()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast2\/testProductEntitlementMapping()",
+        "LoadShedderStoreKit2IntegrationTestsUsEast2\/testProductEntitlementMappingComesFromLoadShedder()",
         "LoadShedderStoreKit2JWSIntegrationTests",
         "OfflineStoreKit1IntegrationTests",
         "OfflineStoreKit2IntegrationTests",

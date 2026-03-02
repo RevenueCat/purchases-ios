@@ -334,29 +334,16 @@ extension PaywallComponent.ColorHex {
 extension DisplayableColorScheme {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func toDynamicColor() -> Color {
-        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    func toDynamicColor(with colorScheme: SwiftUI.ColorScheme) -> Color {
         guard let darkModeColor = self.dark else {
             return light.toColor(fallback: Color.clear)
         }
 
-        let lightModeColor = light
-
-        return Color(UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .light, .unspecified:
-                return UIColor(lightModeColor.toColor(fallback: Color.clear))
-            case .dark:
-                return UIColor(darkModeColor.toColor(fallback: Color.clear))
-            @unknown default:
-                return UIColor(lightModeColor.toColor(fallback: Color.clear))
-            }
-        })
-        #elseif os(watchOS) || os(macOS)
-        // For platforms where `UIColor` is unavailable, fallback to using the light or dark color directly
-        let currentColorScheme = (Environment(\.colorScheme).wrappedValue)
-        return effectiveColor(for: currentColorScheme).toColor(fallback: Color.clear)
-        #endif
+        if colorScheme == .dark {
+            return darkModeColor.toColor(fallback: .clear)
+        } else {
+            return light.toColor(fallback: .clear)
+        }
     }
 
     func effectiveColor(for colorScheme: ColorScheme) -> DisplayableColorInfo {
@@ -409,9 +396,9 @@ extension PaywallComponent.Border {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.Shadow {
 
-    func shadow(uiConfigProvider: UIConfigProvider) -> ShadowModifier.ShadowInfo? {
+    func shadow(uiConfigProvider: UIConfigProvider, colorScheme: ColorScheme) -> ShadowModifier.ShadowInfo? {
         return ShadowModifier.ShadowInfo(
-            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(with: colorScheme),
             radius: self.radius,
             x: self.x,
             y: self.y

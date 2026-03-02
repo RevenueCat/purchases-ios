@@ -203,14 +203,21 @@ private struct RestorePurchasesButton: View {
         AsyncButton {
             Logger.debug(Strings.restoring_purchases)
 
-            let (customerInfo, success) = try await self.purchaseHandler.restorePurchases()
-
-            if success {
-                Logger.debug(Strings.restored_purchases)
+            do {
+                let (customerInfo, success) = try await self.purchaseHandler.restorePurchases()
                 self.restoredCustomerInfo = customerInfo
-                self.showRestoredCustomerInfoAlert = true
-            } else {
-                Logger.debug(Strings.restore_purchases_with_empty_result)
+
+                if success {
+                    Logger.debug(Strings.restored_purchases)
+                    // Show alert and defer setRestored until user acknowledges
+                    self.showRestoredCustomerInfoAlert = true
+                } else {
+                    Logger.debug(Strings.restore_purchases_with_empty_result)
+                    // Inform handler about unsuccessful restore immediately
+                    self.purchaseHandler.setRestored(customerInfo, success: false)
+                }
+            } catch {
+                Logger.debug("Restore purchases failed with error: \(error)")
             }
         } label: {
             let largestText = Text("Restore purchases", bundle: self.localizedBundle)
@@ -234,7 +241,7 @@ private struct RestorePurchasesButton: View {
                     Logger.debug(Strings.setting_restored_customer_info)
                     self.showRestoredCustomerInfoAlert = false
                     self.restoredCustomerInfo = nil
-                    self.purchaseHandler.setRestored(restoredCustomerInfo)
+                    self.purchaseHandler.setRestored(restoredCustomerInfo, success: true)
                 }
             } label: { Text("OK") }
         }

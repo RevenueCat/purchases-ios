@@ -17,7 +17,7 @@ import Nimble
 import XCTest
 
 // swiftlint:disable:next type_name
-class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
+class SubscriberAttributesManagerIntegrationTests: BaseStoreKitIntegrationTests {
 
     private var attribution: Attribution!
     private var userID: String!
@@ -99,7 +99,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
 
         self.verifySyncedAttribute(self.userID, [reserved(.email): invalidEmail])
 
-        expect(error.domain) == RCPurchasesErrorCodeDomain
+        expect(error.domain) == ErrorCode.errorDomain
         expect(error.code) == ErrorCode.invalidSubscriberAttributesError.rawValue
         expect(error.subscriberAttributesErrors) == [
             "$email": "Email address is not a valid email."

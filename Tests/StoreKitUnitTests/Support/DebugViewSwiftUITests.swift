@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 6/12/23.
 
-#if DEBUG && (os(iOS) || VISION_OS) && swift(>=5.8)
+#if DEBUG && (os(iOS) || VISION_OS)
 
 import Nimble
 @testable import RevenueCat
@@ -53,7 +53,8 @@ class DebugViewSwiftUITests: TestCase {
             currentOfferingID: nil,
             placements: nil,
             targeting: nil,
-            response: .mockResponse
+            contents: .mockContents,
+            loadedFromDiskCache: false
         ))
 
         self.snapshot(model, width: 450, height: 900)

@@ -1,0 +1,34 @@
+{
+  "request_date": "2026-01-01T00:00:00Z",
+  "subscriber": {
+    "original_app_user_id": "app_user_id",
+    "first_seen": "2025-01-01T00:00:00Z",
+    "subscriptions": {
+      "rc_sub": {
+        "purchase_date": "2024-01-01T00:00:00Z",
+        "expires_date": "2024-02-01T00:00:00Z",
+        "period_type": "normal",
+        "product_plan_identifier": "monthly",
+        "store": "play_store",
+        "is_sandbox": false
+      },
+      "pro_ios": {
+        "purchase_date": "2024-02-01T00:00:00Z",
+        "expires_date": "2024-03-01T00:00:00Z",
+        "period_type": "normal",
+        "store": "play_store",
+        "is_sandbox": false
+      }
+    },
+    "non_subscriptions": {
+      "rc_sub:monthly": [
+        {
+          "purchase_date": "2024-03-01T00:00:00Z",
+          "store": "play_store",
+          "is_sandbox": false
+        }
+      ]
+    },
+    "entitlements": {}
+  }
+}

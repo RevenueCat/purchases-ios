@@ -78,6 +78,44 @@ public extension Purchases {
         }
     }
 
+    @available(iOS 16.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @objc(showStoreMessagesWithCompletion:)
+    func showStoreMessages(completion: @escaping () -> Void) {
+        _ = Task<Void, Never> {
+            await self.showStoreMessages(for: Set(StoreMessageType.allCases))
+            completion()
+        }
+    }
+
+    /**
+     Calls `showStoreMessages(for:completion:)` with a set of store message types.
+     
+     - Parameter types: An `NSSet` containing items representing store message types.
+       Each item should be either a `StoreMessageType` (backed by `NSNumber`) or an `NSNumber` 
+       representing the raw value of a `StoreMessageType`.
+     - Parameter completion: A closure called once store messages have been shown.
+     
+     If an item in `types` cannot be interpreted as a `StoreMessageType` raw value, it will be ignored.
+     */
+    @available(iOS 16.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @objc(showStoreMessagesForTypes:completion:)
+    func showStoreMessages(forTypes types: NSSet, completion: @escaping () -> Void) {
+        let storeMessageTypes = Set(
+            types.compactMap { ($0 as? NSNumber)?.intValue }
+                .compactMap { StoreMessageType(rawValue: $0) }
+        )
+        _ = Task<Void, Never> {
+            await self.showStoreMessages(for: storeMessageTypes)
+            completion()
+        }
+    }
+
     #endif
 
 }

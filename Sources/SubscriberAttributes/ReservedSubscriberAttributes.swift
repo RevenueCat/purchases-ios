@@ -48,6 +48,9 @@ enum ReservedSubscriberAttribute: String {
     case postHogUserID = "$posthogUserId"
     case amplitudeUserID = "$amplitudeUserId"
     case amplitudeDeviceID = "$amplitudeDeviceId"
+    case solarEngineDistinctId = "$solarEngineDistinctId"
+    case solarEngineAccountId = "$solarEngineAccountId"
+    case solarEngineVisitorId = "$solarEngineVisitorId"
 
     case mediaSource = "$mediaSource"
     case campaign = "$campaign"

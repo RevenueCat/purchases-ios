@@ -20,6 +20,8 @@ lane :installation_tests do
     sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/InstallationTests/"
     sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/APITesters/"
     sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/TestingApps/"
+    sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/v3LoadShedderIntegration/"
+    sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/v4LoadShedderIntegration/"
 
     # Carthage builds all schemes including ones we don't need, so let's nuke them before proceeding
     schemes_directory = "Carthage/Checkouts/purchases-root/RevenueCat.xcodeproj/xcshareddata/xcschemes"

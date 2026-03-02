@@ -36,7 +36,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
     private var transactionsManager: MockTransactionsManager!
     private var operationDispatcher: MockOperationDispatcher!
     private var diagnosticsTracker: DiagnosticsTrackerType?
-    private var paywallEventsManager: PaywallEventsManagerType?
+    private var eventsManager: EventsManagerType?
     private var mockOfferingsManager: MockOfferingsManager!
     private var mockManageSubsHelper: MockManageSubscriptionsHelper!
     private var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
@@ -47,9 +47,9 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
                                                     subsequentNows: eventTimestamp2)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var mockPaywallEventsManager: MockPaywallEventsManager {
+    var mockEventsManager: MockEventsManager {
         get throws {
-            return try XCTUnwrap(self.paywallEventsManager as? MockPaywallEventsManager)
+            return try XCTUnwrap(self.eventsManager as? MockEventsManager)
         }
     }
 
@@ -94,14 +94,15 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
             backend: self.backend,
             paymentQueueWrapper: .right(self.paymentQueueWrapper),
             systemInfo: self.systemInfo,
-            operationDispatcher: self.operationDispatcher
+            operationDispatcher: self.operationDispatcher,
+            localTransactionMetadataStore: MockLocalTransactionMetadataStore()
         )
         self.transactionsManager = MockTransactionsManager(receiptParser: self.receiptParser)
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            self.paywallEventsManager = MockPaywallEventsManager()
+            self.eventsManager = MockEventsManager()
             self.diagnosticsTracker = MockDiagnosticsTracker()
         } else {
-            self.paywallEventsManager = nil
+            self.eventsManager = nil
             self.diagnosticsTracker = nil
         }
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: self.deviceCache,
@@ -156,10 +157,12 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         let testProduct = TestStoreProduct(
             localizedTitle: "Test Product",
             price: 9.99,
+            currencyCode: "USD",
             localizedPriceString: "$9.99",
             productIdentifier: "test.product",
             productType: .autoRenewableSubscription,
-            localizedDescription: "Test subscription"
+            localizedDescription: "Test subscription",
+            locale: .current
         )
         return testProduct.toStoreProduct()
     }
@@ -352,8 +355,9 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         XCTAssertTrue(self.backend.invokedPostReceiptData)
         XCTAssertEqual(self.backend.invokedPostReceiptDataCount, 1)
         let transactionData = try XCTUnwrap(self.backend.invokedPostReceiptDataParameters?.transactionData)
-        XCTAssertEqual(transactionData.appUserID, "appUserID")
-        XCTAssertEqual(transactionData.storefront?.countryCode, Self.mockStorefront.countryCode)
+        let appUserID = try XCTUnwrap(self.backend.invokedPostReceiptDataParameters?.appUserID)
+        XCTAssertEqual(appUserID, "appUserID")
+        XCTAssertEqual(transactionData.storeCountry, Self.mockStorefront.countryCode)
     }
 
     func testSuccessfulPurchaseOfTestStoreWithFailedPostReceiptReturnsFailure() async throws {
@@ -512,7 +516,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
-            paywallEventsManager: self.paywallEventsManager,
+            eventsManager: self.eventsManager,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
             dateProvider: self.mockDateProvider
         )

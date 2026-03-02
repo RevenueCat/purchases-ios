@@ -104,6 +104,9 @@ struct PaywallsV2View: View {
     @StateObject
     private var paywallStateManager: PaywallStateManager
 
+    @StateObject
+    private var selectedPackageContext: PackageContext
+
     private let paywallComponentsData: PaywallComponentsData
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
@@ -129,7 +132,9 @@ struct PaywallsV2View: View {
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void,
         fallbackContent: FallbackContent,
-        failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont
+        failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
+        colorScheme: ColorScheme,
+        promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -142,7 +147,7 @@ struct PaywallsV2View: View {
         self.purchaseHandler = purchaseHandler
         self.onDismiss = onDismiss
         self.fallbackContent = fallbackContent
-        self._paywallPromoOfferCache = .init(wrappedValue: PaywallPromoOfferCache(
+        self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
         self._introOfferEligibilityContext = .init(
@@ -155,18 +160,35 @@ struct PaywallsV2View: View {
         // The creation of the paywall view components can be intensive and should only be executed once.
         // The instantiation of the PaywallStateManager needs to stay in the init of the wrappedValue
         // because StateObject init is an autoclosure that will only get executed once.
-        self._paywallStateManager = .init(
-            wrappedValue: .init(state: Self.createPaywallState(
-                componentsConfig: componentsConfig,
-                componentsLocalizations: paywallComponents.data.componentsLocalizations,
-                preferredLocales: purchaseHandler.preferredLocales,
-                defaultLocale: paywallComponents.data.defaultLocale,
-                uiConfigProvider: uiConfigProvider,
-                offering: offering,
-                introEligibilityChecker: introEligibilityChecker,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-            ))
+        // Note: paywallStateManager.state is created once; if it becomes dynamic, refresh selectedPackageContext.
+        let initialState = Self.createPaywallState(
+            componentsConfig: componentsConfig,
+            componentsLocalizations: paywallComponents.data.componentsLocalizations,
+            preferredLocales: purchaseHandler.preferredLocales,
+            defaultLocale: paywallComponents.data.defaultLocale,
+            uiConfigProvider: uiConfigProvider,
+            offering: offering,
+            introEligibilityChecker: introEligibilityChecker,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            colorScheme: colorScheme
         )
+        self._paywallStateManager = .init(
+            wrappedValue: .init(state: initialState)
+        )
+
+        let selectedPackageContext: PackageContext
+        if case .success(let paywallState) = initialState {
+            selectedPackageContext = Self.makeSelectedPackageContext(
+                from: paywallState,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            )
+        } else {
+            selectedPackageContext = .init(
+                package: nil,
+                variableContext: .init(packages: [], showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            )
+        }
+        self._selectedPackageContext = .init(wrappedValue: selectedPackageContext)
     }
 
     public var body: some View {
@@ -184,6 +206,7 @@ struct PaywallsV2View: View {
                         introOfferEligibilityContext: introOfferEligibilityContext,
                         paywallState: paywallState,
                         uiConfigProvider: self.uiConfigProvider,
+                        selectedPackageContext: self.selectedPackageContext,
                         onDismiss: self.onDismiss
                     )
                     .id(redrawTrigger)
@@ -197,11 +220,9 @@ struct PaywallsV2View: View {
                             self.createEventData()
                         )
                     }
-                    .onDisappear {
-                        self.purchaseHandler.trackPaywallClose()
-                    }
-                    .onChangeOf(self.purchaseHandler.purchased) { purchased in
-                        if purchased {
+                    .onDisappear { self.purchaseHandler.trackPaywallClose() }
+                    .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
+                        if hasPurchased {
                             self.onDismiss()
                         }
                     }
@@ -283,29 +304,21 @@ private struct LoadedPaywallsV2View: View {
     private let uiConfigProvider: UIConfigProvider
     private let onDismiss: () -> Void
 
-    @StateObject
+    @ObservedObject
     private var selectedPackageContext: PackageContext
 
     init(
         introOfferEligibilityContext: IntroOfferEligibilityContext,
         paywallState: PaywallState,
         uiConfigProvider: UIConfigProvider,
+        selectedPackageContext: PackageContext,
         onDismiss: @escaping () -> Void
     ) {
         self.introOfferEligibilityContext = introOfferEligibilityContext
         self.paywallState = paywallState
         self.uiConfigProvider = uiConfigProvider
+        self.selectedPackageContext = selectedPackageContext
         self.onDismiss = onDismiss
-
-        self._selectedPackageContext = .init(
-            wrappedValue: .init(
-                package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
-                variableContext: .init(
-                    packages: paywallState.packages,
-                    showZeroDecimalPlacePrices: paywallState.showZeroDecimalPlacePrices
-                )
-            )
-        )
     }
 
     var body: some View {
@@ -313,7 +326,8 @@ private struct LoadedPaywallsV2View: View {
             VStack(spacing: 0) {
                 ComponentsView(
                     componentViewModels: [.root(paywallState.rootViewModel)],
-                    onDismiss: self.onDismiss
+                    onDismiss: self.onDismiss,
+                    defaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage
                 )
                 .fixMacButtons()
             }
@@ -327,13 +341,18 @@ private struct LoadedPaywallsV2View: View {
                 view
                     .edgesIgnoringSafeArea(.top)
             })
-            .environmentObject(self.selectedPackageContext)
-            .frame(maxHeight: .infinity, alignment: .topLeading)
+            .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height == .fill, apply: { view in
+                view.frame(maxHeight: .infinity, alignment: paywallState.rootViewModel.frameAlignment)
+            })
             .backgroundStyle(
                 self.paywallState.componentsConfig.background
-                    .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle,
+                    .asDisplayable(
+                        uiConfigProvider: uiConfigProvider,
+                        localizationProvider: paywallState.rootViewModel.localizationProvider
+                    ),
                 alignment: .top
             )
+            .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
         }
     }
@@ -364,7 +383,8 @@ fileprivate extension PaywallsV2View {
         uiConfigProvider: UIConfigProvider,
         offering: Offering,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
-        showZeroDecimalPlacePrices: Bool
+        showZeroDecimalPlacePrices: Bool,
+        colorScheme: ColorScheme
     ) -> Result<PaywallState, Error> {
         // Step 1: Get localization
         let localizationProvider = Self.chooseLocalization(
@@ -379,7 +399,8 @@ fileprivate extension PaywallsV2View {
                 componentsConfig: componentsConfig,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                colorScheme: colorScheme
             )
 
             // WIP: Maybe re-enable this later or add some warnings
@@ -408,6 +429,19 @@ fileprivate extension PaywallsV2View {
             // WIP: Need to select default package in fallback view model
             return .failure(error)
         }
+    }
+
+    static func makeSelectedPackageContext(
+        from paywallState: PaywallState,
+        showZeroDecimalPlacePrices: Bool
+    ) -> PackageContext {
+        return .init(
+            package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+            variableContext: .init(
+                packages: paywallState.packages,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            )
+        )
     }
 
     static func chooseLocalization(

@@ -51,7 +51,7 @@ class StoreKitConfigTestCase: TestCase {
         await self.waitForStoreKitTestIfNeeded()
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            await self.deleteAllTransactions(session: self.testSession)
+            try await self.deleteAllTransactions(session: self.testSession)
         }
 
         let suiteName = "StoreKitConfigTests"
@@ -65,7 +65,7 @@ class StoreKitConfigTestCase: TestCase {
         // `SKTestSession` might have not been initialized if the test was skipped.
         if let session = self.testSession {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                await self.deleteAllTransactions(session: session)
+                try await self.deleteAllTransactions(session: session)
             }
             session.clearTransactions()
         }

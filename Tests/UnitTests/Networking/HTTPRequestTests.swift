@@ -181,6 +181,22 @@ class HTTPRequestTests: TestCase {
         }
     }
 
+    func testPathsWithFallbackUrls() {
+        for path in Self.paths {
+            let fallbackUrlsPaths = path.fallbackUrls.map { $0.absoluteString }
+            switch path {
+            case .getProductEntitlementMapping:
+                XCTAssertEqual(fallbackUrlsPaths,
+                               ["https://api-production.8-lives-cat.io/v1/product_entitlement_mapping"])
+            case .getOfferings:
+                XCTAssertEqual(fallbackUrlsPaths,
+                               ["https://api-production.8-lives-cat.io/v1/offerings"])
+            default:
+                XCTAssertTrue(fallbackUrlsPaths.isEmpty)
+            }
+        }
+    }
+
     func testUserIDEscaping() {
         let encodeableUserID = "userid with spaces"
         let encodedUserID = "userid%20with%20spaces"

@@ -114,7 +114,8 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
         component: PaywallComponent,
         packageValidator: PackageValidator,
         offering: Offering,
-        localizationProvider: LocalizationProvider
+        localizationProvider: LocalizationProvider,
+        colorScheme: ColorScheme
     ) -> PaywallComponentViewModel {
         let factory = ViewModelFactory()
         return try! factory.toViewModel(
@@ -123,7 +124,8 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
             firstItemIgnoresSafeAreaInfo: nil,
             offering: offering,
             localizationProvider: localizationProvider,
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            colorScheme: colorScheme
         )
     }
 
@@ -148,7 +150,8 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
                     component: componentWithFallback,
                     packageValidator: PackageValidator(),
                     offering: offering,
-                    localizationProvider: localizationProvider
+                    localizationProvider: localizationProvider,
+                    colorScheme: .light
                 )
             ],
             onDismiss: {}

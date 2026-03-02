@@ -75,6 +75,7 @@ struct VideoPlayerView: View {
             showControls: showControls,
             muteAudio: muteAudio
         )
+        .allowsHitTesting(showControls)
 #endif
     }
 

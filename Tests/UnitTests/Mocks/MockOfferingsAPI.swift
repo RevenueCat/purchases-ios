@@ -41,7 +41,7 @@ class MockOfferingsAPI: OfferingsAPI {
     var invokedGetOfferingsForAppUserIDCount = 0
     var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)?
     var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)]()
-    var stubbedGetOfferingsCompletionResult: Result<OfferingsResponse, BackendError>?
+    var stubbedGetOfferingsCompletionResult: Result<Offerings.Contents, BackendError>?
 
     override func getOfferings(appUserID: String,
                                isAppBackgrounded: Bool,

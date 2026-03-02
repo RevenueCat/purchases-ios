@@ -14,10 +14,12 @@
 import Foundation
 
 /// An inteface representing a simple cache
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 protocol LargeItemCacheType {
+    /// Store data to a url
+    func saveData(_ data: Data, to url: URL) throws
 
     /// Store data to a url
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
     func saveData(_ bytes: AsyncThrowingStream<UInt8, Error>, to url: URL, checksum: Checksum?) async throws
 
     /// Check if there is content cached at the url
@@ -26,18 +28,54 @@ protocol LargeItemCacheType {
     /// Load data from url
     func loadFile(at url: URL) throws -> Data
 
-    /// Creates a directory in the cache from a base path
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL?
+    /// delete data at url
+    func remove(_ url: URL) throws
+
+    /// Creates a directory from a base path in the specified directory type
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createDirectoryIfNeeded(
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType,
+        inAppSpecificDirectory: Bool
+    ) -> URL?
+
+    /// List all file URLs in a directory
+    func contentsOfDirectory(at url: URL) throws -> [URL]
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
+extension LargeItemCacheType {
+    /// Creates a directory in the cache from a base path. Defaults `inAppSpecificDirectory` to true.
+    func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool = true) -> URL? {
+        createDirectoryIfNeeded(
+            basePath: basePath,
+            directoryType: .cache,
+            inAppSpecificDirectory: inAppSpecificDirectory
+        )
+    }
+
+    /// Creates a directory in the persistence (applicationSupport) directory from a base path.
+    /// Defaults `inAppSpecificDirectory` to true.
+    func createPersistenceDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool = true) -> URL? {
+        createDirectoryIfNeeded(
+            basePath: basePath,
+            directoryType: .applicationSupport(),
+            inAppSpecificDirectory: inAppSpecificDirectory
+        )
+    }
+}
+
 extension FileManager: LargeItemCacheType {
-    /// A URL for a cache directory if one is present
-    private var cacheDirectory: URL? {
-        return urls(for: .cachesDirectory, in: .userDomainMask).first
+
+    /// Store data to a url
+    func saveData(_ data: Data, to url: URL) throws {
+        let directoryURL = url.deletingLastPathComponent()
+        try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+        try data.write(to: url)
     }
 
     /// Store data to a url and validate that the file is correct before saving
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
     func saveData(
         _ bytes: AsyncThrowingStream<UInt8, Error>,
         to url: URL,
@@ -49,7 +87,7 @@ extension FileManager: LargeItemCacheType {
         let tempFileURL = temporaryDirectory.appendingPathComponent((checksum?.value ?? "") + url.lastPathComponent)
 
         guard createFile(atPath: tempFileURL.path, contents: nil, attributes: nil) else {
-            let message = Strings.fileRepository.failedToCreateTemporaryFile(tempFileURL).description
+            let message = Strings.fileRepository.failedToCreateTemporaryFile(tempFileURL)
             Logger.error(message)
             throw CocoaError(.fileWriteUnknown)
         }
@@ -93,6 +131,8 @@ extension FileManager: LargeItemCacheType {
 
         // If all succeeds, move the temporary file to the more permanant storage location
         // effectively a "save" operation
+        let directoryURL = url.deletingLastPathComponent()
+        try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         try moveItem(at: tempFileURL, to: url)
     }
 
@@ -108,29 +148,44 @@ extension FileManager: LargeItemCacheType {
         }
     }
 
-    /// Creates a directory in the cache from a base path
-    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
-        guard let cacheDirectory else {
-            return nil
-        }
+    /// Creates a directory from a base path in the specified directory type
+    /// The `inAppSpecificDirectory` should be set to false only for components
+    /// that haven't migrated to the new app specific directory structure yet
+    func createDirectoryIfNeeded(
+        basePath: String,
+        directoryType: DirectoryHelper.DirectoryType,
+        inAppSpecificDirectory: Bool
+    ) -> URL? {
+        guard let baseDirectoryURL = DirectoryHelper.baseUrl(
+            for: directoryType,
+            inAppSpecificDirectory: inAppSpecificDirectory
+        ) else { return nil }
 
-        let path = cacheDirectory.appendingPathComponent(basePath)
+        let directoryURL = baseDirectoryURL.appendingPathComponent(basePath)
         do {
             try createDirectory(
-                at: path,
+                at: directoryURL,
                 withIntermediateDirectories: true,
                 attributes: nil
             )
         } catch {
-            let message = Strings.fileRepository.failedToCreateCacheDirectory(path).description
+            let message = Strings.fileRepository.failedToCreateCacheDirectory(directoryURL)
             Logger.error(message)
         }
 
-        return path
+        return directoryURL
     }
 
     /// Load data from url
     func loadFile(at url: URL) throws -> Data {
         return try Data(contentsOf: url)
+    }
+
+    func remove(_ url: URL) throws {
+        try self.removeItem(at: url)
+    }
+
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        return try self.contentsOfDirectory(at: url, includingPropertiesForKeys: nil, options: [])
     }
 }

@@ -35,17 +35,17 @@ class StackComponentViewModel {
         badgeViewModels: [PaywallComponentViewModel],
         shouldApplySafeAreaInset: Bool = false,
         uiConfigProvider: UIConfigProvider
-    ) throws {
+    ) {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
         self.shouldApplySafeAreaInset = shouldApplySafeAreaInset
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
     }
 
-    func copy(withViewModels newViewModels: [PaywallComponentViewModel]) throws -> StackComponentViewModel {
-        return try StackComponentViewModel(
+    func copy(withViewModels newViewModels: [PaywallComponentViewModel]) -> StackComponentViewModel {
+        return StackComponentViewModel(
             component: self.component,
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
@@ -55,11 +55,13 @@ class StackComponentViewModel {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedStackPartial.buildPartial(
@@ -85,7 +87,8 @@ class StackComponentViewModel {
             border: partial?.border ?? self.component.border,
             shadow: partial?.shadow ?? self.component.shadow,
             badge: partial?.badge ?? self.component.badge,
-            overflow: partial?.overflow ?? self.component.overflow
+            overflow: partial?.overflow ?? self.component.overflow,
+            colorScheme: colorScheme
         )
 
         apply(style)
@@ -166,19 +169,20 @@ struct StackComponentStyle {
         border: PaywallComponent.Border?,
         shadow: PaywallComponent.Shadow?,
         badge: PaywallComponent.Badge?,
-        overflow: PaywallComponent.StackComponent.Overflow?
+        overflow: PaywallComponent.StackComponent.Overflow?,
+        colorScheme: ColorScheme
     ) {
         self.visible = visible
         self.dimension = dimension
         self.size = size
         self.spacing = spacing
-        self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle ??
+        self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider) ??
             backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.shape = shape?.shape
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
-        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider, colorScheme: colorScheme)
         self.badge = badge?.badge(stackShape: self.shape,
                                   stackBorder: badge?.stack.border?.border(uiConfigProvider: uiConfigProvider),
                                   badgeViewModels: badgeViewModels,

@@ -175,7 +175,9 @@ struct BottomSheetViewTestView: View {
             localizedStrings: [
                 "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
             ]
-        )))
+        ), colorScheme: .light
+        )
+    )
     var body: some View {
         GeometryReader { proxy in
             ZStack {

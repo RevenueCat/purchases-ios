@@ -68,13 +68,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
+    var userDefaultsSuiteName: String!
 
     var purchases: Purchases!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        self.userDefaultsSuiteName = "PurchasesSubscriberAttributesTests.\(self.name).\(UUID().uuidString)"
+        self.userDefaults = UserDefaults(suiteName: self.userDefaultsSuiteName)
+        self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.clock = TestClock()
         self.systemInfo = MockSystemInfo(finishTransactions: true, clock: self.clock)
 
@@ -136,7 +139,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             backend: self.mockBackend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
-            operationDispatcher: self.mockOperationDispatcher
+            operationDispatcher: self.mockOperationDispatcher,
+            localTransactionMetadataStore: MockLocalTransactionMetadataStore()
         )
 
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
@@ -172,7 +176,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         self.purchases?.delegate = nil
         self.purchases = nil
-        UserDefaults().removePersistentDomain(forName: "TestDefaults")
+        if let suiteName = self.userDefaultsSuiteName {
+            self.userDefaults?.removePersistentDomain(forName: suiteName)
+            self.userDefaults?.removeSuite(named: suiteName)
+        }
 
         super.tearDown()
     }
@@ -202,7 +209,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsTracker: nil,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
-            paywallEventsManager: nil,
+            eventsManager: nil,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: systemInfo,
@@ -217,6 +224,13 @@ class PurchasesSubscriberAttributesTests: TestCase {
         let healthManager = SDKHealthManager(
             backend: self.mockBackend,
             identityManager: self.mockIdentityManager
+        )
+        let transactionMetadataSyncHelper = TransactionMetadataSyncHelper(
+            customerInfoManager: customerInfoManager,
+            attribution: attribution,
+            currentUserProvider: mockIdentityManager,
+            operationDispatcher: mockOperationDispatcher,
+            transactionPoster: self.transactionPoster
         )
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
@@ -235,7 +249,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               subscriberAttributes: attribution,
                               operationDispatcher: mockOperationDispatcher,
                               customerInfoManager: customerInfoManager,
-                              paywallEventsManager: nil,
+                              eventsManager: nil,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
@@ -247,7 +261,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               storeMessagesHelper: self.mockStoreMessagesHelper,
                               diagnosticsTracker: nil,
                               virtualCurrencyManager: self.mockVirtualCurrencyManager,
-                              healthManager: healthManager)
+                              healthManager: healthManager,
+                              transactionMetadataSyncHelper: transactionMetadataSyncHelper)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -482,6 +497,36 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetKochavaDeviceIDParametersList[0])
             .to(equal(("kochava", purchases.appUserID)))
         expect(self.mockSubscriberAttributesManager.invokedSetKochavaDeviceIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearSolarEngineDistinctId() {
+        setupPurchases()
+        purchases.attribution.setSolarEngineDistinctId("solarDistinct")
+        purchases.attribution.setSolarEngineDistinctId(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineDistinctIdParametersList[0])
+            .to(equal(("solarDistinct", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineDistinctIdParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearSolarEngineAccountId() {
+        setupPurchases()
+        purchases.attribution.setSolarEngineAccountId("solarAccount")
+        purchases.attribution.setSolarEngineAccountId(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineAccountIdParametersList[0])
+            .to(equal(("solarAccount", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineAccountIdParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearSolarEngineVisitorId() {
+        setupPurchases()
+        purchases.attribution.setSolarEngineVisitorId("solarVisitor")
+        purchases.attribution.setSolarEngineVisitorId(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineVisitorIdParametersList[0])
+            .to(equal(("solarVisitor", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineVisitorIdParametersList[1])
             .to(equal((nil, purchases.appUserID)))
     }
 

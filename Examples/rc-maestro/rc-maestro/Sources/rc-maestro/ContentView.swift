@@ -27,7 +27,7 @@ public struct ContentView: View {
                     pushCustomerCenter = true
                 }
                 .buttonStyle(.borderedProminent)
-
+                
                 Spacer()
             }
             .navigationDestination(isPresented: $pushCustomerCenter, destination: {

@@ -51,7 +51,8 @@ struct ImageComponentView: View {
             ),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
-            )
+            ),
+            colorScheme: colorScheme
         ) { style in
             if style.visible {
                 let expectedSize = CGSize(
@@ -101,10 +102,13 @@ struct ImageComponentView: View {
                     .padding(style.padding.extend(by: style.border?.width ?? 0))
                     .shape(border: style.border,
                            shape: style.shape)
-                    .shadow(shadow: style.shadow,
-                            shape: style.shape?.toInsettableShape(size: size))
+                    .applyIfLet(style.shadow, apply: { view, shadow in
+                        // We need to use the normal shadow modifier and not our custom one for png images
+                        view.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
+                    })
                     .padding(style.margin)
                 }
+                .id(style.url)
                 .onSizeChange({ size = $0 })
 
             }
@@ -113,9 +117,10 @@ struct ImageComponentView: View {
 
     private func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
         let totalBorderWidth = (style.border?.width ?? 0) * 2
-        return parentWidth - totalBorderWidth
+        let maxWidth = parentWidth - totalBorderWidth
             - style.margin.leading - style.margin.trailing
             - style.padding.leading - style.padding.trailing
+        return max(0, maxWidth)
     }
 
     private func aspectRatio(style: ImageComponentStyle) -> Double {

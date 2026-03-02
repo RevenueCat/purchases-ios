@@ -82,6 +82,7 @@ actor FileHandler: FileHandlerType {
         try self.fileHandle.seekToEnd()
         try self.fileHandle.write(contentsOf: line.asData)
         try self.fileHandle.write(contentsOf: Self.lineBreakData)
+        try self.fileHandle.synchronize()
     }
 
     /// Removes the contents of the file

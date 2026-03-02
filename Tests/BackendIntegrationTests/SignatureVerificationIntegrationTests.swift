@@ -159,7 +159,7 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
         self.serverDown()
         try await self.purchaseMonthlyOffering(allowOfflineEntitlements: true)
 
-        self.serverUp()
+        self.allServersUp()
         self.invalidSignature = true
 
         let customerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
@@ -265,7 +265,7 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
         try await self.verifyEntitlementWentThrough(info)
 
         // 4. Verify transaction was finished
-        self.verifyTransactionWasFinished()
+        self.verifyAnyTransactionWasFinished()
     }
 
 }

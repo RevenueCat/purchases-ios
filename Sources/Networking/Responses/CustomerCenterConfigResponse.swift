@@ -154,6 +154,47 @@ struct CustomerCenterConfigResponse {
         let displayUserDetailsSection: Bool?
         let displayVirtualCurrencies: Bool?
         let shouldWarnCustomersAboutMultipleSubscriptions: Bool?
+        let supportTickets: SupportTickets?
+
+        struct SupportTickets {
+            let allowCreation: Bool
+            let customerType: String
+            let customerDetails: CustomerDetails?
+
+            struct CustomerDetails {
+                let activeEntitlements: Bool?
+                let appUserId: Bool?
+                let attConsent: Bool?
+                let country: Bool?
+                let deviceVersion: Bool?
+                let email: Bool?
+                let facebookAnonId: Bool?
+                let idfa: Bool?
+                let idfv: Bool?
+                let ipAddress: Bool?
+                let lastOpened: Bool?
+                let lastSeenAppVersion: Bool?
+                let totalSpent: Bool?
+                let userSince: Bool?
+
+                enum CodingKeys: String, CodingKey {
+                    case activeEntitlements
+                    case appUserId
+                    case attConsent
+                    case country
+                    case deviceVersion
+                    case email
+                    case facebookAnonId
+                    case idfa
+                    case idfv
+                    case ipAddress = "ip"
+                    case lastOpened
+                    case lastSeenAppVersion
+                    case totalSpent
+                    case userSince
+                }
+            }
+        }
     }
 
     struct ChangePlan {
@@ -185,6 +226,8 @@ extension CustomerCenterConfigResponse.Screen: Codable, Equatable {}
 extension CustomerCenterConfigResponse.ScreenOffering: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen.ScreenType: Equatable {}
 extension CustomerCenterConfigResponse.Support: Codable, Equatable {}
+extension CustomerCenterConfigResponse.Support.SupportTickets: Codable, Equatable {}
+extension CustomerCenterConfigResponse.Support.SupportTickets.CustomerDetails: Codable, Equatable {}
 extension CustomerCenterConfigResponse.ChangePlan: Codable, Equatable {}
 extension CustomerCenterConfigResponse.ChangePlanProduct: Codable, Equatable {}
 

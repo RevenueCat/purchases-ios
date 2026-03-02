@@ -85,39 +85,39 @@ extension Logger {
 /// ```
 extension Logger: LoggerType {
 
-    func verbose(_ message: @autoclosure () -> LogMessage,
+    func verbose(_ message: LogMessage,
                  fileName: String? = #fileID,
                  functionName: String? = #function,
                  line: UInt = #line) {
-        Self.verbose(message(), fileName: fileName, functionName: functionName, line: line)
+        Self.verbose(message, fileName: fileName, functionName: functionName, line: line)
     }
 
-    func debug(_ message: @autoclosure () -> LogMessage,
+    func debug(_ message: LogMessage,
                fileName: String? = #fileID,
                functionName: String? = #function,
                line: UInt = #line) {
-        Self.debug(message(), fileName: fileName, functionName: functionName, line: line)
+        Self.debug(message, fileName: fileName, functionName: functionName, line: line)
     }
 
-    func info(_ message: @autoclosure () -> LogMessage,
+    func info(_ message: LogMessage,
               fileName: String? = #fileID,
               functionName: String? = #function,
               line: UInt = #line) {
-        Self.info(message(), fileName: fileName, functionName: functionName, line: line)
+        Self.info(message, fileName: fileName, functionName: functionName, line: line)
     }
 
-    func warn(_ message: @autoclosure () -> LogMessage,
+    func warn(_ message: LogMessage,
               fileName: String? = #fileID,
               functionName: String? = #function,
               line: UInt = #line) {
-        Self.warn(message(), fileName: fileName, functionName: functionName, line: line)
+        Self.warn(message, fileName: fileName, functionName: functionName, line: line)
     }
 
-    func error(_ message: @autoclosure () -> LogMessage,
+    func error(_ message: LogMessage,
                fileName: String = #fileID,
                functionName: String = #function,
                line: UInt = #line) {
-        Self.error(message(), fileName: fileName, functionName: functionName, line: line)
+        Self.error(message, fileName: fileName, functionName: functionName, line: line)
     }
 
 }
@@ -126,55 +126,55 @@ extension Logger: LoggerType {
 
 extension Logger {
 
-    static func verbose(_ message: @autoclosure () -> LogMessage,
+    static func verbose(_ message: LogMessage,
                         fileName: String? = #fileID,
                         functionName: String? = #function,
                         line: UInt = #line) {
-        Self.log(level: .verbose, intent: .verbose, message: message(),
+        Self.log(level: .verbose, intent: .verbose, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func debug(_ message: @autoclosure () -> LogMessage,
+    static func debug(_ message: LogMessage,
                       fileName: String? = #fileID,
                       functionName: String? = #function,
                       line: UInt = #line) {
-        Self.log(level: .debug, intent: .info, message: message(),
+        Self.log(level: .debug, intent: .info, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func info(_ message: @autoclosure () -> LogMessage,
+    static func info(_ message: LogMessage,
                      fileName: String? = #fileID,
                      functionName: String? = #function,
                      line: UInt = #line) {
-        Self.log(level: .info, intent: .info, message: message(),
+        Self.log(level: .info, intent: .info, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func warn(_ message: @autoclosure () -> LogMessage,
+    static func warn(_ message: LogMessage,
                      fileName: String? = #fileID,
                      functionName: String? = #function,
                      line: UInt = #line) {
-        Self.log(level: .warn, intent: .warning, message: message(),
+        Self.log(level: .warn, intent: .warning, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func error(_ message: @autoclosure () -> String,
+    static func error(_ message: String,
                       fileName: String = #fileID,
                       functionName: String = #function,
                       line: UInt = #line) {
         Self.error(
-            ErrorMessage(description: message()),
+            ErrorMessage(description: message),
             fileName: fileName,
             functionName: functionName,
             line: line
         )
     }
 
-    static func error(_ message: @autoclosure () -> LogMessage,
+    static func error(_ message: LogMessage,
                       fileName: String = #fileID,
                       functionName: String = #function,
                       line: UInt = #line) {
-        Self.log(level: .error, intent: .rcError, message: message(),
+        Self.log(level: .error, intent: .rcError, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -182,91 +182,91 @@ extension Logger {
 
 extension Logger {
 
-    static func appleError(_ message: @autoclosure () -> String,
+    static func appleError(_ message: String,
                            fileName: String = #fileID,
                            functionName: String = #function,
                            line: UInt = #line) {
         Self.appleError(
-            ErrorMessage(description: message()),
+            ErrorMessage(description: message),
             fileName: fileName,
             functionName: functionName,
             line: line
         )
     }
 
-    static func appleError(_ message: @autoclosure () -> LogMessage,
+    static func appleError(_ message: LogMessage,
                            fileName: String = #fileID,
                            functionName: String = #function,
                            line: UInt = #line) {
-        Self.log(level: .error, intent: .appleError, message: message(),
+        Self.log(level: .error, intent: .appleError, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func appleWarning(_ message: @autoclosure () -> LogMessage,
+    static func appleWarning(_ message: LogMessage,
                              fileName: String = #fileID,
                              functionName: String = #function,
                              line: UInt = #line) {
-        Self.log(level: .warn, intent: .appleError, message: message(),
+        Self.log(level: .warn, intent: .appleError, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func purchase(_ message: @autoclosure () -> LogMessage,
+    static func purchase(_ message: LogMessage,
                          fileName: String = #fileID,
                          functionName: String = #function,
                          line: UInt = #line) {
-        Self.log(level: .info, intent: .purchase, message: message(),
+        Self.log(level: .info, intent: .purchase, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func rcPurchaseSuccess(_ message: @autoclosure () -> LogMessage,
+    static func rcPurchaseSuccess(_ message: LogMessage,
                                   fileName: String = #fileID,
                                   functionName: String = #function,
                                   line: UInt = #line) {
-        Self.log(level: .info, intent: .rcPurchaseSuccess, message: message(),
+        Self.log(level: .info, intent: .rcPurchaseSuccess, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func rcPurchaseError(_ message: @autoclosure () -> LogMessage,
+    static func rcPurchaseError(_ message: LogMessage,
                                 fileName: String = #fileID,
                                 functionName: String = #function,
                                 line: UInt = #line) {
-        Self.log(level: .error, intent: .purchase, message: message(),
+        Self.log(level: .error, intent: .purchase, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func rcSuccess(_ message: @autoclosure () -> LogMessage,
+    static func rcSuccess(_ message: LogMessage,
                           fileName: String = #fileID,
                           functionName: String = #function,
                           line: UInt = #line) {
-        Self.log(level: .debug, intent: .rcSuccess, message: message(),
+        Self.log(level: .debug, intent: .rcSuccess, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func user(_ message: @autoclosure () -> LogMessage,
+    static func user(_ message: LogMessage,
                      fileName: String? = #fileID,
                      functionName: String? = #function,
                      line: UInt = #line) {
-        Self.log(level: .debug, intent: .user, message: message(),
+        Self.log(level: .debug, intent: .user, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func simulatedStoreError(_ message: @autoclosure () -> String,
+    static func simulatedStoreError(_ message: String,
                                     fileName: String = #fileID,
                                     functionName: String = #function,
                                     line: UInt = #line) {
-        Self.log(level: .error, intent: .simulatedStore, message: ErrorMessage(description: message()),
+        Self.log(level: .error, intent: .simulatedStore, message: ErrorMessage(description: message),
                  fileName: fileName, functionName: functionName, line: line)
     }
 
     static func log(level: LogLevel,
                     intent: LogIntent,
-                    message: @autoclosure () -> LogMessage,
+                    message: LogMessage,
                     fileName: String? = #fileID,
                     functionName: String? = #function,
                     line: UInt = #line) {
         guard self.logLevel <= level else { return }
 
-        let message = message()
+        let message = message
         let content = [intent.prefix.notEmpty, message.description]
             .compactMap { $0 }
             .joined(separator: " ")

@@ -55,6 +55,15 @@ func checkAttributionAPI() {
     attribution.setKochavaDeviceID("")
     attribution.setKochavaDeviceID(nil)
 
+    attribution.setSolarEngineDistinctId("")
+    attribution.setSolarEngineDistinctId(nil)
+
+    attribution.setSolarEngineAccountId("")
+    attribution.setSolarEngineAccountId(nil)
+
+    attribution.setSolarEngineVisitorId("")
+    attribution.setSolarEngineVisitorId(nil)
+
     attribution.setMixpanelDistinctID("")
     attribution.setMixpanelDistinctID(nil)
 
@@ -98,4 +107,34 @@ func checkAttributionAPI() {
         attribution.enableAdServicesAttributionTokenCollection()
     }
     #endif
+
+    checkSetAppsFlyerConversionDataAPI()
+}
+
+func checkSetAppsFlyerConversionDataAPI() {
+    attribution.setAppsFlyerConversionData(nil)
+
+    let anyHashableDict: [AnyHashable: Any] = [:]
+    attribution.setAppsFlyerConversionData(anyHashableDict)
+
+    let optionalAnyHashableDict: [AnyHashable: Any]? = [:]
+    attribution.setAppsFlyerConversionData(optionalAnyHashableDict)
+
+    let stringAnyDict: [String: Any] = [:]
+    attribution.setAppsFlyerConversionData(stringAnyDict)
+
+    let stringStringDict: [String: String] = [:]
+    attribution.setAppsFlyerConversionData(stringStringDict as [AnyHashable: Any])
+
+    let stringOptionalStringDict: [String: String?] = [:]
+    attribution.setAppsFlyerConversionData(stringOptionalStringDict.mapValues { $0 as Any } as [AnyHashable: Any])
+
+    let stringIntDict: [String: Int] = [:]
+    attribution.setAppsFlyerConversionData(stringIntDict as [AnyHashable: Any])
+
+    let stringOptionalIntDict: [String: Int?] = [:]
+    attribution.setAppsFlyerConversionData(stringOptionalIntDict.mapValues { $0 as Any } as [AnyHashable: Any])
+
+    let nsDictionary: NSDictionary = [:]
+    attribution.setAppsFlyerConversionData(nsDictionary as? [AnyHashable: Any])
 }

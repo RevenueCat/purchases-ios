@@ -1,21 +1,30 @@
 // swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
-import PackageDescription
 import class Foundation.ProcessInfo
 import struct Foundation.URL
+import PackageDescription
 
 /// This looks for a file named `Local.xcconfig` in the root of the purchases-ios[-spm] repo, and reads any compiler
 /// flags defined in it. It does nothing if this file does not exist in this exact folder. This file does not exist on
 /// a clean checkout. It has to be created manually by a developer.
 var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
-    guard let config = try? String(
+    let ciConfig = try? String(
+        contentsOf: URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("CI.xcconfig")
+    )
+
+    let localConfig = try? String(
         contentsOf: URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .appendingPathComponent("Local.xcconfig")
-    ) else {
+    )
+
+    guard let config = ciConfig ?? localConfig else {
         return []
     }
+
     // We split the capture group by space and remove any special flags, such as $(inherited).
     return config
         .firstMatch(of: #/^SWIFT_ACTIVE_COMPILATION_CONDITIONS *= *(.*)$/#.anchorsMatchLineEndings())?
@@ -38,10 +47,9 @@ let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "tr
 
 var dependencies: [Package.Dependency] = [
     .package(url: "https://github.com/quick/nimble", exact: "13.7.1"),
-    // SST requires iOS 13 starting from version 1.13.0
     .package(
         url: "https://github.com/pointfreeco/swift-snapshot-testing",
-        revision: "26ed3a2b4a2df47917ca9b790a57f91285b923fb"
+        exact: "1.18.9"
     )
 ]
 if shouldIncludeDocCPlugin {

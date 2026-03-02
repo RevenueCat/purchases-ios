@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RCAdTrackerAPI.h"
 #import "RCAttributionAPI.h"
 #import "RCAttributionNetworkAPI.h"
 #import "RCConfigurationAPI.h"
@@ -29,11 +30,15 @@
 #import "RCSubscriptionPeriodAPI.h"
 #import "RCTransactionAPI.h"
 #import "RCVerificationResultAPI.h"
+#import "RCPaywallViewControllerAPI.h"
 
 @import StoreKit;
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
+
+        [RCAdTrackerAPI checkAPI];
+
         [RCAttributionAPI checkAPI];
         [RCAttributionNetworkAPI checkEnums];
 
@@ -83,6 +88,10 @@ int main(int argc, const char * argv[]) {
         [RCTransactionAPI checkAPI];
 
         [RCVerificationResultAPI checkAPI];
+
+        if (@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)) {
+            [RCPaywallViewControllerAPI checkAPI];
+        }
     }
     return 0;
 }

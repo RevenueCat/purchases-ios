@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  StoredEventTests.swift
+//  StoredFeatureEventTests.swift
 //
 //  Created by Cesar de la Vega on 31/10/24.
 
@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 @testable import RevenueCat
 
-class StoredEventTests: TestCase {
+class StoredFeatureEventTests: TestCase {
 
     func testDecodingWithInvalidFeature() throws {
         let json = """
@@ -42,7 +42,7 @@ class StoredEventTests: TestCase {
         expect(event.feature) == .paywalls
     }
 
-    private func decode(_ json: String) throws -> StoredEvent {
-        return try JSONDecoder().decode(StoredEvent.self, from: Data(json.utf8))
+    private func decode(_ json: String) throws -> StoredFeatureEvent {
+        return try JSONDecoder().decode(StoredFeatureEvent.self, from: Data(json.utf8))
     }
 }

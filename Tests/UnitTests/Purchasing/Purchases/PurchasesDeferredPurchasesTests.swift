@@ -168,7 +168,7 @@ class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
         self.product = MockSK1Product(mockProductIdentifier: "mock_product")
     }
 
-    func testDeferBlockMakesPayment() throws {
+    func testDeferBlockMakesPayment() async throws {
         let payment = SKPayment(product: self.product)
 
         _ = try self.paymentQueueWrapperDelegate.paymentQueueWrapper(
@@ -177,13 +177,7 @@ class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
             for: self.product
         )
 
-        waitUntil { completed in
-            if self.purchasesDelegate.makeDeferredPurchase != nil {
-                completed()
-            }
-        }
-
-        expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
+        await expect(self.purchasesDelegate.makeDeferredPurchase).toEventuallyNot(beNil(), timeout: .seconds(2))
 
         expect(self.purchasesDelegate.promoProduct) == StoreProduct(sk1Product: self.product)
         expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())

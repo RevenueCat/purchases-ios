@@ -40,22 +40,26 @@ final class DiscountsHandlerTests: TestCase {
         let subscribedProduct = TestStoreProduct(
             localizedTitle: "subscribedProduct",
             price: 1.99,
+            currencyCode: "USD",
             localizedPriceString: "subscribedProduct",
             productIdentifier: "subscribedProduct",
             productType: .autoRenewableSubscription,
             localizedDescription: "localizedDescription",
-            discounts: [discount]
+            discounts: [discount],
+            locale: Locale(identifier: "en_US")
         )
         let subscribedStoreProduct = subscribedProduct.toStoreProduct()
 
         let targetProduct = TestStoreProduct(
             localizedTitle: "localizedTitle",
             price: 1.99,
+            currencyCode: "USD",
             localizedPriceString: "localizedPriceString",
             productIdentifier: "targetProduct",
             productType: .autoRenewableSubscription,
             localizedDescription: "localizedDescription",
-            discounts: [discount]
+            discounts: [discount],
+            locale: Locale(identifier: "en_US")
         )
 
         mockProvider = MockCustomerCenterPurchases(
@@ -102,11 +106,13 @@ final class DiscountsHandlerTests: TestCase {
         let subscribedProduct = TestStoreProduct(
             localizedTitle: "subscribedProduct",
             price: 1.99,
+            currencyCode: "USD",
             localizedPriceString: "subscribedProduct",
             productIdentifier: "subscribedProduct",
             productType: .autoRenewableSubscription,
             localizedDescription: "localizedDescription",
-            discounts: [discount]
+            discounts: [discount],
+            locale: Locale(identifier: "en_US")
         )
         let subscribedStoreProduct = subscribedProduct.toStoreProduct()
 
@@ -154,22 +160,26 @@ final class DiscountsHandlerTests: TestCase {
         let subscribedProduct = TestStoreProduct(
             localizedTitle: "subscribedProduct",
             price: 1.99,
+            currencyCode: "USD",
             localizedPriceString: "subscribedProduct",
             productIdentifier: "subscribedProduct",
             productType: .autoRenewableSubscription,
             localizedDescription: "localizedDescription",
-            discounts: [discount]
+            discounts: [discount],
+            locale: Locale(identifier: "en_US")
         )
         let subscribedStoreProduct = subscribedProduct.toStoreProduct()
 
         let targetProduct = TestStoreProduct(
             localizedTitle: "localizedTitle",
             price: 1.99,
+            currencyCode: "USD",
             localizedPriceString: "localizedPriceString",
             productIdentifier: "targetProduct",
             productType: .autoRenewableSubscription,
             localizedDescription: "localizedDescription",
-            discounts: [discount]
+            discounts: [discount],
+            locale: Locale(identifier: "en_US")
         )
 
         mockProvider = MockCustomerCenterPurchases(
@@ -216,11 +226,13 @@ final class DiscountsHandlerTests: TestCase {
         let subscribedProduct = TestStoreProduct(
             localizedTitle: "subscribedProduct",
             price: 1.99,
+            currencyCode: "USD",
             localizedPriceString: "subscribedProduct",
             productIdentifier: "subscribedProduct",
             productType: .autoRenewableSubscription,
             localizedDescription: "localizedDescription",
-            discounts: [discount]
+            discounts: [discount],
+            locale: Locale(identifier: "en_US")
         )
         let subscribedStoreProduct = subscribedProduct.toStoreProduct()
 
@@ -262,11 +274,13 @@ final class DiscountsHandlerTests: TestCase {
         let subscribedProduct = TestStoreProduct(
             localizedTitle: "subscribedProduct",
             price: 1.99,
+            currencyCode: "USD",
             localizedPriceString: "subscribedProduct",
             productIdentifier: "subscribedProduct",
             productType: .autoRenewableSubscription,
             localizedDescription: "localizedDescription",
-            discounts: [discount]
+            discounts: [discount],
+            locale: Locale(identifier: "en_US")
         )
         let subscribedStoreProduct = subscribedProduct.toStoreProduct()
 
@@ -308,11 +322,13 @@ final class DiscountsHandlerTests: TestCase {
         let subscribedProduct = TestStoreProduct(
             localizedTitle: "subscribedProduct",
             price: 1.99,
+            currencyCode: "USD",
             localizedPriceString: "subscribedProduct",
             productIdentifier: "subscribedProduct",
             productType: .autoRenewableSubscription,
             localizedDescription: "localizedDescription",
-            discounts: [discount]
+            discounts: [discount],
+            locale: Locale(identifier: "en_US")
         )
         let subscribedStoreProduct = subscribedProduct.toStoreProduct()
 

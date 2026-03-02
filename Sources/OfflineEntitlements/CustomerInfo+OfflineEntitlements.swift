@@ -41,13 +41,14 @@ extension CustomerInfo {
         let content: CustomerInfoResponse = .init(
             subscriber: subscriber,
             requestDate: Date(),
-            rawData: (try? subscriber.asDictionary()) ?? [:]
+            rawData: (try? subscriber.asJSONDictionary()) ?? [:]
         )
 
         self.init(
             response: content,
             entitlementVerification: Self.verification,
-            sandboxEnvironmentDetector: sandboxEnvironmentDetector
+            sandboxEnvironmentDetector: sandboxEnvironmentDetector,
+            httpResponseOriginalSource: nil
         )
     }
 

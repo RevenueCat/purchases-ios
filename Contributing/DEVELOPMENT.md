@@ -6,7 +6,7 @@ Tuist is used to generate the Xcode workspaces and projects in this repository. 
 
 ## Installing Tuist
 
-Follow the official installation guide at [tuist.io](https://docs.tuist.io/tutorial/get-started) to install Tuist, then verify the install with `tuist version`.
+Follow the official installation guide at [tuist.io](https://docs.tuist.dev/en/guides/quick-start/get-started) to install Tuist, then verify the install with `tuist version`.
 
 ## Generating Workspaces
 

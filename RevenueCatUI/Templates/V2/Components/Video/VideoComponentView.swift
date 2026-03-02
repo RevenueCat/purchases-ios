@@ -38,11 +38,22 @@ struct VideoComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.carouselState)
+    private var carouselState
+
     @State var size: CGSize = .zero
 
-    @State private var stagedURL: URL?
     @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
+
+    /// Tracks whether this page is active or adjacent in a carousel.
+    /// Updated via onChange to ensure SwiftUI detects the change.
+    @State private var isPlayable: Bool = true
+
+    /// Toggled when transitioning from non-playable to playable state.
+    /// Used as part of the VideoPlayerView's identity to force recreation,
+    /// ensuring autoplay triggers correctly when the page becomes visible again.
+    @State private var playerRefreshToggle: Bool = false
 
     var body: some View {
         viewModel
@@ -54,26 +65,36 @@ struct VideoComponentView: View {
                 ),
                 isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                     for: self.packageContext.package
-                )
+                ),
+                colorScheme: colorScheme
             ) { style in
                 if style.visible {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
 
                     ZStack {
-                        if imageSource == nil && cachedURL == nil {
-                            // greedily fill space while loading occurs
-                            render(Color.clear, size: size, with: style)
-                        }
+                        // Determine if video player will render
+                        let willShowVideo = cachedURL != nil && isPlayable
 
-                        if let imageSource, cachedURL == nil, let imageViewModel = try? ImageComponentViewModel(
+                        // Always render spacer for sizing (needed for fixed-size videos)
+                        render(Color.clear, size: size, with: style)
+
+                        // Always show thumbnail as base layer while video loads/prepares
+                        if let thumbnailSource = imageSource ?? viewModel.imageSource,
+                           let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: imageSource)
+                            component: .init(
+                                source: thumbnailSource,
+                                fitMode: style.contentMode == .fill ? .fill : .fit
+                            )
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
                         }
 
-                        if let cachedURL {
+                        // Only create VideoPlayerView when on active carousel page (or not in carousel)
+                        // This prevents multiple AVPlayer instances from competing for resources
+                        // Video layers on top of thumbnail once ready
+                        if let cachedURL, willShowVideo {
                             render(
                                 VideoPlayerView(
                                     videoURL: cachedURL,
@@ -82,84 +103,96 @@ struct VideoComponentView: View {
                                     showControls: style.showControls,
                                     loopVideo: style.loop,
                                     muteAudio: style.muteAudio
-                                ),
+                                )
+                                // Recreate player when becoming playable again (carousel navigation).
+                                // swiftlint:disable:next todo
+                                // TODO: Add cachedURL back to .id() once AVPlayer can swap
+                                // URLs mid-playback without visible stuttering.
+                                .id(playerRefreshToggle),
                                 size: size,
                                 with: style
                             )
+                            .transition(.opacity.animation(.easeIn(duration: 0.3)))
                         }
                     }
+                    .allowsHitTesting(style.showControls)
                     .onAppear {
-                        self.imageSource = viewModel.imageSource
                         let fileRepository = FileRepository.shared
 
-                        let resumeDownloadOfFullResolutionVideo: () -> Void = {
-                            Task(priority: .userInitiated) {
-                                do {
-                                    // If the low res and normal resolution files were not yet found on disk
-                                    // then we attempt to finish the download by calling the following method.
-                                    // this method will share the async task that the cacheprewarming started
-                                    // if it didn't error out, expediting the download time and reducing the memory
-                                    // footprint of paywalls
-                                    let url = try await fileRepository
-                                        .generateOrGetCachedFileURL(
-                                            for: viewData.url,
-                                            withChecksum: viewData.checksum
-                                        )
-                                    guard url != cachedURL else { return }
-                                    await MainActor.run {
-                                        self.stagedURL = url
-                                    }
-                                } catch {
-                                    await MainActor.run {
-                                        self.stagedURL = viewData.url
-                                    }
-                                }
-                            }
-                        }
-
-                        if let cachedURL = fileRepository.getCachedFileURL(
+                        // 1. High-res cached → use immediately
+                        if let fullResCachedURL = fileRepository.getCachedFileURL(
                             for: viewData.url,
                             withChecksum: viewData.checksum
                         ) {
-                            self.cachedURL = cachedURL
-                        } else if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
-                            let lowResCachedURL = fileRepository.getCachedFileURL(
-                                for: lowResUrl,
-                                withChecksum: viewData.lowResChecksum
+                            self.cachedURL = fullResCachedURL
+                            self.imageSource = nil
+                            return
+                        }
+
+                        // 2. Low-res cached → use immediately, cache high-res in background
+                        if let lowResUrl = viewData.lowResUrl,
+                           lowResUrl != viewData.url,
+                           let lowResCachedURL = fileRepository.getCachedFileURL(
+                               for: lowResUrl,
+                               withChecksum: viewData.lowResChecksum
+                           ) {
+                            self.cachedURL = lowResCachedURL
+                            self.imageSource = nil
+                            cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
+                            return
+                        }
+
+                        // 3. Nothing cached → stream remote URL, cache in background
+                        self.cachedURL = viewData.url
+                        self.imageSource = viewModel.imageSource
+
+                        // Cache both resolutions as a failsafe: if the high-res
+                        // download fails or is canceled, the low-res version is
+                        // available as a fallback on next open.
+                        cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
+                        if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
+                            cacheVideo(
+                                fileRepository: fileRepository,
+                                url: lowResUrl,
+                                checksum: viewData.lowResChecksum
                             )
-                            self.cachedURL = lowResCachedURL ?? lowResUrl
-                            resumeDownloadOfFullResolutionVideo()
-                        } else {
-                            resumeDownloadOfFullResolutionVideo()
                         }
                     }
                     .applyMediaWidth(size: style.size)
                     .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
+                        view.overlay(
+                            Color.clear.backgroundStyle(.color(colorOverlay))
+                                .allowsHitTesting(false)
+                        )
+                    })
                     .padding(style.padding.extend(by: style.border?.width ?? 0))
                     .shape(border: style.border, shape: style.shape)
                     .clipped()
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
-                    .onReceive(
-                        stagedURL.publisher
-                            .eraseToAnyPublisher()
-                            .removeDuplicates()
-                            .debounce(for: 0.300, scheduler: RunLoop.main)
-                    ) { output in
-                        // in the event that the download of the high res video is so fast that it tries to set the
-                        // url moments after the low_res was set, we need to delay a tiny bit to ensure the rerender
-                        // actually occurs. This happens consistently with small file sizes and great connection
-                        cachedURL = output
-                    }
                 }
             }
             .onSizeChange { size = $0 }
+            .onAppear {
+                updatePlayableState(isPlayable: carouselState?.isActiveOrNeighbor ?? true)
+            }
+            .onChangeOf(carouselState) { newState in
+                updatePlayableState(isPlayable: newState?.isActiveOrNeighbor ?? true)
+            }
 
     }
 
     private func aspectRatio(style: VideoComponentStyle) -> Double {
         let (width, height) = self.videoSize(style: style)
         return Double(width) / Double(height)
+    }
+
+    private func updatePlayableState(isPlayable newValue: Bool) {
+        if !self.isPlayable && newValue {
+            self.playerRefreshToggle.toggle()
+        }
+        self.isPlayable = newValue
     }
 
     private func videoSize(style: VideoComponentStyle) -> (width: Int, height: Int) {
@@ -170,6 +203,21 @@ struct VideoComponentView: View {
             return (style.widthDark ?? style.widthLight, style.heightDark ?? style.heightLight)
         @unknown default:
             return (style.widthLight, style.heightLight)
+        }
+    }
+
+    private func cacheVideo(fileRepository: FileRepository, url: URL, checksum: Checksum?) {
+        Task(priority: .utility) {
+            do {
+                _ = try await fileRepository.generateOrGetCachedFileURL(
+                    for: url,
+                    withChecksum: checksum
+                )
+            } catch {
+                Logger.warning(
+                    Strings.video_failed_to_cache(url, error)
+                )
+            }
         }
     }
 
@@ -185,11 +233,6 @@ struct VideoComponentView: View {
                 contentMode: .fill, // This must be set to fill for the modifier to work correctly
                 containerContentMode: style.contentMode // the container is what truly controls this
             )
-            .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
-                view.overlay(
-                    Color.clear.backgroundStyle(.color(colorOverlay))
-                )
-            })
     }
 
     private func calculateMaxWidth(parentWidth: CGFloat, style: VideoComponentStyle) -> CGFloat {

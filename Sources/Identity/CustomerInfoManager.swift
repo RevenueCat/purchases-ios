@@ -22,6 +22,7 @@ class CustomerInfoManager {
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let operationDispatcher: OperationDispatcher
     private let backend: Backend
+    private let deviceCache: DeviceCache
     private let systemInfo: SystemInfo
     private let transactionFetcher: StoreKit2TransactionFetcherType
     private let transactionPoster: TransactionPosterType
@@ -29,7 +30,7 @@ class CustomerInfoManager {
     private var diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
 
-    /// Underlying synchronized data.
+    /// Underlying synchronized data for in-memory-only mutable state.
     private let data: Atomic<Data>
 
     init(offlineEntitlementsManager: OfflineEntitlementsManager,
@@ -48,8 +49,9 @@ class CustomerInfoManager {
         self.transactionPoster = transactionPoster
         self.systemInfo = systemInfo
         self.dateProvider = dateProvider
+        self.deviceCache = deviceCache
 
-        self.data = .init(.init(deviceCache: deviceCache))
+        self.data = .init(.init())
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -199,9 +201,10 @@ class CustomerInfoManager {
             let infoFromCache = try? self.cachedCustomerInfo(appUserID: appUserID)
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-                let isCacheStale = self.withData {
-                    $0.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded)
-                }
+                let isCacheStale = self.deviceCache.isCustomerInfoCacheStale(
+                    appUserID: appUserID,
+                    isAppBackgrounded: isAppBackgrounded
+                )
 
                 if let infoFromCache = infoFromCache, !isCacheStale {
                     Logger.debug(Strings.customerInfo.vending_cache)
@@ -238,16 +241,14 @@ class CustomerInfoManager {
             return Self.createPreviewCustomerInfo()
         }
 
-        let cachedCustomerInfoData = self.withData {
-            $0.deviceCache.cachedCustomerInfoData(appUserID: appUserID)
-        }
+        let cachedCustomerInfoData = self.deviceCache.cachedCustomerInfoData(appUserID: appUserID)
         guard let customerInfoData = cachedCustomerInfoData else { return nil }
 
         do {
             let info: CustomerInfo = try JSONDecoder.default.decode(jsonData: customerInfoData)
 
             if info.schemaVersionIsCompatible {
-                return info
+                return info.loadedFromCache()
             } else {
                 let msg = Strings.customerInfo.cached_customerinfo_incompatible_schema.description
                 throw ErrorUtils.customerInfoError(withMessage: msg)
@@ -266,7 +267,7 @@ class CustomerInfoManager {
         if customerInfo.shouldCache {
             do {
                 let jsonData = try JSONEncoder.default.encode(customerInfo)
-                self.withData { $0.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID) }
+                self.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
             } catch {
                 Logger.error(Strings.customerInfo.error_encoding_customerinfo(error))
             }
@@ -279,9 +280,7 @@ class CustomerInfoManager {
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
-        self.modifyData {
-            $0.deviceCache.clearCustomerInfoCache(appUserID: appUserID)
-        }
+        self.deviceCache.clearCustomerInfoCache(appUserID: appUserID)
     }
 
     func setLastSentCustomerInfo(_ info: CustomerInfo) {
@@ -434,18 +433,21 @@ private extension CustomerInfoManager {
                     )
 
                     let transactionData = PurchasedTransactionData(
-                        appUserID: appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: [:],
-                        storefront: await Storefront.currentStorefront,
-                        source: Self.sourceForUnfinishedTransaction
+                        storeCountry: await Storefront.currentStorefront?.countryCode
                     )
 
                     // Post everything but the first transaction in the background
                     // in parallel so they can be de-duped
                     let otherTransactionsToPostInParalel = Array(transactions.dropFirst())
                     Task.detached(priority: .background) {
-                        await self.postTransactions(otherTransactionsToPostInParalel, transactionData)
+                        await self.postTransactions(
+                            otherTransactionsToPostInParalel,
+                            transactionData,
+                            postReceiptSource: Self.sourceForUnfinishedTransaction,
+                            appUserID: appUserID
+                        )
                     }
 
                     // Return the result of posting the first transaction.
@@ -453,7 +455,9 @@ private extension CustomerInfoManager {
                     // so we don't need to wait for those.
                     let result = await self.transactionPoster.handlePurchasedTransaction(
                         transactionToPost,
-                        data: transactionData
+                        data: transactionData,
+                        postReceiptSource: Self.sourceForUnfinishedTransaction,
+                        currentUserID: appUserID
                     )
                     completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
                 } else {
@@ -491,7 +495,7 @@ private extension CustomerInfoManager {
                                  isAppBackgrounded: isAppBackgrounded) { customerInfoDataResult in
             switch customerInfoDataResult.result {
             case let .failure(error):
-                self.withData { $0.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID) }
+                self.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID)
                 Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error))
 
             case let .success(info):
@@ -514,9 +518,10 @@ private extension CustomerInfoManager {
     private func fetchAndCacheCustomerInfoDataIfStale(appUserID: String,
                                                       isAppBackgrounded: Bool,
                                                       completion: CustomerInfoDataCompletion?) {
-        let isCacheStale = self.withData {
-            $0.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded)
-        }
+        let isCacheStale = self.deviceCache.isCustomerInfoCacheStale(
+            appUserID: appUserID,
+            isAppBackgrounded: isAppBackgrounded
+        )
 
         guard !isCacheStale, let customerInfo = try? self.cachedCustomerInfo(appUserID: appUserID) else {
             Logger.debug(isAppBackgrounded
@@ -539,14 +544,18 @@ private extension CustomerInfoManager {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     private func postTransactions(
         _ transactions: [StoreTransaction],
-        _ data: PurchasedTransactionData
+        _ data: PurchasedTransactionData,
+        postReceiptSource: PostReceiptSource,
+        appUserID: String
     ) async {
         await withTaskGroup(of: Void.self) { group in
             for transaction in transactions {
                 group.addTask {
                     _ = await self.transactionPoster.handlePurchasedTransaction(
                         transaction,
-                        data: data
+                        data: data,
+                        postReceiptSource: postReceiptSource,
+                        currentUserID: appUserID
                     )
                 }
             }
@@ -554,7 +563,7 @@ private extension CustomerInfoManager {
     }
 
     // Note: this is just a best guess.
-    private static let sourceForUnfinishedTransaction: PurchaseSource = .init(
+    private static let sourceForUnfinishedTransaction: PostReceiptSource = .init(
         isRestore: false,
         // This might have been in theory a `.purchase`. The only downside of this is that the server
         // won't validate that the product is present in the receipt.
@@ -580,7 +589,8 @@ extension CustomerInfoManager {
                                                                rawData: [:])
         let previewCustomerInfo = CustomerInfo(response: previewCustomerInfoResponse,
                                                entitlementVerification: .verified,
-                                               sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default)
+                                               sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default,
+                                               httpResponseOriginalSource: .mainServer)
         return previewCustomerInfo
     }
 
@@ -651,10 +661,11 @@ extension CustomerInfoManager: @unchecked Sendable {}
 
 private extension CustomerInfoManager {
 
-    /// Underlying data for `CustomerInfoManager`.
+    /// Underlying in-memory mutable data for `CustomerInfoManager`.
+    /// `DeviceCache` is intentionally **not** stored here to avoid holding this lock
+    /// during `UserDefaults` I/O, which can deadlock with the main thread.
     struct Data {
 
-        let deviceCache: DeviceCache
         var lastSentCustomerInfo: CustomerInfo?
         /// Observers keyed by a monotonically increasing identifier.
         /// This allows cancelling observations by deleting them from this dictionary.
@@ -662,8 +673,7 @@ private extension CustomerInfoManager {
         /// `PurchasesDelegate/purchases(_:receivedUpdated:)``.
         var customerInfoObserversByIdentifier: [Int: CustomerInfoManager.CustomerInfoChangeClosure]
 
-        init(deviceCache: DeviceCache) {
-            self.deviceCache = deviceCache
+        init() {
             self.lastSentCustomerInfo = nil
             self.customerInfoObserversByIdentifier = [:]
         }

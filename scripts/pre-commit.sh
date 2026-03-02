@@ -1,5 +1,26 @@
 #!/bin/bash
 
+# =============================================================================
+# SwiftLint Pre-Commit Hook
+# =============================================================================
+# Flow:
+#   1. Collect all staged Swift files (batch processing)
+#   2. Run autocorrect quietly
+#   3. Re-stage any files that were modified
+#   4. Run lint to check for remaining violations
+#   5. Show clear summary of what needs manual attention
+# =============================================================================
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+DIM='\033[2m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
 # Figure out where swiftlint is
 HOMEBREW_BINARY_DESTINATION="/opt/homebrew/bin"
 SWIFT_LINT="${HOMEBREW_BINARY_DESTINATION}/swiftlint"
@@ -11,22 +32,22 @@ fi
 
 # Start timer
 START_DATE=$(date +"%s")
-SHOULD_FAIL_PRECOMMIT=0
 
-# Run SwiftLint for given filename
-run_swiftlint() {
-  local filename="$1"
-  if [[ "${filename##*.}" == "swift" ]]; then
-    if [[ "${filename#*.}" != "generated.swift" ]]; then
-      "$SWIFT_LINT" --strict "$filename"
-      retVal=$?
-      if [ $retVal -ne 0 ]; then
-        SHOULD_FAIL_PRECOMMIT=$retVal
-      fi
+# Helper functions
+print_header() {
+  echo -e "${BLUE}${BOLD}$1${NC}"
+}
 
-      "$SWIFT_LINT" --autocorrect --strict "$filename"
-    fi
-  fi
+print_success() {
+  echo -e "${GREEN}✓ $1${NC}"
+}
+
+print_warning() {
+  echo -e "${YELLOW}⚠ $1${NC}"
+}
+
+print_error() {
+  echo -e "${RED}✗ $1${NC}"
 }
 
 verify_no_included_apikeys() {
@@ -58,35 +79,162 @@ verify_no_included_apikeys() {
   done
 }
 
-if [[ -e "$SWIFT_LINT" ]]; then
-  echo "SwiftLint version: $("$SWIFT_LINT" version)"
-
-  # Run only if not merging
-  if ! git rev-parse -q --verify MERGE_HEAD; then
-    # Get only modified or added files that are staged (exclude deleted files)
-    while IFS= read -r -d '' file; do
-      # Get file status from git status --porcelain
-      status=$(git status --porcelain -- "$file" | cut -c1-2)
-      # Run SwiftLint only on files that are not deleted (status != 'D ')
-      if [[ "$status" != "D " ]]; then
-        run_swiftlint "$file"
-      fi
-    done < <(git diff --cached --name-only -z -- '*.swift')
-  fi
-else
-  echo "$SWIFT_LINT is not installed. Please install it via: fastlane setup_dev"
+# Check if SwiftLint is installed
+if [[ ! -e "$SWIFT_LINT" ]]; then
+  print_error "$SWIFT_LINT is not installed. Please install it via: fastlane setup_dev"
   exit 1
 fi
 
+# Skip if merging
+if git rev-parse -q --verify MERGE_HEAD; then
+  print_warning "Merge in progress, skipping SwiftLint"
+  exit 0
+fi
+
+# =============================================================================
+# Step 1: Collect all staged Swift files (batch processing)
+# =============================================================================
+SWIFT_FILES=()
+    while IFS= read -r -d '' file; do
+  # Skip generated files
+  if [[ "${file#*.}" == "generated.swift" ]]; then
+    continue
+  fi
+      # Get file status from git status --porcelain
+      status=$(git status --porcelain -- "$file" | cut -c1-2)
+  # Skip deleted files
+      if [[ "$status" != "D " ]]; then
+    SWIFT_FILES+=("$file")
+      fi
+    done < <(git diff --cached --name-only -z -- '*.swift')
+
+# If no Swift files staged, we're done
+if [[ ${#SWIFT_FILES[@]} -eq 0 ]]; then
+  verify_no_included_apikeys
+  exit 0
+fi
+
+print_header "SwiftLint v$("$SWIFT_LINT" version)"
+echo "Checking ${#SWIFT_FILES[@]} Swift file(s)..."
+echo ""
+
+# =============================================================================
+# Step 2: Store checksums before autocorrect (using temp file for compatibility)
+# =============================================================================
+CHECKSUM_FILE=$(mktemp)
+trap 'rm -f $CHECKSUM_FILE' EXIT
+
+for file in "${SWIFT_FILES[@]}"; do
+  if [[ -f "$file" ]]; then
+    checksum=$(md5 -q "$file" 2>/dev/null || md5sum "$file" | cut -d' ' -f1)
+    echo "$file:$checksum" >> "$CHECKSUM_FILE"
+  fi
+done
+
+# =============================================================================
+# Step 3: Run autocorrect quietly on all files
+# =============================================================================
+"$SWIFT_LINT" --fix --quiet "${SWIFT_FILES[@]}" 2>/dev/null
+
+# =============================================================================
+# Step 4: Re-stage any files that were modified by autocorrect
+# =============================================================================
+FIXED_FILES=()
+for file in "${SWIFT_FILES[@]}"; do
+  if [[ -f "$file" ]]; then
+    checksum_after=$(md5 -q "$file" 2>/dev/null || md5sum "$file" | cut -d' ' -f1)
+    checksum_before=$(grep "^$file:" "$CHECKSUM_FILE" | cut -d':' -f2-)
+    if [[ "$checksum_before" != "$checksum_after" ]]; then
+      FIXED_FILES+=("$file")
+      git add "$file"
+    fi
+  fi
+done
+
+# Report auto-fixed files
+if [[ ${#FIXED_FILES[@]} -gt 0 ]]; then
+  print_success "Auto-fixed and re-staged ${#FIXED_FILES[@]} file(s):"
+  for file in "${FIXED_FILES[@]}"; do
+    echo "    $file"
+  done
+  echo ""
+fi
+
+# =============================================================================
+# Step 5: Run lint to check for remaining violations
+# =============================================================================
+# Capture lint output
+LINT_OUTPUT=$("$SWIFT_LINT" --strict "${SWIFT_FILES[@]}" 2>&1)
+LINT_EXIT_CODE=$?
+
+# =============================================================================
+# Step 6: Show clear summary
+# =============================================================================
 END_DATE=$(date +"%s")
 DIFF=$((END_DATE - START_DATE))
-echo "SwiftLint took $((DIFF / 60)) minutes and $((DIFF % 60)) seconds to complete."
 
-if [ $SHOULD_FAIL_PRECOMMIT -ne 0 ]; then
-  echo "😵 Found formatting errors, some might have been autocorrected."
+if [[ $LINT_EXIT_CODE -eq 0 ]]; then
+  # All good!
+  if [[ ${#FIXED_FILES[@]} -gt 0 ]]; then
+    print_success "All issues were auto-fixed and re-staged!"
+  else
+    print_success "No violations found"
+  fi
+  echo "Completed in ${DIFF}s"
   echo ""
-  echo "⚠️  Please run '$SWIFT_LINT --autocorrect --strict' then check the changes were made and commit them. ⚠️"
-  exit $SHOULD_FAIL_PRECOMMIT
-else
   verify_no_included_apikeys
+  exit 0
+else
+  # There are violations that need manual attention
+  echo ""
+  print_error "Violations require manual fixes:"
+  echo ""
+  
+  # Parse and display violations more clearly
+  # Filter out noise, show only error lines
+  echo "$LINT_OUTPUT" | grep -E "^/.+:[0-9]+:[0-9]+: (error|warning):" | while read -r line; do
+    # Extract components
+    file_path=$(echo "$line" | sed -E 's/^(.+):[0-9]+:[0-9]+:.*/\1/')
+    line_col=$(echo "$line" | sed -E 's/^.+:([0-9]+:[0-9]+):.*/\1/')
+    severity=$(echo "$line" | sed -E 's/^.+:[0-9]+:[0-9]+: (error|warning):.*/\1/')
+    message=$(echo "$line" | sed -E 's/^.+:[0-9]+:[0-9]+: (error|warning): (.+)/\2/')
+    
+    # Extract rule name from parentheses at end of message, e.g., (function_body_length)
+    rule_name=$(echo "$message" | sed -E 's/.*\(([a-z_]+)\)$/\1/')
+    # Remove the rule name from message for cleaner display
+    clean_message=$(echo "$message" | sed -E 's/ \([a-z_]+\)$//')
+    
+    # Get relative path
+    rel_path="${file_path#"$(pwd)/"}"
+    
+    if [[ "$severity" == "error" ]]; then
+      echo -e "  ${RED}error${NC} ${rel_path}:${line_col}"
+    else
+      echo -e "  ${YELLOW}warning${NC} ${rel_path}:${line_col}"
+    fi
+    echo -e "        ${clean_message}"
+    echo -e "        ${DIM}Disable:${NC} ${CYAN}// swiftlint:disable:next ${rule_name}${NC}"
+    echo ""
+  done
+  
+  # Count violations
+  ERROR_COUNT=$(echo "$LINT_OUTPUT" | grep -c ": error:")
+  WARNING_COUNT=$(echo "$LINT_OUTPUT" | grep -c ": warning:")
+  
+  echo ""
+  echo -e "${BOLD}Summary:${NC}"
+  if [[ ${#FIXED_FILES[@]} -gt 0 ]]; then
+    print_success "${#FIXED_FILES[@]} file(s) auto-fixed and re-staged"
+  fi
+  if [[ $ERROR_COUNT -gt 0 ]]; then
+    print_error "$ERROR_COUNT error(s) require manual fixes"
+  fi
+  if [[ $WARNING_COUNT -gt 0 ]]; then
+    print_warning "$WARNING_COUNT warning(s)"
+  fi
+  echo ""
+  echo "Completed in ${DIFF}s"
+  echo ""
+  print_error "Please fix the above violations and try again."
+  exit 1
 fi

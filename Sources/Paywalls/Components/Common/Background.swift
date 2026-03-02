@@ -20,6 +20,7 @@ public extension PaywallComponent {
 
         case color(ColorScheme)
         case image(ThemeImageUrls, FitMode, ColorScheme?)
+        case video(ThemeVideoUrls, ThemeImageUrls, Loop, MuteAudio, FitMode, ColorScheme?)
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
@@ -32,9 +33,15 @@ public extension PaywallComponent {
                 try container.encode(BackgroundType.image.rawValue, forKey: .type)
                 try container.encode(imageInfo, forKey: .value)
                 try container.encode(fitMode, forKey: .fitMode)
-                if let colorScheme {
-                    try container.encode(colorScheme, forKey: .colorOverlay)
-                }
+                try container.encodeIfPresent(colorScheme, forKey: .colorOverlay)
+            case let .video(videoInfo, imageInfo, loop, mute, fitMode, colorScheme):
+                try container.encode(BackgroundType.video.rawValue, forKey: .type)
+                try container.encode(videoInfo, forKey: .value)
+                try container.encode(imageInfo, forKey: .fallbackImage)
+                try container.encode(loop, forKey: .loop)
+                try container.encode(mute, forKey: .muteAudio)
+                try container.encode(fitMode, forKey: .fitMode)
+                try container.encodeIfPresent(colorScheme, forKey: .colorOverlay)
             }
         }
 
@@ -51,6 +58,14 @@ public extension PaywallComponent {
                 let fitMode = try container.decode(FitMode.self, forKey: .fitMode)
                 let colorScheme = try container.decodeIfPresent(ColorScheme.self, forKey: .colorOverlay)
                 self = .image(value, fitMode, colorScheme)
+            case .video:
+                let value = try container.decode(ThemeVideoUrls.self, forKey: .value)
+                let image = try container.decode(ThemeImageUrls.self, forKey: .fallbackImage)
+                let fitMode = try container.decode(FitMode.self, forKey: .fitMode)
+                let loop = try container.decode(Loop.self, forKey: .loop)
+                let mute = try container.decode(MuteAudio.self, forKey: .muteAudio)
+                let colorScheme = try container.decodeIfPresent(ColorScheme.self, forKey: .colorOverlay)
+                self = .video(value, image, loop, mute, fitMode, colorScheme)
             }
         }
 
@@ -59,6 +74,9 @@ public extension PaywallComponent {
 
             case type
             case value
+            case fallbackImage
+            case muteAudio
+            case loop
             case fitMode
             case colorOverlay
 
@@ -69,9 +87,15 @@ public extension PaywallComponent {
 
             case color
             case image
+            case video
 
         }
 
     }
 
+}
+
+public extension PaywallComponent.Background {
+    typealias Loop = Bool
+    typealias MuteAudio = Bool
 }

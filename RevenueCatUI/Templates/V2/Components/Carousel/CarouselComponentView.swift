@@ -36,6 +36,9 @@ struct CarouselComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
 
@@ -50,7 +53,8 @@ struct CarouselComponentView: View {
             ),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
-            )
+            ),
+            colorScheme: colorScheme
         ) { style in
             if style.visible {
                 GeometryReader { reader in
@@ -135,8 +139,12 @@ private struct CarouselView<Content: View>: View {
     /// The current index (in `data`) of the "active" page.
     @State private var index: Int = 0
 
-    /// Real-time drag offset from the user’s finger.
+    /// Real-time drag offset from the user's finger.
+    #if canImport(UIKit) && !os(watchOS) && !os(tvOS)
+    @State private var translation: CGFloat = 0
+    #else
     @GestureState private var translation: CGFloat = 0
+    #endif
 
     /// A timer for auto-play, if enabled.
     @State private var autoTimer: Timer?
@@ -210,10 +218,18 @@ private struct CarouselView<Content: View>: View {
                 )
             }
 
-            // Main horizontal “strip” of pages:
+            // Main horizontal "strip" of pages:
             HStack(alignment: self.pageAlignment, spacing: spacing) {
-                ForEach(data) { item in
+                ForEach(Array(data.enumerated()), id: \.element.id) { pageIndex, item in
                     item.view
+                        .environment(
+                            \.carouselState,
+                            CarouselState(
+                                activeIndex: index,
+                                pageIndex: pageIndex,
+                                originalCount: originalCount
+                            )
+                        )
                         .frame(width: cardWidth)
                 }
             }
@@ -224,9 +240,29 @@ private struct CarouselView<Content: View>: View {
                 // Animate only final snaps (or auto transitions), not real-time dragging
                 view.animation(.easeInOut(duration: self.transitionTime), value: index)
             })
-            .gesture(
-                DragGesture()
+            #if canImport(UIKit) && !os(watchOS) && !os(tvOS)
+            .background(
+                ScrollViewGestureCoordinator(
+                    translation: $translation,
+                    onDragEnded: { translationX in
+                        guard abs(translationX) > 0 else {
+                            self.translation = 0
+                            return
+                        }
 
+                        self.dragOffset = translationX
+                        handleDragEnd(translation: translationX)
+                        self.translation = 0
+                    },
+                    onDragStarted: {
+                        pauseAutoPlay(for: 10)
+                    }
+                )
+                .allowsHitTesting(false)
+            )
+            #else
+            .simultaneousGesture(
+                DragGesture()
                     .onChanged({ _ in
                         pauseAutoPlay(for: 10)
                     })
@@ -234,11 +270,11 @@ private struct CarouselView<Content: View>: View {
                         state = value.translation.width
                     }
                     .onEnded { value in
-                        // Store drag offset to apply nice snap animation when done
                         self.dragOffset = value.translation.width
                         handleDragEnd(translation: value.translation.width)
                     }
             )
+            #endif
             .simultaneousGesture(
                 TapGesture()
                     .onEnded {
@@ -637,7 +673,8 @@ struct CarouselComponentView_Previews: PreviewProvider {
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -714,7 +751,8 @@ struct CarouselComponentView_Previews: PreviewProvider {
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -785,7 +823,8 @@ struct CarouselComponentView_Previews: PreviewProvider {
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -803,16 +842,18 @@ extension CarouselComponentViewModel {
 
     convenience init(
         component: PaywallComponent.CarouselComponent,
-        localizationProvider: LocalizationProvider
+        localizationProvider: LocalizationProvider,
+        colorScheme: ColorScheme
     ) throws {
         let viewModels: [StackComponentViewModel] = try component.pages.map { component in
             return try .init(
                 component: component,
-                localizationProvider: localizationProvider
+                localizationProvider: localizationProvider,
+                colorScheme: colorScheme
             )
         }
 
-        try self.init(
+        self.init(
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             component: component,

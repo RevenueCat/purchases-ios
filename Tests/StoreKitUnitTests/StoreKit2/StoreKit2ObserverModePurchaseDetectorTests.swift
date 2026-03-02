@@ -34,6 +34,7 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     override func setUp() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         deviceCache = .init()
+        try await super.setUp()
     }
 
     func testDetectUnobservedTransactionsDoesntCallDelegateWith0Transactions() async {

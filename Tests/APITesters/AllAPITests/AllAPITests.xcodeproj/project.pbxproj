@@ -127,6 +127,8 @@
 		35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */; };
 		5780280B2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5780280A2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift */; };
 		75C1B6AD2D48D4550011512D /* DangerousSettingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */; };
+		9025C5432EA67FC000845BCE /* RCAdTrackerAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 9025C5412EA67FC000845BCE /* RCAdTrackerAPI.h */; };
+		9025C5442EA67FC000845BCE /* RCAdTrackerAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 9025C5422EA67FC000845BCE /* RCAdTrackerAPI.m */; };
 		FD181EF12D72451000A8EBE2 /* VirtualCurrencyAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */; };
 		FD2A4F982D721D2100ED3367 /* RCVirtualCurrencyAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyAPI.m */; };
 		FD2A4F9A2D721D3D00ED3367 /* RCVirtualCurrencyAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */; };
@@ -135,6 +137,7 @@
 		FDE57B082DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE57B072DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift */; };
 		FDE57B0A2DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = FDE57B092DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h */; };
 		FDE57B0C2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = FDE57B0B2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m */; };
+		CC2A3B4C2E2012AB00AABBCC /* RCPaywallViewControllerAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = CC2A3B4B2E2012AB00AABBCC /* RCPaywallViewControllerAPI.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -363,6 +366,8 @@
 		5780280A2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductPaidPriceAPI.swift; sourceTree = "<group>"; };
 		75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DangerousSettingsAPI.swift; sourceTree = "<group>"; };
 		75C1B6AE2D48D4DB0011512D /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9025C5412EA67FC000845BCE /* RCAdTrackerAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCAdTrackerAPI.h; sourceTree = "<group>"; };
+		9025C5422EA67FC000845BCE /* RCAdTrackerAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCAdTrackerAPI.m; sourceTree = "<group>"; };
 		FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyAPI.swift; sourceTree = "<group>"; };
 		FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCVirtualCurrencyAPI.m; sourceTree = "<group>"; };
 		FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCVirtualCurrencyAPI.h; sourceTree = "<group>"; };
@@ -371,6 +376,8 @@
 		FDE57B072DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesAPI.swift; sourceTree = "<group>"; };
 		FDE57B092DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCVirtualCurrenciesAPI.h; sourceTree = "<group>"; };
 		FDE57B0B2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCVirtualCurrenciesAPI.m; sourceTree = "<group>"; };
+		CC2A3B4A2E2012AB00AABBCC /* RCPaywallViewControllerAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPaywallViewControllerAPI.h; sourceTree = "<group>"; };
+		CC2A3B4B2E2012AB00AABBCC /* RCPaywallViewControllerAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPaywallViewControllerAPI.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -485,6 +492,8 @@
 		2D4C613E2C5AD30400A29FD2 /* ObjcAPITester */ = {
 			isa = PBXGroup;
 			children = (
+				9025C5412EA67FC000845BCE /* RCAdTrackerAPI.h */,
+				9025C5422EA67FC000845BCE /* RCAdTrackerAPI.m */,
 				35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */,
 				35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */,
 				2D4C61732C5AD31900A29FD2 /* main.m */,
@@ -545,6 +554,8 @@
 				FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */,
 				FDE57B092DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h */,
 				FDE57B0B2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m */,
+				CC2A3B4A2E2012AB00AABBCC /* RCPaywallViewControllerAPI.h */,
+				CC2A3B4B2E2012AB00AABBCC /* RCPaywallViewControllerAPI.m */,
 			);
 			path = ObjcAPITester;
 			sourceTree = "<group>";
@@ -680,6 +691,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9025C5432EA67FC000845BCE /* RCAdTrackerAPI.h in Headers */,
 				2D4C61402C5AD30400A29FD2 /* ObjcAPITester.h in Headers */,
 				FD2A4F9A2D721D3D00ED3367 /* RCVirtualCurrencyAPI.h in Headers */,
 				35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */,
@@ -1012,6 +1024,7 @@
 				2D4C61922C5AD31A00A29FD2 /* RCSubscriptionPeriodAPI.m in Sources */,
 				2D4C61802C5AD31A00A29FD2 /* RCStoreProductAPI.m in Sources */,
 				FDE57B0C2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m in Sources */,
+				CC2A3B4C2E2012AB00AABBCC /* RCPaywallViewControllerAPI.m in Sources */,
 				2D4C61792C5AD31A00A29FD2 /* RCRefundRequestStatusAPI.m in Sources */,
 				2D4C618B2C5AD31A00A29FD2 /* RCCustomerInfoAPI.m in Sources */,
 				2D4C617A2C5AD31A00A29FD2 /* RCOfferingsAPI.m in Sources */,
@@ -1023,6 +1036,7 @@
 				2D4C617C2C5AD31A00A29FD2 /* RCStoreKitVersionAPI.m in Sources */,
 				2D4C61902C5AD31A00A29FD2 /* main.m in Sources */,
 				2D4C61932C5AD31A00A29FD2 /* RCPurchasesAPI.m in Sources */,
+				9025C5442EA67FC000845BCE /* RCAdTrackerAPI.m in Sources */,
 				35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */,
 				2D4C618C2C5AD31A00A29FD2 /* RCPurchasesDiagnosticsAPI.m in Sources */,
 			);

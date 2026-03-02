@@ -48,11 +48,13 @@ class ImageComponentViewModel {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (ImageComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedImagePartial.buildPartial(
@@ -75,7 +77,8 @@ class ImageComponentViewModel {
             margin: partial?.margin ?? self.component.margin,
             border: partial?.border ?? self.component.border,
             shadow: partial?.shadow ?? self.component.shadow,
-            uiConfigProvider: self.uiConfigProvider
+            uiConfigProvider: self.uiConfigProvider,
+            colorScheme: colorScheme
         )
 
         apply(style)
@@ -160,7 +163,8 @@ struct ImageComponentStyle {
         margin: PaywallComponent.Padding? = nil,
         border: PaywallComponent.Border? = nil,
         shadow: PaywallComponent.Shadow? = nil,
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        colorScheme: ColorScheme
     ) {
         self.visible = visible
         self.widthLight = source.light.width
@@ -177,7 +181,7 @@ struct ImageComponentStyle {
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
-        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider, colorScheme: colorScheme)
         self.contentMode = fitMode.contentMode
     }
 

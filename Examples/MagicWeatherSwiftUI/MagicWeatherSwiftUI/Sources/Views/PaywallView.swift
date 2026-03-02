@@ -40,7 +40,7 @@ private struct PaywallContent: View {
 
     /// - State for displaying an overlay view
     @State private var isPurchasing: Bool = false
-    @State private var error: NSError?
+    @State private var error: PresentableNSError?
     @State private var displayError: Bool = false
 
     var body: some View {
@@ -67,7 +67,7 @@ private struct PaywallContent: View {
                                     }
                                 } catch {
                                     self.isPurchasing = false
-                                    self.error = error as NSError
+                                    self.error = PresentableNSError(error)
                                     self.displayError = true
                                 }
                             }
@@ -148,14 +148,6 @@ private struct PackageCellView: View {
                 .bold()
         }
         .contentShape(Rectangle()) // Make the whole cell tappable
-    }
-
-}
-
-extension NSError: LocalizedError {
-
-    public var errorDescription: String? {
-        return self.localizedDescription
     }
 
 }

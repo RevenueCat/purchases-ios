@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 6/13/23.
 
 import Foundation
+import Nimble
 
 #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 @testable import RevenueCat_CustomEntitlementComputation
@@ -29,11 +30,13 @@ enum TestMessage: LogMessage {
     case expire_subscription_failed(Error)
     case finished_waiting_for_expiration
     case sleeping_to_force_expiration(seconds: Int)
+    case made_purchase(transaction: StoreTransaction, file: FileString, line: UInt)
 
     case resetting_purchases_singleton
     case removing_receipt(URL)
     case error_removing_url(URL, Error)
     case receipt_content(String)
+    case error_removing_directory(URL, Error)
     case current_entitlements([StoreKit.VerificationResult<StoreKit.Transaction>])
     case unfinished_transactions([StoreKit.VerificationResult<StoreKit.Transaction>])
     case unable_parse_receipt_without_sdk
@@ -61,6 +64,9 @@ extension TestMessage {
         case let .sleeping_to_force_expiration(seconds):
             return "Sleeping for \(seconds) seconds to force expiration"
 
+        case let .made_purchase(storeTransaction, file, line):
+            return "Purchased product '\(storeTransaction.productIdentifier)' with " +
+            "transaction id '\(storeTransaction.transactionIdentifier)' at \(file):\(line)"
         case .resetting_purchases_singleton:
             return "Resetting Purchases.shared"
 
@@ -69,6 +75,9 @@ extension TestMessage {
 
         case let .error_removing_url(url, error):
             return "Error attempting to remove receipt URL '\(url)': \(error)"
+
+        case let .error_removing_directory(url, error):
+            return "Error attempting to remove directory at URL '\(url)': \(error)"
 
         case let .receipt_content(receipt):
             return "Receipt content:\n\(receipt)"
