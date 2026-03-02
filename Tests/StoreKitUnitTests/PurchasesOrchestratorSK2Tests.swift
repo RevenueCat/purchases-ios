@@ -900,12 +900,14 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.logger.clearMessages()
 
-        let (transaction, _, _) = try await self.orchestrator.purchase(sk2Product: product,
-                                                                        package: nil,
-                                                                        promotionalOffer: nil,
-                                                                        winBackOffer: nil,
-                                                                        introductoryOfferEligibilityJWS: nil,
-                                                                        promotionalOfferOptions: nil)
+        let (transaction, _, _) = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
         let purchaseDate = try XCTUnwrap(transaction?.purchaseDate)
 
         self.logger.verifyMessageWasLogged(
@@ -929,12 +931,14 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.logger.clearMessages()
 
-        let (transaction, _, _) = try await self.orchestrator.purchase(sk2Product: product,
-                                                                        package: nil,
-                                                                        promotionalOffer: nil,
-                                                                        winBackOffer: nil,
-                                                                        introductoryOfferEligibilityJWS: nil,
-                                                                        promotionalOfferOptions: nil)
+        let (transaction, _, _) = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
         let purchaseDate = try XCTUnwrap(transaction?.purchaseDate)
 
         self.logger.verifyMessageWasNotLogged(
