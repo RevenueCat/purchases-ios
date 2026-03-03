@@ -770,6 +770,20 @@ extension EnvironmentValues {
     }
 }
 
+/// `EnvironmentKey` for storing the restore initiated interceptor action.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct RestoreInitiatedActionKey: EnvironmentKey {
+    static let defaultValue: RestoreInitiatedAction? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var restoreInitiatedAction: RestoreInitiatedAction? {
+        get { self[RestoreInitiatedActionKey.self] }
+        set { self[RestoreInitiatedActionKey.self] = newValue }
+    }
+}
+
 /// `EnvironmentKey` for storing the offer code redemption initiated interceptor action.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct OfferCodeRedemptionInitiatedActionKey: EnvironmentKey {
