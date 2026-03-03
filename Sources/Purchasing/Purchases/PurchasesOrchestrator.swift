@@ -778,9 +778,11 @@ final class PurchasesOrchestrator {
             case .userCancelled:
                 userCancelled = true
                 transaction = nil
-                self.clearCachedPresentedOfferingContext(for: sk2Product.id)
                 if self.systemInfo.dangerousSettings.customEntitlementComputation {
+                    // handleSK2ProductPurchaseError will clear the cached context
                     throw ErrorUtils.purchaseCancelledError()
+                } else {
+                    self.clearCachedPresentedOfferingContext(for: sk2Product.id)
                 }
             case let .successfulVerifiedTransaction(verifiedTransaction):
                 userCancelled = false

@@ -795,6 +795,144 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testSK1PurchaseWithPackageSuccessIncludesOfferingContext() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: package,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "offering"
+    }
+
+    func testSK1FailedPurchaseForProductADoesNotAffectProductBContext() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let productA = try await self.fetchSk1Product()
+        let paymentA = self.storeKit1Wrapper.payment(with: productA)
+
+        let productB = try await self.fetchSk1Product("different_product")
+        let paymentB = self.storeKit1Wrapper.payment(with: productB)
+
+        // Cache context for both products
+        self.orchestrator.cachePresentedOfferingContext(
+            PresentedOfferingContext(offeringIdentifier: "offering_a"),
+            productIdentifier: productA.productIdentifier
+        )
+        self.orchestrator.cachePresentedOfferingContext(
+            PresentedOfferingContext(offeringIdentifier: "offering_b"),
+            productIdentifier: productB.productIdentifier
+        )
+
+        // Product A fails
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .failed
+        self.storeKit1Wrapper.mockTransactionError = NSError(
+            domain: SKErrorDomain,
+            code: SKError.Code.paymentCancelled.rawValue
+        )
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: productA,
+                payment: paymentA,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // Product B succeeds — its context should still be present
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
+        self.storeKit1Wrapper.mockTransactionError = nil
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: productB,
+                payment: paymentB,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "offering_b"
+    }
+
+    func testSK1ExternallyCachedContextIsClearedOnFailure() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        // Simulate a hybrid SDK caching the context via the @_spi(Internal) API
+        self.orchestrator.cachePresentedOfferingContext(
+            PresentedOfferingContext(offeringIdentifier: "hybrid_offering"),
+            productIdentifier: product.productIdentifier
+        )
+
+        // The purchase fails
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .failed
+        self.storeKit1Wrapper.mockTransactionError = NSError(
+            domain: SKErrorDomain,
+            code: SKError.Code.storeProductNotAvailable.rawValue
+        )
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // Successful purchase of same product without a package
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
+        self.storeKit1Wrapper.mockTransactionError = nil
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
     func testSK1FailedPurchaseClearsCachedPresentedOfferingContext() async throws {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
