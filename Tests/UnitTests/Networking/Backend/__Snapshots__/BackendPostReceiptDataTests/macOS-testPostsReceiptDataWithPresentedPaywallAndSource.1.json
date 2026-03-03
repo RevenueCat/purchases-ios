@@ -45,10 +45,10 @@
         "source" : "customer_center"
       },
       "presented_offering_identifier" : "a_offering",
-      "purchase_source" : "customer_center",
       "price" : "10.98",
       "product_id" : "a_great_product",
       "purchase_completed_by" : "revenuecat",
+      "purchase_source" : "customer_center",
       "sdk_originated" : true,
       "store_country" : "ESP",
       "subscription_group_id" : "sub_group"

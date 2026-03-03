@@ -1959,7 +1959,6 @@ private extension PurchasesOrchestrator {
         self.presentedOfferingContextsByProductID.modify { $0.removeValue(forKey: productIdentifier) }
     }
 
-
     func getAndRemovePresentedOfferingContext(for transaction: StoreTransactionType) -> PresentedOfferingContext? {
         return self.presentedOfferingContextsByProductID.modify { cache in
             guard let cached = cache[transaction.productIdentifier] else {
