@@ -933,6 +933,58 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testSK1PurchasePackageFailThenPurchasePackageAgainIncludesOfferingContext() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        // First attempt: purchase with package fails
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .failed
+        self.storeKit1Wrapper.mockTransactionError = NSError(
+            domain: SKErrorDomain,
+            code: SKError.Code.storeProductNotAvailable.rawValue
+        )
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: package,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // Second attempt: purchase the same package again, this time succeeds
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
+        self.storeKit1Wrapper.mockTransactionError = nil
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: package,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "offering"
+    }
+
     func testSK1FailedPurchaseClearsCachedPresentedOfferingContext() async throws {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 

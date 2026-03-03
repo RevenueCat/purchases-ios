@@ -1491,6 +1491,55 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testSK2PurchasePackageCancelThenPurchasePackageAgainIncludesOfferingContext() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk2Product()
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk2Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        // First attempt: purchase with package, user cancels
+        self.mockStoreKit2TransactionListener?.mockResult = .init(.userCancelled)
+
+        let (_, _, cancelled) = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: package,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+        expect(cancelled) == true
+
+        // Second attempt: purchase the same package again, succeeds
+        self.mockStoreKit2TransactionListener?.mockResult = .init(nil)
+
+        let (transaction, _, _) = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: package,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+        expect(transaction).toNot(beNil())
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "offering"
+    }
+
     func testSK2TransactionListenerDelegateDoesNotIncludeAttributionForRenewals() async throws {
         self.setUpStoreKit2Listener()
 
