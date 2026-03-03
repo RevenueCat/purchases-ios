@@ -1167,6 +1167,99 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == "test_offering"
     }
 
+    func testSK2PurchaseWithPackageThenCancelledThenPurchaseWithProductDoesNotIncludeOfferingContext() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk2Product()
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk2Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        // 1. Purchase with a package (caches PresentedOfferingContext), but user cancels
+        self.mockStoreKit2TransactionListener?.mockResult = .init(.userCancelled)
+
+        let (_, _, cancelled) = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: package,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+        expect(cancelled) == true
+
+        // 2. Subsequent transaction for the same product via the listener (no package context)
+        let transaction = MockStoreTransaction(productIdentifier: product.id)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        // 3. The stale offering context from the cancelled package purchase should NOT be in the POST
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
+    func testSK2PurchaseWithPackageThenFailedThenPurchaseWithProductDoesNotIncludeOfferingContext() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk2Product()
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk2Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        // 1. Purchase with a package (caches PresentedOfferingContext), but the purchase fails
+        self.testSession.failTransactionsEnabled = true
+
+        do {
+            _ = try await self.orchestrator.purchase(
+                sk2Product: product,
+                package: package,
+                promotionalOffer: nil,
+                winBackOffer: nil,
+                introductoryOfferEligibilityJWS: nil,
+                promotionalOfferOptions: nil
+            )
+            XCTFail("Expected error")
+        } catch {
+            // Expected
+        }
+
+        self.testSession.failTransactionsEnabled = false
+
+        // 2. Subsequent transaction for the same product via the listener (no package context)
+        let transaction = MockStoreTransaction(productIdentifier: product.id)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        // 3. The stale offering context from the failed package purchase should NOT be in the POST
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
     func testSK2CancelledPurchaseClearsCachedPresentedOfferingContext() async throws {
         self.setUpStoreKit2Listener()
 

@@ -691,6 +691,110 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testSK1PurchaseWithPackageThenFailedThenPurchaseWithProductDoesNotIncludeOfferingContext() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        // 1. Purchase with a package (caches PresentedOfferingContext), but the purchase fails
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .failed
+        self.storeKit1Wrapper.mockTransactionError = NSError(
+            domain: SKErrorDomain,
+            code: SKError.Code.storeProductNotAvailable.rawValue
+        )
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: package,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // 2. Purchase the same product without a package (direct product purchase)
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
+        self.storeKit1Wrapper.mockTransactionError = nil
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // 3. The stale offering context from the failed package purchase should NOT be in the POST
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
+    func testSK1PurchaseWithPackageThenCancelledThenPurchaseWithProductDoesNotIncludeOfferingContext() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        // 1. Purchase with a package (caches PresentedOfferingContext), but the user cancels
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .failed
+        self.storeKit1Wrapper.mockTransactionError = NSError(
+            domain: SKErrorDomain,
+            code: SKError.Code.paymentCancelled.rawValue
+        )
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: package,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // 2. Purchase the same product without a package
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
+        self.storeKit1Wrapper.mockTransactionError = nil
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // 3. The stale offering context from the cancelled package purchase should NOT be in the POST
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
     func testSK1FailedPurchaseClearsCachedPresentedOfferingContext() async throws {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
