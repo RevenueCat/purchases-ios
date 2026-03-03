@@ -25,6 +25,14 @@ struct AppContentView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
 
+            if Purchases.isConfigured {
+                APIKeyDashboardList()
+                    .tabItem {
+                        Label("Sandbox Paywalls", systemImage: "testtube.2")
+                    }
+                    .tag(Tab.sandboxPaywalls)
+            }
+
             #if !os(macOS)
             SamplePaywallsList()
                 .tabItem {
@@ -34,14 +42,6 @@ struct AppContentView: View {
                 }
                 .tag(Tab.examples)
             #endif
-
-            if Purchases.isConfigured {
-                APIKeyDashboardList()
-                    .tabItem {
-                        Label("Sandbox Paywalls", systemImage: "testtube.2")
-                    }
-                    .tag(Tab.sandboxPaywalls)
-            }
 
             #if !DEBUG
             if !Purchases.isConfigured {
