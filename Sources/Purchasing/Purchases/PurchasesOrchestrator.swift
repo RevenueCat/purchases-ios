@@ -790,6 +790,16 @@ final class PurchasesOrchestrator {
             let customerInfo: CustomerInfo
 
             if let transaction = transaction {
+
+                if let expirationDate = transaction.sk2Transaction?.expirationDate,
+                   expirationDate < self.dateProvider.now() {
+                    Logger.appleWarning(
+                        StoreKitStrings.sk2_purchase_did_not_error_but_expiration_date_is_in_past(
+                            expirationDate: expirationDate
+                        )
+                    )
+                }
+
                 customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
                 self.postFeatureEventsIfNeeded()
             } else {
