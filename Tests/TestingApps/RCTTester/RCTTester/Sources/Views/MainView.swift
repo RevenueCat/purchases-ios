@@ -42,7 +42,13 @@ struct MainView: View {
             #if os(iOS)
             Section("Customer Center") {
                 NavigationLink {
-                    CustomerCenterView()
+                    CustomerCenterView(
+                        navigationOptions: CustomerCenterNavigationOptions(
+                            usesNavigationStack: false,
+                            usesExistingNavigation: true,
+                            shouldShowCloseButton: false
+                        )
+                    )
                 } label: {
                     Label("Open Customer Center", systemImage: "person.crop.circle")
                 }
