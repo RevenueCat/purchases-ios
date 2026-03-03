@@ -44,6 +44,11 @@ struct FeatureEventsRequest {
                     }
                     return AnyEncodable(event)
                 }
+            case .customPaywallImpression:
+                guard let event = CustomPaywallImpressionEvent(storedEvent: storedEvent) else {
+                    return nil
+                }
+                return AnyEncodable(event)
             }
         })
     }

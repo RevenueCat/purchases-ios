@@ -44,6 +44,8 @@ extension FeatureEvent {
             return event.customerCenterImpressionMap()
         case let event as CustomerCenterAnswerSubmittedEvent:
             return event.customerCenterAnswerSubmittedMap()
+        case let event as CustomPaywallImpressionEvent:
+            return event.customPaywallImpressionMap()
         default:
             return [
                 "discriminator": "unknown",
@@ -97,6 +99,25 @@ private extension CustomerCenterEvent {
             "locale": self.data.localeIdentifier,
             "display_mode": self.data.displayMode.identifier
         ]
+    }
+
+}
+
+private extension CustomPaywallImpressionEvent {
+
+    func customPaywallImpressionMap() -> [String: Any] {
+        var result: [String: Any] = [
+            "discriminator": "custom_paywall_impression",
+            "type": "custom_paywall_impression",
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970
+        ]
+
+        if let paywallId = self.data.paywallId {
+            result["paywall_id"] = paywallId
+        }
+
+        return result
     }
 
 }

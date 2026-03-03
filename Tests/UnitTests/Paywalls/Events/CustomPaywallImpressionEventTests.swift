@@ -1,0 +1,175 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  CustomPaywallImpressionEventTests.swift
+//
+//  Created by Rick van der Linden.
+
+import Foundation
+import Nimble
+@_spi(Internal) @testable import RevenueCat
+import XCTest
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class CustomPaywallImpressionEventTests: TestCase {
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+    }
+
+    // MARK: - Event Creation
+
+    func testEventCreationWithPaywallId() {
+        let event = CustomPaywallImpressionEvent(
+            creationData: Self.creationData,
+            data: .init(paywallId: "my_paywall_id")
+        )
+
+        expect(event.creationData.id) == Self.creationData.id
+        expect(event.creationData.date) == Self.creationData.date
+        expect(event.data.paywallId) == "my_paywall_id"
+        expect(event.feature) == .customPaywallImpression
+        expect(event.eventDiscriminator).to(beNil())
+    }
+
+    func testEventCreationWithNilPaywallId() {
+        let event = CustomPaywallImpressionEvent(
+            creationData: Self.creationData,
+            data: .init(paywallId: nil)
+        )
+
+        expect(event.data.paywallId).to(beNil())
+        expect(event.feature) == .customPaywallImpression
+        expect(event.eventDiscriminator).to(beNil())
+    }
+
+    // MARK: - Request Encoding
+
+    func testRequestEncodingWithPaywallId() throws {
+        let event = CustomPaywallImpressionEvent(creationData: Self.creationData, data: .init(paywallId: "my_paywall"))
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywallImpression,
+                appSessionID: Self.appSessionID,
+                eventDiscriminator: nil
+            )
+        )
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallImpressionEvent(storedEvent: storedEvent))
+
+        expect(requestEvent.id) == Self.creationData.id.uuidString
+        expect(requestEvent.version) == 1
+        expect(requestEvent.type) == "custom_paywall_impression"
+        expect(requestEvent.appUserID) == Self.userID
+        expect(requestEvent.appSessionID) == Self.appSessionID.uuidString
+        expect(requestEvent.timestamp) == Self.creationData.date.millisecondsSince1970
+        expect(requestEvent.paywallId) == "my_paywall"
+    }
+
+    func testRequestEncodingWithoutPaywallId() throws {
+        let event = CustomPaywallImpressionEvent(creationData: Self.creationData, data: .init(paywallId: nil))
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywallImpression,
+                appSessionID: nil,
+                eventDiscriminator: nil
+            )
+        )
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallImpressionEvent(storedEvent: storedEvent))
+
+        expect(requestEvent.paywallId).to(beNil())
+    }
+
+    func testRequestEncodingAppSessionIdOmittedWhenNil() throws {
+        let event = CustomPaywallImpressionEvent(creationData: Self.creationData, data: .init(paywallId: "pw"))
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywallImpression,
+                appSessionID: nil,
+                eventDiscriminator: nil
+            )
+        )
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallImpressionEvent(storedEvent: storedEvent))
+        expect(requestEvent.appSessionID).to(beNil())
+
+        let encoded = try JSONEncoder().encode(requestEvent)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        expect(json["appSessionId"]).to(beNil())
+    }
+
+    func testRequestEncodingPaywallIdOmittedWhenNil() throws {
+        let event = CustomPaywallImpressionEvent(creationData: Self.creationData, data: .init(paywallId: nil))
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywallImpression,
+                appSessionID: nil,
+                eventDiscriminator: nil
+            )
+        )
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallImpressionEvent(storedEvent: storedEvent))
+        let encoded = try JSONEncoder().encode(requestEvent)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+
+        expect(json["paywallId"]).to(beNil())
+    }
+
+    func testRequestTypeAndVersion() throws {
+        let event = CustomPaywallImpressionEvent(creationData: Self.creationData, data: .init(paywallId: "pw"))
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywallImpression,
+                appSessionID: nil,
+                eventDiscriminator: nil
+            )
+        )
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallImpressionEvent(storedEvent: storedEvent))
+
+        expect(requestEvent.type) == "custom_paywall_impression"
+        expect(requestEvent.version) == 1
+    }
+
+    // MARK: - Params
+
+    func testParamsWithPaywallId() {
+        let params = CustomPaywallImpressionParams(paywallId: "my_paywall")
+        expect(params.paywallId) == "my_paywall"
+    }
+
+    func testParamsWithNilPaywallId() {
+        let params = CustomPaywallImpressionParams()
+        expect(params.paywallId).to(beNil())
+    }
+
+    // MARK: - Helpers
+
+    private static let userID = "test-user"
+    private static let appSessionID = UUID(uuidString: "A1B2C3D4-E5F6-7890-ABCD-EF1234567890")!
+
+    private static let creationData = CustomPaywallImpressionEvent.CreationData(
+        id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+        date: .init(timeIntervalSince1970: 1694029328)
+    )
+
+}
