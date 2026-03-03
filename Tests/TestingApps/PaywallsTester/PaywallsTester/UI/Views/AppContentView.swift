@@ -13,7 +13,6 @@ struct AppContentView: View {
 
     private enum Tab {
         case examples
-        case myApps
         case sandboxPaywalls
     }
 
@@ -21,16 +20,7 @@ struct AppContentView: View {
     private var configuration = Configuration.shared
 
     @State
-    private var selectedTab: Tab = {
-        if Purchases.isConfigured && !Constants.sandboxPaywallSearch.isEmpty {
-            return .sandboxPaywalls
-        }
-        #if os(macOS)
-        return .myApps
-        #else
-        return .examples
-        #endif
-    }()
+    private var selectedTab: Tab = .sandboxPaywalls
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -44,11 +34,6 @@ struct AppContentView: View {
                 }
                 .tag(Tab.examples)
             #endif
-            AppList()
-                .tabItem {
-                    Label("My Apps", systemImage: "network")
-                }
-                .tag(Tab.myApps)
 
             if Purchases.isConfigured {
                 APIKeyDashboardList()
