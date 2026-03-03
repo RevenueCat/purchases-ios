@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import RevenueCatUI
 
 struct MainView: View {
 
@@ -37,6 +38,16 @@ struct MainView: View {
                     Label("View Offerings", systemImage: "tag")
                 }
             }
+
+            #if os(iOS)
+            Section("Customer Center") {
+                NavigationLink {
+                    CustomerCenterView()
+                } label: {
+                    Label("Open Customer Center", systemImage: "person.crop.circle")
+                }
+            }
+            #endif
 
             Section("Purchases") {
                 Button {
