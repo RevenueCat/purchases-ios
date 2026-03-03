@@ -1769,10 +1769,6 @@
 		2DD500412C519EB4009C19B7 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		2DD500422C519EB4009C19B7 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		2DD500442C519EB4009C19B7 /* SamplePaywalls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywalls.swift; sourceTree = "<group>"; };
-		2DD5004C2C519EB4009C19B7 /* ArrayExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayExtensions.swift; sourceTree = "<group>"; };
-		2DD5004D2C519EB4009C19B7 /* JSONExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONExtensions.swift; sourceTree = "<group>"; };
-		2DD5004E2C519EB4009C19B7 /* StringExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
-		2DD5004F2C519EB4009C19B7 /* UserDefaultsExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsExtensions.swift; sourceTree = "<group>"; };
 		2DD5005B2C519EB4009C19B7 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2DD500632C519EB4009C19B7 /* AsyncButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncButton.swift; sourceTree = "<group>"; };
 		2DD500642C519EB4009C19B7 /* ErrorDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorDisplay.swift; sourceTree = "<group>"; };
@@ -3626,17 +3622,6 @@
 			path = Config;
 			sourceTree = "<group>";
 		};
-		2DD500502C519EB4009C19B7 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				2DD5004C2C519EB4009C19B7 /* ArrayExtensions.swift */,
-				2DD5004D2C519EB4009C19B7 /* JSONExtensions.swift */,
-				2DD5004E2C519EB4009C19B7 /* StringExtensions.swift */,
-				2DD5004F2C519EB4009C19B7 /* UserDefaultsExtensions.swift */,
-			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
 		2DD5005C2C519EB4009C19B7 /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
@@ -3692,7 +3677,6 @@
 			isa = PBXGroup;
 			children = (
 				2DD500452C519EB4009C19B7 /* Config */,
-				2DD500502C519EB4009C19B7 /* Extensions */,
 				2DD5005C2C519EB4009C19B7 /* Preview Content */,
 				2DD500782C519EB4009C19B7 /* UI */,
 				2DD5007B2C519EB4009C19B7 /* Assets.xcassets */,
