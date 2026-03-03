@@ -605,7 +605,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let transactionData = self.backend.invokedPostReceiptDataParameters?.transactionData
         expect(transactionData?.presentedOfferingContext).to(beNil())
-        expect(transactionData?.presentedOfferingSource) == .customerCenter
+        expect(transactionData?.purchaseSource) == .customerCenter
     }
 
     func testCachePurchaseSourceAndOfferingContextAreIndependent() async throws {
@@ -642,7 +642,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let transactionData = self.backend.invokedPostReceiptDataParameters?.transactionData
         expect(transactionData?.presentedOfferingContext?.offeringIdentifier) == "offering"
-        expect(transactionData?.presentedOfferingSource) == .customerCenter
+        expect(transactionData?.purchaseSource) == .customerCenter
     }
 
     func testPurchaseWithDifferentProductDoesNotIncludePaywallData() async throws {
@@ -1248,7 +1248,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingSource
+            self.backend.invokedPostReceiptDataParameters?.transactionData.purchaseSource
         ) == .customerCenter
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
@@ -1280,7 +1280,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 .presentedOfferingContext?.offeringIdentifier
         ) == "test_offering"
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingSource
+            self.backend.invokedPostReceiptDataParameters?.transactionData.purchaseSource
         ) == .customerCenter
     }
 

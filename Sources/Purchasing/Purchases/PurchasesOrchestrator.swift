@@ -933,7 +933,6 @@ final class PurchasesOrchestrator {
             self.clearPurchaseInitiatedPaywall()
             if let productId = paywallEvent.data.productId {
                 self.clearCachedPresentedOfferingContext(for: productId)
-                self.clearCachedPurchaseSource(for: productId)
             } else {
                 Logger.error(Strings.paywalls.missing_product_id_for_paywall_event)
             }
@@ -1461,7 +1460,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let transactionData: PurchasedTransactionData = .init(
             presentedOfferingContext: offeringContext,
             presentedPaywall: paywall,
-            presentedOfferingSource: cachedSource,
+            purchaseSource: cachedSource,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
             storeCountry: storefront?.countryCode
@@ -1878,7 +1877,7 @@ private extension PurchasesOrchestrator {
             let transactionData: PurchasedTransactionData = .init(
                 presentedOfferingContext: offeringContext,
                 presentedPaywall: paywall,
-                presentedOfferingSource: cachedSource,
+                purchaseSource: cachedSource,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
                 storeCountry: storefront?.countryCode
@@ -1960,9 +1959,6 @@ private extension PurchasesOrchestrator {
         self.presentedOfferingContextsByProductID.modify { $0.removeValue(forKey: productIdentifier) }
     }
 
-    func clearCachedPurchaseSource(for productIdentifier: String) {
-        self.purchaseSourcesByProductID.modify { $0.removeValue(forKey: productIdentifier) }
-    }
 
     func getAndRemovePresentedOfferingContext(for transaction: StoreTransactionType) -> PresentedOfferingContext? {
         return self.presentedOfferingContextsByProductID.modify { cache in
@@ -2289,7 +2285,7 @@ extension PurchasesOrchestrator {
         let transactionData: PurchasedTransactionData = .init(
             presentedOfferingContext: offeringContext,
             presentedPaywall: paywall,
-            presentedOfferingSource: cachedSource,
+            purchaseSource: cachedSource,
             unsyncedAttributes: unsyncedAttributes,
             metadata: metadata,
             aadAttributionToken: adServicesToken,
