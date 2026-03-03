@@ -691,6 +691,106 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testSK1FailedPurchaseClearsCachedPresentedOfferingContext() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        let offeringContext = PresentedOfferingContext(offeringIdentifier: "test_offering")
+        self.orchestrator.cachePresentedOfferingContext(
+            offeringContext,
+            productIdentifier: product.productIdentifier
+        )
+
+        // Simulate a failed (non-cancelled) SK1 payment
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .failed
+        self.storeKit1Wrapper.mockTransactionError = NSError(
+            domain: SKErrorDomain,
+            code: SKError.Code.storeProductNotAvailable.rawValue
+        )
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // Now make a successful purchase of the same product without a package
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
+        self.storeKit1Wrapper.mockTransactionError = nil
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
+    func testSK1CancelledPurchaseClearsCachedPresentedOfferingContext() async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        let offeringContext = PresentedOfferingContext(offeringIdentifier: "test_offering")
+        self.orchestrator.cachePresentedOfferingContext(
+            offeringContext,
+            productIdentifier: product.productIdentifier
+        )
+
+        // Simulate a cancelled SK1 payment
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .failed
+        self.storeKit1Wrapper.mockTransactionError = NSError(
+            domain: SKErrorDomain,
+            code: SKError.Code.paymentCancelled.rawValue
+        )
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // Now make a successful purchase of the same product without a package
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
+        self.storeKit1Wrapper.mockTransactionError = nil
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
     func testPurchaseWithDifferentProductDoesNotIncludePaywallData() async throws {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
