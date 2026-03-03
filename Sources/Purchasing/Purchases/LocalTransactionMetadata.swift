@@ -133,6 +133,7 @@ private struct ProductRequestDataEncodedWrapper: Sendable, Codable {
 
 private struct PurchasedTransactionDataEncodedWrapper: Codable {
     private let presentedPaywall: PaywallEvent?
+    private let presentedOfferingSource: PurchaseSource?
     private let unsyncedAttributes: SubscriberAttribute.Dictionary?
     private let metadata: [String: String]?
     private let aadAttributionToken: String?
@@ -146,6 +147,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
 
     init(purchasedTransactionData: PurchasedTransactionData) {
         self.presentedPaywall = purchasedTransactionData.presentedPaywall
+        self.presentedOfferingSource = purchasedTransactionData.presentedOfferingSource
         self.unsyncedAttributes = purchasedTransactionData.unsyncedAttributes
         self.metadata = purchasedTransactionData.metadata
         self.aadAttributionToken = purchasedTransactionData.aadAttributionToken
@@ -160,6 +162,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
         return PurchasedTransactionData(
             presentedOfferingContext: self.presentedOfferingContext,
             presentedPaywall: self.presentedPaywall,
+            presentedOfferingSource: self.presentedOfferingSource,
             unsyncedAttributes: self.unsyncedAttributes,
             metadata: self.metadata,
             aadAttributionToken: self.aadAttributionToken,

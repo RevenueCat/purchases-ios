@@ -483,6 +483,7 @@ class CodableIdempotencyTests: TestCase {
             },
             "purchased_transaction_data_wrapper": {
                 "presented_paywall": null,
+                "presented_offering_source": "customer_center",
                 "unsynced_attributes": null,
                 "metadata": {"key": "value"},
                 "aad_attribution_token": "test_attribution_token",
@@ -531,6 +532,7 @@ class CodableIdempotencyTests: TestCase {
         expect(decoded.transactionData.presentedOfferingContext?.placementIdentifier) == "placement_456"
         expect(decoded.transactionData.presentedOfferingContext?.targetingContext?.revision) == 1
         expect(decoded.transactionData.presentedOfferingContext?.targetingContext?.ruleId) == "rule_789"
+        expect(decoded.transactionData.presentedOfferingSource) == .customerCenter
         expect(decoded.transactionData.metadata) == ["key": "value"]
         expect(decoded.transactionData.aadAttributionToken) == "test_attribution_token"
         expect(decoded.transactionData.storeCountry) == "US"
@@ -553,6 +555,7 @@ class CodableIdempotencyTests: TestCase {
         expect(reDecoded.productData?.productIdentifier) == decoded.productData?.productIdentifier
         expect(reDecoded.transactionData.presentedOfferingContext?.offeringIdentifier)
             == decoded.transactionData.presentedOfferingContext?.offeringIdentifier
+        expect(reDecoded.transactionData.presentedOfferingSource) == .customerCenter
     }
 
     func testLocalTransactionMetadataWithNilProductDataDecodingAndIdempotency() throws {
@@ -591,6 +594,7 @@ class CodableIdempotencyTests: TestCase {
         expect(decoded.originalPurchasesAreCompletedBy) == .myApp
         expect(decoded.productData).to(beNil())
         expect(decoded.transactionData.presentedOfferingContext).to(beNil())
+        expect(decoded.transactionData.presentedOfferingSource).to(beNil())
         expect(decoded.transactionData.metadata).to(beNil())
 
         // Verify encoded receipt
