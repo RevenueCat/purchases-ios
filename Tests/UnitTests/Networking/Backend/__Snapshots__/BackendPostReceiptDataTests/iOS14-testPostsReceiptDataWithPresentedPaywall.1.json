@@ -45,7 +45,6 @@
         "session_id" : "73616D70-6C65-2073-7472-696E67000000"
       },
       "presented_offering_identifier" : "a_offering",
-      "presented_offering_source" : "customer_center",
       "price" : "10.98",
       "product_id" : "a_great_product",
       "purchase_completed_by" : "revenuecat",
