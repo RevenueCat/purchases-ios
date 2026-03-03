@@ -20,7 +20,7 @@ struct AppContentView: View {
     private var configuration = Configuration.shared
 
     @State
-    private var selectedTab: Tab = .sandboxPaywalls
+    private var selectedTab: Tab = Purchases.isConfigured ? .sandboxPaywalls : .examples
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -78,25 +78,6 @@ private extension UIApplication {
             .connectedScenes
             .filter { $0.activationState == .foregroundActive }
             .first as? UIWindowScene
-    }
-
-}
-
-#endif
-
-#if DEBUG
-
-// TODO: Mock developer to instantiate AppContentView
-@testable import RevenueCatUI
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-struct AppContentView_Previews: PreviewProvider {
-
-    static var previews: some View {
-        NavigationStack {
-            AppContentView()
-              .environmentObject(ApplicationData())
-        }
     }
 
 }
