@@ -73,6 +73,8 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
     }
 
     func purchase(package: Package) async throws -> PurchaseResultData {
+        Purchases.shared.cachePurchaseSource(.customerCenter,
+                                             productIdentifier: package.storeProduct.productIdentifier)
         return try await Purchases.shared.purchase(package: package)
     }
 
