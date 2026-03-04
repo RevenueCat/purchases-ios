@@ -78,6 +78,10 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         return try await Purchases.shared.purchase(package: package)
     }
 
+    func cachePurchaseSource(_ source: PurchaseSource, productIdentifier: String) {
+        Purchases.shared.cachePurchaseSource(source, productIdentifier: productIdentifier)
+    }
+
     func track(customerCenterEvent: any CustomerCenterEventType) {
         Purchases.shared.track(customerCenterEvent: customerCenterEvent)
     }

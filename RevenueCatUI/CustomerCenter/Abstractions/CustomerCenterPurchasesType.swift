@@ -89,6 +89,8 @@ import SwiftUI
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus
     #endif
 
+    func cachePurchaseSource(_ source: PurchaseSource, productIdentifier: String)
+
     @MainActor
     func manageSubscriptionsSheetViewModifier(
         isPresented: Binding<Bool>,
@@ -124,7 +126,10 @@ extension CustomerCenterPurchasesType {
         ChangePlansSheetViewModifier(
             isPresented: isPresented,
             subscriptionGroupID: subscriptionGroupID,
-            productIDs: productIDs
+            productIDs: productIDs,
+            onInAppPurchaseStart: { productIdentifier in
+                self.cachePurchaseSource(.customerCenter, productIdentifier: productIdentifier)
+            }
         )
     }
 }
@@ -138,15 +143,18 @@ extension CustomerCenterPurchasesType {
     let isPresented: Binding<Bool>
     let subscriptionGroupID: String?
     let productIDs: [String]
+    let onInAppPurchaseStart: @Sendable (String) -> Void
 
     @_spi(Internal) public init(
         isPresented: Binding<Bool>,
         subscriptionGroupID: String?,
-        productIDs: [String]
+        productIDs: [String],
+        onInAppPurchaseStart: @escaping @Sendable (String) -> Void
     ) {
         self.isPresented = isPresented
         self.subscriptionGroupID = subscriptionGroupID
         self.productIDs = productIDs
+        self.onInAppPurchaseStart = onInAppPurchaseStart
     }
 
     @_spi(Internal) public func body(content: Content) -> some View {
@@ -160,10 +168,16 @@ extension CustomerCenterPurchasesType {
                         SubscriptionStoreView(
                             productIDs: productIDs
                         )
+                        .onInAppPurchaseStart { product in
+                            onInAppPurchaseStart(product.id)
+                        }
                     } else if let subscriptionGroupID {
                         SubscriptionStoreView(
                             groupID: subscriptionGroupID
                         )
+                        .onInAppPurchaseStart { product in
+                            onInAppPurchaseStart(product.id)
+                        }
                     }
                 }
         } else {
