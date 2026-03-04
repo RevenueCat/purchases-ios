@@ -170,7 +170,7 @@ platform :ios do
 
     create_or_checkout_branch(branch_name: branch_name)
 
-    new_hash = sh("git", "ls-remote", "git@github.com:RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git", "refs/heads/main").split("\t").first
+    new_hash = sh("git", "ls-remote", "https://github.com/RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git", "refs/heads/main").split("\t").first
     UI.important("Updating paywall preview resources commit to #{new_hash}")
     update_paywall_preview_resources_commit(new_hash)
 
@@ -2084,7 +2084,7 @@ platform :ios do
       if !File.directory?(SNAPSHOTS_REPO_NAME)
         UI.important("Cloning snapshots repo")
 
-        sh "git", "clone", "git@github.com:RevenueCat/#{SNAPSHOTS_REPO_NAME}.git"
+        sh "git", "clone", "https://github.com/RevenueCat/#{SNAPSHOTS_REPO_NAME}.git"
       end
 
       commit = current_snapshots_commit
@@ -2101,7 +2101,7 @@ platform :ios do
     Dir.chdir("../Tests") do
       if !File.directory?(PAYWALL_PREVIEW_RESOURCES_REPO_NAME)
         UI.important("Cloning paywall-preview-resources repo")
-        sh "git", "clone", "git@github.com:RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git"
+        sh "git", "clone", "https://github.com/RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git"
       end
 
       commit = current_paywall_preview_resources_commit

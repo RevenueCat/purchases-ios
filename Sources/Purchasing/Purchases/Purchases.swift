@@ -400,7 +400,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 with: purchasedProductsFetcher,
                 productEntitlementMappingFetcher: deviceCache,
                 tracker: diagnosticsTracker,
-                observerMode: observerMode
+                observerMode: observerMode,
+                customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
             diagnosticsTracker: diagnosticsTracker
         )
