@@ -632,6 +632,202 @@ class EventsManagerTests: TestCase {
         expect(self.api.invokedPostAdEvents) == true
     }
 
+    // MARK: - isPriorityEvent
+
+    func testPaywallImpressionIsPriorityEvent() {
+        let event: PaywallEvent = .impression(.random(), .random())
+        expect(event.isPriorityEvent) == true
+    }
+
+    func testPaywallCancelIsNotPriorityEvent() {
+        let event: PaywallEvent = .cancel(.random(), .random())
+        expect(event.isPriorityEvent) == false
+    }
+
+    func testPaywallCloseIsNotPriorityEvent() {
+        let event: PaywallEvent = .close(.random(), .random())
+        expect(event.isPriorityEvent) == false
+    }
+
+    func testPaywallExitOfferIsNotPriorityEvent() {
+        let event: PaywallEvent = .exitOffer(
+            .random(),
+            .random(),
+            .init(exitOfferType: .dismiss, exitOfferingIdentifier: "offering")
+        )
+        expect(event.isPriorityEvent) == false
+    }
+
+    func testPaywallPurchaseInitiatedIsNotPriorityEvent() {
+        let event: PaywallEvent = .purchaseInitiated(.random(), .random())
+        expect(event.isPriorityEvent) == false
+    }
+
+    func testPaywallPurchaseErrorIsNotPriorityEvent() {
+        let event: PaywallEvent = .purchaseError(.random(), .random())
+        expect(event.isPriorityEvent) == false
+    }
+
+    func testCustomPaywallImpressionIsPriorityEvent() {
+        let event = CustomPaywallImpressionEvent(data: .init(paywallId: "test"))
+        expect(event.isPriorityEvent) == true
+    }
+
+    func testCustomerCenterEventIsNotPriorityEvent() {
+        let event: CustomerCenterEvent = .impression(
+            CustomerCenterEventCreationData(),
+            .init(locale: .current, darkMode: false, isSandbox: false, displayMode: .fullScreen)
+        )
+        expect(event.isPriorityEvent) == false
+    }
+
+    // MARK: - Priority Event Flush
+
+    func testPriorityEventTriggersImmediateFlush() async throws {
+        let event: PaywallEvent = .impression(.random(), .random())
+
+        await self.manager.track(featureEvent: event)
+
+        expect(self.api.invokedPostPaywallEvents) == true
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
+        await self.verifyEmptyStore()
+    }
+
+    func testCustomPaywallImpressionTriggersImmediateFlush() async throws {
+        let event = CustomPaywallImpressionEvent(data: .init(paywallId: "test"))
+
+        await self.manager.track(featureEvent: event)
+
+        expect(self.api.invokedPostPaywallEvents) == true
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
+        await self.verifyEmptyStore()
+    }
+
+    func testNonPriorityEventDoesNotTriggerFlush() async throws {
+        let event: PaywallEvent = .close(.random(), .random())
+
+        await self.manager.track(featureEvent: event)
+
+        expect(self.api.invokedPostPaywallEvents) == false
+        let events = await self.store.storedEvents
+        expect(events).to(haveCount(1))
+    }
+
+    func testPriorityFlushHandlesNetworkErrorGracefully() async throws {
+        let expectedError: NetworkError = .offlineConnection()
+        self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
+
+        let event: PaywallEvent = .impression(.random(), .random())
+
+        await self.manager.track(featureEvent: event)
+
+        // Should have attempted the flush
+        expect(self.api.invokedPostPaywallEvents) == true
+
+        // Event should still be in the store since the flush failed
+        let events = await self.store.storedEvents
+        expect(events).to(haveCount(1))
+    }
+
+    func testPriorityFlushDoesNotInterfereWithNormalFlush() async throws {
+        // Track a priority event, which triggers immediate flush
+        let event1: PaywallEvent = .impression(.random(), .random())
+        await self.manager.track(featureEvent: event1)
+
+        expect(self.api.invokedPostPaywallEvents) == true
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
+        await self.verifyEmptyStore()
+
+        // Track a non-priority event
+        let event2: PaywallEvent = .close(.random(), .random())
+        await self.manager.track(featureEvent: event2)
+
+        // Non-priority event should not trigger another flush
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
+
+        // Normal flush should still work
+        let result = try await self.manager.flushFeatureEvents(batchSize: 1)
+        expect(result) == 1
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(2))
+        await self.verifyEmptyStore()
+    }
+
+    #if swift(>=5.9)
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    func testPriorityFlushQueuedWhenFlushInProgress() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        // Set up the mock to delay the API call
+        let continuation = AsyncStream<Void>.makeStream()
+
+        self.api.stubbedPostPaywallEventsCallback = { completion in
+            Task {
+                await continuation.stream.first { _ in true }
+                completion(nil)
+            }
+        }
+
+        let manager = self.manager!
+
+        // Start a normal flush with an event already stored
+        _ = await self.storeRandomEvent()
+        async let flushResult = manager.flushFeatureEvents(batchSize: 50)
+
+        // Track a priority event while flush is in progress
+        let priorityEvent: PaywallEvent = .impression(.random(), .random())
+        await manager.track(featureEvent: priorityEvent)
+
+        // Signal the API call to complete
+        continuation.continuation.yield()
+        continuation.continuation.finish()
+
+        let result = try await flushResult
+
+        // The first flush processed the initial event
+        expect(result) == 1
+
+        // The priority flush should have been triggered after the first flush completed,
+        // flushing the priority event
+        expect(self.api.invokedPostPaywallEventsParameters.count) >= 2
+        await self.verifyEmptyStore()
+    }
+
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    func testMultiplePriorityEventsWhileFlushInProgressCoalesceIntoSingleFlush() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let continuation = AsyncStream<Void>.makeStream()
+
+        self.api.stubbedPostPaywallEventsCallback = { completion in
+            Task {
+                await continuation.stream.first { _ in true }
+                completion(nil)
+            }
+        }
+
+        let manager = self.manager!
+
+        // Store an event and start a flush
+        _ = await self.storeRandomEvent()
+        async let flushResult = manager.flushFeatureEvents(batchSize: 50)
+
+        // Track multiple priority events while flush is in progress
+        let priorityEvent1: PaywallEvent = .impression(.random(), .random())
+        let priorityEvent2: PaywallEvent = .impression(.random(), .random())
+        await manager.track(featureEvent: priorityEvent1)
+        await manager.track(featureEvent: priorityEvent2)
+
+        // Signal the API call to complete
+        continuation.continuation.yield()
+        continuation.continuation.finish()
+
+        _ = try await flushResult
+
+        // All events should be flushed
+        await self.verifyEmptyStore()
+    }
+    #endif
+
     // MARK: -
 
     private static let userID = "nacho"

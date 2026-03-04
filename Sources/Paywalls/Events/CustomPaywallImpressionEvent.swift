@@ -20,6 +20,8 @@ struct CustomPaywallImpressionEvent: FeatureEvent {
 
     var eventDiscriminator: String? { nil }
 
+    var isPriorityEvent: Bool { true }
+
     var creationData: CreationData
     var data: Data
 
