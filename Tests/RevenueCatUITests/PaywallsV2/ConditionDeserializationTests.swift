@@ -100,6 +100,15 @@ class ConditionDeserializationTests: TestCase {
         expect(condition).to(equal(.introOfferCondition(operator: .notEquals, value: true)))
     }
 
+    func testDecodeExtendedIntroOfferConditionWithWrongValueType_FallsBackToUnsupported() throws {
+        // value should be a boolean, not a string
+        let json = """
+        {"type": "intro_offer_condition", "operator": "=", "value": "not_a_boolean"}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
     // MARK: - Extended Promo Offer Condition Tests
 
     func testDecodeExtendedPromoOfferConditionEqualsTrue() throws {
@@ -116,6 +125,15 @@ class ConditionDeserializationTests: TestCase {
         """
         let condition = try decode(json)
         expect(condition).to(equal(.promoOfferCondition(operator: .equals, value: false)))
+    }
+
+    func testDecodeExtendedPromoOfferConditionWithWrongValueType_FallsBackToUnsupported() throws {
+        // value should be a boolean, not a string
+        let json = """
+        {"type": "promo_offer_condition", "operator": "=", "value": "not_a_boolean"}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
     }
 
     // MARK: - Variable Condition Tests
