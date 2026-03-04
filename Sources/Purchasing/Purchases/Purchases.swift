@@ -1985,7 +1985,11 @@ extension Purchases: AttributionDelegate {
         _ attribution: Attribution,
         requestsSyncAttributesAndOfferingsWithCompletion completion: @escaping (Offerings?, PublicError?) -> Void
     ) {
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
+        #else
         self.syncAttributesAndOfferingsIfNeeded(completion: completion)
+        #endif
     }
 
 }

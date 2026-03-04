@@ -12,7 +12,7 @@ import Foundation
 
 extension SubscriberAttributesManager {
 
-    func setAppstackAttributionParams(_ data: [AnyHashable: Any]?, appUserID: String) {
+    func setAppstackAttributionParams(_ data: [String: Any]?, appUserID: String) {
         guard let data = data else { return }
 
         setAppstackCampaignAttributes(from: data, appUserID: appUserID)
@@ -37,7 +37,7 @@ private extension SubscriberAttributesManager {
 
     }
 
-    func setAppstackCampaignAttributes(from data: [AnyHashable: Any], appUserID: String) {
+    func setAppstackCampaignAttributes(from data: [String: Any], appUserID: String) {
         if let mediaSource = stringValueForAppstackData(from: data, key: AppstackAttributionKeys.adNetwork) {
             setMediaSource(mediaSource, appUserID: appUserID)
             setAttributes([AppstackAttributionKeys.adNetwork: mediaSource], appUserID: appUserID)
@@ -65,7 +65,7 @@ private extension SubscriberAttributesManager {
         }
     }
 
-    func setAppstackClickIDs(from data: [AnyHashable: Any], appUserID: String) {
+    func setAppstackClickIDs(from data: [String: Any], appUserID: String) {
         for key in AppstackAttributionKeys.clickIDs {
             if let value = stringValueForAppstackData(from: data, key: key) {
                 setAttributes([key: value], appUserID: appUserID)
@@ -73,14 +73,14 @@ private extension SubscriberAttributesManager {
         }
     }
 
-    func setAppstackIDAttribute(from data: [AnyHashable: Any], appUserID: String) {
+    func setAppstackIDAttribute(from data: [String: Any], appUserID: String) {
         if let appstackID = stringValueForAppstackData(from: data, key: AppstackAttributionKeys.appstackID) {
             setAppstackID(appstackID, appUserID: appUserID)
         }
     }
 
-    func stringValueForAppstackData(from data: [AnyHashable: Any], key: String) -> String? {
-        guard let value = data[key as AnyHashable] else { return nil }
+    func stringValueForAppstackData(from data: [String: Any], key: String) -> String? {
+        guard let value = data[key] else { return nil }
 
         if let stringValue = value as? String {
             return stringValue.isEmpty ? nil : stringValue

@@ -2456,7 +2456,7 @@ class SubscriberAttributesManagerTests: TestCase {
     // region Appstack Attribution Data
 
     func testSetAppstackAttributionParamsSetsAllAttributes() {
-        let fullData: [AnyHashable: Any] = [
+        let fullData: [String: Any] = [
             "appstack_id": "appstack_id_value",
             "appstack_adnetwork": "facebook",
             "appstack_campaign": "summer_sale",
@@ -2503,7 +2503,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetAppstackAttributionParamsMissingAppstackIdDoesNotTriggerDeviceIdentifiers() {
-        let dataWithoutId: [AnyHashable: Any] = [
+        let dataWithoutId: [String: Any] = [
             "appstack_adnetwork": "facebook",
             "appstack_campaign": "summer_sale"
         ]
@@ -2560,7 +2560,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
     func testSetAppstackAttributionParamsHandlesNilValuesInDictionary() {
         let nilValue: String? = nil
-        let dataWithNilValues: [AnyHashable: Any] = [
+        let dataWithNilValues: [String: Any] = [
             "appstack_adnetwork": nilValue as Any,
             "appstack_campaign": "valid_campaign"
         ]
@@ -2574,7 +2574,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetAppstackAttributionParamsHandlesEmptyStringValues() {
-        let dataWithEmptyStrings: [AnyHashable: Any] = [
+        let dataWithEmptyStrings: [String: Any] = [
             "appstack_adnetwork": "",
             "appstack_campaign": "valid_campaign"
         ]
@@ -2588,7 +2588,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetAppstackAttributionParamsHandlesNSNullValues() {
-        let dataWithNSNull: [AnyHashable: Any] = [
+        let dataWithNSNull: [String: Any] = [
             "appstack_adnetwork": NSNull(),
             "appstack_campaign": "valid_campaign"
         ]
@@ -2600,7 +2600,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetAppstackAttributionParamsHandlesIntegerValues() {
-        let dataWithIntegers: [AnyHashable: Any] = [
+        let dataWithIntegers: [String: Any] = [
             "appstack_adnetwork": 12345
         ]
         self.subscriberAttributesManager.setAppstackAttributionParams(dataWithIntegers, appUserID: "kratos")
@@ -2610,7 +2610,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetAppstackAttributionParamsHandlesDoubleValues() {
-        let dataWithDoubles: [AnyHashable: Any] = [
+        let dataWithDoubles: [String: Any] = [
             "appstack_campaign": 12345.67
         ]
         self.subscriberAttributesManager.setAppstackAttributionParams(dataWithDoubles, appUserID: "kratos")
@@ -2620,7 +2620,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetAppstackAttributionParamsWithOnlyClickIds() {
-        let clickIdData: [AnyHashable: Any] = [
+        let clickIdData: [String: Any] = [
             "fbclid": "fb_click_id",
             "gclid": "google_click_id"
         ]
@@ -2649,7 +2649,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetAppstackAttributionParamsIgnoresUnrelatedFields() {
-        let dataWithExtraFields: [AnyHashable: Any] = [
+        let dataWithExtraFields: [String: Any] = [
             "appstack_adnetwork": "google",
             "some_random_field": "value",
             "install_time": "2024-01-15",
@@ -2669,7 +2669,7 @@ class SubscriberAttributesManagerTests: TestCase {
             "appstack_id": "test_id"
         ]
         self.subscriberAttributesManager.setAppstackAttributionParams(
-            nsDictionary as? [AnyHashable: Any],
+            nsDictionary as? [String: Any],
             appUserID: "kratos"
         )
 
@@ -2681,7 +2681,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetAppstackAttributionParamsTypicalIntegration() {
-        let attributionParams: [AnyHashable: Any] = [
+        let attributionParams: [String: Any] = [
             "appstack_id": "as_install_abc123",
             "appstack_adnetwork": "Meta",
             "appstack_campaign": "Summer Sale 2024",

@@ -115,33 +115,20 @@ func checkAttributionAPI() {
 func checkSetAppstackAttributionParamsAPI() {
     attribution.setAppstackAttributionParams(nil) { _, _ in }
 
-    let anyHashableDict: [AnyHashable: Any] = [:]
-    attribution.setAppstackAttributionParams(anyHashableDict) { _, _ in }
-
-    let optionalAnyHashableDict: [AnyHashable: Any]? = [:]
-    attribution.setAppstackAttributionParams(optionalAnyHashableDict) { _, _ in }
-
     let stringAnyDict: [String: Any] = [:]
     attribution.setAppstackAttributionParams(stringAnyDict) { _, _ in }
 
-    let stringStringDict: [String: String] = [:]
-    attribution.setAppstackAttributionParams(stringStringDict as [AnyHashable: Any]) { _, _ in }
+    let optionalStringAnyDict: [String: Any]? = [:]
+    attribution.setAppstackAttributionParams(optionalStringAnyDict) { _, _ in }
 
-    let stringOptionalStringDict: [String: String?] = [:]
-    attribution.setAppstackAttributionParams(
-        stringOptionalStringDict.mapValues { $0 as Any } as [AnyHashable: Any]
-    ) { _, _ in }
+    let stringStringDict: [String: String] = [:]
+    attribution.setAppstackAttributionParams(stringStringDict) { _, _ in }
 
     let stringIntDict: [String: Int] = [:]
-    attribution.setAppstackAttributionParams(stringIntDict as [AnyHashable: Any]) { _, _ in }
-
-    let stringOptionalIntDict: [String: Int?] = [:]
-    attribution.setAppstackAttributionParams(
-        stringOptionalIntDict.mapValues { $0 as Any } as [AnyHashable: Any]
-    ) { _, _ in }
+    attribution.setAppstackAttributionParams(stringIntDict) { _, _ in }
 
     let nsDictionary: NSDictionary = [:]
-    attribution.setAppstackAttributionParams(nsDictionary as? [AnyHashable: Any]) { _, _ in }
+    attribution.setAppstackAttributionParams(nsDictionary as? [String: Any]) { _, _ in }
 }
 
 func checkSetAppsFlyerConversionDataAPI() {
