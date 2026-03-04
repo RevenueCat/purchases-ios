@@ -17,6 +17,10 @@ struct PaywallsTesterApp: App {
     @State
     private var shouldShowWebPurchaseRedemptionResultAlert: Bool = false
 
+    init() {
+        Configuration.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             AppContentView()
