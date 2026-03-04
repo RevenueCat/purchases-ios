@@ -48,6 +48,45 @@ class TabsComponentViewModel {
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
 
+    // swiftlint:disable:next function_parameter_count
+    func styles(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        colorScheme: ColorScheme
+    ) -> TabsComponentStyle {
+        let conditionContext = ConditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
+        )
+
+        let partial = PresentedTabsPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+
+        return TabsComponentStyle(
+            uiConfigProvider: self.uiConfigProvider,
+            visible: partial?.visible ?? self.component.visible ?? true,
+            size: partial?.size ?? self.component.size,
+            padding: partial?.padding ?? self.component.padding,
+            margin: partial?.margin ?? self.component.margin,
+            background: partial?.background ?? self.component.background,
+            shape: partial?.shape ?? self.component.shape,
+            border: partial?.border ?? self.component.border,
+            shadow: partial?.shadow ?? self.component.shadow,
+            colorScheme: colorScheme
+        )
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -123,7 +162,7 @@ struct TabsComponentStyle {
         size: PaywallComponent.Size,
         padding: PaywallComponent.Padding,
         margin: PaywallComponent.Padding,
-        backgroundColor: PaywallComponent.ColorScheme?,
+        background: PaywallComponent.Background?,
         shape: PaywallComponent.Shape?,
         border: PaywallComponent.Border?,
         shadow: PaywallComponent.Shadow?,
@@ -131,7 +170,7 @@ struct TabsComponentStyle {
     ) {
         self.visible = visible
         self.size = size
-        self.backgroundStyle = backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+        self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider)
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.shape = shape?.shape
