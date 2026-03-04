@@ -66,4 +66,3 @@ extension CustomPaywallImpressionEvent {
 extension CustomPaywallImpressionEvent.CreationData: Equatable, Codable, Sendable {}
 extension CustomPaywallImpressionEvent.Data: Equatable, Codable, Sendable {}
 extension CustomPaywallImpressionEvent: Equatable, Codable, Sendable {}
-
