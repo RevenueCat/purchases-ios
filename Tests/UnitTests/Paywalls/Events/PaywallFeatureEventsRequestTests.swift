@@ -90,6 +90,32 @@ class PaywallFeatureEventsRequestTests: TestCase {
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
+    func testWithPurchaseInfoPreservesSource() {
+        let data = Self.eventDataWithSource
+
+        let result = data.withPurchaseInfo(
+            packageId: "test_package",
+            productId: "test_product",
+            errorCode: nil,
+            errorMessage: nil
+        )
+
+        expect(result.source) == .customerCenter
+    }
+
+    func testWithPurchaseInfoPreservesNilSource() {
+        let data = Self.eventData
+
+        let result = data.withPurchaseInfo(
+            packageId: "test_package",
+            productId: "test_product",
+            errorCode: nil,
+            errorMessage: nil
+        )
+
+        expect(result.source).to(beNil())
+    }
+
     func testPaywallEventWithoutMillisecondPrecisionIsParsed() throws {
         let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
@@ -141,7 +167,8 @@ class PaywallFeatureEventsRequestTests: TestCase {
             sessionID: UUID(),
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: false
+            darkMode: false,
+            source: nil
         )
         let event = PaywallEvent.impression(creationData, eventData)
 
@@ -178,7 +205,8 @@ class PaywallFeatureEventsRequestTests: TestCase {
             sessionID: UUID(),
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: false
+            darkMode: false,
+            source: nil
         )
         let event = PaywallEvent.close(creationData, eventData)
 
@@ -215,7 +243,8 @@ class PaywallFeatureEventsRequestTests: TestCase {
             sessionID: UUID(),
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: false
+            darkMode: false,
+            source: nil
         )
         let event = PaywallEvent.cancel(creationData, eventData)
 
@@ -266,7 +295,8 @@ private extension PaywallFeatureEventsRequestTests {
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
         displayMode: .fullScreen,
         localeIdentifier: "es_ES",
-        darkMode: true
+        darkMode: true,
+        source: nil
     )
 
     static let eventDataWithSource: PaywallEvent.Data = .init(
