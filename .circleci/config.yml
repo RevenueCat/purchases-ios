@@ -677,10 +677,6 @@ jobs:
           name: SPM RevenueCatUI Release Build
           command: swift build -c release --target RevenueCatUI
           no_output_timeout: 30m
-      - run:
-          name: SPM RevenueCatAdMob Release Build
-          command: cd RevenueCatAdMob && swift build -c release --target RevenueCatAdMob
-          no_output_timeout: 30m
       - slack-notify-on-fail
 
   api-tests:
@@ -703,6 +699,10 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - run:
+          name: SPM RevenueCatAdMob Release Build
+          command: cd RevenueCatAdMob && swift build -c release --target RevenueCatAdMob
+          no_output_timeout: 30m
       - tuist-generate-workspace
       - run:
           name: RevenueCatAdMob unit tests
@@ -713,15 +713,6 @@ jobs:
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5'
             -resultBundlePath /tmp/RevenueCatAdMobTestResults.xcresult
           no_output_timeout: 10m
-      - slack-notify-on-fail
-
-  revenuecat-admob-tests-v11:
-    executor:
-      name: macos-executor
-      xcode_version: "16.4"
-    steps:
-      - checkout
-      - install-dependencies
       - run:
           name: RevenueCatAdMob v11 compatibility tests
           command: |
@@ -2541,9 +2532,6 @@ workflows:
           context:
             - slack-secrets
       - revenuecat-admob-tests:
-          context:
-            - slack-secrets
-      - revenuecat-admob-tests-v11:
           context:
             - slack-secrets
       - deploy-purchase-tester:
