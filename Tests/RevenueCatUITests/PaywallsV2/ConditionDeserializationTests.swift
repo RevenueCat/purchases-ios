@@ -57,72 +57,72 @@ class ConditionDeserializationTests: TestCase {
     }
 
     func testDecodeLegacyIntroOfferCondition() throws {
-        // Legacy intro_offer is normalized to introOffer(operator: .equals, value: true)
+        // Legacy intro_offer decodes to .introOffer (no params)
         let json = """
         {"type": "intro_offer"}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.introOffer(operator: .equals, value: true)))
+        expect(condition).to(equal(.introOffer))
     }
 
     func testDecodeLegacyPromoOfferCondition() throws {
-        // Legacy promo_offer is normalized to promoOffer(operator: .equals, value: true)
+        // Legacy promo_offer decodes to .promoOffer (no params)
         let json = """
         {"type": "promo_offer"}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.promoOffer(operator: .equals, value: true)))
+        expect(condition).to(equal(.promoOffer))
     }
 
     // MARK: - Extended Intro Offer Condition Tests
 
     func testDecodeExtendedIntroOfferConditionEqualsTrue() throws {
         let json = """
-        {"type": "intro_offer", "operator": "=", "value": true}
+        {"type": "intro_offer_condition", "operator": "=", "value": true}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.introOffer(operator: .equals, value: true)))
+        expect(condition).to(equal(.introOfferCondition(operator: .equals, value: true)))
     }
 
     func testDecodeExtendedIntroOfferConditionEqualsFalse() throws {
         let json = """
-        {"type": "intro_offer", "operator": "=", "value": false}
+        {"type": "intro_offer_condition", "operator": "=", "value": false}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.introOffer(operator: .equals, value: false)))
+        expect(condition).to(equal(.introOfferCondition(operator: .equals, value: false)))
     }
 
     func testDecodeExtendedIntroOfferConditionNotEquals() throws {
         let json = """
-        {"type": "intro_offer", "operator": "!=", "value": true}
+        {"type": "intro_offer_condition", "operator": "!=", "value": true}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.introOffer(operator: .notEquals, value: true)))
+        expect(condition).to(equal(.introOfferCondition(operator: .notEquals, value: true)))
     }
 
     // MARK: - Extended Promo Offer Condition Tests
 
     func testDecodeExtendedPromoOfferConditionEqualsTrue() throws {
         let json = """
-        {"type": "promo_offer", "operator": "=", "value": true}
+        {"type": "promo_offer_condition", "operator": "=", "value": true}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.promoOffer(operator: .equals, value: true)))
+        expect(condition).to(equal(.promoOfferCondition(operator: .equals, value: true)))
     }
 
     func testDecodeExtendedPromoOfferConditionEqualsFalse() throws {
         let json = """
-        {"type": "promo_offer", "operator": "=", "value": false}
+        {"type": "promo_offer_condition", "operator": "=", "value": false}
         """
         let condition = try decode(json)
-        expect(condition).to(equal(.promoOffer(operator: .equals, value: false)))
+        expect(condition).to(equal(.promoOfferCondition(operator: .equals, value: false)))
     }
 
     // MARK: - Variable Condition Tests
 
     func testDecodeVariableConditionWithStringValue() throws {
         let json = """
-        {"type": "variable", "operator": "=", "variable": "user_tier", "value": "premium"}
+        {"type": "variable_condition", "operator": "=", "variable": "user_tier", "value": "premium"}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.variable(
@@ -134,7 +134,7 @@ class ConditionDeserializationTests: TestCase {
 
     func testDecodeVariableConditionWithBooleanValue() throws {
         let json = """
-        {"type": "variable", "operator": "!=", "variable": "is_vip", "value": true}
+        {"type": "variable_condition", "operator": "!=", "variable": "is_vip", "value": true}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.variable(
@@ -146,7 +146,7 @@ class ConditionDeserializationTests: TestCase {
 
     func testDecodeVariableConditionWithIntValue() throws {
         let json = """
-        {"type": "variable", "operator": "=", "variable": "level", "value": 5}
+        {"type": "variable_condition", "operator": "=", "variable": "level", "value": 5}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.variable(
@@ -158,7 +158,7 @@ class ConditionDeserializationTests: TestCase {
 
     func testDecodeVariableConditionWithDoubleValue() throws {
         let json = """
-        {"type": "variable", "operator": "=", "variable": "score", "value": 3.14}
+        {"type": "variable_condition", "operator": "=", "variable": "score", "value": 3.14}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.variable(
@@ -172,7 +172,7 @@ class ConditionDeserializationTests: TestCase {
 
     func testDecodeSelectedPackageConditionIn() throws {
         let json = """
-        {"type": "selected_package", "operator": "in", "packages": ["monthly", "annual"]}
+        {"type": "selected_package_condition", "operator": "in", "packages": ["monthly", "annual"]}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.selectedPackage(
@@ -183,7 +183,7 @@ class ConditionDeserializationTests: TestCase {
 
     func testDecodeSelectedPackageConditionNotIn() throws {
         let json = """
-        {"type": "selected_package", "operator": "not in", "packages": ["trial"]}
+        {"type": "selected_package_condition", "operator": "not in", "packages": ["trial"]}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.selectedPackage(
@@ -232,7 +232,8 @@ class ConditionDeserializationTests: TestCase {
 
     func testDecodeVariableConditionWithExtraFields() throws {
         let json = """
-        {"type": "variable", "operator": "=", "variable": "plan", "value": "premium", "description": "Check plan"}
+        {"type": "variable_condition", "operator": "=", "variable": "plan", "value": "premium",
+        "description": "Check plan"}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.variable(
@@ -245,7 +246,7 @@ class ConditionDeserializationTests: TestCase {
     func testDecodeMalformedVariableCondition_FallsBackToUnsupported() throws {
         // Missing required "variable" field
         let json = """
-        {"type": "variable", "operator": "=", "value": "test"}
+        {"type": "variable_condition", "operator": "=", "value": "test"}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.unsupported))
@@ -254,7 +255,7 @@ class ConditionDeserializationTests: TestCase {
     func testDecodeMalformedSelectedPackageCondition_FallsBackToUnsupported() throws {
         // Missing required "packages" field
         let json = """
-        {"type": "selected_package", "operator": "in"}
+        {"type": "selected_package_condition", "operator": "in"}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.unsupported))
@@ -262,7 +263,7 @@ class ConditionDeserializationTests: TestCase {
 
     func testDecodeSelectedPackageWithUnknownOperator_FallsBackToUnsupported() throws {
         let json = """
-        {"type": "selected_package", "operator": "contains", "packages": ["monthly"]}
+        {"type": "selected_package_condition", "operator": "contains", "packages": ["monthly"]}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.unsupported))
@@ -270,7 +271,7 @@ class ConditionDeserializationTests: TestCase {
 
     func testDecodeVariableWithUnknownOperator_FallsBackToUnsupported() throws {
         let json = """
-        {"type": "variable", "operator": ">", "variable": "level", "value": 5}
+        {"type": "variable_condition", "operator": ">", "variable": "level", "value": 5}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.unsupported))
@@ -279,7 +280,7 @@ class ConditionDeserializationTests: TestCase {
     func testDecodeSelectedPackageWithWrongFieldType_FallsBackToUnsupported() throws {
         // packages should be an array, not a string
         let json = """
-        {"type": "selected_package", "operator": "in", "packages": "not_an_array"}
+        {"type": "selected_package_condition", "operator": "in", "packages": "not_an_array"}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.unsupported))
@@ -288,7 +289,7 @@ class ConditionDeserializationTests: TestCase {
     func testDecodeVariableWithArrayValue_FallsBackToUnsupported() throws {
         // value should be a primitive, not an array
         let json = """
-        {"type": "variable", "operator": "=", "variable": "items", "value": [1, 2, 3]}
+        {"type": "variable_condition", "operator": "=", "variable": "items", "value": [1, 2, 3]}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.unsupported))
@@ -297,7 +298,7 @@ class ConditionDeserializationTests: TestCase {
     func testDecodeVariableWithObjectValue_FallsBackToUnsupported() throws {
         // value should be a primitive, not an object
         let json = """
-        {"type": "variable", "operator": "=", "variable": "config", "value": {"nested": true}}
+        {"type": "variable_condition", "operator": "=", "variable": "config", "value": {"nested": true}}
         """
         let condition = try decode(json)
         expect(condition).to(equal(.unsupported))
@@ -357,15 +358,21 @@ class ConditionDeserializationTests: TestCase {
         expect(PaywallComponent.ExtendedCondition.selected.toCondition()).to(equal(.selected))
     }
 
+    func testExtendedConditionToPublicCondition_LegacyOffers() throws {
+        // Legacy intro/promo offer conditions map to their public equivalents
+        expect(PaywallComponent.ExtendedCondition.introOffer.toCondition()).to(equal(.introOffer))
+        expect(PaywallComponent.ExtendedCondition.promoOffer.toCondition()).to(equal(.promoOffer))
+    }
+
     func testExtendedConditionToPublicCondition_Extended() throws {
-        // Extended intro/promo offer conditions map to their legacy equivalents
-        let introCondition = PaywallComponent.ExtendedCondition.introOffer(
+        // Extended intro/promo offer conditions also map to their legacy public equivalents
+        let introCondition = PaywallComponent.ExtendedCondition.introOfferCondition(
             operator: .equals,
             value: true
         )
         expect(introCondition.toCondition()).to(equal(.introOffer))
 
-        let promoCondition = PaywallComponent.ExtendedCondition.promoOffer(
+        let promoCondition = PaywallComponent.ExtendedCondition.promoOfferCondition(
             operator: .notEquals,
             value: false
         )

@@ -254,11 +254,73 @@ class PresentedPartialsTests: TestCase {
         expect(result).to(beNil())
     }
 
+    // MARK: - Legacy Intro/Promo Offer Condition Tests
+
+    func testLegacyIntroOffer_MatchesWhenEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [.introOffer]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testLegacyIntroOffer_DoesNotMatchWhenNotEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [.introOffer]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testLegacyPromoOffer_MatchesWhenEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [.promoOffer]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: true,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testLegacyPromoOffer_DoesNotMatchWhenNotEligible() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [.promoOffer]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
     // MARK: - Extended Intro Offer Condition Tests
 
     func testIntroOfferCondition_EqualsTrue_MatchesWhenEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .equals, value: true)
+            .introOfferCondition(operator: .equals, value: true)
         ]
 
         let result = TestPartial.buildPartial(
@@ -275,7 +337,7 @@ class PresentedPartialsTests: TestCase {
 
     func testIntroOfferCondition_EqualsFalse_MatchesWhenNotEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .equals, value: false)
+            .introOfferCondition(operator: .equals, value: false)
         ]
 
         let result = TestPartial.buildPartial(
@@ -292,7 +354,7 @@ class PresentedPartialsTests: TestCase {
 
     func testIntroOfferCondition_NotEqualsTrue_MatchesWhenNotEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .notEquals, value: true)
+            .introOfferCondition(operator: .notEquals, value: true)
         ]
 
         let result = TestPartial.buildPartial(
@@ -309,7 +371,7 @@ class PresentedPartialsTests: TestCase {
 
     func testIntroOfferCondition_EqualsFalse_DoesNotMatchWhenEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .equals, value: false)
+            .introOfferCondition(operator: .equals, value: false)
         ]
 
         let result = TestPartial.buildPartial(
@@ -326,7 +388,7 @@ class PresentedPartialsTests: TestCase {
 
     func testIntroOfferCondition_NotEqualsTrue_DoesNotMatchWhenEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .notEquals, value: true)
+            .introOfferCondition(operator: .notEquals, value: true)
         ]
 
         let result = TestPartial.buildPartial(
@@ -343,7 +405,7 @@ class PresentedPartialsTests: TestCase {
 
     func testIntroOfferCondition_NotEqualsFalse_MatchesWhenEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .notEquals, value: false)
+            .introOfferCondition(operator: .notEquals, value: false)
         ]
 
         let result = TestPartial.buildPartial(
@@ -360,7 +422,7 @@ class PresentedPartialsTests: TestCase {
 
     func testIntroOfferCondition_NotEqualsFalse_DoesNotMatchWhenNotEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .notEquals, value: false)
+            .introOfferCondition(operator: .notEquals, value: false)
         ]
 
         let result = TestPartial.buildPartial(
@@ -377,7 +439,7 @@ class PresentedPartialsTests: TestCase {
 
     func testIntroOfferCondition_EqualsTrue_DoesNotMatchWhenNotEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .equals, value: true)
+            .introOfferCondition(operator: .equals, value: true)
         ]
 
         let result = TestPartial.buildPartial(
@@ -396,7 +458,7 @@ class PresentedPartialsTests: TestCase {
 
     func testPromoOfferCondition_EqualsTrue_MatchesWhenEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .promoOffer(operator: .equals, value: true)
+            .promoOfferCondition(operator: .equals, value: true)
         ]
 
         let result = TestPartial.buildPartial(
@@ -413,7 +475,7 @@ class PresentedPartialsTests: TestCase {
 
     func testPromoOfferCondition_EqualsFalse_MatchesWhenNotEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .promoOffer(operator: .equals, value: false)
+            .promoOfferCondition(operator: .equals, value: false)
         ]
 
         let result = TestPartial.buildPartial(
@@ -430,7 +492,7 @@ class PresentedPartialsTests: TestCase {
 
     func testPromoOfferCondition_NotEqualsFalse_MatchesWhenEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .promoOffer(operator: .notEquals, value: false)
+            .promoOfferCondition(operator: .notEquals, value: false)
         ]
 
         let result = TestPartial.buildPartial(
@@ -447,7 +509,7 @@ class PresentedPartialsTests: TestCase {
 
     func testPromoOfferCondition_EqualsTrue_DoesNotMatchWhenNotEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .promoOffer(operator: .equals, value: true)
+            .promoOfferCondition(operator: .equals, value: true)
         ]
 
         let result = TestPartial.buildPartial(
@@ -464,7 +526,7 @@ class PresentedPartialsTests: TestCase {
 
     func testPromoOfferCondition_EqualsFalse_DoesNotMatchWhenEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .promoOffer(operator: .equals, value: false)
+            .promoOfferCondition(operator: .equals, value: false)
         ]
 
         let result = TestPartial.buildPartial(
@@ -481,7 +543,7 @@ class PresentedPartialsTests: TestCase {
 
     func testPromoOfferCondition_NotEqualsTrue_DoesNotMatchWhenEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .promoOffer(operator: .notEquals, value: true)
+            .promoOfferCondition(operator: .notEquals, value: true)
         ]
 
         let result = TestPartial.buildPartial(
@@ -498,7 +560,7 @@ class PresentedPartialsTests: TestCase {
 
     func testPromoOfferCondition_NotEqualsTrue_MatchesWhenNotEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .promoOffer(operator: .notEquals, value: true)
+            .promoOfferCondition(operator: .notEquals, value: true)
         ]
 
         let result = TestPartial.buildPartial(
@@ -515,7 +577,7 @@ class PresentedPartialsTests: TestCase {
 
     func testPromoOfferCondition_NotEqualsFalse_DoesNotMatchWhenNotEligible() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .promoOffer(operator: .notEquals, value: false)
+            .promoOfferCondition(operator: .notEquals, value: false)
         ]
 
         let result = TestPartial.buildPartial(
@@ -535,7 +597,7 @@ class PresentedPartialsTests: TestCase {
     func testIntroOfferCondition_IgnoresPromoEligibility() throws {
         // intro_offer equals true, only promo eligible → should NOT match
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .equals, value: true)
+            .introOfferCondition(operator: .equals, value: true)
         ]
 
         let result = TestPartial.buildPartial(
@@ -553,7 +615,7 @@ class PresentedPartialsTests: TestCase {
     func testPromoOfferCondition_IgnoresIntroEligibility() throws {
         // promo_offer equals true, only intro eligible → should NOT match
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .promoOffer(operator: .equals, value: true)
+            .promoOfferCondition(operator: .equals, value: true)
         ]
 
         let result = TestPartial.buildPartial(
@@ -693,7 +755,7 @@ class PresentedPartialsTests: TestCase {
     func testMultipleMatchingOverrides_LaterPropertiesWin() throws {
         // Two matching overrides, verify last value wins
         let conditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .equals, value: true)
+            .introOfferCondition(operator: .equals, value: true)
         ]
 
         let result = TestPartial.buildPartial(
@@ -716,10 +778,10 @@ class PresentedPartialsTests: TestCase {
         // Three overrides: first matches, second doesn't, third matches
         // Verify first + third combine (skipping second)
         let matchingConditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .equals, value: true)
+            .introOfferCondition(operator: .equals, value: true)
         ]
         let nonMatchingConditions: [PaywallComponent.ExtendedCondition] = [
-            .introOffer(operator: .equals, value: false)
+            .introOfferCondition(operator: .equals, value: false)
         ]
 
         let result = TestPartial.buildPartial(

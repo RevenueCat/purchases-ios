@@ -169,10 +169,14 @@ extension PaywallComponent {
         // MARK: - Selection state
         case selected
 
+        // MARK: - Offer eligibility (legacy simple boolean check)
+        case introOffer
+        case promoOffer
+
         // MARK: - Offer eligibility (with operator/value)
-        // Note: Legacy conditions without operator/value are normalized to (operator: .equals, value: true)
-        case introOffer(operator: EqualityOperator, value: Bool)
-        case promoOffer(operator: EqualityOperator, value: Bool)
+        case introOfferCondition(operator: EqualityOperator, value: Bool)
+        case promoOfferCondition(operator: EqualityOperator, value: Bool)
+
         // Multiple intro offers condition - supported in Android, always evaluates to false on iOS
         case multipleIntroOffers
 
@@ -191,8 +195,8 @@ extension PaywallComponent {
             case .medium: return .medium
             case .expanded: return .expanded
             case .selected: return .selected
-            case .introOffer: return .introOffer
-            case .promoOffer: return .promoOffer
+            case .introOffer, .introOfferCondition: return .introOffer
+            case .promoOffer, .promoOfferCondition: return .promoOffer
             case .multipleIntroOffers: return .multipleIntroOffers
             case .variable, .selectedPackage, .unsupported: return .unsupported
             }
@@ -206,13 +210,14 @@ extension PaywallComponent {
             case .medium: self = .medium
             case .expanded: self = .expanded
             case .selected: self = .selected
-            case .introOffer: self = .introOffer(operator: .equals, value: true)
-            case .promoOffer: self = .promoOffer(operator: .equals, value: true)
+            case .introOffer: self = .introOffer
+            case .promoOffer: self = .promoOffer
             case .multipleIntroOffers: self = .multipleIntroOffers
             case .unsupported: self = .unsupported
             }
         }
 
+        // swiftlint:disable:next cyclomatic_complexity
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -225,23 +230,27 @@ extension PaywallComponent {
                 try container.encode(ConditionType.expanded.rawValue, forKey: .type)
             case .selected:
                 try container.encode(ConditionType.selected.rawValue, forKey: .type)
-            case .introOffer(let condOp, let value):
+            case .introOffer:
                 try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
+            case .promoOffer:
+                try container.encode(ConditionType.promoOffer.rawValue, forKey: .type)
+            case .introOfferCondition(let condOp, let value):
+                try container.encode(ConditionType.introOfferCondition.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(value, forKey: .value)
-            case .promoOffer(let condOp, let value):
-                try container.encode(ConditionType.promoOffer.rawValue, forKey: .type)
+            case .promoOfferCondition(let condOp, let value):
+                try container.encode(ConditionType.promoOfferCondition.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(value, forKey: .value)
             case .multipleIntroOffers:
                 try container.encode(ConditionType.multipleIntroOffers.rawValue, forKey: .type)
             case .variable(let condOp, let variable, let value):
-                try container.encode(ConditionType.variable.rawValue, forKey: .type)
+                try container.encode(ConditionType.variableCondition.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(variable, forKey: .variable)
                 try container.encode(value, forKey: .value)
             case .selectedPackage(let condOp, let packages):
-                try container.encode(ConditionType.selectedPackage.rawValue, forKey: .type)
+                try container.encode(ConditionType.selectedPackageCondition.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(packages, forKey: .packages)
             case .unsupported:
@@ -271,23 +280,25 @@ extension PaywallComponent {
                 case .selected:
                     self = .selected
                 case .introOffer:
-                    // Check for extended form (with operator/value), otherwise normalize legacy
-                    let condOp = try container.decodeIfPresent(EqualityOperator.self, forKey: .operator) ?? .equals
-                    let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
-                    self = .introOffer(operator: condOp, value: value)
+                    self = .introOffer
+                case .introOfferCondition:
+                    let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
+                    let value = try container.decode(Bool.self, forKey: .value)
+                    self = .introOfferCondition(operator: condOp, value: value)
                 case .promoOffer:
-                    // Check for extended form (with operator/value), otherwise normalize legacy
-                    let condOp = try container.decodeIfPresent(EqualityOperator.self, forKey: .operator) ?? .equals
-                    let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
-                    self = .promoOffer(operator: condOp, value: value)
+                    self = .promoOffer
+                case .promoOfferCondition:
+                    let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
+                    let value = try container.decode(Bool.self, forKey: .value)
+                    self = .promoOfferCondition(operator: condOp, value: value)
                 case .multipleIntroOffers:
                     self = .multipleIntroOffers
-                case .variable:
+                case .variableCondition:
                     let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
                     let variable = try container.decode(String.self, forKey: .variable)
                     let value = try container.decode(ConditionValue.self, forKey: .value)
                     self = .variable(operator: condOp, variable: variable, value: value)
-                case .selectedPackage:
+                case .selectedPackageCondition:
                     let condOp = try container.decode(ArrayOperator.self, forKey: .operator)
                     let packages = try container.decode([String].self, forKey: .packages)
                     self = .selectedPackage(operator: condOp, packages: packages)
@@ -316,11 +327,13 @@ extension PaywallComponent {
             case medium
             case expanded
             case introOffer = "intro_offer"
+            case introOfferCondition = "intro_offer_condition"
             case promoOffer = "promo_offer"
+            case promoOfferCondition = "promo_offer_condition"
             case multipleIntroOffers = "multiple_intro_offers"
             case selected
-            case variable
-            case selectedPackage = "selected_package"
+            case variableCondition = "variable_condition"
+            case selectedPackageCondition = "selected_package_condition"
 
         }
 
