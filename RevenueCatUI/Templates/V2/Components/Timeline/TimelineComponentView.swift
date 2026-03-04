@@ -84,7 +84,8 @@ struct TimelineComponentView: View {
                         for: self.packageContext.package
                     ),
                     selectedPackageId: self.packageContext.package?.identifier,
-                    customVariables: self.customVariables
+                    customVariables: self.customVariables,
+                    defaultCustomVariables: viewModel.uiConfigProvider.defaultCustomVariables
                 ) { itemStyle in
                     if itemStyle.visible {
                         timelineRow(itemStyle: itemStyle, style: style)
@@ -111,7 +112,8 @@ struct TimelineComponentView: View {
                             for: self.packageContext.package
                         ),
                         selectedPackageId: self.packageContext.package?.identifier,
-                        customVariables: self.customVariables
+                        customVariables: self.customVariables,
+                        defaultCustomVariables: viewModel.uiConfigProvider.defaultCustomVariables
                     ) { itemStyle in
                         if itemStyle.visible {
                             let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil

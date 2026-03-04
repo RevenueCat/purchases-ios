@@ -59,7 +59,8 @@ class ImageComponentViewModel {
     ) -> ImageComponentStyle {
         let conditionContext = ConditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            defaultCustomVariables: uiConfigProvider.defaultCustomVariables
         )
 
         let localizedPartial = LocalizedImagePartial.buildPartial(
