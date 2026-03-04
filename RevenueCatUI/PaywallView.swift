@@ -489,7 +489,7 @@ private final class HostWindowObserverView: NSView {
 
     private weak var observedHostWindow: NSWindow?
     private var frameObservation: NSKeyValueObservation?
-    private var sheetParentObservation: NSKeyValueObservation?
+    private var sheetNotificationObserver: NSObjectProtocol?
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
@@ -497,28 +497,33 @@ private final class HostWindowObserverView: NSView {
     }
 
     deinit {
-        self.frameObservation = nil
-        self.sheetParentObservation = nil
+        self.clearObservations()
     }
 
+    /// Finds the host (parent) window that presented this view's window as a sheet,
+    /// then begins observing the host's frame for size changes.
     private func resolveAndObserveHost() {
         guard let paywallWindow = self.window else {
             self.clearObservations()
             return
         }
 
+        // If sheetParent is already set when viewDidMoveToWindow fires.
         if let host = paywallWindow.sheetParent {
-            self.sheetParentObservation = nil
             self.observeHostFrame(host)
-        } else {
-            self.sheetParentObservation = paywallWindow.observe(
-                \.sheetParent,
-                options: [.new]
-            ) { [weak self] window, _ in
-                if let host = window.sheetParent {
-                    self?.sheetParentObservation = nil
-                    self?.observeHostFrame(host)
-                }
+            return
+        }
+
+        // If the sheet relationship isn't established yet.
+        self.sheetNotificationObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.willBeginSheetNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            DispatchQueue.main.async {
+                guard let self, let host = self.window?.sheetParent else { return }
+                self.removeSheetNotificationObserver()
+                self.observeHostFrame(host)
             }
         }
     }
@@ -534,9 +539,16 @@ private final class HostWindowObserverView: NSView {
         }
     }
 
+    private func removeSheetNotificationObserver() {
+        if let observer = self.sheetNotificationObserver {
+            NotificationCenter.default.removeObserver(observer)
+            self.sheetNotificationObserver = nil
+        }
+    }
+
     private func clearObservations() {
         self.frameObservation = nil
-        self.sheetParentObservation = nil
+        self.removeSheetNotificationObserver()
         self.observedHostWindow = nil
     }
 }
