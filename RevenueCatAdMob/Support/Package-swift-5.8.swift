@@ -1,6 +1,7 @@
 // swift-tools-version:5.8
 // RevenueCat AdMob Adapter — v11-compatible manifest (Google Mobile Ads 11.x, RC_ADMOB_SDK_11).
-// Used only for v11 CI: copy this to ../Package.swift before running swift test.
+// Not redundant with ../Package.swift: main manifest uses GMA 12.x–14.x; this one pins to 11.x for
+// revenuecat-admob-tests-v11 CI. That job copies this file to ../Package.swift before running tests.
 
 import PackageDescription
 
