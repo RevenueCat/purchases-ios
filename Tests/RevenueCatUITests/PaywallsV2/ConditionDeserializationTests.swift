@@ -192,6 +192,16 @@ class ConditionDeserializationTests: TestCase {
         )))
     }
 
+    // MARK: - Multiple Intro Offers Compatibility (iOS)
+
+    func testDecodeMultipleIntroOffersCondition_DecodesToMultipleIntroOffers() throws {
+        let json = """
+        {"type": "multiple_intro_offers", "operator": "=", "value": true}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.multipleIntroOffers))
+    }
+
     // MARK: - Unknown Condition Type Tests
 
     func testDecodeUnknownConditionType_FallsBackToUnsupported() throws {

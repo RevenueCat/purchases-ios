@@ -739,6 +739,23 @@ class PresentedPartialsTests: TestCase {
         expect(result?.value).to(equal("third"))
     }
 
+    // MARK: - Multiple Intro Offers Compatibility (iOS)
+
+    func testMultipleIntroOffersCondition_AlwaysEvaluatesToFalse() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [.multipleIntroOffers]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
     // MARK: - Unsupported Condition Tests
 
     func testUnsupportedCondition_DoesNotMatch() throws {

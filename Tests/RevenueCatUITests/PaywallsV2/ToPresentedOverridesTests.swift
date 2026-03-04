@@ -84,6 +84,16 @@ class ToPresentedOverridesTests: TestCase {
         expect(overrides.hasUnsupportedCondition()).to(beFalse())
     }
 
+    // MARK: - Multiple Intro Offers Compatibility (iOS)
+
+    func testHasUnsupportedCondition_WithMultipleIntroOffers_ReturnsFalse() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.multipleIntroOffers], properties: .init())
+        ]
+
+        expect(overrides.hasUnsupportedCondition()).to(beFalse())
+    }
+
     // MARK: - Recursive containsUnsupportedConditions Tests
 
     func testStackWithUnsupportedCondition_ReturnsTrue() throws {
