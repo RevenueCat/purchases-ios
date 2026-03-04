@@ -541,7 +541,11 @@ public extension Attribution {
         completion: @escaping (Offerings?, PublicError?) -> Void
     ) {
         self.subscriberAttributesManager.setAppstackAttributionParams(data, appUserID: appUserID)
-        self.delegate?.attribution(self, requestsSyncAttributesAndOfferingsWithCompletion: completion)
+        guard let delegate = self.delegate else {
+            completion(nil, nil)
+            return
+        }
+        delegate.attribution(self, requestsSyncAttributesAndOfferingsWithCompletion: completion)
     }
 
     /**

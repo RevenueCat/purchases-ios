@@ -124,4 +124,13 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(self.backend.invokedPostAttributionDataParameters).to(beNil())
     }
 
+    func testSetAppstackAttributionParamsCallsCompletionWhenDelegateIsNil() {
+        // delegate is nil because setupPurchases() has not been called
+        var completionCalled = false
+        self.attribution.setAppstackAttributionParams(["appstack_id": "test"]) { _, _ in
+            completionCalled = true
+        }
+        expect(completionCalled).to(beTrue())
+    }
+
 }
