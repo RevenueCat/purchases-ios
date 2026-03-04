@@ -329,7 +329,12 @@ struct NativeAdViewRepresentable: UIViewRepresentable {
         return nativeAdView
     }
 
-    func updateUIView(_ uiView: NativeAdView, context: Context) {}
+    func updateUIView(_ uiView: NativeAdView, context: Context) {
+        uiView.nativeAd = nativeAd
+        (uiView.headlineView as? UILabel)?.text = nativeAd.headline
+        (uiView.bodyView as? UILabel)?.text = nativeAd.body
+        (uiView.callToActionView as? UIButton)?.setTitle(nativeAd.callToAction, for: .normal)
+    }
 }
 
 struct BannerAdView: UIViewRepresentable {
