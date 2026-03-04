@@ -780,7 +780,10 @@ final class PurchasesOrchestrator {
                 userCancelled = true
                 transaction = nil
                 if self.systemInfo.dangerousSettings.customEntitlementComputation {
+                    // handleSK2ProductPurchaseError will clear the cached context
                     throw ErrorUtils.purchaseCancelledError()
+                } else {
+                    self.clearCachedPresentedOfferingContext(for: sk2Product.id)
                 }
             case let .successfulVerifiedTransaction(verifiedTransaction):
                 userCancelled = false
@@ -835,6 +838,7 @@ final class PurchasesOrchestrator {
         promotionalOfferId: String?,
         winBackOfferApplied: Bool
     ) async throws -> PurchaseResultData {
+        self.clearCachedPresentedOfferingContext(for: productId)
 
         if case StoreKitError.userCancelled = error {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
@@ -1221,6 +1225,7 @@ private extension PurchasesOrchestrator {
 
     func handleFailedTransaction(_ transaction: SKPaymentTransaction) {
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
+        self.clearCachedPresentedOfferingContext(for: storeTransaction.productIdentifier)
 
         if let error = transaction.error,
            let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) {

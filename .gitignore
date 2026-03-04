@@ -54,6 +54,7 @@ Tests/purchases-ios-snapshots
 .swiftpm/xcode/xcshareddata/xcschemes/RevenueCat.xcscheme
 
 Examples/**/Package.resolved
+Tuist/Package.resolved
 
 Tests/InstallationTests/SPMInstallation/SPMInstallation.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved

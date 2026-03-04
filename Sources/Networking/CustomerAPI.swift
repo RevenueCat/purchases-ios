@@ -163,11 +163,16 @@ final class CustomerAPI {
             containsAttributionData: containsAttributionData,
             sdkOriginated: sdkOriginated
         )
+        let offlineCustomerInfoCreator: OfflineCustomerInfoCreator? =
+            self.backendConfig.systemInfo.supportsOfflineEntitlements
+            ? self.backendConfig.offlineCustomerInfoCreator
+            : nil
+
         let factory = PostReceiptDataOperation.createFactory(
             configuration: config,
             postData: postData,
             customerInfoCallbackCache: self.customerInfoCallbackCache,
-            offlineCustomerInfoCreator: self.backendConfig.offlineCustomerInfoCreator
+            offlineCustomerInfoCreator: offlineCustomerInfoCreator
         )
 
         let callbackObject = CustomerInfoCallback(cacheKey: factory.cacheKey,

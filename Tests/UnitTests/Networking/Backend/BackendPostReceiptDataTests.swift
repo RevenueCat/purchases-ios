@@ -1262,6 +1262,41 @@ class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPostingReceiptWithServerErrorDoesNotComputeOfflineUser() throws {
+        self.httpClient.disableSnapshotTesting()
+
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(error: .serverDown())
+        )
+
+        let customerInfo = try CustomerInfo(data: Self.validCustomerResponse)
+        self.mockOfflineCustomerInfoCreator.stubbedCreatedResult = .success(customerInfo)
+
+        let result = waitUntilValue { completed in
+            self.backend.post(receipt: Self.receipt,
+                              productData: nil,
+                              transactionData: .init(
+                                 presentedOfferingContext: nil,
+                                 unsyncedAttributes: nil,
+                                 storeCountry: nil
+                              ),
+                              postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+                              observerMode: false,
+                              originalPurchaseCompletedBy: .revenueCat,
+                              appUserID: Self.userID,
+                              completion: { result in
+                completed(result)
+            })
+        }
+
+        expect(result).to(beFailure())
+        expect(result?.error?.isServerDown) == true
+        expect(self.mockOfflineCustomerInfoCreator.createRequested) == false
+        expect(self.mockOfflineCustomerInfoCreator.createRequestCount) == 0
+    }
+
 }
 
 private extension BaseBackendPostReceiptDataTests {
