@@ -56,7 +56,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["hide_text": .bool(true)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Variable - Hidden (bool = true)")
+        .previewDisplayName("Text: hide_text=true (equals) → hidden")
 
         // MARK: Variable condition does NOT hide text (condition doesn't match)
         TextComponentView(
@@ -85,7 +85,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["hide_text": .bool(false)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Variable - Visible (bool = false)")
+        .previewDisplayName("Text: hide_text=false (equals) → visible")
 
         // MARK: Variable condition with notEquals operator
         TextComponentView(
@@ -114,7 +114,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("free")])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Variable - Visible (notEquals matches, so hidden)")
+        .previewDisplayName("Text: tier='free' (notEquals 'free') → hidden")
 
         // MARK: Variable condition changes text content
         TextComponentView(
@@ -147,7 +147,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("premium")])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Variable - Text override (premium)")
+        .previewDisplayName("Text: tier='premium' (equals) → text+color override")
 
         // MARK: Variable condition does NOT change text (no match)
         TextComponentView(
@@ -180,7 +180,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("free")])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Variable - Text no override (free)")
+        .previewDisplayName("Text: tier='free' (equals 'premium') → no override")
     }
 
 }
@@ -226,7 +226,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["hide_banner": .bool(true)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Stack - Hidden by variable")
+        .previewDisplayName("Stack: hide_banner=true (equals) → stack+children hidden")
 
         // MARK: Stack visible when variable condition doesn't match
         StackComponentView(
@@ -263,7 +263,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["hide_banner": .bool(false)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Stack - Visible by variable")
+        .previewDisplayName("Stack: hide_banner=false (equals) → stack visible")
 
         // MARK: Mixed visibility — one child hidden, one visible
         VStack(spacing: 0) {
@@ -310,7 +310,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["show_promo": .bool(false)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Mixed - One hidden, one visible")
+        .previewDisplayName("Siblings: show_promo=false (equals) → one hidden")
 
         // MARK: Mixed visibility — both visible
         VStack(spacing: 0) {
@@ -357,7 +357,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["show_promo": .bool(true)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Mixed - Both visible")
+        .previewDisplayName("Siblings: show_promo=true (equals) → both visible")
     }
 
 }
