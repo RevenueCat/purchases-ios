@@ -128,6 +128,10 @@ struct CustomVariablesEditorView: View {
             switch newVariableType {
             case .string:
                 TextField("Value", text: $newVariableStringValue)
+                    #if os(iOS) || os(tvOS) || os(visionOS)
+                    .textInputAutocapitalization(.never)
+                    #endif
+                    .autocorrectionDisabled()
             case .number:
                 TextField("Value", text: $newVariableNumberValue)
                     #if os(iOS) || os(visionOS)
