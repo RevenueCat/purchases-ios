@@ -141,6 +141,171 @@ class ToPresentedOverridesTests: TestCase {
         expect(component.containsUnsupportedConditions()).to(beFalse())
     }
 
+    // MARK: - containsUnsupportedConditions per Component Type (Bug Bash Section 5)
+
+    func testCarouselWithUnsupportedCondition_ReturnsTrue() throws {
+        let carousel = PaywallComponent.CarouselComponent(
+            pages: [.init(components: [])],
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ]
+        )
+
+        expect(carousel.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testCarouselWithUnsupportedConditionInPage_ReturnsTrue() throws {
+        let carousel = PaywallComponent.CarouselComponent(
+            pages: [.init(
+                components: [],
+                overrides: [
+                    .init(extendedConditions: [.unsupported], properties: .init())
+                ]
+            )]
+        )
+
+        expect(carousel.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testCarouselWithNoUnsupportedConditions_ReturnsFalse() throws {
+        let carousel = PaywallComponent.CarouselComponent(
+            pages: [.init(components: [])],
+            overrides: [
+                .init(extendedConditions: [.compact], properties: .init())
+            ]
+        )
+
+        expect(carousel.containsUnsupportedConditions()).to(beFalse())
+    }
+
+    func testTabsWithUnsupportedCondition_ReturnsTrue() throws {
+        let tabs = PaywallComponent.TabsComponent(
+            control: .init(type: .buttons, stack: .init(components: [])),
+            tabs: [.init(id: "tab_1", stack: .init(components: []))],
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ]
+        )
+
+        expect(tabs.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testTabsWithUnsupportedConditionInTab_ReturnsTrue() throws {
+        let tabs = PaywallComponent.TabsComponent(
+            control: .init(type: .buttons, stack: .init(components: [])),
+            tabs: [.init(
+                id: "tab_1",
+                stack: .init(
+                    components: [],
+                    overrides: [
+                        .init(extendedConditions: [.unsupported], properties: .init())
+                    ]
+                )
+            )]
+        )
+
+        expect(tabs.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testTabsWithUnsupportedConditionInControl_ReturnsTrue() throws {
+        let tabs = PaywallComponent.TabsComponent(
+            control: .init(
+                type: .buttons,
+                stack: .init(
+                    components: [],
+                    overrides: [
+                        .init(extendedConditions: [.unsupported], properties: .init())
+                    ]
+                )
+            ),
+            tabs: [.init(id: "tab_1", stack: .init(components: []))]
+        )
+
+        expect(tabs.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testTabsWithNoUnsupportedConditions_ReturnsFalse() throws {
+        let tabs = PaywallComponent.TabsComponent(
+            control: .init(type: .buttons, stack: .init(components: [])),
+            tabs: [.init(id: "tab_1", stack: .init(components: []))],
+            overrides: [
+                .init(extendedConditions: [.selectedPackage(operator: .in, packages: ["annual"])],
+                      properties: .init())
+            ]
+        )
+
+        expect(tabs.containsUnsupportedConditions()).to(beFalse())
+    }
+
+    func testButtonWithUnsupportedConditionInStack_ReturnsTrue() throws {
+        let button = PaywallComponent.ButtonComponent(
+            action: .restorePurchases,
+            stack: .init(
+                components: [],
+                overrides: [
+                    .init(extendedConditions: [.unsupported], properties: .init())
+                ]
+            )
+        )
+
+        expect(PaywallComponent.button(button).containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testPackageWithUnsupportedConditionInStack_ReturnsTrue() throws {
+        let package = PaywallComponent.PackageComponent(
+            packageID: "monthly",
+            isSelectedByDefault: false,
+            applePromoOfferProductCode: nil,
+            stack: .init(
+                components: [],
+                overrides: [
+                    .init(extendedConditions: [.unsupported], properties: .init())
+                ]
+            )
+        )
+
+        expect(PaywallComponent.package(package).containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testDeeplyNestedUnsupportedCondition_ReturnsTrue() throws {
+        // Stack > Stack > Text with unsupported condition
+        let text = PaywallComponent.TextComponent(
+            text: "text_1",
+            color: .init(light: .hex("#000000")),
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ]
+        )
+        let innerStack = PaywallComponent.StackComponent(
+            components: [.text(text)]
+        )
+        let outerStack = PaywallComponent.StackComponent(
+            components: [.stack(innerStack)]
+        )
+
+        expect(outerStack.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testDeeplyNestedNoUnsupportedConditions_ReturnsFalse() throws {
+        // Stack > Stack > Text with supported condition
+        let text = PaywallComponent.TextComponent(
+            text: "text_1",
+            color: .init(light: .hex("#000000")),
+            overrides: [
+                .init(extendedConditions: [.variable(operator: .equals, variable: "x", value: .string("y"))],
+                      properties: .init())
+            ]
+        )
+        let innerStack = PaywallComponent.StackComponent(
+            components: [.text(text)]
+        )
+        let outerStack = PaywallComponent.StackComponent(
+            components: [.stack(innerStack)]
+        )
+
+        expect(outerStack.containsUnsupportedConditions()).to(beFalse())
+    }
+
     // MARK: - toPresentedOverrides Throwing Tests
 
     func testToPresentedOverrides_WithUnsupportedCondition_ThrowsUnsupportedConditionError() throws {
