@@ -416,7 +416,8 @@ fileprivate extension TimelineComponentViewModel {
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: item.icon
-                )
+                ),
+                uiConfigProvider: uiConfigProvider
             )
         }
 

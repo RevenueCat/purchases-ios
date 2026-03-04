@@ -56,7 +56,8 @@ class TimelineComponentViewModel {
     ) -> some View {
         let conditionContext = ConditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
         )
         let partial = PresentedTimelinePartial.buildPartial(
             state: state,
@@ -92,17 +93,20 @@ class TimelineItemViewModel {
     let title: TextComponentViewModel
     let description: TextComponentViewModel?
     let icon: IconComponentViewModel
+    let uiConfigProvider: UIConfigProvider
 
     private let presentedOverrides: PresentedOverrides<PresentedTimelineItemPartial>?
 
     init(component: PaywallComponent.TimelineComponent.Item,
          title: TextComponentViewModel,
          description: TextComponentViewModel?,
-         icon: IconComponentViewModel) throws {
+         icon: IconComponentViewModel,
+         uiConfigProvider: UIConfigProvider) throws {
         self.component = component
         self.title = title
         self.description = description
         self.icon = icon
+        self.uiConfigProvider = uiConfigProvider
         self.presentedOverrides = try component.overrides?.toPresentedOverrides { $0 }
     }
 
@@ -119,7 +123,8 @@ class TimelineItemViewModel {
     ) -> some View {
         let conditionContext = ConditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
         )
         let partial = PresentedTimelineItemPartial.buildPartial(
             state: state,

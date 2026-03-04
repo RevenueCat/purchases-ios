@@ -886,6 +886,104 @@ class PresentedPartialsTests: TestCase {
         expect(result).to(beNil())
     }
 
+    // MARK: - Default Custom Variables Merge Tests
+
+    func testVariableCondition_UsesDefaultCustomVariableWhenDeveloperDoesNotProvide() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "something", value: .bool(false))
+        ]
+
+        // Developer provides no custom variables, but dashboard has a default
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: [:],
+            defaultCustomVariables: ["something": .bool(false)]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testVariableCondition_DeveloperValueOverridesDefault() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "something", value: .bool(true))
+        ]
+
+        // Developer provides true, dashboard default is false — developer should win
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["something": .bool(true)],
+            defaultCustomVariables: ["something": .bool(false)]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testVariableCondition_DefaultVariableNotMatchingConditionSkips() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "something", value: .bool(false))
+        ]
+
+        // Dashboard default is true, condition checks for false — should NOT match
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: [:],
+            defaultCustomVariables: ["something": .bool(true)]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testVariableCondition_MissingFromBothDefaultAndDeveloper_DoesNotMatch() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "something", value: .bool(false))
+        ]
+
+        // No developer variables, no defaults — should NOT match
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: [:],
+            defaultCustomVariables: [:]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
     // MARK: - Unsupported Condition Tests
 
     func testUnsupportedCondition_DoesNotMatch() throws {

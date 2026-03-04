@@ -259,7 +259,8 @@ struct ViewModelFactory {
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
                         component: item.icon
-                    )
+                    ),
+                    uiConfigProvider: uiConfigProvider
                 )
             }
 

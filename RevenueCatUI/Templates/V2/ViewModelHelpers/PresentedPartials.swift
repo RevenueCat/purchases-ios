@@ -47,16 +47,18 @@ struct ConditionContext {
     /// The identifier of the currently selected package, or nil if none is selected.
     let selectedPackageId: String?
 
-    /// Custom variables provided by the developer for condition evaluation.
+    /// Custom variables for condition evaluation (developer-provided merged with dashboard defaults).
     let customVariables: [String: CustomVariableValue]
 
     /// Creates a context with the given parameters.
+    /// Developer-provided `customVariables` take priority over `defaultCustomVariables` from the dashboard.
     init(
         selectedPackageId: String? = nil,
-        customVariables: [String: CustomVariableValue] = [:]
+        customVariables: [String: CustomVariableValue] = [:],
+        defaultCustomVariables: [String: CustomVariableValue] = [:]
     ) {
         self.selectedPackageId = selectedPackageId
-        self.customVariables = customVariables
+        self.customVariables = defaultCustomVariables.merging(customVariables) { _, developer in developer }
     }
 
 }

@@ -83,7 +83,8 @@ class VideoComponentViewModel {
     ) -> some View {
         let conditionContext = ConditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
         )
         let localizedPartial = LocalizedVideoPartial.buildPartial(
             state: state,

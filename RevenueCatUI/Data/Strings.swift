@@ -113,6 +113,7 @@ enum Strings {
 
     // Conditional Configurability
     case paywall_contains_unsupported_condition
+
 }
 
 extension Strings: CustomStringConvertible {
