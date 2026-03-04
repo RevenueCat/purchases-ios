@@ -14,6 +14,7 @@ import ObjectiveC.runtime
 private enum RCBannerAssociatedKeys {
     static var trackingDelegate: UInt8 = 0
     static var originalPaidHandler: UInt8 = 0
+    static var didInstallPaidHandlerWrapper: UInt8 = 0
 }
 
 #if !RC_ADMOB_SDK_11
@@ -42,8 +43,11 @@ private enum RCBannerAssociatedKeys {
         )
         self.delegate = trackingDelegate
 
-        let previousPaidHandler = (objc_getAssociatedObject(self, &RCBannerAssociatedKeys.originalPaidHandler)
-            as? ((RCGoogleMobileAds.AdValue) -> Void)) ?? self.paidEventHandler
+        let storedPaidHandler = objc_getAssociatedObject(self, &RCBannerAssociatedKeys.originalPaidHandler)
+            as? ((RCGoogleMobileAds.AdValue) -> Void)
+        let didInstallWrapper = (objc_getAssociatedObject(self, &RCBannerAssociatedKeys.didInstallPaidHandlerWrapper)
+            as? NSNumber)?.boolValue ?? false
+        let previousPaidHandler = didInstallWrapper ? storedPaidHandler : (storedPaidHandler ?? self.paidEventHandler)
         let effectivePaidHandler = paidEventHandler ?? previousPaidHandler
         objc_setAssociatedObject(
             self,
@@ -71,6 +75,12 @@ private enum RCBannerAssociatedKeys {
                 capturedUserHandler?(adValue)
             }
         }
+        objc_setAssociatedObject(
+            self,
+            &RCBannerAssociatedKeys.didInstallPaidHandlerWrapper,
+            NSNumber(value: true),
+            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
+        )
 
         self.load(request)
     }
@@ -102,8 +112,11 @@ private enum RCBannerAssociatedKeys {
         )
         self.delegate = trackingDelegate
 
-        let previousPaidHandler = (objc_getAssociatedObject(self, &RCBannerAssociatedKeys.originalPaidHandler)
-            as? ((GADAdValue) -> Void)) ?? self.paidEventHandler
+        let storedPaidHandler = objc_getAssociatedObject(self, &RCBannerAssociatedKeys.originalPaidHandler)
+            as? ((GADAdValue) -> Void)
+        let didInstallWrapper = (objc_getAssociatedObject(self, &RCBannerAssociatedKeys.didInstallPaidHandlerWrapper)
+            as? NSNumber)?.boolValue ?? false
+        let previousPaidHandler = didInstallWrapper ? storedPaidHandler : (storedPaidHandler ?? self.paidEventHandler)
         let effectivePaidHandler = paidEventHandler ?? previousPaidHandler
         objc_setAssociatedObject(
             self,
@@ -131,6 +144,12 @@ private enum RCBannerAssociatedKeys {
                 capturedUserHandler?(adValue)
             }
         }
+        objc_setAssociatedObject(
+            self,
+            &RCBannerAssociatedKeys.didInstallPaidHandlerWrapper,
+            NSNumber(value: true),
+            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
+        )
 
         self.load(request)
     }

@@ -40,6 +40,18 @@ final class RCAdMobBannerPaidHandlerBehaviorTests: RCAdMobTestCase {
         XCTAssertEqual(userHandlerCount, 1)
     }
 
+    /// Regression: calling loadAndTrack twice with no paidEventHandler must not cause infinite recursion
+    /// when the paid event fires (second call would capture our own wrapper as "original" and recurse).
+    func testLoadAndTrackTwiceWithNoPaidHandlerDoesNotRecurse() {
+        let bannerView = BannerView(adSize: AdSizeBanner)
+
+        bannerView.loadAndTrack(request: Request(), placement: "home_banner")
+        bannerView.loadAndTrack(request: Request(), placement: "home_banner")
+
+        // Invoking the wrapper must not stack overflow; with the bug this recurses infinitely.
+        bannerView.paidEventHandler?(Self.makeAdValuePlaceholder())
+    }
+
     /// Regression: user's paid handler must be invoked even when the paid event fires after the banner was deallocated.
     /// (e.g. ad SDK invokes the handler asynchronously after the view is gone.)
     func testPaidEventHandlerInvokedWhenBannerDeallocatedBeforeCallback() {
