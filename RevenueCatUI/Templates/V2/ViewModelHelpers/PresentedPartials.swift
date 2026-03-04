@@ -63,38 +63,6 @@ struct ConditionContext {
 
 extension PresentedPartial {
 
-    /// Builds a partial component based on current state and conditions
-    /// - Parameters:
-    ///   - state: Current view state (selected/unselected)
-    ///   - condition: Current screen condition (compact/medium/expanded)
-    ///   - presentedOverrides: Override configurations to apply
-    /// - Returns: Configured partial component
-    static func buildPartial(
-        state: ComponentViewState,
-        condition: ScreenCondition,
-        isEligibleForIntroOffer: Bool,
-        isEligibleForPromoOffer: Bool,
-        with presentedOverrides: PresentedOverrides<Self>?
-    ) -> Self? {
-        guard let presentedOverrides else {
-            return nil
-        }
-
-        var presentedPartial: Self?
-
-        for presentedOverride in presentedOverrides where self.shouldApply(
-            for: presentedOverride.conditions,
-            state: state,
-            activeCondition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer
-        ) {
-            presentedPartial = Self.combine(presentedPartial, with: presentedOverride.properties)
-        }
-
-        return presentedPartial
-    }
-
     /// Builds a partial component based on current state, conditions, and condition context.
     /// - Parameters:
     ///   - state: Current view state (selected/unselected)
@@ -132,27 +100,6 @@ extension PresentedPartial {
         }
 
         return presentedPartial
-    }
-
-    private static func shouldApply(
-        for conditions: [PaywallComponent.ExtendedCondition],
-        state: ComponentViewState,
-        activeCondition: ScreenCondition,
-        isEligibleForIntroOffer: Bool,
-        isEligibleForPromoOffer: Bool
-    ) -> Bool {
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            return shouldApply(
-                for: conditions,
-                state: state,
-                activeCondition: activeCondition,
-                isEligibleForIntroOffer: isEligibleForIntroOffer,
-                isEligibleForPromoOffer: isEligibleForPromoOffer,
-                conditionContext: ConditionContext()
-            )
-        } else {
-            return false
-        }
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
