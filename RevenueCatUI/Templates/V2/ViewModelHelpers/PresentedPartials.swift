@@ -301,7 +301,7 @@ extension PresentedPartial {
         actualValue: CustomVariableValue,
         expectedValue: PaywallComponent.ConditionValue
     ) -> Bool {
-        // Type-strict comparison: the actual value must be of the same type as expected
+        // Type-strict comparison: the actual value must be of the same type as expected.
         switch expectedValue {
         case .string(let expected):
             guard actualValue.isString else { return false }
@@ -311,11 +311,17 @@ extension PresentedPartial {
             return actualValue.boolValue == expected
         case .int(let expected):
             guard actualValue.isNumber else { return false }
-            return actualValue.doubleValue == Double(expected)
+            return doublesMatch(actualValue.doubleValue, Double(expected))
         case .double(let expected):
             guard actualValue.isNumber else { return false }
-            return actualValue.doubleValue == expected
+            return doublesMatch(actualValue.doubleValue, expected)
         }
+    }
+
+    /// Compares two doubles using epsilon-based equality to handle floating point
+    /// representation differences that can arise from JSON round-trips.
+    private static func doublesMatch(_ lhs: Double, _ rhs: Double) -> Bool {
+        abs(lhs - rhs) < 1e-10
     }
 
 }

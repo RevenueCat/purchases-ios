@@ -231,6 +231,74 @@ class PresentedPartialsTests: TestCase {
         expect(result).toNot(beNil())
     }
 
+    func testVariableCondition_DoubleNearlyEqual_MatchesWithinEpsilon() throws {
+        // 0.1 + 0.2 != 0.3 in IEEE 754, but should match via epsilon comparison
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "score", value: .double(0.3))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["score": .number(0.1 + 0.2)]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testVariableCondition_DoubleClearlyDifferent_DoesNotMatch() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "score", value: .double(3.14))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["score": .number(3.15)]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testVariableCondition_IntFromDoubleRoundTrip_Matches() throws {
+        // Int condition value compared against number variable that holds the same value
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "count", value: .int(42))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["count": .number(42.0)]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
     func testVariableCondition_TypeMismatch_DoesNotMatch() throws {
         // Condition expects int, but variable is a string
         let conditions: [PaywallComponent.ExtendedCondition] = [

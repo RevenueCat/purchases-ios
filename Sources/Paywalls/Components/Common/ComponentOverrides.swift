@@ -76,7 +76,6 @@ public extension PaywallComponent {
         case expanded
         case introOffer = "intro_offer"
         case promoOffer = "promo_offer"
-        case multipleIntroOffers = "multiple_intro_offers"
         case selected
         case unsupported
 
@@ -197,8 +196,7 @@ extension PaywallComponent {
             case .selected: return .selected
             case .introOffer, .introOfferCondition: return .introOffer
             case .promoOffer, .promoOfferCondition: return .promoOffer
-            case .multipleIntroOffers: return .multipleIntroOffers
-            case .variable, .selectedPackage, .unsupported: return .unsupported
+            case .multipleIntroOffers, .variable, .selectedPackage, .unsupported: return .unsupported
             }
         }
 
@@ -212,7 +210,6 @@ extension PaywallComponent {
             case .selected: self = .selected
             case .introOffer: self = .introOffer
             case .promoOffer: self = .promoOffer
-            case .multipleIntroOffers: self = .multipleIntroOffers
             case .unsupported: self = .unsupported
             }
         }

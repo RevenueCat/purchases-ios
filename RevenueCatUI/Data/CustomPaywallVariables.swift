@@ -35,13 +35,13 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct CustomVariableValue: Sendable, Equatable, Hashable {
 
-    enum Storage: Sendable, Equatable, Hashable {
+    private enum Storage: Sendable, Equatable, Hashable {
         case string(String)
         case number(Double)
         case bool(Bool)
     }
 
-    let storage: Storage
+    private let storage: Storage
 
     private init(_ storage: Storage) {
         self.storage = storage
