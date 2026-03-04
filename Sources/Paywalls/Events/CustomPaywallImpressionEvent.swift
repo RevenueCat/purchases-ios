@@ -67,18 +67,3 @@ extension CustomPaywallImpressionEvent.CreationData: Equatable, Codable, Sendabl
 extension CustomPaywallImpressionEvent.Data: Equatable, Codable, Sendable {}
 extension CustomPaywallImpressionEvent: Equatable, Codable, Sendable {}
 
-// MARK: - Params
-
-/// Parameters for tracking a custom paywall impression.
-struct CustomPaywallImpressionParams {
-
-    /// An optional identifier for the custom paywall being shown.
-    let paywallId: String?
-
-    init(paywallId: String? = nil) {
-        self.paywallId = paywallId
-    }
-
-}
-
-extension CustomPaywallImpressionParams: Sendable {}
