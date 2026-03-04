@@ -133,7 +133,8 @@ extension PaywallEvent {
                 sessionID: sessionID,
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
-                darkMode: darkMode
+                darkMode: darkMode,
+                source: nil
             )
         }
 
@@ -177,7 +178,8 @@ extension PaywallEvent {
                 sessionID: sessionID,
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
-                darkMode: darkMode
+                darkMode: darkMode,
+                source: nil
             )
         }
 
@@ -212,7 +214,7 @@ extension PaywallEvent {
             displayMode: PaywallViewMode,
             localeIdentifier: String,
             darkMode: Bool,
-            source: PaywallSource? = nil,
+            source: PaywallSource?,
             packageId: String? = nil,
             productId: String? = nil,
             errorCode: Int? = nil,
@@ -314,6 +316,7 @@ extension PaywallEvent.Data {
             displayMode: self.displayMode,
             localeIdentifier: self.localeIdentifier,
             darkMode: self.darkMode,
+            source: self.source,
             packageId: packageId,
             productId: productId,
             errorCode: errorCode,
