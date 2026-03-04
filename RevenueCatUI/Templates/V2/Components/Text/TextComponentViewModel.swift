@@ -65,7 +65,8 @@ class TextComponentViewModel {
         let isEligibleForPromoOffer = promoOffer != nil
         let conditionContext = ConditionContext(
             selectedPackageId: packageContext.package?.identifier,
-            customVariables: customVariables
+            customVariables: customVariables,
+            defaultCustomVariables: uiConfigProvider.defaultCustomVariables
         )
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,

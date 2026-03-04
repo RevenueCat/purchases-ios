@@ -741,6 +741,174 @@ class PresentedPartialsTests: TestCase {
 
     // MARK: - Unsupported Condition Tests
 
+    // MARK: - Default Custom Variables Merge Tests
+
+    func testVariableCondition_UsesDefaultWhenDeveloperDoesNotProvide() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "plan", value: .string("free"))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: [:],
+            defaultCustomVariables: ["plan": .string("free")]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testVariableCondition_DeveloperOverridesDefault() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "plan", value: .string("premium"))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["plan": .string("premium")],
+            defaultCustomVariables: ["plan": .string("free")]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testVariableCondition_DeveloperOverridesDefault_DefaultDoesNotMatch() throws {
+        // Default is "free", developer overrides with "premium", condition checks for "free" → no match
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "plan", value: .string("free"))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["plan": .string("premium")],
+            defaultCustomVariables: ["plan": .string("free")]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testVariableCondition_DefaultBoolUsedInCondition() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "is_vip", value: .bool(true))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: [:],
+            defaultCustomVariables: ["is_vip": .bool(true)]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testVariableCondition_DefaultNumberUsedInCondition() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "level", value: .int(5))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: [:],
+            defaultCustomVariables: ["level": .number(5)]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testVariableCondition_MergesMultipleDefaultsWithDeveloperVariables() throws {
+        // Default provides "plan" and "level", developer provides "plan" override
+        // Condition checks "level" from defaults → should match
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "level", value: .int(3))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["plan": .string("premium")],
+            defaultCustomVariables: ["plan": .string("free"), "level": .number(3)]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testVariableCondition_EmptyDefaultsDoNotAffectBehavior() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "plan", value: .string("premium"))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["plan": .string("premium")],
+            defaultCustomVariables: [:]
+        )
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    // MARK: - Unsupported Condition Tests
+
     func testUnsupportedCondition_DoesNotMatch() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [.unsupported]
 

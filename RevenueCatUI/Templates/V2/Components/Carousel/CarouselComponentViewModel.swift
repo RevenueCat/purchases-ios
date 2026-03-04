@@ -57,7 +57,8 @@ class CarouselComponentViewModel {
     ) -> some View {
         let conditionContext = ConditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            defaultCustomVariables: uiConfigProvider.defaultCustomVariables
         )
         let partial = PresentedCarouselPartial.buildPartial(
             state: state,
