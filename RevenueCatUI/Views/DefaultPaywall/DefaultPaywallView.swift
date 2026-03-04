@@ -98,20 +98,16 @@ struct DefaultPaywallView: View {
         return showWarning
     }
 
-    @ViewBuilder
-    var warningTitle: some View {
-        if shouldShowWarning {
-            Text("RevenueCat Paywalls")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-    }
-
     // MARK: - Body
 
     var body: some View {
         VStack {
-            warningTitle
+            if shouldShowWarning {
+                Text("RevenueCat Paywalls")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+
             Spacer()
 
             if shouldShowWarning, let warning {
@@ -166,7 +162,7 @@ struct DefaultPaywallView: View {
                                 do {
                                     _ = try await handler.purchase(package: selected)
                                 } catch {
-                                    // PurchaseHandler tracks the error internally
+                                    Logger.debug("Purchase failed with error: \(error)")
                                 }
                             }
                         }
@@ -194,7 +190,7 @@ struct DefaultPaywallView: View {
                             do {
                                 _ = try await handler.restorePurchases()
                             } catch {
-                                // PurchaseHandler tracks the error internally
+                                Logger.debug("Restore failed with error: \(error)")
                             }
                         }
                     } label: {
@@ -233,7 +229,7 @@ struct DefaultPaywallView: View {
 
 // MARK: - Helpers
 
-extension View {
+private extension View {
     // centers content but doesn't allow it to get too wide, this looks better on full screens like an ipad
     func fillWithReadableContentWidth() -> some View {
         self
@@ -244,6 +240,6 @@ extension View {
     }
 }
 
-extension Color {
+internal extension Color {
     static let revenueCatBrandRed = Color(red: 0.949, green: 0.329, blue: 0.357) // #f2545b
 }
