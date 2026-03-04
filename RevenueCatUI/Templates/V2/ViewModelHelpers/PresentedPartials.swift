@@ -197,14 +197,20 @@ extension PresentedPartial {
         case .selected:
             return state == .selected
 
+        // Offer eligibility (legacy simple boolean check)
+        case .introOffer:
+            return isEligibleForIntroOffer
+        case .promoOffer:
+            return isEligibleForPromoOffer
+
         // Offer eligibility (with operator/value)
-        case .introOffer(let condOp, let value):
+        case .introOfferCondition(let condOp, let value):
             return evaluateBoolCondition(
                 actual: isEligibleForIntroOffer,
                 expected: value,
                 operator: condOp
             )
-        case .promoOffer(let condOp, let value):
+        case .promoOfferCondition(let condOp, let value):
             return evaluateBoolCondition(
                 actual: isEligibleForPromoOffer,
                 expected: value,
