@@ -186,6 +186,19 @@ extension PaywallComponent {
         // MARK: - Fallback for unknown conditions
         case unsupported
 
+        /// Whether this condition is a rule introduced by conditional configurability
+        /// (e.g., variable_condition, selected_package_condition, intro_offer_condition, promo_offer_condition).
+        /// When an unsupported condition is encountered, all overrides containing rules are discarded,
+        /// rendering the "default paywall" with only base conditions applied.
+        public var isRule: Bool {
+            switch self {
+            case .compact, .medium, .expanded, .selected, .introOffer, .promoOffer, .multipleIntroOffers:
+                return false
+            case .introOfferCondition, .promoOfferCondition, .variable, .selectedPackage, .unsupported:
+                return true
+            }
+        }
+
         /// Converts to the public Condition type.
         /// Extended conditions that cannot be represented in the public type return `.unsupported`.
         public func toCondition() -> Condition {

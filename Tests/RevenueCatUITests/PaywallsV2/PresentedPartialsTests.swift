@@ -1337,6 +1337,51 @@ class PresentedPartialsTests: TestCase {
         expect(ineligibleResult).to(beNil())
     }
 
+    // MARK: - Default Paywall Behavior: Unsupported → evaluates to false at runtime
+
+    func testUnsupportedCondition_EvaluatesToFalse() throws {
+        // Even if an unsupported override reaches buildPartial, it evaluates to false
+        let overrides: PresentedOverrides<VisibilityPartial> = [
+            PresentedOverride(
+                conditions: [.unsupported],
+                properties: VisibilityPartial(visible: false)
+            )
+        ]
+
+        let result = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: overrides
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testUnsupportedCondition_InAndCondition_PreventsOverrideFromApplying() throws {
+        // Override has [.compact, .unsupported] — both must match (AND).
+        // Since .unsupported always returns false, the whole override doesn't apply.
+        let overrides: PresentedOverrides<VisibilityPartial> = [
+            PresentedOverride(
+                conditions: [.compact, .unsupported],
+                properties: VisibilityPartial(visible: false)
+            )
+        ]
+
+        let result = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: overrides
+        )
+
+        expect(result).to(beNil())
+    }
+
     // MARK: - Different Condition Types on Sibling Components (Bug Bash Section 6)
 
     func testDifferentConditionTypes_EvaluateIndependently() throws {

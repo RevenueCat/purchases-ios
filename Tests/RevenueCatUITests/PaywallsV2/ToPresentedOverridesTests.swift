@@ -306,38 +306,60 @@ class ToPresentedOverridesTests: TestCase {
         expect(outerStack.containsUnsupportedConditions()).to(beFalse())
     }
 
-    // MARK: - toPresentedOverrides Throwing Tests
+    // MARK: - toPresentedOverrides Default Paywall Behavior (Filters Rules When Unsupported Present)
 
-    func testToPresentedOverrides_WithUnsupportedCondition_ThrowsUnsupportedConditionError() throws {
+    func testToPresentedOverrides_WithOnlyUnsupportedCondition_ReturnsEmpty() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [.unsupported], properties: .init())
         ]
 
-        expect {
-            try overrides.toPresentedOverrides { $0 }
-        }.to(throwError(PaywallError.unsupportedCondition))
+        let result = try overrides.toPresentedOverrides { $0 }
+        expect(result).to(beEmpty())
     }
 
-    func testToPresentedOverrides_WithUnsupportedConditionAmongOthers_ThrowsUnsupportedConditionError() throws {
+    func testToPresentedOverrides_WithUnsupportedConditionAmongOthers_FiltersOutRuleOverride() throws {
+        // Override has [.compact, .unsupported, .selected] — contains a rule (.unsupported),
+        // so the entire override is discarded
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [.compact, .unsupported, .selected], properties: .init())
         ]
 
-        expect {
-            try overrides.toPresentedOverrides { $0 }
-        }.to(throwError(PaywallError.unsupportedCondition))
+        let result = try overrides.toPresentedOverrides { $0 }
+        expect(result).to(beEmpty())
     }
 
-    func testToPresentedOverrides_WithMultipleOverrides_OneHasUnsupported_ThrowsUnsupportedConditionError() throws {
+    func testToPresentedOverrides_WithUnsupportedPresent_KeepsOnlyLegacyOverrides() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [.compact], properties: .init()),
             .init(extendedConditions: [.unsupported], properties: .init()),
             .init(extendedConditions: [.medium], properties: .init())
         ]
 
-        expect {
-            try overrides.toPresentedOverrides { $0 }
-        }.to(throwError(PaywallError.unsupportedCondition))
+        let result = try overrides.toPresentedOverrides { $0 }
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
+        expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.medium]))
+    }
+
+    func testToPresentedOverrides_WithUnsupportedPresent_DiscardsAllRuleOverrides() throws {
+        // When unsupported is present, ALL rule-based overrides are discarded — even known ones
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [.introOffer], properties: .init()),
+            .init(extendedConditions: [
+                .selectedPackage(operator: .in, packages: ["monthly"])
+            ], properties: .init()),
+            .init(extendedConditions: [
+                .variable(operator: .equals, variable: "plan", value: .string("pro"))
+            ], properties: .init()),
+            .init(extendedConditions: [.unsupported], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides { $0 }
+        // Only compact and introOffer survive (legacy/base conditions)
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
+        expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.introOffer]))
     }
 
     func testToPresentedOverrides_WithSupportedConditions_SucceedsAndReturnsOverrides() throws {

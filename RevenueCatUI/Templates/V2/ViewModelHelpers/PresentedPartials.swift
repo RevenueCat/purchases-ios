@@ -290,10 +290,11 @@ private extension ScreenCondition {
 
 extension Array {
 
-    /// Converts component overrides to presented overrides
-    /// - Parameter convert: Conversion function to apply
-    /// - Returns: Presented overrides with converted components
-    /// - Throws: `PaywallError.unsupportedCondition` if any override contains unsupported conditions
+    /// Converts component overrides to presented overrides.
+    ///
+    /// If any override contains an unsupported condition, all conditional configurability (rule-based)
+    /// overrides are discarded and only legacy overrides are kept. This renders the "default paywall" —
+    /// the same paywall template with only legacy overrides applied.
     func toPresentedOverrides<
         T: PaywallPartialComponent,
         P: PresentedPartial
@@ -301,12 +302,16 @@ extension Array {
         convert: (T) throws -> P
     ) throws -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
-        // Check for unsupported conditions first - triggers fallback to default paywall
+        let overridesToProcess: Self
         if self.hasUnsupportedCondition() {
-            throw PaywallError.unsupportedCondition
+            overridesToProcess = self.filter { override in
+                override.extendedConditions.allSatisfy { !$0.isRule }
+            }
+        } else {
+            overridesToProcess = self
         }
 
-        return try self.compactMap { partial in
+        return try overridesToProcess.compactMap { partial in
             let presentedPartial = try convert(partial.properties)
 
             return PresentedOverride(

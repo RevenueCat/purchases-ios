@@ -393,7 +393,6 @@ fileprivate extension PaywallsV2View {
             if componentsConfig.stack.containsUnsupportedConditions() ||
                 componentsConfig.stickyFooter?.stack.containsUnsupportedConditions() == true {
                 Logger.warning(Strings.paywall_contains_unsupported_condition)
-                throw PaywallError.unsupportedCondition
             }
 
             let factory = ViewModelFactory()

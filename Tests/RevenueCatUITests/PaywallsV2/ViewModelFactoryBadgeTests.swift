@@ -246,7 +246,7 @@ class ViewModelFactoryBadgeTests: TestCase {
                 uiConfigProvider: try Self.createUIConfigProvider(),
                 colorScheme: .light
             )
-        }.toNot(throwError(PaywallError.unsupportedCondition))
+        }.toNot(throwError())
     }
 
     // MARK: - Helpers

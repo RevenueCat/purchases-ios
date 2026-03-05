@@ -358,7 +358,9 @@ extension Strings: CustomStringConvertible {
         case .errorLoadingExitOffer(let error):
             return "Error loading exit offer: \(error)"
         case .paywall_contains_unsupported_condition:
-            return "Paywall contains unsupported conditions. Falling back to default paywall."
+            return "Paywall contains conditions not recognized by this SDK version. " +
+            "Overrides with unsupported conditions will be ignored. " +
+            "Update to the latest SDK version to support all condition types."
         }
     }
 
