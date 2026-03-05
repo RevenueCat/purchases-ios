@@ -150,6 +150,98 @@ class CustomPaywallImpressionEventTests: TestCase {
         expect(requestEvent.version) == 1
     }
 
+    // MARK: - StoredEvent Round-Trip
+
+    func testCanInitFromDeserializedEvent() throws {
+        let event = CustomPaywallImpressionEvent(
+            creationData: Self.creationData,
+            data: .init(paywallId: "my_paywall")
+        )
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywallImpression,
+                appSessionID: Self.appSessionID,
+                eventDiscriminator: nil
+            )
+        )
+
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+
+        expect(deserialized.userID) == Self.userID
+        expect(deserialized.feature) == .customPaywallImpression
+
+        let requestEvent = try XCTUnwrap(
+            FeatureEventsRequest.CustomPaywallImpressionEvent(storedEvent: deserialized)
+        )
+
+        expect(requestEvent.id) == Self.creationData.id.uuidString
+        expect(requestEvent.appUserID) == Self.userID
+        expect(requestEvent.appSessionID) == Self.appSessionID.uuidString
+        expect(requestEvent.paywallId) == "my_paywall"
+    }
+
+    func testTimestampPreservesMilliseconds() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.890)
+        let creationData = CustomPaywallImpressionEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let event = CustomPaywallImpressionEvent(
+            creationData: creationData,
+            data: .init(paywallId: nil)
+        )
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywallImpression,
+                appSessionID: Self.appSessionID,
+                eventDiscriminator: nil
+            )
+        )
+
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+        let requestEvent = try XCTUnwrap(
+            FeatureEventsRequest.CustomPaywallImpressionEvent(storedEvent: deserialized)
+        )
+
+        expect(requestEvent.timestamp) == 1_694_029_328_890
+    }
+
+    func testPreservesMillisecondsInCreationDate() throws {
+        let timeIntervalWithMilliseconds: TimeInterval = 1694029328.890
+        let creationData = CustomPaywallImpressionEvent.CreationData(
+            id: UUID(),
+            date: Date(timeIntervalSince1970: timeIntervalWithMilliseconds)
+        )
+        let event = CustomPaywallImpressionEvent(
+            creationData: creationData,
+            data: .init(paywallId: "test")
+        )
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywallImpression,
+                appSessionID: Self.appSessionID,
+                eventDiscriminator: nil
+            )
+        )
+
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(CustomPaywallImpressionEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(timeIntervalWithMilliseconds))
+    }
+
     // MARK: - Params
 
     func testParamsWithPaywallId() {
