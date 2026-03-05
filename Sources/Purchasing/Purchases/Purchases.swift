@@ -2123,6 +2123,23 @@ extension Purchases: InternalPurchasesType {
 /// Necessary because `ErrorUtils` inside of `Purchases` finds the obsoleted type.
 private typealias NewErrorUtils = ErrorUtils
 
+// MARK: - Custom Paywall Impressions
+
+internal extension Purchases {
+
+    /// Tracks an impression for a custom paywall.
+    /// - Parameter params: Parameters for the custom paywall impression.
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func trackCustomPaywallImpression(_ params: CustomPaywallEvent.Params = .init()) async {
+        let event = CustomPaywallEvent.impression(
+            .init(),
+            .init(paywallId: params.paywallId)
+        )
+        await self.eventsManager?.track(featureEvent: event)
+    }
+
+}
+
 internal extension Purchases {
 
     var isStoreKit1Configured: Bool {
