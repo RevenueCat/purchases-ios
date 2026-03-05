@@ -112,9 +112,9 @@ struct ConditionalVisibility_Previews: PreviewProvider {
             )
         )
         .previewRequiredPaywallsV2Properties()
-        .environment(\.customPaywallVariables, ["tier": .string("free")])
+        .environment(\.customPaywallVariables, ["tier": .string("premium")])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Text: tier='free' (notEquals 'free') → hidden")
+        .previewDisplayName("Text: tier='premium' (notEquals 'free') → hidden")
 
         // MARK: Variable condition changes text content
         TextComponentView(
