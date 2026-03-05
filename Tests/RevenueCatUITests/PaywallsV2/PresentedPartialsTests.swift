@@ -1001,6 +1001,402 @@ class PresentedPartialsTests: TestCase {
         expect(result).to(beNil())
     }
 
+    // MARK: - Visibility Override Precedence Tests (Bug Bash Section 6)
+
+    func testTwoOverrides_HideThenShow_LastMatchingWins() throws {
+        // Override #1: hide when plan = "free"
+        // Override #2: show when selected_package in ["annual"]
+        // Both match → last matching override's visible wins (visible = true)
+        let overrides: PresentedOverrides<VisibilityPartial> = [
+            PresentedOverride(
+                conditions: [.variable(operator: .equals, variable: "plan", value: .string("free"))],
+                properties: VisibilityPartial(visible: false)
+            ),
+            PresentedOverride(
+                conditions: [.selectedPackage(operator: .in, packages: ["annual"])],
+                properties: VisibilityPartial(visible: true)
+            )
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: "annual",
+            customVariables: ["plan": .string("free")]
+        )
+
+        let result = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: overrides
+        )
+
+        expect(result).toNot(beNil())
+        expect(result?.visible).to(equal(true))
+    }
+
+    func testTwoOverrides_OnlyFirstMatches_HidesComponent() throws {
+        // Override #1: hide when plan = "free" → matches
+        // Override #2: show when selected_package in ["annual"] → doesn't match (monthly selected)
+        // Only override #1 matches → visible = false
+        let overrides: PresentedOverrides<VisibilityPartial> = [
+            PresentedOverride(
+                conditions: [.variable(operator: .equals, variable: "plan", value: .string("free"))],
+                properties: VisibilityPartial(visible: false)
+            ),
+            PresentedOverride(
+                conditions: [.selectedPackage(operator: .in, packages: ["annual"])],
+                properties: VisibilityPartial(visible: true)
+            )
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: "monthly",
+            customVariables: ["plan": .string("free")]
+        )
+
+        let result = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: overrides
+        )
+
+        expect(result).toNot(beNil())
+        expect(result?.visible).to(equal(false))
+    }
+
+    func testThreeOverrides_FirstAndThirdMatch_LastWins() throws {
+        // Override #1: hide when country = "US" → matches
+        // Override #2: show when selected_package in ["annual"] → matches
+        // Override #3: hide when intro_offer = true → matches
+        // All match → last override's visible wins (false)
+        let overrides: PresentedOverrides<VisibilityPartial> = [
+            PresentedOverride(
+                conditions: [.variable(operator: .equals, variable: "country", value: .string("US"))],
+                properties: VisibilityPartial(visible: false)
+            ),
+            PresentedOverride(
+                conditions: [.selectedPackage(operator: .in, packages: ["annual"])],
+                properties: VisibilityPartial(visible: true)
+            ),
+            PresentedOverride(
+                conditions: [.introOfferCondition(operator: .equals, value: true)],
+                properties: VisibilityPartial(visible: false)
+            )
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: "annual",
+            customVariables: ["country": .string("US")]
+        )
+
+        let result = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: overrides
+        )
+
+        expect(result).toNot(beNil())
+        expect(result?.visible).to(equal(false))
+    }
+
+    func testThreeOverrides_ThirdDoesNotMatch_SecondWins() throws {
+        // Override #1: hide when country = "US" → matches
+        // Override #2: show when selected_package in ["annual"] → matches
+        // Override #3: hide when intro_offer = true → does NOT match (not eligible)
+        // Overrides 1 and 2 match → override #2 wins (visible = true)
+        let overrides: PresentedOverrides<VisibilityPartial> = [
+            PresentedOverride(
+                conditions: [.variable(operator: .equals, variable: "country", value: .string("US"))],
+                properties: VisibilityPartial(visible: false)
+            ),
+            PresentedOverride(
+                conditions: [.selectedPackage(operator: .in, packages: ["annual"])],
+                properties: VisibilityPartial(visible: true)
+            ),
+            PresentedOverride(
+                conditions: [.introOfferCondition(operator: .equals, value: true)],
+                properties: VisibilityPartial(visible: false)
+            )
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: "annual",
+            customVariables: ["country": .string("US")]
+        )
+
+        let result = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: overrides
+        )
+
+        expect(result).toNot(beNil())
+        expect(result?.visible).to(equal(true))
+    }
+
+    // MARK: - Same Condition Hides Multiple Components (Bug Bash Section 6)
+
+    func testSameConditionEvaluatesIndependentlyPerComponent() throws {
+        // Two separate components each have the same condition
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "promo", value: .string("false"))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["promo": .string("false")]
+        )
+
+        // Component 1
+        let result1 = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: VisibilityPartial(visible: false))]
+        )
+
+        // Component 2 (same condition, independently evaluated)
+        let result2 = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: VisibilityPartial(visible: false))]
+        )
+
+        expect(result1?.visible).to(equal(false))
+        expect(result2?.visible).to(equal(false))
+    }
+
+    // MARK: - Condition + Selected State (Bug Bash Section 11)
+
+    func testConditionAndSelectedState_BothApply() throws {
+        // Override #1: selected state styling (value = "selected_style")
+        // Override #2: hide when variable "highlight" = "false"
+        // When both match, the last override's properties win
+        let overrides: PresentedOverrides<VisibilityPartial> = [
+            PresentedOverride(
+                conditions: [.selected],
+                properties: VisibilityPartial(visible: true, value: "selected_style")
+            ),
+            PresentedOverride(
+                conditions: [.variable(operator: .equals, variable: "highlight", value: .string("false"))],
+                properties: VisibilityPartial(visible: false)
+            )
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["highlight": .string("false")]
+        )
+
+        // Selected + highlight=false → both match, last visible (false) wins
+        let result = VisibilityPartial.buildPartial(
+            state: .selected,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: overrides
+        )
+
+        expect(result?.visible).to(equal(false))
+    }
+
+    func testConditionAndSelectedState_OnlySelectedMatches() throws {
+        // Override #1: selected state styling
+        // Override #2: hide when variable "highlight" = "false" → doesn't match (highlight = "true")
+        // Only override #1 matches → visible = true
+        let overrides: PresentedOverrides<VisibilityPartial> = [
+            PresentedOverride(
+                conditions: [.selected],
+                properties: VisibilityPartial(visible: true, value: "selected_style")
+            ),
+            PresentedOverride(
+                conditions: [.variable(operator: .equals, variable: "highlight", value: .string("false"))],
+                properties: VisibilityPartial(visible: false)
+            )
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["highlight": .string("true")]
+        )
+
+        let result = VisibilityPartial.buildPartial(
+            state: .selected,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: overrides
+        )
+
+        expect(result?.visible).to(equal(true))
+        expect(result?.value).to(equal("selected_style"))
+    }
+
+    // MARK: - Same Variable for Text Replacement AND Visibility (Bug Bash Section 11)
+
+    func testVariableConditionMatchesExactValue() throws {
+        // Override: hide when "user_name" = "John"
+        // user_name = "John" → hidden
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "user_name", value: .string("John"))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["user_name": .string("John")]
+        )
+
+        let result = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: VisibilityPartial(visible: false))]
+        )
+
+        expect(result?.visible).to(equal(false))
+    }
+
+    func testVariableConditionDoesNotMatchDifferentValue() throws {
+        // Override: hide when "user_name" = "John"
+        // user_name = "Jane" → not hidden (override doesn't match)
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .variable(operator: .equals, variable: "user_name", value: .string("John"))
+        ]
+
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["user_name": .string("Jane")]
+        )
+
+        let result = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: context,
+            with: [PresentedOverride(conditions: conditions, properties: VisibilityPartial(visible: false))]
+        )
+
+        expect(result).to(beNil())
+    }
+
+    // MARK: - Intro Offer with Different Eligibility per Evaluation (Bug Bash Section 4)
+
+    func testIntroOfferCondition_DifferentEligibilityProducesDifferentResults() throws {
+        // Same condition evaluated with different eligibility states
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .introOfferCondition(operator: .equals, value: true)
+        ]
+
+        let overrides = [PresentedOverride(
+            conditions: conditions,
+            properties: VisibilityPartial(visible: false)
+        )]
+
+        // Eligible user → condition matches → visible = false
+        let eligibleResult = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: overrides
+        )
+
+        // Ineligible user → condition doesn't match → nil (no override applied)
+        let ineligibleResult = VisibilityPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: overrides
+        )
+
+        expect(eligibleResult?.visible).to(equal(false))
+        expect(ineligibleResult).to(beNil())
+    }
+
+    // MARK: - Different Condition Types on Sibling Components (Bug Bash Section 6)
+
+    func testDifferentConditionTypes_EvaluateIndependently() throws {
+        // Component 1: hide when user_tier = "premium"
+        let component1Overrides = [PresentedOverride(
+            conditions: [PaywallComponent.ExtendedCondition.variable(
+                operator: .equals, variable: "user_tier", value: .string("premium")
+            )],
+            properties: VisibilityPartial(visible: false)
+        )]
+
+        // Component 2: hide when selected_package in ["annual"]
+        let component2Overrides = [PresentedOverride(
+            conditions: [PaywallComponent.ExtendedCondition.selectedPackage(
+                operator: .in, packages: ["annual"]
+            )],
+            properties: VisibilityPartial(visible: false)
+        )]
+
+        let context = ConditionContext(
+            selectedPackageId: "annual",
+            customVariables: ["user_tier": .string("premium")]
+        )
+
+        // Both hidden
+        let result1 = VisibilityPartial.buildPartial(
+            state: .default, condition: .compact,
+            isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
+            conditionContext: context, with: component1Overrides
+        )
+        let result2 = VisibilityPartial.buildPartial(
+            state: .default, condition: .compact,
+            isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
+            conditionContext: context, with: component2Overrides
+        )
+
+        expect(result1?.visible).to(equal(false))
+        expect(result2?.visible).to(equal(false))
+
+        // Change user_tier → component 1 reappears, component 2 stays hidden
+        let context2 = ConditionContext(
+            selectedPackageId: "annual",
+            customVariables: ["user_tier": .string("free")]
+        )
+
+        let result1After = VisibilityPartial.buildPartial(
+            state: .default, condition: .compact,
+            isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
+            conditionContext: context2, with: component1Overrides
+        )
+        let result2After = VisibilityPartial.buildPartial(
+            state: .default, condition: .compact,
+            isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
+            conditionContext: context2, with: component2Overrides
+        )
+
+        expect(result1After).to(beNil())
+        expect(result2After?.visible).to(equal(false))
+    }
+
 }
 
 // MARK: - Test Helpers
@@ -1011,6 +1407,20 @@ private struct TestPartial: PresentedPartial {
 
     static func combine(_ base: TestPartial?, with other: TestPartial?) -> TestPartial {
         return TestPartial(value: other?.value ?? base?.value)
+    }
+
+}
+
+private struct VisibilityPartial: PresentedPartial {
+
+    var visible: Bool?
+    var value: String?
+
+    static func combine(_ base: VisibilityPartial?, with other: VisibilityPartial?) -> VisibilityPartial {
+        return VisibilityPartial(
+            visible: other?.visible ?? base?.visible,
+            value: other?.value ?? base?.value
+        )
     }
 
 }
