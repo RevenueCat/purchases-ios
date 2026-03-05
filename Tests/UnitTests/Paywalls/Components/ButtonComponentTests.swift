@@ -236,6 +236,83 @@ class ButtonComponentCodableTests: TestCase {
         XCTAssertEqual(decodedButton, buttonComponent)
     }
 
+    func testVisibleDecoding() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "visible": false,
+            "action": {
+                "type": "restore_purchases"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        XCTAssertEqual(decodedButton.visible, false)
+    }
+
+    func testVisibleDefaultsToNilWhenMissing() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "action": {
+                "type": "restore_purchases"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        XCTAssertNil(decodedButton.visible)
+    }
+
+    func testOverridesDecoding() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "action": {
+                "type": "restore_purchases"
+            },
+            "stack": \(jsonStringDefaultStack),
+            "overrides": [
+                {
+                    "conditions": [
+                        { "type": "compact" }
+                    ],
+                    "properties": {
+                        "visible": false
+                    }
+                }
+            ]
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        XCTAssertNotNil(decodedButton.overrides)
+        XCTAssertEqual(decodedButton.overrides?.count, 1)
+        XCTAssertEqual(decodedButton.overrides?.first?.properties.visible, false)
+    }
+
+    func testOverridesDefaultsToNilWhenMissing() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "action": {
+                "type": "restore_purchases"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        XCTAssertNil(decodedButton.overrides)
+    }
+
 }
 
 #endif

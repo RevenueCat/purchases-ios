@@ -62,7 +62,13 @@ final class PartialComponentTests: TestCase {
         ), PaywallComponent.PartialIconComponent()),
 
         // StackComponent
-        (PaywallComponent.StackComponent(components: []), PaywallComponent.PartialStackComponent())
+        (PaywallComponent.StackComponent(components: []), PaywallComponent.PartialStackComponent()),
+
+        // ButtonComponent
+        (PaywallComponent.ButtonComponent(
+            action: .restorePurchases,
+            stack: .init(components: [])
+        ), PaywallComponent.PartialButtonComponent())
     ]
 
     func testPartialTextComponentPropertiesMatchTextComponent() {

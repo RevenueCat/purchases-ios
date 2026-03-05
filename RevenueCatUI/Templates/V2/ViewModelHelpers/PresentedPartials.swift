@@ -348,6 +348,9 @@ extension PaywallComponent {
         case .stack(let component):
             return component.containsUnsupportedConditions()
         case .button(let component):
+            if component.overrides?.hasUnsupportedCondition() == true {
+                return true
+            }
             if component.stack.containsUnsupportedConditions() {
                 return true
             }

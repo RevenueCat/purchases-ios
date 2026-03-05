@@ -237,6 +237,30 @@ class ToPresentedOverridesTests: TestCase {
         expect(tabs.containsUnsupportedConditions()).to(beFalse())
     }
 
+    func testButtonWithUnsupportedConditionInOwnOverrides_ReturnsTrue() throws {
+        let button = PaywallComponent.ButtonComponent(
+            action: .restorePurchases,
+            stack: .init(components: []),
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ]
+        )
+
+        expect(PaywallComponent.button(button).containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testButtonWithSupportedConditionInOwnOverrides_ReturnsFalse() throws {
+        let button = PaywallComponent.ButtonComponent(
+            action: .restorePurchases,
+            stack: .init(components: []),
+            overrides: [
+                .init(extendedConditions: [.compact], properties: .init())
+            ]
+        )
+
+        expect(PaywallComponent.button(button).containsUnsupportedConditions()).to(beFalse())
+    }
+
     func testButtonWithUnsupportedConditionInStack_ReturnsTrue() throws {
         let button = PaywallComponent.ButtonComponent(
             action: .restorePurchases,

@@ -167,9 +167,11 @@ struct ViewModelFactory {
                 try ButtonComponentViewModel(
                     component: component,
                     localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
                     offering: offering,
                     stackViewModel: stackViewModel,
-                    sheetStackViewModel: sheetStackViewModel
+                    sheetStackViewModel: sheetStackViewModel,
+                    discardRules: discardRules
                 )
             )
         case .package(let component):

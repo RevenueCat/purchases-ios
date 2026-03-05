@@ -14,7 +14,11 @@
 
 import Foundation
 @_spi(Internal) import RevenueCat
+import SwiftUI
+
 #if !os(tvOS) // For Paywalls V2
+
+typealias PresentedButtonPartial = PaywallComponent.PartialButtonComponent
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ButtonComponentViewModel {
@@ -44,22 +48,31 @@ class ButtonComponentViewModel {
 
     let component: PaywallComponent.ButtonComponent
     let localizationProvider: LocalizationProvider
+    let uiConfigProvider: UIConfigProvider
     let action: Action
     let stackViewModel: StackComponentViewModel
     let sheetStackViewModel: StackComponentViewModel?
+
+    private let presentedOverrides: PresentedOverrides<PresentedButtonPartial>?
 
     // swiftlint:disable:next cyclomatic_complexity
     init(
         component: PaywallComponent.ButtonComponent,
         localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider,
         offering: Offering,
         stackViewModel: StackComponentViewModel,
-        sheetStackViewModel: StackComponentViewModel? = nil
+        sheetStackViewModel: StackComponentViewModel? = nil,
+        discardRules: Bool = false
     ) throws {
         self.component = component
         self.localizationProvider = localizationProvider
+        self.uiConfigProvider = uiConfigProvider
         self.stackViewModel = stackViewModel
         self.sheetStackViewModel = sheetStackViewModel
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(
+            discardRules: discardRules
+        ) { $0 }
 
         let localizedStrings = localizationProvider.localizedStrings
 
@@ -102,6 +115,33 @@ class ButtonComponentViewModel {
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue]
+    ) -> Bool {
+        let conditionContext = ConditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
+        )
+
+        let partial = PresentedButtonPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+
+        return partial?.visible ?? self.component.visible ?? true
+    }
+
     var hasUnknownAction: Bool {
         switch self.action {
         case .navigateTo(destination: let destination):
@@ -132,6 +172,28 @@ class ButtonComponentViewModel {
         case .sheet:
             return false
         }
+    }
+
+}
+
+extension PresentedButtonPartial: PresentedPartial {
+
+    static func combine(
+        _ base: PaywallComponent.PartialButtonComponent?,
+        with other: PaywallComponent.PartialButtonComponent?
+    ) -> Self {
+
+        let visible = other?.visible ?? base?.visible
+        let action = other?.action ?? base?.action
+        let stack = other?.stack ?? base?.stack
+        let transition = other?.transition ?? base?.transition
+
+        return .init(
+            visible: visible,
+            action: action,
+            stack: stack,
+            transition: transition
+        )
     }
 
 }

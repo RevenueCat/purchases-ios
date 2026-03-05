@@ -31,6 +31,24 @@ struct ButtonComponentView: View {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -61,7 +79,19 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        if !self.viewModel.hasUnknownAction {
+        let isVisible = self.viewModel.visible(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            ),
+            selectedPackageId: self.packageContext.package?.identifier,
+            customVariables: self.customVariables
+        )
+        if isVisible && !self.viewModel.hasUnknownAction {
             AsyncButton {
                 try await performAction()
             } label: {
@@ -257,6 +287,7 @@ fileprivate extension ButtonComponentViewModel {
         try self.init(
             component: component,
             localizationProvider: localizationProvider,
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering,
             stackViewModel: stackViewModel
         )

@@ -20,57 +20,76 @@ public extension PaywallComponent {
     final class ButtonComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let visible: Bool?
         public let action: Action
         public let stack: PaywallComponent.StackComponent
         public let transition: PaywallComponent.Transition?
 
+        public let overrides: ComponentOverrides<PartialButtonComponent>?
+
         public init(
+            visible: Bool? = nil,
             action: Action,
             stack: PaywallComponent.StackComponent,
-            transition: PaywallComponent.Transition? = nil
+            transition: PaywallComponent.Transition? = nil,
+            overrides: ComponentOverrides<PartialButtonComponent>? = nil
         ) {
             self.type = .button
+            self.visible = visible
             self.action = action
             self.stack = stack
             self.transition = transition
+            self.overrides = overrides
         }
 
         private enum CodingKeys: String, CodingKey {
             case type
+            case visible
             case action
             case stack
             case transition
+            case overrides
         }
 
         required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.type = try container.decode(ComponentType.self, forKey: .type)
+            self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
             self.action = try container.decode(Action.self, forKey: .action)
             self.stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
             self.transition = try container.decodeIfPresent(PaywallComponent.Transition.self, forKey: .transition)
+            self.overrides = try container.decodeIfPresent(
+                ComponentOverrides<PartialButtonComponent>.self,
+                forKey: .overrides
+            )
         }
 
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(type, forKey: .type)
+            try container.encodeIfPresent(visible, forKey: .visible)
             try container.encode(action, forKey: .action)
             try container.encode(stack, forKey: .stack)
             try container.encode(transition, forKey: .transition)
+            try container.encodeIfPresent(overrides, forKey: .overrides)
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(visible)
             hasher.combine(action)
             hasher.combine(stack)
             hasher.combine(transition)
+            hasher.combine(overrides)
         }
 
         public static func == (lhs: ButtonComponent, rhs: ButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.visible == rhs.visible &&
                    lhs.action == rhs.action &&
                    lhs.stack == rhs.stack &&
-                   lhs.transition == rhs.transition
-
+                   lhs.transition == rhs.transition &&
+                   lhs.overrides == rhs.overrides
         }
 
         public enum Action: Codable, Sendable, Hashable, Equatable {
@@ -236,6 +255,47 @@ public extension PaywallComponent {
                 self.backgroundBlur = backgroundBlur
                 self.size = size
             }
+        }
+    }
+
+    final class PartialButtonComponent: PaywallPartialComponent {
+
+        public let visible: Bool?
+        public let action: ButtonComponent.Action?
+        public let stack: StackComponent?
+        public let transition: Transition?
+
+        public init(
+            visible: Bool? = true,
+            action: ButtonComponent.Action? = nil,
+            stack: StackComponent? = nil,
+            transition: Transition? = nil
+        ) {
+            self.visible = visible
+            self.action = action
+            self.stack = stack
+            self.transition = transition
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case visible
+            case action
+            case stack
+            case transition
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(visible)
+            hasher.combine(action)
+            hasher.combine(stack)
+            hasher.combine(transition)
+        }
+
+        public static func == (lhs: PartialButtonComponent, rhs: PartialButtonComponent) -> Bool {
+            return lhs.visible == rhs.visible &&
+                   lhs.action == rhs.action &&
+                   lhs.stack == rhs.stack &&
+                   lhs.transition == rhs.transition
         }
     }
 }
