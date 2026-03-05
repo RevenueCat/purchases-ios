@@ -185,6 +185,7 @@ struct ImageComponentView_Previews: PreviewProvider {
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
     static let bigImageUrl = URL(string: "https://assets.pawwalls.com/1172568_1741034533.heic")!
     static let smallImage = URL(string: "https://assets.pawwalls.com/1172568_1734493671.heic")!
+    static let icon = URL(string: "https://icons.pawwalls.com/icons/star.heic")!
 
     @ViewBuilder
     static func imageView(
@@ -291,6 +292,31 @@ struct ImageComponentView_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Image streching vertically when height=fit")
+
+        // Icons {
+        VStack {
+            imageView(
+                url: icon,
+                size: .init(width: .fixed(24), height: .fixed(24)),
+                fitMode: .fit,
+                width: 24,
+                height: 24
+            )
+            imageView(url: icon, size: .init(width: .fill, height: .fixed(24)), fitMode: .fit, width: 24, height: 24)
+            imageView(url: icon, size: .init(width: .fixed(24), height: .fill), fitMode: .fit, width: 24, height: 24)
+            imageView(
+                url: icon,
+                size: .init(width: .fixed(100), height: .fixed(100)),
+                fitMode: .fit,
+                width: 24,
+                height: 24
+            )
+            imageView(url: icon, size: .init(width: .fixed(100), height: .fill), fitMode: .fit, width: 24, height: 24)
+            imageView(url: icon, size: .init(width: .fill, height: .fixed(100)), fitMode: .fit, width: 24, height: 24)
+        }
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("icons sizing")
 
         // Light - Fit
         VStack {
