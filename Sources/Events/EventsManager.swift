@@ -69,6 +69,9 @@ actor EventsManager: EventsManagerType {
     private var adFlushInProgress = false
 
     private var flushInProgress = false
+    private var pendingPriorityFlush = false
+
+    private let priorityFlushRateLimiter: RateLimiter
 
     init(
         internalAPI: InternalAPI,
@@ -76,7 +79,8 @@ actor EventsManager: EventsManagerType {
         store: FeatureEventStoreType,
         systemInfo: SystemInfo,
         appSessionID: UUID = SystemInfo.appSessionID,
-        adEventStore: AdEventStoreType? = nil
+        adEventStore: AdEventStoreType? = nil,
+        priorityFlushRateLimiter: RateLimiter = .init(maxCalls: 5, period: 60)
     ) {
         self.internalAPI = internalAPI
         self.userProvider = userProvider
@@ -84,6 +88,7 @@ actor EventsManager: EventsManagerType {
         self.systemInfo = systemInfo
         self.appSessionID = appSessionID
         self.adEventStore = adEventStore
+        self.priorityFlushRateLimiter = priorityFlushRateLimiter
     }
 
     func track(featureEvent: FeatureEvent) async {
@@ -101,6 +106,10 @@ actor EventsManager: EventsManagerType {
         }
         await self.store.store(event)
         self.eventsListener?.onEventTracked(featureEvent.toMap())
+
+        if featureEvent.isPriorityEvent {
+            await self.performPriorityFlush()
+        }
     }
 
     func track(adEvent: AdEvent) async {
@@ -167,6 +176,14 @@ private extension EventsManager {
         self.flushInProgress = true
         defer { self.flushInProgress = false }
 
+        let result = try await self.flushFeatureEventBatches(batchSize: batchSize)
+        await self.drainPendingPriorityFlushIfNeeded()
+        return result
+    }
+
+    /// Sends feature events in batches, returning the total number of events flushed.
+    /// This method does not manage `flushInProgress` — callers are responsible for that.
+    private func flushFeatureEventBatches(batchSize: Int) async throws -> Int {
         var totalFlushed = 0
         var batchesSent = 0
 
@@ -204,6 +221,44 @@ private extension EventsManager {
         }
 
         return totalFlushed
+    }
+
+    func performPriorityFlush() async {
+        guard self.priorityFlushRateLimiter.shouldProceed() else {
+            Logger.warn(EventsManagerStrings.priority_flush_rate_limited(
+                maxCalls: self.priorityFlushRateLimiter.maxCalls,
+                period: Int(self.priorityFlushRateLimiter.period)
+            ))
+            return
+        }
+
+        guard !self.flushInProgress else {
+            Logger.debug(EventsManagerStrings.priority_flush_queued)
+            self.pendingPriorityFlush = true
+            return
+        }
+
+        Logger.debug(EventsManagerStrings.priority_flush_starting)
+        do {
+            _ = try await self.flushFeatureEventsInternal(batchSize: Self.defaultEventBatchSize)
+        } catch {
+            Logger.error(Strings.paywalls.event_flush_failed(error))
+        }
+    }
+
+    /// Drains any pending priority flush requests using a loop to avoid unbounded recursion.
+    /// Called while `flushInProgress` is still `true`, so concurrent flushes are rejected.
+    func drainPendingPriorityFlushIfNeeded() async {
+        while self.pendingPriorityFlush {
+            self.pendingPriorityFlush = false
+            Logger.debug(EventsManagerStrings.priority_flush_draining)
+
+            do {
+                _ = try await self.flushFeatureEventBatches(batchSize: Self.defaultEventBatchSize)
+            } catch {
+                Logger.error(Strings.paywalls.event_flush_failed(error))
+            }
+        }
     }
 
     func flushAdEvents(count: Int) async throws -> Int {
@@ -321,6 +376,11 @@ enum EventsManagerStrings {
     case background_task_failed(String)
     case background_task_started(String)
 
+    case priority_flush_starting
+    case priority_flush_queued
+    case priority_flush_draining
+    case priority_flush_rate_limited(maxCalls: Int, period: Int)
+
     case ad_event_tracking_disabled
     case ad_event_cannot_serialize
     case ad_event_flush_already_in_progress
@@ -348,6 +408,19 @@ extension EventsManagerStrings: LogMessage {
 
         case .background_task_started(let taskName):
             return "Background task started: \(taskName)"
+
+        case .priority_flush_starting:
+            return "Priority event tracked, triggering immediate flush"
+
+        case .priority_flush_queued:
+            return "Priority event tracked while flush in progress, queuing priority flush"
+
+        case .priority_flush_draining:
+            return "Draining pending priority flush"
+
+        case let .priority_flush_rate_limited(maxCalls, period):
+            return "Priority flush rate-limited (max \(maxCalls) calls per \(period)s). " +
+                "Event stored; will be uploaded on next scheduled flush."
 
         case .ad_event_tracking_disabled:
             return "Ad event tracking is disabled - no ad event store configured"
