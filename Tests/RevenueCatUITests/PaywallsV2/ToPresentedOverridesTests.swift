@@ -237,6 +237,99 @@ class ToPresentedOverridesTests: TestCase {
         expect(tabs.containsUnsupportedConditions()).to(beFalse())
     }
 
+    func testTimelineWithUnsupportedConditionInTitle_ReturnsTrue() throws {
+        let timeline = PaywallComponent.TimelineComponent(
+            iconAlignment: nil,
+            itemSpacing: nil,
+            textSpacing: nil,
+            columnGutter: nil,
+            size: .init(width: .fill, height: .fit),
+            padding: .zero,
+            margin: .zero,
+            items: [.init(
+                title: .init(
+                    text: "text_1",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [.init(extendedConditions: [.unsupported], properties: .init())]
+                ),
+                description: nil,
+                icon: .init(
+                    baseUrl: "https://example.com", iconName: "icon",
+                    formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
+                    size: .init(width: .fit, height: .fit),
+                    padding: .zero, margin: .zero,
+                    color: .init(light: .hex("#000000")), iconBackground: nil
+                ),
+                connector: .init(width: 1, color: .init(light: .hex("#000000")), margin: .zero),
+                overrides: nil
+            )],
+            overrides: nil
+        )
+
+        expect(timeline.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testTimelineWithUnsupportedConditionInDescription_ReturnsTrue() throws {
+        let timeline = PaywallComponent.TimelineComponent(
+            iconAlignment: nil,
+            itemSpacing: nil,
+            textSpacing: nil,
+            columnGutter: nil,
+            size: .init(width: .fill, height: .fit),
+            padding: .zero,
+            margin: .zero,
+            items: [.init(
+                title: .init(text: "text_1", color: .init(light: .hex("#000000"))),
+                description: .init(
+                    text: "desc",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [.init(extendedConditions: [.unsupported], properties: .init())]
+                ),
+                icon: .init(
+                    baseUrl: "https://example.com", iconName: "icon",
+                    formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
+                    size: .init(width: .fit, height: .fit),
+                    padding: .zero, margin: .zero,
+                    color: .init(light: .hex("#000000")), iconBackground: nil
+                ),
+                connector: .init(width: 1, color: .init(light: .hex("#000000")), margin: .zero),
+                overrides: nil
+            )],
+            overrides: nil
+        )
+
+        expect(timeline.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testTimelineWithUnsupportedConditionInIcon_ReturnsTrue() throws {
+        let timeline = PaywallComponent.TimelineComponent(
+            iconAlignment: nil,
+            itemSpacing: nil,
+            textSpacing: nil,
+            columnGutter: nil,
+            size: .init(width: .fill, height: .fit),
+            padding: .zero,
+            margin: .zero,
+            items: [.init(
+                title: .init(text: "text_1", color: .init(light: .hex("#000000"))),
+                description: nil,
+                icon: .init(
+                    baseUrl: "https://example.com", iconName: "icon",
+                    formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
+                    size: .init(width: .fit, height: .fit),
+                    padding: .zero, margin: .zero,
+                    color: .init(light: .hex("#000000")), iconBackground: nil,
+                    overrides: [.init(extendedConditions: [.unsupported], properties: .init())]
+                ),
+                connector: .init(width: 1, color: .init(light: .hex("#000000")), margin: .zero),
+                overrides: nil
+            )],
+            overrides: nil
+        )
+
+        expect(timeline.containsUnsupportedConditions()).to(beTrue())
+    }
+
     func testButtonWithUnsupportedConditionInStack_ReturnsTrue() throws {
         let button = PaywallComponent.ButtonComponent(
             action: .restorePurchases,
@@ -265,6 +358,52 @@ class ToPresentedOverridesTests: TestCase {
         )
 
         expect(PaywallComponent.package(package).containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testButtonSheetWithUnsupportedCondition_ReturnsTrue() throws {
+        let sheetText = PaywallComponent.TextComponent(
+            text: "text_1",
+            color: .init(light: .hex("#000000")),
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ]
+        )
+        let button = PaywallComponent.ButtonComponent(
+            action: .navigateTo(destination: .sheet(sheet: .init(
+                id: "sheet_1",
+                name: nil,
+                stack: .init(components: [.text(sheetText)]),
+                backgroundBlur: false,
+                size: nil
+            ))),
+            stack: .init(components: [])
+        )
+
+        expect(PaywallComponent.button(button).containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testButtonSheetWithNoUnsupportedConditions_ReturnsFalse() throws {
+        let button = PaywallComponent.ButtonComponent(
+            action: .navigateTo(destination: .sheet(sheet: .init(
+                id: "sheet_1",
+                name: nil,
+                stack: .init(components: []),
+                backgroundBlur: false,
+                size: nil
+            ))),
+            stack: .init(components: [])
+        )
+
+        expect(PaywallComponent.button(button).containsUnsupportedConditions()).to(beFalse())
+    }
+
+    func testButtonWithNonSheetAction_ReturnsFalse() throws {
+        let button = PaywallComponent.ButtonComponent(
+            action: .restorePurchases,
+            stack: .init(components: [])
+        )
+
+        expect(PaywallComponent.button(button).containsUnsupportedConditions()).to(beFalse())
     }
 
     func testDeeplyNestedUnsupportedCondition_ReturnsTrue() throws {
@@ -306,38 +445,21 @@ class ToPresentedOverridesTests: TestCase {
         expect(outerStack.containsUnsupportedConditions()).to(beFalse())
     }
 
-    // MARK: - toPresentedOverrides Throwing Tests
+    // MARK: - toPresentedOverrides Behavior Without discardRules
 
-    func testToPresentedOverrides_WithUnsupportedCondition_ThrowsUnsupportedConditionError() throws {
-        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
-            .init(extendedConditions: [.unsupported], properties: .init())
-        ]
-
-        expect {
-            try overrides.toPresentedOverrides { $0 }
-        }.to(throwError(PaywallError.unsupportedCondition))
-    }
-
-    func testToPresentedOverrides_WithUnsupportedConditionAmongOthers_ThrowsUnsupportedConditionError() throws {
-        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
-            .init(extendedConditions: [.compact, .unsupported, .selected], properties: .init())
-        ]
-
-        expect {
-            try overrides.toPresentedOverrides { $0 }
-        }.to(throwError(PaywallError.unsupportedCondition))
-    }
-
-    func testToPresentedOverrides_WithMultipleOverrides_OneHasUnsupported_ThrowsUnsupportedConditionError() throws {
+    func testToPresentedOverrides_WithoutDiscardRules_KeepsAllOverridesIncludingUnsupported() throws {
+        // Without discardRules, all overrides are kept as-is (no local filtering)
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [.compact], properties: .init()),
             .init(extendedConditions: [.unsupported], properties: .init()),
+            .init(extendedConditions: [
+                .selectedPackage(operator: .in, packages: ["monthly"])
+            ], properties: .init()),
             .init(extendedConditions: [.medium], properties: .init())
         ]
 
-        expect {
-            try overrides.toPresentedOverrides { $0 }
-        }.to(throwError(PaywallError.unsupportedCondition))
+        let result = try overrides.toPresentedOverrides { $0 }
+        expect(result.count).to(equal(4))
     }
 
     func testToPresentedOverrides_WithSupportedConditions_SucceedsAndReturnsOverrides() throws {
@@ -362,6 +484,105 @@ class ToPresentedOverridesTests: TestCase {
         let result = try overrides.toPresentedOverrides { $0 }
 
         expect(result).to(beEmpty())
+    }
+
+    // MARK: - Global discardRules Flag Tests (Cross-Component Unsupported Condition Propagation)
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_DiscardsRuleOverridesEvenWithoutLocalUnsupported() throws {
+        // This component has NO unsupported conditions locally, but the global flag says to discard rules
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [
+                .selectedPackage(operator: .in, packages: ["monthly"])
+            ], properties: .init()),
+            .init(extendedConditions: [
+                .variable(operator: .equals, variable: "plan", value: .string("pro"))
+            ], properties: .init()),
+            .init(extendedConditions: [.medium], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        // Only legacy conditions survive
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
+        expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.medium]))
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesFalse_KeepsAllOverrides() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [
+                .selectedPackage(operator: .in, packages: ["monthly"])
+            ], properties: .init()),
+            .init(extendedConditions: [.medium], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: false) { $0 }
+        expect(result.count).to(equal(3))
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_DiscardsIntroOfferConditionButKeepsLegacyIntroOffer() throws {
+        // introOffer (legacy) is NOT a rule; introOfferCondition (with operator/value) IS a rule
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.introOffer], properties: .init()),
+            .init(extendedConditions: [
+                .introOfferCondition(operator: .equals, value: true)
+            ], properties: .init()),
+            .init(extendedConditions: [.selected], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.introOffer]))
+        expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.selected]))
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_EmptyOverrides_ReturnsEmpty() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = []
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result).to(beEmpty())
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_DropsUnsupportedOverrides() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [.unsupported], properties: .init()),
+            .init(extendedConditions: [.medium], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
+        expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.medium]))
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_DropsMixedLegacyAndRuleOverride() throws {
+        // An override with both a legacy condition and a rule should be dropped entirely
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [
+                .compact,
+                .selectedPackage(operator: .in, packages: ["monthly"])
+            ], properties: .init()),
+            .init(extendedConditions: [.medium], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
+        expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.medium]))
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_OnlyLegacyOverrides_KeepsAll() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [.selected], properties: .init()),
+            .init(extendedConditions: [.introOffer], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result.count).to(equal(3))
     }
 
 }

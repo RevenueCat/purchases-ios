@@ -33,10 +33,6 @@ enum PaywallError: Error {
     /// when ``purchasesAreCompletedBy`` is ``.revenueCat``
     case purchaseAndRestoreDefinedForRevenueCat
 
-    /// The paywall contains conditions not recognized by this SDK version.
-    /// This triggers a fallback to the default paywall.
-    case unsupportedCondition
-
 }
 
 extension PaywallError: CustomNSError, CustomStringConvertible {
@@ -65,9 +61,6 @@ extension PaywallError: CustomNSError, CustomStringConvertible {
             "the Paywall has purchase/restore blocks defined. These will NOT be executed. " +
             "Please set purchasesAreCompletedBy to .myApp if you wish to run these blocks " +
             "instead of RevenueCat's purchase/restore code."
-        case .unsupportedCondition:
-            return "Paywall contains conditions not recognized by this SDK version. " +
-            "Falling back to default paywall. Please update to the latest SDK version."
         }
     }
 

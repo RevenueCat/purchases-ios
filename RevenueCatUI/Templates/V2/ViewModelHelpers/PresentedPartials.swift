@@ -290,23 +290,30 @@ private extension ScreenCondition {
 
 extension Array {
 
-    /// Converts component overrides to presented overrides
-    /// - Parameter convert: Conversion function to apply
-    /// - Returns: Presented overrides with converted components
-    /// - Throws: `PaywallError.unsupportedCondition` if any override contains unsupported conditions
+    /// Converts component overrides to presented overrides.
+    ///
+    /// When `discardRules` is true (because unsupported conditions were found anywhere in the paywall),
+    /// all conditional configurability (rule-based) overrides are discarded globally and only legacy
+    /// overrides are kept. This renders the "default paywall" — the same paywall template with only
+    /// legacy overrides applied.
     func toPresentedOverrides<
         T: PaywallPartialComponent,
         P: PresentedPartial
     >(
+        discardRules: Bool = false,
         convert: (T) throws -> P
     ) throws -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
-        // Check for unsupported conditions first - triggers fallback to default paywall
-        if self.hasUnsupportedCondition() {
-            throw PaywallError.unsupportedCondition
+        let overridesToProcess: Self
+        if discardRules {
+            overridesToProcess = self.filter { override in
+                override.extendedConditions.allSatisfy { !$0.isRule && $0 != .unsupported }
+            }
+        } else {
+            overridesToProcess = self
         }
 
-        return try self.compactMap { partial in
+        return try overridesToProcess.compactMap { partial in
             let presentedPartial = try convert(partial.properties)
 
             return PresentedOverride(
@@ -341,7 +348,13 @@ extension PaywallComponent {
         case .stack(let component):
             return component.containsUnsupportedConditions()
         case .button(let component):
-            return component.stack.containsUnsupportedConditions()
+            if component.stack.containsUnsupportedConditions() {
+                return true
+            }
+            if case let .navigateTo(.sheet(sheet)) = component.action {
+                return sheet.stack.containsUnsupportedConditions()
+            }
+            return false
         case .package(let component):
             return component.stack.containsUnsupportedConditions()
         case .purchaseButton(let component):
@@ -380,7 +393,12 @@ extension PaywallComponent.TimelineComponent {
 
     func containsUnsupportedConditions() -> Bool {
         (overrides?.hasUnsupportedCondition() == true) ||
-        items.contains(where: { $0.overrides?.hasUnsupportedCondition() == true })
+        items.contains(where: {
+            ($0.overrides?.hasUnsupportedCondition() == true) ||
+            ($0.title.overrides?.hasUnsupportedCondition() == true) ||
+            ($0.description?.overrides?.hasUnsupportedCondition() == true) ||
+            ($0.icon.overrides?.hasUnsupportedCondition() == true)
+        })
     }
 
 }

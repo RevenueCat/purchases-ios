@@ -34,7 +34,8 @@ class TabsComponentViewModel {
         component: PaywallComponent.TabsComponent,
         controlStackViewModel: StackComponentViewModel,
         tabViewModels: [TabViewModel],
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        discardRules: Bool = false
     ) throws {
         self.component = component
         self.controlStackViewModel = controlStackViewModel
@@ -45,7 +46,7 @@ class TabsComponentViewModel {
         self.defaultTabId = component.defaultTabId
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
     }
 
     // swiftlint:disable:next function_parameter_count
