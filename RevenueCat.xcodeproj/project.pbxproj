@@ -45,6 +45,7 @@
 		03C06FCA2D479C7400600693 /* CarouselComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C06FC92D479C6D00600693 /* CarouselComponentView.swift */; };
 		03C06FCC2D479C7C00600693 /* CarouselComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C06FCB2D479C7600600693 /* CarouselComponentViewModel.swift */; };
 		03C72F6D2D32CDFB00297FEC /* FamilySharingTogglePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */; };
+		64AF814EEC17056C959AF793 /* ConditionalConfigurabilityPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55ACA2F51E289B5E660E362 /* ConditionalConfigurabilityPreview.swift */; };
 		03C72F8D2D3311E300297FEC /* DisplayableColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F8C2D3311D500297FEC /* DisplayableColor.swift */; };
 		03C72FBE2D34949600297FEC /* PaywallIconComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72FBD2D34949600297FEC /* PaywallIconComponent.swift */; };
 		03C72FC22D349BAE00297FEC /* IconComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72FC02D349BAE00297FEC /* IconComponentViewModel.swift */; };
@@ -1581,6 +1582,7 @@
 		03C06FC92D479C6D00600693 /* CarouselComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselComponentView.swift; sourceTree = "<group>"; };
 		03C06FCB2D479C7600600693 /* CarouselComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselComponentViewModel.swift; sourceTree = "<group>"; };
 		03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySharingTogglePreview.swift; sourceTree = "<group>"; };
+		F55ACA2F51E289B5E660E362 /* ConditionalConfigurabilityPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionalConfigurabilityPreview.swift; sourceTree = "<group>"; };
 		03C72F8C2D3311D500297FEC /* DisplayableColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayableColor.swift; sourceTree = "<group>"; };
 		03C72FBD2D34949600297FEC /* PaywallIconComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallIconComponent.swift; sourceTree = "<group>"; };
 		03C72FBF2D349BAE00297FEC /* IconComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconComponentView.swift; sourceTree = "<group>"; };
@@ -3236,6 +3238,7 @@
 				2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */,
 				2C8EC6DA2CCC23B700D6CCF8 /* MultiTierPreview.swift */,
 				03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */,
+				F55ACA2F51E289B5E660E362 /* ConditionalConfigurabilityPreview.swift */,
 			);
 			path = TemplateComponentsViewPreviews;
 			sourceTree = "<group>";
@@ -7914,6 +7917,7 @@
 				887A60CA2C1D037000E1A461 /* RemoteImage.swift in Sources */,
 				887A607B2C1D037000E1A461 /* Bundle+Extensions.swift in Sources */,
 				03C72F6D2D32CDFB00297FEC /* FamilySharingTogglePreview.swift in Sources */,
+				64AF814EEC17056C959AF793 /* ConditionalConfigurabilityPreview.swift in Sources */,
 				030F918A2D55C1D20085103F /* LocaleFinder.swift in Sources */,
 				887A60CF2C1D037000E1A461 /* View+PresentPaywallFooter.swift in Sources */,
 				887A60BB2C1D037000E1A461 /* Template4View.swift in Sources */,
