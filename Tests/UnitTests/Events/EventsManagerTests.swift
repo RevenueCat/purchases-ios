@@ -268,7 +268,7 @@ class EventsManagerTests: TestCase {
         let event = CustomPaywallImpressionEvent(creationData: creationData, data: data)
         let map = (event as FeatureEvent).toMap()
 
-        expect(map["discriminator"] as? String) == "custom_paywall_impression"
+        expect(map["discriminator"] as? String) == "custom_paywall_event"
         expect(map["type"] as? String) == "custom_paywall_impression"
         expect(map["id"] as? String) == creationData.id.uuidString
         expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
@@ -281,7 +281,7 @@ class EventsManagerTests: TestCase {
         let event = CustomPaywallImpressionEvent(creationData: creationData, data: data)
         let map = (event as FeatureEvent).toMap()
 
-        expect(map["discriminator"] as? String) == "custom_paywall_impression"
+        expect(map["discriminator"] as? String) == "custom_paywall_event"
         expect(map["type"] as? String) == "custom_paywall_impression"
         expect(map["paywall_id"]).to(beNil())
     }
