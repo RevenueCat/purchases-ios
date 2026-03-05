@@ -393,7 +393,12 @@ extension PaywallComponent.TimelineComponent {
 
     func containsUnsupportedConditions() -> Bool {
         (overrides?.hasUnsupportedCondition() == true) ||
-        items.contains(where: { $0.overrides?.hasUnsupportedCondition() == true })
+        items.contains(where: {
+            ($0.overrides?.hasUnsupportedCondition() == true) ||
+            ($0.title.overrides?.hasUnsupportedCondition() == true) ||
+            ($0.description?.overrides?.hasUnsupportedCondition() == true) ||
+            ($0.icon.overrides?.hasUnsupportedCondition() == true)
+        })
     }
 
 }

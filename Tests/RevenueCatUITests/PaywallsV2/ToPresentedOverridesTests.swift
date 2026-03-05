@@ -237,6 +237,99 @@ class ToPresentedOverridesTests: TestCase {
         expect(tabs.containsUnsupportedConditions()).to(beFalse())
     }
 
+    func testTimelineWithUnsupportedConditionInTitle_ReturnsTrue() throws {
+        let timeline = PaywallComponent.TimelineComponent(
+            iconAlignment: nil,
+            itemSpacing: nil,
+            textSpacing: nil,
+            columnGutter: nil,
+            size: .init(width: .fill, height: .fit),
+            padding: .zero,
+            margin: .zero,
+            items: [.init(
+                title: .init(
+                    text: "text_1",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [.init(extendedConditions: [.unsupported], properties: .init())]
+                ),
+                description: nil,
+                icon: .init(
+                    baseUrl: "https://example.com", iconName: "icon",
+                    formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
+                    size: .init(width: .fit, height: .fit),
+                    padding: .zero, margin: .zero,
+                    color: .init(light: .hex("#000000")), iconBackground: nil
+                ),
+                connector: .init(width: 1, color: .init(light: .hex("#000000")), margin: .zero),
+                overrides: nil
+            )],
+            overrides: nil
+        )
+
+        expect(timeline.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testTimelineWithUnsupportedConditionInDescription_ReturnsTrue() throws {
+        let timeline = PaywallComponent.TimelineComponent(
+            iconAlignment: nil,
+            itemSpacing: nil,
+            textSpacing: nil,
+            columnGutter: nil,
+            size: .init(width: .fill, height: .fit),
+            padding: .zero,
+            margin: .zero,
+            items: [.init(
+                title: .init(text: "text_1", color: .init(light: .hex("#000000"))),
+                description: .init(
+                    text: "desc",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [.init(extendedConditions: [.unsupported], properties: .init())]
+                ),
+                icon: .init(
+                    baseUrl: "https://example.com", iconName: "icon",
+                    formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
+                    size: .init(width: .fit, height: .fit),
+                    padding: .zero, margin: .zero,
+                    color: .init(light: .hex("#000000")), iconBackground: nil
+                ),
+                connector: .init(width: 1, color: .init(light: .hex("#000000")), margin: .zero),
+                overrides: nil
+            )],
+            overrides: nil
+        )
+
+        expect(timeline.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testTimelineWithUnsupportedConditionInIcon_ReturnsTrue() throws {
+        let timeline = PaywallComponent.TimelineComponent(
+            iconAlignment: nil,
+            itemSpacing: nil,
+            textSpacing: nil,
+            columnGutter: nil,
+            size: .init(width: .fill, height: .fit),
+            padding: .zero,
+            margin: .zero,
+            items: [.init(
+                title: .init(text: "text_1", color: .init(light: .hex("#000000"))),
+                description: nil,
+                icon: .init(
+                    baseUrl: "https://example.com", iconName: "icon",
+                    formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
+                    size: .init(width: .fit, height: .fit),
+                    padding: .zero, margin: .zero,
+                    color: .init(light: .hex("#000000")), iconBackground: nil,
+                    overrides: [.init(extendedConditions: [.unsupported], properties: .init())]
+                ),
+                connector: .init(width: 1, color: .init(light: .hex("#000000")), margin: .zero),
+                overrides: nil
+            )],
+            overrides: nil
+        )
+
+        expect(timeline.containsUnsupportedConditions()).to(beTrue())
+    }
+
     func testButtonWithUnsupportedConditionInStack_ReturnsTrue() throws {
         let button = PaywallComponent.ButtonComponent(
             action: .restorePurchases,
