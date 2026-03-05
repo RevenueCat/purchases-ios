@@ -2130,10 +2130,10 @@ internal extension Purchases {
     /// Tracks an impression for a custom paywall.
     /// - Parameter params: Parameters for the custom paywall impression.
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams = .init()) async {
-        let event = CustomPaywallImpressionEvent(
-            creationData: .init(),
-            data: .init(paywallId: params.paywallId)
+    func trackCustomPaywallImpression(_ params: CustomPaywallEvent.Params = .init()) async {
+        let event = CustomPaywallEvent.impression(
+            .init(),
+            .init(paywallId: params.paywallId)
         )
         await self.eventsManager?.track(featureEvent: event)
     }

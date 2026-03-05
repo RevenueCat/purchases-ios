@@ -13,12 +13,12 @@
 
 import Foundation
 
-/// Type alias to resolve naming ambiguity inside `FeatureEventsRequest.CustomPaywallImpressionEvent`.
-private typealias StoredCustomPaywallImpressionEvent = CustomPaywallImpressionEvent
+/// Type alias to resolve naming ambiguity inside `FeatureEventsRequest.CustomPaywallEvent`.
+private typealias StoredCustomPaywallEvent = CustomPaywallEvent
 
 extension FeatureEventsRequest {
 
-    struct CustomPaywallImpressionEvent {
+    struct CustomPaywallEvent {
 
         let id: String
         let version: Int
@@ -32,7 +32,7 @@ extension FeatureEventsRequest {
 
 }
 
-extension FeatureEventsRequest.CustomPaywallImpressionEvent {
+extension FeatureEventsRequest.CustomPaywallEvent {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: StoredFeatureEvent) {
@@ -42,7 +42,7 @@ extension FeatureEventsRequest.CustomPaywallImpressionEvent {
         }
 
         do {
-            let event = try JSONDecoder.default.decode(StoredCustomPaywallImpressionEvent.self, from: jsonData)
+            let event = try JSONDecoder.default.decode(StoredCustomPaywallEvent.self, from: jsonData)
 
             self.init(
                 id: event.creationData.id.uuidString,
@@ -66,7 +66,7 @@ extension FeatureEventsRequest.CustomPaywallImpressionEvent {
 
 // MARK: - Codable
 
-extension FeatureEventsRequest.CustomPaywallImpressionEvent: Encodable {
+extension FeatureEventsRequest.CustomPaywallEvent: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 

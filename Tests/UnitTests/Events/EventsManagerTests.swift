@@ -260,12 +260,12 @@ class EventsManagerTests: TestCase {
         expect(map["path"] as? String) == "REFUND_REQUEST"
     }
 
-    // MARK: - toMap (Custom Paywall Impression Events)
+    // MARK: - toMap (Custom Paywall Events)
 
     func testCustomPaywallImpressionToMapWithPaywallId() {
-        let creationData = CustomPaywallImpressionEvent.CreationData()
-        let data = CustomPaywallImpressionEvent.Data(paywallId: "my_paywall")
-        let event = CustomPaywallImpressionEvent(creationData: creationData, data: data)
+        let creationData = CustomPaywallEvent.CreationData()
+        let data = CustomPaywallEvent.Data(paywallId: "my_paywall")
+        let event = CustomPaywallEvent.impression(creationData, data)
         let map = (event as FeatureEvent).toMap()
 
         expect(map["discriminator"] as? String) == "custom_paywall_event"
@@ -276,9 +276,9 @@ class EventsManagerTests: TestCase {
     }
 
     func testCustomPaywallImpressionToMapWithoutPaywallId() {
-        let creationData = CustomPaywallImpressionEvent.CreationData()
-        let data = CustomPaywallImpressionEvent.Data(paywallId: nil)
-        let event = CustomPaywallImpressionEvent(creationData: creationData, data: data)
+        let creationData = CustomPaywallEvent.CreationData()
+        let data = CustomPaywallEvent.Data(paywallId: nil)
+        let event = CustomPaywallEvent.impression(creationData, data)
         let map = (event as FeatureEvent).toMap()
 
         expect(map["discriminator"] as? String) == "custom_paywall_event"
@@ -289,9 +289,9 @@ class EventsManagerTests: TestCase {
     // MARK: - trackEvent (Custom Paywall Impression)
 
     func testTrackCustomPaywallImpressionEvent() async throws {
-        let event = CustomPaywallImpressionEvent(
-            creationData: .init(),
-            data: .init(paywallId: "test_paywall")
+        let event = CustomPaywallEvent.impression(
+            .init(),
+            .init(paywallId: "test_paywall")
         )
 
         await self.manager.track(featureEvent: event)
@@ -301,7 +301,7 @@ class EventsManagerTests: TestCase {
             try XCTUnwrap(.init(
                 event: event,
                 userID: Self.userID,
-                feature: .customPaywallImpression,
+                feature: .customPaywalls,
                 appSessionID: self.appSessionID,
                 eventDiscriminator: nil
             ))
