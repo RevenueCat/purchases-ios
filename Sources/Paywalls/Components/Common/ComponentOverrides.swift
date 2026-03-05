@@ -190,11 +190,14 @@ extension PaywallComponent {
         /// (e.g., variable_condition, selected_package_condition, intro_offer_condition, promo_offer_condition).
         /// When an unsupported condition is encountered, all overrides containing rules are discarded,
         /// rendering the "default paywall" with only base conditions applied.
+        /// Note: `.unsupported` is NOT a rule — it existed before conditional configurability as a
+        /// fallback for unrecognized condition types. It always evaluates to `false` at runtime.
         public var isRule: Bool {
             switch self {
-            case .compact, .medium, .expanded, .selected, .introOffer, .promoOffer, .multipleIntroOffers:
+            case .compact, .medium, .expanded, .selected, .introOffer, .promoOffer,
+                 .multipleIntroOffers, .unsupported:
                 return false
-            case .introOfferCondition, .promoOfferCondition, .variable, .selectedPackage, .unsupported:
+            case .introOfferCondition, .promoOfferCondition, .variable, .selectedPackage:
                 return true
             }
         }
