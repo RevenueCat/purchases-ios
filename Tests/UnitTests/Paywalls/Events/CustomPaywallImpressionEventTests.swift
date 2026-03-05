@@ -157,7 +157,7 @@ class CustomPaywallImpressionEventTests: TestCase {
         expect(params.paywallId) == "my_paywall"
     }
 
-    func testParamsWithNilPaywallId() {
+    func testParamsDefaultPaywallIdIsNil() {
         let params = CustomPaywallImpressionParams()
         expect(params.paywallId).to(beNil())
     }
