@@ -224,13 +224,6 @@ extension SubscriberAttributesManagerIntegrationTests: AttributionDelegate {
         )
     }
 
-    func attribution(
-        _ attribution: Attribution,
-        requestsSyncAttributesAndOfferingsWithCompletion completion: @escaping (Offerings?, PublicError?) -> Void
-    ) {
-        // Not needed for these integration tests.
-    }
-
 }
 
 private extension SubscriberAttributesManagerIntegrationTests {

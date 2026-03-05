@@ -133,4 +133,24 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(completionCalled).to(beTrue())
     }
 
+    func testSetAppstackAttributionParamsCallsCompletionWhenPurchasesIsDeallocated() {
+        self.setupPurchases()
+
+        weak var purchases = self.purchases
+
+        Purchases.clearSingleton()
+        self.purchases = nil
+        expect(purchases).toEventually(beNil())
+
+        var offerings: Offerings?
+        var error: PublicError?
+        self.attribution.setAppstackAttributionParams(["appstack_id": "test"]) { receivedOfferings, receivedError in
+            offerings = receivedOfferings
+            error = receivedError
+        }
+
+        expect(offerings).to(beNil())
+        expect(error).to(beNil())
+    }
+
 }

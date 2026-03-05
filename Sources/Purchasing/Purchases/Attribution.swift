@@ -37,6 +37,8 @@ import Foundation
 
     weak var delegate: AttributionDelegate?
 
+    var syncAttributesAndOfferingsIfNeededHandler: ((@escaping (Offerings?, PublicError?) -> Void) -> Void)?
+
     init(subscriberAttributesManager: SubscriberAttributesManager,
          currentUserProvider: CurrentUserProvider,
          attributionPoster: AttributionPoster,
@@ -519,19 +521,6 @@ public extension Attribution {
      * that this method will never unset any attributes, even if passed `nil`. To unset an attribute,
      * call the individual setter with a `nil` value.
      *
-     * The following RevenueCat attributes will be set based on the Appstack data:
-     * - `$appstackId`: From `appstack_id` (also triggers device identifier collection)
-     * - `$mediaSource` and custom `appstack_adnetwork`: From `appstack_adnetwork`
-     * - `$campaign` and custom `appstack_campaign`: From `appstack_campaign`
-     * - `$adGroup` and custom `appstack_adset`: From `appstack_adset`
-     * - `$ad` and custom `appstack_ad`: From `appstack_ad`
-     * - `$keyword` and custom `appstack_keywords`: From `appstack_keywords`
-     * - Custom `fbclid`: From `fbclid`
-     * - Custom `gclid`: From `gclid`
-     * - Custom `wbraid`: From `wbraid`
-     * - Custom `gbraid`: From `gbraid`
-     * - Custom `ttclid`: From `ttclid`
-     *
      * - Parameter data: The attribution params from `AppstackAttributionSdk.shared.getAttributionParams()`.
      * - Parameter completion: Called with the ``Offerings`` (targeted with Appstack data, or the cached 
      * ones if rate limited) or an error.
@@ -541,11 +530,11 @@ public extension Attribution {
         completion: @escaping (Offerings?, PublicError?) -> Void
     ) {
         self.subscriberAttributesManager.setAppstackAttributionParams(data, appUserID: appUserID)
-        guard let delegate = self.delegate else {
+        guard let handler = self.syncAttributesAndOfferingsIfNeededHandler else {
             completion(nil, nil)
             return
         }
-        delegate.attribution(self, requestsSyncAttributesAndOfferingsWithCompletion: completion)
+        handler(completion)
     }
 
     /**
@@ -676,10 +665,5 @@ protocol AttributionDelegate: AnyObject, Sendable {
 
     func attribution(didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
                      forUserID userID: String)
-
-    func attribution(
-        _ attribution: Attribution,
-        requestsSyncAttributesAndOfferingsWithCompletion completion: @escaping (Offerings?, PublicError?) -> Void
-    )
 
 }
