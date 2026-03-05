@@ -64,12 +64,23 @@ struct RemoteImage<Content: View>: View {
         self.expectedSize = nil
         self.content = { (image, _) in
             if let aspectRatio {
-                return AnyView(
-                    image
-                        .fitToAspect(aspectRatio, contentMode: .fill)
-                        .frame(maxWidth: maxWidth)
-                        .accessibilityHidden(true)
-                )
+                let fitImage = image
+                    .fitToAspect(aspectRatio, contentMode: .fill)
+                    .accessibilityHidden(true)
+
+                if let maxWidth, maxWidth.isFinite {
+                    // Force the rendered width for finite constraints so small intrinsic images
+                    // (for example SVGs) still expand to the expected size.
+                    return AnyView(
+                        fitImage
+                            .frame(width: maxWidth)
+                    )
+                } else {
+                    return AnyView(
+                        fitImage
+                            .frame(maxWidth: maxWidth)
+                    )
+                }
             } else {
                 return AnyView(
                     image

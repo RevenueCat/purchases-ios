@@ -145,15 +145,34 @@ struct ImageComponentView: View {
         maxWidth: CGFloat,
         with style: ImageComponentStyle
     ) -> some View {
-        image
-            .fitToAspect(
-                self.aspectRatio(style: style),
-                contentMode: style.contentMode,
-                containerContentMode: style.contentMode
-            )
-            .frame(maxWidth: maxWidth)
+        self.applyImageWidth(
+            image
+                .fitToAspect(
+                    self.aspectRatio(style: style),
+                    contentMode: style.contentMode,
+                    containerContentMode: style.contentMode
+                ),
+            maxWidth: maxWidth,
+            size: style.size
+        )
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
+    }
+
+    @ViewBuilder
+    private func applyImageWidth<Content: View>(
+        _ view: Content,
+        maxWidth: CGFloat,
+        size: PaywallComponent.Size
+    ) -> some View {
+        switch size.width {
+        case .fill, .fixed:
+            // Using fixed width here ensures small intrinsic assets (for example SVGs)
+            // scale up to the expected rendered width.
+            view.frame(width: maxWidth)
+        case .fit, .relative:
+            view.frame(maxWidth: maxWidth)
+        }
     }
 
 }
