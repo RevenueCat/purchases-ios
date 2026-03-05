@@ -292,18 +292,20 @@ extension Array {
 
     /// Converts component overrides to presented overrides.
     ///
-    /// If any override contains an unsupported condition, all conditional configurability (rule-based)
-    /// overrides are discarded and only legacy overrides are kept. This renders the "default paywall" —
-    /// the same paywall template with only legacy overrides applied.
+    /// When `discardRules` is true (because unsupported conditions were found anywhere in the paywall),
+    /// all conditional configurability (rule-based) overrides are discarded globally and only legacy
+    /// overrides are kept. This renders the "default paywall" — the same paywall template with only
+    /// legacy overrides applied.
     func toPresentedOverrides<
         T: PaywallPartialComponent,
         P: PresentedPartial
     >(
+        discardRules: Bool = false,
         convert: (T) throws -> P
     ) throws -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
         let overridesToProcess: Self
-        if self.hasUnsupportedCondition() {
+        if discardRules || self.hasUnsupportedCondition() {
             overridesToProcess = self.filter { override in
                 override.extendedConditions.allSatisfy { !$0.isRule }
             }

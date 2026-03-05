@@ -34,13 +34,14 @@ class TimelineComponentViewModel {
     init(
         component: PaywallComponent.TimelineComponent,
         items: [TimelineItemViewModel],
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        discardRules: Bool = false
     ) throws {
         self.component = component
         self.items = items
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
     }
 
     @ViewBuilder
@@ -101,13 +102,14 @@ class TimelineItemViewModel {
          title: TextComponentViewModel,
          description: TextComponentViewModel?,
          icon: IconComponentViewModel,
-         uiConfigProvider: UIConfigProvider) throws {
+         uiConfigProvider: UIConfigProvider,
+         discardRules: Bool = false) throws {
         self.component = component
         self.title = title
         self.description = description
         self.icon = icon
         self.uiConfigProvider = uiConfigProvider
-        self.presentedOverrides = try component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = try component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
     }
 
     @ViewBuilder

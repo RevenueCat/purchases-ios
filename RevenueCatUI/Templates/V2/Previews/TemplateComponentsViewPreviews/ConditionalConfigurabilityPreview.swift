@@ -362,6 +362,124 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
 
 }
 
+// MARK: - Default Paywall behavior (global discardRules)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct DefaultPaywallBehavior_Previews: PreviewProvider {
+
+    static var previews: some View {
+
+        // MARK: Normal: rule override APPLIES (discardRules=false)
+        TextComponentView(
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_base": .string("Base text (free tier)"),
+                        "id_premium": .string("Premium override applied!")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_base",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [
+                        .init(
+                            extendedConditions: [
+                                .variable(operator: .equals, variable: "tier", value: .string("premium"))
+                            ],
+                            properties: .init(
+                                text: "id_premium",
+                                color: .init(light: .hex("#FFD700"))
+                            )
+                        )
+                    ]
+                ),
+                discardRules: false
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .environment(\.customPaywallVariables, ["tier": .string("premium")])
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Normal: rule override applies (gold text)")
+
+        // MARK: Default paywall: rule override DISCARDED (discardRules=true, simulates unsupported elsewhere)
+        TextComponentView(
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_base": .string("Base text (free tier)"),
+                        "id_premium": .string("Premium override applied!")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_base",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [
+                        .init(
+                            extendedConditions: [
+                                .variable(operator: .equals, variable: "tier", value: .string("premium"))
+                            ],
+                            properties: .init(
+                                text: "id_premium",
+                                color: .init(light: .hex("#FFD700"))
+                            )
+                        )
+                    ]
+                ),
+                discardRules: true
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .environment(\.customPaywallVariables, ["tier": .string("premium")])
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Default paywall: rule override discarded (base text)")
+
+        // MARK: Default paywall keeps legacy overrides (compact condition still applies)
+        TextComponentView(
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_base": .string("Default text"),
+                        "id_compact": .string("Compact layout text")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_base",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [
+                        .init(
+                            extendedConditions: [.compact],
+                            properties: .init(
+                                text: "id_compact",
+                                color: .init(light: .hex("#007AFF"))
+                            )
+                        ),
+                        .init(
+                            extendedConditions: [
+                                .variable(operator: .equals, variable: "tier", value: .string("premium"))
+                            ],
+                            properties: .init(
+                                fontWeight: .bold
+                            )
+                        )
+                    ]
+                ),
+                discardRules: true
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .environment(\.customPaywallVariables, ["tier": .string("premium")])
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Default paywall: legacy compact override kept, rule discarded")
+    }
+
+}
+
 #endif
 
 #endif

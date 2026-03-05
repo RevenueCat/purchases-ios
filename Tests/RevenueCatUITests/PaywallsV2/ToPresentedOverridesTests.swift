@@ -386,6 +386,75 @@ class ToPresentedOverridesTests: TestCase {
         expect(result).to(beEmpty())
     }
 
+    // MARK: - Global discardRules Flag Tests (Cross-Component Unsupported Condition Propagation)
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_DiscardsRuleOverridesEvenWithoutLocalUnsupported() throws {
+        // This component has NO unsupported conditions locally, but the global flag says to discard rules
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [
+                .selectedPackage(operator: .in, packages: ["monthly"])
+            ], properties: .init()),
+            .init(extendedConditions: [
+                .variable(operator: .equals, variable: "plan", value: .string("pro"))
+            ], properties: .init()),
+            .init(extendedConditions: [.medium], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        // Only legacy conditions survive
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
+        expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.medium]))
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesFalse_KeepsAllOverrides() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [
+                .selectedPackage(operator: .in, packages: ["monthly"])
+            ], properties: .init()),
+            .init(extendedConditions: [.medium], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: false) { $0 }
+        expect(result.count).to(equal(3))
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_DiscardsIntroOfferConditionButKeepsLegacyIntroOffer() throws {
+        // introOffer (legacy) is NOT a rule; introOfferCondition (with operator/value) IS a rule
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.introOffer], properties: .init()),
+            .init(extendedConditions: [
+                .introOfferCondition(operator: .equals, value: true)
+            ], properties: .init()),
+            .init(extendedConditions: [.selected], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.introOffer]))
+        expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.selected]))
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_EmptyOverrides_ReturnsEmpty() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = []
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result).to(beEmpty())
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_OnlyLegacyOverrides_KeepsAll() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [.selected], properties: .init()),
+            .init(extendedConditions: [.introOffer], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result.count).to(equal(3))
+    }
+
 }
 
 #endif

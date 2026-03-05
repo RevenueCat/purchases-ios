@@ -30,7 +30,8 @@ class ImageComponentViewModel {
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        component: PaywallComponent.ImageComponent
+        component: PaywallComponent.ImageComponent,
+        discardRules: Bool = false
     ) throws {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
@@ -42,7 +43,7 @@ class ImageComponentViewModel {
             self.imageInfo = component.source
         }
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
             try LocalizedImagePartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
     }

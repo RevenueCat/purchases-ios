@@ -395,7 +395,7 @@ fileprivate extension PaywallsV2View {
                 Logger.warning(Strings.paywall_contains_unsupported_condition)
             }
 
-            let factory = ViewModelFactory()
+            var factory = ViewModelFactory()
             let root = try factory.toRootViewModel(
                 componentsConfig: componentsConfig,
                 offering: offering,

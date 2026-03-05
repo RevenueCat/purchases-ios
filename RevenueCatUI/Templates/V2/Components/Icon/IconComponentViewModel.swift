@@ -31,13 +31,14 @@ class IconComponentViewModel {
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        component: PaywallComponent.IconComponent
+        component: PaywallComponent.IconComponent,
+        discardRules: Bool = false
     ) throws {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
     }
 
     var expectedSize: CGSize {
