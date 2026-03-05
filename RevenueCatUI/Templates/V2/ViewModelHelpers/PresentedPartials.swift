@@ -305,7 +305,7 @@ extension Array {
     ) throws -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
         let overridesToProcess: Self
-        if discardRules || self.hasUnsupportedCondition() {
+        if discardRules {
             overridesToProcess = self.filter { override in
                 override.extendedConditions.allSatisfy { !$0.isRule }
             }
