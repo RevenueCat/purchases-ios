@@ -267,6 +267,52 @@ class ToPresentedOverridesTests: TestCase {
         expect(PaywallComponent.package(package).containsUnsupportedConditions()).to(beTrue())
     }
 
+    func testButtonSheetWithUnsupportedCondition_ReturnsTrue() throws {
+        let sheetText = PaywallComponent.TextComponent(
+            text: "text_1",
+            color: .init(light: .hex("#000000")),
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ]
+        )
+        let button = PaywallComponent.ButtonComponent(
+            action: .navigateTo(destination: .sheet(sheet: .init(
+                id: "sheet_1",
+                name: nil,
+                stack: .init(components: [.text(sheetText)]),
+                backgroundBlur: false,
+                size: nil
+            ))),
+            stack: .init(components: [])
+        )
+
+        expect(PaywallComponent.button(button).containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testButtonSheetWithNoUnsupportedConditions_ReturnsFalse() throws {
+        let button = PaywallComponent.ButtonComponent(
+            action: .navigateTo(destination: .sheet(sheet: .init(
+                id: "sheet_1",
+                name: nil,
+                stack: .init(components: []),
+                backgroundBlur: false,
+                size: nil
+            ))),
+            stack: .init(components: [])
+        )
+
+        expect(PaywallComponent.button(button).containsUnsupportedConditions()).to(beFalse())
+    }
+
+    func testButtonWithNonSheetAction_ReturnsFalse() throws {
+        let button = PaywallComponent.ButtonComponent(
+            action: .restorePurchases,
+            stack: .init(components: [])
+        )
+
+        expect(PaywallComponent.button(button).containsUnsupportedConditions()).to(beFalse())
+    }
+
     func testDeeplyNestedUnsupportedCondition_ReturnsTrue() throws {
         // Stack > Stack > Text with unsupported condition
         let text = PaywallComponent.TextComponent(

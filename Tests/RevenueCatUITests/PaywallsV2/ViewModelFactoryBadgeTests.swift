@@ -393,6 +393,124 @@ class ViewModelFactoryBadgeTests: TestCase {
         expect(factory.discardRules).to(beFalse())
     }
 
+    @MainActor
+    func testGlobalUnsupported_InButtonSheetDestination_DiscardsRulesFromRootStack() throws {
+        // Root stack text: has only a rule condition (no unsupported locally)
+        let textWithRule = PaywallComponent.TextComponent(
+            text: "badge_text_lid",
+            color: Self.black,
+            overrides: [
+                .init(extendedConditions: [
+                    .selectedPackage(operator: .in, packages: ["monthly"])
+                ], properties: .init(fontWeight: .bold))
+            ]
+        )
+
+        // Button with sheet destination containing unsupported condition
+        let sheetText = PaywallComponent.TextComponent(
+            text: "badge_text_lid",
+            color: Self.black,
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ]
+        )
+        let button = PaywallComponent.ButtonComponent(
+            action: .navigateTo(destination: .sheet(sheet: .init(
+                id: "sheet_1",
+                name: nil,
+                stack: .init(components: [.text(sheetText)]),
+                backgroundBlur: false,
+                size: nil
+            ))),
+            stack: .init(components: [
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ])
+        )
+
+        let rootStack = PaywallComponent.StackComponent(
+            components: [.text(textWithRule), .button(button)]
+        )
+
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: rootStack,
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        _ = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        // Unsupported in button sheet should trigger global discard
+        expect(factory.discardRules).to(beTrue())
+    }
+
+    @MainActor
+    func testGlobalUnsupported_InNestedTabsComponent_DiscardsRulesFromSibling() throws {
+        // Sibling text: has only a rule condition (no unsupported locally)
+        let textWithRule = PaywallComponent.TextComponent(
+            text: "badge_text_lid",
+            color: Self.black,
+            overrides: [
+                .init(extendedConditions: [
+                    .variable(operator: .equals, variable: "tier", value: .string("pro"))
+                ], properties: .init(fontWeight: .bold))
+            ]
+        )
+
+        // Tabs component: tab contains unsupported condition in its stack
+        let tabText = PaywallComponent.TextComponent(
+            text: "badge_text_lid",
+            color: Self.black,
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ]
+        )
+        let tabs = PaywallComponent.TabsComponent(
+            control: .init(
+                type: .buttons,
+                stack: .init(components: [
+                    .tabControlButton(.init(tabId: "tab_1", stack: .init(components: [])))
+                ])
+            ),
+            tabs: [.init(
+                id: "tab_1",
+                stack: .init(components: [.text(tabText)])
+            )]
+        )
+
+        let rootStack = PaywallComponent.StackComponent(
+            components: [.text(textWithRule), .tabs(tabs)]
+        )
+
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: rootStack,
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        _ = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        // Unsupported in tabs subtree should trigger global discard
+        expect(factory.discardRules).to(beTrue())
+    }
+
     // MARK: - Helpers
 
     private static let black = PaywallComponent.ColorScheme(

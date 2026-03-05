@@ -348,7 +348,13 @@ extension PaywallComponent {
         case .stack(let component):
             return component.containsUnsupportedConditions()
         case .button(let component):
-            return component.stack.containsUnsupportedConditions()
+            if component.stack.containsUnsupportedConditions() {
+                return true
+            }
+            if case let .navigateTo(.sheet(sheet)) = component.action {
+                return sheet.stack.containsUnsupportedConditions()
+            }
+            return false
         case .package(let component):
             return component.stack.containsUnsupportedConditions()
         case .purchaseButton(let component):
