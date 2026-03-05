@@ -65,6 +65,7 @@ enum PaywallsStrings {
     // MARK: - Conditions
 
     case unrecognized_condition_type(String)
+    case malformed_condition(String, Error)
 
 }
 
@@ -180,6 +181,10 @@ extension PaywallsStrings: LogMessage {
 
         case let .unrecognized_condition_type(conditionType):
             return "Paywall contains unrecognized condition type '\(conditionType)'. " +
+            "Please update to the latest SDK version."
+
+        case let .malformed_condition(conditionType, error):
+            return "Paywall contains malformed condition of type '\(conditionType)': \(error). " +
             "Please update to the latest SDK version."
 
         }

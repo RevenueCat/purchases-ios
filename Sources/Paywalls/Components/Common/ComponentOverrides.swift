@@ -317,7 +317,9 @@ extension PaywallComponent {
                     self = .selectedPackage(operator: condOp, packages: packages)
                 }
             } catch {
-                // If decoding fails for a known type (e.g., malformed value), fall back to unsupported
+                let rawType = (try? decoder.container(keyedBy: CodingKeys.self)
+                    .decode(String.self, forKey: .type)) ?? "unknown"
+                Logger.warn(Strings.paywalls.malformed_condition(rawType, error))
                 self = .unsupported
             }
         }
