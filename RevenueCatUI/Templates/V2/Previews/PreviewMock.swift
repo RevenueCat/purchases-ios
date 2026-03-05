@@ -84,9 +84,7 @@ struct PreviewRequiredPaywallsV2Properties: ViewModifier {
     let packageContext: PackageContext?
 
     func body(content: Content) -> some View {
-        PreviewSnapshotImageCacheWarmer.prepareForPaywallsV2PreviewsIfNeeded()
-
-        return content
+        content
             .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: .default()))
             .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
             .environmentObject(PurchaseHandler.default())
