@@ -544,6 +544,36 @@ class ToPresentedOverridesTests: TestCase {
         expect(result).to(beEmpty())
     }
 
+    func testToPresentedOverrides_WithDiscardRulesTrue_DropsUnsupportedOverrides() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [.unsupported], properties: .init()),
+            .init(extendedConditions: [.medium], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
+        expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.medium]))
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_DropsMixedLegacyAndRuleOverride() throws {
+        // An override with both a legacy condition and a rule should be dropped entirely
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [
+                .compact,
+                .selectedPackage(operator: .in, packages: ["monthly"])
+            ], properties: .init()),
+            .init(extendedConditions: [.medium], properties: .init())
+        ]
+
+        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
+        expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.medium]))
+    }
+
     func testToPresentedOverrides_WithDiscardRulesTrue_OnlyLegacyOverrides_KeepsAll() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
             .init(extendedConditions: [.compact], properties: .init()),

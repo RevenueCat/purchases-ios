@@ -307,7 +307,7 @@ extension Array {
         let overridesToProcess: Self
         if discardRules {
             overridesToProcess = self.filter { override in
-                override.extendedConditions.allSatisfy { !$0.isRule }
+                override.extendedConditions.allSatisfy { !$0.isRule && $0 != .unsupported }
             }
         } else {
             overridesToProcess = self

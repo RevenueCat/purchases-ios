@@ -192,7 +192,7 @@ extension PaywallComponent {
         /// rendering the "default paywall" with only base conditions applied.
         /// Note: `.unsupported` is NOT a rule — it existed before conditional configurability as a
         /// fallback for unrecognized condition types. It always evaluates to `false` at runtime.
-        public var isRule: Bool {
+        @_spi(Internal) public var isRule: Bool {
             switch self {
             case .compact, .medium, .expanded, .selected, .introOffer, .promoOffer,
                  .multipleIntroOffers, .unsupported:
