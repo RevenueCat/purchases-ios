@@ -39,6 +39,11 @@ struct CarouselComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
 
@@ -54,6 +59,8 @@ struct CarouselComponentView: View {
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
             ),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
@@ -853,7 +860,7 @@ extension CarouselComponentViewModel {
             )
         }
 
-        self.init(
+        try self.init(
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             component: component,
