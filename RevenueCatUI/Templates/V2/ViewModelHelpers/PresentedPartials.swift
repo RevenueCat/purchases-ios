@@ -302,7 +302,7 @@ extension Array {
     >(
         discardRules: Bool = false,
         convert: (T) throws -> P
-    ) throws -> PresentedOverrides<P>
+    ) rethrows -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
         let overridesToProcess: Self
         if discardRules {
