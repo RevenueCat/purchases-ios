@@ -44,12 +44,7 @@ extension BinarySizeTestIntegrationMethod {
 
     var dependencies: [TargetDependency] {
         switch self {
-        case .localSource:
-            return [
-                .project(target: "RevenueCat", path: .relativeToRoot("Projects/RevenueCat")),
-                .project(target: "RevenueCatUI", path: .relativeToRoot("Projects/RevenueCatUI"))
-            ]
-        case .spm:
+        case .localSource, .spm:
             return [
                 .package(product: "RevenueCat", type: .runtime),
                 .package(product: "RevenueCatUI", type: .runtime)
@@ -61,10 +56,10 @@ extension BinarySizeTestIntegrationMethod {
 
     var packages: [ProjectDescription.Package] {
         switch self {
-        case .localSource, .cocoapods:
-            return []
-        case .spm:
+        case .localSource, .spm:
             return [.package(path: "../..")]
+        case .cocoapods:
+            return []
         }
     }
 

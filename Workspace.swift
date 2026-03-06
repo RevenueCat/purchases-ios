@@ -16,14 +16,15 @@ var projects: [Path] = [
     "./Projects/RCTTester"
 ]
 
-// Include RevenueCat/RevenueCatUI Tuist projects only when not using remote dependencies.
-// In remote modes (remoteXcodeProject), the external `purchases-ios` package provides these
-// targets and including the local projects would cause duplicate framework names.
+// Include RevenueCat/RevenueCatUI Tuist projects only when using local Xcode project dependencies.
+// In all other modes (localSwiftPackage, remoteSwiftPackage, remoteXcodeProject), the SPM package
+// or external dependency provides these targets and including the local projects would cause
+// duplicate framework names ("Multiple commands produce" build errors).
 switch Environment.dependencyMode {
-case .localSwiftPackage, .localXcodeProject:
+case .localXcodeProject:
     projects.append("./Projects/RevenueCat")
     projects.append("./Projects/RevenueCatUI")
-case .remoteSwiftPackage, .remoteXcodeProject:
+case .localSwiftPackage, .remoteSwiftPackage, .remoteXcodeProject:
     break
 }
 
