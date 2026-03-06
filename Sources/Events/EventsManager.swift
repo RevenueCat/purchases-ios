@@ -246,6 +246,7 @@ private extension EventsManager {
     /// Manages `flushInProgress` internally so concurrent flushes are rejected.
     func startPendingPriorityFlushIfNeeded() async {
         while self.pendingPriorityFlush {
+            guard !self.flushInProgress else { return }
             guard self.priorityFlushRateLimiter.shouldProceed() else {
                 self.pendingPriorityFlush = false
                 Logger.warn(EventsManagerStrings.priority_flush_rate_limited(
