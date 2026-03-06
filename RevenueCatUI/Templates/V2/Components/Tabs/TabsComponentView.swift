@@ -86,6 +86,8 @@ struct LoadedTabsComponentView: View {
 
     @Environment(\.customPaywallVariables)
     private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
 
     private let viewModel: TabsComponentViewModel
     private let onDismiss: () -> Void
@@ -202,7 +204,7 @@ struct LoadedTabsComponentView: View {
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
             ),
-            selectedPackageId: self.packageContext.package?.identifier,
+            selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
             colorScheme: self.colorScheme
         )

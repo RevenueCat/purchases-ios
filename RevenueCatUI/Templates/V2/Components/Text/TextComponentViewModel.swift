@@ -56,6 +56,7 @@ class TextComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        selectedPackageId: String?,
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?,
@@ -65,7 +66,7 @@ class TextComponentViewModel {
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
         let conditionContext = ConditionContext(
-            selectedPackageId: packageContext.package?.identifier,
+            selectedPackageId: selectedPackageId,
             customVariables: customVariables,
             defaultCustomVariables: uiConfigProvider.defaultCustomVariables
         )
