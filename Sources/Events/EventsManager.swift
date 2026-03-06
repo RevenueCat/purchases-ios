@@ -239,7 +239,7 @@ private extension EventsManager {
             return
         }
 
-        await self.startPendingPriorityFlushIfNeeded()
+        Task { await self.startPendingPriorityFlushIfNeeded() }
     }
 
     /// Starts pending priority flushes if the rate limiter allows.
