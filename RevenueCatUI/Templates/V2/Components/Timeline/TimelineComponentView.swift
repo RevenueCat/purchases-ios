@@ -42,6 +42,8 @@ struct TimelineComponentView: View {
 
     @Environment(\.customPaywallVariables)
     private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
 
     internal init(viewModel: TimelineComponentViewModel) {
         self.viewModel = viewModel
@@ -59,7 +61,7 @@ struct TimelineComponentView: View {
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
             ),
-            selectedPackageId: self.packageContext.package?.identifier,
+            selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables
         ) { style in
             if style.visible {
@@ -83,7 +85,7 @@ struct TimelineComponentView: View {
                     isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                         for: self.packageContext.package
                     ),
-                    selectedPackageId: self.packageContext.package?.identifier,
+                    selectedPackageId: self.selectedPackageId,
                     customVariables: self.customVariables
                 ) { itemStyle in
                     if itemStyle.visible {
@@ -110,7 +112,7 @@ struct TimelineComponentView: View {
                         isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                             for: self.packageContext.package
                         ),
-                        selectedPackageId: self.packageContext.package?.identifier,
+                        selectedPackageId: self.selectedPackageId,
                         customVariables: self.customVariables
                     ) { itemStyle in
                         if itemStyle.visible {

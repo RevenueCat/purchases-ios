@@ -41,6 +41,8 @@ struct CarouselComponentView: View {
 
     @Environment(\.customPaywallVariables)
     private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
 
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
@@ -57,7 +59,7 @@ struct CarouselComponentView: View {
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
             ),
-            selectedPackageId: self.packageContext.package?.identifier,
+            selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
             colorScheme: colorScheme
         ) { style in

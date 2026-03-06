@@ -348,6 +348,7 @@ private struct LoadedPaywallsV2View: View {
                     ),
                 alignment: .top
             )
+            .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
         }
