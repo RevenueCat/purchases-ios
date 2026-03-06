@@ -95,6 +95,9 @@ struct PaywallsV2View: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.paywallSource)
+    private var paywallSource
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -285,7 +288,8 @@ struct PaywallsV2View: View {
             sessionID: .init(),
             displayMode: .fullScreen,
             locale: .current,
-            darkMode: self.colorScheme == .dark
+            darkMode: self.colorScheme == .dark,
+            source: self.paywallSource
         )
     }
 

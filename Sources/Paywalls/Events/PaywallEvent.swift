@@ -109,6 +109,7 @@ extension PaywallEvent {
         public var displayMode: PaywallViewMode
         public var localeIdentifier: String
         public var darkMode: Bool
+        @_spi(Internal) public var source: PaywallSource?
         var packageId: String?
         var productId: String?
         var errorCode: Int?
@@ -116,6 +117,7 @@ extension PaywallEvent {
 
         #if !os(tvOS) // For Paywalls V2
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+        @available(*, deprecated, message: "This initializer will be removed in a future version.")
         public init(
             offering: Offering,
             paywallComponentsData: PaywallComponentsData,
@@ -131,12 +133,36 @@ extension PaywallEvent {
                 sessionID: sessionID,
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
-                darkMode: darkMode
+                darkMode: darkMode,
+                source: nil
+            )
+        }
+
+        @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+        @_spi(Internal) public init(
+            offering: Offering,
+            paywallComponentsData: PaywallComponentsData,
+            sessionID: SessionID,
+            displayMode: PaywallViewMode,
+            locale: Locale,
+            darkMode: Bool,
+            source: PaywallSource?
+        ) {
+            self.init(
+                paywallIdentifier: paywallComponentsData.id,
+                offeringIdentifier: offering.identifier,
+                paywallRevision: paywallComponentsData.revision,
+                sessionID: sessionID,
+                displayMode: displayMode,
+                localeIdentifier: locale.identifier,
+                darkMode: darkMode,
+                source: source
             )
         }
         #endif
 
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+        @available(*, deprecated, message: "This initializer will be removed in a future version.")
         public init(
             offering: Offering,
             paywall: PaywallData,
@@ -152,7 +178,30 @@ extension PaywallEvent {
                 sessionID: sessionID,
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
-                darkMode: darkMode
+                darkMode: darkMode,
+                source: nil
+            )
+        }
+
+        @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+        @_spi(Internal) public init(
+            offering: Offering,
+            paywall: PaywallData,
+            sessionID: SessionID,
+            displayMode: PaywallViewMode,
+            locale: Locale,
+            darkMode: Bool,
+            source: PaywallSource?
+        ) {
+            self.init(
+                paywallIdentifier: paywall.id,
+                offeringIdentifier: offering.identifier,
+                paywallRevision: paywall.revision,
+                sessionID: sessionID,
+                displayMode: displayMode,
+                localeIdentifier: locale.identifier,
+                darkMode: darkMode,
+                source: source
             )
         }
         // swiftlint:enable missing_docs
@@ -165,6 +214,7 @@ extension PaywallEvent {
             displayMode: PaywallViewMode,
             localeIdentifier: String,
             darkMode: Bool,
+            source: PaywallSource?,
             packageId: String? = nil,
             productId: String? = nil,
             errorCode: Int? = nil,
@@ -177,6 +227,7 @@ extension PaywallEvent {
             self.displayMode = displayMode
             self.localeIdentifier = localeIdentifier
             self.darkMode = darkMode
+            self.source = source
             self.packageId = packageId
             self.productId = productId
             self.errorCode = errorCode
@@ -265,6 +316,7 @@ extension PaywallEvent.Data {
             displayMode: self.displayMode,
             localeIdentifier: self.localeIdentifier,
             darkMode: self.darkMode,
+            source: self.source,
             packageId: packageId,
             productId: productId,
             errorCode: errorCode,

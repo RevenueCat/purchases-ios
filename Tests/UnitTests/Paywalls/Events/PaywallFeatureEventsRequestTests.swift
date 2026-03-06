@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import SnapshotTesting
 import XCTest
 
@@ -63,7 +63,8 @@ class PaywallFeatureEventsRequestTests: TestCase {
             sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: true
+            darkMode: true,
+            source: nil
         )
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
@@ -80,6 +81,40 @@ class PaywallFeatureEventsRequestTests: TestCase {
         let requestEvent = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: deserializedEvent))
 
         assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testImpressionEventWithSource() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithSource)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testWithPurchaseInfoPreservesSource() {
+        let data = Self.eventDataWithSource
+
+        let result = data.withPurchaseInfo(
+            packageId: "test_package",
+            productId: "test_product",
+            errorCode: nil,
+            errorMessage: nil
+        )
+
+        expect(result.source) == .customerCenter
+    }
+
+    func testWithPurchaseInfoPreservesNilSource() {
+        let data = Self.eventData
+
+        let result = data.withPurchaseInfo(
+            packageId: "test_package",
+            productId: "test_product",
+            errorCode: nil,
+            errorMessage: nil
+        )
+
+        expect(result.source).to(beNil())
     }
 
     func testPaywallEventWithoutMillisecondPrecisionIsParsed() throws {
@@ -133,7 +168,8 @@ class PaywallFeatureEventsRequestTests: TestCase {
             sessionID: UUID(),
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: false
+            darkMode: false,
+            source: nil
         )
         let event = PaywallEvent.impression(creationData, eventData)
 
@@ -170,7 +206,8 @@ class PaywallFeatureEventsRequestTests: TestCase {
             sessionID: UUID(),
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: false
+            darkMode: false,
+            source: nil
         )
         let event = PaywallEvent.close(creationData, eventData)
 
@@ -207,7 +244,8 @@ class PaywallFeatureEventsRequestTests: TestCase {
             sessionID: UUID(),
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: false
+            darkMode: false,
+            source: nil
         )
         let event = PaywallEvent.cancel(creationData, eventData)
 
@@ -258,7 +296,19 @@ private extension PaywallFeatureEventsRequestTests {
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
         displayMode: .fullScreen,
         localeIdentifier: "es_ES",
-        darkMode: true
+        darkMode: true,
+        source: nil
+    )
+
+    static let eventDataWithSource: PaywallEvent.Data = .init(
+        paywallIdentifier: "test_paywall_id",
+        offeringIdentifier: "offering",
+        paywallRevision: 0,
+        sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
+        displayMode: .fullScreen,
+        localeIdentifier: "es_ES",
+        darkMode: true,
+        source: .customerCenter
     )
 
     static let userID = "Jack Shepard"
