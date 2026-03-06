@@ -1016,6 +1016,68 @@ class EventsManagerTests: TestCase {
         )
         await self.verifyEmptyStore()
     }
+    func testPendingPriorityFlushDrainsAfterFlushError() async throws {
+        // The way this test is written does not work in iOS 15.
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        // Store a non-priority event so there's something to flush
+        let event1: PaywallEvent = .close(.random(), .random())
+        await self.manager.track(featureEvent: event1)
+
+        // Set up the mock to delay the API response and fail the first call
+        let continuation = AsyncStream<Void>.makeStream()
+        let callCount = Atomic<Int>(0)
+
+        self.api.stubbedPostPaywallEventsCallback = { completion in
+            Task {
+                let count = callCount.value
+                callCount.value = count + 1
+
+                if count == 0 {
+                    await continuation.stream.first { _ in true }
+                    // First call fails with a non-synced error
+                    completion(.networkError(.offlineConnection()))
+                } else {
+                    completion(nil)
+                }
+            }
+        }
+
+        let manager = self.manager!
+
+        // Start a flush — held by delayed API response
+        async let flushResult: Int = {
+            do {
+                return try await manager.flushFeatureEvents(batchSize: 50)
+            } catch {
+                return -1
+            }
+        }()
+
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        // Track a priority event while flush is in progress — should queue
+        let event2: PaywallEvent = .impression(.random(), .random())
+        await manager.track(featureEvent: event2)
+
+        self.logger.verifyMessageWasLogged(
+            EventsManagerStrings.priority_flush_queued,
+            level: .debug
+        )
+
+        // Complete the first flush (which will fail)
+        continuation.continuation.yield()
+        continuation.continuation.finish()
+        _ = await flushResult
+
+        // The drain should have picked up and flushed the remaining events despite the error
+        self.logger.verifyMessageWasLogged(
+            EventsManagerStrings.priority_flush_draining,
+            level: .debug
+        )
+
+        await self.verifyEmptyStore()
+    }
     #endif
 
     func testScheduledFlushStillWorksWhenPriorityFlushIsRateLimited() async throws {

@@ -180,11 +180,12 @@ private extension EventsManager {
             result = try await self.flushFeatureEventBatches(batchSize: batchSize)
         } catch {
             self.flushInProgress = false
+            Task { await self.startPendingPriorityFlushIfNeeded() }
             throw error
         }
         self.flushInProgress = false
 
-        await self.startPendingPriorityFlushIfNeeded()
+        Task { await self.startPendingPriorityFlushIfNeeded() }
         return result
     }
 
