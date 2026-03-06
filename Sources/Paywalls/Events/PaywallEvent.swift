@@ -53,15 +53,6 @@ public enum PaywallEvent: FeatureEvent {
         }
     }
 
-    var isPriorityEvent: Bool {
-        switch self {
-        case .impression:
-            return true
-        case .cancel, .close, .exitOffer, .purchaseInitiated, .purchaseError:
-            return false
-        }
-    }
-
     /// A `PaywallView` was displayed.
     case impression(CreationData, Data)
 
