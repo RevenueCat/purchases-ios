@@ -154,12 +154,14 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     func setUpSystemInfo(
-        finishTransactions: Bool = true
+        finishTransactions: Bool = true,
+        customEntitlementComputation: Bool = false
     ) {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "1.2.3")
 
         self.systemInfo = .init(platformInfo: platformInfo,
                                 finishTransactions: finishTransactions,
+                                customEntitlementsComputation: customEntitlementComputation,
                                 storeKitVersion: Self.storeKitVersion)
         self.systemInfo.stubbedIsSandbox = true
     }

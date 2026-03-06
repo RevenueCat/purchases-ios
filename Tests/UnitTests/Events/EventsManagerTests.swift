@@ -260,6 +260,54 @@ class EventsManagerTests: TestCase {
         expect(map["path"] as? String) == "REFUND_REQUEST"
     }
 
+    // MARK: - toMap (Custom Paywall Events)
+
+    func testCustomPaywallImpressionToMapWithPaywallId() {
+        let creationData = CustomPaywallEvent.CreationData()
+        let data = CustomPaywallEvent.Data(paywallId: "my_paywall")
+        let event = CustomPaywallEvent.impression(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "custom_paywall_event"
+        expect(map["type"] as? String) == "custom_paywall_impression"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["paywall_id"] as? String) == "my_paywall"
+    }
+
+    func testCustomPaywallImpressionToMapWithoutPaywallId() {
+        let creationData = CustomPaywallEvent.CreationData()
+        let data = CustomPaywallEvent.Data(paywallId: nil)
+        let event = CustomPaywallEvent.impression(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "custom_paywall_event"
+        expect(map["type"] as? String) == "custom_paywall_impression"
+        expect(map["paywall_id"]).to(beNil())
+    }
+
+    // MARK: - trackEvent (Custom Paywall Impression)
+
+    func testTrackCustomPaywallImpressionEvent() async throws {
+        let event = CustomPaywallEvent.impression(
+            .init(),
+            .init(paywallId: "test_paywall")
+        )
+
+        await self.manager.track(featureEvent: event)
+
+        let events = await self.store.storedEvents
+        expect(events) == [
+            try XCTUnwrap(.init(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywalls,
+                appSessionID: self.appSessionID,
+                eventDiscriminator: nil
+            ))
+        ]
+    }
+
     // MARK: - flushAllEvents
 
     func testFlushEmptyStore() async throws {

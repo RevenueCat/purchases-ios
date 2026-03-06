@@ -122,6 +122,7 @@ struct VideoComponentView: View {
                             .transition(.opacity.animation(.easeIn(duration: 0.3)))
                         }
                     }
+                    .allowsHitTesting(style.showControls)
                     .onAppear {
                         let fileRepository = FileRepository.shared
 
