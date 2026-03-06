@@ -810,6 +810,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         #endif
 
         self.purchasesOrchestrator.delegate = self
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
+            completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
+        }
+        #else
+        self.attribution.syncAttributesAndOfferingsIfNeededHandler = { [weak self] completion in
+            guard let self else {
+                completion(nil, nil)
+                return
+            }
+            self.syncAttributesAndOfferingsIfNeeded(completion: completion)
+        }
+        #endif
 
         // Don't update caches or run health checks in the background to avoid too many users
         // hitting the backend concurrently when launched through a notification at the same time.
