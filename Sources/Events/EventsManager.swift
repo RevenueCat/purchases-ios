@@ -174,10 +174,17 @@ private extension EventsManager {
             return 0
         }
         self.flushInProgress = true
-        defer { self.flushInProgress = false }
 
-        let result = try await self.flushFeatureEventBatches(batchSize: batchSize)
-        await self.drainPendingPriorityFlushIfNeeded()
+        let result: Int
+        do {
+            result = try await self.flushFeatureEventBatches(batchSize: batchSize)
+        } catch {
+            self.flushInProgress = false
+            throw error
+        }
+        self.flushInProgress = false
+
+        await self.startPendingPriorityFlushIfNeeded()
         return result
     }
 
@@ -224,34 +231,34 @@ private extension EventsManager {
     }
 
     func performPriorityFlush() async {
-        guard self.priorityFlushRateLimiter.shouldProceed() else {
-            Logger.warn(EventsManagerStrings.priority_flush_rate_limited(
-                maxCalls: self.priorityFlushRateLimiter.maxCalls,
-                period: Int(self.priorityFlushRateLimiter.period)
-            ))
-            return
-        }
+        self.pendingPriorityFlush = true
 
         guard !self.flushInProgress else {
             Logger.debug(EventsManagerStrings.priority_flush_queued)
-            self.pendingPriorityFlush = true
             return
         }
 
-        Logger.debug(EventsManagerStrings.priority_flush_starting)
-        do {
-            _ = try await self.flushFeatureEventsInternal(batchSize: Self.defaultEventBatchSize)
-        } catch {
-            Logger.error(Strings.paywalls.event_flush_failed(error))
-        }
+        await self.startPendingPriorityFlushIfNeeded()
     }
 
-    /// Drains any pending priority flush requests using a loop to avoid unbounded recursion.
-    /// Called while `flushInProgress` is still `true`, so concurrent flushes are rejected.
-    func drainPendingPriorityFlushIfNeeded() async {
+    /// Starts pending priority flushes if the rate limiter allows.
+    /// Manages `flushInProgress` internally so concurrent flushes are rejected.
+    func startPendingPriorityFlushIfNeeded() async {
         while self.pendingPriorityFlush {
+            guard self.priorityFlushRateLimiter.shouldProceed() else {
+                self.pendingPriorityFlush = false
+                Logger.warn(EventsManagerStrings.priority_flush_rate_limited(
+                    maxCalls: self.priorityFlushRateLimiter.maxCalls,
+                    period: Int(self.priorityFlushRateLimiter.period)
+                ))
+                return
+            }
+
             self.pendingPriorityFlush = false
             Logger.debug(EventsManagerStrings.priority_flush_draining)
+
+            self.flushInProgress = true
+            defer { self.flushInProgress = false }
 
             do {
                 _ = try await self.flushFeatureEventBatches(batchSize: Self.defaultEventBatchSize)

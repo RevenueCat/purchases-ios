@@ -718,7 +718,7 @@ class EventsManagerTests: TestCase {
         await self.verifyEmptyStore()
 
         self.logger.verifyMessageWasLogged(
-            EventsManagerStrings.priority_flush_starting,
+            EventsManagerStrings.priority_flush_draining,
             level: .debug
         )
     }
@@ -733,7 +733,7 @@ class EventsManagerTests: TestCase {
         expect(events).to(haveCount(1))
 
         self.logger.verifyMessageWasNotLogged(
-            EventsManagerStrings.priority_flush_starting,
+            EventsManagerStrings.priority_flush_draining,
             level: .debug
         )
     }
@@ -943,6 +943,78 @@ class EventsManagerTests: TestCase {
         await self.verifyEmptyStore()
         // First call: event1 from the manual flush; second call: event2 from the drain
         expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(2))
+    }
+
+    func testQueuedPriorityEventsDoNotExhaustRateLimiter() async throws {
+        // The way this test is written does not work in iOS 15.
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        // Use a rate limiter with maxCalls=2 so we can verify it's not exhausted
+        let rateLimiter = RateLimiter(maxCalls: 2, period: 60)
+        self.manager = .init(
+            internalAPI: self.api,
+            userProvider: self.userProvider,
+            store: self.store,
+            systemInfo: MockSystemInfo(finishTransactions: true),
+            appSessionID: self.appSessionID,
+            adEventStore: nil,
+            priorityFlushRateLimiter: rateLimiter
+        )
+
+        // Store a non-priority event to flush
+        let event1: PaywallEvent = .close(.random(), .random())
+        await self.manager.track(featureEvent: event1)
+
+        // Set up the mock to delay the API response
+        let continuation = AsyncStream<Void>.makeStream()
+        let callCount = Atomic<Int>(0)
+
+        self.api.stubbedPostPaywallEventsCallback = { completion in
+            Task {
+                let count = callCount.value
+                callCount.value = count + 1
+
+                if count == 0 {
+                    await continuation.stream.first { _ in true }
+                }
+                completion(nil)
+            }
+        }
+
+        let manager = self.manager!
+
+        // Start a flush — held by delayed API response
+        async let flushResult = manager.flushFeatureEvents(batchSize: 50)
+
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        // Track 3 priority events while flush is in progress.
+        // These should all coalesce into a single pending priority flush,
+        // NOT exhaust the rate limiter (which only allows 2 calls).
+        for _ in 0..<3 {
+            let event: PaywallEvent = .impression(.random(), .random())
+            await manager.track(featureEvent: event)
+        }
+
+        // Release the first flush
+        continuation.continuation.yield()
+        continuation.continuation.finish()
+        _ = try await flushResult
+
+        // The drain should have flushed the 3 queued events
+        await self.verifyEmptyStore()
+
+        // Now track another priority event — it should still flush
+        // because the rate limiter was only consumed once (by the drain), not 3 times
+        let finalEvent: PaywallEvent = .impression(.random(), .random())
+        await manager.track(featureEvent: finalEvent)
+
+        // Should NOT be rate limited — the rate limiter should have capacity remaining
+        self.logger.verifyMessageWasNotLogged(
+            EventsManagerStrings.priority_flush_rate_limited(maxCalls: 2, period: 60),
+            level: .warn
+        )
+        await self.verifyEmptyStore()
     }
     #endif
 

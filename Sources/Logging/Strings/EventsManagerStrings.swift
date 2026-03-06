@@ -21,7 +21,6 @@ enum EventsManagerStrings {
     case background_task_failed(String)
     case background_task_started(String)
 
-    case priority_flush_starting
     case priority_flush_queued
     case priority_flush_draining
     case priority_flush_rate_limited(maxCalls: Int, period: Int)
@@ -53,9 +52,6 @@ extension EventsManagerStrings: LogMessage {
 
         case .background_task_started(let taskName):
             return "Background task started: \(taskName)"
-
-        case .priority_flush_starting:
-            return "Priority event tracked, triggering immediate flush"
 
         case .priority_flush_queued:
             return "Priority event tracked while flush in progress, queuing priority flush"
