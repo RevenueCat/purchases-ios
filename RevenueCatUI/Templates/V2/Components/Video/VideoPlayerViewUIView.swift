@@ -85,7 +85,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
 
         do {
             try audioSession.setCategory(
-                .ambient,
+                .playback,
                 mode: .default,
                 options: [.mixWithOthers]
             )
