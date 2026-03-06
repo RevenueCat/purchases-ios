@@ -938,6 +938,7 @@ class EventsManagerTests: TestCase {
 
         // Wait for the initial flush to complete
         _ = try await flushResult
+        try await self.waitForPriorityFlush()
 
         // The drain should have picked up and flushed the priority event
         self.logger.verifyMessageWasLogged(
