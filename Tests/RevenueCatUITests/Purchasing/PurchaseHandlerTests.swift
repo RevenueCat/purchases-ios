@@ -13,7 +13,7 @@
 
 import Combine
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -462,6 +462,69 @@ class PurchaseHandlerTests: TestCase {
         let result3 = handler.trackPaywallClose()
         expect(result3) == false
 
+    }
+
+    func testPaywallSourceIsPropagatedToTrackedEvents() async throws {
+        let impressionExpectation = expectation(description: "Impression tracked")
+        let closeExpectation = expectation(description: "Close tracked")
+
+        let source = PaywallSource.customerCenter
+        var trackedEvents: [PaywallEvent] = []
+
+        let handler = PurchaseHandler(
+            purchases: MockPurchases(
+                purchase: { _ in
+                return (
+                    transaction: nil,
+                    customerInfo: TestData.customerInfo,
+                    userCancelled: false
+                )
+            },
+                restorePurchases: {
+                return TestData.customerInfo
+            },
+                trackEvent: { event in
+                await MainActor.run {
+                    trackedEvents.append(event)
+
+                    switch event {
+                    case .impression:
+                        impressionExpectation.fulfill()
+                    case .close:
+                        closeExpectation.fulfill()
+                    case .cancel, .exitOffer, .purchaseInitiated, .purchaseError:
+                        break
+                    }
+                }
+            },
+                customerInfo: {
+                return TestData.customerInfo
+            })
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false,
+            source: source
+        )
+
+        handler.trackPaywallImpression(eventData)
+
+        await fulfillment(of: [impressionExpectation], timeout: 1.0)
+
+        let result = handler.trackPaywallClose()
+        expect(result) == true
+
+        await fulfillment(of: [closeExpectation], timeout: 1.0)
+
+        expect(trackedEvents).to(haveCount(2))
+        trackedEvents.forEach { event in
+            expect(event.data.source) == source
+        }
     }
 
     func test_dedupedSubmissions_ofPurchaseCompletedEvents() async throws {
