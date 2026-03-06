@@ -70,6 +70,10 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         }
     }
 
+    func purchase(package: Package) async throws -> PurchaseResultData {
+        return try await Purchases.shared.purchase(package: package)
+    }
+
     func track(customerCenterEvent: any CustomerCenterEventType) {
         Purchases.shared.track(customerCenterEvent: customerCenterEvent)
     }
