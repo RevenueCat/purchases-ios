@@ -69,6 +69,9 @@ actor EventsManager: EventsManagerType {
     private var adFlushInProgress = false
 
     private var flushInProgress = false
+    private var pendingPriorityFlush = false
+
+    private let priorityFlushRateLimiter: RateLimiter
 
     init(
         internalAPI: InternalAPI,
@@ -76,7 +79,8 @@ actor EventsManager: EventsManagerType {
         store: FeatureEventStoreType,
         systemInfo: SystemInfo,
         appSessionID: UUID = SystemInfo.appSessionID,
-        adEventStore: AdEventStoreType? = nil
+        adEventStore: AdEventStoreType? = nil,
+        priorityFlushRateLimiter: RateLimiter = .init(maxCalls: 5, period: 60)
     ) {
         self.internalAPI = internalAPI
         self.userProvider = userProvider
@@ -84,6 +88,7 @@ actor EventsManager: EventsManagerType {
         self.systemInfo = systemInfo
         self.appSessionID = appSessionID
         self.adEventStore = adEventStore
+        self.priorityFlushRateLimiter = priorityFlushRateLimiter
     }
 
     func track(featureEvent: FeatureEvent) async {
@@ -101,6 +106,10 @@ actor EventsManager: EventsManagerType {
         }
         await self.store.store(event)
         self.eventsListener?.onEventTracked(featureEvent.toMap())
+
+        if featureEvent.isPriorityEvent {
+            await self.performPriorityFlush()
+        }
     }
 
     func track(adEvent: AdEvent) async {
@@ -165,8 +174,23 @@ private extension EventsManager {
             return 0
         }
         self.flushInProgress = true
-        defer { self.flushInProgress = false }
 
+        let result: Int
+        do {
+            result = try await self.flushFeatureEventBatches(batchSize: batchSize)
+        } catch {
+            self.flushInProgress = false
+            throw error
+        }
+        self.flushInProgress = false
+
+        await self.startPendingPriorityFlushIfNeeded()
+        return result
+    }
+
+    /// Sends feature events in batches, returning the total number of events flushed.
+    /// This method does not manage `flushInProgress` — callers are responsible for that.
+    private func flushFeatureEventBatches(batchSize: Int) async throws -> Int {
         var totalFlushed = 0
         var batchesSent = 0
 
@@ -204,6 +228,44 @@ private extension EventsManager {
         }
 
         return totalFlushed
+    }
+
+    func performPriorityFlush() async {
+        self.pendingPriorityFlush = true
+
+        guard !self.flushInProgress else {
+            Logger.debug(EventsManagerStrings.priority_flush_queued)
+            return
+        }
+
+        await self.startPendingPriorityFlushIfNeeded()
+    }
+
+    /// Starts pending priority flushes if the rate limiter allows.
+    /// Manages `flushInProgress` internally so concurrent flushes are rejected.
+    func startPendingPriorityFlushIfNeeded() async {
+        while self.pendingPriorityFlush {
+            guard self.priorityFlushRateLimiter.shouldProceed() else {
+                self.pendingPriorityFlush = false
+                Logger.warn(EventsManagerStrings.priority_flush_rate_limited(
+                    maxCalls: self.priorityFlushRateLimiter.maxCalls,
+                    period: Int(self.priorityFlushRateLimiter.period)
+                ))
+                return
+            }
+
+            self.pendingPriorityFlush = false
+            Logger.debug(EventsManagerStrings.priority_flush_draining)
+
+            self.flushInProgress = true
+            defer { self.flushInProgress = false }
+
+            do {
+                _ = try await self.flushFeatureEventBatches(batchSize: Self.defaultEventBatchSize)
+            } catch {
+                Logger.error(Strings.paywalls.event_flush_failed(error))
+            }
+        }
     }
 
     func flushAdEvents(count: Int) async throws -> Int {
@@ -309,69 +371,3 @@ private extension EventsManager {
 
 }
 #endif
-
-// MARK: - Messages
-
-// swiftlint:disable identifier_name
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum EventsManagerStrings {
-
-    case background_task_unavailable
-    case background_task_expired(String)
-    case background_task_failed(String)
-    case background_task_started(String)
-
-    case ad_event_tracking_disabled
-    case ad_event_cannot_serialize
-    case ad_event_flush_already_in_progress
-    case ad_event_flush_with_empty_store
-    case ad_event_flush_starting(Int)
-    case ad_events_flushed_successfully
-    case ad_event_sync_failed(Error)
-
-}
-// swiftlint:enable identifier_name
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension EventsManagerStrings: LogMessage {
-
-    var description: String {
-        switch self {
-        case .background_task_unavailable:
-            return "Background task unavailable"
-
-        case .background_task_expired(let taskName):
-            return "Background task expired: \(taskName)"
-
-        case .background_task_failed(let taskName):
-            return "Background task failed to start: \(taskName)"
-
-        case .background_task_started(let taskName):
-            return "Background task started: \(taskName)"
-
-        case .ad_event_tracking_disabled:
-            return "Ad event tracking is disabled - no ad event store configured"
-
-        case .ad_event_cannot_serialize:
-            return "Cannot serialize ad event"
-
-        case .ad_event_flush_already_in_progress:
-            return "Ad event flush already in progress"
-
-        case .ad_event_flush_with_empty_store:
-            return "Ad event flush with empty store"
-
-        case let .ad_event_flush_starting(count):
-            return "Ad event flush starting with \(count) event(s)"
-
-        case .ad_events_flushed_successfully:
-            return "Ad events flushed successfully"
-
-        case let .ad_event_sync_failed(error):
-            return "Ad event sync failed: \(error)"
-        }
-    }
-
-    var category: String { return "events_manager" }
-
-}
