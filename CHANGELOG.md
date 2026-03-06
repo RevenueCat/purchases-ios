@@ -11,6 +11,7 @@
 ### Paywallv2
 #### 🐞 Bugfixes
 * Fix carousel blocking vertical scroll in parent ScrollView (#6284) via Facundo Menzella (@facumenzella)
+* Fix exit offer crash in MY_APP mode by propagating purchase handlers (#6391) via Toni Rico (@tonidero)
 
 ### 🔄 Other Changes
 * Update to use CI commands from CircleCI orb (#6413) via Toni Rico (@tonidero)
