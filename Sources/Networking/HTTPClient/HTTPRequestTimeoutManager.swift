@@ -15,8 +15,9 @@ protocol HTTPRequestTimeoutManagerType {
     /// - Parameters:
     ///   - path: The HTTP request path for which to determine the timeout
     ///   - isFallback: Whether this is a fallback request
+    ///   - hasProxyURL: Whether a proxy URL is configured, which disables fallback URLs
     /// - Returns: The timeout interval in seconds
-    func timeout(for path: HTTPRequestPath, isFallback: Bool) -> TimeInterval
+    func timeout(for path: HTTPRequestPath, isFallback: Bool, hasProxyURL: Bool) -> TimeInterval
 
     /// Updates the internal state in response to the result received from the backend.
     ///
@@ -66,15 +67,16 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         self.dateProvider = dateProvider
     }
 
-    func timeout(for path: HTTPRequestPath, isFallback: Bool) -> TimeInterval {
+    func timeout(for path: HTTPRequestPath, isFallback: Bool, hasProxyURL: Bool) -> TimeInterval {
         if shouldResetTimeout {
             resetLastTimeoutRequestTime()
         }
 
         let timeout: TimeInterval
 
-        // A fallback request or a request that doesn't support a fallback
-        if isFallback || !path.supportsFallbackURLs {
+        // A fallback request, a request that doesn't support a fallback, or a proxy is configured
+        // (proxy disables fallback URLs, so the aggressive short timeout should not be used)
+        if isFallback || !path.supportsFallbackURLs || hasProxyURL {
             timeout = self.defaultTimeout
         }
         // Main backend request that supports fallback when a timeout was previously received from the main backend

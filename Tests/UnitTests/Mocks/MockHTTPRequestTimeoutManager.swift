@@ -24,7 +24,7 @@ class MockHTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
 
     var timeoutToReturn: TimeInterval
 
-    func timeout(for path: HTTPRequestPath, isFallback: Bool) -> TimeInterval {
+    func timeout(for path: HTTPRequestPath, isFallback: Bool, hasProxyURL: Bool) -> TimeInterval {
         timeoutCallCount += 1
         lastTimeoutPath = path
         lastTimeoutIsFallback = isFallback
