@@ -606,9 +606,8 @@ private extension HTTPClient {
         #endif
 
         finalURLRequest.timeoutInterval = requestTimeoutManager.timeout(
-            for: request.httpRequest.path,
             isFallback: request.isFallbackURLRequest,
-            hasProxyURL: SystemInfo.proxyURL != nil
+            fallbackAvailable: request.httpRequest.path.supportsFallbackURLs && SystemInfo.proxyURL == nil
         )
 
         // swiftlint:disable:next redundant_void_return

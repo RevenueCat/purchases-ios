@@ -1123,9 +1123,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         XCTAssertEqual(
             timeoutManager.timeout(
-                for: request.path,
                 isFallback: false,
-                hasProxyURL: false
+                fallbackAvailable: true
             ),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
@@ -1144,9 +1143,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         XCTAssertEqual(
             timeoutManager.timeout(
-                for: request.path,
                 isFallback: false,
-                hasProxyURL: false
+                fallbackAvailable: true
             ),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
@@ -1197,12 +1195,11 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
 
         // Make sure it uses the default timeout because it doesn't support fallback requests
-        XCTAssertEqual(timeoutManager.timeout(for: request.path, isFallback: false, hasProxyURL: false), self.defaultRequestTimeout)
+        XCTAssertEqual(timeoutManager.timeout(isFallback: false, fallbackAvailable: false), self.defaultRequestTimeout)
 
         // Make sure it uses the default timeout for backend requests suppoting fallback
-        let requestSupportingFallback = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
         XCTAssertEqual(
-            timeoutManager.timeout(for: requestSupportingFallback.path, isFallback: false, hasProxyURL: false),
+            timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
     }
@@ -1229,7 +1226,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         // Still reduced timeout because error was not a timeout
         XCTAssertEqual(
-            timeoutManager.timeout(for: request.path, isFallback: false, hasProxyURL: false),
+            timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
     }
@@ -1262,7 +1259,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         // Timeout should remain at mainBackendRequestSupportingFallback because .other doesn't change the timeout state
         XCTAssertEqual(
-            timeoutManager.timeout(for: request.path, isFallback: false, hasProxyURL: false),
+            timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
     }
@@ -1305,7 +1302,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // The initial request to the main backend should use the value for a request
         // to the main backend that supports fallback
         XCTAssertEqual(
-            self.timeoutManager.timeout(for: firstRequest.path, isFallback: false, hasProxyURL: false),
+            self.timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
 
@@ -1346,7 +1343,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 // A new request that supports fallback to the main backend
                 // should use the default timeout since previously a timeout was received
                 XCTAssertEqual(
-                    self.timeoutManager.timeout(for: secondRequest.path, isFallback: false, hasProxyURL: false),
+                    self.timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
                     HTTPRequestTimeoutManager.Timeout.reduced.rawValue
                 )
 

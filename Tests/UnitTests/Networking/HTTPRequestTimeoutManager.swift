@@ -28,7 +28,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
     /// when the request supports a fallback
     func testDefaultTimeoutForPathWithFallback() {
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
     }
@@ -36,7 +36,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
     /// Initially the default timeout should be returned for a request that is a fallback request
     func testDefaultTimeoutForPathWithFallbackForFallbackRequest() {
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: true, hasProxyURL: false),
+            manager.timeout(isFallback: true, fallbackAvailable: true),
             Self.defaultTimeout
         )
     }
@@ -44,7 +44,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
     /// For a path that does not support fallbacks the default timeout should be used initially
     func testDefaultTimeoutForPathWithoutFallback() {
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withoutFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: false),
             Self.defaultTimeout
         )
     }
@@ -53,7 +53,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
     /// timeout should be used initially
     func testDefaultTimeoutForPathWithoutFallbackForFallbackRequest() {
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withoutFallback, isFallback: true, hasProxyURL: false),
+            manager.timeout(isFallback: true, fallbackAvailable: false),
             Self.defaultTimeout
         )
     }
@@ -64,7 +64,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
 
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
     }
@@ -79,7 +79,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         dateProvider.advance(by: 2)
 
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
 
@@ -87,7 +87,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         dateProvider.advance(by: 11 * 60)
 
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
     }
@@ -97,14 +97,14 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         // Record timeout first
         manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
 
         // Record success - should reset timeout state
         manager.recordRequestResult(.successOnMainBackend)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
     }
@@ -114,14 +114,14 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         // Record timeout first
         manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
 
         // Record .other - should not change state
         manager.recordRequestResult(.other)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
     }
@@ -131,7 +131,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         // Record timeout
         manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
 
@@ -140,7 +140,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
 
         // Timeout should still be reduced
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
     }
@@ -149,7 +149,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
     func testTimeoutDoesNotResetIfNoTimeoutHasOccurred() {
         // No timeout recorded
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
 
@@ -158,7 +158,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
 
         // Should still be default since no timeout occurred
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
     }
@@ -169,7 +169,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         // First timeout
         manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
 
@@ -179,7 +179,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         // Second timeout - should update timestamp
         manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
 
@@ -188,7 +188,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
 
         // Should still be reduced because last timeout was only 5 seconds ago
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
     }
@@ -199,7 +199,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         // Record timeout
         manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
 
@@ -209,7 +209,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         // Record success - should reset immediately regardless of time
         manager.recordRequestResult(.successOnMainBackend)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
     }
@@ -222,15 +222,15 @@ class HTTPRequestTimeoutManagerTests: TestCase {
 
         // Multiple calls should all return reduced timeout
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
     }
@@ -243,14 +243,14 @@ class HTTPRequestTimeoutManagerTests: TestCase {
 
         // Fallback requests should always use default timeout
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: true, hasProxyURL: false),
+            manager.timeout(isFallback: true, fallbackAvailable: true),
             Self.defaultTimeout
         )
 
         // Even after success, fallback should still use default timeout
         manager.recordRequestResult(.successOnMainBackend)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withFallback, isFallback: true, hasProxyURL: false),
+            manager.timeout(isFallback: true, fallbackAvailable: true),
             Self.defaultTimeout
         )
     }
@@ -260,52 +260,22 @@ class HTTPRequestTimeoutManagerTests: TestCase {
     func testEndpointsWithoutFallbackSupportAlwaysUseDefaultTimeout() {
         // Initially
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withoutFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: false),
             Self.defaultTimeout
         )
 
         // Even after recording timeout
         manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withoutFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: false),
             Self.defaultTimeout
         )
 
         // After success
         manager.recordRequestResult(.successOnMainBackend)
         XCTAssertEqual(
-            manager.timeout(for: Mockpath.withoutFallback, isFallback: false, hasProxyURL: false),
+            manager.timeout(isFallback: false, fallbackAvailable: false),
             Self.defaultTimeout
         )
-    }
-
-    enum Mockpath: HTTPRequestPath {
-        case withFallback
-        case withoutFallback
-
-        static var serverHostURL: URL { URL(string: "https://api.revenuecat.com")! }
-
-        var authenticated: Bool { true }
-
-        var shouldSendEtag: Bool { true }
-
-        var supportsSignatureVerification: Bool { false }
-
-        var needsNonceForSigning: Bool { false }
-
-        var name: String { "Test" }
-
-        var relativePath: String { "/v1/test" }
-
-        var fallbackUrls: [URL] {
-            switch self {
-            case .withFallback:
-                return [
-                    Self.serverHostURL.appendingPathComponent("/fallback")
-                ]
-            case .withoutFallback:
-                return []
-            }
-        }
     }
 }
