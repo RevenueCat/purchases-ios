@@ -1967,13 +1967,14 @@ jobs:
     steps:
       - checkout
       - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
           command: |
-            git clone https://github.com/RevenueCat/purchases-ios.git
+            git clone git@github.com:RevenueCat/purchases-ios.git
             cd purchases-ios
             git fetch --tags
-            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm.git
+            git remote set-url origin git@github.com:RevenueCat/purchases-ios-spm.git
             git push origin
             git push --tags
 
