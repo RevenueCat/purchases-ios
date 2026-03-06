@@ -153,17 +153,17 @@ extension PresentedPartial {
             return isEligibleForPromoOffer
 
         // Offer eligibility (with operator/value)
-        case .introOfferCondition(let condOp, let value):
+        case .introOfferCondition(let conditionOperator, let value):
             return evaluateBoolCondition(
                 actual: isEligibleForIntroOffer,
                 expected: value,
-                operator: condOp
+                operator: conditionOperator
             )
-        case .promoOfferCondition(let condOp, let value):
+        case .promoOfferCondition(let conditionOperator, let value):
             return evaluateBoolCondition(
                 actual: isEligibleForPromoOffer,
                 expected: value,
-                operator: condOp
+                operator: conditionOperator
             )
 
         // Multiple intro offers - supported in Android, always evaluates to false on iOS
@@ -171,19 +171,19 @@ extension PresentedPartial {
             return false
 
         // Variable condition
-        case .variable(let condOp, let variable, let value):
+        case .variable(let conditionOperator, let variable, let value):
             return evaluateVariableCondition(
                 variable: variable,
                 expectedValue: value,
-                operator: condOp,
+                operator: conditionOperator,
                 customVariables: conditionContext.customVariables
             )
 
         // Selected package condition
-        case .selectedPackage(let condOp, let packages):
+        case .selectedPackage(let conditionOperator, let packages):
             return evaluateSelectedPackageCondition(
                 packages: packages,
-                operator: condOp,
+                operator: conditionOperator,
                 selectedPackageId: conditionContext.selectedPackageId
             )
 
@@ -195,7 +195,7 @@ extension PresentedPartial {
 
     private static func evaluateSelectedPackageCondition(
         packages: [String],
-        operator condOp: PaywallComponent.ArrayOperator,
+        operator conditionOperator: PaywallComponent.ArrayOperator,
         selectedPackageId: String?
     ) -> Bool {
         guard let selectedPackageId else {
@@ -203,7 +203,7 @@ extension PresentedPartial {
             return false
         }
 
-        switch condOp {
+        switch conditionOperator {
         case .in:
             return packages.contains(selectedPackageId)
         case .notIn:
@@ -214,9 +214,9 @@ extension PresentedPartial {
     private static func evaluateBoolCondition(
         actual: Bool,
         expected: Bool,
-        operator condOp: PaywallComponent.EqualityOperator
+        operator conditionOperator: PaywallComponent.EqualityOperator
     ) -> Bool {
-        switch condOp {
+        switch conditionOperator {
         case .equals:
             return actual == expected
         case .notEquals:
@@ -228,16 +228,16 @@ extension PresentedPartial {
     private static func evaluateVariableCondition(
         variable: String,
         expectedValue: PaywallComponent.ConditionValue,
-        operator condOp: PaywallComponent.EqualityOperator,
+        operator conditionOperator: PaywallComponent.EqualityOperator,
         customVariables: [String: CustomVariableValue]
     ) -> Bool {
         guard let actualValue = customVariables[variable] else {
-            return condOp == .notEquals
+            return conditionOperator == .notEquals
         }
 
         let matches = matchesValue(actualValue: actualValue, expectedValue: expectedValue)
 
-        switch condOp {
+        switch conditionOperator {
         case .equals:
             return matches
         case .notEquals:
