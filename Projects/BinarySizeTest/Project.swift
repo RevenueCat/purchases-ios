@@ -2,6 +2,19 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 import Foundation
 
+/// Unlike other Tuist projects in this repo, BinarySizeTest manages its own dependency integration
+/// independently of `Environment.dependencyMode`. Each case produces a separate binary uploaded to
+/// Emerge for size tracking, so they each have a distinct bundle ID.
+///
+/// - `localSource`: Uses Xcode project target references (`.project(target:path:)`).
+///   Requires `TUIST_RC_XCODE_PROJECT=true` so that `Workspace.swift` includes the
+///   `Projects/RevenueCat` and `Projects/RevenueCatUI` projects.
+/// - `spm`: Uses a local SPM package reference (`.package(path:)`).
+///   Works with the default `localSwiftPackage` dependency mode.
+/// - `cocoapods`: No Tuist-managed dependencies; uses CocoaPods via `pod install`.
+///
+/// Set via `TUIST_BINARY_SIZE_TEST_INTEGRATION_METHOD`
+/// (`LOCAL_SOURCE` | `SPM` | `COCOAPODS`, defaults to `LOCAL_SOURCE`).
 enum BinarySizeTestIntegrationMethod: String {
     case localSource = "LOCAL_SOURCE"
     case cocoapods = "COCOAPODS"
@@ -44,7 +57,12 @@ extension BinarySizeTestIntegrationMethod {
 
     var dependencies: [TargetDependency] {
         switch self {
-        case .localSource, .spm:
+        case .localSource:
+            return [
+                .project(target: "RevenueCat", path: .relativeToRoot("Projects/RevenueCat")),
+                .project(target: "RevenueCatUI", path: .relativeToRoot("Projects/RevenueCatUI"))
+            ]
+        case .spm:
             return [
                 .package(product: "RevenueCat", type: .runtime),
                 .package(product: "RevenueCatUI", type: .runtime)
@@ -56,10 +74,10 @@ extension BinarySizeTestIntegrationMethod {
 
     var packages: [ProjectDescription.Package] {
         switch self {
-        case .localSource, .spm:
-            return [.package(path: "../..")]
-        case .cocoapods:
+        case .localSource, .cocoapods:
             return []
+        case .spm:
+            return [.package(path: "../..")]
         }
     }
 
