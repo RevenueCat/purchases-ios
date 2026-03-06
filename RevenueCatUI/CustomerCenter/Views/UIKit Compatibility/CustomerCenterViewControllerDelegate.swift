@@ -87,8 +87,19 @@ public protocol CustomerCenterViewControllerDelegate: NSObjectProtocol {
     )
 
     /// Called when a promotional offer succeeds.
+    @available(*, deprecated, message: "Use customerCenterViewController(_:didSucceedWithPromotionalOffer:customerInfo:transaction:) instead")
     @objc(customerCenterViewControllerDidSucceedWithPromotionalOffer:)
     optional func customerCenterViewControllerDidSucceedWithPromotionalOffer(_ controller: CustomerCenterViewController)
+
+    /// Called when a promotional offer purchase completes successfully,
+    /// providing the resulting customer info, transaction, and the promotional offer identifier.
+    @objc(customerCenterViewController:didSucceedWithPromotionalOffer:customerInfo:transaction:)
+    optional func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didSucceedWithPromotionalOffer offerId: String,
+        customerInfo: CustomerInfo,
+        transaction: StoreTransaction
+    )
 
     /// Called when the Customer Center is dismissed.
     /// Make sure to call dismiss(animated: ) on the CustomerCenterViewController to actually dismiss

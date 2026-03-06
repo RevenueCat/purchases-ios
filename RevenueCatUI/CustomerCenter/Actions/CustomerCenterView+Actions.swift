@@ -57,7 +57,14 @@ extension CustomerCenterView {
     @MainActor @Sendable (_ actionIdentifier: String, _ purchaseIdentifier: String?) -> Void
 
     /// A closure used for notifying when a promotional offer succeeded.
+    @available(*, deprecated, message: "Use PromotionalOfferSucceededHandler instead")
     public typealias PromotionalOfferSuccessHandler = @MainActor @Sendable () -> Void
+
+    /// A closure used for notifying when a promotional offer purchase completes successfully,
+    /// providing the resulting customer info, transaction, and the promotional offer identifier.
+    public typealias PromotionalOfferSucceededHandler =
+    @MainActor @Sendable (_ customerInfo: CustomerInfo, _ transaction: StoreTransaction,
+                           _ offerId: String) -> Void
 
     /// A closure used for notifying when the change plan button has been selected
     public typealias ChangePlansHandler = @MainActor @Sendable (_ optionId: String) -> Void
@@ -143,6 +150,16 @@ extension CustomerCenterView {
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterExternalActions) { actions in
                 actions.promotionalOfferSuccess = handler as @MainActor @Sendable () -> Void
+            }
+        }
+    }
+
+    struct OnPromotionalOfferSucceeded: ViewModifier {
+        let handler: PromotionalOfferSucceededHandler
+        func body(content: Content) -> some View {
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.promotionalOfferSucceeded =
+                    handler as @MainActor @Sendable (CustomerInfo, StoreTransaction, String) -> Void
             }
         }
     }
@@ -322,17 +339,26 @@ extension View {
     }
 
     /// Invokes the given closure when a promotional offer purchase completes successfully in the Customer Center.
-    /// Example:
-    /// ```swift
-    /// CustomerCenterView()
-    ///     .onCustomerCenterPromotionalOfferSuccess {
-    ///         // Refresh UI or reload data
-    ///     }
-    /// ```
+    @available(*, deprecated, message: "Use onCustomerCenterPromotionalOfferSucceeded instead")
     public func onCustomerCenterPromotionalOfferSuccess(
         _ handler: @escaping CustomerCenterView.PromotionalOfferSuccessHandler
     ) -> some View {
         return self.modifier(CustomerCenterView.OnPromotionalOfferSuccess(handler: handler))
+    }
+
+    /// Invokes the given closure when a promotional offer purchase completes successfully in the Customer Center,
+    /// providing the resulting customer info, transaction, and the promotional offer identifier.
+    /// Example:
+    /// ```swift
+    /// CustomerCenterView()
+    ///     .onCustomerCenterPromotionalOfferSucceeded { customerInfo, transaction, offerId in
+    ///         print("Promo offer \(offerId) succeeded")
+    ///     }
+    /// ```
+    public func onCustomerCenterPromotionalOfferSucceeded(
+        _ handler: @escaping CustomerCenterView.PromotionalOfferSucceededHandler
+    ) -> some View {
+        return self.modifier(CustomerCenterView.OnPromotionalOfferSucceeded(handler: handler))
     }
 
     /// Invokes the given closure when the user chooses the Change Plans option in the Customer Center.

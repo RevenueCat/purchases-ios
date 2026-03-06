@@ -121,7 +121,8 @@ public class CustomerCenterViewController: UIViewController {
         managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
         changePlansSelected: CustomerCenterView.ChangePlansHandler? = nil,
         onCustomAction: CustomerCenterView.CustomActionHandler? = nil,
-        promotionalOfferSuccess: CustomerCenterView.PromotionalOfferSuccessHandler? = nil
+        promotionalOfferSuccess: CustomerCenterView.PromotionalOfferSuccessHandler? = nil,
+        promotionalOfferSucceeded: CustomerCenterView.PromotionalOfferSucceededHandler? = nil
     ) {
         super.init(nibName: nil, bundle: nil)
 
@@ -192,6 +193,12 @@ public class CustomerCenterViewController: UIViewController {
         if let promotionalOfferSuccess {
             actionWrapper.promotionalOfferSuccessPublisher
                 .sink(receiveValue: promotionalOfferSuccess)
+                .store(in: &cancellables)
+        }
+
+        if let promotionalOfferSucceeded {
+            actionWrapper.promotionalOfferSucceededPublisher
+                .sink(receiveValue: { promotionalOfferSucceeded($0.0, $0.1, $0.2) })
                 .store(in: &cancellables)
         }
 
@@ -335,6 +342,18 @@ public class CustomerCenterViewController: UIViewController {
             .sink { [weak self] in
                 guard let self else { return }
                 self.delegate?.customerCenterViewControllerDidSucceedWithPromotionalOffer?(self)
+            }
+            .store(in: &cancellables)
+
+        actionWrapper.promotionalOfferSucceededPublisher
+            .sink { [weak self] customerInfo, transaction, offerId in
+                guard let self else { return }
+                self.delegate?.customerCenterViewController?(
+                    self,
+                    didSucceedWithPromotionalOffer: offerId,
+                    customerInfo: customerInfo,
+                    transaction: transaction
+                )
             }
             .store(in: &cancellables)
     }

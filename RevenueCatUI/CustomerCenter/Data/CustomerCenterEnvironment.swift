@@ -117,6 +117,8 @@ final class CustomerCenterExternalActions: @unchecked Sendable {
     var feedbackSurveyCompleted: @MainActor @Sendable (String) -> Void = { _ in }
     var managementOptionSelected: @MainActor @Sendable (CustomerCenterActionable) -> Void = { _ in }
     var promotionalOfferSuccess: @MainActor @Sendable () -> Void = {}
+    var promotionalOfferSucceeded: @MainActor @Sendable (CustomerInfo, StoreTransaction, String) -> Void =
+        { _, _, _ in }
     var changePlansSelected: @MainActor @Sendable (String) -> Void = { _ in }
     var customActionSelected: @MainActor @Sendable (String, String?) -> Void = { _, _ in }
 }
