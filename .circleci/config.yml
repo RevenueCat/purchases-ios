@@ -1824,11 +1824,12 @@ jobs:
       - revenuecat/trust-github-key
       - install-dependencies
 
-      # LOCAL_SOURCE
+      # LOCAL_SOURCE (uses Xcode project targets, needs TUIST_RC_XCODE_PROJECT)
       - run:
           name: Set BinarySizeTest integration method (LOCAL_SOURCE)
           command: |
             echo 'export TUIST_BINARY_SIZE_TEST_INTEGRATION_METHOD=LOCAL_SOURCE' >> "$BASH_ENV"
+            echo 'export TUIST_RC_XCODE_PROJECT=true' >> "$BASH_ENV"
       - tuist-generate-workspace:
           query: "BinarySizeTest"
       - run:
@@ -1840,6 +1841,7 @@ jobs:
           name: Set BinarySizeTest integration method (COCOAPODS)
           command: |
             echo 'export TUIST_BINARY_SIZE_TEST_INTEGRATION_METHOD=COCOAPODS' >> "$BASH_ENV"
+            echo 'unset TUIST_RC_XCODE_PROJECT' >> "$BASH_ENV"
       - tuist-generate-workspace:
           query: "BinarySizeTest"
       - run:
