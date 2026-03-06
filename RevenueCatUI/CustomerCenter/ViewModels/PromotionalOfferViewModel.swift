@@ -77,7 +77,11 @@ final class PromotionalOfferViewModel: ObservableObject {
             } else {
                 let transactionId = result.transaction?.transactionIdentifier ?? "-"
                 Logger.debug(Strings.promo_offer_purchase_succeeded(productId, offerId, transactionId))
-                self.actionWrapper.handleAction(.promotionalOfferSuccess)
+                if let transaction = result.transaction {
+                    self.actionWrapper.handleAction(
+                        .promotionalOfferSucceeded(result.customerInfo, transaction, offerId)
+                    )
+                }
                 self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
             }
         } catch {
