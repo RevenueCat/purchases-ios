@@ -38,6 +38,11 @@ struct IconComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
     let viewModel: IconComponentViewModel
 
     var body: some View {
@@ -50,6 +55,8 @@ struct IconComponentView: View {
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
             ),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
@@ -115,7 +122,8 @@ struct IconComponentView_Previews: PreviewProvider {
         // Default
         VStack {
             IconComponentView(
-                viewModel: .init(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
@@ -146,7 +154,8 @@ struct IconComponentView_Previews: PreviewProvider {
         // Default - Background
         VStack {
             IconComponentView(
-                viewModel: .init(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]

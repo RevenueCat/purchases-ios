@@ -352,6 +352,7 @@ private struct LoadedPaywallsV2View: View {
                     ),
                 alignment: .top
             )
+            .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
         }
@@ -394,7 +395,7 @@ fileprivate extension PaywallsV2View {
         )
 
         do {
-            let factory = ViewModelFactory()
+            var factory = ViewModelFactory()
             let root = try factory.toRootViewModel(
                 componentsConfig: componentsConfig,
                 offering: offering,
@@ -402,6 +403,10 @@ fileprivate extension PaywallsV2View {
                 uiConfigProvider: uiConfigProvider,
                 colorScheme: colorScheme
             )
+
+            if factory.discardRules {
+                Logger.warning(Strings.paywall_contains_unsupported_condition)
+            }
 
             // WIP: Maybe re-enable this later or add some warnings
 //            guard packageValidator.isValid else {
