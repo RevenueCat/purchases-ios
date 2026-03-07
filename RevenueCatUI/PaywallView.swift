@@ -569,25 +569,26 @@ private struct CatalystWindowSizeObserver: UIViewRepresentable {
     func updateUIView(_ uiView: UIView, context: Context) {
         context.coordinator.onResize = onResize
 
+        // Don't apply a zero size — onAppear hasn't fired yet to set the real initial size.
+        guard currentSize.width > 0, currentSize.height > 0 else { return }
         guard let win = uiView.window else { return }
         let current = win.bounds.size
         guard abs(current.width - currentSize.width) > 0.5
                 || abs(current.height - currentSize.height) > 0.5 else { return }
 
-        if let rootVC = win.rootViewController {
-            rootVC.preferredContentSize = currentSize
-        } else {
-            win.frame = CGRect(
-                x: win.frame.midX - currentSize.width / 2,
-                y: win.frame.midY - currentSize.height / 2,
-                width: currentSize.width,
-                height: currentSize.height
-            )
-        }
+        // Record the target before applying so the resulting NSWindowDidResizeNotification
+        // echo is recognised as self-inflicted and ignored by the Coordinator.
+        context.coordinator.lastSetSize = currentSize
+
+        // preferredContentSize signals the UIKit presentation layer to resize the
+        // underlying AppKit NSPanel. On Catalyst, there is always a rootViewController.
+        win.rootViewController?.preferredContentSize = currentSize
     }
 
     final class Coordinator {
         var onResize: (CGSize) -> Void = { _ in }
+        var lastSetSize: CGSize = .zero
+
         private var observer: NSObjectProtocol?
 
         func subscribe(onResize: @escaping (CGSize) -> Void) {
@@ -603,12 +604,13 @@ private struct CatalystWindowSizeObserver: UIViewRepresentable {
                 guard let self else { return }
                 let allWindows = UIApplication.shared.connectedScenes
                     .compactMap { $0 as? UIWindowScene }.flatMap { $0.windows }
-                if let host = allWindows.first(where: { $0.isKeyWindow }) {
-                    self.onResize(CGSize(
-                        width: host.bounds.width * 0.8,
-                        height: host.bounds.height * 0.8
-                    ))
-                }
+                guard let host = allWindows.first(where: { $0.isKeyWindow }) else { return }
+                let newSize = host.bounds.size
+                guard abs(newSize.width - self.lastSetSize.width) > 2.0
+                        || abs(newSize.height - self.lastSetSize.height) > 2.0 else { return }
+                let target = CGSize(width: newSize.width * 0.8, height: newSize.height * 0.8)
+                self.lastSetSize = target
+                self.onResize(target)
             }
         }
 
