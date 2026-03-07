@@ -230,12 +230,19 @@ public struct PaywallView: View {
         #elseif targetEnvironment(macCatalyst)
             .frame(width: self.containerSize.width > 0 ? self.containerSize.width : nil,
                    height: self.containerSize.height > 0 ? self.containerSize.height : nil)
-            .background(
-                CatalystWindowSizeObserver { windowSize in
+            .onAppear {
+                let allWindows = UIApplication.shared.connectedScenes
+                    .compactMap { $0 as? UIWindowScene }.flatMap { $0.windows }
+                if let host = allWindows.first(where: { $0.isKeyWindow }) {
                     self.containerSize = CGSize(
-                        width: windowSize.width * 0.8,
-                        height: windowSize.height * 0.8
+                        width: host.bounds.width * 0.8,
+                        height: host.bounds.height * 0.8
                     )
+                }
+            }
+            .background(
+                CatalystWindowSizeObserver(currentSize: self.containerSize) { newSize in
+                    self.containerSize = newSize
                 }
             )
         #endif
@@ -449,18 +456,6 @@ public struct PaywallView: View {
             height: window.frame.height * 0.8
         )
 
-        #elseif targetEnvironment(macCatalyst)
-        guard let scene = UIApplication.shared.connectedScenes
-                .compactMap({ $0 as? UIWindowScene })
-                .first(where: { $0.activationState == .foregroundActive }),
-              let window = scene.windows.first(where: { $0.isKeyWindow }) else {
-            return .zero
-        }
-        return CGSize(
-            width: window.bounds.width * 0.8,
-            height: window.bounds.height * 0.8
-        )
-
         #else
         return .zero
         #endif
@@ -556,52 +551,72 @@ private final class HostWindowObserverView: NSView {
 #endif
 
 #if targetEnvironment(macCatalyst)
-
 private struct CatalystWindowSizeObserver: UIViewRepresentable {
 
-    let onWindowSizeChanged: (CGSize) -> Void
+    let currentSize: CGSize
+    let onResize: (CGSize) -> Void
 
-    func makeUIView(context: Context) -> WindowObserverView {
-        let view = WindowObserverView()
-        view.onWindowSizeChanged = self.onWindowSizeChanged
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.isHidden = true
+        view.isUserInteractionEnabled = false
+        context.coordinator.subscribe(onResize: onResize)
         return view
     }
 
-    func updateUIView(_ uiView: WindowObserverView, context: Context) {
-        uiView.onWindowSizeChanged = self.onWindowSizeChanged
-        uiView.refreshWindowObservationIfNeeded()
-    }
-}
+    func updateUIView(_ uiView: UIView, context: Context) {
+        context.coordinator.onResize = onResize
 
-private final class WindowObserverView: UIView {
+        guard let win = uiView.window else { return }
+        let current = win.bounds.size
+        guard abs(current.width - currentSize.width) > 0.5
+                || abs(current.height - currentSize.height) > 0.5 else { return }
 
-    var onWindowSizeChanged: ((CGSize) -> Void)?
-
-    private weak var observedWindow: UIWindow?
-    private var windowBoundsObservation: NSKeyValueObservation?
-
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-        self.refreshWindowObservationIfNeeded()
-    }
-
-    func refreshWindowObservationIfNeeded() {
-        guard let window = self.window else {
-            self.observedWindow = nil
-            self.windowBoundsObservation = nil
-            return
-        }
-        guard self.observedWindow !== window else { return }
-        self.observedWindow = window
-        self.windowBoundsObservation = window.observe(
-            \.bounds,
-            options: [.initial, .new]
-        ) { [weak self] window, _ in
-            self?.onWindowSizeChanged?(window.bounds.size)
+        if let rootVC = win.rootViewController {
+            rootVC.preferredContentSize = currentSize
+        } else {
+            win.frame = CGRect(
+                x: win.frame.midX - currentSize.width / 2,
+                y: win.frame.midY - currentSize.height / 2,
+                width: currentSize.width,
+                height: currentSize.height
+            )
         }
     }
-}
 
+    final class Coordinator {
+        var onResize: (CGSize) -> Void = { _ in }
+        private var observer: NSObjectProtocol?
+
+        func subscribe(onResize: @escaping (CGSize) -> Void) {
+            guard observer == nil else { return }
+            self.onResize = onResize
+            // AppKit's NSWindow.didResizeNotification is not importable in Catalyst/UIKit targets;
+            // the notification name string is the only way to observe it from UIKit code.
+            observer = NotificationCenter.default.addObserver(
+                forName: NSNotification.Name("NSWindowDidResizeNotification"),
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self else { return }
+                let allWindows = UIApplication.shared.connectedScenes
+                    .compactMap { $0 as? UIWindowScene }.flatMap { $0.windows }
+                if let host = allWindows.first(where: { $0.isKeyWindow }) {
+                    self.onResize(CGSize(
+                        width: host.bounds.width * 0.8,
+                        height: host.bounds.height * 0.8
+                    ))
+                }
+            }
+        }
+
+        deinit {
+            if let observer { NotificationCenter.default.removeObserver(observer) }
+        }
+    }
+}
 #endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
