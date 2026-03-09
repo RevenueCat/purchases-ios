@@ -6,6 +6,7 @@ import GoogleMobileAds
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
+// swiftlint:disable:next type_body_length
 final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
     func testLoadAndTrackInstallsProxyAndForwardsFailAndFinishLoading() {
@@ -148,7 +149,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
     func testPlaceholderSelectorsMatchRealAdValueClass() {
         let adValueClass: AnyClass = RCGoogleMobileAds.AdValue.self
         for sel in [
-            #selector(getter: AdValuePlaceholder.value),
+            NSSelectorFromString("value"),
             #selector(getter: AdValuePlaceholder.currencyCode),
             #selector(getter: AdValuePlaceholder.precision)
         ] {
@@ -158,6 +159,156 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
             )
         }
     }
+
+    // MARK: - Tracking verification (uses injectable rcAdMob)
+
+    func testLoadAndTrackTracksLoadedOnNativeAdReceived() {
+        let mockTracker = MockAdTracker()
+        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adLoader = Self.makeAdLoader()
+        let spy = AdLoaderDelegateSpy()
+        adLoader.delegate = spy
+
+        adLoader.loadAndTrack(
+            Request(),
+            placement: "native_feed",
+            nativeAdDelegate: nil,
+            rcAdMob: rcAdMob
+        )
+
+        let nativeDelegate = adLoader.delegate as? NativeAdLoaderDelegate
+        nativeDelegate?.adLoader(adLoader, didReceive: Self.makeNativeAdPlaceholder())
+
+        XCTAssertEqual(mockTracker.calls.count, 1)
+        XCTAssertEqual(mockTracker.calls.first, MockAdTracker.Call(
+            method: "trackAdLoaded",
+            adFormat: "native",
+            placement: "native_feed",
+            adUnitId: "native_unit"
+        ))
+    }
+
+    func testLoadAndTrackTracksFailedToLoadOnError() {
+        let mockTracker = MockAdTracker()
+        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adLoader = Self.makeAdLoader()
+        let spy = AdLoaderDelegateSpy()
+        adLoader.delegate = spy
+
+        adLoader.loadAndTrack(
+            Request(),
+            placement: "native_feed",
+            nativeAdDelegate: nil,
+            rcAdMob: rcAdMob
+        )
+
+        let loaderDelegate = adLoader.delegate
+        loaderDelegate?.adLoader(
+            adLoader,
+            didFailToReceiveAdWithError: NSError(domain: "com.google.ads", code: 3)
+        )
+
+        XCTAssertEqual(mockTracker.calls.count, 1)
+        XCTAssertEqual(mockTracker.calls.first, MockAdTracker.Call(
+            method: "trackAdFailedToLoad",
+            adFormat: "native",
+            placement: "native_feed",
+            adUnitId: "native_unit"
+        ))
+    }
+
+    func testLoadAndTrackTracksRevenueOnPaidEvent() {
+        let mockTracker = MockAdTracker()
+        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adLoader = Self.makeAdLoader()
+        let spy = AdLoaderDelegateSpy()
+        adLoader.delegate = spy
+
+        adLoader.loadAndTrack(
+            Request(),
+            placement: "native_feed",
+            nativeAdDelegate: nil,
+            rcAdMob: rcAdMob
+        )
+
+        let nativeBacking = NativeAdPlaceholder()
+        let nativeDelegate = adLoader.delegate as? NativeAdLoaderDelegate
+        nativeDelegate?.adLoader(adLoader, didReceive: Self.makeNativeAdPlaceholder(backing: nativeBacking))
+
+        let callsBeforePaid = mockTracker.calls.count
+
+        nativeBacking.paidEventHandler?(Self.makeAdValuePlaceholder())
+
+        XCTAssertEqual(mockTracker.calls.count, callsBeforePaid + 1)
+        XCTAssertEqual(mockTracker.calls.last, MockAdTracker.Call(
+            method: "trackAdRevenue",
+            adFormat: "native",
+            placement: "native_feed",
+            adUnitId: "native_unit"
+        ))
+    }
+
+    func testLoadAndTrackDoesNotTrackWhenNotConfigured() {
+        let mockTracker = MockAdTracker()
+        mockTracker.isConfigured = false
+        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adLoader = Self.makeAdLoader()
+        let spy = AdLoaderDelegateSpy()
+        adLoader.delegate = spy
+
+        adLoader.loadAndTrack(
+            Request(),
+            placement: "native_feed",
+            nativeAdDelegate: nil,
+            rcAdMob: rcAdMob
+        )
+
+        let nativeDelegate = adLoader.delegate as? NativeAdLoaderDelegate
+        nativeDelegate?.adLoader(adLoader, didReceive: Self.makeNativeAdPlaceholder())
+
+        XCTAssertTrue(mockTracker.calls.isEmpty)
+    }
+
+    func testLoadAndTrackTracksNativeImpressionAndClickViaDelegateProxy() {
+        let mockTracker = MockAdTracker()
+        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adLoader = Self.makeAdLoader()
+        let spy = AdLoaderDelegateSpy()
+        adLoader.delegate = spy
+
+        adLoader.loadAndTrack(
+            Request(),
+            placement: "native_feed",
+            nativeAdDelegate: nil,
+            rcAdMob: rcAdMob
+        )
+
+        let nativeBacking = NativeAdPlaceholder()
+        let nativeAd = Self.makeNativeAdPlaceholder(backing: nativeBacking)
+        let nativeDelegate = adLoader.delegate as? NativeAdLoaderDelegate
+        nativeDelegate?.adLoader(adLoader, didReceive: nativeAd)
+
+        let callsBeforeEvents = mockTracker.calls.count
+
+        nativeBacking.delegate?.nativeAdDidRecordImpression?(nativeAd)
+        nativeBacking.delegate?.nativeAdDidRecordClick?(nativeAd)
+
+        XCTAssertEqual(mockTracker.calls.count, callsBeforeEvents + 2)
+        XCTAssertEqual(mockTracker.calls[callsBeforeEvents], MockAdTracker.Call(
+            method: "trackAdDisplayed",
+            adFormat: "native",
+            placement: "native_feed",
+            adUnitId: "native_unit"
+        ))
+        XCTAssertEqual(mockTracker.calls[callsBeforeEvents + 1], MockAdTracker.Call(
+            method: "trackAdOpened",
+            adFormat: "native",
+            placement: "native_feed",
+            adUnitId: "native_unit"
+        ))
+    }
+
+    // MARK: - Helpers
 
     private static func makeNativeAdPlaceholder(
         backing: NativeAdPlaceholder = NativeAdPlaceholder()
