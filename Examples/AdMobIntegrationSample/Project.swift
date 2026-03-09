@@ -1,7 +1,10 @@
 import ProjectDescription
+import ProjectDescriptionHelpers
 
 let project = Project(
     name: "AdMobIntegrationSample",
+    organizationName: .revenueCatOrgName,
+    settings: .appProject,
     targets: [
         .target(
             name: "AdMobIntegrationSample",
@@ -15,10 +18,11 @@ let project = Project(
             ]),
             sources: ["Sources/**"],
             dependencies: [
-                .project(target: "RevenueCat", path: "../../Projects/RevenueCat"),
+                .revenueCat,
+                .revenueCatAdMob,
                 .external(name: "GoogleMobileAds"),
-                .project(target: "RevenueCatAdMob", path: "../../Projects/RevenueCatAdMob")
-            ]
+            ],
+            settings: .appTarget
         )
     ]
 )
