@@ -36,15 +36,11 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-snapshot-testing",
-            revision: "26ed3a2b4a2df47917ca9b790a57f91285b923fb"
+            exact: "1.18.9"
         ),
         .package(
             url: "https://github.com/RevenueCat/purchases-ios",
             branch: "main"
-        ),
-        .package(
-            url: "https://github.com/RevenueCat/purchases-ios-spm",
-            revision: "3.14.4"
         ),
         .package(
             url: "https://github.com/AliSoftware/OHHTTPStubs",

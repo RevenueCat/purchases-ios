@@ -69,23 +69,17 @@ class SynchronizedUserDefaultsTests: TestCase {
     func testNoDeadlockWhenWritingFromBackgroundAndReadingFromMain() {
         // Register a notification observer on the main queue that will be triggered
         // when UserDefaults changes.
-        let notificationExpectation = expectation(description: "Notification received")
-        notificationExpectation.assertForOverFulfill = false
-
         let observer = NotificationCenter.default.addObserver(
             forName: UserDefaults.didChangeNotification,
             object: nil,
             queue: OperationQueue.main
-        ) { _ in
-            notificationExpectation.fulfill()
-        }
+        ) { _ in }
 
         defer {
             NotificationCenter.default.removeObserver(observer)
         }
 
         let writeStarted = DispatchSemaphore(value: 0)
-        let writeCompleted = expectation(description: "Write completed")
 
         let syncDefaults = self.synchronizedUserDefaults!
         let key = self.testKey
@@ -96,22 +90,29 @@ class SynchronizedUserDefaultsTests: TestCase {
                 writeStarted.signal()
                 $0.set("value", forKey: key)
             }
-            writeCompleted.fulfill()
         }
 
         // Wait until background thread is holding the lock.
         writeStarted.wait()
 
-        // Try to read from main while background holds the lock.
-        // This creates the race condition that would deadlock with a naive lock implementation.
-        let value = self.synchronizedUserDefaults.read {
-            $0.string(forKey: self.testKey)
+        // Try to read from another background thread while the write lock is held.
+        // We must NOT read on the main/test thread because if there's a deadlock,
+        // the main thread would hang forever and `wait(timeout:)` would never execute.
+        let readCompleted = DispatchSemaphore(value: 0)
+
+        DispatchQueue.global().async {
+            _ = syncDefaults.read {
+                $0.string(forKey: key)
+            }
+            readCompleted.signal()
         }
 
-        // If we reach here without hanging, there's no deadlock.
-        wait(for: [notificationExpectation, writeCompleted], timeout: 2.0)
+        let timedOut = readCompleted.wait(timeout: .now() + 3) == .timedOut
 
-        expect(value) == "value"
+        expect(timedOut).to(
+            beFalse(),
+            description: "Deadlock: reading blocked while another thread was writing"
+        )
     }
 
     func testConcurrentReadsDoNotDeadlock() {

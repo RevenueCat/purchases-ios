@@ -11,13 +11,29 @@ import SwiftUI
 
 struct AppContentView: View {
 
+    private enum Tab {
+        case examples
+        case myApps
+        case sandboxPaywalls
+    }
+
     @ObservedObject
     private var configuration = Configuration.shared
 
-
+    @State
+    private var selectedTab: Tab = {
+        if Purchases.isConfigured && !Constants.sandboxPaywallSearch.isEmpty {
+            return .sandboxPaywalls
+        }
+        #if os(macOS)
+        return .myApps
+        #else
+        return .examples
+        #endif
+    }()
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
 
             #if !os(macOS)
             SamplePaywallsList()
@@ -26,17 +42,20 @@ struct AppContentView: View {
                         .renderingMode(.template)
                     Text("Examples")
                 }
+                .tag(Tab.examples)
             #endif
             AppList()
                 .tabItem {
                     Label("My Apps", systemImage: "network")
                 }
+                .tag(Tab.myApps)
 
             if Purchases.isConfigured {
                 APIKeyDashboardList()
                     .tabItem {
                         Label("Sandbox Paywalls", systemImage: "testtube.2")
                     }
+                    .tag(Tab.sandboxPaywalls)
             }
 
             #if !DEBUG

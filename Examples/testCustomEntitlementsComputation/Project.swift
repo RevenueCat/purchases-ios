@@ -11,6 +11,7 @@ let allDestinations: Destinations = [
 let project = Project(
     name: "testCustomEntitlementsComputation",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .appProject,
     targets: [
         .target(

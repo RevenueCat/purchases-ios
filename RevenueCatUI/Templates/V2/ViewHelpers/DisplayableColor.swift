@@ -30,7 +30,7 @@ extension PaywallComponent.Background {
         case .image(let image, let fitMode, let colorScheme):
             return .image(image, fitMode, colorScheme?.asDisplayable(uiConfigProvider: uiConfigProvider))
         case let .video(video, image, loop, mute, fitMode, colorScheme):
-            let viewModel = VideoComponentViewModel(
+            let viewModel = VideoComponentViewModel.forBackground(
                 localizationProvider: localizationProvider ?? .init(locale: .current, localizedStrings: .init()),
                 uiConfigProvider: uiConfigProvider,
                 component: .init(

@@ -171,6 +171,7 @@ extension PostReceiptDataOperation {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
+        var source: PaywallSource?
 
     }
 
@@ -235,7 +236,8 @@ private extension PurchasedTransactionData {
                      revision: paywall.data.paywallRevision,
                      displayMode: paywall.data.displayMode,
                      darkMode: paywall.data.darkMode,
-                     localeIdentifier: paywall.data.localeIdentifier)
+                     localeIdentifier: paywall.data.localeIdentifier,
+                     source: paywall.data.source)
     }
 }
 
@@ -357,6 +359,7 @@ extension PostReceiptDataOperation.Paywall: Codable {
         case displayMode
         case darkMode
         case localeIdentifier = "locale"
+        case source
 
     }
 }

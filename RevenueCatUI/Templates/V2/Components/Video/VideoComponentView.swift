@@ -41,6 +41,11 @@ struct VideoComponentView: View {
     @Environment(\.carouselState)
     private var carouselState
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
     @State var size: CGSize = .zero
 
     @State private var cachedURL: URL?
@@ -66,6 +71,8 @@ struct VideoComponentView: View {
                 isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                     for: self.packageContext.package
                 ),
+                selectedPackageId: self.selectedPackageId,
+                customVariables: self.customVariables,
                 colorScheme: colorScheme
             ) { style in
                 if style.visible {
@@ -106,10 +113,8 @@ struct VideoComponentView: View {
                                 )
                                 // Recreate player when becoming playable again (carousel navigation).
                                 // swiftlint:disable:next todo
-                                // TODO: Add cachedURL back to .id() once we find a way to swap
-                                // video URLs without visual glitches. Currently, iOS AVPlayer
-                                // causes visible stuttering when replacing items mid-playback,
-                                // so the high-res version is only used on next paywall open.
+                                // TODO: Add cachedURL back to .id() once AVPlayer can swap
+                                // URLs mid-playback without visible stuttering.
                                 .id(playerRefreshToggle),
                                 size: size,
                                 with: style
@@ -117,62 +122,47 @@ struct VideoComponentView: View {
                             .transition(.opacity.animation(.easeIn(duration: 0.3)))
                         }
                     }
+                    .allowsHitTesting(style.showControls)
                     .onAppear {
                         let fileRepository = FileRepository.shared
 
-                        let resumeDownloadOfFullResolutionVideo: () -> Void = {
-                            Task(priority: .userInitiated) {
-                                do {
-                                    // If the low res and normal resolution files were not yet found on disk
-                                    // then we attempt to finish the download by calling the following method.
-                                    // this method will share the async task that the cacheprewarming started
-                                    // if it didn't error out, expediting the download time and reducing the memory
-                                    // footprint of paywalls
-                                    let url = try await fileRepository
-                                        .generateOrGetCachedFileURL(
-                                            for: viewData.url,
-                                            withChecksum: viewData.checksum
-                                        )
-                                    guard url != cachedURL, !Task.isCancelled else { return }
-                                    await MainActor.run {
-                                        self.cachedURL = url
-                                        self.imageSource = nil
-                                    }
-                                } catch {
-                                    await MainActor.run {
-                                        self.cachedURL = viewData.url
-                                        self.imageSource = nil
-                                    }
-                                }
-                            }
-                        }
-
-                        let fullResCachedURL = fileRepository.getCachedFileURL(
+                        // 1. High-res cached → use immediately
+                        if let fullResCachedURL = fileRepository.getCachedFileURL(
                             for: viewData.url,
                             withChecksum: viewData.checksum
-                        )
-
-                        if let cachedURL = fullResCachedURL {
-                            self.cachedURL = cachedURL
-                            // If we have a cached video, no need to display a fallback image
+                        ) {
+                            self.cachedURL = fullResCachedURL
                             self.imageSource = nil
-                        } else if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
-                            let lowResCachedURL = fileRepository.getCachedFileURL(
-                                for: lowResUrl,
-                                withChecksum: viewData.lowResChecksum
+                            return
+                        }
+
+                        // 2. Low-res cached → use immediately, cache high-res in background
+                        if let lowResUrl = viewData.lowResUrl,
+                           lowResUrl != viewData.url,
+                           let lowResCachedURL = fileRepository.getCachedFileURL(
+                               for: lowResUrl,
+                               withChecksum: viewData.lowResChecksum
+                           ) {
+                            self.cachedURL = lowResCachedURL
+                            self.imageSource = nil
+                            cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
+                            return
+                        }
+
+                        // 3. Nothing cached → stream remote URL, cache in background
+                        self.cachedURL = viewData.url
+                        self.imageSource = viewModel.imageSource
+
+                        // Cache both resolutions as a failsafe: if the high-res
+                        // download fails or is canceled, the low-res version is
+                        // available as a fallback on next open.
+                        cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
+                        if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
+                            cacheVideo(
+                                fileRepository: fileRepository,
+                                url: lowResUrl,
+                                checksum: viewData.lowResChecksum
                             )
-                            self.cachedURL = lowResCachedURL ?? lowResUrl
-
-                            if lowResCachedURL == nil {
-                                // Display the fallback image while loading takes place
-                                self.imageSource = viewModel.imageSource
-                            }
-
-                            resumeDownloadOfFullResolutionVideo()
-                        } else {
-                            // Display the fallback image while loading takes place
-                            self.imageSource = viewModel.imageSource
-                            resumeDownloadOfFullResolutionVideo()
                         }
                     }
                     .applyMediaWidth(size: style.size)
@@ -220,6 +210,21 @@ struct VideoComponentView: View {
             return (style.widthDark ?? style.widthLight, style.heightDark ?? style.heightLight)
         @unknown default:
             return (style.widthLight, style.heightLight)
+        }
+    }
+
+    private func cacheVideo(fileRepository: FileRepository, url: URL, checksum: Checksum?) {
+        Task(priority: .utility) {
+            do {
+                _ = try await fileRepository.generateOrGetCachedFileURL(
+                    for: url,
+                    withChecksum: checksum
+                )
+            } catch {
+                Logger.warning(
+                    Strings.video_failed_to_cache(url, error)
+                )
+            }
         }
     }
 

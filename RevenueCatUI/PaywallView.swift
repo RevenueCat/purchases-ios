@@ -53,8 +53,7 @@ public struct PaywallView: View {
     @State
     private var error: NSError?
 
-//    @StateObject
-//    private var defaultPaywallPromoOfferCache = PaywallPromoOfferCache()
+    private var promoOfferCache: PaywallPromoOfferCache?
 
     private var initializationError: NSError?
 
@@ -169,6 +168,7 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
         self.useDraftPaywall = configuration.useDraftPaywall
+        self.promoOfferCache = configuration.promoOfferCache
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
@@ -357,7 +357,8 @@ public struct PaywallView: View {
                             Purchases.shared.failedToLoadFontWithConfig(fontConfig)
                         }
                     },
-                    colorScheme: colorScheme
+                    colorScheme: colorScheme,
+                    promoOfferCache: self.promoOfferCache
                 )
             }
         } else {
@@ -517,6 +518,9 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.dismiss)
     private var dismiss
 
+    @Environment(\.paywallSource)
+    private var paywallSource
+
     init(
         offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,
@@ -630,7 +634,8 @@ struct LoadedOfferingPaywallView: View {
             sessionID: .init(),
             displayMode: self.mode,
             locale: .current,
-            darkMode: self.colorScheme == .dark
+            darkMode: self.colorScheme == .dark,
+            source: self.paywallSource
         )
     }
 

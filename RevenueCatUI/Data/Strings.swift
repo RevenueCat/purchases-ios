@@ -101,6 +101,7 @@ enum Strings {
 
     // Video
     case video_failed_to_set_audio_session_category(Error)
+    case video_failed_to_cache(URL, Error)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -109,6 +110,10 @@ enum Strings {
     case prefetchedExitOffer(String)
     case presentingExitOffer(String)
     case errorLoadingExitOffer(Error)
+
+    // Conditional Configurability
+    case paywall_contains_unsupported_condition
+
 }
 
 extension Strings: CustomStringConvertible {
@@ -337,6 +342,8 @@ extension Strings: CustomStringConvertible {
 
         case .video_failed_to_set_audio_session_category(let error):
             return "Failed to set audio session category: \(error)"
+        case .video_failed_to_cache(let url, let error):
+            return "Failed to cache video at \(url): \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
@@ -350,6 +357,9 @@ extension Strings: CustomStringConvertible {
             return "Presenting exit offer paywall for offering '\(offeringId)'"
         case .errorLoadingExitOffer(let error):
             return "Error loading exit offer: \(error)"
+        case .paywall_contains_unsupported_condition:
+            return "Unsupported paywall rule encountered. " +
+            "Rendering paywall without conditional configurability rules."
         }
     }
 
