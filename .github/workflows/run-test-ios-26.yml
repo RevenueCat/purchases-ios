@@ -33,10 +33,6 @@ jobs:
 
       - name: Set up Ruby and install dependencies
         run: |
-          eval "$(rbenv init -)"
-          rbenv install -s 3.2.0
-          rbenv global 3.2.0
-          rbenv rehash
           ruby -v
           bundle config set --local clean 'true'
           bundle config set --local path 'vendor/bundle'
