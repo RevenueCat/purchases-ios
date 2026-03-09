@@ -2308,7 +2308,7 @@ workflows:
           <<: *release-tags
       - push-revenuecatadmob-pod:
           requires:
-            - push-revenuecatui-pod
+            - push-revenuecat-pod
           <<: *release-tags
       - deploy-to-spm:
           <<: *release-tags
