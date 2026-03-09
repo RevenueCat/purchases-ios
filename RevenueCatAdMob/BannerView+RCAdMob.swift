@@ -60,7 +60,7 @@ private enum RCBannerAssociatedKeys {
         self.paidEventHandler = { [weak self] adValue in
             if let self {
                 let responseInfo: RCGoogleMobileAds.ResponseInfo? = self.responseInfo
-                RCAdMob.trackRevenue(
+                RCAdMob.shared.trackRevenue(
                     placement: placement,
                     adUnitID: self.adUnitID,
                     adFormat: RevenueCat.AdFormat.banner,
@@ -129,7 +129,7 @@ private enum RCBannerAssociatedKeys {
         self.paidEventHandler = { [weak self] adValue in
             if let self {
                 let responseInfo: RCGoogleMobileAds.ResponseInfo? = self.responseInfo
-                RCAdMob.trackRevenue(
+                RCAdMob.shared.trackRevenue(
                     placement: placement,
                     adUnitID: self.adUnitID,
                     adFormat: RevenueCat.AdFormat.banner,

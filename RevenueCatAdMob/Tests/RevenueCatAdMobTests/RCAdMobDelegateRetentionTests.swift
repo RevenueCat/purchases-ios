@@ -18,7 +18,7 @@ final class RCAdMobDelegateRetentionTests: RCAdMobTestCase {
                 return
             }
 
-            RCAdMob.retainFullScreenDelegate(strongDelegate, for: owner)
+            RCAdMob.shared.retainFullScreenDelegate(strongDelegate, for: owner)
             delegate = nil
 
             XCTAssertNotNil(weakDelegate)
@@ -41,7 +41,7 @@ final class RCAdMobDelegateRetentionTests: RCAdMobTestCase {
                 return
             }
 
-            RCAdMob.retainNativeDelegate(strongDelegate, for: owner)
+            RCAdMob.shared.retainNativeDelegate(strongDelegate, for: owner)
             delegate = nil
 
             XCTAssertNotNil(weakDelegate)

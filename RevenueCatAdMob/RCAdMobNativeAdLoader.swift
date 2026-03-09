@@ -119,7 +119,7 @@ private final class RCNativeAdLoaderDelegateProxy: NSObject,
 
     func adLoader(_ adLoader: RCGoogleMobileAds.AdLoader, didReceive nativeAd: RCGoogleMobileAds.NativeAd) {
         let responseInfo: RCGoogleMobileAds.ResponseInfo? = nativeAd.responseInfo
-        RCAdMob.trackLoaded(
+        RCAdMob.shared.trackLoaded(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: self.adUnitID,
@@ -132,7 +132,7 @@ private final class RCNativeAdLoaderDelegateProxy: NSObject,
             placement: self.placement,
             adUnitID: self.adUnitID
         )
-        RCAdMob.retainNativeDelegate(trackingDelegate, for: nativeAd)
+        RCAdMob.shared.retainNativeDelegate(trackingDelegate, for: nativeAd)
         nativeAd.delegate = trackingDelegate
 
         let placement = self.placement
@@ -144,7 +144,7 @@ private final class RCNativeAdLoaderDelegateProxy: NSObject,
                 return
             }
             let paidResponseInfo: RCGoogleMobileAds.ResponseInfo? = nativeAd.responseInfo
-            RCAdMob.trackRevenue(
+            RCAdMob.shared.trackRevenue(
                 placement: placement,
                 adUnitID: adUnitID,
                 adFormat: RevenueCat.AdFormat.native,
@@ -158,7 +158,7 @@ private final class RCNativeAdLoaderDelegateProxy: NSObject,
     }
 
     func adLoader(_ adLoader: RCGoogleMobileAds.AdLoader, didFailToReceiveAdWithError error: Error) {
-        RCAdMob.trackFailedToLoad(
+        RCAdMob.shared.trackFailedToLoad(
             placement: self.placement,
             adUnitID: self.adUnitID,
             adFormat: RevenueCat.AdFormat.native,

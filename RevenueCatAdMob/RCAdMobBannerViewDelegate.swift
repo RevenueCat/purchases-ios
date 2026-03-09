@@ -14,19 +14,22 @@ import GoogleMobileAds
 internal final class RCAdMobBannerViewDelegate: NSObject, RCGoogleMobileAds.BannerViewDelegate {
 
     weak var delegate: RCGoogleMobileAds.BannerViewDelegate?
+    private let rcAdMob: RCAdMob
     private let placement: String?
 
     init(
+        rcAdMob: RCAdMob = .shared,
         delegate: RCGoogleMobileAds.BannerViewDelegate?,
         placement: String?
     ) {
+        self.rcAdMob = rcAdMob
         self.delegate = delegate
         self.placement = placement
     }
 
     func bannerViewDidReceiveAd(_ bannerView: RCGoogleMobileAds.BannerView) {
         let responseInfo: RCGoogleMobileAds.ResponseInfo? = bannerView.responseInfo
-        RCAdMob.trackLoaded(
+        self.rcAdMob.trackLoaded(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: bannerView.adUnitID,
@@ -36,7 +39,7 @@ internal final class RCAdMobBannerViewDelegate: NSObject, RCGoogleMobileAds.Bann
     }
 
     func bannerView(_ bannerView: RCGoogleMobileAds.BannerView, didFailToReceiveAdWithError error: any Error) {
-        RCAdMob.trackFailedToLoad(
+        self.rcAdMob.trackFailedToLoad(
             placement: self.placement,
             adUnitID: bannerView.adUnitID,
             adFormat: RevenueCat.AdFormat.banner,
@@ -47,7 +50,7 @@ internal final class RCAdMobBannerViewDelegate: NSObject, RCGoogleMobileAds.Bann
 
     func bannerViewDidRecordImpression(_ bannerView: RCGoogleMobileAds.BannerView) {
         let responseInfo: RCGoogleMobileAds.ResponseInfo? = bannerView.responseInfo
-        RCAdMob.trackDisplayed(
+        self.rcAdMob.trackDisplayed(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: bannerView.adUnitID,
@@ -58,7 +61,7 @@ internal final class RCAdMobBannerViewDelegate: NSObject, RCGoogleMobileAds.Bann
 
     func bannerViewDidRecordClick(_ bannerView: RCGoogleMobileAds.BannerView) {
         let responseInfo: RCGoogleMobileAds.ResponseInfo? = bannerView.responseInfo
-        RCAdMob.trackOpened(
+        self.rcAdMob.trackOpened(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: bannerView.adUnitID,

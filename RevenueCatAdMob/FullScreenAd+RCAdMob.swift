@@ -26,7 +26,7 @@ import GoogleMobileAds
         completion: @escaping (GoogleMobileAds.InterstitialAd?, Error?) -> Void
     ) {
         GoogleMobileAds.InterstitialAd.load(with: adUnitID, request: request) { loadedAd, error in
-            handleLoadOutcome(
+            RCAdMob.shared.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
@@ -56,7 +56,7 @@ import GoogleMobileAds
         completion: @escaping (GADInterstitialAd?, Error?) -> Void
     ) {
         GADInterstitialAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
-            handleLoadOutcome(
+            RCAdMob.shared.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
@@ -90,7 +90,7 @@ import GoogleMobileAds
         completion: @escaping (GoogleMobileAds.AppOpenAd?, Error?) -> Void
     ) {
         GoogleMobileAds.AppOpenAd.load(with: adUnitID, request: request) { loadedAd, error in
-            handleLoadOutcome(
+            RCAdMob.shared.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
@@ -120,7 +120,7 @@ import GoogleMobileAds
         completion: @escaping (GADAppOpenAd?, Error?) -> Void
     ) {
         GADAppOpenAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
-            handleLoadOutcome(
+            RCAdMob.shared.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
@@ -154,7 +154,7 @@ import GoogleMobileAds
         completion: @escaping (GoogleMobileAds.RewardedAd?, Error?) -> Void
     ) {
         GoogleMobileAds.RewardedAd.load(with: adUnitID, request: request) { loadedAd, error in
-            handleLoadOutcome(
+            RCAdMob.shared.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
@@ -184,7 +184,7 @@ import GoogleMobileAds
         completion: @escaping (GADRewardedAd?, Error?) -> Void
     ) {
         GADRewardedAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
-            handleLoadOutcome(
+            RCAdMob.shared.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
@@ -218,7 +218,7 @@ import GoogleMobileAds
         completion: @escaping (GoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
     ) {
         GoogleMobileAds.RewardedInterstitialAd.load(with: adUnitID, request: request) { loadedAd, error in
-            handleLoadOutcome(
+            RCAdMob.shared.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
@@ -248,7 +248,7 @@ import GoogleMobileAds
         completion: @escaping (GADRewardedInterstitialAd?, Error?) -> Void
     ) {
         GADRewardedInterstitialAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
-            handleLoadOutcome(
+            RCAdMob.shared.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
@@ -267,7 +267,7 @@ import GoogleMobileAds
 #endif
 
 @available(iOS 15.0, *)
-private protocol RCFullScreenAdTracking: AnyObject {
+internal protocol RCFullScreenAdTracking: AnyObject {
     var fullScreenContentDelegate: RCGoogleMobileAds.FullScreenContentDelegate? { get set }
     var paidEventHandler: ((RCGoogleMobileAds.AdValue) -> Void)? { get set }
 }
@@ -293,73 +293,13 @@ extension GADRewardedInterstitialAd: RCFullScreenAdTracking {}
 #endif
 
 @available(iOS 15.0, *)
-private struct FullScreenLoadContext {
+internal struct FullScreenLoadContext {
     let placement: String?
     let adUnitID: String
     let adFormat: RevenueCat.AdFormat
     let fullScreenContentDelegate: RCGoogleMobileAds.FullScreenContentDelegate?
     let paidEventHandler: ((RCGoogleMobileAds.AdValue) -> Void)?
     let responseInfo: RCGoogleMobileAds.ResponseInfo?
-}
-
-@available(iOS 15.0, *)
-private func handleLoadOutcome<Ad: AnyObject & RCFullScreenAdTracking>(
-    loadedAd: Ad?,
-    error: Error?,
-    context: FullScreenLoadContext,
-    completion: (Ad?, Error?) -> Void
-) {
-    if let error {
-        RCAdMob.trackFailedToLoad(
-            placement: context.placement,
-            adUnitID: context.adUnitID,
-            adFormat: context.adFormat,
-            error: error
-        )
-        completion(nil, error)
-        return
-    }
-
-    guard let loadedAd else {
-        // SDK contract is success (ad, nil) or failure (nil, error). (nil, nil) is not documented; forward as-is.
-        completion(nil, nil)
-        return
-    }
-
-    RCAdMob.trackLoaded(
-        responseInfo: context.responseInfo,
-        placement: context.placement,
-        adUnitID: context.adUnitID,
-        adFormat: context.adFormat
-    )
-
-    let placement = context.placement
-    let adUnitID = context.adUnitID
-    let adFormat = context.adFormat
-    let fullScreenContentDelegate = context.fullScreenContentDelegate
-    let paidEventHandler = context.paidEventHandler
-    let responseInfo = context.responseInfo
-
-    let trackingDelegate = RCAdMobFullScreenContentDelegate(
-        delegate: fullScreenContentDelegate,
-        placement: placement,
-        adUnitID: adUnitID,
-        adFormat: adFormat,
-        responseInfoProvider: { responseInfo }
-    )
-    RCAdMob.retainFullScreenDelegate(trackingDelegate, for: loadedAd)
-    loadedAd.fullScreenContentDelegate = trackingDelegate
-    loadedAd.paidEventHandler = { adValue in
-        RCAdMob.trackRevenue(
-            placement: placement,
-            adUnitID: adUnitID,
-            adFormat: adFormat,
-            responseInfo: responseInfo,
-            adValue: adValue
-        )
-        paidEventHandler?(adValue)
-    }
-    completion(loadedAd, nil)
 }
 
 #endif

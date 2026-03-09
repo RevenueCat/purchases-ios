@@ -7,8 +7,39 @@ import Foundation
 import GoogleMobileAds
 import ObjectiveC.runtime
 @_spi(Experimental) import RevenueCat
+
+// MARK: - AdTracking protocol
+
 @available(iOS 15.0, *)
-internal enum RCAdMob {
+internal protocol AdTracking {
+    var isConfigured: Bool { get }
+    func trackAdLoaded(_ data: AdLoaded)
+    func trackAdDisplayed(_ data: AdDisplayed)
+    func trackAdOpened(_ data: AdOpened)
+    func trackAdRevenue(_ data: AdRevenue)
+    func trackAdFailedToLoad(_ data: AdFailedToLoad)
+}
+
+// MARK: - PurchasesAdTracker (production conformance)
+
+@available(iOS 15.0, *)
+internal final class PurchasesAdTracker: AdTracking {
+    var isConfigured: Bool { Purchases.isConfigured }
+    func trackAdLoaded(_ data: AdLoaded) { Purchases.shared.adTracker.trackAdLoaded(data) }
+    func trackAdDisplayed(_ data: AdDisplayed) { Purchases.shared.adTracker.trackAdDisplayed(data) }
+    func trackAdOpened(_ data: AdOpened) { Purchases.shared.adTracker.trackAdOpened(data) }
+    func trackAdRevenue(_ data: AdRevenue) { Purchases.shared.adTracker.trackAdRevenue(data) }
+    func trackAdFailedToLoad(_ data: AdFailedToLoad) { Purchases.shared.adTracker.trackAdFailedToLoad(data) }
+}
+
+// MARK: - RCAdMob
+
+@available(iOS 15.0, *)
+internal final class RCAdMob {
+
+    static let shared = RCAdMob(tracker: PurchasesAdTracker())
+
+    let tracker: AdTracking
 
     private static var fullScreenDelegateKey: UInt8 = 0
     private static var nativeDelegateKey: UInt8 = 0
@@ -17,7 +48,11 @@ internal enum RCAdMob {
     private static let fallbackValue = ""
     static let microsPerUnit = NSDecimalNumber(value: 1_000_000)
 
-    static func trackLoaded(
+    init(tracker: AdTracking) {
+        self.tracker = tracker
+    }
+
+    func trackLoaded(
         responseInfo: RCGoogleMobileAds.ResponseInfo?,
         placement: String?,
         adUnitID: String?,
@@ -25,18 +60,18 @@ internal enum RCAdMob {
     ) {
         self.trackIfConfigured {
             let data = AdLoaded(
-                networkName: self.networkName(from: responseInfo),
+                networkName: Self.networkName(from: responseInfo),
                 mediatorName: .adMob,
                 adFormat: adFormat,
                 placement: placement,
-                adUnitId: self.adUnitID(adUnitID),
-                impressionId: self.impressionID(from: responseInfo)
+                adUnitId: Self.adUnitID(adUnitID),
+                impressionId: Self.impressionID(from: responseInfo)
             )
-            Purchases.shared.adTracker.trackAdLoaded(data)
+            self.tracker.trackAdLoaded(data)
         }
     }
 
-    static func trackDisplayed(
+    func trackDisplayed(
         responseInfo: RCGoogleMobileAds.ResponseInfo?,
         placement: String?,
         adUnitID: String?,
@@ -44,18 +79,18 @@ internal enum RCAdMob {
     ) {
         self.trackIfConfigured {
             let data = AdDisplayed(
-                networkName: self.networkName(from: responseInfo),
+                networkName: Self.networkName(from: responseInfo),
                 mediatorName: .adMob,
                 adFormat: adFormat,
                 placement: placement,
-                adUnitId: self.adUnitID(adUnitID),
-                impressionId: self.impressionID(from: responseInfo)
+                adUnitId: Self.adUnitID(adUnitID),
+                impressionId: Self.impressionID(from: responseInfo)
             )
-            Purchases.shared.adTracker.trackAdDisplayed(data)
+            self.tracker.trackAdDisplayed(data)
         }
     }
 
-    static func trackOpened(
+    func trackOpened(
         responseInfo: RCGoogleMobileAds.ResponseInfo?,
         placement: String?,
         adUnitID: String?,
@@ -63,18 +98,18 @@ internal enum RCAdMob {
     ) {
         self.trackIfConfigured {
             let data = AdOpened(
-                networkName: self.networkName(from: responseInfo),
+                networkName: Self.networkName(from: responseInfo),
                 mediatorName: .adMob,
                 adFormat: adFormat,
                 placement: placement,
-                adUnitId: self.adUnitID(adUnitID),
-                impressionId: self.impressionID(from: responseInfo)
+                adUnitId: Self.adUnitID(adUnitID),
+                impressionId: Self.impressionID(from: responseInfo)
             )
-            Purchases.shared.adTracker.trackAdOpened(data)
+            self.tracker.trackAdOpened(data)
         }
     }
 
-    static func trackRevenue(
+    func trackRevenue(
         placement: String?,
         adUnitID: String?,
         adFormat: RevenueCat.AdFormat,
@@ -83,21 +118,21 @@ internal enum RCAdMob {
     ) {
         self.trackIfConfigured {
             let data = AdRevenue(
-                networkName: self.networkName(from: responseInfo),
+                networkName: Self.networkName(from: responseInfo),
                 mediatorName: .adMob,
                 adFormat: adFormat,
                 placement: placement,
-                adUnitId: self.adUnitID(adUnitID),
-                impressionId: self.impressionID(from: responseInfo),
-                revenueMicros: self.revenueMicros(from: adValue.value),
+                adUnitId: Self.adUnitID(adUnitID),
+                impressionId: Self.impressionID(from: responseInfo),
+                revenueMicros: Self.revenueMicros(from: adValue.value),
                 currency: adValue.currencyCode,
-                precision: self.mapPrecision(adValue.precision)
+                precision: Self.mapPrecision(adValue.precision)
             )
-            Purchases.shared.adTracker.trackAdRevenue(data)
+            self.tracker.trackAdRevenue(data)
         }
     }
 
-    static func trackFailedToLoad(
+    func trackFailedToLoad(
         placement: String?,
         adUnitID: String?,
         adFormat: RevenueCat.AdFormat,
@@ -108,10 +143,10 @@ internal enum RCAdMob {
                 mediatorName: .adMob,
                 adFormat: adFormat,
                 placement: placement,
-                adUnitId: self.adUnitID(adUnitID),
+                adUnitId: Self.adUnitID(adUnitID),
                 mediatorErrorCode: (error as NSError).code
             )
-            Purchases.shared.adTracker.trackAdFailedToLoad(data)
+            self.tracker.trackAdFailedToLoad(data)
         }
     }
 
@@ -130,22 +165,84 @@ internal enum RCAdMob {
         return Int(micros.int64Value)
     }
 
-    static func retainFullScreenDelegate(_ delegate: AnyObject, for object: AnyObject) {
+    func retainFullScreenDelegate(_ delegate: AnyObject, for object: AnyObject) {
         objc_setAssociatedObject(
             object,
-            &self.fullScreenDelegateKey,
+            &Self.fullScreenDelegateKey,
             delegate,
             .OBJC_ASSOCIATION_RETAIN_NONATOMIC
         )
     }
 
-    static func retainNativeDelegate(_ delegate: AnyObject, for object: AnyObject) {
+    func retainNativeDelegate(_ delegate: AnyObject, for object: AnyObject) {
         objc_setAssociatedObject(
             object,
-            &self.nativeDelegateKey,
+            &Self.nativeDelegateKey,
             delegate,
             .OBJC_ASSOCIATION_RETAIN_NONATOMIC
         )
+    }
+
+    // MARK: - handleLoadOutcome
+
+    func handleLoadOutcome<Ad: AnyObject & RCFullScreenAdTracking>(
+        loadedAd: Ad?,
+        error: Error?,
+        context: FullScreenLoadContext,
+        completion: (Ad?, Error?) -> Void
+    ) {
+        if let error {
+            self.trackFailedToLoad(
+                placement: context.placement,
+                adUnitID: context.adUnitID,
+                adFormat: context.adFormat,
+                error: error
+            )
+            completion(nil, error)
+            return
+        }
+
+        guard let loadedAd else {
+            // SDK contract is success (ad, nil) or failure (nil, error). (nil, nil) is not documented; forward as-is.
+            completion(nil, nil)
+            return
+        }
+
+        self.trackLoaded(
+            responseInfo: context.responseInfo,
+            placement: context.placement,
+            adUnitID: context.adUnitID,
+            adFormat: context.adFormat
+        )
+
+        let placement = context.placement
+        let adUnitID = context.adUnitID
+        let adFormat = context.adFormat
+        let fullScreenContentDelegate = context.fullScreenContentDelegate
+        let paidEventHandler = context.paidEventHandler
+        let responseInfo = context.responseInfo
+
+        let trackingDelegate = RCAdMobFullScreenContentDelegate(
+            rcAdMob: self,
+            delegate: fullScreenContentDelegate,
+            placement: placement,
+            adUnitID: adUnitID,
+            adFormat: adFormat,
+            responseInfoProvider: { responseInfo }
+        )
+        self.retainFullScreenDelegate(trackingDelegate, for: loadedAd)
+        loadedAd.fullScreenContentDelegate = trackingDelegate
+        loadedAd.paidEventHandler = { [weak self] adValue in
+            self?.trackRevenue(
+                placement: placement,
+                adUnitID: adUnitID,
+                adFormat: adFormat,
+                responseInfo: responseInfo,
+                adValue: adValue
+            )
+            paidEventHandler?(adValue)
+        }
+        completion(loadedAd, nil)
     }
 
     // MARK: - Private helpers
@@ -162,8 +259,8 @@ internal enum RCAdMob {
         adUnitID ?? self.fallbackValue
     }
 
-    private static func trackIfConfigured(_ block: () -> Void) {
-        guard Purchases.isConfigured else { return }
+    private func trackIfConfigured(_ block: () -> Void) {
+        guard self.tracker.isConfigured else { return }
         block()
     }
 
