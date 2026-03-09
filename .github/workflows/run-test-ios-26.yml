@@ -31,11 +31,16 @@ jobs:
       - name: Validate Package.swift
         run: swift package describe
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2.0'
-          bundler-cache: true
+      - name: Set up Ruby and install dependencies
+        run: |
+          eval "$(rbenv init -)"
+          rbenv install -s 3.2.0
+          rbenv global 3.2.0
+          rbenv rehash
+          ruby -v
+          bundle config set --local clean 'true'
+          bundle config set --local path 'vendor/bundle'
+          bundle install
 
       - name: Install xcbeautify
         run: brew install xcbeautify
@@ -67,20 +72,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           bundle exec fastlane create_snapshot_pr version:"ios-26"
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-ios-26
-          path: fastlane/test_output
-
-      - name: Upload test output
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: scan-test-output-ios-26
-          path: fastlane/test_output/xctest
 
       # TODO: Migrate Slack notification for main branch failures.
       # CircleCI used slack-notify-on-fail which posts to #feed-circleci-ios-failures on main branch failures.
