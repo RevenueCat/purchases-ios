@@ -38,7 +38,7 @@ class StackComponentViewModel {
         shouldApplySafeAreaInset: Bool = false,
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
-    ) throws {
+    ) {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
@@ -48,8 +48,8 @@ class StackComponentViewModel {
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
-    func copy(withViewModels newViewModels: [PaywallComponentViewModel]) throws -> StackComponentViewModel {
-        return try StackComponentViewModel(
+    func copy(withViewModels newViewModels: [PaywallComponentViewModel]) -> StackComponentViewModel {
+        return StackComponentViewModel(
             component: self.component,
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,

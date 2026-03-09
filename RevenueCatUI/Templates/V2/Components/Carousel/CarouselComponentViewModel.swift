@@ -35,7 +35,7 @@ class CarouselComponentViewModel {
         component: PaywallComponent.CarouselComponent,
         pageStackViewModels: [StackComponentViewModel],
         discardRules: Bool = false
-    ) throws {
+    ) {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
