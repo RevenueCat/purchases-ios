@@ -1,5 +1,5 @@
 {
-  "originHash" : "87fe8f3a1799f58c25f9dd030ce2cb8465656be2f14e4d3cae4c1185d6b51b05",
+  "originHash" : "426dbc2a9d99fc7a0184e38cf98f99a97422ee40350a3c3259715daf784c1822",
   "pins" : [
     {
       "identity" : "cwlcatchexception",
@@ -43,7 +43,7 @@
       "location" : "https://github.com/RevenueCat/purchases-ios",
       "state" : {
         "branch" : "main",
-        "revision" : "b715caf85ab9298db7ab16976ac3ed196a837993"
+        "revision" : "cf253649058932c8e81a5f66e16a07acc6d8e49b"
       }
     },
     {
@@ -62,6 +62,24 @@
       "state" : {
         "revision" : "2a2a938798236b8fa0bc57c453ee9de9f9ec3ab0",
         "version" : "1.4.1"
+      }
+    },
+    {
+      "identity" : "swift-package-manager-google-mobile-ads",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
+      "state" : {
+        "revision" : "1a1a5ee5563b8e9ef57ba82c4a570e2e47078dc1",
+        "version" : "13.0.0"
+      }
+    },
+    {
+      "identity" : "swift-package-manager-google-user-messaging-platform",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git",
+      "state" : {
+        "revision" : "708a282840c2171ee63bd93b87afa49fe507d70e",
+        "version" : "2.7.0"
       }
     },
     {
