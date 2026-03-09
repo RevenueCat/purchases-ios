@@ -584,7 +584,64 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: true
+            darkMode: true,
+            source: nil
+        )
+
+        let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
+                                                                     paymentMode: nil,
+                                                                     currencyCode: currencyCode,
+                                                                     price: price,
+                                                                     subscriptionGroup: group)
+
+        waitUntil { completed in
+            self.backend.post(receipt: Self.receipt,
+                              productData: productData,
+                              transactionData: .init(
+                                 presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
+                                 presentedPaywall: .impression(paywallEventCreationData, paywallEventData),
+                                 unsyncedAttributes: nil,
+                                 storeCountry: nil
+                              ),
+                              postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+                              observerMode: false,
+                              originalPurchaseCompletedBy: .revenueCat,
+                              sdkOriginated: true,
+                              appUserID: Self.userID,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
+    func testPostsReceiptDataWithPresentedPaywallAndSource() throws {
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let productIdentifier = "a_great_product"
+        let offeringIdentifier = "a_offering"
+        let price: Decimal = 10.98
+        let group = "sub_group"
+
+        let currencyCode = "BFD"
+
+        let paywallEventCreationData: PaywallEvent.CreationData = .init(
+            id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+            date: .init(timeIntervalSince1970: 1694029328)
+        )
+        let paywallEventData: PaywallEvent.Data = .init(
+            paywallIdentifier: "test_paywall_id",
+            offeringIdentifier: offeringIdentifier,
+            paywallRevision: 5,
+            sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: true,
+            source: .customerCenter
         )
 
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,

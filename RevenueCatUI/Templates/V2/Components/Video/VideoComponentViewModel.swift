@@ -31,15 +31,43 @@ class VideoComponentViewModel {
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        component: PaywallComponent.VideoComponent
-    ) {
+        component: PaywallComponent.VideoComponent,
+        discardRules: Bool = false
+    ) throws {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides {
-            LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedStrings)
-        } ?? []
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
+            LocalizedVideoPartial(partial: $0)
+        }
+    }
+
+    /// Creates a view model for video backgrounds, which don't have overrides.
+    /// This is non-throwing because video backgrounds are constructed without overrides.
+    static func forBackground(
+        localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider,
+        component: PaywallComponent.VideoComponent
+    ) -> VideoComponentViewModel {
+        VideoComponentViewModel(
+            localizationProvider: localizationProvider,
+            uiConfigProvider: uiConfigProvider,
+            component: component,
+            presentedOverrides: nil
+        )
+    }
+
+    private init(
+        localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider,
+        component: PaywallComponent.VideoComponent,
+        presentedOverrides: PresentedOverrides<LocalizedVideoPartial>?
+    ) {
+        self.localizationProvider = localizationProvider
+        self.uiConfigProvider = uiConfigProvider
+        self.component = component
+        self.presentedOverrides = presentedOverrides
     }
 
     @ViewBuilder
@@ -49,14 +77,21 @@ class VideoComponentViewModel {
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
     ) -> some View {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
+        )
         let localizedPartial = LocalizedVideoPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
@@ -130,19 +165,6 @@ struct LocalizedVideoPartial: PresentedPartial {
                 border: otherPartial?.border ?? basePartial?.border,
                 shadow: otherPartial?.shadow ?? basePartial?.shadow
             )
-        )
-    }
-
-}
-
-extension LocalizedVideoPartial {
-
-    static func create(
-        from partial: PaywallComponent.PartialVideoComponent,
-        using localizedStrings: PaywallComponent.LocalizationDictionary
-    ) -> LocalizedVideoPartial {
-        return LocalizedVideoPartial(
-            partial: partial
         )
     }
 
