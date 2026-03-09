@@ -41,7 +41,7 @@ class CarouselComponentViewModel {
         self.component = component
         self.pageStackViewModels = pageStackViewModels
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
     }
 
     @ViewBuilder

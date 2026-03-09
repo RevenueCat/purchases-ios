@@ -38,7 +38,7 @@ class IconComponentViewModel {
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
     }
 
     var expectedSize: CGSize {

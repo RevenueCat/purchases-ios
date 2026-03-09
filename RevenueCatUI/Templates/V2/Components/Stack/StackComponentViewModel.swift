@@ -45,7 +45,7 @@ class StackComponentViewModel {
         self.badgeViewModels = badgeViewModels
         self.shouldApplySafeAreaInset = shouldApplySafeAreaInset
         self.discardRules = discardRules
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
     }
 
     func copy(withViewModels newViewModels: [PaywallComponentViewModel]) throws -> StackComponentViewModel {
