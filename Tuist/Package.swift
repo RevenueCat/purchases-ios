@@ -19,7 +19,6 @@
             "SnapshotTesting": .framework, // default is .staticFramework,
             "RevenueCat": .framework,
             "RevenueCatUI": .framework,
-            "RevenueCatAdMob": .framework,
             "Purchases": .framework,
             "GoogleMobileAds": .framework,
             "OHHTTPStubs": .framework,
@@ -44,7 +43,7 @@ let package = Package(
             url: "https://github.com/RevenueCat/purchases-ios",
             branch: "main"
         ),
-        .package(path: "../RevenueCatAdMob"),
+
         .package(
             url: "https://github.com/RevenueCat/purchases-ios-spm",
             revision: "3.14.4"
