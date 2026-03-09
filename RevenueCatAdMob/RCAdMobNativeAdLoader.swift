@@ -15,6 +15,41 @@ private enum RCNativeAdLoaderAssociatedKeys {
     static var trackingProxy: UInt8 = 0
 }
 
+// MARK: - Internal implementation (shared across SDK versions)
+
+@available(iOS 15.0, *)
+internal extension RCGoogleMobileAds.AdLoader {
+
+    func loadAndTrack(
+        _ request: RCGoogleMobileAds.Request,
+        placement: String?,
+        nativeAdDelegate: (any RCGoogleMobileAds.NativeAdDelegate)?,
+        rcAdMob: RCAdMob
+    ) {
+        let previousDelegate = (self.delegate as? RCNativeAdLoaderDelegateProxy)?
+            .forwardedLoaderDelegate ?? self.delegate
+
+        let proxy = RCNativeAdLoaderDelegateProxy(
+            rcAdMob: rcAdMob,
+            adUnitID: self.adUnitID,
+            placement: placement,
+            delegate: previousDelegate,
+            nativeAdDelegate: nativeAdDelegate
+        )
+        objc_setAssociatedObject(
+            self,
+            &RCNativeAdLoaderAssociatedKeys.trackingProxy,
+            proxy,
+            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
+        )
+        self.delegate = proxy
+        self.load(request)
+    }
+
+}
+
+// MARK: - Public API
+
 #if !RC_ADMOB_SDK_11
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.AdLoader {
@@ -32,23 +67,12 @@ private enum RCNativeAdLoaderAssociatedKeys {
         placement: String? = nil,
         nativeAdDelegate: (any GoogleMobileAds.NativeAdDelegate)? = nil
     ) {
-        let previousDelegate = (self.delegate as? RCNativeAdLoaderDelegateProxy)?
-            .forwardedLoaderDelegate ?? self.delegate
-
-        let proxy = RCNativeAdLoaderDelegateProxy(
-            adUnitID: self.adUnitID,
+        self.loadAndTrack(
+            request,
             placement: placement,
-            delegate: previousDelegate,
-            nativeAdDelegate: nativeAdDelegate
+            nativeAdDelegate: nativeAdDelegate,
+            rcAdMob: .shared
         )
-        objc_setAssociatedObject(
-            self,
-            &RCNativeAdLoaderAssociatedKeys.trackingProxy,
-            proxy,
-            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
-        )
-        self.delegate = proxy
-        self.load(request)
     }
 }
 #else // RC_ADMOB_SDK_11
@@ -68,23 +92,12 @@ private enum RCNativeAdLoaderAssociatedKeys {
         placement: String? = nil,
         nativeAdDelegate: GADNativeAdDelegate? = nil
     ) {
-        let previousDelegate = (self.delegate as? RCNativeAdLoaderDelegateProxy)?
-            .forwardedLoaderDelegate ?? self.delegate
-
-        let proxy = RCNativeAdLoaderDelegateProxy(
-            adUnitID: self.adUnitID,
+        self.loadAndTrack(
+            request,
             placement: placement,
-            delegate: previousDelegate,
-            nativeAdDelegate: nativeAdDelegate
+            nativeAdDelegate: nativeAdDelegate,
+            rcAdMob: .shared
         )
-        objc_setAssociatedObject(
-            self,
-            &RCNativeAdLoaderAssociatedKeys.trackingProxy,
-            proxy,
-            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
-        )
-        self.delegate = proxy
-        self.load(request)
     }
 }
 #endif
@@ -94,6 +107,7 @@ private final class RCNativeAdLoaderDelegateProxy: NSObject,
     RCGoogleMobileAds.NativeAdLoaderDelegate,
     RCGoogleMobileAds.AdLoaderDelegate {
 
+    private let rcAdMob: RCAdMob
     private let adUnitID: String
     private let placement: String?
     private weak var loaderDelegate: RCGoogleMobileAds.AdLoaderDelegate?
@@ -101,11 +115,13 @@ private final class RCNativeAdLoaderDelegateProxy: NSObject,
     private weak var nativeAdDelegate: RCGoogleMobileAds.NativeAdDelegate?
 
     init(
+        rcAdMob: RCAdMob = .shared,
         adUnitID: String,
         placement: String?,
         delegate: RCGoogleMobileAds.AdLoaderDelegate?,
         nativeAdDelegate: RCGoogleMobileAds.NativeAdDelegate?
     ) {
+        self.rcAdMob = rcAdMob
         self.adUnitID = adUnitID
         self.placement = placement
         self.loaderDelegate = delegate
@@ -119,7 +135,7 @@ private final class RCNativeAdLoaderDelegateProxy: NSObject,
 
     func adLoader(_ adLoader: RCGoogleMobileAds.AdLoader, didReceive nativeAd: RCGoogleMobileAds.NativeAd) {
         let responseInfo: RCGoogleMobileAds.ResponseInfo? = nativeAd.responseInfo
-        RCAdMob.shared.trackLoaded(
+        self.rcAdMob.trackLoaded(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: self.adUnitID,
@@ -128,13 +144,15 @@ private final class RCNativeAdLoaderDelegateProxy: NSObject,
 
         let existingDelegate = self.nativeAdDelegate ?? nativeAd.delegate
         let trackingDelegate = RCAdMobNativeAdDelegate(
+            rcAdMob: self.rcAdMob,
             delegate: existingDelegate,
             placement: self.placement,
             adUnitID: self.adUnitID
         )
-        RCAdMob.shared.retainNativeDelegate(trackingDelegate, for: nativeAd)
+        self.rcAdMob.retainNativeDelegate(trackingDelegate, for: nativeAd)
         nativeAd.delegate = trackingDelegate
 
+        let rcAdMob = self.rcAdMob
         let placement = self.placement
         let adUnitID = self.adUnitID
         let existingPaidHandler = nativeAd.paidEventHandler
@@ -144,7 +162,7 @@ private final class RCNativeAdLoaderDelegateProxy: NSObject,
                 return
             }
             let paidResponseInfo: RCGoogleMobileAds.ResponseInfo? = nativeAd.responseInfo
-            RCAdMob.shared.trackRevenue(
+            rcAdMob.trackRevenue(
                 placement: placement,
                 adUnitID: adUnitID,
                 adFormat: RevenueCat.AdFormat.native,
@@ -158,7 +176,7 @@ private final class RCNativeAdLoaderDelegateProxy: NSObject,
     }
 
     func adLoader(_ adLoader: RCGoogleMobileAds.AdLoader, didFailToReceiveAdWithError error: Error) {
-        RCAdMob.shared.trackFailedToLoad(
+        self.rcAdMob.trackFailedToLoad(
             placement: self.placement,
             adUnitID: self.adUnitID,
             adFormat: RevenueCat.AdFormat.native,

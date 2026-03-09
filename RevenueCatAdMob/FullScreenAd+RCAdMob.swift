@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  FullScreenAd+RCAdMob.swift
 //
@@ -12,21 +13,23 @@ import GoogleMobileAds
 
 // MARK: - InterstitialAd (v11: GADInterstitialAd, v12: InterstitialAd)
 
-#if !RC_ADMOB_SDK_11
-@available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.InterstitialAd {
+// MARK: Internal implementation
 
-    /// Loads an interstitial ad, reports to RevenueCat; pass a full-screen content delegate for callbacks.
+@available(iOS 15.0, *)
+internal extension RCGoogleMobileAds.InterstitialAd {
+
+    // swiftlint:disable:next function_parameter_count
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
-        request: GoogleMobileAds.Request,
+        request: RCGoogleMobileAds.Request,
         placement: String?,
-        fullScreenContentDelegate: (any GoogleMobileAds.FullScreenContentDelegate)? = nil,
-        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
-        completion: @escaping (GoogleMobileAds.InterstitialAd?, Error?) -> Void
+        fullScreenContentDelegate: RCGoogleMobileAds.FullScreenContentDelegate?,
+        paidEventHandler: ((RCGoogleMobileAds.AdValue) -> Void)?,
+        rcAdMob: RCAdMob,
+        completion: @escaping (RCGoogleMobileAds.InterstitialAd?, Error?) -> Void
     ) {
-        GoogleMobileAds.InterstitialAd.load(with: adUnitID, request: request) { loadedAd, error in
-            RCAdMob.shared.handleLoadOutcome(
+        RCGoogleMobileAds.InterstitialAd.load(with: adUnitID, request: request) { loadedAd, error in
+            rcAdMob.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
@@ -40,6 +43,34 @@ import GoogleMobileAds
                 completion: completion
             )
         }
+    }
+
+}
+
+// MARK: Public API
+
+#if !RC_ADMOB_SDK_11
+@available(iOS 15.0, *)
+@_spi(Experimental) public extension GoogleMobileAds.InterstitialAd {
+
+    /// Loads an interstitial ad, reports to RevenueCat; pass a full-screen content delegate for callbacks.
+    static func loadAndTrack(
+        withAdUnitID adUnitID: String,
+        request: GoogleMobileAds.Request,
+        placement: String?,
+        fullScreenContentDelegate: (any GoogleMobileAds.FullScreenContentDelegate)? = nil,
+        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
+        completion: @escaping (GoogleMobileAds.InterstitialAd?, Error?) -> Void
+    ) {
+        self.loadAndTrack(
+            withAdUnitID: adUnitID,
+            request: request,
+            placement: placement,
+            fullScreenContentDelegate: fullScreenContentDelegate,
+            paidEventHandler: paidEventHandler,
+            rcAdMob: .shared,
+            completion: completion
+        )
     }
 }
 #else // RC_ADMOB_SDK_11
@@ -55,14 +86,44 @@ import GoogleMobileAds
         paidEventHandler: ((GADAdValue) -> Void)? = nil,
         completion: @escaping (GADInterstitialAd?, Error?) -> Void
     ) {
-        GADInterstitialAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
-            RCAdMob.shared.handleLoadOutcome(
+        self.loadAndTrack(
+            withAdUnitID: adUnitID,
+            request: request,
+            placement: placement,
+            fullScreenContentDelegate: fullScreenContentDelegate,
+            paidEventHandler: paidEventHandler,
+            rcAdMob: .shared,
+            completion: completion
+        )
+    }
+}
+#endif
+
+// MARK: - AppOpenAd (v11: GADAppOpenAd, v12: AppOpenAd)
+
+// MARK: Internal implementation
+
+@available(iOS 15.0, *)
+internal extension RCGoogleMobileAds.AppOpenAd {
+
+    // swiftlint:disable:next function_parameter_count
+    static func loadAndTrack(
+        withAdUnitID adUnitID: String,
+        request: RCGoogleMobileAds.Request,
+        placement: String?,
+        fullScreenContentDelegate: RCGoogleMobileAds.FullScreenContentDelegate?,
+        paidEventHandler: ((RCGoogleMobileAds.AdValue) -> Void)?,
+        rcAdMob: RCAdMob,
+        completion: @escaping (RCGoogleMobileAds.AppOpenAd?, Error?) -> Void
+    ) {
+        RCGoogleMobileAds.AppOpenAd.load(with: adUnitID, request: request) { loadedAd, error in
+            rcAdMob.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
                     placement: placement,
                     adUnitID: adUnitID,
-                    adFormat: RevenueCat.AdFormat.interstitial,
+                    adFormat: RevenueCat.AdFormat.appOpen,
                     fullScreenContentDelegate: fullScreenContentDelegate,
                     paidEventHandler: paidEventHandler,
                     responseInfo: loadedAd?.responseInfo
@@ -71,10 +132,10 @@ import GoogleMobileAds
             )
         }
     }
-}
-#endif
 
-// MARK: - AppOpenAd (v11: GADAppOpenAd, v12: AppOpenAd)
+}
+
+// MARK: Public API
 
 #if !RC_ADMOB_SDK_11
 @available(iOS 15.0, *)
@@ -89,21 +150,15 @@ import GoogleMobileAds
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
         completion: @escaping (GoogleMobileAds.AppOpenAd?, Error?) -> Void
     ) {
-        GoogleMobileAds.AppOpenAd.load(with: adUnitID, request: request) { loadedAd, error in
-            RCAdMob.shared.handleLoadOutcome(
-                loadedAd: loadedAd,
-                error: error,
-                context: FullScreenLoadContext(
-                    placement: placement,
-                    adUnitID: adUnitID,
-                    adFormat: RevenueCat.AdFormat.appOpen,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler,
-                    responseInfo: loadedAd?.responseInfo
-                ),
-                completion: completion
-            )
-        }
+        self.loadAndTrack(
+            withAdUnitID: adUnitID,
+            request: request,
+            placement: placement,
+            fullScreenContentDelegate: fullScreenContentDelegate,
+            paidEventHandler: paidEventHandler,
+            rcAdMob: .shared,
+            completion: completion
+        )
     }
 }
 #else // RC_ADMOB_SDK_11
@@ -119,14 +174,44 @@ import GoogleMobileAds
         paidEventHandler: ((GADAdValue) -> Void)? = nil,
         completion: @escaping (GADAppOpenAd?, Error?) -> Void
     ) {
-        GADAppOpenAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
-            RCAdMob.shared.handleLoadOutcome(
+        self.loadAndTrack(
+            withAdUnitID: adUnitID,
+            request: request,
+            placement: placement,
+            fullScreenContentDelegate: fullScreenContentDelegate,
+            paidEventHandler: paidEventHandler,
+            rcAdMob: .shared,
+            completion: completion
+        )
+    }
+}
+#endif
+
+// MARK: - RewardedAd (v11: GADRewardedAd, v12: RewardedAd)
+
+// MARK: Internal implementation
+
+@available(iOS 15.0, *)
+internal extension RCGoogleMobileAds.RewardedAd {
+
+    // swiftlint:disable:next function_parameter_count
+    static func loadAndTrack(
+        withAdUnitID adUnitID: String,
+        request: RCGoogleMobileAds.Request,
+        placement: String?,
+        fullScreenContentDelegate: RCGoogleMobileAds.FullScreenContentDelegate?,
+        paidEventHandler: ((RCGoogleMobileAds.AdValue) -> Void)?,
+        rcAdMob: RCAdMob,
+        completion: @escaping (RCGoogleMobileAds.RewardedAd?, Error?) -> Void
+    ) {
+        RCGoogleMobileAds.RewardedAd.load(with: adUnitID, request: request) { loadedAd, error in
+            rcAdMob.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
                     placement: placement,
                     adUnitID: adUnitID,
-                    adFormat: RevenueCat.AdFormat.appOpen,
+                    adFormat: RevenueCat.AdFormat.rewarded,
                     fullScreenContentDelegate: fullScreenContentDelegate,
                     paidEventHandler: paidEventHandler,
                     responseInfo: loadedAd?.responseInfo
@@ -135,10 +220,10 @@ import GoogleMobileAds
             )
         }
     }
-}
-#endif
 
-// MARK: - RewardedAd (v11: GADRewardedAd, v12: RewardedAd)
+}
+
+// MARK: Public API
 
 #if !RC_ADMOB_SDK_11
 @available(iOS 15.0, *)
@@ -153,21 +238,15 @@ import GoogleMobileAds
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
         completion: @escaping (GoogleMobileAds.RewardedAd?, Error?) -> Void
     ) {
-        GoogleMobileAds.RewardedAd.load(with: adUnitID, request: request) { loadedAd, error in
-            RCAdMob.shared.handleLoadOutcome(
-                loadedAd: loadedAd,
-                error: error,
-                context: FullScreenLoadContext(
-                    placement: placement,
-                    adUnitID: adUnitID,
-                    adFormat: RevenueCat.AdFormat.rewarded,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler,
-                    responseInfo: loadedAd?.responseInfo
-                ),
-                completion: completion
-            )
-        }
+        self.loadAndTrack(
+            withAdUnitID: adUnitID,
+            request: request,
+            placement: placement,
+            fullScreenContentDelegate: fullScreenContentDelegate,
+            paidEventHandler: paidEventHandler,
+            rcAdMob: .shared,
+            completion: completion
+        )
     }
 }
 #else // RC_ADMOB_SDK_11
@@ -183,14 +262,44 @@ import GoogleMobileAds
         paidEventHandler: ((GADAdValue) -> Void)? = nil,
         completion: @escaping (GADRewardedAd?, Error?) -> Void
     ) {
-        GADRewardedAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
-            RCAdMob.shared.handleLoadOutcome(
+        self.loadAndTrack(
+            withAdUnitID: adUnitID,
+            request: request,
+            placement: placement,
+            fullScreenContentDelegate: fullScreenContentDelegate,
+            paidEventHandler: paidEventHandler,
+            rcAdMob: .shared,
+            completion: completion
+        )
+    }
+}
+#endif
+
+// MARK: - RewardedInterstitialAd (v11: GADRewardedInterstitialAd, v12: RewardedInterstitialAd)
+
+// MARK: Internal implementation
+
+@available(iOS 15.0, *)
+internal extension RCGoogleMobileAds.RewardedInterstitialAd {
+
+    // swiftlint:disable:next function_parameter_count
+    static func loadAndTrack(
+        withAdUnitID adUnitID: String,
+        request: RCGoogleMobileAds.Request,
+        placement: String?,
+        fullScreenContentDelegate: RCGoogleMobileAds.FullScreenContentDelegate?,
+        paidEventHandler: ((RCGoogleMobileAds.AdValue) -> Void)?,
+        rcAdMob: RCAdMob,
+        completion: @escaping (RCGoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
+    ) {
+        RCGoogleMobileAds.RewardedInterstitialAd.load(with: adUnitID, request: request) { loadedAd, error in
+            rcAdMob.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
                 context: FullScreenLoadContext(
                     placement: placement,
                     adUnitID: adUnitID,
-                    adFormat: RevenueCat.AdFormat.rewarded,
+                    adFormat: RevenueCat.AdFormat.rewardedInterstitial,
                     fullScreenContentDelegate: fullScreenContentDelegate,
                     paidEventHandler: paidEventHandler,
                     responseInfo: loadedAd?.responseInfo
@@ -199,10 +308,10 @@ import GoogleMobileAds
             )
         }
     }
-}
-#endif
 
-// MARK: - RewardedInterstitialAd (v11: GADRewardedInterstitialAd, v12: RewardedInterstitialAd)
+}
+
+// MARK: Public API
 
 #if !RC_ADMOB_SDK_11
 @available(iOS 15.0, *)
@@ -217,21 +326,15 @@ import GoogleMobileAds
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
         completion: @escaping (GoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
     ) {
-        GoogleMobileAds.RewardedInterstitialAd.load(with: adUnitID, request: request) { loadedAd, error in
-            RCAdMob.shared.handleLoadOutcome(
-                loadedAd: loadedAd,
-                error: error,
-                context: FullScreenLoadContext(
-                    placement: placement,
-                    adUnitID: adUnitID,
-                    adFormat: RevenueCat.AdFormat.rewardedInterstitial,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler,
-                    responseInfo: loadedAd?.responseInfo
-                ),
-                completion: completion
-            )
-        }
+        self.loadAndTrack(
+            withAdUnitID: adUnitID,
+            request: request,
+            placement: placement,
+            fullScreenContentDelegate: fullScreenContentDelegate,
+            paidEventHandler: paidEventHandler,
+            rcAdMob: .shared,
+            completion: completion
+        )
     }
 }
 #else // RC_ADMOB_SDK_11
@@ -247,21 +350,15 @@ import GoogleMobileAds
         paidEventHandler: ((GADAdValue) -> Void)? = nil,
         completion: @escaping (GADRewardedInterstitialAd?, Error?) -> Void
     ) {
-        GADRewardedInterstitialAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
-            RCAdMob.shared.handleLoadOutcome(
-                loadedAd: loadedAd,
-                error: error,
-                context: FullScreenLoadContext(
-                    placement: placement,
-                    adUnitID: adUnitID,
-                    adFormat: RevenueCat.AdFormat.rewardedInterstitial,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler,
-                    responseInfo: loadedAd?.responseInfo
-                ),
-                completion: completion
-            )
-        }
+        self.loadAndTrack(
+            withAdUnitID: adUnitID,
+            request: request,
+            placement: placement,
+            fullScreenContentDelegate: fullScreenContentDelegate,
+            paidEventHandler: paidEventHandler,
+            rcAdMob: .shared,
+            completion: completion
+        )
     }
 }
 #endif
