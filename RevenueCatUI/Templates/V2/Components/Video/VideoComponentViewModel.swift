@@ -33,14 +33,14 @@ class VideoComponentViewModel {
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.VideoComponent,
         discardRules: Bool = false
-    ) throws {
+    ) {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
-            LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedStrings)
-        } ?? []
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
+            LocalizedVideoPartial(partial: $0)
+        }
     }
 
     /// Creates a view model for video backgrounds, which don't have overrides.
