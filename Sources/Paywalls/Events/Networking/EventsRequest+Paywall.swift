@@ -29,6 +29,7 @@ extension FeatureEventsRequest {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
+        var source: PaywallSource?
         var exitOfferType: ExitOfferType?
         var exitOfferingID: String?
         var packageId: String?
@@ -79,6 +80,7 @@ extension FeatureEventsRequest.PaywallEvent {
                 displayMode: data.displayMode,
                 darkMode: data.darkMode,
                 localeIdentifier: data.localeIdentifier,
+                source: data.source,
                 exitOfferType: exitOfferData?.exitOfferType,
                 exitOfferingID: exitOfferData?.exitOfferingIdentifier,
                 packageId: data.packageId,
@@ -133,6 +135,7 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case displayMode
         case darkMode
         case localeIdentifier = "locale"
+        case source
         case exitOfferType
         case exitOfferingID = "exitOfferingId"
         case packageId = "packageId"

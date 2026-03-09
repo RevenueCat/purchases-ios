@@ -794,7 +794,10 @@ final class PurchasesOrchestrator {
                 userCancelled = true
                 transaction = nil
                 if self.systemInfo.dangerousSettings.customEntitlementComputation {
+                    // handleSK2ProductPurchaseError will clear the cached context
                     throw ErrorUtils.purchaseCancelledError()
+                } else {
+                    self.clearCachedPresentedOfferingContext(for: sk2Product.id)
                 }
             case let .successfulVerifiedTransaction(verifiedTransaction):
                 if verifiedTransaction.transactionIdentifier == existingTransactionID {
@@ -813,6 +816,16 @@ final class PurchasesOrchestrator {
             let customerInfo: CustomerInfo
 
             if let transaction = transaction {
+
+                if let expirationDate = transaction.sk2Transaction?.expirationDate,
+                   expirationDate < self.dateProvider.now() {
+                    Logger.appleWarning(
+                        StoreKitStrings.sk2_purchase_did_not_error_but_expiration_date_is_in_past(
+                            expirationDate: expirationDate
+                        )
+                    )
+                }
+
                 customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
                 self.postFeatureEventsIfNeeded()
             } else {
@@ -848,6 +861,7 @@ final class PurchasesOrchestrator {
         promotionalOfferId: String?,
         winBackOfferApplied: Bool
     ) async throws -> PurchaseResultData {
+        self.clearCachedPresentedOfferingContext(for: productId)
 
         if case StoreKitError.userCancelled = error {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
@@ -1227,6 +1241,7 @@ private extension PurchasesOrchestrator {
 
     func handleFailedTransaction(_ transaction: SKPaymentTransaction) {
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
+        self.clearCachedPresentedOfferingContext(for: storeTransaction.productIdentifier)
 
         if let error = transaction.error,
            let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) {

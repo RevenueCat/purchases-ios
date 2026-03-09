@@ -59,6 +59,20 @@ custom_rules:
     message: "In older versions of xcode build tools, this is not supported and will fail in CI"
     severity: error
 
+  no_direct_state_assignment_in_init:
+    included: ".*\\.swift"
+    name: "No direct @State assignment in init"
+    regex: '(?s)@State(?:\s*\([^)]*\))?\s+(?:private\s+)?var\s+([A-Za-z_][A-Za-z0-9_]*)\b(?:[^{}]|\{[^{}]*\})*?init\s*\([^{}]*\)\s*\{(?:[^{}]|\{[^{}]*\})*?\bself\.\1\s*='
+    message: "Initialize @State in init using backing storage: self._property = .init(initialValue: ...)"
+    severity: error
+
+  no_direct_state_assignment_in_init_reverse_order:
+    included: ".*\\.swift"
+    name: "No direct @State assignment in init (reverse order)"
+    regex: '(?s)init\s*\([^{}]*\)\s*\{(?:[^{}]|\{[^{}]*\})*?\bself\.([A-Za-z_][A-Za-z0-9_]*)\s*=(?:[^{}]|\{[^{}]*\})*?\}(?:[^{}]|\{[^{}]*\})*?@State(?:\s*\([^)]*\))?\s+(?:private\s+)?var\s+\1\b'
+    message: "Initialize @State in init using backing storage: self._property = .init(initialValue: ...)"
+    severity: error
+
   no_trailing_comma_multiline:
     name: "No Trailing Commas"
     regex: ',\s*\n\s*\)'

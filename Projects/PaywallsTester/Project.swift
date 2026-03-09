@@ -122,6 +122,7 @@ if hasCustomStoreKit {
 let project = Project(
     name: "PaywallsTester",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .appProject,
     targets: [
         .target(
