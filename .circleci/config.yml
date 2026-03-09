@@ -1526,7 +1526,7 @@ jobs:
     steps:
       - checkout
       - install-bundle-dependencies
-      - trust-github-key
+      - revenuecat/trust-github-key
       - run:
           name: Deploy new version
           command: bundle exec fastlane push_revenuecatadmob_pod
