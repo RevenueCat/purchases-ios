@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.source           = { :git => "https://github.com/revenuecat/purchases-ios.git", :tag => s.version.to_s }
   s.documentation_url = "https://docs.revenuecat.com/"
 
-  s.swift_version  = "5.7"
+  s.swift_version  = "5.8"
 
   s.ios.deployment_target = "15.0"
 
