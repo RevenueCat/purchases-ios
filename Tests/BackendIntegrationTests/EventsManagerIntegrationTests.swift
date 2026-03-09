@@ -31,7 +31,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             PaywallEvent.close(
                 Self.eventCreationData, Self.eventData
             ),
-            PaywallEvent.impression(
+            PaywallEvent.cancel(
                 Self.eventCreationData, Self.eventData
             )
         ]

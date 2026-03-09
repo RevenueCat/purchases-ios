@@ -20,6 +20,8 @@ enum CustomPaywallEvent: FeatureEvent {
 
     var eventDiscriminator: String? { nil }
 
+    var isPriorityEvent: Bool { true }
+
     /// A custom paywall was shown.
     case impression(CreationData, Data)
 
