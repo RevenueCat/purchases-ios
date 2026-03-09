@@ -534,6 +534,22 @@ class IdentityManagerTests: TestCase {
         expect(receivedError?.code) == ErrorCode.unsupportedError.rawValue
     }
 
+    func testSwitchUserBlockedInUIPreviewMode() {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: true)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+
+        let manager = create(appUserID: nil)
+        let originalUserID = manager.currentAppUserID
+
+        manager.switchUser(to: "other-user")
+
+        expect(manager.currentAppUserID) == originalUserID
+    }
+
 }
 
 private extension IdentityManagerTests {

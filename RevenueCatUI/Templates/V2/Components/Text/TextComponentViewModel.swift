@@ -33,7 +33,8 @@ class TextComponentViewModel {
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        component: PaywallComponent.TextComponent
+        component: PaywallComponent.TextComponent,
+        discardRules: Bool = false
     ) throws {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
@@ -43,7 +44,7 @@ class TextComponentViewModel {
             return ""
         }()
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
             try LocalizedTextPartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
 
@@ -55,6 +56,7 @@ class TextComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        selectedPackageId: String?,
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?,
@@ -63,11 +65,16 @@ class TextComponentViewModel {
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
+        let conditionContext = uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
+        )
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial

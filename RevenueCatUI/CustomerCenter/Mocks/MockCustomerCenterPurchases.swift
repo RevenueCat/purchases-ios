@@ -96,6 +96,13 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         return try purchaseResult.get()
     }
 
+    var purchasePackageCallCount = 0
+    var purchasePackageResult: Result<PurchaseResultData, Error>?
+    func purchase(package: Package) async throws -> PurchaseResultData {
+        purchasePackageCallCount += 1
+        return try (purchasePackageResult ?? purchaseResult).get()
+    }
+
     var trackCallCount = 0
     var trackError: Error?
     var trackedEvents: [CustomerCenterEventType] = []
