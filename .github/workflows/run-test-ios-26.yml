@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   run-test-ios-26:
-    runs-on: macos-26
+    runs-on: macos-26-xlarge
     timeout-minutes: 60
     env:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: ${{ github.event_name == 'workflow_dispatch' && inputs.generate_snapshots && 'true' || 'false' }}
