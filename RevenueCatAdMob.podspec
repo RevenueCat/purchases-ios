@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "RevenueCatAdMob"
-  s.version          = "5.60.0-SNAPSHOT"
+  s.version          = "5.62.0-SNAPSHOT"
   s.summary          = "AdMob adapter for RevenueCat ad tracking."
 
   s.description      = <<-DESC
