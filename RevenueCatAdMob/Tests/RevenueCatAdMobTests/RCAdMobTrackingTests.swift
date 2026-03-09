@@ -18,6 +18,8 @@ final class MockAdTracker: AdTracking {
     }
 
     private(set) var calls: [Call] = []
+    private(set) var revenueData: [AdRevenue] = []
+    private(set) var failedToLoadData: [AdFailedToLoad] = []
 
     func trackAdLoaded(_ data: AdLoaded) {
         self.calls.append(Call(
@@ -53,6 +55,7 @@ final class MockAdTracker: AdTracking {
             placement: data.placement,
             adUnitId: data.adUnitId
         ))
+        self.revenueData.append(data)
     }
 
     func trackAdFailedToLoad(_ data: AdFailedToLoad) {
@@ -62,12 +65,14 @@ final class MockAdTracker: AdTracking {
             placement: data.placement,
             adUnitId: data.adUnitId
         ))
+        self.failedToLoadData.append(data)
     }
 }
 
 // MARK: - Core RCAdMob tracking tests
 
 @available(iOS 15.0, *)
+// swiftlint:disable:next type_body_length
 final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     private var mockTracker: MockAdTracker!
@@ -277,6 +282,97 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
         XCTAssertNotNil(fakeAd.paidEventHandler)
     }
+
+    func testTrackRevenueCallsTrackerWithCorrectRevenueData() {
+        self.rcAdMob.trackRevenue(
+            placement: "reward_screen",
+            adUnitID: "ca-app-pub-reward",
+            adFormat: .rewarded,
+            responseInfo: nil,
+            adValue: Self.makeAdValuePlaceholder()
+        )
+
+        XCTAssertEqual(self.mockTracker.revenueData.count, 1)
+        let revenue = self.mockTracker.revenueData[0]
+        XCTAssertEqual(revenue.revenueMicros, 2500)
+        XCTAssertEqual(revenue.currency, "EUR")
+        XCTAssertEqual(revenue.precision, AdRevenue.Precision.exact)
+        XCTAssertEqual(revenue.adFormat, AdFormat.rewarded)
+        XCTAssertEqual(revenue.placement, "reward_screen")
+        XCTAssertEqual(revenue.adUnitId, "ca-app-pub-reward")
+        XCTAssertEqual(revenue.mediatorName, MediatorName.adMob)
+        XCTAssertEqual(revenue.networkName, "")
+        XCTAssertEqual(revenue.impressionId, "")
+    }
+
+    func testTrackRevenueNoOpsWhenNotConfigured() {
+        self.mockTracker.isConfigured = false
+
+        self.rcAdMob.trackRevenue(
+            placement: "test",
+            adUnitID: "unit",
+            adFormat: .interstitial,
+            responseInfo: nil,
+            adValue: Self.makeAdValuePlaceholder()
+        )
+
+        XCTAssertTrue(self.mockTracker.revenueData.isEmpty)
+    }
+
+    func testHandleLoadOutcomeOnSuccessPaidHandlerTracksRevenue() {
+        let fakeAd = FakeFullScreenAd()
+        let context = FullScreenLoadContext(
+            placement: "reward_screen",
+            adUnitID: "ca-app-pub-reward",
+            adFormat: .rewarded,
+            fullScreenContentDelegate: nil,
+            paidEventHandler: nil,
+            responseInfo: nil
+        )
+
+        self.rcAdMob.handleLoadOutcome(
+            loadedAd: fakeAd, error: nil, context: context
+        ) { _, _ in }
+
+        fakeAd.paidEventHandler?(Self.makeAdValuePlaceholder())
+
+        XCTAssertEqual(self.mockTracker.revenueData.count, 1)
+        let revenue = self.mockTracker.revenueData[0]
+        XCTAssertEqual(revenue.revenueMicros, 2500)
+        XCTAssertEqual(revenue.currency, "EUR")
+        XCTAssertEqual(revenue.precision, AdRevenue.Precision.exact)
+        XCTAssertEqual(revenue.adFormat, AdFormat.rewarded)
+        XCTAssertEqual(revenue.placement, "reward_screen")
+        XCTAssertEqual(revenue.adUnitId, "ca-app-pub-reward")
+    }
+
+    func testHandleLoadOutcomeOnSuccessPaidHandlerForwardsToUserHandler() {
+        let fakeAd = FakeFullScreenAd()
+        var userHandlerCalled = false
+        let context = FullScreenLoadContext(
+            placement: "reward_screen",
+            adUnitID: "ca-app-pub-reward",
+            adFormat: .rewarded,
+            fullScreenContentDelegate: nil,
+            paidEventHandler: { _ in userHandlerCalled = true },
+            responseInfo: nil
+        )
+
+        self.rcAdMob.handleLoadOutcome(
+            loadedAd: fakeAd, error: nil, context: context
+        ) { _, _ in }
+
+        fakeAd.paidEventHandler?(Self.makeAdValuePlaceholder())
+
+        XCTAssertTrue(userHandlerCalled)
+        XCTAssertEqual(self.mockTracker.revenueData.count, 1)
+    }
+
+    // MARK: - Helpers
+
+    private static func makeAdValuePlaceholder() -> RCGoogleMobileAds.AdValue {
+        return unsafeBitCast(TrackingTestAdValuePlaceholder(), to: RCGoogleMobileAds.AdValue.self)
+    }
 }
 
 // MARK: - Delegate tracking tests
@@ -421,6 +517,13 @@ private final class FakeFullScreenAd: NSObject, RCFullScreenAdTracking {
 private final class FakeFullScreenPresentingAd: NSObject, RCGoogleMobileAds.FullScreenPresentingAd {
     var fullScreenContentDelegate: RCGoogleMobileAds.FullScreenContentDelegate?
     var responseInfo: GoogleMobileAds.ResponseInfo? { nil }
+}
+
+@available(iOS 15.0, *)
+private final class TrackingTestAdValuePlaceholder: NSObject {
+    @objc var value: NSDecimalNumber { NSDecimalNumber(string: "0.0025") }
+    @objc var currencyCode: String { "EUR" }
+    @objc var precision: Int { 3 }
 }
 
 #endif

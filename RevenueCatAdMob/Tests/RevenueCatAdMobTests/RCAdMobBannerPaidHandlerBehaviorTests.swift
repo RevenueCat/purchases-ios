@@ -3,6 +3,7 @@ import XCTest
 
 #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(GoogleMobileAds)
 import GoogleMobileAds
+@_spi(Experimental) import RevenueCat
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
@@ -70,6 +71,54 @@ final class RCAdMobBannerPaidHandlerBehaviorTests: RCAdMobTestCase {
         wrapperClosure?(Self.makeAdValuePlaceholder()) // Simulate ad SDK invoking after deallocation
 
         XCTAssertTrue(userHandlerCalled, "User's paid handler should be called even when banner was deallocated")
+    }
+
+    func testBannerPaidEventTracksRevenueViaMockTracker() {
+        let mockTracker = MockAdTracker()
+        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let bannerView = BannerView(adSize: AdSizeBanner)
+        bannerView.adUnitID = "ca-app-pub-banner"
+
+        bannerView.loadAndTrack(
+            request: Request(),
+            placement: "home_banner",
+            delegate: nil,
+            paidEventHandler: nil,
+            rcAdMob: rcAdMob
+        )
+
+        bannerView.paidEventHandler?(Self.makeAdValuePlaceholder())
+
+        XCTAssertEqual(mockTracker.revenueData.count, 1)
+        let revenue = mockTracker.revenueData[0]
+        XCTAssertEqual(revenue.revenueMicros, 1_000_000)
+        XCTAssertEqual(revenue.currency, "USD")
+        XCTAssertEqual(revenue.precision, AdRevenue.Precision.unknown)
+        XCTAssertEqual(revenue.adFormat, AdFormat.banner)
+        XCTAssertEqual(revenue.placement, "home_banner")
+        XCTAssertEqual(revenue.adUnitId, "ca-app-pub-banner")
+        XCTAssertEqual(revenue.mediatorName, MediatorName.adMob)
+    }
+
+    func testBannerPaidEventForwardsToUserHandlerAndTracksRevenue() {
+        let mockTracker = MockAdTracker()
+        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let bannerView = BannerView(adSize: AdSizeBanner)
+        bannerView.adUnitID = "ca-app-pub-banner"
+        var userHandlerCalled = false
+
+        bannerView.loadAndTrack(
+            request: Request(),
+            placement: "home_banner",
+            delegate: nil,
+            paidEventHandler: { _ in userHandlerCalled = true },
+            rcAdMob: rcAdMob
+        )
+
+        bannerView.paidEventHandler?(Self.makeAdValuePlaceholder())
+
+        XCTAssertTrue(userHandlerCalled)
+        XCTAssertEqual(mockTracker.revenueData.count, 1)
     }
 
     private static func makeAdValuePlaceholder() -> RCGoogleMobileAds.AdValue {
