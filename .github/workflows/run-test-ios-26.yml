@@ -1,0 +1,86 @@
+name: Run iOS 26 Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      generate_snapshots:
+        description: 'Generate snapshots'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-test-ios-26:
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: ${{ github.event_name == 'workflow_dispatch' && inputs.generate_snapshots && 'true' || 'false' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26.3
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
+
+      - name: Validate Package.swift
+        run: swift package describe
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.0'
+          bundler-cache: true
+
+      - name: Install xcbeautify
+        run: brew install xcbeautify
+
+      # === SPM Release Build (Xcode 26) ===
+      - name: SPM Release Build (Xcode 26)
+        run: swift build -c release --target RevenueCat
+        timeout-minutes: 30
+
+      # === iOS 26 tests ===
+      - name: Run iOS 26 tests
+        run: bundle exec fastlane test_ios
+        timeout-minutes: 15
+        env:
+          SCAN_DEVICE: 'iPhone 17 (26.2)'
+
+      - name: Compress result bundle
+        if: always()
+        run: |
+          BUNDLE="fastlane/test_output/xctest/ios/RevenueCat.xcresult"
+          if [ -d "$BUNDLE" ]; then
+            tar -czf "$BUNDLE.tar.gz" -C "fastlane/test_output/xctest/ios" "RevenueCat.xcresult"
+            rm -r "$BUNDLE"
+          fi
+
+      - name: Create snapshot PR
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.generate_snapshots }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          bundle exec fastlane create_snapshot_pr version:"ios-26"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-ios-26
+          path: fastlane/test_output
+
+      - name: Upload test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-test-output-ios-26
+          path: fastlane/test_output/xctest
+
+      # TODO: Migrate Slack notification for main branch failures.
+      # CircleCI used slack-notify-on-fail which posts to #feed-circleci-ios-failures on main branch failures.
