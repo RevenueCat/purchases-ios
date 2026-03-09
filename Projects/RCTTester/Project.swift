@@ -4,6 +4,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "RCTTester",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .appProject,
     targets: [
         .target(
@@ -18,6 +19,8 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
+                    "CFBundleIconName": "AppIcon",
+                    "ITSAppUsesNonExemptEncryption": false,
                     "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)",
                 ]
             ),
@@ -27,12 +30,15 @@ let project = Project(
             resources: [
                 "../../Tests/TestingApps/RCTTester/RCTTester/**/*.xcassets",
                 "../../Tests/TestingApps/RCTTester/RCTTester/**/*.storekit",
+                "../../Tests/TestingApps/RCTTester/RCTTester/**/*.icon",
             ],
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
             ],
-            settings: .appTarget
+            settings: .appTarget(including: [
+                "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+            ])
         )
     ],
     schemes: [

@@ -22,11 +22,139 @@ protocol FeatureEvent: Encodable, Sendable {
     /// and then we can remove this `shouldStoreEvent` (as it will be always `true`)
     var shouldStoreEvent: Bool { get }
 
+    /// Whether tracking this event should trigger an immediate flush to the backend.
+    var isPriorityEvent: Bool { get }
+
 }
 
 extension FeatureEvent {
 
     /// By default, all events should be stored.
     var shouldStoreEvent: Bool { true }
+
+    /// By default, events are not priority events.
+    var isPriorityEvent: Bool { false }
+
+}
+
+// MARK: - Dictionary Mapping
+
+extension FeatureEvent {
+
+    /// Converts this event into a dictionary suitable for hybrid SDK consumption.
+    func toMap() -> [String: Any] {
+        switch self {
+        case let event as PaywallEvent:
+            return event.paywallMap()
+        case let event as CustomerCenterEvent:
+            return event.customerCenterImpressionMap()
+        case let event as CustomerCenterAnswerSubmittedEvent:
+            return event.customerCenterAnswerSubmittedMap()
+        case let event as CustomPaywallEvent:
+            return event.customPaywallEventMap()
+        default:
+            return [
+                "discriminator": "unknown",
+                "type": "unknown",
+                "class_name": String(describing: type(of: self))
+            ]
+        }
+    }
+
+}
+
+private extension PaywallEvent {
+
+    func paywallMap() -> [String: Any] {
+        let typeName: String = {
+            switch self {
+            case .impression: return "paywall_impression"
+            case .cancel: return "paywall_cancel"
+            case .close: return "paywall_close"
+            case .exitOffer: return "paywall_exit_offer"
+            case .purchaseInitiated: return "paywall_purchase_initiated"
+            case .purchaseError: return "paywall_purchase_error"
+            }
+        }()
+
+        return [
+            "discriminator": "paywalls",
+            "type": typeName,
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970,
+            "offering_id": self.data.offeringIdentifier,
+            "paywall_revision": self.data.paywallRevision,
+            "session_id": self.data.sessionIdentifier.uuidString,
+            "display_mode": self.data.displayMode.identifier,
+            "locale": self.data.localeIdentifier,
+            "dark_mode": self.data.darkMode
+        ]
+    }
+
+}
+
+private extension CustomerCenterEvent {
+
+    func customerCenterImpressionMap() -> [String: Any] {
+        return [
+            "discriminator": "customer_center",
+            "type": "customer_center_impression",
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970,
+            "dark_mode": self.data.darkMode,
+            "locale": self.data.localeIdentifier,
+            "display_mode": self.data.displayMode.identifier
+        ]
+    }
+
+}
+
+private extension CustomPaywallEvent {
+
+    func customPaywallEventMap() -> [String: Any] {
+        let typeName: String = {
+            switch self {
+            case .impression: return "custom_paywall_impression"
+            }
+        }()
+
+        var result: [String: Any] = [
+            "discriminator": "custom_paywall_event",
+            "type": typeName,
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970
+        ]
+
+        if let paywallId = self.data.paywallId {
+            result["paywall_id"] = paywallId
+        }
+
+        return result
+    }
+
+}
+
+private extension CustomerCenterAnswerSubmittedEvent {
+
+    func customerCenterAnswerSubmittedMap() -> [String: Any] {
+        var result: [String: Any] = [
+            "discriminator": "customer_center",
+            "type": "customer_center_survey_option_chosen",
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970,
+            "dark_mode": self.data.darkMode,
+            "locale": self.data.localeIdentifier,
+            "display_mode": self.data.displayMode.identifier,
+            "survey_option_id": self.data.surveyOptionID,
+            "path": self.data.path.rawValue,
+            "revision_id": self.data.revisionID
+        ]
+
+        if let url = self.data.url {
+            result["url"] = url.absoluteString
+        }
+
+        return result
+    }
 
 }

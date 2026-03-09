@@ -57,9 +57,22 @@ struct VariableHandlerV2 {
         with package: Package?,
         locale: Locale,
         localizations: [String: String],
+        isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer? = nil,
         countdownTime: CountdownTime? = nil
     ) -> String {
+        let context = VariablesV2.ProcessContext(
+            package: package,
+            locale: locale,
+            localizations: localizations,
+            discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth,
+            showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            date: self.dateProvider(),
+            promoOffer: promoOffer,
+            countdownTime: countdownTime
+        )
+
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
             // Check for custom variable first (uses custom. prefix)
             if variableRaw.hasPrefix(Self.customVariablePrefix) {
@@ -71,16 +84,7 @@ struct VariableHandlerV2 {
             let variable = self.findVariable(variableRaw)
             let function = functionRaw.flatMap { self.findFunction($0) }
 
-            let processedVariable = variable?.process(
-                package: package,
-                locale: locale,
-                localizations: localizations,
-                discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth,
-                showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
-                date: self.dateProvider(),
-                promoOffer: promoOffer,
-                countdownTime: countdownTime
-            ) ?? ""
+            let processedVariable = variable?.process(with: context) ?? ""
 
             return function?.process(processedVariable) ?? processedVariable
         }
@@ -281,17 +285,40 @@ enum FunctionsV2: String {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension VariablesV2 {
 
-    // swiftlint:disable:next cyclomatic_complexity function_body_length function_parameter_count
-    func process(
-        package: Package?,
-        locale: Locale,
-        localizations: [String: String],
-        discountRelativeToMostExpensivePerMonth: Double?,
-        showZeroDecimalPlacePrices: Bool,
-        date: Date,
-        promoOffer: PromotionalOffer?,
-        countdownTime: CountdownTime?
-    ) -> String {
+    struct ProcessContext {
+        let package: Package?
+        let locale: Locale
+        let localizations: [String: String]
+        let discountRelativeToMostExpensivePerMonth: Double?
+        let showZeroDecimalPlacePrices: Bool
+        let isEligibleForIntroOffer: Bool
+        let date: Date
+        let promoOffer: PromotionalOffer?
+        let countdownTime: CountdownTime?
+    }
+
+    struct OfferContext {
+        let isEligibleForIntroOffer: Bool
+        let showZeroDecimalPlacePrices: Bool
+        let promoOffer: PromotionalOffer?
+    }
+
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
+    func process(with context: ProcessContext) -> String {
+        let package = context.package
+        let locale = context.locale
+        let localizations = context.localizations
+        let discountRelativeToMostExpensivePerMonth = context.discountRelativeToMostExpensivePerMonth
+        let showZeroDecimalPlacePrices = context.showZeroDecimalPlacePrices
+        let isEligibleForIntroOffer = context.isEligibleForIntroOffer
+        let date = context.date
+        let promoOffer = context.promoOffer
+        let countdownTime = context.countdownTime
+        let offerContext = OfferContext(
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            promoOffer: promoOffer
+        )
         switch self {
         case .productCurrencyCode:
             if let package {
@@ -386,7 +413,7 @@ extension VariablesV2 {
                 return self.productOfferPrice(
                     package: package,
                     localizations: localizations,
-                    promoOffer: promoOffer
+                    offerContext: offerContext
                 )
             }
         case .productOfferPricePerDay:
@@ -394,7 +421,7 @@ extension VariablesV2 {
                 return self.productOfferPricePerDay(
                     package: package,
                     localizations: localizations,
-                    promoOffer: promoOffer
+                    offerContext: offerContext
                 )
             }
         case .productOfferPricePerWeek:
@@ -402,7 +429,7 @@ extension VariablesV2 {
                 return self.productOfferPricePerWeek(
                     package: package,
                     localizations: localizations,
-                    promoOffer: promoOffer
+                    offerContext: offerContext
                 )
             }
         case .productOfferPricePerMonth:
@@ -410,7 +437,7 @@ extension VariablesV2 {
                 return self.productOfferPricePerMonth(
                     package: package,
                     localizations: localizations,
-                    promoOffer: promoOffer
+                    offerContext: offerContext
                 )
             }
         case .productOfferPricePerYear:
@@ -418,7 +445,7 @@ extension VariablesV2 {
                 return self.productOfferPricePerYear(
                     package: package,
                     localizations: localizations,
-                    promoOffer: promoOffer
+                    offerContext: offerContext
                 )
             }
         case .productOfferPeriod:
@@ -426,7 +453,7 @@ extension VariablesV2 {
                 return self.productOfferPeriod(
                     package: package,
                     localizations: localizations,
-                    promoOffer: promoOffer
+                    offerContext: offerContext
                 )
             }
         case .productOfferPeriodAbbreviated:
@@ -434,36 +461,53 @@ extension VariablesV2 {
                 return self.productOfferPeriodAbbreviated(
                     package: package,
                     localizations: localizations,
-                    promoOffer: promoOffer
+                    offerContext: offerContext
                 )
             }
         case .productOfferPeriodInDays:
             if let package {
-                return self.productOfferPeriodInDays(package: package, promoOffer: promoOffer)
+                return self.productOfferPeriodInDays(
+                    package: package,
+                    offerContext: offerContext
+                )
             }
         case .productOfferPeriodInWeeks:
             if let package {
-                return self.productOfferPeriodInWeeks(package: package, promoOffer: promoOffer)
+                return self.productOfferPeriodInWeeks(
+                    package: package,
+                    offerContext: offerContext
+                )
             }
         case .productOfferPeriodInMonths:
             if let package {
-                return self.productOfferPeriodInMonths(package: package, promoOffer: promoOffer)
+                return self.productOfferPeriodInMonths(
+                    package: package,
+                    offerContext: offerContext
+                )
             }
         case .productOfferPeriodInYears:
             if let package {
-                return self.productOfferPeriodInYears(package: package, promoOffer: promoOffer)
+                return self.productOfferPeriodInYears(
+                    package: package,
+                    offerContext: offerContext
+                )
             }
         case .productOfferPeriodWithUnit:
             if let package {
                 return self.productOfferPeriodWithUnit(
                     package: package,
                     localizations: localizations,
-                    promoOffer: promoOffer
+                    offerContext: offerContext
                 )
             }
         case .productOfferEndDate:
             if let package {
-                return self.productOfferEndDate(package: package, locale: locale, date: date, promoOffer: promoOffer)
+                return self.productOfferEndDate(
+                    package: package,
+                    locale: locale,
+                    offerContext: offerContext,
+                    date: date
+                )
             }
         case .productSecondaryOfferPrice:
             if let package {
@@ -686,26 +730,33 @@ extension VariablesV2 {
     func productOfferPrice(
         package: Package,
         localizations: [String: String],
-        promoOffer: PromotionalOffer?
+        offerContext: OfferContext
     ) -> String {
-        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
-            return ""
+        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
+            return self.productPrice(package: package,
+                                     showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices)
         }
 
         if isFree(discount) {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        return discount.localizedPriceString
+        return formatDiscountPrice(
+            discount.price,
+            package: package,
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices,
+            fallback: discount.localizedPriceString
+        )
     }
 
     func productOfferPricePerDay(
         package: Package,
         localizations: [String: String],
-        promoOffer: PromotionalOffer?
+        offerContext: OfferContext
     ) -> String {
-        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
-            return ""
+        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
+            return self.productPricePerDay(package: package,
+                                           showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices)
         }
 
         if !canDiscountDisplay(discount, unit: .day) {
@@ -716,20 +767,21 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        guard let price = discount.pricePerDay, let formatter = package.storeProduct.priceFormatter else {
-            return ""
-        }
-
-        return formatter.string(from: price as NSDecimalNumber) ?? ""
+        return formatDiscountPrice(
+            discount.pricePerDay?.decimalValue,
+            package: package,
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
+        )
     }
 
     func productOfferPricePerWeek(
         package: Package,
         localizations: [String: String],
-        promoOffer: PromotionalOffer?
+        offerContext: OfferContext
     ) -> String {
-        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
-            return ""
+        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
+            return self.productPricePerWeek(package: package,
+                                            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices)
         }
 
         if !canDiscountDisplay(discount, unit: .week) {
@@ -740,20 +792,21 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        guard let price = discount.pricePerWeek, let formatter = package.storeProduct.priceFormatter else {
-            return ""
-        }
-
-        return formatter.string(from: price as NSDecimalNumber) ?? ""
+        return formatDiscountPrice(
+            discount.pricePerWeek?.decimalValue,
+            package: package,
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
+        )
     }
 
     func productOfferPricePerMonth(
         package: Package,
         localizations: [String: String],
-        promoOffer: PromotionalOffer?
+        offerContext: OfferContext
     ) -> String {
-        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
-            return ""
+        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
+            return self.productPricePerMonth(package: package,
+                                             showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices)
         }
 
         if !canDiscountDisplay(discount, unit: .month) {
@@ -764,20 +817,21 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        guard let price = discount.pricePerMonth, let formatter = package.storeProduct.priceFormatter else {
-            return ""
-        }
-
-        return formatter.string(from: price as NSDecimalNumber) ?? ""
+        return formatDiscountPrice(
+            discount.pricePerMonth?.decimalValue,
+            package: package,
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
+        )
     }
 
     func productOfferPricePerYear(
         package: Package,
         localizations: [String: String],
-        promoOffer: PromotionalOffer?
+        offerContext: OfferContext
     ) -> String {
-        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
-            return ""
+        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
+            return self.productPricePerYear(package: package,
+                                            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices)
         }
 
         if !canDiscountDisplay(discount, unit: .year) {
@@ -788,21 +842,23 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        guard let price = discount.pricePerYear, let formatter = package.storeProduct.priceFormatter else {
-            return ""
-        }
-
-        return formatter.string(from: price as NSDecimalNumber) ?? ""
+        return formatDiscountPrice(
+            discount.pricePerYear?.decimalValue,
+            package: package,
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
+        )
     }
 
     func productOfferPeriod(
         package: Package,
         localizations: [String: String],
-        promoOffer: PromotionalOffer?
+        offerContext: OfferContext
     ) -> String {
-        let initialOffer = package.storeProduct.introductoryDiscount?.subscriptionPeriod
-        guard let period = promoOffer?.discount.subscriptionPeriod ?? initialOffer else {
-            return ""
+        guard let period = resolvedDiscount(
+            for: package,
+            offerContext: offerContext
+        )?.subscriptionPeriod else {
+            return self.productPeriod(package: package, localizations: localizations)
         }
 
         return localizations[period.periodLocalizationKey] ?? ""
@@ -811,19 +867,24 @@ extension VariablesV2 {
     func productOfferPeriodAbbreviated(
         package: Package,
         localizations: [String: String],
-        promoOffer: PromotionalOffer?
+        offerContext: OfferContext
     ) -> String {
-        let initialOffer = package.storeProduct.introductoryDiscount?.subscriptionPeriod
-        guard let period = promoOffer?.discount.subscriptionPeriod ?? initialOffer else {
-            return ""
+        guard let period = resolvedDiscount(
+            for: package,
+            offerContext: offerContext
+        )?.subscriptionPeriod else {
+            return self.productPeriodAbbreviated(package: package, localizations: localizations)
         }
 
         return localizations[period.periodAbbreviatedLocalizationKey] ?? ""
     }
 
-    func productOfferPeriodInDays(package: Package, promoOffer: PromotionalOffer?) -> String {
-        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
-            return ""
+    func productOfferPeriodInDays(
+        package: Package,
+        offerContext: OfferContext
+    ) -> String {
+        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
+            return self.productPeriodInDays(package: package)
         }
 
         if !canDiscountDisplay(discount, unit: .day) {
@@ -833,9 +894,12 @@ extension VariablesV2 {
         return "\(discount.subscriptionPeriod.periodInUnit(unit: .day))"
     }
 
-    func productOfferPeriodInWeeks(package: Package, promoOffer: PromotionalOffer?) -> String {
-        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
-            return ""
+    func productOfferPeriodInWeeks(
+        package: Package,
+        offerContext: OfferContext
+    ) -> String {
+        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
+            return self.productPeriodInWeeks(package: package)
         }
 
         if !canDiscountDisplay(discount, unit: .week) {
@@ -845,9 +909,12 @@ extension VariablesV2 {
         return "\(discount.subscriptionPeriod.periodInUnit(unit: .week))"
     }
 
-    func productOfferPeriodInMonths(package: Package, promoOffer: PromotionalOffer?) -> String {
-        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
-            return ""
+    func productOfferPeriodInMonths(
+        package: Package,
+        offerContext: OfferContext
+    ) -> String {
+        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
+            return self.productPeriodInMonths(package: package)
         }
 
         if !canDiscountDisplay(discount, unit: .month) {
@@ -857,9 +924,12 @@ extension VariablesV2 {
         return "\(discount.subscriptionPeriod.periodInUnit(unit: .month))"
     }
 
-    func productOfferPeriodInYears(package: Package, promoOffer: PromotionalOffer?) -> String {
-        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
-            return ""
+    func productOfferPeriodInYears(
+        package: Package,
+        offerContext: OfferContext
+    ) -> String {
+        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
+            return self.productPeriodInYears(package: package)
         }
 
         if !canDiscountDisplay(discount, unit: .year) {
@@ -872,11 +942,13 @@ extension VariablesV2 {
     func productOfferPeriodWithUnit(
         package: Package,
         localizations: [String: String],
-        promoOffer: PromotionalOffer?
+        offerContext: OfferContext
     ) -> String {
-        let introOffer = package.storeProduct.introductoryDiscount?.subscriptionPeriod
-        guard let period = promoOffer?.discount.subscriptionPeriod ?? introOffer else {
-            return ""
+        guard let period = resolvedDiscount(
+            for: package,
+            offerContext: offerContext
+        )?.subscriptionPeriod else {
+            return self.productPeriodWithUnit(package: package, localizations: localizations)
         }
 
         guard let localizedFormat = localizations[period.unitPeriodLocalizationKey] else {
@@ -886,8 +958,13 @@ extension VariablesV2 {
         return String(format: localizedFormat, period.value)
     }
 
-    func productOfferEndDate(package: Package, locale: Locale, date: Date, promoOffer: PromotionalOffer?) -> String {
-        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
+    func productOfferEndDate(
+        package: Package,
+        locale: Locale,
+        offerContext: OfferContext,
+        date: Date
+    ) -> String {
+        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
             return ""
         }
 
@@ -986,6 +1063,30 @@ private extension VariablesV2 {
         case .payAsYouGo, .payUpFront:
             return false
         }
+    }
+
+    func resolvedDiscount(
+        for package: Package,
+        offerContext: VariablesV2.OfferContext
+    ) -> StoreProductDiscount? {
+        let introDiscount = offerContext.isEligibleForIntroOffer
+            ? package.storeProduct.introductoryDiscount : nil
+        return offerContext.promoOffer?.discount ?? introDiscount
+    }
+
+    func formatDiscountPrice(
+        _ price: Decimal?,
+        package: Package,
+        showZeroDecimalPlacePrices: Bool,
+        fallback: String = ""
+    ) -> String {
+        guard let price, let formatter = package.storeProduct.priceFormatter else {
+            return fallback
+        }
+        return formatter.formattedPriceStrippingTrailingZerosIfNeeded(
+            price,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        ) ?? fallback
     }
 
 }

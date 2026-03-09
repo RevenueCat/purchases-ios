@@ -75,10 +75,8 @@ struct PurchaseButtonComponentView: View {
                 showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
             )
         }
-        .applyIf(self.shouldBeDisabled) {
-            $0.disabled(true)
-                .opacity(0.35)
-        }
+        .disabled(self.shouldBeDisabled)
+        .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
         #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
             SafariView(url: self.inAppBrowserURL!)

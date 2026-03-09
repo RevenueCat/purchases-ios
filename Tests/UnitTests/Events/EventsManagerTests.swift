@@ -14,7 +14,7 @@
 import Foundation
 import Nimble
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 import XCTest
 
@@ -60,7 +60,7 @@ class EventsManagerTests: TestCase {
     // MARK: - trackEvent
 
     func testTrackEvent() async throws {
-        let event: PaywallEvent = .impression(.random(), .random())
+        let event: PaywallEvent = .close(.random(), .random())
 
         await self.manager.track(featureEvent: event)
 
@@ -71,8 +71,8 @@ class EventsManagerTests: TestCase {
     }
 
     func testTrackMultipleEvents() async throws {
-        let event1: PaywallEvent = .impression(.random(), .random())
-        let event2: PaywallEvent = .close(.random(), .random())
+        let event1: PaywallEvent = .close(.random(), .random())
+        let event2: PaywallEvent = .cancel(.random(), .random())
 
         await self.manager.track(featureEvent: event1)
         await self.manager.track(featureEvent: event2)
@@ -99,6 +99,217 @@ class EventsManagerTests: TestCase {
 
         await self.manager.track(featureEvent: event)
 
+        await self.verifyEmptyStore()
+    }
+
+    // MARK: - toMap (Paywall Events)
+
+    func testPaywallImpressionToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let event: PaywallEvent = .impression(creationData, data)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_impression"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["offering_id"] as? String) == data.offeringIdentifier
+        expect(map["paywall_revision"] as? Int) == data.paywallRevision
+        expect(map["session_id"] as? String) == data.sessionIdentifier.uuidString
+        expect(map["display_mode"] as? String) == data.displayMode.identifier
+        expect(map["locale"] as? String) == data.localeIdentifier
+        expect(map["dark_mode"] as? Bool) == data.darkMode
+    }
+
+    func testPaywallCloseToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let event: PaywallEvent = .close(creationData, data)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_close"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["offering_id"] as? String) == data.offeringIdentifier
+        expect(map["paywall_revision"] as? Int) == data.paywallRevision
+        expect(map["session_id"] as? String) == data.sessionIdentifier.uuidString
+        expect(map["display_mode"] as? String) == data.displayMode.identifier
+        expect(map["locale"] as? String) == data.localeIdentifier
+        expect(map["dark_mode"] as? Bool) == data.darkMode
+    }
+
+    func testPaywallCancelToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let event: PaywallEvent = .cancel(creationData, data)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_cancel"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["session_id"] as? String) == data.sessionIdentifier.uuidString
+    }
+
+    func testPaywallExitOfferToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let exitOfferData = PaywallEvent.ExitOfferData(
+            exitOfferType: .dismiss,
+            exitOfferingIdentifier: "exit_offering"
+        )
+        let event: PaywallEvent = .exitOffer(creationData, data, exitOfferData)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_exit_offer"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["session_id"] as? String) == data.sessionIdentifier.uuidString
+    }
+
+    func testPaywallPurchaseInitiatedToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let event: PaywallEvent = .purchaseInitiated(creationData, data)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_purchase_initiated"
+    }
+
+    func testPaywallPurchaseErrorToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let event: PaywallEvent = .purchaseError(creationData, data)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_purchase_error"
+    }
+
+    // MARK: - toMap (Customer Center Events)
+
+    func testCustomerCenterImpressionToMap() {
+        let creationData = CustomerCenterEventCreationData()
+        let data = CustomerCenterEvent.Data(
+            locale: Locale(identifier: "en_US"),
+            darkMode: true,
+            isSandbox: false,
+            displayMode: .fullScreen
+        )
+        let event: CustomerCenterEvent = .impression(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "customer_center"
+        expect(map["type"] as? String) == "customer_center_impression"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["dark_mode"] as? Bool) == true
+        expect(map["locale"] as? String) == "en_US"
+        expect(map["display_mode"] as? String) == "full_screen"
+    }
+
+    func testCustomerCenterAnswerSubmittedToMap() {
+        let creationData = CustomerCenterEventCreationData()
+        let data = CustomerCenterAnswerSubmittedEvent.Data(
+            locale: Locale(identifier: "es_ES"),
+            darkMode: false,
+            isSandbox: true,
+            displayMode: .sheet,
+            path: .cancel,
+            url: URL(string: "https://example.com"),
+            surveyOptionID: "option_1",
+            revisionID: 42
+        )
+        let event: CustomerCenterAnswerSubmittedEvent = .answerSubmitted(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "customer_center"
+        expect(map["type"] as? String) == "customer_center_survey_option_chosen"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["dark_mode"] as? Bool) == false
+        expect(map["locale"] as? String) == "es_ES"
+        expect(map["display_mode"] as? String) == "sheet"
+        expect(map["survey_option_id"] as? String) == "option_1"
+        expect(map["path"] as? String) == "CANCEL"
+        expect(map["revision_id"] as? Int) == 42
+        expect(map["url"] as? String) == "https://example.com"
+    }
+
+    func testCustomerCenterAnswerSubmittedToMapWithNilUrl() {
+        let creationData = CustomerCenterEventCreationData()
+        let data = CustomerCenterAnswerSubmittedEvent.Data(
+            locale: Locale(identifier: "en_US"),
+            darkMode: true,
+            isSandbox: false,
+            displayMode: .fullScreen,
+            path: .refundRequest,
+            url: nil,
+            surveyOptionID: "option_2",
+            revisionID: 1
+        )
+        let event: CustomerCenterAnswerSubmittedEvent = .answerSubmitted(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["url"]).to(beNil())
+        expect(map["survey_option_id"] as? String) == "option_2"
+        expect(map["path"] as? String) == "REFUND_REQUEST"
+    }
+
+    // MARK: - toMap (Custom Paywall Events)
+
+    func testCustomPaywallImpressionToMapWithPaywallId() {
+        let creationData = CustomPaywallEvent.CreationData()
+        let data = CustomPaywallEvent.Data(paywallId: "my_paywall")
+        let event = CustomPaywallEvent.impression(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "custom_paywall_event"
+        expect(map["type"] as? String) == "custom_paywall_impression"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["paywall_id"] as? String) == "my_paywall"
+    }
+
+    func testCustomPaywallImpressionToMapWithoutPaywallId() {
+        let creationData = CustomPaywallEvent.CreationData()
+        let data = CustomPaywallEvent.Data(paywallId: nil)
+        let event = CustomPaywallEvent.impression(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "custom_paywall_event"
+        expect(map["type"] as? String) == "custom_paywall_impression"
+        expect(map["paywall_id"]).to(beNil())
+    }
+
+    // MARK: - trackEvent (Custom Paywall Impression)
+
+    func testTrackCustomPaywallImpressionEvent() async throws {
+        let event = CustomPaywallEvent.impression(
+            .init(),
+            .init(paywallId: "test_paywall")
+        )
+
+        await self.manager.track(featureEvent: event)
+        try await self.waitForPriorityFlush()
+
+        // Custom paywall impression is a priority event, so it triggers an immediate flush.
+        // The event should have been stored and then flushed.
+        expect(self.api.invokedPostPaywallEvents) == true
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
+        expect(self.api.invokedPostPaywallEventsParameters.first) == [
+            try XCTUnwrap(.init(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywalls,
+                appSessionID: self.appSessionID,
+                eventDiscriminator: nil
+            ))
+        ]
         await self.verifyEmptyStore()
     }
 
@@ -353,9 +564,9 @@ class EventsManagerTests: TestCase {
     func testFlushAllEventsFlushesFeatureAndAdEvents() async throws {
         self.createManagerWithAdEvents()
 
-        // Store feature events
-        let featureEvent1: PaywallEvent = .impression(.random(), .random())
-        let featureEvent2: PaywallEvent = .close(.random(), .random())
+        // Store feature events (use non-priority events to avoid auto-flush)
+        let featureEvent1: PaywallEvent = .close(.random(), .random())
+        let featureEvent2: PaywallEvent = .cancel(.random(), .random())
         await self.manager.track(featureEvent: featureEvent1)
         await self.manager.track(featureEvent: featureEvent2)
 
@@ -386,7 +597,7 @@ class EventsManagerTests: TestCase {
     func testFlushAllEventsOnlyFlushesFeatureEventsWhenAdStoreEmpty() async throws {
         self.createManagerWithAdEvents()
 
-        let featureEvent: PaywallEvent = .impression(.random(), .random())
+        let featureEvent: PaywallEvent = .close(.random(), .random())
         await self.manager.track(featureEvent: featureEvent)
 
         let result = try await self.manager.flushAllEvents(batchSize: 10)
@@ -419,7 +630,7 @@ class EventsManagerTests: TestCase {
     func testFlushAllEventsThrowsIfFeatureEventsFlushFails() async throws {
         self.createManagerWithAdEvents()
 
-        let featureEvent: PaywallEvent = .impression(.random(), .random())
+        let featureEvent: PaywallEvent = .close(.random(), .random())
         await self.manager.track(featureEvent: featureEvent)
 
         let adEvent: AdEvent = .randomDisplayedEvent()
@@ -448,7 +659,7 @@ class EventsManagerTests: TestCase {
     func testFlushAllEventsThrowsIfAdEventsFlushFails() async throws {
         self.createManagerWithAdEvents()
 
-        let featureEvent: PaywallEvent = .impression(.random(), .random())
+        let featureEvent: PaywallEvent = .close(.random(), .random())
         await self.manager.track(featureEvent: featureEvent)
 
         let adEvent: AdEvent = .randomDisplayedEvent()
@@ -474,6 +685,443 @@ class EventsManagerTests: TestCase {
         expect(self.api.invokedPostAdEvents) == true
     }
 
+    // MARK: - isPriorityEvent
+
+    func testPaywallImpressionIsPriorityEvent() {
+        let event: PaywallEvent = .impression(.random(), .random())
+        expect(event.isPriorityEvent) == true
+    }
+
+    func testPaywallCancelIsNotPriorityEvent() {
+        let event: PaywallEvent = .cancel(.random(), .random())
+        expect(event.isPriorityEvent) == false
+    }
+
+    func testPaywallCloseIsNotPriorityEvent() {
+        let event: PaywallEvent = .close(.random(), .random())
+        expect(event.isPriorityEvent) == false
+    }
+
+    func testCustomPaywallImpressionIsPriorityEvent() {
+        let event = CustomPaywallEvent.impression(.init(), .init(paywallId: "test"))
+        expect(event.isPriorityEvent) == true
+    }
+
+    // MARK: - Priority Event Flush
+
+    func testPriorityEventTriggersImmediateFlush() async throws {
+        let event: PaywallEvent = .impression(.random(), .random())
+
+        await self.manager.track(featureEvent: event)
+        try await self.waitForPriorityFlush()
+
+        expect(self.api.invokedPostPaywallEvents) == true
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
+        await self.verifyEmptyStore()
+
+        self.logger.verifyMessageWasLogged(
+            EventsManagerStrings.priority_flush_draining,
+            level: .debug
+        )
+    }
+
+    func testNonPriorityEventDoesNotTriggerFlush() async throws {
+        let event: PaywallEvent = .close(.random(), .random())
+
+        await self.manager.track(featureEvent: event)
+
+        expect(self.api.invokedPostPaywallEvents) == false
+        let events = await self.store.storedEvents
+        expect(events).to(haveCount(1))
+
+        self.logger.verifyMessageWasNotLogged(
+            EventsManagerStrings.priority_flush_draining,
+            level: .debug
+        )
+    }
+
+    // MARK: - Priority Flush Rate Limiting
+
+    func testPriorityFlushIsRateLimitedAfterExceedingMaxCalls() async throws {
+        let rateLimiter = RateLimiter(maxCalls: 2, period: 60)
+        self.manager = .init(
+            internalAPI: self.api,
+            userProvider: self.userProvider,
+            store: self.store,
+            systemInfo: MockSystemInfo(finishTransactions: true),
+            appSessionID: self.appSessionID,
+            adEventStore: nil,
+            priorityFlushRateLimiter: rateLimiter
+        )
+
+        // First two priority events should trigger flushes
+        let event1: PaywallEvent = .impression(.random(), .random())
+        let event2: PaywallEvent = .impression(.random(), .random())
+        await self.manager.track(featureEvent: event1)
+        try await self.waitForPriorityFlush()
+        await self.manager.track(featureEvent: event2)
+        try await self.waitForPriorityFlush()
+
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(2))
+        await self.verifyEmptyStore()
+
+        // Third priority event should be rate-limited: event stored but no flush
+        let event3: PaywallEvent = .impression(.random(), .random())
+        await self.manager.track(featureEvent: event3)
+        try await self.waitForPriorityFlush()
+
+        // No additional flush call
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(2))
+        // Event is still stored
+        let events = await self.store.storedEvents
+        expect(events).to(haveCount(1))
+
+        self.logger.verifyMessageWasLogged(
+            EventsManagerStrings.priority_flush_rate_limited(maxCalls: 2, period: 60),
+            level: .warn
+        )
+    }
+
+    func testPriorityFlushProceedsWithinRateLimit() async throws {
+        let rateLimiter = RateLimiter(maxCalls: 5, period: 60)
+        self.manager = .init(
+            internalAPI: self.api,
+            userProvider: self.userProvider,
+            store: self.store,
+            systemInfo: MockSystemInfo(finishTransactions: true),
+            appSessionID: self.appSessionID,
+            adEventStore: nil,
+            priorityFlushRateLimiter: rateLimiter
+        )
+
+        // Track 5 priority events — all should flush (within the limit)
+        for _ in 0..<5 {
+            let event: PaywallEvent = .impression(.random(), .random())
+            await self.manager.track(featureEvent: event)
+            try await self.waitForPriorityFlush()
+        }
+
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(5))
+        await self.verifyEmptyStore()
+
+        self.logger.verifyMessageWasNotLogged(
+            EventsManagerStrings.priority_flush_rate_limited(maxCalls: 5, period: 60),
+            level: .warn
+        )
+    }
+
+    #if compiler(>=6)
+    func testFlushDuringDrainIsRejected() async throws {
+        // The way this test is written does not work in iOS 15.
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        // Store a non-priority event
+        let event1: PaywallEvent = .close(.random(), .random())
+        await self.manager.track(featureEvent: event1)
+
+        let apiCallCount = Atomic<Int>(0)
+        let firstCallContinuation = AsyncStream<Void>.makeStream()
+        let secondCallContinuation = AsyncStream<Void>.makeStream()
+
+        self.api.stubbedPostPaywallEventsCallback = { completion in
+            Task {
+                let count = apiCallCount.value
+                apiCallCount.value = count + 1
+
+                if count == 0 {
+                    await firstCallContinuation.stream.first { _ in true }
+                } else if count == 1 {
+                    await secondCallContinuation.stream.first { _ in true }
+                }
+                completion(nil)
+            }
+        }
+
+        let manager = self.manager!
+
+        // Start a flush — held by delayed first API call
+        async let flushResult = manager.flushFeatureEvents(batchSize: 50)
+
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        // Track a priority event while flush is in progress — queues pending flush
+        let event2: PaywallEvent = .impression(.random(), .random())
+        await manager.track(featureEvent: event2)
+
+        // Complete first API call — drain starts, held by delayed second API call
+        firstCallContinuation.continuation.yield()
+        firstCallContinuation.continuation.finish()
+
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        // Drain is now in progress. Launch a concurrent flush in a separate Task
+        // so it competes for the actor. It should be rejected because the drain
+        // holds the flushInProgress flag.
+        let concurrentResult: Atomic<Int?> = .init(nil)
+        Task {
+            let result = try await manager.flushFeatureEvents(batchSize: 50)
+            concurrentResult.value = result
+        }
+
+        // Give the concurrent task time to enqueue on the actor
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        // Complete the drain
+        secondCallContinuation.continuation.yield()
+        secondCallContinuation.continuation.finish()
+
+        _ = try await flushResult
+
+        // Wait for the concurrent task to complete
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        // The concurrent flush should have returned 0 (rejected).
+        // If flushInProgress is not held during the drain, this would be nil
+        // (task still waiting) or non-zero (flushed concurrently).
+        expect(concurrentResult.value) == 0
+
+        self.logger.verifyMessageWasLogged(
+            Strings.paywalls.event_flush_already_in_progress,
+            level: .debug
+        )
+
+        await self.verifyEmptyStore()
+    }
+
+    func testPriorityFlushCoalescesWhenFlushInProgress() async throws {
+        // The way this test is written does not work in iOS 15.
+        // The second Task does not start until the first one is done.
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        // Store a non-priority event so there's something to flush
+        let event1: PaywallEvent = .close(.random(), .random())
+        await self.manager.track(featureEvent: event1)
+
+        // Set up the mock to delay the API response
+        let continuation = AsyncStream<Void>.makeStream()
+        let callCount = Atomic<Int>(0)
+
+        self.api.stubbedPostPaywallEventsCallback = { completion in
+            Task {
+                let count = callCount.value
+                callCount.value = count + 1
+
+                if count == 0 {
+                    // Only delay the first call
+                    await continuation.stream.first { _ in true }
+                }
+                completion(nil)
+            }
+        }
+
+        let manager = self.manager!
+
+        // Start a normal flush — this will be held by the delayed API response
+        async let flushResult = manager.flushFeatureEvents(batchSize: 50)
+
+        // Give the flush task time to start
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        // Track a priority event while the flush is in progress
+        // This should queue a pending priority flush instead of starting a new one
+        let event2: PaywallEvent = .impression(.random(), .random())
+        await manager.track(featureEvent: event2)
+
+        self.logger.verifyMessageWasLogged(
+            EventsManagerStrings.priority_flush_queued,
+            level: .debug
+        )
+
+        // Signal the first API call to complete
+        continuation.continuation.yield()
+        continuation.continuation.finish()
+
+        // Wait for the initial flush to complete
+        _ = try await flushResult
+        try await self.waitForPriorityFlush()
+
+        // The drain should have picked up and flushed the priority event
+        self.logger.verifyMessageWasLogged(
+            EventsManagerStrings.priority_flush_draining,
+            level: .debug
+        )
+
+        // All events should have been flushed
+        await self.verifyEmptyStore()
+        // First call: event1 from the manual flush; second call: event2 from the drain
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(2))
+    }
+
+    func testQueuedPriorityEventsDoNotExhaustRateLimiter() async throws {
+        // The way this test is written does not work in iOS 15.
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        // Use a rate limiter with maxCalls=2 so we can verify it's not exhausted
+        let rateLimiter = RateLimiter(maxCalls: 2, period: 60)
+        self.manager = .init(
+            internalAPI: self.api,
+            userProvider: self.userProvider,
+            store: self.store,
+            systemInfo: MockSystemInfo(finishTransactions: true),
+            appSessionID: self.appSessionID,
+            adEventStore: nil,
+            priorityFlushRateLimiter: rateLimiter
+        )
+
+        // Store a non-priority event to flush
+        let event1: PaywallEvent = .close(.random(), .random())
+        await self.manager.track(featureEvent: event1)
+
+        // Set up the mock to delay the API response
+        let continuation = AsyncStream<Void>.makeStream()
+        let callCount = Atomic<Int>(0)
+
+        self.api.stubbedPostPaywallEventsCallback = { completion in
+            Task {
+                let count = callCount.value
+                callCount.value = count + 1
+
+                if count == 0 {
+                    await continuation.stream.first { _ in true }
+                }
+                completion(nil)
+            }
+        }
+
+        let manager = self.manager!
+
+        // Start a flush — held by delayed API response
+        async let flushResult = manager.flushFeatureEvents(batchSize: 50)
+
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        // Track 3 priority events while flush is in progress.
+        // These should all coalesce into a single pending priority flush,
+        // NOT exhaust the rate limiter (which only allows 2 calls).
+        for _ in 0..<3 {
+            let event: PaywallEvent = .impression(.random(), .random())
+            await manager.track(featureEvent: event)
+        }
+
+        // Release the first flush
+        continuation.continuation.yield()
+        continuation.continuation.finish()
+        _ = try await flushResult
+        try await self.waitForPriorityFlush()
+
+        // The drain should have flushed the 3 queued events
+        await self.verifyEmptyStore()
+
+        // Now track another priority event — it should still flush
+        // because the rate limiter was only consumed once (by the drain), not 3 times
+        let finalEvent: PaywallEvent = .impression(.random(), .random())
+        await manager.track(featureEvent: finalEvent)
+        try await self.waitForPriorityFlush()
+
+        // Should NOT be rate limited — the rate limiter should have capacity remaining
+        self.logger.verifyMessageWasNotLogged(
+            EventsManagerStrings.priority_flush_rate_limited(maxCalls: 2, period: 60),
+            level: .warn
+        )
+        await self.verifyEmptyStore()
+    }
+    func testPendingPriorityFlushDrainsAfterFlushError() async throws {
+        // The way this test is written does not work in iOS 15.
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        // Store a non-priority event so there's something to flush
+        let event1: PaywallEvent = .close(.random(), .random())
+        await self.manager.track(featureEvent: event1)
+
+        // Set up the mock to delay the API response and fail the first call
+        let continuation = AsyncStream<Void>.makeStream()
+        let callCount = Atomic<Int>(0)
+
+        self.api.stubbedPostPaywallEventsCallback = { completion in
+            Task {
+                let count = callCount.value
+                callCount.value = count + 1
+
+                if count == 0 {
+                    await continuation.stream.first { _ in true }
+                    // First call fails with a non-synced error
+                    completion(.networkError(.offlineConnection()))
+                } else {
+                    completion(nil)
+                }
+            }
+        }
+
+        let manager = self.manager!
+
+        // Start a flush — held by delayed API response
+        async let flushResult: Int = {
+            do {
+                return try await manager.flushFeatureEvents(batchSize: 50)
+            } catch {
+                return -1
+            }
+        }()
+
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        // Track a priority event while flush is in progress — should queue
+        let event2: PaywallEvent = .impression(.random(), .random())
+        await manager.track(featureEvent: event2)
+
+        self.logger.verifyMessageWasLogged(
+            EventsManagerStrings.priority_flush_queued,
+            level: .debug
+        )
+
+        // Complete the first flush (which will fail)
+        continuation.continuation.yield()
+        continuation.continuation.finish()
+        _ = await flushResult
+        try await self.waitForPriorityFlush()
+
+        // The drain should have picked up and flushed the remaining events despite the error
+        self.logger.verifyMessageWasLogged(
+            EventsManagerStrings.priority_flush_draining,
+            level: .debug
+        )
+
+        await self.verifyEmptyStore()
+    }
+    #endif
+
+    func testScheduledFlushStillWorksWhenPriorityFlushIsRateLimited() async throws {
+        let rateLimiter = RateLimiter(maxCalls: 1, period: 60)
+        self.manager = .init(
+            internalAPI: self.api,
+            userProvider: self.userProvider,
+            store: self.store,
+            systemInfo: MockSystemInfo(finishTransactions: true),
+            appSessionID: self.appSessionID,
+            adEventStore: nil,
+            priorityFlushRateLimiter: rateLimiter
+        )
+
+        // First priority event flushes
+        let event1: PaywallEvent = .impression(.random(), .random())
+        await self.manager.track(featureEvent: event1)
+        try await self.waitForPriorityFlush()
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
+
+        // Second priority event is rate-limited — stored but not flushed
+        let event2: PaywallEvent = .impression(.random(), .random())
+        await self.manager.track(featureEvent: event2)
+        try await self.waitForPriorityFlush()
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
+
+        // Scheduled flush should still pick up the stored event
+        let result = try await self.manager.flushFeatureEvents(
+            batchSize: EventsManager.defaultEventBatchSize
+        )
+        expect(result) == 1
+        await self.verifyEmptyStore()
+    }
+
     // MARK: -
 
     private static let userID = "nacho"
@@ -485,8 +1133,14 @@ class EventsManagerTests: TestCase {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension EventsManagerTests {
 
+    /// Waits briefly for fire-and-forget priority flush Tasks to complete.
+    func waitForPriorityFlush() async throws {
+        try await Task.sleep(nanoseconds: 100_000_000)
+    }
+
+    /// Stores a non-priority event that won't trigger an automatic flush.
     func storeRandomEvent() async -> PaywallEvent {
-        let event: PaywallEvent = .impression(.random(), .random())
+        let event: PaywallEvent = .close(.random(), .random())
         await self.manager.track(featureEvent: event)
 
         return event

@@ -806,6 +806,8 @@ final class PurchasesOrchestrator {
                 // throw an error so the wasBackgrounded flag is included in the error's userInfo.
                 if wasBackgrounded || self.systemInfo.dangerousSettings.customEntitlementComputation {
                     throw ErrorUtils.purchaseCancelledError(wasBackgrounded: wasBackgrounded)
+                } else {
+                    self.clearCachedPresentedOfferingContext(for: sk2Product.id)
                 }
             case let .successfulVerifiedTransaction(verifiedTransaction):
                 userCancelled = false
@@ -815,6 +817,16 @@ final class PurchasesOrchestrator {
             let customerInfo: CustomerInfo
 
             if let transaction = transaction {
+
+                if let expirationDate = transaction.sk2Transaction?.expirationDate,
+                   expirationDate < self.dateProvider.now() {
+                    Logger.appleWarning(
+                        StoreKitStrings.sk2_purchase_did_not_error_but_expiration_date_is_in_past(
+                            expirationDate: expirationDate
+                        )
+                    )
+                }
+
                 customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
                 self.postFeatureEventsIfNeeded()
             } else {
@@ -850,6 +862,7 @@ final class PurchasesOrchestrator {
         promotionalOfferId: String?,
         winBackOfferApplied: Bool
     ) async throws -> PurchaseResultData {
+        self.clearCachedPresentedOfferingContext(for: productId)
         // Check if app was backgrounded during purchase (for UPI/external payment app detection)
         let wasBackgrounded = self.getAndClearBackgroundedState(productIdentifier: productId)
 
@@ -1232,6 +1245,7 @@ private extension PurchasesOrchestrator {
     func handleFailedTransaction(_ transaction: SKPaymentTransaction) {
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
         let productIdentifier = storeTransaction.productIdentifier
+        self.clearCachedPresentedOfferingContext(for: productIdentifier)
 
         if let error = transaction.error,
            let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) {

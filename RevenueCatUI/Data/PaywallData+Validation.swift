@@ -25,15 +25,55 @@ extension Offering {
                                   template: PaywallTemplate,
                                   error: Offering.PaywallValidationError?)
 
+    /// Errors that can occur during paywall validation.
+    ///
+    /// When validation fails, the paywall falls back to a default Template 2 layout
+    /// using the offering's available packages. In debug builds, a red error banner
+    /// is displayed; in production, the fallback renders silently.
     enum PaywallValidationError: Swift.Error, Equatable {
 
+        /// The offering has no configured paywall (`offering.paywall == nil`).
+        ///
+        /// This typically means no paywall was set up in the RevenueCat dashboard,
+        /// or a v2 paywall exists but hasn't been published yet.
         case missingPaywall(Offering)
+
+        /// The paywall has no localization data.
+        ///
+        /// For single-tier paywalls: `localizedConfiguration` is nil.
+        /// For multi-tier paywalls: `localizedConfigurationByTier` is nil.
         case missingLocalization
+
+        /// A multi-tier paywall has an empty `config.tiers` array.
+        ///
+        /// Multi-tier templates require at least one tier to be configured.
         case missingTiers
+
+        /// A tier ID exists in the paywall config but has no corresponding localization entry.
+        ///
+        /// The tier was configured but `localizedConfigurationByTier[tier.id]` returns nil.
         case missingTier(PaywallData.Tier)
+
+        /// A tier has localization data but its `tierName` is nil or empty.
+        ///
+        /// Tier names are required for the tier selection UI (e.g., "Basic", "Premium").
         case missingTierName(PaywallData.Tier)
+
+        /// The `templateName` doesn't match any known `PaywallTemplate` enum case.
+        ///
+        /// This can happen if a newer template is used with an older SDK version.
         case invalidTemplate(String)
+
+        /// Localization strings contain unrecognized template variables.
+        ///
+        /// Valid variables include: `app_name`, `price`, `total_price_and_per_month`,
+        /// `sub_price_per_month`, `sub_duration`, `sub_offer_price`, etc.
+        /// Unrecognized variables would render as raw `{{ variable }}` text.
         case invalidVariables(Set<String>)
+
+        /// Feature items reference icon IDs that don't exist in the `PaywallIcon` enum.
+        ///
+        /// Check `PaywallIcon` for the list of valid icon identifiers.
         case invalidIcons(Set<String>)
 
     }
@@ -70,7 +110,6 @@ extension Offering {
                     error: .missingPaywall(self))
         }
     }
-
 }
 
 // MARK: - PaywallData validation
