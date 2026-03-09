@@ -19,11 +19,10 @@ final class RCAdMobAPISurfaceTests: RCAdMobTestCase {
         let nativeLoadAndTrackWithDelegate:
             (RCGoogleMobileAds.AdLoader) -> (
                 RCGoogleMobileAds.Request,
-                String,
                 String?,
                 RCGoogleMobileAds.NativeAdDelegate?
             ) -> Void = RCGoogleMobileAds.AdLoader.loadAndTrack(
-                _:adUnitID:placement:nativeAdDelegate:
+                _:placement:nativeAdDelegate:
             )
 
         XCTAssertNotNil(bannerLoadAndTrack)

@@ -198,7 +198,6 @@ class AdMobManager: NSObject, ObservableObject {
         adLoader.delegate = self
         adLoader.loadAndTrack(
             Request(),
-            adUnitID: adUnitID,
             placement: placement,
             nativeAdDelegate: nil
         )

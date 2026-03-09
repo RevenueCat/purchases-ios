@@ -15,7 +15,6 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
         adLoader.loadAndTrack(
             Request(),
-            adUnitID: "native_unit",
             placement: "feed",
             nativeAdDelegate: nil
         )
@@ -37,7 +36,6 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
         adLoader.loadAndTrack(
             Request(),
-            adUnitID: "native_unit",
             placement: "feed",
             nativeAdDelegate: nil
         )
@@ -59,7 +57,6 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
         adLoader.loadAndTrack(
             Request(),
-            adUnitID: "native_unit",
             placement: "feed",
             nativeAdDelegate: nil
         )
@@ -85,7 +82,6 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
         adLoader.loadAndTrack(
             Request(),
-            adUnitID: "native_unit",
             placement: "feed",
             nativeAdDelegate: explicitNativeDelegate
         )
@@ -111,7 +107,6 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
         adLoader.loadAndTrack(
             Request(),
-            adUnitID: "native_unit",
             placement: "feed",
             nativeAdDelegate: nil
         )

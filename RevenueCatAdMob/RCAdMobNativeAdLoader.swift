@@ -21,14 +21,14 @@ private enum RCNativeAdLoaderAssociatedKeys {
 
     /// Loads a native ad request, tracks lifecycle events with RevenueCat, and forwards callbacks.
     ///
+    /// Uses this loader's own `adUnitID` for tracking to guarantee consistency.
+    ///
     /// - Parameters:
     ///   - request: The AdMob request used to load the ad.
-    ///   - adUnitID: The AdMob ad unit identifier associated with this request.
     ///   - placement: Optional placement label used for RevenueCat analytics.
     ///   - nativeAdDelegate: Optional delegate that will receive native ad callbacks.
     func loadAndTrack(
         _ request: GoogleMobileAds.Request,
-        adUnitID: String,
         placement: String? = nil,
         nativeAdDelegate: (any GoogleMobileAds.NativeAdDelegate)? = nil
     ) {
@@ -36,7 +36,7 @@ private enum RCNativeAdLoaderAssociatedKeys {
             .forwardedLoaderDelegate ?? self.delegate
 
         let proxy = RCNativeAdLoaderDelegateProxy(
-            adUnitID: adUnitID,
+            adUnitID: self.adUnitID,
             placement: placement,
             delegate: previousDelegate,
             nativeAdDelegate: nativeAdDelegate
@@ -57,14 +57,14 @@ private enum RCNativeAdLoaderAssociatedKeys {
 
     /// Loads a native ad request, tracks lifecycle events with RevenueCat, and forwards callbacks.
     ///
+    /// Uses this loader's own `adUnitID` for tracking to guarantee consistency.
+    ///
     /// - Parameters:
     ///   - request: The AdMob request used to load the ad.
-    ///   - adUnitID: The AdMob ad unit identifier associated with this request.
     ///   - placement: Optional placement label used for RevenueCat analytics.
     ///   - nativeAdDelegate: Optional delegate that will receive native ad callbacks.
     func loadAndTrack(
         _ request: GADRequest,
-        adUnitID: String,
         placement: String? = nil,
         nativeAdDelegate: GADNativeAdDelegate? = nil
     ) {
@@ -72,7 +72,7 @@ private enum RCNativeAdLoaderAssociatedKeys {
             .forwardedLoaderDelegate ?? self.delegate
 
         let proxy = RCNativeAdLoaderDelegateProxy(
-            adUnitID: adUnitID,
+            adUnitID: self.adUnitID,
             placement: placement,
             delegate: previousDelegate,
             nativeAdDelegate: nativeAdDelegate
