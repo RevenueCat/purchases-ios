@@ -1,8 +1,10 @@
+// swiftlint:disable file_length
 import Foundation
 import XCTest
 
 #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(GoogleMobileAds)
 import GoogleMobileAds
+@_spi(Experimental) import RevenueCat
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
@@ -306,6 +308,100 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
             placement: "native_feed",
             adUnitId: "native_unit"
         ))
+    }
+
+    func testLoadAndTrackRevenueEventContainsCorrectRevenueData() {
+        let mockTracker = MockAdTracker()
+        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adLoader = Self.makeAdLoader()
+        let spy = AdLoaderDelegateSpy()
+        adLoader.delegate = spy
+
+        adLoader.loadAndTrack(
+            Request(),
+            placement: "native_feed",
+            nativeAdDelegate: nil,
+            rcAdMob: rcAdMob
+        )
+
+        let nativeBacking = NativeAdPlaceholder()
+        let nativeDelegate = adLoader.delegate as? NativeAdLoaderDelegate
+        nativeDelegate?.adLoader(adLoader, didReceive: Self.makeNativeAdPlaceholder(backing: nativeBacking))
+
+        nativeBacking.paidEventHandler?(Self.makeAdValuePlaceholder())
+
+        XCTAssertEqual(mockTracker.revenueData.count, 1)
+        let revenue = mockTracker.revenueData[0]
+        XCTAssertEqual(revenue.revenueMicros, 1_000_000)
+        XCTAssertEqual(revenue.currency, "USD")
+        XCTAssertEqual(revenue.precision, AdRevenue.Precision.unknown)
+        XCTAssertEqual(revenue.adFormat, AdFormat.native)
+        XCTAssertEqual(revenue.placement, "native_feed")
+        XCTAssertEqual(revenue.adUnitId, "native_unit")
+        XCTAssertEqual(revenue.mediatorName, MediatorName.adMob)
+    }
+
+    func testLoadAndTrackFailedToLoadCapturesErrorCode() {
+        let mockTracker = MockAdTracker()
+        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adLoader = Self.makeAdLoader()
+        let spy = AdLoaderDelegateSpy()
+        adLoader.delegate = spy
+
+        adLoader.loadAndTrack(
+            Request(),
+            placement: "native_feed",
+            nativeAdDelegate: nil,
+            rcAdMob: rcAdMob
+        )
+
+        adLoader.delegate?.adLoader(
+            adLoader,
+            didFailToReceiveAdWithError: NSError(domain: "com.google.ads", code: 7)
+        )
+
+        XCTAssertEqual(mockTracker.failedToLoadData.count, 1)
+        XCTAssertEqual(mockTracker.failedToLoadData[0].mediatorErrorCode, 7)
+    }
+
+    func testPaidHandlerWhenNativeAdDeallocatedSkipsTrackingButCallsExistingHandler() {
+        let mockTracker = MockAdTracker()
+        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adLoader = Self.makeAdLoader()
+        let spy = AdLoaderDelegateSpy()
+        adLoader.delegate = spy
+
+        adLoader.loadAndTrack(
+            Request(),
+            placement: "native_feed",
+            nativeAdDelegate: nil,
+            rcAdMob: rcAdMob
+        )
+
+        var existingHandlerCalled = false
+        var capturedHandler: ((RCGoogleMobileAds.AdValue) -> Void)?
+        var callsAfterLoad = 0
+
+        do {
+            let backing = NativeAdPlaceholder()
+            backing.paidEventHandler = { _ in existingHandlerCalled = true }
+
+            let nativeDelegate = adLoader.delegate as? NativeAdLoaderDelegate
+            nativeDelegate?.adLoader(adLoader, didReceive: Self.makeNativeAdPlaceholder(backing: backing))
+
+            capturedHandler = backing.paidEventHandler
+            callsAfterLoad = mockTracker.calls.count
+        }
+
+        capturedHandler?(Self.makeAdValuePlaceholder())
+
+        XCTAssertTrue(existingHandlerCalled)
+        XCTAssertEqual(
+            mockTracker.calls.filter { $0.method == "trackAdRevenue" }.count,
+            0,
+            "Revenue should not be tracked when the native ad has been deallocated"
+        )
+        XCTAssertEqual(mockTracker.calls.count, callsAfterLoad)
     }
 
     // MARK: - Helpers

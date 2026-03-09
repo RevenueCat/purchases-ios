@@ -21,6 +21,10 @@ final class MockAdTracker: AdTracking {
     private(set) var revenueData: [AdRevenue] = []
     private(set) var failedToLoadData: [AdFailedToLoad] = []
 
+    private(set) var loadedData: [AdLoaded] = []
+    private(set) var displayedData: [AdDisplayed] = []
+    private(set) var openedData: [AdOpened] = []
+
     func trackAdLoaded(_ data: AdLoaded) {
         self.calls.append(Call(
             method: "trackAdLoaded",
@@ -28,6 +32,7 @@ final class MockAdTracker: AdTracking {
             placement: data.placement,
             adUnitId: data.adUnitId
         ))
+        self.loadedData.append(data)
     }
 
     func trackAdDisplayed(_ data: AdDisplayed) {
@@ -37,6 +42,7 @@ final class MockAdTracker: AdTracking {
             placement: data.placement,
             adUnitId: data.adUnitId
         ))
+        self.displayedData.append(data)
     }
 
     func trackAdOpened(_ data: AdOpened) {
@@ -46,6 +52,7 @@ final class MockAdTracker: AdTracking {
             placement: data.placement,
             adUnitId: data.adUnitId
         ))
+        self.openedData.append(data)
     }
 
     func trackAdRevenue(_ data: AdRevenue) {
@@ -368,10 +375,104 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         XCTAssertEqual(self.mockTracker.revenueData.count, 1)
     }
 
+    func testTrackFailedToLoadCapturesErrorCode() {
+        let error = NSError(domain: "com.google.ads", code: 42, userInfo: nil)
+        self.rcAdMob.trackFailedToLoad(
+            placement: "feed",
+            adUnitID: "ca-app-pub-456",
+            adFormat: .banner,
+            error: error
+        )
+
+        XCTAssertEqual(self.mockTracker.failedToLoadData.count, 1)
+        XCTAssertEqual(self.mockTracker.failedToLoadData[0].mediatorErrorCode, 42)
+    }
+
+    func testTrackLoadedExtractsResponseInfoFields() {
+        self.rcAdMob.trackLoaded(
+            responseInfo: Self.makeResponseInfoPlaceholder(),
+            placement: "home",
+            adUnitID: "ca-app-pub-123",
+            adFormat: .interstitial
+        )
+
+        XCTAssertEqual(self.mockTracker.loadedData.count, 1)
+        let loaded = self.mockTracker.loadedData[0]
+        XCTAssertEqual(loaded.networkName, "GADMAdapterTestNetwork")
+        XCTAssertEqual(loaded.impressionId, "resp-id-abc")
+    }
+
+    func testTrackRevenueExtractsResponseInfoFields() {
+        self.rcAdMob.trackRevenue(
+            placement: "home",
+            adUnitID: "ca-app-pub-123",
+            adFormat: .interstitial,
+            responseInfo: Self.makeResponseInfoPlaceholder(),
+            adValue: Self.makeAdValuePlaceholder()
+        )
+
+        XCTAssertEqual(self.mockTracker.revenueData.count, 1)
+        let revenue = self.mockTracker.revenueData[0]
+        XCTAssertEqual(revenue.networkName, "GADMAdapterTestNetwork")
+        XCTAssertEqual(revenue.impressionId, "resp-id-abc")
+    }
+
+    func testHandleLoadOutcomeForwardsCallbacksToUserDelegate() {
+        let fakeAd = FakeFullScreenAd()
+        let spy = FullScreenContentDelegateSpy()
+        let context = FullScreenLoadContext(
+            placement: "test",
+            adUnitID: "unit",
+            adFormat: .interstitial,
+            fullScreenContentDelegate: spy,
+            paidEventHandler: nil,
+            responseInfo: nil
+        )
+
+        self.rcAdMob.handleLoadOutcome(
+            loadedAd: fakeAd, error: nil, context: context
+        ) { _, _ in }
+
+        let presentingAd = FakeFullScreenPresentingAd()
+        fakeAd.fullScreenContentDelegate?.adDidRecordImpression?(presentingAd)
+        fakeAd.fullScreenContentDelegate?.adDidRecordClick?(presentingAd)
+        fakeAd.fullScreenContentDelegate?.adWillPresentFullScreenContent?(presentingAd)
+        fakeAd.fullScreenContentDelegate?.adWillDismissFullScreenContent?(presentingAd)
+        fakeAd.fullScreenContentDelegate?.adDidDismissFullScreenContent?(presentingAd)
+
+        XCTAssertTrue(spy.didRecordImpression)
+        XCTAssertTrue(spy.didRecordClick)
+        XCTAssertTrue(spy.willPresent)
+        XCTAssertTrue(spy.willDismiss)
+        XCTAssertTrue(spy.didDismiss)
+    }
+
+    func testNilAdUnitIDMapsToEmptyString() {
+        self.rcAdMob.trackLoaded(
+            responseInfo: nil,
+            placement: "test",
+            adUnitID: nil,
+            adFormat: .banner
+        )
+
+        XCTAssertEqual(self.mockTracker.loadedData.count, 1)
+        XCTAssertEqual(self.mockTracker.loadedData[0].adUnitId, "")
+    }
+
     // MARK: - Helpers
 
     private static func makeAdValuePlaceholder() -> RCGoogleMobileAds.AdValue {
         return unsafeBitCast(TrackingTestAdValuePlaceholder(), to: RCGoogleMobileAds.AdValue.self)
+    }
+
+    private static func makeResponseInfoPlaceholder() -> RCGoogleMobileAds.ResponseInfo {
+        return unsafeBitCast(
+            ResponseInfoPlaceholder(
+                identifier: "resp-id-abc",
+                networkClassName: "GADMAdapterTestNetwork"
+            ),
+            to: RCGoogleMobileAds.ResponseInfo.self
+        )
     }
 }
 
@@ -524,6 +625,50 @@ private final class TrackingTestAdValuePlaceholder: NSObject {
     @objc var value: NSDecimalNumber { NSDecimalNumber(string: "0.0025") }
     @objc var currencyCode: String { "EUR" }
     @objc var precision: Int { 3 }
+}
+
+@available(iOS 15.0, *)
+private final class AdNetworkResponseInfoPlaceholder: NSObject {
+    @objc let adNetworkClassName: String
+    init(className: String) {
+        self.adNetworkClassName = className
+    }
+}
+
+@available(iOS 15.0, *)
+private final class ResponseInfoPlaceholder: NSObject {
+    @objc let responseIdentifier: String?
+    @objc let loadedAdNetworkResponseInfo: AnyObject?
+
+    init(identifier: String, networkClassName: String) {
+        self.responseIdentifier = identifier
+        self.loadedAdNetworkResponseInfo = AdNetworkResponseInfoPlaceholder(className: networkClassName)
+    }
+}
+
+@available(iOS 15.0, *)
+private final class FullScreenContentDelegateSpy: NSObject, RCGoogleMobileAds.FullScreenContentDelegate {
+    var didRecordImpression = false
+    var didRecordClick = false
+    var willPresent = false
+    var willDismiss = false
+    var didDismiss = false
+
+    func adDidRecordImpression(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+        self.didRecordImpression = true
+    }
+    func adDidRecordClick(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+        self.didRecordClick = true
+    }
+    func adWillPresentFullScreenContent(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+        self.willPresent = true
+    }
+    func adWillDismissFullScreenContent(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+        self.willDismiss = true
+    }
+    func adDidDismissFullScreenContent(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+        self.didDismiss = true
+    }
 }
 
 #endif

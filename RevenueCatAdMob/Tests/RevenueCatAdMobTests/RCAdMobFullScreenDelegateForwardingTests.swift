@@ -162,6 +162,27 @@ final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
         XCTAssertEqual(spy.presentFailureCode, 31)
     }
 
+    func testDidFailToPresentFullScreenContentDoesNotTriggerTracking() {
+        let mockTracker = MockAdTracker()
+        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let spy = FullScreenDelegateSpy()
+        let subject = RCAdMobFullScreenContentDelegate(
+            rcAdMob: rcAdMob,
+            delegate: spy,
+            placement: "interstitial_home",
+            adUnitID: "test_unit",
+            adFormat: .interstitial,
+            responseInfoProvider: { nil }
+        )
+        let presentingAd = PresentingAdStub()
+        let error = NSError(domain: "test", code: 99)
+
+        subject.ad(presentingAd, didFailToPresentFullScreenContentWithError: error)
+
+        XCTAssertTrue(mockTracker.calls.isEmpty)
+        XCTAssertEqual(spy.presentFailureCode, 99)
+    }
+
     func testTrackingFullScreenDelegateReadsResponseInfoOnlyForTrackedCallbacks() {
         var responseInfoReads = 0
         let subject = RCAdMobFullScreenContentDelegate(
