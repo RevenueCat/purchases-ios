@@ -1,59 +1,43 @@
 import ProjectDescription
 
 extension TargetDependency {
-    /// Returns a RevenueCat dependency that can be either local or external
-    /// - Parameter local: If true, returns a local project dependency. If false, returns an external dependency
-    /// from spm
+    /// Returns the RevenueCat dependency based on the dependency mode
     /// - Returns: A TargetDependency for RevenueCat
     public static var revenueCat: TargetDependency {
-        if Environment.local {
-            .project(
-                target: "RevenueCat",
-                path: .relativeToRoot("Projects/RevenueCat")
-            )
-        } else {
-            .revenueCatLocal
+        switch Environment.dependencyMode {
+        case .localSwiftPackage, .remoteSwiftPackage:
+            return .revenueCatSwiftPackageDependency
+        case .remoteXcodeProject:
+            return .revenueCatRemoteXcodeProjectDependency
+        case .localXcodeProject:
+            return .revenueCatXcodeProjectDependency
         }
     }
 
-    /// Returns a local RevenueCat dependency from SPM
-    /// - Returns: A TargetDependency for RevenueCat from external source
-    public static var revenueCatLocal: TargetDependency {
-        .external(
-            name: "RevenueCat"
-        )
-    }
-
-    /// Returns a RevenueCat dependency with custom entitlement computation enabled
-    /// - Returns: A TargetDependency for RevenueCat_CustomEntitlementComputation
-    public static var revenueCatCustomEntitlementComputation: TargetDependency {
-        .project(
-            target: "RevenueCat_CustomEntitlementComputation",
-            path: .relativeToRoot("Projects/RevenueCat")
-        )
-    }
-
-    /// Returns a RevenueCatUI dependency that can be either local or external
-    /// - Parameter local: If true, returns a local project dependency. If false, returns an external dependency 
-    /// from spm
+    /// Returns the RevenueCatUI dependency based on the dependency mode
     /// - Returns: A TargetDependency for RevenueCatUI
     public static var revenueCatUI: TargetDependency {
-        if Environment.local {
-            .project(
-                target: "RevenueCatUI",
-                path: .relativeToRoot("Projects/RevenueCatUI")
-            )
-        } else {
-            .revenueCatUILocal
+        switch Environment.dependencyMode {
+        case .localSwiftPackage, .remoteSwiftPackage:
+            return .revenueCatUISwiftPackageDependency
+        case .remoteXcodeProject:
+            return .revenueCatUIRemoteXcodeProjectDependency
+        case .localXcodeProject:
+            return .revenueCatUIXcodeProjectDependency
         }
     }
 
-    /// Returns a local RevenueCatUI dependency from SPM
-    /// - Returns: A TargetDependency for RevenueCatUI from external source
-    public static var revenueCatUILocal: TargetDependency {
-        .external(
-            name: "RevenueCatUI"
-        )
+    /// Returns the RevenueCat_CustomEntitlementComputation dependency based on the dependency mode
+    /// - Returns: A TargetDependency for RevenueCat_CustomEntitlementComputation
+    public static var revenueCatCustomEntitlementComputation: TargetDependency {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage, .remoteSwiftPackage:
+            return .revenueCatCustomEntitlementComputationSwiftPackageDependency
+        case .remoteXcodeProject:
+            return .revenueCatCustomEntitlementComputationRemoteXcodeProjectDependency
+        case .localXcodeProject:
+            return .revenueCatCustomEntitlementComputationXcodeProjectDependency
+        }
     }
 
     /// Returns a RevenueCatAdMob dependency from the local Tuist project
@@ -65,13 +49,93 @@ extension TargetDependency {
         )
     }
 
-    /// Returns a ReceiptParser dependency
+    /// Returns the ReceiptParser dependency based on the dependency mode
     /// - Returns: A TargetDependency for ReceiptParser
-    public static var receiptparser: TargetDependency {
+    public static var receiptParser: TargetDependency {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage, .remoteSwiftPackage:
+            return .receiptParserSwiftPackageDependency
+        case .remoteXcodeProject:
+            return .receiptParserRemoteXcodeProjectDependency
+        case .localXcodeProject:
+            return .receiptParserXcodeProjectDependency
+        }
+    }
+
+    // MARK: - RevenueCat
+
+    /// RevenueCat as a native Xcode SPM package dependency (used for both local and remote SPM modes)
+    static var revenueCatSwiftPackageDependency: TargetDependency {
+        .package(product: "RevenueCat", type: .runtime)
+    }
+
+    /// RevenueCat as a Tuist-managed XcodeProj dependency (resolved via Tuist/Package.swift)
+    static var revenueCatRemoteXcodeProjectDependency: TargetDependency {
+        .external(name: "RevenueCat")
+    }
+
+    /// RevenueCat as a local Tuist project target dependency
+    static var revenueCatXcodeProjectDependency: TargetDependency {
+        .project(
+            target: "RevenueCat",
+            path: .relativeToRoot("Projects/RevenueCat"))
+    }
+
+    // MARK: - RevenueCatUI
+
+    /// RevenueCatUI as a native Xcode SPM package dependency (used for both local and remote SPM modes)
+    static var revenueCatUISwiftPackageDependency: TargetDependency {
+        .package(product: "RevenueCatUI", type: .runtime)
+    }
+
+    /// RevenueCatUI as a Tuist-managed XcodeProj dependency (resolved via Tuist/Package.swift)
+    static var revenueCatUIRemoteXcodeProjectDependency: TargetDependency {
+        .external(name: "RevenueCatUI")
+    }
+
+    /// RevenueCatUI as a local Tuist project target dependency
+    static var revenueCatUIXcodeProjectDependency: TargetDependency {
+        .project(
+            target: "RevenueCatUI",
+            path: .relativeToRoot("Projects/RevenueCatUI"))
+    }
+
+    // MARK: - Custom Entitlement Computation
+
+    /// RevenueCat_CustomEntitlementComputation as a native Xcode SPM package dependency
+    static var revenueCatCustomEntitlementComputationSwiftPackageDependency: TargetDependency {
+        .package(product: "RevenueCat_CustomEntitlementComputation", type: .runtime)
+    }
+
+    /// RevenueCat_CustomEntitlementComputation as a Tuist-managed XcodeProj dependency
+    static var revenueCatCustomEntitlementComputationRemoteXcodeProjectDependency: TargetDependency {
+        .external(name: "RevenueCat_CustomEntitlementComputation")
+    }
+
+    /// RevenueCat_CustomEntitlementComputation as a local Tuist project target dependency
+    static var revenueCatCustomEntitlementComputationXcodeProjectDependency: TargetDependency {
+        .project(
+            target: "RevenueCat_CustomEntitlementComputation",
+            path: .relativeToRoot("Projects/RevenueCat"))
+    }
+
+    // MARK: - Receipt Parser
+
+    /// ReceiptParser as a native Xcode SPM package dependency
+    static var receiptParserSwiftPackageDependency: TargetDependency {
+        .package(product: "ReceiptParser", type: .runtime)
+    }
+
+    /// ReceiptParser as a Tuist-managed XcodeProj dependency
+    static var receiptParserRemoteXcodeProjectDependency: TargetDependency {
+        .external(name: "ReceiptParser")
+    }
+
+    /// ReceiptParser as a local Tuist project target dependency
+    static var receiptParserXcodeProjectDependency: TargetDependency {
         .project(
             target: "ReceiptParser",
-            path: .relativeToRoot("Projects/RevenueCat")
-        )
+            path: .relativeToRoot("Projects/RevenueCat"))
     }
 
     /// Returns a dependency for the Nimble testing framework

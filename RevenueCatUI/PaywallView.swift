@@ -518,6 +518,9 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.dismiss)
     private var dismiss
 
+    @Environment(\.paywallSource)
+    private var paywallSource
+
     init(
         offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,
@@ -631,7 +634,8 @@ struct LoadedOfferingPaywallView: View {
             sessionID: .init(),
             displayMode: self.mode,
             locale: .current,
-            darkMode: self.colorScheme == .dark
+            darkMode: self.colorScheme == .dark,
+            source: self.paywallSource
         )
     }
 

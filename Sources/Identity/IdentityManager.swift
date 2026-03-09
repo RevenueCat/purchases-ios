@@ -108,6 +108,11 @@ class IdentityManager: CurrentUserProvider {
     }
 
     func switchUser(to newAppUserID: String) {
+        guard self.currentAppUserID != Self.uiPreviewModeAppUserID &&
+              newAppUserID != Self.uiPreviewModeAppUserID else {
+            Logger.error(Strings.identity.operation_not_supported_in_preview_mode)
+            return
+        }
         Logger.debug(Strings.identity.switching_user(newUserID: newAppUserID))
         self.resetCacheAndSave(newUserID: newAppUserID)
     }
