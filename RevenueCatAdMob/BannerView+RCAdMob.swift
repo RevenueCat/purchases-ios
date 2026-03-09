@@ -22,7 +22,6 @@ private enum RCBannerAssociatedKeys {
 @available(iOS 15.0, *)
 internal extension RCGoogleMobileAds.BannerView {
 
-    // swiftlint:disable:next function_body_length
     func loadAndTrack(
         request: RCGoogleMobileAds.Request,
         placement: String?,
@@ -46,6 +45,20 @@ internal extension RCGoogleMobileAds.BannerView {
         )
         self.delegate = trackingDelegate
 
+        installPaidEventHandlerWrapper(
+            paidEventHandler: paidEventHandler,
+            placement: placement,
+            rcAdMob: rcAdMob
+        )
+
+        self.load(request)
+    }
+
+    private func installPaidEventHandlerWrapper(
+        paidEventHandler: ((RCGoogleMobileAds.AdValue) -> Void)?,
+        placement: String?,
+        rcAdMob: RCAdMob
+    ) {
         let storedPaidHandler = objc_getAssociatedObject(self, &RCBannerAssociatedKeys.originalPaidHandler)
             as? ((RCGoogleMobileAds.AdValue) -> Void)
         let didInstallWrapper = (objc_getAssociatedObject(self, &RCBannerAssociatedKeys.didInstallPaidHandlerWrapper)
@@ -84,8 +97,6 @@ internal extension RCGoogleMobileAds.BannerView {
             NSNumber(value: true),
             .OBJC_ASSOCIATION_RETAIN_NONATOMIC
         )
-
-        self.load(request)
     }
 
 }
