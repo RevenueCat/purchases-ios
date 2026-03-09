@@ -2320,6 +2320,7 @@ workflows:
       - make-release:
           requires:
             - push-revenuecatui-pod
+            - push-revenuecatadmob-pod
             - deploy-to-spm
             - docs-deploy
             - deploy-purchase-tester
