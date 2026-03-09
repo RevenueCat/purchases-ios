@@ -62,6 +62,7 @@ internal extension RCGoogleMobileAds.AdLoader {
     ///   - request: The AdMob request used to load the ad.
     ///   - placement: Optional placement label used for RevenueCat analytics.
     ///   - nativeAdDelegate: Optional delegate that will receive native ad callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
     func loadAndTrack(
         _ request: GoogleMobileAds.Request,
         placement: String? = nil,
@@ -87,6 +88,7 @@ internal extension RCGoogleMobileAds.AdLoader {
     ///   - request: The AdMob request used to load the ad.
     ///   - placement: Optional placement label used for RevenueCat analytics.
     ///   - nativeAdDelegate: Optional delegate that will receive native ad callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
     func loadAndTrack(
         _ request: GADRequest,
         placement: String? = nil,

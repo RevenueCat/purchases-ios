@@ -108,6 +108,13 @@ internal extension RCGoogleMobileAds.BannerView {
 @_spi(Experimental) public extension GoogleMobileAds.BannerView {
 
     /// Loads a banner ad and tracks ad events with RevenueCat while optionally forwarding callbacks.
+    ///
+    /// - Parameters:
+    ///   - request: The AdMob request used to load the ad.
+    ///   - placement: Optional placement label used for RevenueCat analytics.
+    ///   - delegate: Optional delegate that will receive banner ad callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
+    ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
     func loadAndTrack(
         request: GoogleMobileAds.Request,
         placement: String? = nil,
@@ -129,6 +136,13 @@ internal extension RCGoogleMobileAds.BannerView {
 @_spi(Experimental) public extension GADBannerView {
 
     /// Loads a banner ad and tracks ad events with RevenueCat while optionally forwarding callbacks.
+    ///
+    /// - Parameters:
+    ///   - request: The AdMob request used to load the ad.
+    ///   - placement: Optional placement label used for RevenueCat analytics.
+    ///   - delegate: Optional delegate that will receive banner ad callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
+    ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
     func loadAndTrack(
         request: GADRequest,
         placement: String? = nil,

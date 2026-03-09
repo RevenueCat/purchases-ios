@@ -53,7 +53,16 @@ internal extension RCGoogleMobileAds.InterstitialAd {
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.InterstitialAd {
 
-    /// Loads an interstitial ad, reports to RevenueCat; pass a full-screen content delegate for callbacks.
+    /// Loads an interstitial ad, reports to RevenueCat, and forwards callbacks.
+    ///
+    /// - Parameters:
+    ///   - adUnitID: The ad unit identifier.
+    ///   - request: The AdMob request used to load the ad.
+    ///   - placement: Optional placement label used for RevenueCat analytics.
+    ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
+    ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
+    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
@@ -77,7 +86,16 @@ internal extension RCGoogleMobileAds.InterstitialAd {
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GADInterstitialAd {
 
-    /// Loads an interstitial ad, reports to RevenueCat; pass a full-screen content delegate for callbacks.
+    /// Loads an interstitial ad, reports to RevenueCat, and forwards callbacks.
+    ///
+    /// - Parameters:
+    ///   - adUnitID: The ad unit identifier.
+    ///   - request: The AdMob request used to load the ad.
+    ///   - placement: Optional placement label used for RevenueCat analytics.
+    ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
+    ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
+    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GADRequest,
@@ -141,7 +159,16 @@ internal extension RCGoogleMobileAds.AppOpenAd {
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.AppOpenAd {
 
-    /// Loads an app open ad, reports to RevenueCat; pass a full-screen content delegate for callbacks.
+    /// Loads an app open ad, reports to RevenueCat, and forwards callbacks.
+    ///
+    /// - Parameters:
+    ///   - adUnitID: The ad unit identifier.
+    ///   - request: The AdMob request used to load the ad.
+    ///   - placement: Optional placement label used for RevenueCat analytics.
+    ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
+    ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
+    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
@@ -165,7 +192,16 @@ internal extension RCGoogleMobileAds.AppOpenAd {
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GADAppOpenAd {
 
-    /// Loads an app open ad, reports to RevenueCat; pass a full-screen content delegate for callbacks.
+    /// Loads an app open ad, reports to RevenueCat, and forwards callbacks.
+    ///
+    /// - Parameters:
+    ///   - adUnitID: The ad unit identifier.
+    ///   - request: The AdMob request used to load the ad.
+    ///   - placement: Optional placement label used for RevenueCat analytics.
+    ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
+    ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
+    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GADRequest,
@@ -229,7 +265,16 @@ internal extension RCGoogleMobileAds.RewardedAd {
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.RewardedAd {
 
-    /// Loads a rewarded ad, reports to RevenueCat; pass a full-screen content delegate for callbacks.
+    /// Loads a rewarded ad, reports to RevenueCat, and forwards callbacks.
+    ///
+    /// - Parameters:
+    ///   - adUnitID: The ad unit identifier.
+    ///   - request: The AdMob request used to load the ad.
+    ///   - placement: Optional placement label used for RevenueCat analytics.
+    ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
+    ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
+    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
@@ -253,7 +298,16 @@ internal extension RCGoogleMobileAds.RewardedAd {
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GADRewardedAd {
 
-    /// Loads a rewarded ad, reports to RevenueCat; pass a full-screen content delegate for callbacks.
+    /// Loads a rewarded ad, reports to RevenueCat, and forwards callbacks.
+    ///
+    /// - Parameters:
+    ///   - adUnitID: The ad unit identifier.
+    ///   - request: The AdMob request used to load the ad.
+    ///   - placement: Optional placement label used for RevenueCat analytics.
+    ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
+    ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
+    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GADRequest,
@@ -317,7 +371,16 @@ internal extension RCGoogleMobileAds.RewardedInterstitialAd {
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.RewardedInterstitialAd {
 
-    /// Loads a rewarded interstitial ad, reports to RevenueCat; pass a full-screen content delegate for callbacks.
+    /// Loads a rewarded interstitial ad, reports to RevenueCat, and forwards callbacks.
+    ///
+    /// - Parameters:
+    ///   - adUnitID: The ad unit identifier.
+    ///   - request: The AdMob request used to load the ad.
+    ///   - placement: Optional placement label used for RevenueCat analytics.
+    ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
+    ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
+    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
@@ -341,7 +404,16 @@ internal extension RCGoogleMobileAds.RewardedInterstitialAd {
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GADRewardedInterstitialAd {
 
-    /// Loads a rewarded interstitial ad, reports to RevenueCat; pass a full-screen content delegate for callbacks.
+    /// Loads a rewarded interstitial ad, reports to RevenueCat, and forwards callbacks.
+    ///
+    /// - Parameters:
+    ///   - adUnitID: The ad unit identifier.
+    ///   - request: The AdMob request used to load the ad.
+    ///   - placement: Optional placement label used for RevenueCat analytics.
+    ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
+    ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
+    ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
+    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GADRequest,
