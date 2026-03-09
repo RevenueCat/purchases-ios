@@ -38,7 +38,7 @@ class IconComponentViewModel {
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     var expectedSize: CGSize {
@@ -98,10 +98,9 @@ class IconComponentViewModel {
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (IconComponentStyle) -> some View
     ) -> some View {
-        let conditionContext = ConditionContext(
+        let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables,
-            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
+            customVariables: customVariables
         )
         let partial = PresentedIconPartial.buildPartial(
             state: state,

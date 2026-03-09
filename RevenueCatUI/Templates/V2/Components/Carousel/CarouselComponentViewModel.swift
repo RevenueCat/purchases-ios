@@ -41,7 +41,7 @@ class CarouselComponentViewModel {
         self.component = component
         self.pageStackViewModels = pageStackViewModels
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     @ViewBuilder
@@ -56,10 +56,9 @@ class CarouselComponentViewModel {
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (CarouselComponentStyle) -> some View
     ) -> some View {
-        let conditionContext = ConditionContext(
+        let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables,
-            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
+            customVariables: customVariables
         )
         let partial = PresentedCarouselPartial.buildPartial(
             state: state,

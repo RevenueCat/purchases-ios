@@ -38,7 +38,7 @@ class VideoComponentViewModel {
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
             LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedStrings)
         } ?? []
     }
@@ -82,10 +82,9 @@ class VideoComponentViewModel {
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
     ) -> some View {
-        let conditionContext = ConditionContext(
+        let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables,
-            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
+            customVariables: customVariables
         )
         let localizedPartial = LocalizedVideoPartial.buildPartial(
             state: state,
@@ -166,19 +165,6 @@ struct LocalizedVideoPartial: PresentedPartial {
                 border: otherPartial?.border ?? basePartial?.border,
                 shadow: otherPartial?.shadow ?? basePartial?.shadow
             )
-        )
-    }
-
-}
-
-extension LocalizedVideoPartial {
-
-    static func create(
-        from partial: PaywallComponent.PartialVideoComponent,
-        using localizedStrings: PaywallComponent.LocalizationDictionary
-    ) -> LocalizedVideoPartial {
-        return LocalizedVideoPartial(
-            partial: partial
         )
     }
 
