@@ -28,7 +28,6 @@ internal enum RCGoogleMobileAds {
     typealias BannerView = GADBannerView
     typealias BannerViewDelegate = GADBannerViewDelegate
     typealias AdLoader = GADAdLoader
-    typealias AdLoaderOptions = GADAdLoaderOptions
     typealias NativeAd = GADNativeAd
     typealias NativeAdDelegate = GADNativeAdDelegate
     typealias NativeAdLoaderDelegate = GADNativeAdLoaderDelegate
