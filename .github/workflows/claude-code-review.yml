@@ -5,6 +5,12 @@ on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
 
+permissions:
+  issues: read
+  pull-requests: read
+  id-token: write
+  contents: read
+
 jobs:
   claude-review:
     uses: revenuecat/sdk-github-workflows/.github/workflows/claude-code-review.yml@v5
