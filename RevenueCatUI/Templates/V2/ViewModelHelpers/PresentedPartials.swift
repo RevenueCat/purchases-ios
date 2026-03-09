@@ -306,7 +306,7 @@ extension Array {
     >(
         discardRules: Bool = false,
         convert: (T) throws -> P
-    ) throws -> PresentedOverrides<P>
+    ) rethrows -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
         let overridesToProcess: Self
         if discardRules {
@@ -330,9 +330,9 @@ extension Array {
     /// Convenience overload when the partial type is already the presented type (identity conversion).
     func toPresentedOverrides<T: PaywallPartialComponent & PresentedPartial>(
         discardRules: Bool = false
-    ) throws -> PresentedOverrides<T>
+    ) -> PresentedOverrides<T>
     where Element == PaywallComponent.ComponentOverride<T> {
-        try toPresentedOverrides(discardRules: discardRules) { $0 }
+        toPresentedOverrides(discardRules: discardRules) { $0 }
     }
 
     func hasUnsupportedCondition<T: PaywallPartialComponent>() -> Bool

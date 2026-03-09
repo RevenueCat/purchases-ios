@@ -41,7 +41,7 @@ class TimelineComponentViewModel {
         self.items = items
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     @ViewBuilder
@@ -108,7 +108,7 @@ class TimelineItemViewModel {
         self.description = description
         self.icon = icon
         self.uiConfigProvider = uiConfigProvider
-        self.presentedOverrides = try component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     @ViewBuilder
