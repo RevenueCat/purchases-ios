@@ -129,6 +129,36 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
         )
     }
 
+    func testPlaceholderSelectorsMatchRealNativeAdClass() {
+        let nativeAdClass: AnyClass = RCGoogleMobileAds.NativeAd.self
+        for sel in [
+            #selector(getter: NativeAdPlaceholder.responseInfo),
+            #selector(getter: NativeAdPlaceholder.paidEventHandler),
+            #selector(setter: NativeAdPlaceholder.paidEventHandler),
+            #selector(getter: NativeAdPlaceholder.delegate),
+            #selector(setter: NativeAdPlaceholder.delegate)
+        ] {
+            XCTAssertTrue(
+                nativeAdClass.instancesRespond(to: sel),
+                "NativeAd no longer responds to \(sel) — update NativeAdPlaceholder to match the new SDK."
+            )
+        }
+    }
+
+    func testPlaceholderSelectorsMatchRealAdValueClass() {
+        let adValueClass: AnyClass = RCGoogleMobileAds.AdValue.self
+        for sel in [
+            #selector(getter: AdValuePlaceholder.value),
+            #selector(getter: AdValuePlaceholder.currencyCode),
+            #selector(getter: AdValuePlaceholder.precision)
+        ] {
+            XCTAssertTrue(
+                adValueClass.instancesRespond(to: sel),
+                "AdValue no longer responds to \(sel) — update AdValuePlaceholder to match the new SDK."
+            )
+        }
+    }
+
     private static func makeNativeAdPlaceholder(
         backing: NativeAdPlaceholder = NativeAdPlaceholder()
     ) -> RCGoogleMobileAds.NativeAd {
