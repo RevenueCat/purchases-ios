@@ -103,6 +103,13 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         return try (purchasePackageResult ?? purchaseResult).get()
     }
 
+    var cachePurchaseSourceCallCount = 0
+    var cachedPurchaseSources: [(source: PurchaseSource, productIdentifier: String)] = []
+    func cachePurchaseSource(_ source: PurchaseSource, productIdentifier: String) {
+        cachePurchaseSourceCallCount += 1
+        cachedPurchaseSources.append((source: source, productIdentifier: productIdentifier))
+    }
+
     var trackCallCount = 0
     var trackError: Error?
     var trackedEvents: [CustomerCenterEventType] = []

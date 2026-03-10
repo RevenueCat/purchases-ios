@@ -583,6 +583,68 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
+    func testCachePurchaseSourceIsIncludedInReceiptPost() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+
+        self.orchestrator.cachePurchaseSource(.customerCenter, productIdentifier: product.id)
+
+        _ = try await self.orchestrator.purchase(sk2Product: product,
+                                                 package: nil,
+                                                 promotionalOffer: nil,
+                                                 winBackOffer: nil,
+                                                 introductoryOfferEligibilityJWS: nil,
+                                                 promotionalOfferOptions: nil)
+
+        let transactionData = self.backend.invokedPostReceiptDataParameters?.transactionData
+        expect(transactionData?.presentedOfferingContext).to(beNil())
+        expect(transactionData?.purchaseSource) == .customerCenter
+    }
+
+    func testCachePurchaseSourceAndOfferingContextAreIndependent() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: product)
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: storeProduct,
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        self.orchestrator.cachePresentedOfferingContext(
+            package.presentedOfferingContext,
+            productIdentifier: product.id
+        )
+        self.orchestrator.cachePurchaseSource(.customerCenter, productIdentifier: product.id)
+
+        _ = try await self.orchestrator.purchase(sk2Product: product,
+                                                 package: nil,
+                                                 promotionalOffer: nil,
+                                                 winBackOffer: nil,
+                                                 introductoryOfferEligibilityJWS: nil,
+                                                 promotionalOfferOptions: nil)
+
+        let transactionData = self.backend.invokedPostReceiptDataParameters?.transactionData
+        expect(transactionData?.presentedOfferingContext?.offeringIdentifier) == "offering"
+        expect(transactionData?.purchaseSource) == .customerCenter
+    }
+
     func testPurchaseWithDifferentProductDoesNotIncludePaywallData() async throws {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
@@ -1167,6 +1229,61 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == "test_offering"
     }
 
+    func testSK2TransactionListenerDelegateIncludesPurchaseSourceInObserverMode() async throws {
+        self.setUpSystemInfo(finishTransactions: false)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        self.orchestrator.cachePurchaseSource(.customerCenter, productIdentifier: Self.testProductId)
+
+        let transaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.purchaseSource
+        ) == .customerCenter
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
+    func testSK2TransactionListenerDelegateIncludesPurchaseSourceAndOfferingContextIndependently() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        self.orchestrator.cachePresentedOfferingContext(
+            PresentedOfferingContext(offeringIdentifier: "test_offering"),
+            productIdentifier: Self.testProductId
+        )
+        self.orchestrator.cachePurchaseSource(.customerCenter, productIdentifier: Self.testProductId)
+
+        let transaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.purchaseSource
+        ) == .customerCenter
+    }
+
     func testSK2PurchaseWithPackageThenCancelledThenPurchaseWithProductDoesNotIncludeOfferingContext() async throws {
         self.setUpStoreKit2Listener()
 
@@ -1278,7 +1395,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         // Simulate user cancellation via the mock listener
         self.mockStoreKit2TransactionListener?.mockResult = .init(.userCancelled)
 
-        let (_, _, cancelled) = try await self.orchestrator.purchase(
+        let (_, _, cancelled2) = try await self.orchestrator.purchase(
             sk2Product: product,
             package: nil,
             promotionalOffer: nil,
@@ -1286,7 +1403,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             introductoryOfferEligibilityJWS: nil,
             promotionalOfferOptions: nil
         )
-        expect(cancelled) == true
+        expect(cancelled2) == true
 
         // Now simulate a subsequent transaction for the same product via the listener.
         // The stale offering context should have been cleared by the cancellation.
@@ -1510,7 +1627,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         // First attempt: purchase with package, user cancels
         self.mockStoreKit2TransactionListener?.mockResult = .init(.userCancelled)
 
-        let (_, _, cancelled) = try await self.orchestrator.purchase(
+        let (_, _, cancelled3) = try await self.orchestrator.purchase(
             sk2Product: product,
             package: package,
             promotionalOffer: nil,
@@ -1518,7 +1635,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             introductoryOfferEligibilityJWS: nil,
             promotionalOfferOptions: nil
         )
-        expect(cancelled) == true
+        expect(cancelled3) == true
 
         // Second attempt: purchase the same package again, succeeds
         self.mockStoreKit2TransactionListener?.mockResult = .init(nil)

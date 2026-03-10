@@ -60,6 +60,8 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         product: StoreProduct,
         promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData {
+        Purchases.shared.cachePurchaseSource(.customerCenter, productIdentifier: product.productIdentifier)
+
         if let promotionalOffer = promotionalOffer {
             return try await Purchases.shared.purchase(
                 product: product,
@@ -71,7 +73,13 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
     }
 
     func purchase(package: Package) async throws -> PurchaseResultData {
+        Purchases.shared.cachePurchaseSource(.customerCenter,
+                                             productIdentifier: package.storeProduct.productIdentifier)
         return try await Purchases.shared.purchase(package: package)
+    }
+
+    func cachePurchaseSource(_ source: PurchaseSource, productIdentifier: String) {
+        Purchases.shared.cachePurchaseSource(source, productIdentifier: productIdentifier)
     }
 
     func track(customerCenterEvent: any CustomerCenterEventType) {
