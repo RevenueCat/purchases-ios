@@ -28,15 +28,7 @@ extension NSError.UserInfoKey {
     static let file: NSError.UserInfoKey = "source_file"
     static let function: NSError.UserInfoKey = "source_function"
 
-    /// Key for `userInfo` indicating the purchase may have been interrupted by an external payment app.
-    ///
-    /// When this key is present and `true` in a `purchaseCancelledError`, the app was backgrounded
-    /// during the purchase flow. This can occur when the user is redirected to an external payment app
-    /// (e.g., UPI apps in India). In this case, the purchase may have actually succeeded.
-    ///
-    /// Developers should call `Purchases.shared.customerInfo()` to verify the actual entitlement status
-    /// when this key is present.
-    public static let purchaseWasBackgroundedKey: NSError.UserInfoKey = "rc_purchase_was_backgrounded"
+    static let purchaseWasBackgroundedKey: NSError.UserInfoKey = "rc_purchase_was_backgrounded"
 
 }
 
