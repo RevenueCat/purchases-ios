@@ -192,7 +192,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             expect(nsError.code) == ErrorCode.purchaseCancelledError.rawValue
 
             // Verify purchaseWasBackgroundedKey is set in userInfo
-            let wasBackgrounded = nsError.userInfo[NSError.UserInfoKey.purchaseWasBackgroundedKey as String] as? Bool
+            let wasBackgrounded = nsError.userInfo[PurchasesErrorUserInfoKey.purchaseWasBackgroundedKey] as? Bool
             expect(wasBackgrounded) == true
         }
 

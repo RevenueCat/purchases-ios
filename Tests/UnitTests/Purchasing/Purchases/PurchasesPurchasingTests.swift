@@ -927,7 +927,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
 
         // Verify the purchaseWasBackgroundedKey is set in userInfo
-        let wasBackgrounded = receivedError?.userInfo[NSError.UserInfoKey.purchaseWasBackgroundedKey as String] as? Bool
+        let wasBackgrounded = receivedError?.userInfo[PurchasesErrorUserInfoKey.purchaseWasBackgroundedKey] as? Bool
         expect(wasBackgrounded) == true
     }
 
