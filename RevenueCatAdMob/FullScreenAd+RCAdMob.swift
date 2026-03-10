@@ -28,7 +28,13 @@ internal extension RCGoogleMobileAds.InterstitialAd {
         rcAdMob: RCAdMob,
         completion: @escaping (RCGoogleMobileAds.InterstitialAd?, Error?) -> Void
     ) {
+#if RC_ADMOB_SDK_11
+        // swiftlint:disable:next unused_closure_parameter
+        RCGoogleMobileAds.InterstitialAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
+#else
+        // swiftlint:disable:next unused_closure_parameter
         RCGoogleMobileAds.InterstitialAd.load(with: adUnitID, request: request) { loadedAd, error in
+#endif
             rcAdMob.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
@@ -124,7 +130,6 @@ internal extension RCGoogleMobileAds.InterstitialAd {
 @available(iOS 15.0, *)
 internal extension RCGoogleMobileAds.AppOpenAd {
 
-    // swiftlint:disable:next function_parameter_count
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: RCGoogleMobileAds.Request,
@@ -134,7 +139,11 @@ internal extension RCGoogleMobileAds.AppOpenAd {
         rcAdMob: RCAdMob,
         completion: @escaping (RCGoogleMobileAds.AppOpenAd?, Error?) -> Void
     ) {
+#if RC_ADMOB_SDK_11
+        RCGoogleMobileAds.AppOpenAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
+#else
         RCGoogleMobileAds.AppOpenAd.load(with: adUnitID, request: request) { loadedAd, error in
+#endif
             rcAdMob.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
@@ -230,7 +239,6 @@ internal extension RCGoogleMobileAds.AppOpenAd {
 @available(iOS 15.0, *)
 internal extension RCGoogleMobileAds.RewardedAd {
 
-    // swiftlint:disable:next function_parameter_count
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: RCGoogleMobileAds.Request,
@@ -240,7 +248,11 @@ internal extension RCGoogleMobileAds.RewardedAd {
         rcAdMob: RCAdMob,
         completion: @escaping (RCGoogleMobileAds.RewardedAd?, Error?) -> Void
     ) {
+#if RC_ADMOB_SDK_11
+        RCGoogleMobileAds.RewardedAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
+#else
         RCGoogleMobileAds.RewardedAd.load(with: adUnitID, request: request) { loadedAd, error in
+#endif
             rcAdMob.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
@@ -336,7 +348,6 @@ internal extension RCGoogleMobileAds.RewardedAd {
 @available(iOS 15.0, *)
 internal extension RCGoogleMobileAds.RewardedInterstitialAd {
 
-    // swiftlint:disable:next function_parameter_count
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: RCGoogleMobileAds.Request,
@@ -346,7 +357,11 @@ internal extension RCGoogleMobileAds.RewardedInterstitialAd {
         rcAdMob: RCAdMob,
         completion: @escaping (RCGoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
     ) {
+#if RC_ADMOB_SDK_11
+        RCGoogleMobileAds.RewardedInterstitialAd.load(withAdUnitID: adUnitID, request: request) { loadedAd, error in
+#else
         RCGoogleMobileAds.RewardedInterstitialAd.load(with: adUnitID, request: request) { loadedAd, error in
+#endif
             rcAdMob.handleLoadOutcome(
                 loadedAd: loadedAd,
                 error: error,
