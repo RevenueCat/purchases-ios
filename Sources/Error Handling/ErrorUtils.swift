@@ -393,6 +393,28 @@ enum ErrorUtils {
                                 fileName: fileName, functionName: functionName, line: line)
     }
 
+    /// Maps an `SKError` to a `PurchasesError`, checking for the special case of
+    /// `AMSError.paymentSheetFailed` when the app was backgrounded (potential UPI/external payment app flow).
+    ///
+    /// When a user switches to an external payment app (e.g., UPI in India), the app goes to background
+    /// and Apple returns `AMSError.paymentSheetFailed` even though the payment may be in progress.
+    /// In this case, returns a `purchaseCancelledError` with `purchaseWasBackgroundedKey` in `userInfo`.
+    static func mapTransactionError(_ error: Error, wasBackgrounded: Bool) -> PurchasesError {
+        if let skError = error as? SKError,
+           skError.code.rawValue == SKError.UndocumentedCode.unhandledException.rawValue,
+           let underlyingError = skError.userInfo[NSUnderlyingErrorKey] as? NSError,
+           underlyingError.domain == AMSError.domain,
+           underlyingError.code == AMSError.Code.paymentSheetFailed.rawValue,
+           wasBackgrounded {
+            Logger.debug(Strings.purchase.purchase_interrupted_external_app(
+                productIdentifier: skError.userInfo["productId"] as? String ?? "unknown"
+            ))
+            return ErrorUtils.purchaseCancelledError(error: error, wasBackgrounded: true)
+        }
+
+        return ErrorUtils.purchasesError(withSKError: error)
+    }
+
     /**
      * Constructs an Error with the ``ErrorCode/productNotAvailableForPurchaseError`` code.
      *

@@ -80,7 +80,6 @@ final class PurchasesOrchestrator {
     private let dateProvider: DateProvider
 
     let notificationCenter: NotificationCenter
-    private var appBackgroundObserver: NSObjectProtocol?
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -271,22 +270,10 @@ final class PurchasesOrchestrator {
         self.dateProvider = dateProvider
         self.notificationCenter = notificationCenter
 
-        // Observe app background events to track if purchases were interrupted by external payment apps
-        self.appBackgroundObserver = self.notificationCenter.addObserver(
-            forName: SystemInfo.applicationDidEnterBackgroundNotification,
-            object: nil,
-            queue: nil
-        ) { [weak self] _ in
-            self?.markActivePurchasesBackgrounded()
-        }
-
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
 
     deinit {
-        if let observer = self.appBackgroundObserver {
-            self.notificationCenter.removeObserver(observer)
-        }
         Logger.verbose(Strings.purchase.purchases_orchestrator_deinit(self))
     }
 
@@ -1251,7 +1238,7 @@ private extension PurchasesOrchestrator {
            let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) {
             // Check if app was backgrounded during purchase (for UPI/external payment app detection)
             let wasBackgrounded = self.getAndClearBackgroundedState(productIdentifier: productIdentifier)
-            let purchasesError = self.mapTransactionError(error, wasBackgrounded: wasBackgrounded)
+            let purchasesError = ErrorUtils.mapTransactionError(error, wasBackgrounded: wasBackgrounded)
 
             let isCancelled = purchasesError.isCancelledError
 
@@ -1288,30 +1275,6 @@ private extension PurchasesOrchestrator {
         }
 
         self.transactionPoster.finishTransactionIfNeeded(storeTransaction, completion: {})
-    }
-
-    /// Maps a transaction error to a `PurchasesError`, checking for the special case of
-    /// `AMSError.paymentSheetFailed` when the app was backgrounded (potential UPI/external payment app flow).
-    private func mapTransactionError(_ error: Error, wasBackgrounded: Bool) -> PurchasesError {
-        // Check for the specific AMSError.paymentSheetFailed case that can occur with UPI payments
-        // When the user switches to an external payment app, the app goes to background and Apple
-        // returns this error even though the payment may be in progress.
-        if let skError = error as? SKError,
-           skError.code.rawValue == 907, // SKError.UndocumentedCode.unhandledException
-           let underlyingError = skError.userInfo[NSUnderlyingErrorKey] as? NSError,
-           underlyingError.domain == "AMSErrorDomain",
-           underlyingError.code == 6, // AMSError.Code.paymentSheetFailed
-           wasBackgrounded {
-            Logger.debug(Strings.purchase.purchase_interrupted_external_app(
-                productIdentifier: skError.userInfo["productId"] as? String ?? "unknown"
-            ))
-            // Return purchaseCancelledError with wasBackgrounded flag set.
-            // This adds `purchaseWasBackgroundedKey` to userInfo so developers can detect
-            // that the cancellation may be due to an external payment app redirect.
-            return ErrorUtils.purchaseCancelledError(error: error, wasBackgrounded: true)
-        }
-
-        return ErrorUtils.purchasesError(withSKError: error)
     }
 
     func handleDeferredTransaction(_ transaction: SKPaymentTransaction) {
@@ -1649,9 +1612,37 @@ extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
 
 }
 
+// MARK: - Purchase Background State Tracking (for UPI/external payment app detection)
+
+extension PurchasesOrchestrator {
+
+    /// Marks all in-flight purchases as having been backgrounded.
+    /// Called from ``Purchases/applicationDidEnterBackground()`` when the app enters the background.
+    func markActivePurchasesBackgrounded() {
+        self.purchaseBackgroundedState.modify { dict in
+            for key in dict.keys {
+                dict[key] = true
+            }
+        }
+    }
+
+}
+
 // MARK: Private funcs
 
 private extension PurchasesOrchestrator {
+
+    /// Marks that a purchase has started for the given product.
+    /// This should be called when initiating a purchase to track if the app gets backgrounded during the flow.
+    func markPurchaseStarted(productIdentifier: String) {
+        self.purchaseBackgroundedState.modify { $0[productIdentifier] = false }
+    }
+
+    /// Returns whether the app was backgrounded during the purchase for the given product
+    /// and cleans up the tracking state.
+    func getAndClearBackgroundedState(productIdentifier: String) -> Bool {
+        return self.purchaseBackgroundedState.modify { $0.removeValue(forKey: productIdentifier) } ?? false
+    }
 
     /// - Returns: whether the callback was added
     @discardableResult
@@ -1996,30 +1987,6 @@ private extension PurchasesOrchestrator {
     func clearPurchaseInitiatedPaywall() {
         Logger.verbose(Strings.paywalls.clearing_purchase_initiated_paywall)
         self.purchaseInitiatedPaywall.value = nil
-    }
-
-    // MARK: - Purchase Background State Tracking (for UPI/external payment app detection)
-
-    /// Marks that a purchase has started for the given product.
-    /// This should be called when initiating a purchase to track if the app gets backgrounded during the flow.
-    func markPurchaseStarted(productIdentifier: String) {
-        self.purchaseBackgroundedState.modify { $0[productIdentifier] = false }
-    }
-
-    /// Marks all in-flight purchases as having been backgrounded.
-    /// Called when the app enters the background.
-    private func markActivePurchasesBackgrounded() {
-        self.purchaseBackgroundedState.modify { dict in
-            for key in dict.keys {
-                dict[key] = true
-            }
-        }
-    }
-
-    /// Returns whether the app was backgrounded during the purchase for the given product
-    /// and cleans up the tracking state.
-    func getAndClearBackgroundedState(productIdentifier: String) -> Bool {
-        return self.purchaseBackgroundedState.modify { $0.removeValue(forKey: productIdentifier) } ?? false
     }
 
     // MARK: - Presented Offering Context Caching
