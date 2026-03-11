@@ -470,7 +470,6 @@ private extension PaywallViewConfiguration.Content {
 // MARK: -
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable, message: "Legacy paywalls are unavailable on macOS")
 @available(tvOS, unavailable)
 struct LoadedOfferingPaywallView: View {
 
@@ -560,7 +559,6 @@ struct LoadedOfferingPaywallView: View {
                 isFooterPaywall: mode != .fullScreen
             )
         } else {
-
             self.paywall
                 .createView(for: self.offering,
                             template: self.template,
@@ -609,7 +607,9 @@ struct LoadedOfferingPaywallView: View {
                                 color: self.getCloseButtonColor(configuration: configuration)
                             )
                         }
+                    #if !os(macOS)
                         .toolbarBackground(.hidden, for: .navigationBar)
+                    #endif
                 } else {
                     view
                         .toolbar {
@@ -619,7 +619,9 @@ struct LoadedOfferingPaywallView: View {
                         }
                 }
             }
+            #if !os(macOS)
             .navigationViewStyle(.stack)
+            #endif
         } else {
             view
         }
