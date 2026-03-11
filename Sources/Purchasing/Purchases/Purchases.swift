@@ -810,6 +810,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         #endif
 
         self.purchasesOrchestrator.delegate = self
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
+            completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
+        }
+        #else
+        self.attribution.syncAttributesAndOfferingsIfNeededHandler = { [weak self] completion in
+            guard let self else {
+                completion(nil, nil)
+                return
+            }
+            self.syncAttributesAndOfferingsIfNeeded(completion: completion)
+        }
+        #endif
 
         // Don't update caches or run health checks in the background to avoid too many users
         // hitting the backend concurrently when launched through a notification at the same time.
@@ -2122,6 +2135,23 @@ extension Purchases: InternalPurchasesType {
 
 /// Necessary because `ErrorUtils` inside of `Purchases` finds the obsoleted type.
 private typealias NewErrorUtils = ErrorUtils
+
+// MARK: - Custom Paywall Impressions
+
+internal extension Purchases {
+
+    /// Tracks an impression for a custom paywall.
+    /// - Parameter params: Parameters for the custom paywall impression.
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func trackCustomPaywallImpression(_ params: CustomPaywallEvent.Params = .init()) async {
+        let event = CustomPaywallEvent.impression(
+            .init(),
+            .init(paywallId: params.paywallId)
+        )
+        await self.eventsManager?.track(featureEvent: event)
+    }
+
+}
 
 internal extension Purchases {
 

@@ -171,7 +171,7 @@ When creating a pull request, **always add one of these labels** to categorize t
 
 **Additional scope labels** (add alongside the primary label above):
 - `pr:RevenueCatUI` — Changes specific to the RevenueCatUI module (paywalls, customer center)
-- `feat:Paywalls_V2` — Changes related to Paywalls V2 (requires `pr:RevenueCatUI` as well)
+- `feat:PaywallsV2` — Changes related to Paywalls V2 (requires `pr:RevenueCatUI` as well)
 - `feat:Customer Center` — Changes related to Customer Center (requires `pr:RevenueCatUI` as well)
 
 ## Code Review Guidelines

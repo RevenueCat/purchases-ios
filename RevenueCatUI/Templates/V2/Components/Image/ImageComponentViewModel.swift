@@ -30,7 +30,8 @@ class ImageComponentViewModel {
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        component: PaywallComponent.ImageComponent
+        component: PaywallComponent.ImageComponent,
+        discardRules: Bool = false
     ) throws {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
@@ -42,31 +43,37 @@ class ImageComponentViewModel {
             self.imageInfo = component.source
         }
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
             try LocalizedImagePartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
     }
 
-    @ViewBuilder
     // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
-        colorScheme: ColorScheme,
-        @ViewBuilder apply: @escaping (ImageComponentStyle) -> some View
-    ) -> some View {
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        colorScheme: ColorScheme
+    ) -> ImageComponentStyle {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
+        )
+
         let localizedPartial = LocalizedImagePartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
 
-        let style = ImageComponentStyle(
+        return ImageComponentStyle(
             visible: partial?.visible ?? self.component.visible ?? true,
             source: localizedPartial?.imageInfo ?? self.imageInfo,
             size: partial?.size ?? self.component.size,
@@ -80,7 +87,29 @@ class ImageComponentViewModel {
             uiConfigProvider: self.uiConfigProvider,
             colorScheme: colorScheme
         )
+    }
 
+    @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
+    func styles(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        colorScheme: ColorScheme,
+        @ViewBuilder apply: @escaping (ImageComponentStyle) -> some View
+    ) -> some View {
+        let style = styles(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            colorScheme: colorScheme
+        )
         apply(style)
     }
 

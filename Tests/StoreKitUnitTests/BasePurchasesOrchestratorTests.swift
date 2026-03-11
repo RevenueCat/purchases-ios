@@ -318,7 +318,8 @@ extension BasePurchasesOrchestratorTests {
         sessionID: .init(),
         displayMode: .fullScreen,
         localeIdentifier: "en_US",
-        darkMode: true
+        darkMode: true,
+        source: nil
     )
 
     static let testPackageId = "test_package"
