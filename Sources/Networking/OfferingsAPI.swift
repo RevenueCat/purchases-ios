@@ -33,8 +33,12 @@ class OfferingsAPI {
     func getOfferings(appUserID: String,
                       isAppBackgrounded: Bool,
                       completion: @escaping OfferingsResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        if let guardError = self.backendConfig.iamSessionGuardError() {
+            completion(.failure(guardError))
+            return
+        }
+
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
         let factory = GetOfferingsOperation.createFactory(
             configuration: config,
             offeringsCallbackCache: self.offeringsCallbacksCache
@@ -57,8 +61,7 @@ class OfferingsAPI {
     }
 
     func getWebOfferingProducts(appUserID: String, completion: @escaping WebOfferingProductsResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
         let factory = GetWebOfferingProductsOperation.createFactory(
             configuration: config,
             webOfferingProductsCallbackCache: self.webOfferingProductsCallbacksCache
@@ -78,8 +81,12 @@ class OfferingsAPI {
                              receiptData: Data,
                              productIdentifiers: Set<String>,
                              completion: @escaping IntroEligibilityResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        if let guardError = self.backendConfig.iamSessionGuardError() {
+            completion([:], guardError)
+            return
+        }
+
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
         let getIntroEligibilityOperation = GetIntroEligibilityOperation(configuration: config,
                                                                         receiptData: receiptData,
                                                                         productIdentifiers: productIdentifiers,
@@ -94,8 +101,7 @@ class OfferingsAPI {
               receipt: EncodedAppleReceipt,
               appUserID: String,
               completion: @escaping OfferSigningResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
 
         let postOfferData = PostOfferForSigningOperation.PostOfferForSigningData(offerIdentifier: offerIdentifier,
                                                                                  productIdentifier: productIdentifier,

@@ -42,8 +42,10 @@ class PostAdServicesTokenOperation: NetworkOperation {
             return
         }
 
-        let request = HTTPRequest(method: .post(Body(aadAttributionToken: self.token)),
-                                  path: .postAdServicesToken(appUserID: appUserID))
+        let requestPath: HTTPRequestPath = self.configuration.iamEnabled
+            ? HTTPRequest.IAMCustomerPath.postAdServicesToken
+            : HTTPRequest.Path.postAdServicesToken(appUserID: appUserID)
+        let request = HTTPRequest(method: .post(Body(aadAttributionToken: self.token)), requestPath: requestPath)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {

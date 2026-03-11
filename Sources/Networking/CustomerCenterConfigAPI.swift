@@ -30,8 +30,12 @@ class CustomerCenterConfigAPI {
     func getCustomerCenterConfig(appUserID: String,
                                  isAppBackgrounded: Bool,
                                  completion: @escaping CustomerCenterConfigResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        if let guardError = self.backendConfig.iamSessionGuardError() {
+            completion(.failure(guardError))
+            return
+        }
+
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
 
         let factory = GetCustomerCenterConfigOperation.createFactory(
             configuration: config,
@@ -52,8 +56,7 @@ class CustomerCenterConfigAPI {
                           customerEmail: String,
                           ticketDescription: String,
                           completion: @escaping CreateTicketResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
 
         let operation = PostCreateTicketOperation(configuration: config,
                                                   customerEmail: customerEmail,

@@ -70,6 +70,24 @@ struct HTTPRequest {
         self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
     }
 
+    init(
+        method: Method,
+        path: HTTPRequest.IAMAuthPath,
+        nonce: Data? = nil,
+        isRetryable: Bool = false
+    ) {
+        self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
+    }
+
+    init(
+        method: Method,
+        path: HTTPRequest.IAMCustomerPath,
+        nonce: Data? = nil,
+        isRetryable: Bool = false
+    ) {
+        self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
+    }
+
     internal init(
         method: Method,
         requestPath: HTTPRequestPath,

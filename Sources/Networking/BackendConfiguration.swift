@@ -23,6 +23,8 @@ class BackendConfiguration {
     let dateProvider: DateProvider
     let systemInfo: SystemInfo
     let offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
+    /// Non-nil when IAM mode is enabled.
+    let iamSessionManager: IAMSessionManager?
 
     init(httpClient: HTTPClient,
          operationDispatcher: OperationDispatcher,
@@ -30,6 +32,7 @@ class BackendConfiguration {
          diagnosticsQueue: OperationQueue,
          systemInfo: SystemInfo,
          offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
+         iamSessionManager: IAMSessionManager? = nil,
          dateProvider: DateProvider = DateProvider()) {
         self.httpClient = httpClient
         self.operationDispatcher = operationDispatcher
@@ -38,10 +41,37 @@ class BackendConfiguration {
         self.offlineCustomerInfoCreator = offlineCustomerInfoCreator
         self.dateProvider = dateProvider
         self.systemInfo = systemInfo
+        self.iamSessionManager = iamSessionManager
+    }
+
+    /// Returns `true` when the SDK was configured with IAM mode enabled.
+    var iamEnabled: Bool {
+        return self.iamSessionManager != nil
     }
 
     func clearCache() {
         self.httpClient.clearCaches()
+    }
+
+    /// Creates a ``NetworkOperation/UserSpecificConfiguration`` pre-populated with the IAM enabled flag.
+    func userSpecificConfiguration(appUserID: String) -> NetworkOperation.UserSpecificConfiguration {
+        NetworkOperation.UserSpecificConfiguration(
+            httpClient: self.httpClient,
+            appUserID: appUserID,
+            iamEnabled: self.iamEnabled
+        )
+    }
+
+    /// In IAM mode, verifies that a session is established before proceeding.
+    ///
+    /// - Returns: `nil` if the check passes (or IAM is not enabled).
+    ///            A `BackendError` if IAM is enabled but no session has been established.
+    func iamSessionGuardError() -> BackendError? {
+        guard self.iamEnabled else { return nil }
+        guard self.iamSessionManager?.hasSession == true else {
+            return .iamSessionNotInitialized()
+        }
+        return nil
     }
 
 }

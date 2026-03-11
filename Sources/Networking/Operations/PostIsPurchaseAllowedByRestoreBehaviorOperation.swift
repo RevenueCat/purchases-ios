@@ -16,7 +16,7 @@ import Foundation
 // swiftlint:disable:next type_name
 final class PostIsPurchaseAllowedByRestoreBehaviorOperation: CacheableNetworkOperation {
 
-    private let configuration: AppUserConfiguration
+    private let configuration: UserSpecificConfiguration
     private let postData: PostData
     private let isPurchaseAllowedByRestoreBehaviorCallbackCache:
     CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>
@@ -71,10 +71,10 @@ final class PostIsPurchaseAllowedByRestoreBehaviorOperation: CacheableNetworkOpe
             return
         }
 
-        let request = HTTPRequest(
-            method: .post(self.postData),
-            path: .isPurchaseAllowedByRestoreBehavior(appUserID: self.configuration.appUserID)
-        )
+        let requestPath: HTTPRequestPath = self.configuration.iamEnabled
+            ? HTTPRequest.IAMCustomerPath.isPurchaseAllowedByRestoreBehavior
+            : HTTPRequest.Path.isPurchaseAllowedByRestoreBehavior(appUserID: self.configuration.appUserID)
+        let request = HTTPRequest(method: .post(self.postData), requestPath: requestPath)
 
         // swiftlint:disable:next line_length
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<IsPurchaseAllowedByRestoreBehaviorResponse>.Result) in

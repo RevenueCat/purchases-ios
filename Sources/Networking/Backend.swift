@@ -24,6 +24,8 @@ class Backend {
     let customerCenterConfig: CustomerCenterConfigAPI
     let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
     let virtualCurrenciesAPI: VirtualCurrenciesAPI
+    /// Non-nil when the SDK is configured with IAM mode enabled.
+    let iamAPI: IAMAPI?
 
     private let config: BackendConfiguration
 
@@ -36,6 +38,7 @@ class Backend {
         attributionFetcher: AttributionFetcher,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
         diagnosticsTracker: DiagnosticsTrackerType?,
+        iamEnabled: Bool = false,
         dateProvider: DateProvider = DateProvider()
     ) {
         let httpClient = HTTPClient(apiKey: apiKey,
@@ -45,12 +48,21 @@ class Backend {
                                     diagnosticsTracker: diagnosticsTracker,
                                     requestTimeout: httpClientTimeout,
                                     operationDispatcher: OperationDispatcher.default)
+
+        let iamSessionManager: IAMSessionManager? = iamEnabled
+            ? IAMSessionManager(apiKey: apiKey, baseURL: SystemInfo.apiBaseURL)
+            : nil
+
+        // Attach the session manager to the HTTP client so it can refresh tokens on 401.
+        httpClient.iamSessionManager = iamSessionManager
+
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
                                           systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+                                          iamSessionManager: iamSessionManager,
                                           dateProvider: dateProvider)
         self.init(backendConfig: config, attributionFetcher: attributionFetcher)
     }
@@ -66,6 +78,10 @@ class Backend {
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
 
+        let iamAPI: IAMAPI? = backendConfig.iamSessionManager.map {
+            IAMAPI(backendConfig: backendConfig, sessionManager: $0)
+        }
+
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
@@ -75,7 +91,8 @@ class Backend {
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
-                  virtualCurrenciesAPI: virtualCurrenciesAPI)
+                  virtualCurrenciesAPI: virtualCurrenciesAPI,
+                  iamAPI: iamAPI)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -87,7 +104,8 @@ class Backend {
                   internalAPI: InternalAPI,
                   customerCenterConfig: CustomerCenterConfigAPI,
                   redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
-                  virtualCurrenciesAPI: VirtualCurrenciesAPI) {
+                  virtualCurrenciesAPI: VirtualCurrenciesAPI,
+                  iamAPI: IAMAPI? = nil) {
         self.config = backendConfig
 
         self.customer = customerAPI
@@ -99,6 +117,7 @@ class Backend {
         self.customerCenterConfig = customerCenterConfig
         self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
         self.virtualCurrenciesAPI = virtualCurrenciesAPI
+        self.iamAPI = iamAPI
     }
 
     func clearHTTPClientCaches() {

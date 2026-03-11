@@ -56,6 +56,11 @@ import Foundation
     let preferredLocale: String?
     let automaticDeviceIdentifierCollectionEnabled: Bool
     internal let diagnosticsEnabled: Bool
+    /// When `true`, the SDK uses the IAM authentication service.
+    ///
+    /// In IAM mode, ``Purchases/initAnonymous()`` or ``Purchases/loginUser(with:)`` must be called
+    /// before any other SDK operation.
+    internal let iamEnabled: Bool
 
     private init(with builder: Builder) {
         self.apiKey = builder.apiKey
@@ -72,6 +77,7 @@ import Foundation
         self.diagnosticsEnabled = builder.diagnosticsEnabled
         self.preferredLocale = builder.preferredLocale
         self.automaticDeviceIdentifierCollectionEnabled = builder.automaticDeviceIdentifierCollectionEnabled
+        self.iamEnabled = builder.iamEnabled
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -115,6 +121,7 @@ import Foundation
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
+        private(set) var iamEnabled: Bool = false
 
         /// The preferred locale for the requests.
         ///
@@ -290,6 +297,18 @@ import Foundation
         }
 
         #endif
+
+        /// Enable IAM (Identity and Access Management) mode.
+        ///
+        /// When enabled, the SDK will use the RevenueCat IAM service for authentication.
+        /// You **must** call ``Purchases/initAnonymous()`` or ``Purchases/loginUser(with:)``
+        /// before performing any SDK operation; otherwise an error will be returned.
+        ///
+        /// Defaults to `false`.
+        @objc public func with(iamEnabled: Bool) -> Builder {
+            self.iamEnabled = iamEnabled
+            return self
+        }
 
         /// Set ``StoreKitVersion``.
         ///

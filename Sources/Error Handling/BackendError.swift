@@ -31,6 +31,9 @@ enum BackendError: Error, Equatable {
     case expiredWebRedemptionToken(obfuscatedEmail: String)
     case unsupportedInUIPreviewMode(Source)
     case missingTransactionJWS(Source)
+    /// Attempted an SDK operation in IAM mode before calling ``Purchases/initAnonymous()``
+    /// or ``Purchases/loginUser(with:)``.
+    case iamSessionNotInitialized(Source)
 
 }
 
@@ -87,6 +90,12 @@ extension BackendError {
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
         return .unsupportedInUIPreviewMode(.init(file: file, function: function, line: line))
+    }
+
+    static func iamSessionNotInitialized(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .iamSessionNotInitialized(.init(file: file, function: function, line: line))
     }
 
 }
@@ -166,6 +175,11 @@ extension BackendError: PurchasesErrorConvertible {
                                                               functionName: source.function,
                                                               line: source.line)
 
+        case let .iamSessionNotInitialized(source):
+            return ErrorUtils.iamSessionNotInitializedError(fileName: source.file,
+                                                            functionName: source.function,
+                                                            line: source.line)
+
         }
     }
 
@@ -207,7 +221,8 @@ extension BackendError {
              .purchaseBelongsToOtherUser,
              .expiredWebRedemptionToken,
              .unsupportedInUIPreviewMode,
-             .missingTransactionJWS:
+             .missingTransactionJWS,
+             .iamSessionNotInitialized:
             return nil
         }
     }
@@ -231,7 +246,8 @@ extension BackendError {
                 .purchaseBelongsToOtherUser,
                 .expiredWebRedemptionToken,
                 .unsupportedInUIPreviewMode,
-                .missingTransactionJWS:
+                .missingTransactionJWS,
+                .iamSessionNotInitialized:
             return nil
 
         case let .unexpectedBackendResponse(error, _, _):

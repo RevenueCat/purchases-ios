@@ -50,8 +50,10 @@ class PostSubscriberAttributesOperation: NetworkOperation {
             return
         }
 
-        let request = HTTPRequest(method: .post(Body(self.subscriberAttributes)),
-                                  path: .postSubscriberAttributes(appUserID: appUserID))
+        let requestPath: HTTPRequestPath = self.configuration.iamEnabled
+            ? HTTPRequest.IAMCustomerPath.postSubscriberAttributes
+            : HTTPRequest.Path.postSubscriberAttributes(appUserID: appUserID)
+        let request = HTTPRequest(method: .post(Body(self.subscriberAttributes)), requestPath: requestPath)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {

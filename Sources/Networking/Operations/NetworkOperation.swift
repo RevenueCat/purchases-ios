@@ -187,6 +187,14 @@ class NetworkOperation: Operation {
 
         let httpClient: HTTPClient
         let appUserID: String
+        /// Whether the SDK was configured with IAM mode enabled.
+        let iamEnabled: Bool
+
+        init(httpClient: HTTPClient, appUserID: String, iamEnabled: Bool = false) {
+            self.httpClient = httpClient
+            self.appUserID = appUserID
+            self.iamEnabled = iamEnabled
+        }
 
     }
 

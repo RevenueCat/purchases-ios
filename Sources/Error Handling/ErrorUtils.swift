@@ -578,6 +578,21 @@ enum ErrorUtils {
                                 line: line)
     }
 
+    /// Constructs an error indicating that an IAM session has not been established.
+    ///
+    /// Call ``Purchases/initAnonymous()`` or ``Purchases/loginUser(with:)`` before
+    /// performing any SDK operation when IAM mode is enabled.
+    static func iamSessionNotInitializedError(
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
+        return ErrorUtils.error(with: .configurationError,
+                                message: "No IAM session established. " +
+                                         "Call initAnonymous() or loginUser(with:) before using the SDK.",
+                                fileName: fileName,
+                                functionName: functionName,
+                                line: line)
+    }
+
     /**
      * Constructs an Error with the ``ErrorCode/testStoreSimulatedPurchaseError`` code.
      *

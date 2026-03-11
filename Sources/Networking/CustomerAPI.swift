@@ -40,8 +40,12 @@ final class CustomerAPI {
                          isAppBackgrounded: Bool,
                          allowComputingOffline: Bool,
                          completion: @escaping CustomerInfoResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        if let guardError = self.backendConfig.iamSessionGuardError() {
+            completion(.failure(guardError))
+            return
+        }
+
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
 
         let factory = GetCustomerInfoOperation.createFactory(
             configuration: config,
@@ -63,8 +67,12 @@ final class CustomerAPI {
     func post(subscriberAttributes: SubscriberAttribute.Dictionary,
               appUserID: String,
               completion: SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        if let guardError = self.backendConfig.iamSessionGuardError() {
+            completion?(guardError)
+            return
+        }
+
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
         let operation = PostSubscriberAttributesOperation(configuration: config,
                                                           subscriberAttributes: subscriberAttributes,
                                                           completion: completion)
@@ -75,8 +83,12 @@ final class CustomerAPI {
               network: AttributionNetwork,
               appUserID: String,
               completion: SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        if let guardError = self.backendConfig.iamSessionGuardError() {
+            completion?(guardError)
+            return
+        }
+
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
         let postAttributionDataOperation = PostAttributionDataOperation(configuration: config,
                                                                         attributionData: attributionData,
                                                                         network: network,
@@ -87,8 +99,12 @@ final class CustomerAPI {
     func post(adServicesToken: String,
               appUserID: String,
               completion: SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        if let guardError = self.backendConfig.iamSessionGuardError() {
+            completion?(guardError)
+            return
+        }
+
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
         let postAttributionDataOperation = PostAdServicesTokenOperation(configuration: config,
                                                                         token: adServicesToken,
                                                                         responseHandler: completion)
@@ -101,8 +117,12 @@ final class CustomerAPI {
         isAppBackgrounded: Bool,
         completion: @escaping IsPurchaseAllowedByRestoreBehaviorResponseHandler
     ) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        if let guardError = self.backendConfig.iamSessionGuardError() {
+            completion(.failure(guardError))
+            return
+        }
+
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
         let postData = PostIsPurchaseAllowedByRestoreBehaviorOperation.PostData(
             transactionJWS: transactionJWS
         )
@@ -146,8 +166,7 @@ final class CustomerAPI {
             subscriberAttributesToPost?[consentStatus.key] = consentStatus
         }
 
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        let config = self.backendConfig.userSpecificConfiguration(appUserID: appUserID)
 
         let postData = PostReceiptDataOperation.PostData(
             transactionData: transactionData.withAttributesToPost(subscriberAttributesToPost),

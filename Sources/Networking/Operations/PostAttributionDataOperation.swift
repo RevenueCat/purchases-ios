@@ -46,8 +46,11 @@ class PostAttributionDataOperation: NetworkOperation {
             return
         }
 
+        let requestPath: HTTPRequestPath = self.configuration.iamEnabled
+            ? HTTPRequest.IAMCustomerPath.postAttributionData
+            : HTTPRequest.Path.postAttributionData(appUserID: appUserID)
         let request = HTTPRequest(method: .post(Body(network: self.network, attributionData: self.attributionData)),
-                                  path: .postAttributionData(appUserID: appUserID))
+                                  requestPath: requestPath)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {

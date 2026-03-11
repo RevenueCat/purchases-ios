@@ -85,8 +85,10 @@ private extension GetCustomerInfoOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get,
-                                  path: .getCustomerInfo(appUserID: appUserID))
+        let requestPath: HTTPRequestPath = self.configuration.iamEnabled
+            ? HTTPRequest.IAMCustomerPath.getCustomerInfo
+            : HTTPRequest.Path.getCustomerInfo(appUserID: appUserID)
+        let request = HTTPRequest(method: .get, requestPath: requestPath)
 
         self.httpClient.perform(
             request

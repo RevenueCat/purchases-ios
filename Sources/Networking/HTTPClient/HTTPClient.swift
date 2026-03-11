@@ -26,6 +26,10 @@ class HTTPClient {
     let apiKey: String
     let authHeaders: RequestHeaders
 
+    /// When non-nil, IAM mode is enabled. Auth headers will use the IAM access token for
+    /// customer endpoints and the API key for IAM auth endpoints (`/auth/login`, `/auth/token`).
+    var iamSessionManager: IAMSessionManager?
+
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
     private let eTagManager: ETagManager
@@ -87,11 +91,31 @@ class HTTPClient {
         completionHandler: Completion<Value>?
     ) {
         self.perform(request: .init(httpRequest: request,
-                                    authHeaders: self.authHeaders,
+                                    authHeaders: self.resolvedAuthHeaders(for: request.path),
                                     defaultHeaders: self.defaultHeaders,
                                     verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
                                     internalSettings: self.systemInfo.dangerousSettings.internalSettings,
                                     completionHandler: completionHandler))
+    }
+
+    /// Returns the appropriate authorization headers for a given path.
+    ///
+    /// - IAM auth paths (`/auth/login`, `/auth/token`) always use the API key.
+    /// - All other authenticated paths use the IAM access token when an IAM session is active.
+    /// - Falls back to the API key when there is no active IAM session.
+    func resolvedAuthHeaders(for path: HTTPRequestPath) -> RequestHeaders {
+        if let sessionManager = self.iamSessionManager {
+            if path.isIAMAuthPath {
+                // Auth endpoints always authenticate with the API key
+                return self.authHeaders
+            }
+            if let accessToken = sessionManager.accessToken {
+                return HTTPClient.authorizationHeader(withToken: accessToken)
+            }
+            // No session yet — return empty headers; guards in the API layer will fail fast.
+            return [:]
+        }
+        return self.authHeaders
     }
 
     func clearCaches() {
@@ -156,6 +180,10 @@ extension HTTPClient {
 
     static func authorizationHeader(withAPIKey apiKey: String) -> RequestHeaders {
         return [RequestHeader.authorization.rawValue: "Bearer \(apiKey)"]
+    }
+
+    static func authorizationHeader(withToken token: String) -> RequestHeaders {
+        return [RequestHeader.authorization.rawValue: "Bearer \(token)"]
     }
 
     static func nonceHeader(with data: Data) -> RequestHeaders {
@@ -288,6 +316,20 @@ internal extension HTTPClient {
             var copy = self
             copy.retryCount += 1
             copy.headers[RequestHeader.retryCount.rawValue] = "\(copy.retryCount)"
+            return copy
+        }
+
+        /// Returns a copy of this request with the Authorization header replaced by a fresh
+        /// IAM access token taken from the given `sessionManager`.
+        ///
+        /// Used after a successful token refresh to retry the original request.
+        func requestWithRefreshedIAMToken(from sessionManager: IAMSessionManager) -> Self {
+            var copy = self
+            if let newToken = sessionManager.accessToken {
+                copy.headers[RequestHeader.authorization.rawValue] = "Bearer \(newToken)"
+            }
+            // Mark as retried so we don't enter another refresh loop on subsequent 401s
+            copy.retryCount += 1
             return copy
         }
 
@@ -519,6 +561,38 @@ private extension HTTPClient {
                 if !retryScheduled {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
                                                                httpURLResponse: httpURLResponse)
+                }
+
+                // IAM token refresh on 401: if we have a session manager and the request is not
+                // itself an IAM auth path, try refreshing the token and retry the request once.
+                if !retryScheduled,
+                   httpURLResponse?.statusCode == HTTPStatusCode.unauthorized.rawValue,
+                   let sessionManager = self.iamSessionManager,
+                   !request.httpRequest.path.isIAMAuthPath,
+                   !request.retried {
+                    retryScheduled = true
+                    self.requestTimeoutManager.recordRequestResult(requestTimeoutResult)
+                    self.trackHttpRequestPerformedIfNeeded(request: request,
+                                                           host: urlRequest.url?.host,
+                                                           requestStartTime: requestStartTime,
+                                                           result: response)
+                    self.beginNextRequest()
+
+                    Logger.debug(Strings.network.iam_refreshing_token)
+                    sessionManager.refreshSessionIfPossible { [weak self] success in
+                        guard let self else { return }
+                        if success {
+                            // Re-build the request with the new access token and retry
+                            let refreshedRequest = request.requestWithRefreshedIAMToken(
+                                from: sessionManager
+                            )
+                            self.perform(request: refreshedRequest)
+                        } else {
+                            // Refresh failed — forward the original 401 to the caller
+                            request.completionHandler?(response)
+                        }
+                    }
+                    return
                 }
             }
 

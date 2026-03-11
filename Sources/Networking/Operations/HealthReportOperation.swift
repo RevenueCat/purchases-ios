@@ -23,7 +23,7 @@ final class HealthReportOperation: CacheableNetworkOperation {
 
     }
 
-    private let configuration: AppUserConfiguration
+    private let configuration: UserSpecificConfiguration
     private let callbackCache: CallbackCache<Callback>
 
     static func createFactory(
@@ -46,8 +46,10 @@ final class HealthReportOperation: CacheableNetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        let request: HTTPRequest = .init(method: .get,
-                                         path: .appHealthReport(appUserID: configuration.appUserID))
+        let requestPath: HTTPRequestPath = self.configuration.iamEnabled
+            ? HTTPRequest.IAMCustomerPath.appHealthReport
+            : HTTPRequest.Path.appHealthReport(appUserID: self.configuration.appUserID)
+        let request: HTTPRequest = .init(method: .get, requestPath: requestPath)
 
         self.httpClient.perform(
             request

@@ -333,7 +333,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
-                     automaticDeviceIdentifierCollectionEnabled: Bool = true
+                     automaticDeviceIdentifierCollectionEnabled: Bool = true,
+                     iamEnabled: Bool = false
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -403,7 +404,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 observerMode: observerMode,
                 customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
-            diagnosticsTracker: diagnosticsTracker
+            diagnosticsTracker: diagnosticsTracker,
+            iamEnabled: iamEnabled
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -1029,6 +1031,54 @@ public extension Purchases {
         return try await logOutAsync()
     }
 
+    @objc func initAnonymous(completion: @escaping (PublicError?) -> Void) {
+        guard let iamAPI = self.backend.iamAPI else {
+            completion(NewErrorUtils.configurationError(message: "IAM is not enabled.").asPublicError)
+            return
+        }
+        iamAPI.login(method: .anonymous()) { result in
+            self.operationDispatcher.dispatchOnMainThread {
+                completion(result.error?.asPublicError)
+            }
+        }
+    }
+
+    func initAnonymous() async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            self.initAnonymous { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    func loginUser(with method: IAMLoginMethod, completion: @escaping (PublicError?) -> Void) {
+        guard let iamAPI = self.backend.iamAPI else {
+            completion(NewErrorUtils.configurationError(message: "IAM is not enabled.").asPublicError)
+            return
+        }
+        iamAPI.login(method: method) { result in
+            self.operationDispatcher.dispatchOnMainThread {
+                completion(result.error?.asPublicError)
+            }
+        }
+    }
+
+    func loginUser(with method: IAMLoginMethod) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            self.loginUser(with: method) { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
     @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
         guard syncAttributesAndOfferingsIfNeededRateLimiter.shouldProceed() else {
             Logger.warn(
@@ -1643,7 +1693,8 @@ public extension Purchases {
                   showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
                   diagnosticsEnabled: configuration.diagnosticsEnabled,
                   preferredLocale: configuration.preferredLocale,
-                  automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled
+                  automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
+                  iamEnabled: configuration.iamEnabled
         )
     }
 
@@ -1911,7 +1962,8 @@ public extension Purchases {
         showStoreMessagesAutomatically: Bool,
         diagnosticsEnabled: Bool,
         preferredLocale: String?,
-        automaticDeviceIdentifierCollectionEnabled: Bool = true
+        automaticDeviceIdentifierCollectionEnabled: Bool = true,
+        iamEnabled: Bool = false
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -1928,7 +1980,8 @@ public extension Purchases {
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
                   diagnosticsEnabled: diagnosticsEnabled,
                   preferredLocale: preferredLocale,
-                  automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled)
+                  automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled,
+                  iamEnabled: iamEnabled)
         )
     }
 

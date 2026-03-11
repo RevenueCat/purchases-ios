@@ -44,6 +44,8 @@ enum NetworkStrings {
     case starting_request(httpMethod: String, path: String)
     case retrying_request(httpMethod: String, path: String)
     case retrying_request_with_fallback_path(httpMethod: String, path: String)
+    case iam_refreshing_token
+    case iam_token_refresh_failed
     case failing_url_resolved_to_host(url: URL, resolvedHost: String)
     case blocked_network(url: URL, newHost: String?)
     case api_request_redirect(from: URL, to: URL)
@@ -124,6 +126,12 @@ extension NetworkStrings: LogMessage {
 
         case let .retrying_request_with_fallback_path(httpMethod, path):
             return "Retrying request using fallback host: \(httpMethod) \(path)"
+
+        case .iam_refreshing_token:
+            return "[IAM] Access token expired, refreshing..."
+
+        case .iam_token_refresh_failed:
+            return "[IAM] Token refresh failed; forwarding 401 to caller."
 
         case let .failing_url_resolved_to_host(url, resolvedHost):
             return "Failing url '\(url)' resolved to host '\(resolvedHost)'"

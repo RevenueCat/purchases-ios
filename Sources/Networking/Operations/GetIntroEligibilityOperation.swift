@@ -75,9 +75,14 @@ private extension GetIntroEligibilityOperation {
             return
         }
 
-        let request = HTTPRequest(method: .post(Body(productIdentifiers: self.productIdentifiers,
-                                                     fetchToken: self.receiptData.asFetchToken)),
-                                  path: .getIntroEligibility(appUserID: appUserID))
+        let requestPath: HTTPRequestPath = self.configuration.iamEnabled
+            ? HTTPRequest.IAMCustomerPath.getIntroEligibility
+            : HTTPRequest.Path.getIntroEligibility(appUserID: appUserID)
+        let request = HTTPRequest(
+            method: .post(Body(productIdentifiers: self.productIdentifiers,
+                               fetchToken: self.receiptData.asFetchToken)),
+            requestPath: requestPath
+        )
 
         httpClient.perform(
             request

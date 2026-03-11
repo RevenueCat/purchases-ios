@@ -16,7 +16,7 @@ import Foundation
 final class GetOfferingsOperation: CacheableNetworkOperation {
 
     private let offeringsCallbackCache: CallbackCache<OfferingsCallback>
-    private let configuration: AppUserConfiguration
+    private let configuration: UserSpecificConfiguration
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
@@ -64,7 +64,10 @@ private extension GetOfferingsOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
+        let requestPath: HTTPRequestPath = self.configuration.iamEnabled
+            ? HTTPRequest.IAMCustomerPath.getOfferings
+            : HTTPRequest.Path.getOfferings(appUserID: appUserID)
+        let request = HTTPRequest(method: .get, requestPath: requestPath)
 
         httpClient.perform(request) { (response: VerifiedHTTPResponse<OfferingsResponse>.Result) in
             defer {

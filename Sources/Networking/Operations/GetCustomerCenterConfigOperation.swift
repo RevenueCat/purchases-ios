@@ -18,7 +18,7 @@ import Foundation
 final class GetCustomerCenterConfigOperation: CacheableNetworkOperation {
 
     private let customerCenterConfigCallbackCache: CallbackCache<CustomerCenterConfigCallback>
-    private let configuration: AppUserConfiguration
+    private let configuration: UserSpecificConfiguration
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
@@ -68,7 +68,10 @@ private extension GetCustomerCenterConfigOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get, path: .getCustomerCenterConfig(appUserID: appUserID))
+        let requestPath: HTTPRequestPath = self.configuration.iamEnabled
+            ? HTTPRequest.IAMCustomerPath.getCustomerCenterConfig
+            : HTTPRequest.Path.getCustomerCenterConfig(appUserID: appUserID)
+        let request = HTTPRequest(method: .get, requestPath: requestPath)
 
         httpClient.perform(request) { (response: VerifiedHTTPResponse<CustomerCenterConfigResponse>.Result) in
             defer {
