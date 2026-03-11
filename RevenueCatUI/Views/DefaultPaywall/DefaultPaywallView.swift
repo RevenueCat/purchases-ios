@@ -29,10 +29,12 @@ struct DefaultPaywallView: View {
         warning: PaywallWarning? = nil,
         offering: Offering?,
         appName: String = AppStyleExtractor.getAppName(),
-        iconDetailProvider: AppIconDetailProvider = AppIconDetailProvider()
+        iconDetailProvider: AppIconDetailProvider = AppIconDetailProvider(),
+        isFooterPaywall: Bool = false
     ) {
         self.handler = handler
         self.appName = appName
+        self.isFooterPaywall = isFooterPaywall
         self._warning = .init(initialValue: warning)
         self._appIconDetailProvider = StateObject(wrappedValue: iconDetailProvider)
         if let packages = offering?.availablePackages, !packages.isEmpty {
@@ -46,6 +48,7 @@ struct DefaultPaywallView: View {
 
     let handler: PurchaseHandler
     let appName: String
+    let isFooterPaywall: Bool
 
     @State private var warning: PaywallWarning?
     @State private var products: [Package]
@@ -98,21 +101,28 @@ struct DefaultPaywallView: View {
         return showWarning
     }
 
+    @ViewBuilder
+    var spacer: some View {
+        if !isFooterPaywall {
+            Spacer()
+        }
+    }
+
     // MARK: - Body
 
     var body: some View {
         VStack {
-            if shouldShowWarning {
+            if shouldShowWarning && !isFooterPaywall {
                 Text("RevenueCat Paywalls")
                     .font(.headline)
                     .frame(maxWidth: .infinity, alignment: .center)
             }
 
-            Spacer()
+            spacer
 
             if shouldShowWarning, let warning {
                 DefaultPaywallWarning(warning: warning)
-            } else {
+            } else if !isFooterPaywall {
                 VStack(alignment: .center, spacing: 16) {
                     ZStack {
                         appIconDetailProvider.image
@@ -137,7 +147,8 @@ struct DefaultPaywallView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
             }
-            Spacer()
+
+            spacer
 
             VStack {
                 ForEach(products) { product in
