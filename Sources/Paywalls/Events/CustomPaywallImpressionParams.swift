@@ -11,6 +11,8 @@
 //
 //  Created by Rick van der Linden on 11/03/2026.
 
+import Foundation
+
 /// Parameters for tracking a custom paywall impression event.
 @_spi(Experimental) @objc(RCCustomPaywallImpressionParams)
 public final class CustomPaywallImpressionParams: NSObject, Sendable {
