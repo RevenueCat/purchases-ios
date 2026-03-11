@@ -2148,7 +2148,7 @@ extension Purchases {
     /// - Parameter params: Parameters for the custom paywall impression.
     @_spi(Experimental)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams = .init()) {
+    @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams) {
         Task {
             let event = CustomPaywallEvent.impression(
                 .init(),
@@ -2156,6 +2156,16 @@ extension Purchases {
             )
             await self.eventsManager?.track(featureEvent: event)
         }
+    }
+
+    /// Tracks an impression for a custom paywall with no additional parameters.
+    ///
+    /// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
+    /// This enables RevenueCat to track paywall impressions for analytics.
+    @_spi(Experimental)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @objc public func trackCustomPaywallImpression() {
+        trackCustomPaywallImpression(CustomPaywallImpressionParams())
     }
 
 }
