@@ -23,7 +23,6 @@
         RCPurchases *purchases = RCPurchases.sharedPurchases;
         [purchases trackCustomPaywallImpression:paramsDefault];
         [purchases trackCustomPaywallImpression:paramsWithId];
-        [purchases trackCustomPaywallImpression];
     }
 }
 
