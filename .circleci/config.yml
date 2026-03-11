@@ -19,7 +19,8 @@ parameters:
         update_paywall_templates,
         record_paywall_screenshots,
         tuist,
-        deploy_rct_tester
+        deploy_rct_tester,
+        deploy_purchase_tester
       ]
     default: default
   generate_snapshots:
@@ -2398,6 +2399,16 @@ workflows:
       equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
     jobs:
       - docs-deploy
+
+  # Temporary: manual deployment of Purchase Tester to verify Xcode 26 build
+  manual-deploy-purchase-tester:
+    when:
+      equal: [deploy_purchase_tester, << pipeline.parameters.action >>]
+    jobs:
+      - deploy-purchase-tester:
+          dry_run: false
+          context:
+            - slack-secrets
 
   # The deployment of the RCT Tester app can be done manually from CircleCI
   # by triggering the pipeline with the "deploy_rct_tester" action
