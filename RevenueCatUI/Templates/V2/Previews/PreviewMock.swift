@@ -11,6 +11,10 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
+enum PreviewMock {}
+
+typealias MockData = PreviewMock
+
 #if !os(tvOS) // For Paywalls V2
 
 #if DEBUG
@@ -113,7 +117,7 @@ extension View {
     }
 }
 
-enum PreviewMock {
+extension PreviewMock {
 
     static var weeklyStandardPackage: Package = .init(
         identifier: "weekly_standard",
@@ -244,6 +248,7 @@ enum PreviewMock {
     )
 
 }
+#endif
 
 extension PreviewMock {
 
@@ -300,4 +305,23 @@ extension PreviewMock {
 
 #endif
 
-#endif
+extension MockData {
+
+    /// A stub to render a view during a loading event
+    static let loadingOffering = Offering(
+        identifier: "loading-state",
+        serverDescription: "loading-state",
+        availablePackages: [.init(
+            identifier: "loading-state",
+            packageType: .annual,
+            storeProduct: .init(sk1Product: Product(
+                price: 99.99,
+                unit: .year,
+                localizedTitle: "loading-state"
+            )),
+            offeringIdentifier: "loading-state",
+            webCheckoutUrl: nil
+        )],
+        webCheckoutUrl: nil
+    )
+}

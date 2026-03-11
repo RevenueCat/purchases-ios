@@ -236,9 +236,11 @@ public struct PaywallView: View {
                     // Loading state using the default paywall view
                     DefaultPaywallView(
                         handler: purchaseHandler,
-                        offering: nil,
+                        offering: MockData.loadingOffering,
                         isFooterPaywall: mode != .fullScreen
                     )
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
                         .redacted(reason: .placeholder)
                         .transition(Self.transition)
                         .task {
