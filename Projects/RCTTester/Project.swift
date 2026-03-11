@@ -38,6 +38,7 @@ let project = Project(
             ],
             settings: .appTarget(including: [
                 "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+                "PROVISIONING_PROFILE_SPECIFIER": "$(RCT_PROVISIONING_PROFILE)",
             ])
         )
     ],
