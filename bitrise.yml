@@ -13,19 +13,19 @@ workflows:
       - target_branch: main
     meta:
       bitrise.io:
-        stack: osx-xcode-26.3.x
+        stack: osx-xcode-26.2.x
         machine_type_id: g2.mac.large
     steps:
 
     - git-clone@8: {}
 
     - script@1:
-        title: Select Xcode 26
+        title: Print Xcode version
         inputs:
         - content: |
             set -eo pipefail
             set -x
-            sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
+            xcode-select -p
             xcodebuild -version
 
     - script@1:
