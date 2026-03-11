@@ -1,0 +1,81 @@
+format_version: "11"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: ios
+
+workflows:
+  run-test-ios-26:
+    envs:
+    - SCAN_DEVICE: "iPhone 17 (26.2)"
+    triggers:
+      push:
+      - branch: main
+      pull_request:
+      - target_branch: main
+    meta:
+      bitrise.io:
+        stack: osx-xcode-26.2.x
+        machine_type_id: g2.mac.large
+    steps:
+
+    - git-clone@8: {}
+
+    - script@1:
+        title: Select Xcode 26
+        inputs:
+        - content: |
+            set -euo pipefail
+            sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
+            xcodebuild -version
+
+    - script@1:
+        title: Validate Package.swift
+        inputs:
+        - content: |
+            set -euo pipefail
+            swift package describe
+
+    - script@1:
+        title: Set up Ruby and install dependencies
+        inputs:
+        - content: |
+            set -euo pipefail
+            ruby -v
+            bundle config set --local clean 'true'
+            bundle config set --local path 'vendor/bundle'
+            bundle install
+
+    - script@1:
+        title: Install xcbeautify
+        inputs:
+        - content: brew install xcbeautify
+
+    - script@1:
+        title: SPM Release Build (Xcode 26)
+        timeout: 1800
+        inputs:
+        - content: |
+            set -euo pipefail
+            swift build -c release --target RevenueCat
+
+    - script@1:
+        title: Run iOS 26 tests
+        timeout: 900
+        inputs:
+        - content: |
+            set -euo pipefail
+            bundle exec fastlane test_ios
+
+    - script@1:
+        title: Compress result bundle
+        is_always_run: true
+        inputs:
+        - content: |
+            set -euo pipefail
+            BUNDLE="fastlane/test_output/xctest/ios/RevenueCat.xcresult"
+            if [ -d "$BUNDLE" ]; then
+              tar -czf "$BUNDLE.tar.gz" -C "fastlane/test_output/xctest/ios" "RevenueCat.xcresult"
+              cp "$BUNDLE.tar.gz" "$BITRISE_DEPLOY_DIR/"
+              rm -r "$BUNDLE"
+            fi
+
+    - deploy-to-bitrise-io@2: {}
