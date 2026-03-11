@@ -234,7 +234,11 @@ public struct PaywallView: View {
                     .transition(Self.transition)
                 } else {
                     // Loading state using the default paywall view
-                    DefaultPaywallView(handler: purchaseHandler, offering: nil)
+                    DefaultPaywallView(
+                        handler: purchaseHandler,
+                        offering: nil,
+                        isFooterPaywall: mode != .fullScreen
+                    )
                         .redacted(reason: .placeholder)
                         .transition(Self.transition)
                         .task {
