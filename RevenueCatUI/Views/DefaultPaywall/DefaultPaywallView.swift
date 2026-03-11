@@ -173,7 +173,7 @@ struct DefaultPaywallView: View {
                                 do {
                                     _ = try await handler.purchase(package: selected)
                                 } catch {
-                                    Logger.debug("Purchase failed with error: \(error)")
+                                    Logger.debug(Strings.purchase_failed(error))
                                 }
                             }
                         }
@@ -201,7 +201,7 @@ struct DefaultPaywallView: View {
                             do {
                                 _ = try await handler.restorePurchases()
                             } catch {
-                                Logger.debug("Restore failed with error: \(error)")
+                                Logger.debug(Strings.restore_purchases_failed(error))
                             }
                         }
                     } label: {
