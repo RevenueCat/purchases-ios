@@ -90,6 +90,10 @@ extension Offering {
         if let paywall = self.paywall {
             switch paywall.validate() {
             case let .success(template):
+                #if os(macOS)
+                let error = Offering.PaywallValidationError.invalidTemplate("Legacy paywalls are unsupported on macOS.")
+                return (paywall, paywall.locale ?? locale, template, error)
+                #endif
                 return (paywall, paywall.locale ?? locale, template, nil)
 
             case let .failure(error):

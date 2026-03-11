@@ -363,15 +363,10 @@ public struct PaywallView: View {
                 countries: offering.paywall?.zeroDecimalPlaceCountries
             )
 
-            var (paywall, displayedLocale, template, error) = offering.validatedPaywall(
+            let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
                 locale: purchaseHandler.preferredLocaleOverride ?? .current
             )
 
-            #if os(macOS)
-                if error == nil {
-                    error = Offering.PaywallValidationError.invalidTemplate("Legacy paywalls are unsupported on macOS.")
-                }
-            #endif
             LoadedOfferingPaywallView(
                 offering: offering,
                 activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
