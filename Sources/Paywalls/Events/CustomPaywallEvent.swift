@@ -76,21 +76,6 @@ extension CustomPaywallEvent {
 
 }
 
-/// Parameters for tracking a custom paywall impression event.
-@_spi(Experimental) @objc(RCCustomPaywallImpressionParams)
-public final class CustomPaywallImpressionParams: NSObject {
-
-    /// An optional identifier for the custom paywall being shown.
-    @objc public let paywallId: String?
-
-    /// Creates parameters for a custom paywall impression.
-    /// - Parameter paywallId: An optional identifier for the custom paywall being shown.
-    @objc public init(paywallId: String? = nil) {
-        self.paywallId = paywallId
-    }
-
-}
-
 // MARK: -
 
 extension CustomPaywallEvent.CreationData: Equatable, Codable, Sendable {}

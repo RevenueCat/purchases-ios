@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@_spi(Internal) @testable import RevenueCat
+@_spi(Experimental) @_spi(Internal) @testable import RevenueCat
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -245,12 +245,12 @@ class CustomPaywallEventTests: TestCase {
     // MARK: - Params
 
     func testParamsWithPaywallId() {
-        let params = CustomPaywallEvent.Params(paywallId: "my_paywall")
+        let params = CustomPaywallImpressionParams(paywallId: "my_paywall")
         expect(params.paywallId) == "my_paywall"
     }
 
     func testParamsDefaultPaywallIdIsNil() {
-        let params = CustomPaywallEvent.Params()
+        let params = CustomPaywallImpressionParams()
         expect(params.paywallId).to(beNil())
     }
 
