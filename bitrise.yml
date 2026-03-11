@@ -13,7 +13,7 @@ workflows:
       - target_branch: main
     meta:
       bitrise.io:
-        stack: osx-xcode-26.2.x
+        stack: osx-xcode-26.3.x
         machine_type_id: g2.mac.large
     steps:
 
