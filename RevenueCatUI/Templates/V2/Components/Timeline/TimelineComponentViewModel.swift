@@ -34,28 +34,37 @@ class TimelineComponentViewModel {
     init(
         component: PaywallComponent.TimelineComponent,
         items: [TimelineItemViewModel],
-        uiConfigProvider: UIConfigProvider
-    ) {
+        uiConfigProvider: UIConfigProvider,
+        discardRules: Bool = false
+    ) throws {
         self.component = component
         self.items = items
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
         @ViewBuilder apply: @escaping (TimelineComponentStyle) -> some View
     ) -> some View {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
+        )
         let partial = PresentedTimelinePartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
 
@@ -84,33 +93,45 @@ class TimelineItemViewModel {
     let title: TextComponentViewModel
     let description: TextComponentViewModel?
     let icon: IconComponentViewModel
+    let uiConfigProvider: UIConfigProvider
 
     private let presentedOverrides: PresentedOverrides<PresentedTimelineItemPartial>?
 
     init(component: PaywallComponent.TimelineComponent.Item,
          title: TextComponentViewModel,
          description: TextComponentViewModel?,
-         icon: IconComponentViewModel) {
+         icon: IconComponentViewModel,
+         uiConfigProvider: UIConfigProvider,
+         discardRules: Bool = false) throws {
         self.component = component
         self.title = title
         self.description = description
         self.icon = icon
-        self.presentedOverrides = component.overrides?.toPresentedOverrides { $0 }
+        self.uiConfigProvider = uiConfigProvider
+        self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
         @ViewBuilder apply: @escaping (TimelineItemStyle) -> some View
     ) -> some View {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
+        )
         let partial = PresentedTimelineItemPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
 

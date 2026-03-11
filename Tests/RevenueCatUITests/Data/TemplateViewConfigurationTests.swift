@@ -216,7 +216,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
     func testCreateMultitierWithNoAvailableProductsForAnyTier() {
         expect {
-            let config = try Config.create(
+            _ = try Config.create(
                 // We have some packages, but none of them are part of any tiers.
                 with: [
                     TestData.weeklyPackage,

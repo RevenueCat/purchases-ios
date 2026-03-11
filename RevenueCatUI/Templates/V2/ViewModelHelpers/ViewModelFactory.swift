@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -30,13 +30,21 @@ struct ViewModelFactory {
 
     let packageValidator = PackageValidator()
 
-    func toRootViewModel(
+    /// When true, all rule-based overrides are discarded globally across all components.
+    /// Set when any component in the paywall contains unsupported conditions.
+    private(set) var discardRules: Bool = false
+
+    mutating func toRootViewModel(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         colorScheme: ColorScheme
     ) throws -> RootViewModel {
+        // Compute global flag: if ANY component has unsupported conditions, discard all rule overrides
+        self.discardRules = componentsConfig.stack.containsUnsupportedConditions() ||
+            componentsConfig.stickyFooter?.stack.containsUnsupportedConditions() == true
+
         let firstItemIgnoresSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
 
         let rootStackViewModel = try toStackViewModel(
@@ -93,7 +101,8 @@ struct ViewModelFactory {
                 try TextComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    component: component
+                    component: component,
+                    discardRules: discardRules
                 )
             )
         case .image(let component):
@@ -101,15 +110,17 @@ struct ViewModelFactory {
                 try ImageComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    component: component
+                    component: component,
+                    discardRules: discardRules
                 )
             )
         case .icon(let component):
             return .icon(
-                IconComponentViewModel(
+                try IconComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    component: component
+                    component: component,
+                    discardRules: discardRules
                 )
             )
         case .stack(let component):
@@ -244,30 +255,36 @@ struct ViewModelFactory {
                     description = try TextComponentViewModel(
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
-                        component: descriptionComponent
+                        component: descriptionComponent,
+                        discardRules: discardRules
                     )
                 }
-                return TimelineItemViewModel(
+                return try TimelineItemViewModel(
                     component: item,
                     title: try TextComponentViewModel(
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
-                        component: item.title
+                        component: item.title,
+                        discardRules: discardRules
                     ),
                     description: description,
-                    icon: IconComponentViewModel(
+                    icon: try IconComponentViewModel(
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
-                        component: item.icon
-                    )
+                        component: item.icon,
+                        discardRules: discardRules
+                    ),
+                    uiConfigProvider: uiConfigProvider,
+                    discardRules: discardRules
                 )
             }
 
             return .timeline(
-                TimelineComponentViewModel(
+                try TimelineComponentViewModel(
                     component: component,
                     items: models,
-                    uiConfigProvider: uiConfigProvider
+                    uiConfigProvider: uiConfigProvider,
+                    discardRules: discardRules
                 )
             )
         case .tabs(let component):
@@ -300,7 +317,7 @@ struct ViewModelFactory {
                 overflow: nil,
                 overrides: component.overrides.map { overrides in
                     overrides.map { override in
-                        return .init(conditions: override.conditions, properties: .init(
+                        return .init(extendedConditions: override.extendedConditions, properties: .init(
                             visible: override.properties.visible,
                             dimension: nil,
                             size: override.properties.size,
@@ -359,11 +376,12 @@ struct ViewModelFactory {
             }
 
             return .tabs(
-                TabsComponentViewModel(
+                try TabsComponentViewModel(
                     component: component,
                     controlStackViewModel: controlStackViewModel,
                     tabViewModels: tabViewModels,
-                    uiConfigProvider: uiConfigProvider
+                    uiConfigProvider: uiConfigProvider,
+                    discardRules: discardRules
                 )
             )
         case .tabControl(let component):
@@ -415,11 +433,12 @@ struct ViewModelFactory {
             }
 
             return .carousel(
-                CarouselComponentViewModel(
+                try CarouselComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component,
-                    pageStackViewModels: pageStackViewModels
+                    pageStackViewModels: pageStackViewModels,
+                    discardRules: discardRules
                 )
             )
         case .video(let component):
@@ -427,7 +446,8 @@ struct ViewModelFactory {
                 VideoComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    component: component
+                    component: component,
+                    discardRules: discardRules
                 )
             )
         case .countdown(let component):
@@ -523,12 +543,13 @@ struct ViewModelFactory {
         // This is only used with ZStack children that aren't the background
         let shouldApplySafeAreaInset = component == firstItemIgnoresSafeAreaInfo?.parentZStack
 
-        return StackComponentViewModel(
+        return try StackComponentViewModel(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,
             shouldApplySafeAreaInset: shouldApplySafeAreaInset,
-            uiConfigProvider: uiConfigProvider
+            uiConfigProvider: uiConfigProvider,
+            discardRules: discardRules
         )
     }
 

@@ -77,6 +77,10 @@ class SubscriberAttributesManager {
         setAttributionID(appsflyerID, forNetworkID: .appsFlyerID, appUserID: appUserID)
     }
 
+    func setAppstackID(_ appstackID: String?, appUserID: String) {
+        setAttributionID(appstackID, forNetworkID: .appstackID, appUserID: appUserID)
+    }
+
     func setFBAnonymousID(_ fBAnonymousID: String?, appUserID: String) {
         setAttributionID(fBAnonymousID, forNetworkID: .fBAnonID, appUserID: appUserID)
     }

@@ -112,6 +112,10 @@ enum Strings {
     case prefetchedExitOffer(String)
     case presentingExitOffer(String)
     case errorLoadingExitOffer(Error)
+
+    // Conditional Configurability
+    case paywall_contains_unsupported_condition
+
 }
 
 extension Strings: CustomStringConvertible {
@@ -359,6 +363,9 @@ extension Strings: CustomStringConvertible {
             return "Restore failed with error: \(error)"
         case .purchase_failed(let error):
             return "Purchase failed with error: \(error)"
+        case .paywall_contains_unsupported_condition:
+            return "Unsupported paywall rule encountered. " +
+            "Rendering paywall without conditional configurability rules."
         }
     }
 

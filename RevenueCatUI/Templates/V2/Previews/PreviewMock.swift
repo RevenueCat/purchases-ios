@@ -89,6 +89,7 @@ struct PreviewRequiredPaywallsV2Properties: ViewModifier {
             .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
             .environmentObject(PurchaseHandler.default())
             .environmentObject(self.packageContext ?? Self.defaultPackageContext)
+            .environment(\.selectedPackageId, (self.packageContext ?? Self.defaultPackageContext).package?.identifier)
             .environment(\.screenCondition, screenCondition)
             .environment(\.componentViewState, componentViewState)
             .environment(\.safeAreaInsets, EdgeInsets())

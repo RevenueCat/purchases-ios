@@ -40,6 +40,11 @@ struct TimelineComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
     internal init(viewModel: TimelineComponentViewModel) {
         self.viewModel = viewModel
     }
@@ -55,7 +60,9 @@ struct TimelineComponentView: View {
             ),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
-            )
+            ),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables
         ) { style in
             if style.visible {
                 timeline(style: style)
@@ -77,7 +84,9 @@ struct TimelineComponentView: View {
                     ),
                     isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                         for: self.packageContext.package
-                    )
+                    ),
+                    selectedPackageId: self.selectedPackageId,
+                    customVariables: self.customVariables
                 ) { itemStyle in
                     if itemStyle.visible {
                         timelineRow(itemStyle: itemStyle, style: style)
@@ -102,7 +111,9 @@ struct TimelineComponentView: View {
                         ),
                         isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                             for: self.packageContext.package
-                        )
+                        ),
+                        selectedPackageId: self.selectedPackageId,
+                        customVariables: self.customVariables
                     ) { itemStyle in
                         if itemStyle.visible {
                             let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil
@@ -395,7 +406,7 @@ fileprivate extension TimelineComponentViewModel {
                     component: descriptionComponent
                 )
             }
-            return TimelineItemViewModel(
+            return try TimelineItemViewModel(
                 component: item,
                 title: try TextComponentViewModel(
                     localizationProvider: localizationProvider,
@@ -403,15 +414,16 @@ fileprivate extension TimelineComponentViewModel {
                     component: item.title
                 ),
                 description: description,
-                icon: IconComponentViewModel(
+                icon: try IconComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: item.icon
-                )
+                ),
+                uiConfigProvider: uiConfigProvider
             )
         }
 
-        self.init(
+        try self.init(
             component: component,
             items: models,
             uiConfigProvider: uiConfigProvider

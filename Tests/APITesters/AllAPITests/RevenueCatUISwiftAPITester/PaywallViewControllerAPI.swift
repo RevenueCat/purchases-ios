@@ -107,6 +107,8 @@ func paywallViewControllerAPI(_ delegate: Delegate,
 func customVariableValueAPI() {
     // CustomVariableValue type and static constructors
     let _: CustomVariableValue = .string("test")
+    let _: CustomVariableValue = .number(42)
+    let _: CustomVariableValue = .bool(true)
 
     // Accessing underlying value
     let stringValue: CustomVariableValue = .string("hello")
