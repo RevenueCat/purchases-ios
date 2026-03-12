@@ -1226,6 +1226,19 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationMode, "EntitlementV
   RCEntitlementVerificationModeEnforced = 2,
 };
 
+/// Parameters for tracking a custom paywall impression event.
+SWIFT_CLASS_NAMED("CustomPaywallImpressionParams")
+@interface RCCustomPaywallImpressionParams : NSObject
+/// An optional identifier for the custom paywall being shown.
+@property (nonatomic, readonly, copy) NSString * _Nullable paywallId;
+/// Creates parameters for a custom paywall impression.
+/// \param paywallId An optional identifier for the custom paywall being shown.
+///
+- (nonnull instancetype)initWithPaywallId:(NSString * _Nullable)paywallId OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
 @class RCEntitlementInfos;
 @class NSDate;
 @class RCNonSubscriptionTransaction;
@@ -3222,6 +3235,25 @@ SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 /// When the purchase completes, the result will be part of the callback parameters.
 ///
 - (void)readyForPromotedProduct:(RCStoreProduct * _Nonnull)product purchase:(void (^ _Nonnull)(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))startPurchase;
+@end
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+/// Tracks an impression for a custom paywall.
+/// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
+/// This enables RevenueCat to track paywall impressions for analytics.
+/// important:
+/// Each call creates a separate impression event. Call this once per paywall presentation,
+/// not in SwiftUI’s <code>onAppear</code> or similar callbacks that may fire multiple times for the same display.
+/// \param params Parameters for the custom paywall impression.
+///
+- (void)trackCustomPaywallImpression:(RCCustomPaywallImpressionParams * _Nonnull)params SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(tvos,introduced=15.0) SWIFT_AVAILABILITY(macos,introduced=12.0) SWIFT_AVAILABILITY(ios,introduced=15.0);
+/// Tracks an impression for a custom paywall with no additional parameters.
+/// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
+/// This enables RevenueCat to track paywall impressions for analytics.
+/// important:
+/// Each call creates a separate impression event. Call this once per paywall presentation,
+/// not in SwiftUI’s <code>onAppear</code> or similar callbacks that may fire multiple times for the same display.
+- (void)trackCustomPaywallImpression SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(tvos,introduced=15.0) SWIFT_AVAILABILITY(macos,introduced=12.0) SWIFT_AVAILABILITY(ios,introduced=15.0);
 @end
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
