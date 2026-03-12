@@ -237,6 +237,10 @@ class DeviceCache {
         self.offeringsCachedObject.cache(instance: offerings)
     }
 
+    func clearInMemoryOfferingsCache() {
+        self.offeringsCachedObject.clearCache()
+    }
+
     func clearOfferingsCache(appUserID: String) {
         self.offeringsCachedObject.clearCache()
         self.offeringsCachePreferredLocales.value = []
