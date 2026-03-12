@@ -303,8 +303,6 @@ extension PreviewMock {
 
 }
 
-#endif
-
 extension MockData {
 
     /// A stub to render a view during a loading event
@@ -325,3 +323,5 @@ extension MockData {
         webCheckoutUrl: nil
     )
 }
+
+#endif
