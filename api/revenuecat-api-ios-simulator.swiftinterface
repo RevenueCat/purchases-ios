@@ -1,7 +1,7 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 6.2.4 effective-5.10 (swiftlang-6.2.4.1.4 clang-1700.6.4.2)
+// swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.0.19.9 clang-1700.3.19.1)
 // swift-module-flags: -target arm64-apple-ios13.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name RevenueCat
-// swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2.4
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2
 import AdServices
 import Combine
 import CommonCrypto
@@ -166,8 +166,10 @@ extension RevenueCat.PaywallEvent {
     public var localeIdentifier: Swift.String
     public var darkMode: Swift.Bool
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @available(*, deprecated, message: "This initializer will be removed in a future version.")
     public init(offering: RevenueCat.Offering, paywallComponentsData: RevenueCat.PaywallComponentsData, sessionID: RevenueCat.PaywallEvent.SessionID, displayMode: RevenueCat.PaywallViewMode, locale: Foundation.Locale, darkMode: Swift.Bool)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @available(*, deprecated, message: "This initializer will be removed in a future version.")
     public init(offering: RevenueCat.Offering, paywall: RevenueCat.PaywallData, sessionID: RevenueCat.PaywallEvent.SessionID, displayMode: RevenueCat.PaywallViewMode, locale: Foundation.Locale, darkMode: Swift.Bool)
   }
 }
@@ -2745,8 +2747,8 @@ extension RevenueCat.SubscriptionPeriod {
 extension RevenueCat.SubscriptionPeriod.Unit : Swift.Codable {
 }
 extension RevenueCat.SubscriptionPeriod : Swift.Codable {
+  convenience public init(from decoder: any Swift.Decoder) throws
   final public func encode(to encoder: any Swift.Encoder) throws
-  public init(from decoder: any Swift.Decoder) throws
 }
 @objc(RCPurchaseOwnershipType) public enum PurchaseOwnershipType : Swift.Int {
   case purchased = 0
@@ -3838,16 +3840,18 @@ public protocol PaywallPartialComponent : RevenueCat.PaywallComponentBase {
 extension RevenueCat.PaywallComponent {
   public typealias ComponentOverrides<T> = [RevenueCat.PaywallComponent.ComponentOverride<T>] where T : RevenueCat.PaywallPartialComponent
   public struct ComponentOverride<T> : Swift.Codable, Swift.Sendable, Swift.Hashable, Swift.Equatable where T : RevenueCat.PaywallPartialComponent {
-    public let conditions: [RevenueCat.PaywallComponent.Condition]
+    public var conditions: [RevenueCat.PaywallComponent.Condition] {
+      get
+    }
     public let properties: T
     public init(conditions: [RevenueCat.PaywallComponent.Condition], properties: T)
-    public static func == (a: RevenueCat.PaywallComponent.ComponentOverride<T>, b: RevenueCat.PaywallComponent.ComponentOverride<T>) -> Swift.Bool
+    public init(from decoder: any Swift.Decoder) throws
     public func encode(to encoder: any Swift.Encoder) throws
+    public static func == (a: RevenueCat.PaywallComponent.ComponentOverride<T>, b: RevenueCat.PaywallComponent.ComponentOverride<T>) -> Swift.Bool
     public func hash(into hasher: inout Swift.Hasher)
     public var hashValue: Swift.Int {
       get
     }
-    public init(from decoder: any Swift.Decoder) throws
   }
   public enum Condition : Swift.String, Swift.Codable, Swift.Sendable, Swift.Hashable, Swift.Equatable {
     case compact
@@ -3857,8 +3861,6 @@ extension RevenueCat.PaywallComponent {
     case promoOffer
     case selected
     case unsupported
-    public func encode(to encoder: any Swift.Encoder) throws
-    public init(from decoder: any Swift.Decoder) throws
     #if compiler(>=5.3) && $NonescapableTypes
     public init?(rawValue: Swift.String)
     #endif
