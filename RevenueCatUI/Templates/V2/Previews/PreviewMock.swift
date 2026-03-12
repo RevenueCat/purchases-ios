@@ -17,11 +17,11 @@ typealias MockData = PreviewMock
 
 #if !os(tvOS) // For Paywalls V2
 
-#if DEBUG
-
 @_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
+
+#if DEBUG
 
 // swiftlint:disable identifier_name
 
