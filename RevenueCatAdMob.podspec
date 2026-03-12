@@ -28,11 +28,10 @@ Pod::Spec.new do |s|
   s.source_files = "RevenueCatAdMob/**/*.swift"
   s.exclude_files = [
     "RevenueCatAdMob/Tests/**/*.swift",
-    "RevenueCatAdMob/Support/**/*",
     "RevenueCatAdMob/**/Package*.swift"
   ]
 
   s.dependency "RevenueCat", s.version.to_s
-  # Supports Google Mobile Ads SDK v11.x, v12.x, and v13.x.
-  s.dependency "Google-Mobile-Ads-SDK", ">= 11.2", "< 14"
+  # Supports Google Mobile Ads SDK v12.x and v13.x.
+  s.dependency "Google-Mobile-Ads-SDK", ">= 12.0", "< 14"
 end

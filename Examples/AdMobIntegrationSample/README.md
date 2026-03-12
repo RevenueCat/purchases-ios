@@ -211,4 +211,4 @@ If callbacks stop after `loadAndTrack`, check for delegate/handler reassignment:
 
 ## AdMob SDK version note
 
-This sample uses **Google Mobile Ads v13**; no compiler flag is required. The adapter defaults to the v12+ Swift API. If you use **AdMob v11** in your own app, add `-D RC_ADMOB_SDK_11` to the RevenueCatAdMob target’s Swift flags so the adapter uses the v11 (GAD-prefixed) API.
+This sample uses **Google Mobile Ads v13**; no compiler flag is required. The adapter supports v12.x and v13.x only.

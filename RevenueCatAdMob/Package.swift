@@ -1,5 +1,5 @@
 // swift-tools-version: 5.8
-// RevenueCat AdMob Adapter — main manifest (Google Mobile Ads 12.x–13.x).
+// RevenueCat AdMob Adapter — supports Google Mobile Ads v12.x and v13.x only.
 
 import PackageDescription
 

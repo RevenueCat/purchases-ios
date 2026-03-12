@@ -641,16 +641,6 @@ jobs:
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5'
             -resultBundlePath /tmp/RevenueCatAdMobTestResults.xcresult
           no_output_timeout: 10m
-      - run:
-          name: RevenueCatAdMob v11 compatibility tests
-          command: |
-            cp RevenueCatAdMob/Support/Package-swift-5.8.swift RevenueCatAdMob/Package.swift
-            cd RevenueCatAdMob && xcodebuild test \
-              -scheme RevenueCatAdMob \
-              -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
-              -only-testing:RevenueCatAdMobTests/RCAdMobAPISurfaceTests \
-              -resultBundlePath /tmp/RevenueCatAdMobV11TestResults.xcresult
-          no_output_timeout: 10m
       - slack-notify-on-fail
 
   spm-receipt-parser:

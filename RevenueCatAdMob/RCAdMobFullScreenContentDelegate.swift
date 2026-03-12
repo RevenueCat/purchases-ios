@@ -11,22 +11,22 @@ import GoogleMobileAds
 @_spi(Experimental) import RevenueCat
 
 @available(iOS 15.0, *)
-internal final class RCAdMobFullScreenContentDelegate: NSObject, RCGoogleMobileAds.FullScreenContentDelegate {
+internal final class RCAdMobFullScreenContentDelegate: NSObject, GoogleMobileAds.FullScreenContentDelegate {
 
-    weak var delegate: RCGoogleMobileAds.FullScreenContentDelegate?
+    weak var delegate: GoogleMobileAds.FullScreenContentDelegate?
     private let rcAdMob: RCAdMob
     private let placement: String?
     private let adUnitID: String
     private let adFormat: RevenueCat.AdFormat
-    private let responseInfoProvider: () -> RCGoogleMobileAds.ResponseInfo?
+    private let responseInfoProvider: () -> GoogleMobileAds.ResponseInfo?
 
     init(
         rcAdMob: RCAdMob = .shared,
-        delegate: RCGoogleMobileAds.FullScreenContentDelegate?,
+        delegate: GoogleMobileAds.FullScreenContentDelegate?,
         placement: String?,
         adUnitID: String,
         adFormat: RevenueCat.AdFormat,
-        responseInfoProvider: @escaping () -> RCGoogleMobileAds.ResponseInfo?
+        responseInfoProvider: @escaping () -> GoogleMobileAds.ResponseInfo?
     ) {
         self.rcAdMob = rcAdMob
         self.delegate = delegate
@@ -36,7 +36,7 @@ internal final class RCAdMobFullScreenContentDelegate: NSObject, RCGoogleMobileA
         self.responseInfoProvider = responseInfoProvider
     }
 
-    func adDidRecordImpression(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+    func adDidRecordImpression(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         let responseInfo = self.responseInfoProvider()
         self.rcAdMob.trackDisplayed(
             responseInfo: responseInfo,
@@ -47,7 +47,7 @@ internal final class RCAdMobFullScreenContentDelegate: NSObject, RCGoogleMobileA
         self.delegate?.adDidRecordImpression?(presentingAd)
     }
 
-    func adDidRecordClick(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+    func adDidRecordClick(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         let responseInfo = self.responseInfoProvider()
         self.rcAdMob.trackOpened(
             responseInfo: responseInfo,
@@ -58,20 +58,20 @@ internal final class RCAdMobFullScreenContentDelegate: NSObject, RCGoogleMobileA
         self.delegate?.adDidRecordClick?(presentingAd)
     }
 
-    func adWillPresentFullScreenContent(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+    func adWillPresentFullScreenContent(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         self.delegate?.adWillPresentFullScreenContent?(presentingAd)
     }
 
-    func adWillDismissFullScreenContent(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+    func adWillDismissFullScreenContent(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         self.delegate?.adWillDismissFullScreenContent?(presentingAd)
     }
 
-    func adDidDismissFullScreenContent(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+    func adDidDismissFullScreenContent(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         self.delegate?.adDidDismissFullScreenContent?(presentingAd)
     }
 
     func ad(
-        _ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd,
+        _ presentingAd: any GoogleMobileAds.FullScreenPresentingAd,
         didFailToPresentFullScreenContentWithError error: any Error
     ) {
         self.delegate?.ad?(presentingAd, didFailToPresentFullScreenContentWithError: error)

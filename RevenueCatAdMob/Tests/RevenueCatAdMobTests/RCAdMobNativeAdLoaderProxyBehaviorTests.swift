@@ -133,7 +133,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
     }
 
     func testPlaceholderSelectorsMatchRealNativeAdClass() {
-        let nativeAdClass: AnyClass = RCGoogleMobileAds.NativeAd.self
+        let nativeAdClass: AnyClass = GoogleMobileAds.NativeAd.self
         for sel in [
             #selector(getter: NativeAdPlaceholder.responseInfo),
             #selector(getter: NativeAdPlaceholder.paidEventHandler),
@@ -149,7 +149,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
     }
 
     func testPlaceholderSelectorsMatchRealAdValueClass() {
-        let adValueClass: AnyClass = RCGoogleMobileAds.AdValue.self
+        let adValueClass: AnyClass = GoogleMobileAds.AdValue.self
         for sel in [
             NSSelectorFromString("value"),
             #selector(getter: AdValuePlaceholder.currencyCode),
@@ -379,7 +379,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
         )
 
         var existingHandlerCalled = false
-        var capturedHandler: ((RCGoogleMobileAds.AdValue) -> Void)?
+        var capturedHandler: ((GoogleMobileAds.AdValue) -> Void)?
         var callsAfterLoad = 0
 
         do {
@@ -408,12 +408,12 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
     private static func makeNativeAdPlaceholder(
         backing: NativeAdPlaceholder = NativeAdPlaceholder()
-    ) -> RCGoogleMobileAds.NativeAd {
-        return unsafeBitCast(backing, to: RCGoogleMobileAds.NativeAd.self)
+    ) -> GoogleMobileAds.NativeAd {
+        return unsafeBitCast(backing, to: GoogleMobileAds.NativeAd.self)
     }
 
-    private static func makeAdValuePlaceholder() -> RCGoogleMobileAds.AdValue {
-        return unsafeBitCast(AdValuePlaceholder(), to: RCGoogleMobileAds.AdValue.self)
+    private static func makeAdValuePlaceholder() -> GoogleMobileAds.AdValue {
+        return unsafeBitCast(AdValuePlaceholder(), to: GoogleMobileAds.AdValue.self)
     }
 
 }
@@ -440,19 +440,19 @@ private final class AdLoaderDelegateSpy: NSObject, AdLoaderDelegate, NativeAdLoa
 }
 
 @available(iOS 15.0, *)
-private final class NativeDelegateSpy: NSObject, RCGoogleMobileAds.NativeAdDelegate {
+private final class NativeDelegateSpy: NSObject, GoogleMobileAds.NativeAdDelegate {
     var didPresentScreen = false
 
-    func nativeAdWillPresentScreen(_ nativeAd: RCGoogleMobileAds.NativeAd) {
+    func nativeAdWillPresentScreen(_ nativeAd: GoogleMobileAds.NativeAd) {
         self.didPresentScreen = true
     }
 }
 
 @available(iOS 15.0, *)
 private final class NativeAdPlaceholder: NSObject {
-    @objc var responseInfo: RCGoogleMobileAds.ResponseInfo? { nil }
-    @objc var paidEventHandler: ((RCGoogleMobileAds.AdValue) -> Void)?
-    @objc var delegate: RCGoogleMobileAds.NativeAdDelegate?
+    @objc var responseInfo: GoogleMobileAds.ResponseInfo? { nil }
+    @objc var paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?
+    @objc var delegate: GoogleMobileAds.NativeAdDelegate?
 }
 
 @available(iOS 15.0, *)

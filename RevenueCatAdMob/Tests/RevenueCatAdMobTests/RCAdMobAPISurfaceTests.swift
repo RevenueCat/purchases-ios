@@ -8,20 +8,20 @@ import GoogleMobileAds
 final class RCAdMobAPISurfaceTests: RCAdMobTestCase {
 
     func testBannerAndNativeEntryPointsRemainAvailableInSwift() {
-        let bannerLoadAndTrack: (RCGoogleMobileAds.BannerView) -> (
-            RCGoogleMobileAds.Request,
+        let bannerLoadAndTrack: (GoogleMobileAds.BannerView) -> (
+            GoogleMobileAds.Request,
             String?,
-            RCGoogleMobileAds.BannerViewDelegate?,
-            ((RCGoogleMobileAds.AdValue) -> Void)?
-        ) -> Void = RCGoogleMobileAds.BannerView.loadAndTrack(
+            GoogleMobileAds.BannerViewDelegate?,
+            ((GoogleMobileAds.AdValue) -> Void)?
+        ) -> Void = GoogleMobileAds.BannerView.loadAndTrack(
             request:placement:delegate:paidEventHandler:
         )
         let nativeLoadAndTrackWithDelegate:
-            (RCGoogleMobileAds.AdLoader) -> (
-                RCGoogleMobileAds.Request,
+            (GoogleMobileAds.AdLoader) -> (
+                GoogleMobileAds.Request,
                 String?,
-                RCGoogleMobileAds.NativeAdDelegate?
-            ) -> Void = RCGoogleMobileAds.AdLoader.loadAndTrack(
+                GoogleMobileAds.NativeAdDelegate?
+            ) -> Void = GoogleMobileAds.AdLoader.loadAndTrack(
                 _:placement:nativeAdDelegate:
             )
 
@@ -32,42 +32,42 @@ final class RCAdMobAPISurfaceTests: RCAdMobTestCase {
     func testFullScreenEntryPointsRemainAvailableInSwift() {
         let interstitialLoadAndTrack: (
             String,
-            RCGoogleMobileAds.Request,
+            GoogleMobileAds.Request,
             String?,
-            RCGoogleMobileAds.FullScreenContentDelegate?,
-            ((RCGoogleMobileAds.AdValue) -> Void)?,
-            @escaping (RCGoogleMobileAds.InterstitialAd?, Error?) -> Void
-        ) -> Void = RCGoogleMobileAds.InterstitialAd.loadAndTrack(
+            GoogleMobileAds.FullScreenContentDelegate?,
+            ((GoogleMobileAds.AdValue) -> Void)?,
+            @escaping (GoogleMobileAds.InterstitialAd?, Error?) -> Void
+        ) -> Void = GoogleMobileAds.InterstitialAd.loadAndTrack(
             withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:
         )
         let appOpenLoadAndTrack: (
             String,
-            RCGoogleMobileAds.Request,
+            GoogleMobileAds.Request,
             String?,
-            RCGoogleMobileAds.FullScreenContentDelegate?,
-            ((RCGoogleMobileAds.AdValue) -> Void)?,
-            @escaping (RCGoogleMobileAds.AppOpenAd?, Error?) -> Void
-        ) -> Void = RCGoogleMobileAds.AppOpenAd.loadAndTrack(
+            GoogleMobileAds.FullScreenContentDelegate?,
+            ((GoogleMobileAds.AdValue) -> Void)?,
+            @escaping (GoogleMobileAds.AppOpenAd?, Error?) -> Void
+        ) -> Void = GoogleMobileAds.AppOpenAd.loadAndTrack(
             withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:
         )
         let rewardedLoadAndTrack: (
             String,
-            RCGoogleMobileAds.Request,
+            GoogleMobileAds.Request,
             String?,
-            RCGoogleMobileAds.FullScreenContentDelegate?,
-            ((RCGoogleMobileAds.AdValue) -> Void)?,
-            @escaping (RCGoogleMobileAds.RewardedAd?, Error?) -> Void
-        ) -> Void = RCGoogleMobileAds.RewardedAd.loadAndTrack(
+            GoogleMobileAds.FullScreenContentDelegate?,
+            ((GoogleMobileAds.AdValue) -> Void)?,
+            @escaping (GoogleMobileAds.RewardedAd?, Error?) -> Void
+        ) -> Void = GoogleMobileAds.RewardedAd.loadAndTrack(
             withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:
         )
         let rewardedInterstitialLoadAndTrack: (
             String,
-            RCGoogleMobileAds.Request,
+            GoogleMobileAds.Request,
             String?,
-            RCGoogleMobileAds.FullScreenContentDelegate?,
-            ((RCGoogleMobileAds.AdValue) -> Void)?,
-            @escaping (RCGoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
-        ) -> Void = RCGoogleMobileAds.RewardedInterstitialAd.loadAndTrack(
+            GoogleMobileAds.FullScreenContentDelegate?,
+            ((GoogleMobileAds.AdValue) -> Void)?,
+            @escaping (GoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
+        ) -> Void = GoogleMobileAds.RewardedInterstitialAd.loadAndTrack(
             withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:
         )
 

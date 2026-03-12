@@ -61,7 +61,7 @@ final class RCAdMobNativeDelegateForwardingTests: RCAdMobTestCase {
             adUnitID: ""
         )
         let backing = CountingNativeAdPlaceholder()
-        let nativeAd = unsafeBitCast(backing, to: RCGoogleMobileAds.NativeAd.self)
+        let nativeAd = unsafeBitCast(backing, to: GoogleMobileAds.NativeAd.self)
 
         subject.nativeAdDidRecordImpression(nativeAd)
         subject.nativeAdDidRecordClick(nativeAd)
@@ -72,15 +72,15 @@ final class RCAdMobNativeDelegateForwardingTests: RCAdMobTestCase {
         XCTAssertEqual(backing.responseInfoReads, 2)
     }
 
-    private static func makeNativeAdPlaceholder() -> RCGoogleMobileAds.NativeAd {
+    private static func makeNativeAdPlaceholder() -> GoogleMobileAds.NativeAd {
         let backing = NativeAdPlaceholder()
-        return unsafeBitCast(backing, to: RCGoogleMobileAds.NativeAd.self)
+        return unsafeBitCast(backing, to: GoogleMobileAds.NativeAd.self)
     }
 
 }
 
 @available(iOS 15.0, *)
-private final class NativeDelegateSpy: NSObject, RCGoogleMobileAds.NativeAdDelegate {
+private final class NativeDelegateSpy: NSObject, GoogleMobileAds.NativeAdDelegate {
 
     var didRecordImpression = false
     var didRecordClick = false
@@ -88,23 +88,23 @@ private final class NativeDelegateSpy: NSObject, RCGoogleMobileAds.NativeAdDeleg
     var willDismiss = false
     var didDismiss = false
 
-    func nativeAdDidRecordImpression(_ nativeAd: RCGoogleMobileAds.NativeAd) {
+    func nativeAdDidRecordImpression(_ nativeAd: GoogleMobileAds.NativeAd) {
         self.didRecordImpression = true
     }
 
-    func nativeAdDidRecordClick(_ nativeAd: RCGoogleMobileAds.NativeAd) {
+    func nativeAdDidRecordClick(_ nativeAd: GoogleMobileAds.NativeAd) {
         self.didRecordClick = true
     }
 
-    func nativeAdWillPresentScreen(_ nativeAd: RCGoogleMobileAds.NativeAd) {
+    func nativeAdWillPresentScreen(_ nativeAd: GoogleMobileAds.NativeAd) {
         self.willPresent = true
     }
 
-    func nativeAdWillDismissScreen(_ nativeAd: RCGoogleMobileAds.NativeAd) {
+    func nativeAdWillDismissScreen(_ nativeAd: GoogleMobileAds.NativeAd) {
         self.willDismiss = true
     }
 
-    func nativeAdDidDismissScreen(_ nativeAd: RCGoogleMobileAds.NativeAd) {
+    func nativeAdDidDismissScreen(_ nativeAd: GoogleMobileAds.NativeAd) {
         self.didDismiss = true
     }
 
@@ -112,14 +112,14 @@ private final class NativeDelegateSpy: NSObject, RCGoogleMobileAds.NativeAdDeleg
 
 @available(iOS 15.0, *)
 private final class NativeAdPlaceholder: NSObject {
-    @objc var responseInfo: RCGoogleMobileAds.ResponseInfo? { nil }
+    @objc var responseInfo: GoogleMobileAds.ResponseInfo? { nil }
 }
 
 @available(iOS 15.0, *)
 private final class CountingNativeAdPlaceholder: NSObject {
     private(set) var responseInfoReads = 0
 
-    @objc var responseInfo: RCGoogleMobileAds.ResponseInfo? {
+    @objc var responseInfo: GoogleMobileAds.ResponseInfo? {
         self.responseInfoReads += 1
         return nil
     }

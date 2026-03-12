@@ -19,7 +19,6 @@ let project = Project(
                     excluding: [
                         "../../RevenueCatAdMob/.build/**",
                         "../../RevenueCatAdMob/Tests/**",
-                        "../../RevenueCatAdMob/Support/**",
                         "../../RevenueCatAdMob/Package.swift"
                     ]
                 )

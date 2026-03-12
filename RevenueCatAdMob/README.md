@@ -18,16 +18,9 @@ The adapter is a **separate Swift package** from the main RevenueCat SDK. That w
 
 ## Supported AdMob SDK versions
 
-The adapter supports **Google Mobile Ads SDK v11.x, v12.x, and v13.x**. It defaults to the v12+ Swift API (no `GAD` prefix).
-
-- **v12.x and v13.x** — Use as-is; no extra setup. The adapter uses the v12+ Swift API by default.
-- **v11.x** — Add the compiler flag `RC_ADMOB_SDK_11` to the **RevenueCatAdMob** target so the adapter uses the v11 (GAD-prefixed) API:
-  - **Xcode:** Target → RevenueCatAdMob → Build Settings → Other Swift Flags → add `-D RC_ADMOB_SDK_11`
-  - **CocoaPods:** In your `Podfile`, use a `post_install` hook to add that flag to the `RevenueCatAdMob` target’s `OTHER_SWIFT_FLAGS` when you use AdMob v11.
+The adapter supports **Google Mobile Ads SDK v12.x and v13.x** (Swift API). Use as-is; no extra setup required.
 
 ## Usage
-
-The examples below use the **v12+ Swift API** (no `GAD` prefix). If you use AdMob v11 with `RC_ADMOB_SDK_11`, use the `GAD`-prefixed types (e.g. `GADBannerView`, `GADRequest()`) instead.
 
 Import the adapter with SPI to access the experimental API surface:
 
@@ -257,7 +250,7 @@ Use RevenueCat's base `AdTracker` APIs directly from Objective-C integrations.
 
 ## Supported ad formats
 
-| Format | API (Swift v12+) |
+| Format | API |
 | -------- | --- |
 | Banner | `BannerView.loadAndTrack(request:placement:)` |
 | Interstitial | `InterstitialAd.loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:...)` |

@@ -11,15 +11,15 @@ import GoogleMobileAds
 @_spi(Experimental) import RevenueCat
 
 @available(iOS 15.0, *)
-internal final class RCAdMobBannerViewDelegate: NSObject, RCGoogleMobileAds.BannerViewDelegate {
+internal final class RCAdMobBannerViewDelegate: NSObject, GoogleMobileAds.BannerViewDelegate {
 
-    weak var delegate: RCGoogleMobileAds.BannerViewDelegate?
+    weak var delegate: GoogleMobileAds.BannerViewDelegate?
     private let rcAdMob: RCAdMob
     private let placement: String?
 
     init(
         rcAdMob: RCAdMob = .shared,
-        delegate: RCGoogleMobileAds.BannerViewDelegate?,
+        delegate: GoogleMobileAds.BannerViewDelegate?,
         placement: String?
     ) {
         self.rcAdMob = rcAdMob
@@ -27,8 +27,8 @@ internal final class RCAdMobBannerViewDelegate: NSObject, RCGoogleMobileAds.Bann
         self.placement = placement
     }
 
-    func bannerViewDidReceiveAd(_ bannerView: RCGoogleMobileAds.BannerView) {
-        let responseInfo: RCGoogleMobileAds.ResponseInfo? = bannerView.responseInfo
+    func bannerViewDidReceiveAd(_ bannerView: GoogleMobileAds.BannerView) {
+        let responseInfo: GoogleMobileAds.ResponseInfo? = bannerView.responseInfo
         self.rcAdMob.trackLoaded(
             responseInfo: responseInfo,
             placement: self.placement,
@@ -38,7 +38,7 @@ internal final class RCAdMobBannerViewDelegate: NSObject, RCGoogleMobileAds.Bann
         self.delegate?.bannerViewDidReceiveAd?(bannerView)
     }
 
-    func bannerView(_ bannerView: RCGoogleMobileAds.BannerView, didFailToReceiveAdWithError error: any Error) {
+    func bannerView(_ bannerView: GoogleMobileAds.BannerView, didFailToReceiveAdWithError error: any Error) {
         self.rcAdMob.trackFailedToLoad(
             placement: self.placement,
             adUnitID: bannerView.adUnitID,
@@ -48,8 +48,8 @@ internal final class RCAdMobBannerViewDelegate: NSObject, RCGoogleMobileAds.Bann
         self.delegate?.bannerView?(bannerView, didFailToReceiveAdWithError: error)
     }
 
-    func bannerViewDidRecordImpression(_ bannerView: RCGoogleMobileAds.BannerView) {
-        let responseInfo: RCGoogleMobileAds.ResponseInfo? = bannerView.responseInfo
+    func bannerViewDidRecordImpression(_ bannerView: GoogleMobileAds.BannerView) {
+        let responseInfo: GoogleMobileAds.ResponseInfo? = bannerView.responseInfo
         self.rcAdMob.trackDisplayed(
             responseInfo: responseInfo,
             placement: self.placement,
@@ -59,8 +59,8 @@ internal final class RCAdMobBannerViewDelegate: NSObject, RCGoogleMobileAds.Bann
         self.delegate?.bannerViewDidRecordImpression?(bannerView)
     }
 
-    func bannerViewDidRecordClick(_ bannerView: RCGoogleMobileAds.BannerView) {
-        let responseInfo: RCGoogleMobileAds.ResponseInfo? = bannerView.responseInfo
+    func bannerViewDidRecordClick(_ bannerView: GoogleMobileAds.BannerView) {
+        let responseInfo: GoogleMobileAds.ResponseInfo? = bannerView.responseInfo
         self.rcAdMob.trackOpened(
             responseInfo: responseInfo,
             placement: self.placement,
@@ -70,15 +70,15 @@ internal final class RCAdMobBannerViewDelegate: NSObject, RCGoogleMobileAds.Bann
         self.delegate?.bannerViewDidRecordClick?(bannerView)
     }
 
-    func bannerViewWillPresentScreen(_ bannerView: RCGoogleMobileAds.BannerView) {
+    func bannerViewWillPresentScreen(_ bannerView: GoogleMobileAds.BannerView) {
         self.delegate?.bannerViewWillPresentScreen?(bannerView)
     }
 
-    func bannerViewWillDismissScreen(_ bannerView: RCGoogleMobileAds.BannerView) {
+    func bannerViewWillDismissScreen(_ bannerView: GoogleMobileAds.BannerView) {
         self.delegate?.bannerViewWillDismissScreen?(bannerView)
     }
 
-    func bannerViewDidDismissScreen(_ bannerView: RCGoogleMobileAds.BannerView) {
+    func bannerViewDidDismissScreen(_ bannerView: GoogleMobileAds.BannerView) {
         self.delegate?.bannerViewDidDismissScreen?(bannerView)
     }
 

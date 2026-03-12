@@ -53,7 +53,7 @@ internal final class RCAdMob {
     }
 
     func trackLoaded(
-        responseInfo: RCGoogleMobileAds.ResponseInfo?,
+        responseInfo: GoogleMobileAds.ResponseInfo?,
         placement: String?,
         adUnitID: String?,
         adFormat: RevenueCat.AdFormat
@@ -72,7 +72,7 @@ internal final class RCAdMob {
     }
 
     func trackDisplayed(
-        responseInfo: RCGoogleMobileAds.ResponseInfo?,
+        responseInfo: GoogleMobileAds.ResponseInfo?,
         placement: String?,
         adUnitID: String?,
         adFormat: RevenueCat.AdFormat
@@ -91,7 +91,7 @@ internal final class RCAdMob {
     }
 
     func trackOpened(
-        responseInfo: RCGoogleMobileAds.ResponseInfo?,
+        responseInfo: GoogleMobileAds.ResponseInfo?,
         placement: String?,
         adUnitID: String?,
         adFormat: RevenueCat.AdFormat
@@ -113,8 +113,8 @@ internal final class RCAdMob {
         placement: String?,
         adUnitID: String?,
         adFormat: RevenueCat.AdFormat,
-        responseInfo: RCGoogleMobileAds.ResponseInfo?,
-        adValue: RCGoogleMobileAds.AdValue
+        responseInfo: GoogleMobileAds.ResponseInfo?,
+        adValue: GoogleMobileAds.AdValue
     ) {
         self.trackIfConfigured {
             let data = AdRevenue(
@@ -150,7 +150,7 @@ internal final class RCAdMob {
         }
     }
 
-    internal static func mapPrecision(_ precision: RCGoogleMobileAds.AdValuePrecision) -> AdRevenue.Precision {
+    internal static func mapPrecision(_ precision: GoogleMobileAds.AdValuePrecision) -> AdRevenue.Precision {
         switch precision {
         case .precise: return .exact
         case .estimated: return .estimated
@@ -247,11 +247,11 @@ internal final class RCAdMob {
 
     // MARK: - Private helpers
 
-    private static func networkName(from responseInfo: RCGoogleMobileAds.ResponseInfo?) -> String {
+    private static func networkName(from responseInfo: GoogleMobileAds.ResponseInfo?) -> String {
         responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName ?? self.fallbackValue
     }
 
-    private static func impressionID(from responseInfo: RCGoogleMobileAds.ResponseInfo?) -> String {
+    private static func impressionID(from responseInfo: GoogleMobileAds.ResponseInfo?) -> String {
         responseInfo?.responseIdentifier ?? self.fallbackValue
     }
 

@@ -461,17 +461,17 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     // MARK: - Helpers
 
-    private static func makeAdValuePlaceholder() -> RCGoogleMobileAds.AdValue {
-        return unsafeBitCast(TrackingTestAdValuePlaceholder(), to: RCGoogleMobileAds.AdValue.self)
+    private static func makeAdValuePlaceholder() -> GoogleMobileAds.AdValue {
+        return unsafeBitCast(TrackingTestAdValuePlaceholder(), to: GoogleMobileAds.AdValue.self)
     }
 
-    private static func makeResponseInfoPlaceholder() -> RCGoogleMobileAds.ResponseInfo {
+    private static func makeResponseInfoPlaceholder() -> GoogleMobileAds.ResponseInfo {
         return unsafeBitCast(
             ResponseInfoPlaceholder(
                 identifier: "resp-id-abc",
                 networkClassName: "GADMAdapterTestNetwork"
             ),
-            to: RCGoogleMobileAds.ResponseInfo.self
+            to: GoogleMobileAds.ResponseInfo.self
         )
     }
 }
@@ -494,7 +494,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
         let bannerDelegate = RCAdMobBannerViewDelegate(
             rcAdMob: self.rcAdMob, delegate: nil, placement: "banner_top"
         )
-        let fakeBanner = RCGoogleMobileAds.BannerView()
+        let fakeBanner = GoogleMobileAds.BannerView()
         fakeBanner.adUnitID = "ca-app-pub-banner"
 
         bannerDelegate.bannerViewDidReceiveAd(fakeBanner)
@@ -508,7 +508,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
         let bannerDelegate = RCAdMobBannerViewDelegate(
             rcAdMob: self.rcAdMob, delegate: nil, placement: "banner_bottom"
         )
-        let fakeBanner = RCGoogleMobileAds.BannerView()
+        let fakeBanner = GoogleMobileAds.BannerView()
         fakeBanner.adUnitID = "ca-app-pub-banner"
         let error = NSError(domain: "test", code: 1, userInfo: nil)
 
@@ -522,7 +522,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
         let bannerDelegate = RCAdMobBannerViewDelegate(
             rcAdMob: self.rcAdMob, delegate: nil, placement: "banner_mid"
         )
-        let fakeBanner = RCGoogleMobileAds.BannerView()
+        let fakeBanner = GoogleMobileAds.BannerView()
         fakeBanner.adUnitID = "ca-app-pub-banner"
 
         bannerDelegate.bannerViewDidRecordImpression(fakeBanner)
@@ -535,7 +535,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
         let bannerDelegate = RCAdMobBannerViewDelegate(
             rcAdMob: self.rcAdMob, delegate: nil, placement: "banner_mid"
         )
-        let fakeBanner = RCGoogleMobileAds.BannerView()
+        let fakeBanner = GoogleMobileAds.BannerView()
         fakeBanner.adUnitID = "ca-app-pub-banner"
 
         bannerDelegate.bannerViewDidRecordClick(fakeBanner)
@@ -583,7 +583,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
         let nativeDelegate = RCAdMobNativeAdDelegate(
             rcAdMob: self.rcAdMob, delegate: nil, placement: "native_feed", adUnitID: "ca-app-pub-native"
         )
-        let fakeNativeAd = RCGoogleMobileAds.NativeAd()
+        let fakeNativeAd = GoogleMobileAds.NativeAd()
 
         nativeDelegate.nativeAdDidRecordImpression(fakeNativeAd)
 
@@ -596,7 +596,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
         let nativeDelegate = RCAdMobNativeAdDelegate(
             rcAdMob: self.rcAdMob, delegate: nil, placement: "native_feed", adUnitID: "ca-app-pub-native"
         )
-        let fakeNativeAd = RCGoogleMobileAds.NativeAd()
+        let fakeNativeAd = GoogleMobileAds.NativeAd()
 
         nativeDelegate.nativeAdDidRecordClick(fakeNativeAd)
 
@@ -610,13 +610,13 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
 
 @available(iOS 15.0, *)
 private final class FakeFullScreenAd: NSObject, RCFullScreenAdTracking {
-    var fullScreenContentDelegate: RCGoogleMobileAds.FullScreenContentDelegate?
-    var paidEventHandler: ((RCGoogleMobileAds.AdValue) -> Void)?
+    var fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?
+    var paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?
 }
 
 @available(iOS 15.0, *)
-private final class FakeFullScreenPresentingAd: NSObject, RCGoogleMobileAds.FullScreenPresentingAd {
-    var fullScreenContentDelegate: RCGoogleMobileAds.FullScreenContentDelegate?
+private final class FakeFullScreenPresentingAd: NSObject, GoogleMobileAds.FullScreenPresentingAd {
+    var fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?
     var responseInfo: GoogleMobileAds.ResponseInfo? { nil }
 }
 
@@ -647,26 +647,26 @@ private final class ResponseInfoPlaceholder: NSObject {
 }
 
 @available(iOS 15.0, *)
-private final class FullScreenContentDelegateSpy: NSObject, RCGoogleMobileAds.FullScreenContentDelegate {
+private final class FullScreenContentDelegateSpy: NSObject, GoogleMobileAds.FullScreenContentDelegate {
     var didRecordImpression = false
     var didRecordClick = false
     var willPresent = false
     var willDismiss = false
     var didDismiss = false
 
-    func adDidRecordImpression(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+    func adDidRecordImpression(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         self.didRecordImpression = true
     }
-    func adDidRecordClick(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+    func adDidRecordClick(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         self.didRecordClick = true
     }
-    func adWillPresentFullScreenContent(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+    func adWillPresentFullScreenContent(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         self.willPresent = true
     }
-    func adWillDismissFullScreenContent(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+    func adWillDismissFullScreenContent(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         self.willDismiss = true
     }
-    func adDidDismissFullScreenContent(_ presentingAd: any RCGoogleMobileAds.FullScreenPresentingAd) {
+    func adDidDismissFullScreenContent(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         self.didDismiss = true
     }
 }

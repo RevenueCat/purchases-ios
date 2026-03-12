@@ -11,16 +11,16 @@ import GoogleMobileAds
 @_spi(Experimental) import RevenueCat
 
 @available(iOS 15.0, *)
-internal final class RCAdMobNativeAdDelegate: NSObject, RCGoogleMobileAds.NativeAdDelegate {
+internal final class RCAdMobNativeAdDelegate: NSObject, GoogleMobileAds.NativeAdDelegate {
 
-    weak var delegate: RCGoogleMobileAds.NativeAdDelegate?
+    weak var delegate: GoogleMobileAds.NativeAdDelegate?
     private let rcAdMob: RCAdMob
     private let placement: String?
     private let adUnitID: String
 
     init(
         rcAdMob: RCAdMob = .shared,
-        delegate: RCGoogleMobileAds.NativeAdDelegate?,
+        delegate: GoogleMobileAds.NativeAdDelegate?,
         placement: String?,
         adUnitID: String
     ) {
@@ -30,8 +30,8 @@ internal final class RCAdMobNativeAdDelegate: NSObject, RCGoogleMobileAds.Native
         self.adUnitID = adUnitID
     }
 
-    func nativeAdDidRecordImpression(_ nativeAd: RCGoogleMobileAds.NativeAd) {
-        let responseInfo: RCGoogleMobileAds.ResponseInfo? = nativeAd.responseInfo
+    func nativeAdDidRecordImpression(_ nativeAd: GoogleMobileAds.NativeAd) {
+        let responseInfo: GoogleMobileAds.ResponseInfo? = nativeAd.responseInfo
         self.rcAdMob.trackDisplayed(
             responseInfo: responseInfo,
             placement: self.placement,
@@ -41,8 +41,8 @@ internal final class RCAdMobNativeAdDelegate: NSObject, RCGoogleMobileAds.Native
         self.delegate?.nativeAdDidRecordImpression?(nativeAd)
     }
 
-    func nativeAdDidRecordClick(_ nativeAd: RCGoogleMobileAds.NativeAd) {
-        let responseInfo: RCGoogleMobileAds.ResponseInfo? = nativeAd.responseInfo
+    func nativeAdDidRecordClick(_ nativeAd: GoogleMobileAds.NativeAd) {
+        let responseInfo: GoogleMobileAds.ResponseInfo? = nativeAd.responseInfo
         self.rcAdMob.trackOpened(
             responseInfo: responseInfo,
             placement: self.placement,
@@ -52,15 +52,15 @@ internal final class RCAdMobNativeAdDelegate: NSObject, RCGoogleMobileAds.Native
         self.delegate?.nativeAdDidRecordClick?(nativeAd)
     }
 
-    func nativeAdWillPresentScreen(_ nativeAd: RCGoogleMobileAds.NativeAd) {
+    func nativeAdWillPresentScreen(_ nativeAd: GoogleMobileAds.NativeAd) {
         self.delegate?.nativeAdWillPresentScreen?(nativeAd)
     }
 
-    func nativeAdWillDismissScreen(_ nativeAd: RCGoogleMobileAds.NativeAd) {
+    func nativeAdWillDismissScreen(_ nativeAd: GoogleMobileAds.NativeAd) {
         self.delegate?.nativeAdWillDismissScreen?(nativeAd)
     }
 
-    func nativeAdDidDismissScreen(_ nativeAd: RCGoogleMobileAds.NativeAd) {
+    func nativeAdDidDismissScreen(_ nativeAd: GoogleMobileAds.NativeAd) {
         self.delegate?.nativeAdDidDismissScreen?(nativeAd)
     }
 

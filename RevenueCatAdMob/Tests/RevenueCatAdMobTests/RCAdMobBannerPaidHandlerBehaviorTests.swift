@@ -121,9 +121,9 @@ final class RCAdMobBannerPaidHandlerBehaviorTests: RCAdMobTestCase {
         XCTAssertEqual(mockTracker.revenueData.count, 1)
     }
 
-    private static func makeAdValuePlaceholder() -> RCGoogleMobileAds.AdValue {
+    private static func makeAdValuePlaceholder() -> GoogleMobileAds.AdValue {
         let backing = AdValuePlaceholder()
-        return unsafeBitCast(backing, to: RCGoogleMobileAds.AdValue.self)
+        return unsafeBitCast(backing, to: GoogleMobileAds.AdValue.self)
     }
 
 }
