@@ -81,4 +81,23 @@ class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
         expect(data.paywallId).to(beNil())
     }
 
+    func testTrackMultipleImpressionsInQuickSuccession() async throws {
+        let paywallIds = ["paywall_1", "paywall_2", "paywall_3"]
+        for id in paywallIds {
+            self.purchases.trackCustomPaywallImpression(CustomPaywallImpressionParams(paywallId: id))
+        }
+
+        let manager = try self.mockEventsManager
+
+        await expect { await manager.trackedEvents }.toEventually(haveCount(3))
+
+        let trackedEvents = await manager.trackedEvents
+        let trackedPaywallIds = trackedEvents.compactMap { event -> String? in
+            guard case let .impression(_, data) = event as? CustomPaywallEvent else { return nil }
+            return data.paywallId
+        }
+
+        expect(trackedPaywallIds) == paywallIds
+    }
+
 }
