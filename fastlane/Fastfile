@@ -2027,9 +2027,10 @@ platform :ios do
     xcconfig_path = "#{project_root}/CI.xcconfig"
     File.write(xcconfig_path, [
       "// Auto-generated for RCT Tester deployment. Do not commit to VCS.",
-      "REVENUECAT_API_KEY = #{api_key}"
+      "REVENUECAT_API_KEY = #{api_key}",
+      "RCT_PROVISIONING_PROFILE = #{provisioning_profile_name}"
     ].join("\n"))
-    UI.success("Created CI.xcconfig with REVENUECAT_API_KEY")
+    UI.success("Created CI.xcconfig with REVENUECAT_API_KEY and RCT_PROVISIONING_PROFILE")
 
     # Generate the Tuist workspace (must happen after CI.xcconfig is written)
     tuist_generate(query: "RCTTester")
@@ -2049,6 +2050,12 @@ platform :ios do
       )
     end
 
+    # PROVISIONING_PROFILE_SPECIFIER is set at the target level in the Tuist
+    # Project.swift via the RCT_PROVISIONING_PROFILE xcconfig variable (written
+    # to CI.xcconfig above). It must NOT be passed as an xcarg because xcargs
+    # apply globally to all targets, including SPM resource bundle targets
+    # (RevenueCat_RevenueCat, RevenueCat_RevenueCatUI) which don't support
+    # provisioning profiles.
     build_ios_app(
       workspace: workspace_path,
       scheme: "RCTTester - Live Config",
@@ -2057,8 +2064,7 @@ platform :ios do
       export_method: 'app-store',
       xcargs: "CODE_SIGN_STYLE=Manual " \
               "DEVELOPMENT_TEAM=8SXR2327BM " \
-              "CODE_SIGN_IDENTITY='Apple Distribution' " \
-              "PROVISIONING_PROFILE_SPECIFIER='#{provisioning_profile_name}'",
+              "CODE_SIGN_IDENTITY='Apple Distribution'",
       export_options: {
         signingStyle: "manual",
         manageAppVersionAndBuildNumber: false,
