@@ -45,6 +45,8 @@ enum OfferingStrings {
     case overriding_package(old: String, new: String)
     case known_issue_ios_18_4_simulator_products_not_found
 
+    case override_preferred_locale_rate_limited
+
     // Custom Variables
     case ui_config_no_custom_variables
     case ui_config_custom_variables_decoded(keys: [String])
@@ -178,6 +180,10 @@ extension OfferingStrings: LogMessage {
             "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version with " +
             "your simulator." +
             "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
+
+        case .override_preferred_locale_rate_limited:
+            return "overridePreferredUILocale called too frequently. " +
+            "Skipping offerings re-fetch. The locale will take effect on the next offerings fetch."
 
         case .ui_config_no_custom_variables:
             return "UIConfig decoded with no custom_variables. " +

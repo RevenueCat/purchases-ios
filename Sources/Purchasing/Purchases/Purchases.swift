@@ -1597,6 +1597,8 @@ extension Purchases {
             self.getOfferings(fetchPolicy: .default) { _, _ in
                 // No-op
             }
+        } else {
+            Logger.warn(Strings.offering.override_preferred_locale_rate_limited)
         }
     }
 }
