@@ -1598,7 +1598,10 @@ extension Purchases {
                 // No-op
             }
         } else {
-            Logger.warn(Strings.offering.override_preferred_locale_rate_limited)
+            Logger.debug(Strings.offering.override_preferred_locale_rate_limited(
+                maxCalls: self.overridePreferredUILocaleRateLimiter.maxCalls,
+                periodSeconds: Int(self.overridePreferredUILocaleRateLimiter.period)
+            ))
         }
     }
 }
