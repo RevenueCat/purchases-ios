@@ -1593,7 +1593,7 @@ extension Purchases {
 
         if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
             // Refetches new offerings with preferred locale
-            self.offeringsManager.invalidateInMemoryCache()
+            self.offeringsManager.clearInMemoryOfferingsCache()
             self.getOfferings(fetchPolicy: .default) { _, _ in
                 // No-op
             }

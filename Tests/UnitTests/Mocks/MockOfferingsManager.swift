@@ -92,12 +92,12 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         }
     }
 
-    var invokedInvalidateInMemoryCache = false
-    var invokedInvalidateInMemoryCacheCount = 0
+    var invokedClearInMemoryOfferingsCache = false
+    var invokedClearInMemoryOfferingsCacheCount = 0
 
-    override func invalidateInMemoryCache() {
-        invokedInvalidateInMemoryCache = true
-        invokedInvalidateInMemoryCacheCount += 1
+    override func clearInMemoryOfferingsCache() {
+        invokedClearInMemoryOfferingsCache = true
+        invokedClearInMemoryOfferingsCacheCount += 1
     }
 
     var invokedInvalidateAndReFetchCachedOfferingsIfAppropiate = false
