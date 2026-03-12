@@ -76,6 +76,8 @@ extension Offering {
         /// Check `PaywallIcon` for the list of valid icon identifiers.
         case invalidIcons(Set<String>)
 
+        case platformNotSupported(String)
+
     }
 
 }
@@ -91,7 +93,9 @@ extension Offering {
             switch paywall.validate() {
             case let .success(template):
                 #if os(macOS)
-                let error = Offering.PaywallValidationError.invalidTemplate("Legacy paywalls are unsupported on macOS.")
+                let error = Offering.PaywallValidationError.platformNotSupported(
+                    "Legacy paywalls are unsupported on macOS."
+                )
                 return (paywall, paywall.locale ?? locale, template, error)
                 #endif
                 return (paywall, paywall.locale ?? locale, template, nil)
@@ -259,6 +263,8 @@ extension Offering.PaywallValidationError: CustomStringConvertible {
 
         case let .invalidIcons(names):
             return "Found unrecognized icons: \(names.joined(separator: ", "))."
+        case .platformNotSupported(let message):
+            return "The current platform is not supported: \(message)"
         }
     }
 

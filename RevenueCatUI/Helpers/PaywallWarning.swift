@@ -80,7 +80,7 @@ enum PaywallWarning {
         case .invalidIcons(let set):
             return "The following icon names are not valid: \(set.joined(separator: ", ")). Please check `PaywallIcon` for the list of valid icon names."
         case .other(let error):
-            return error.localizedDescription
+            return "\(error)"
         }
     }
 
@@ -119,6 +119,8 @@ enum PaywallWarning {
             return .invalidVariables(set)
         case .invalidIcons(let set):
             return .invalidIcons(set)
+        case .platformNotSupported:
+            return .other(from)
         }
     }
 
