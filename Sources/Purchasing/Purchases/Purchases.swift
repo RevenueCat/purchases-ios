@@ -2138,17 +2138,40 @@ private typealias NewErrorUtils = ErrorUtils
 
 // MARK: - Custom Paywall Impressions
 
-internal extension Purchases {
+extension Purchases {
 
     /// Tracks an impression for a custom paywall.
+    ///
+    /// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
+    /// This enables RevenueCat to track paywall impressions for analytics.
+    ///
+    /// - Important: Each call creates a separate impression event. Call this once per paywall presentation,
+    ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
+    ///
     /// - Parameter params: Parameters for the custom paywall impression.
+    @_spi(Experimental)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func trackCustomPaywallImpression(_ params: CustomPaywallEvent.Params = .init()) async {
-        let event = CustomPaywallEvent.impression(
-            .init(),
-            .init(paywallId: params.paywallId)
-        )
-        await self.eventsManager?.track(featureEvent: event)
+    @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams) {
+        Task {
+            let event = CustomPaywallEvent.impression(
+                .init(),
+                .init(paywallId: params.paywallId)
+            )
+            await self.eventsManager?.track(featureEvent: event)
+        }
+    }
+
+    /// Tracks an impression for a custom paywall with no additional parameters.
+    ///
+    /// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
+    /// This enables RevenueCat to track paywall impressions for analytics.
+    ///
+    /// - Important: Each call creates a separate impression event. Call this once per paywall presentation,
+    ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
+    @_spi(Experimental)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @objc public func trackCustomPaywallImpression() {
+        trackCustomPaywallImpression(CustomPaywallImpressionParams())
     }
 
 }
