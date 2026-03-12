@@ -2145,6 +2145,9 @@ extension Purchases {
     /// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
     /// This enables RevenueCat to track paywall impressions for analytics.
     ///
+    /// - Important: Each call creates a separate impression event. Call this once per paywall presentation,
+    ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
+    ///
     /// - Parameter params: Parameters for the custom paywall impression.
     @_spi(Experimental)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -2162,6 +2165,9 @@ extension Purchases {
     ///
     /// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
     /// This enables RevenueCat to track paywall impressions for analytics.
+    ///
+    /// - Important: Each call creates a separate impression event. Call this once per paywall presentation,
+    ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
     @_spi(Experimental)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @objc public func trackCustomPaywallImpression() {
