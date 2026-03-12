@@ -1466,7 +1466,8 @@ platform :ios do
       include_debug_symbols: true,
       # Set SKIP_INSTALL and BUILD_LIBRARY_FOR_DISTRIBUTION.
       # See https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle#Set-up-the-project
-      override_xcargs: true
+      override_xcargs: true,
+      xcargs: "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) RC_XCFRAMEWORK'"
     )
 
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
