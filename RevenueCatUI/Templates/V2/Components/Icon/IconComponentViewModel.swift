@@ -33,7 +33,7 @@ class IconComponentViewModel {
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.IconComponent,
         discardRules: Bool = false
-    ) throws {
+    ) {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component

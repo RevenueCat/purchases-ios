@@ -36,7 +36,7 @@ class TimelineComponentViewModel {
         items: [TimelineItemViewModel],
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
-    ) throws {
+    ) {
         self.component = component
         self.items = items
         self.uiConfigProvider = uiConfigProvider
@@ -102,7 +102,7 @@ class TimelineItemViewModel {
          description: TextComponentViewModel?,
          icon: IconComponentViewModel,
          uiConfigProvider: UIConfigProvider,
-         discardRules: Bool = false) throws {
+         discardRules: Bool = false) {
         self.component = component
         self.title = title
         self.description = description
