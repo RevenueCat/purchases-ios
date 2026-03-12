@@ -166,16 +166,16 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
 
     // MARK: - overridePreferredUILocale
 
-    func testOverridePreferredUILocaleInvalidatesCachedOfferings() {
+    func testOverridePreferredUILocaleInvalidatesInMemoryCache() {
         self.setupPurchases()
 
-        self.mockOfferingsManager.invokedInvalidateCachedOfferings = false
+        self.mockOfferingsManager.invokedInvalidateInMemoryCache = false
         self.mockOfferingsManager.invokedOfferingsCount = 0
 
         self.purchases.overridePreferredUILocale("fr_FR")
 
-        expect(self.mockOfferingsManager.invokedInvalidateCachedOfferings) == true
-        expect(self.mockOfferingsManager.invokedInvalidateCachedOfferingsCount) == 1
+        expect(self.mockOfferingsManager.invokedInvalidateInMemoryCache) == true
+        expect(self.mockOfferingsManager.invokedInvalidateInMemoryCacheCount) == 1
     }
 
     func testOverridePreferredUILocaleRefetchesOfferings() {
@@ -186,21 +186,20 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.purchases.overridePreferredUILocale("de_DE")
 
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 1
-        expect(self.mockOfferingsManager.invokedOfferingsParameters?.fetchCurrent) == true
     }
 
     func testOverridePreferredUILocaleDoesNothingWhenLocaleUnchanged() {
         self.setupPurchases()
 
         self.purchases.overridePreferredUILocale("it_IT")
-        self.mockOfferingsManager.invokedInvalidateCachedOfferings = false
-        self.mockOfferingsManager.invokedInvalidateCachedOfferingsCount = 0
+        self.mockOfferingsManager.invokedInvalidateInMemoryCache = false
+        self.mockOfferingsManager.invokedInvalidateInMemoryCacheCount = 0
         self.mockOfferingsManager.invokedOfferingsCount = 0
 
         // Call again with the same locale
         self.purchases.overridePreferredUILocale("it_IT")
 
-        expect(self.mockOfferingsManager.invokedInvalidateCachedOfferings) == false
+        expect(self.mockOfferingsManager.invokedInvalidateInMemoryCache) == false
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 0
     }
 
@@ -212,14 +211,14 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.purchases.overridePreferredUILocale("de_DE")
 
         // Reset counters after exhausting the rate limiter
-        self.mockOfferingsManager.invokedInvalidateCachedOfferings = false
-        self.mockOfferingsManager.invokedInvalidateCachedOfferingsCount = 0
+        self.mockOfferingsManager.invokedInvalidateInMemoryCache = false
+        self.mockOfferingsManager.invokedInvalidateInMemoryCacheCount = 0
         self.mockOfferingsManager.invokedOfferingsCount = 0
 
         // Third call should be fully rate-limited
         self.purchases.overridePreferredUILocale("es_ES")
 
-        expect(self.mockOfferingsManager.invokedInvalidateCachedOfferings) == false
+        expect(self.mockOfferingsManager.invokedInvalidateInMemoryCache) == false
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 0
     }
 
@@ -227,13 +226,13 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.setupPurchases()
 
         self.purchases.overridePreferredUILocale("fr_FR")
-        self.mockOfferingsManager.invokedInvalidateCachedOfferings = false
-        self.mockOfferingsManager.invokedInvalidateCachedOfferingsCount = 0
+        self.mockOfferingsManager.invokedInvalidateInMemoryCache = false
+        self.mockOfferingsManager.invokedInvalidateInMemoryCacheCount = 0
         self.mockOfferingsManager.invokedOfferingsCount = 0
 
         self.purchases.overridePreferredUILocale(nil)
 
-        expect(self.mockOfferingsManager.invokedInvalidateCachedOfferings) == true
+        expect(self.mockOfferingsManager.invokedInvalidateInMemoryCache) == true
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 1
     }
 

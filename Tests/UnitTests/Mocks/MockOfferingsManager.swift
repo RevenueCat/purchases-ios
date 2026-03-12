@@ -92,14 +92,12 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         }
     }
 
-    var invokedInvalidateCachedOfferings = false
-    var invokedInvalidateCachedOfferingsCount = 0
-    var invokedInvalidateCachedOfferingsParameters: String?
+    var invokedInvalidateInMemoryCache = false
+    var invokedInvalidateInMemoryCacheCount = 0
 
-    override func invalidateCachedOfferings(appUserID: String) {
-        invokedInvalidateCachedOfferings = true
-        invokedInvalidateCachedOfferingsCount += 1
-        invokedInvalidateCachedOfferingsParameters = appUserID
+    override func invalidateInMemoryCache() {
+        invokedInvalidateInMemoryCache = true
+        invokedInvalidateInMemoryCacheCount += 1
     }
 
     var invokedInvalidateAndReFetchCachedOfferingsIfAppropiate = false

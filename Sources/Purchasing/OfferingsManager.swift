@@ -156,6 +156,10 @@ class OfferingsManager {
         return productIDsFromBackend.subtracting(productIDsFromStore)
     }
 
+    func invalidateInMemoryCache() {
+        self.deviceCache.clearInMemoryOfferingsCache()
+    }
+
     func invalidateCachedOfferings(appUserID: String) {
         self.deviceCache.clearOfferingsCache(appUserID: appUserID)
     }

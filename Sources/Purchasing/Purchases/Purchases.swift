@@ -1593,8 +1593,8 @@ extension Purchases {
 
         if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
             // Refetches new offerings with preferred locale
-            self.offeringsManager.invalidateCachedOfferings(appUserID: self.appUserID)
-            self.getOfferings(fetchPolicy: .default, fetchCurrent: true) { _, _ in
+            self.offeringsManager.invalidateInMemoryCache()
+            self.getOfferings(fetchPolicy: .default) { _, _ in
                 // No-op
             }
         }
