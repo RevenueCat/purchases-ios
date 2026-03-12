@@ -626,21 +626,19 @@ jobs:
       xcode_version: "16.4"
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
       - run:
           name: SPM RevenueCatAdMob Release Build
-          command: cd RevenueCatAdMob && swift build -c release --target RevenueCatAdMob
+          command: swift build -c release --target RevenueCatAdMob
           no_output_timeout: 30m
-      - tuist-generate-workspace
       - run:
           name: RevenueCatAdMob unit tests
-          command: >
-            xcodebuild test
-            -workspace RevenueCat-Tuist.xcworkspace
-            -scheme RevenueCatAdMob
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5'
-            -resultBundlePath /tmp/RevenueCatAdMobTestResults.xcresult
+          command: bundle exec fastlane test_revenuecatadmob
           no_output_timeout: 10m
+          environment:
+            DEVICE: iPhone 16,OS=18.5
       - slack-notify-on-fail
 
   spm-receipt-parser:

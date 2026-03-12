@@ -50,6 +50,10 @@ var dependencies: [Package.Dependency] = [
     .package(
         url: "https://github.com/pointfreeco/swift-snapshot-testing",
         exact: "1.18.9"
+    ),
+    .package(
+        url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
+        "12.0.0"..<"14.0.0"
     )
 ]
 if shouldIncludeDocCPlugin {
@@ -83,7 +87,9 @@ let package = Package(
         .library(name: "ReceiptParser",
                  targets: ["ReceiptParser"]),
         .library(name: "RevenueCatUI",
-                 targets: ["RevenueCatUI"])
+                 targets: ["RevenueCatUI"]),
+        .library(name: "RevenueCatAdMob",
+                 targets: ["RevenueCatAdMob"])
     ],
     dependencies: dependencies,
     targets: [
@@ -135,6 +141,17 @@ let package = Package(
                         .copy("Resources/header.heic"),
                         .copy("Resources/background.heic"),
                         .copy("PaywallsV2/__PreviewResources__")
-                    ])
+                    ]),
+        // RevenueCatAdMob
+        .target(name: "RevenueCatAdMob",
+                dependencies: [
+                    "RevenueCat",
+                    .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads")
+                ],
+                path: "RevenueCatAdMob",
+                exclude: ["README.md", "Tests", ".build", "Derived", "Package.resolved"]),
+        .testTarget(name: "RevenueCatAdMobTests",
+                    dependencies: ["RevenueCatAdMob"],
+                    path: "RevenueCatAdMob/Tests/RevenueCatAdMobTests")
     ]
 )

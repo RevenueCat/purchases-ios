@@ -2,17 +2,21 @@
 
 Wraps AdMob ad lifecycle callbacks to automatically track ad events in RevenueCat. Drop-in replacement for standard AdMob loading calls — add one method call and RevenueCat tracks loaded, displayed, opened, revenue, and failed-to-load events for you.
 
-The adapter is a **separate Swift package** from the main RevenueCat SDK. That way, apps that depend only on RevenueCat (or RevenueCatUI) do not resolve or link Google Mobile Ads, avoiding version clashes with apps that use a different AdMob version or don't use the adapter.
+The adapter is a **product of the main RevenueCat Swift package**. Add the main `purchases-ios` package and link the `RevenueCatAdMob` product only for targets that use it; other targets can depend only on RevenueCat or RevenueCatUI without resolving Google Mobile Ads.
 
 ## Installation
 
-- **Swift Package Manager (development from this repo):** Add the adapter package by path so it resolves RevenueCat from the parent and adds Google Mobile Ads only for this target:
+- **Swift Package Manager:** Add the main RevenueCat package and the `RevenueCatAdMob` product to the target that uses the adapter:
   ```swift
-  .package(path: "path/to/purchases-ios/RevenueCatAdMob")
+  .package(url: "https://github.com/RevenueCat/purchases-ios", from: "5.0.0")  // or your preferred version
+  ```
+  Then add the `RevenueCatAdMob` product to your target. Your app will resolve Google Mobile Ads only for targets that depend on `RevenueCatAdMob`.
+
+- **Swift Package Manager (local development):** To use the adapter from a local checkout of this repo, add the package by path to the **root** of the repo (not the `RevenueCatAdMob` folder):
+  ```swift
+  .package(path: "path/to/purchases-ios")
   ```
   Then add the `RevenueCatAdMob` product to your target.
-
-- **When the adapter is published as a separate repo:** Add the adapter package by URL (e.g. `https://github.com/RevenueCat/purchases-ios-admob`) and the `RevenueCatAdMob` product. The adapter package will depend on RevenueCat and Google Mobile Ads; your app will only resolve AdMob if it uses the adapter.
 
 - **CocoaPods:** Use the `RevenueCatAdMob` pod (if published). It will pull in RevenueCat and Google Mobile Ads only for targets that use it.
 

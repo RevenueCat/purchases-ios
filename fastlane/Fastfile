@@ -689,6 +689,24 @@ platform :ios do
     )
   end
 
+  desc "Runs all RevenueCatAdMob tests (SPM package, workspace '.' like test_revenuecatui)"
+  lane :test_revenuecatadmob do
+    platform = ENV['PLATFORM'] || 'iOS Simulator'
+    destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
+    sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+
+    xcodebuild(
+      workspace: '.',
+      scheme: 'RevenueCatAdMob',
+      destination: "platform=" + platform + ",name=" + destination,
+      sdk: sdk,
+      result_bundle_path: 'fastlane/test_output/revenuecatadmob.xcresult',
+      report_formats: [:junit],
+      report_path: 'fastlane/test_output/revenuecatadmob/tests.xml',
+      test: true
+    )
+  end
+
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
@@ -1454,17 +1472,15 @@ platform :ios do
     create_and_sign_xcframework_admob
   end
 
-  # Build RevenueCatAdMob xcframework from the standalone adapter package (RevenueCatAdMob/).
-  # Run xcodebuild from inside the package directory so no -package-path is required.
-  # Resolve the build scheme from the package so we don't assume scheme name matches product name.
+  # Build RevenueCatAdMob xcframework from the root Swift package (RevenueCatAdMob is a target in the main package).
+  # Run xcodebuild from the package root; resolve the build scheme from the package.
   private_lane :create_and_sign_xcframework_admob do
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
-    package_dir = File.join(project_root, "RevenueCatAdMob")
     product_name = "RevenueCatAdMob"
     output_directory = "build/xcframeworks/#{product_name}"
     framework_paths = []
 
-    scheme = Dir.chdir(package_dir) do
+    scheme = Dir.chdir(project_root) do
       list_json = sh("xcodebuild", "-list", "-json")
       list = JSON.parse(list_json)
       schemes = list.dig("workspace", "schemes") || list.dig("project", "schemes") || []
@@ -1484,8 +1500,9 @@ platform :ios do
 
     destinations.each do |dest|
       derived_data = File.join(project_root, "build", "RevenueCatAdMob-DerivedData-#{dest[:platform].gsub(/[\s+]/, '-')}")
-      Dir.chdir(package_dir) do
+      Dir.chdir(project_root) do
         sh("xcodebuild", "build",
+           "-package-path", ".",
            "-scheme", scheme,
            "-destination", dest[:xcode_dest],
            "-derivedDataPath", derived_data,

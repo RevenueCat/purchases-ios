@@ -54,7 +54,7 @@ This sample uses RevenueCatAdMob APIs exposed as experimental Swift SPI (`@_spi(
 - A valid RevenueCat API key
 - AdMob test ad unit IDs (included in this sample)
 - **Google Mobile Ads SDK v13** (Swift API; this sample uses v13 naming)
-- `RevenueCat`, `GoogleMobileAds`, and `RevenueCatAdMob` dependencies
+- `RevenueCat`, `GoogleMobileAds`, and `RevenueCatAdMob` dependencies (RevenueCatAdMob is a product of the main purchases-ios package; add the repo once and link the `RevenueCatAdMob` product)
 
 ---
 
