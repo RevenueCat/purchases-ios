@@ -214,29 +214,27 @@ public struct PaywallView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         self.content
-        // Fix: - Paywall adapts size dynamically to 80% of macOS window size
-        // See https://github.com/RevenueCat/purchases-ios/issues/5827
+        // Fix: https://github.com/RevenueCat/purchases-ios/issues/5827
         #if os(macOS)
-            .frame(width: self.containerSize.width > 0 ? self.containerSize.width : nil,
-                   height: self.containerSize.height > 0 ? self.containerSize.height : nil)
+            .frame(maxWidth: self.containerSize.width > 0 ? self.containerSize.width : nil,
+                   minHeight: self.containerSize.height > 0 ? self.containerSize.height : nil)
             .background(
                 MacOSHostWindowSizeObserver { windowSize in
                     self.containerSize = CGSize(
-                        width: windowSize.width * 0.8,
-                        height: windowSize.height * 0.8
+                        width: windowSize.width * PaywallSizing.hostWindowFactor,
+                        height: windowSize.height * PaywallSizing.hostWindowFactor
                     )
                 }
             )
         #elseif targetEnvironment(macCatalyst)
-            .frame(width: self.containerSize.width > 0 ? self.containerSize.width : nil,
-                   height: self.containerSize.height > 0 ? self.containerSize.height : nil)
+            .frame(minHeight: self.containerSize.height > 0 ? self.containerSize.height : nil)
             .onAppear {
                 let allWindows = UIApplication.shared.connectedScenes
                     .compactMap { $0 as? UIWindowScene }.flatMap { $0.windows }
                 if let host = allWindows.first(where: { $0.isKeyWindow }) {
                     self.containerSize = CGSize(
-                        width: host.bounds.width * 0.8,
-                        height: host.bounds.height * 0.8
+                        width: .zero,
+                        height: host.bounds.height * PaywallSizing.hostWindowFactor
                     )
                 }
             }
@@ -452,14 +450,18 @@ public struct PaywallView: View {
         #if os(macOS)
         guard let window = NSApplication.shared.keyWindow else { return .zero }
         return CGSize(
-            width: window.frame.width * 0.8,
-            height: window.frame.height * 0.8
+            width: window.frame.width * PaywallSizing.hostWindowFactor,
+            height: window.frame.height * PaywallSizing.hostWindowFactor
         )
 
         #else
         return .zero
         #endif
     }
+}
+
+private enum PaywallSizing {
+    static let hostWindowFactor: CGFloat = 0.8
 }
 
 #if os(macOS)
@@ -530,7 +532,8 @@ private final class HostWindowObserverView: NSView {
             \.frame,
             options: [.initial, .new]
         ) { [weak self] window, _ in
-            self?.onWindowSizeChanged?(window.frame.size)
+            let size = window.frame.size
+            DispatchQueue.main.async { self?.onWindowSizeChanged?(size) }
         }
     }
 
@@ -569,20 +572,19 @@ private struct CatalystWindowSizeObserver: UIViewRepresentable {
     func updateUIView(_ uiView: UIView, context: Context) {
         context.coordinator.onResize = onResize
 
-        // Don't apply a zero size — onAppear hasn't fired yet to set the real initial size.
-        guard currentSize.width > 0, currentSize.height > 0 else { return }
+        guard currentSize.height > 0 else { return }
         guard let win = uiView.window else { return }
         let current = win.bounds.size
-        guard abs(current.width - currentSize.width) > 0.5
-                || abs(current.height - currentSize.height) > 0.5 else { return }
+        guard abs(current.height - currentSize.height) > 0.5 else { return }
 
         // Record the target before applying so the resulting NSWindowDidResizeNotification
         // echo is recognised as self-inflicted and ignored by the Coordinator.
-        context.coordinator.lastSetSize = currentSize
+        let target = CGSize(width: current.width, height: currentSize.height)
+        context.coordinator.lastSetSize = target
 
         // preferredContentSize signals the UIKit presentation layer to resize the
         // underlying AppKit NSPanel. On Catalyst, there is always a rootViewController.
-        win.rootViewController?.preferredContentSize = currentSize
+        win.rootViewController?.preferredContentSize = target
     }
 
     final class Coordinator {
@@ -606,11 +608,10 @@ private struct CatalystWindowSizeObserver: UIViewRepresentable {
                     .compactMap { $0 as? UIWindowScene }.flatMap { $0.windows }
                 guard let host = allWindows.first(where: { $0.isKeyWindow }) else { return }
                 let newSize = host.bounds.size
-                guard abs(newSize.width - self.lastSetSize.width) > 2.0
-                        || abs(newSize.height - self.lastSetSize.height) > 2.0 else { return }
-                let target = CGSize(width: newSize.width * 0.8, height: newSize.height * 0.8)
-                self.lastSetSize = target
-                self.onResize(target)
+                guard abs(newSize.height - self.lastSetSize.height) > 2.0 else { return }
+                let targetHeight = newSize.height * PaywallSizing.hostWindowFactor
+                self.lastSetSize = CGSize(width: self.lastSetSize.width, height: targetHeight)
+                self.onResize(CGSize(width: 0, height: targetHeight))
             }
         }
 
