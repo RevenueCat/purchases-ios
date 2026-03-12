@@ -1,4 +1,4 @@
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import RevenueCatUI
 
 #if os(iOS) || os(tvOS) || os(visionOS)
@@ -51,5 +51,8 @@ class Tester {
         if #available(iOS 15.0, macOS 12.0, *) {
             _ = PaywallViewController()
         }
+
+        assert(Purchases.installationMethod == "xcframework",
+               "Expected 'xcframework' but got '\(Purchases.installationMethod)'")
     }
 }
