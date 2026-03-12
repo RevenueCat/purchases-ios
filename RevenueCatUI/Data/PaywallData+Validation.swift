@@ -97,8 +97,9 @@ extension Offering {
                     "Legacy paywalls are unsupported on macOS."
                 )
                 return (paywall, paywall.locale ?? locale, template, error)
-                #endif
+                #else
                 return (paywall, paywall.locale ?? locale, template, nil)
+                #endif
 
             case let .failure(error):
                 let paywall: PaywallData = paywall.config.packages.isEmpty
