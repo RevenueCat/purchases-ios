@@ -204,7 +204,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 0
     }
 
-    func testOverridePreferredUILocaleStillInvalidatesCacheWhenRateLimited() {
+    func testOverridePreferredUILocaleDoesNotInvalidateOrFetchWhenRateLimited() {
         self.setupPurchases()
 
         // Exhaust the rate limiter (maxCalls: 2)
@@ -216,11 +216,10 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.mockOfferingsManager.invokedInvalidateCachedOfferingsCount = 0
         self.mockOfferingsManager.invokedOfferingsCount = 0
 
-        // Third call should be rate-limited for the fetch but still invalidate cache
+        // Third call should be fully rate-limited
         self.purchases.overridePreferredUILocale("es_ES")
 
-        expect(self.mockOfferingsManager.invokedInvalidateCachedOfferings) == true
-        expect(self.mockOfferingsManager.invokedInvalidateCachedOfferingsCount) == 1
+        expect(self.mockOfferingsManager.invokedInvalidateCachedOfferings) == false
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 0
     }
 

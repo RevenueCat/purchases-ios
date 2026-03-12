@@ -1590,9 +1590,9 @@ extension Purchases {
         }
 
         self.systemInfo.overridePreferredLocale(locale)
-        self.offeringsManager.invalidateCachedOfferings(appUserID: self.appUserID)
 
         if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
+            self.offeringsManager.invalidateCachedOfferings(appUserID: self.appUserID)
             self.getOfferings(fetchPolicy: .default, fetchCurrent: true) { _, _ in
                 // No-op
             }
