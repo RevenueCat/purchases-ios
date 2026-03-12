@@ -33,12 +33,12 @@ class VideoComponentViewModel {
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.VideoComponent,
         discardRules: Bool = false
-    ) throws {
+    ) {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
             LocalizedVideoPartial(partial: $0)
         }
     }

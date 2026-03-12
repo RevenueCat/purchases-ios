@@ -20,6 +20,8 @@ enum CustomPaywallEvent: FeatureEvent {
 
     var eventDiscriminator: String? { nil }
 
+    var isPriorityEvent: Bool { true }
+
     /// A custom paywall was shown.
     case impression(CreationData, Data)
 
@@ -74,25 +76,8 @@ extension CustomPaywallEvent {
 
 }
 
-extension CustomPaywallEvent {
-
-    /// Parameters for tracking a custom paywall event.
-    struct Params {
-
-        /// An optional identifier for the custom paywall being shown.
-        let paywallId: String?
-
-        init(paywallId: String? = nil) {
-            self.paywallId = paywallId
-        }
-
-    }
-
-}
-
 // MARK: -
 
 extension CustomPaywallEvent.CreationData: Equatable, Codable, Sendable {}
 extension CustomPaywallEvent.Data: Equatable, Codable, Sendable {}
-extension CustomPaywallEvent.Params: Sendable {}
 extension CustomPaywallEvent: Equatable, Codable, Sendable {}
