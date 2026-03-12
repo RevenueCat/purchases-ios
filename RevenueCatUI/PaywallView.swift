@@ -524,7 +524,7 @@ struct LoadedOfferingPaywallView: View {
     ) {
         self.offering = offering
         self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
-        self.paywall = paywall
+        self.paywall = paywall.modifiedIfError(error)
         self.template = template
         self.mode = mode
         self.fonts = fonts
@@ -675,6 +675,40 @@ struct LoadedOfferingPaywallView: View {
         }
     }
 
+}
+
+private extension PaywallData {
+
+    // If there is an error that will prevent the paywall from displaying normally, we need to modify the revision to
+    // -1 so that logging will denote that it's the default paywall
+    func modifiedIfError(_ error: Error?) -> PaywallData {
+        if let error = error, self.revision >= 0 {
+            if let localizationConfig = self.localizedConfiguration {
+                return PaywallData(
+                    id: self.id,
+                    templateName: self.templateName,
+                    config: self.config,
+                    localization: localizationConfig,
+                    assetBaseURL: self.assetBaseURL,
+                    revision: -1,
+                    locale: self.locale ?? .current,
+                    zeroDecimalPlaceCountries: self.zeroDecimalPlaceCountries
+                )
+            }
+
+            return PaywallData(
+                id: self.id,
+                templateName: self.templateName,
+                config: self.config,
+                localizationByTier: localizedConfigurationByTier ?? [:],
+                assetBaseURL: self.assetBaseURL,
+                revision: -1,
+                locale: self.locale ?? .current,
+                zeroDecimalPlaceCountries: self.zeroDecimalPlaceCountries
+            )
+        }
+        return self
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
