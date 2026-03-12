@@ -90,6 +90,12 @@ struct TestCustomerCenterViewActionsAPI: View {
                 _ = managementOption
             })
             .onCustomerCenterPromotionalOfferSuccess({})
+            .onCustomerCenterPromotionalOfferSucceeded({
+                (customerInfo: CustomerInfo, transaction: StoreTransaction, offerId: String) in
+                _ = customerInfo
+                _ = transaction
+                _ = offerId
+            })
             .onCustomerCenterChangePlansSelected({ (optionId: String) in
                 _ = optionId
             })

@@ -145,7 +145,7 @@ extension CustomerCenterView {
         }
     }
 
-    struct OnPromotionalOfferSuccess: ViewModifier {
+    fileprivate struct OnPromotionalOfferSuccess: ViewModifier {
         let handler: PromotionalOfferSuccessHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterExternalActions) { actions in
@@ -154,7 +154,7 @@ extension CustomerCenterView {
         }
     }
 
-    struct OnPromotionalOfferSucceeded: ViewModifier {
+    fileprivate struct OnPromotionalOfferSucceeded: ViewModifier {
         let handler: PromotionalOfferSucceededHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterExternalActions) { actions in
@@ -164,7 +164,7 @@ extension CustomerCenterView {
         }
     }
 
-    struct OnChangePlansSelected: ViewModifier {
+    fileprivate struct OnChangePlansSelected: ViewModifier {
         let handler: ChangePlansHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterExternalActions) { actions in
