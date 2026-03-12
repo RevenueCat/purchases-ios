@@ -12,7 +12,7 @@
 + (void)checkAPI {
     if (@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)) {
         // CustomPaywallImpressionParams API
-        RCCustomPaywallImpressionParams *paramsDefault __unused = [[RCCustomPaywallImpressionParams alloc] init];
+        RCCustomPaywallImpressionParams *paramsDefault __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:nil];
         RCCustomPaywallImpressionParams *paramsWithId __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:@"my-paywall"];
         RCCustomPaywallImpressionParams *paramsWithNil __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:nil];
 
