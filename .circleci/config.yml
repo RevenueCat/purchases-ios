@@ -1770,6 +1770,7 @@ jobs:
   deploy-purchase-tester:
     executor:
       name: macos-executor
+      xcode_version: "26.3"
     parameters:
       dry_run:
         type: boolean
