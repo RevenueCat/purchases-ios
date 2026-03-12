@@ -1301,15 +1301,19 @@ platform :ios do
     branch_name = "generated_swiftinterface/#{base_branch}-#{build_number}"
 
     # Copy generated files to the api/ directory
-    ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
-      src = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
-      dst = "../api/revenuecat-api#{platform[:suffix]}.swiftinterface"
+    ApiDiffHelper::MODULES.each do |scheme|
+      prefix = ApiDiffHelper.api_file_prefix(scheme)
 
-      if File.exist?(src)
-        FileUtils.cp(src, dst)
-        UI.success("Updated #{dst}")
-      else
-        UI.error("Missing generated file: #{src}")
+      ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
+        src = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/#{scheme}#{platform[:suffix]}.swiftinterface"
+        dst = "../api/#{prefix}-api#{platform[:suffix]}.swiftinterface"
+
+        if File.exist?(src)
+          FileUtils.cp(src, dst)
+          UI.success("Updated #{dst}")
+        else
+          UI.error("Missing generated file: #{src}")
+        end
       end
     end
 
@@ -2121,8 +2125,14 @@ platform :ios do
   end
 
   desc "Generate Swift interface files for API change detection"
-  lane :generate_swiftinterface do
+  lane :generate_swiftinterface do |options|
     require 'tmpdir'
+
+    schemes = if options[:scheme]
+                [options[:scheme]]
+              else
+                ApiDiffHelper::MODULES
+              end
 
     # Create CI.xcconfig to exclude DEBUG from compilation conditions
     # This ensures the generated swiftinterface matches CI (release) builds
@@ -2131,37 +2141,39 @@ platform :ios do
 
     begin
       Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
-        ApiDiffHelper::PLATFORMS.each do |platform_config|
-          UI.message("Building RevenueCat for #{platform_config[:platform]}...")
+        schemes.each do |scheme|
+          ApiDiffHelper::PLATFORMS.each do |platform_config|
+            UI.message("Building #{scheme} for #{platform_config[:platform]}...")
 
-          sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
+            sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
 
-          Dir.chdir("..") do
-            sh("xcodebuild", "clean", "build",
-               "-scheme", "RevenueCat",
-               "-derivedDataPath", ".build",
-               "-configuration", "Release",
-               "-sdk", sdk_path,
-               "-destination", platform_config[:destination],
-               "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
+            Dir.chdir("..") do
+              sh("xcodebuild", "clean", "build",
+                 "-scheme", scheme,
+                 "-derivedDataPath", ".build",
+                 "-configuration", "Release",
+                 "-sdk", sdk_path,
+                 "-destination", platform_config[:destination],
+                 "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
+            end
+
+            swiftinterface_files = ApiDiffHelper.find_swiftinterface_file("../.build", platform_config[:sdk], scheme)
+
+            if swiftinterface_files.empty?
+              UI.user_error!("Could not find #{scheme}.swiftinterface for #{platform_config[:platform]}")
+            end
+
+            output_path = "#{temp_dir}/#{scheme}#{platform_config[:suffix]}.swiftinterface"
+            FileUtils.cp(swiftinterface_files.first, output_path)
+            UI.success("Generated #{scheme} #{platform_config[:platform]} swiftinterface")
           end
-
-        swiftinterface_files = ApiDiffHelper.find_swiftinterface_file("../.build", platform_config[:sdk])
-
-        if swiftinterface_files.empty?
-          UI.user_error!("Could not find RevenueCat.swiftinterface for #{platform_config[:platform]}")
         end
 
-        output_path = "#{temp_dir}/RevenueCat#{platform_config[:suffix]}.swiftinterface"
-        FileUtils.cp(swiftinterface_files.first, output_path)
-        UI.success("Generated #{platform_config[:platform]} swiftinterface")
+        # Copy to expected location for CI artifacts
+        sh("mkdir", "-p", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
+        sh("cp", "-r", "#{temp_dir}/.", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
+        UI.success("Swift interface files copied to #{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}")
       end
-
-      # Copy to expected location for CI artifacts
-      sh("mkdir", "-p", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
-      sh("cp", "-r", "#{temp_dir}/.", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
-      UI.success("Swift interface files copied to #{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}")
-    end
     ensure
       # Clean up CI.xcconfig
       cleanup_swiftinterface_xcconfig
@@ -2213,7 +2225,7 @@ platform :ios do
   end
 
   desc "Check API changes and report results"
-  lane :check_api_changes do
+  lane :check_api_changes do |options|
     api_diff_tool = File.expand_path("~/bin/public-api-diff")
 
     unless File.exist?(api_diff_tool)
@@ -2226,14 +2238,24 @@ platform :ios do
       return
     end
 
+    schemes = if options[:scheme]
+                [options[:scheme]]
+              else
+                ApiDiffHelper::MODULES
+              end
+
     failed_platforms = []
 
-    ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
-      old_file = "../api/revenuecat-api#{platform[:suffix]}.swiftinterface"
-      new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
+    schemes.each do |scheme|
+      prefix = ApiDiffHelper.api_file_prefix(scheme)
 
-      result = ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, platform[:name])
-      failed_platforms << result unless result[:success]
+      ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
+        old_file = "../api/#{prefix}-api#{platform[:suffix]}.swiftinterface"
+        new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/#{scheme}#{platform[:suffix]}.swiftinterface"
+
+        result = ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, "#{scheme} #{platform[:name]}")
+        failed_platforms << result unless result[:success]
+      end
     end
 
     if failed_platforms.any?

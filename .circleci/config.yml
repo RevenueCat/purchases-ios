@@ -1901,7 +1901,7 @@ jobs:
           name: Update paywall templates
           command: bundle exec fastlane ios update_paywall_preview_resources_commit
 
-  check-api-changes:
+  check-api-changes-revenuecat:
     executor:
       name: macos-executor
       xcode_version: *swiftinterface-xcode-version
@@ -1910,13 +1910,13 @@ jobs:
       - install-dependencies
       - revenuecat/install-public-api-diff
       - run:
-          name: Generate PR branch swiftinterface
+          name: Generate RevenueCat swiftinterface
           command: |
-            bundle exec fastlane ios generate_swiftinterface
+            bundle exec fastlane ios generate_swiftinterface scheme:RevenueCat
       - run:
-          name: Check API changes
+          name: Check RevenueCat API changes
           command: |
-            bundle exec fastlane ios check_api_changes
+            bundle exec fastlane ios check_api_changes scheme:RevenueCat
       - store_artifacts:
           path: /tmp/pr-swiftinterface/RevenueCat-ios-simulator.swiftinterface
           destination: revenuecat-api-ios-simulator.swiftinterface
@@ -1944,6 +1944,51 @@ jobs:
       - store_artifacts:
           path: /tmp/pr-swiftinterface/RevenueCat-visionos.swiftinterface
           destination: revenuecat-api-visionos.swiftinterface
+      - slack-notify-on-fail
+
+  check-api-changes-revenuecatui:
+    executor:
+      name: macos-executor
+      xcode_version: *swiftinterface-xcode-version
+    steps:
+      - checkout
+      - install-dependencies
+      - revenuecat/install-public-api-diff
+      - run:
+          name: Generate RevenueCatUI swiftinterface
+          command: |
+            bundle exec fastlane ios generate_swiftinterface scheme:RevenueCatUI
+      - run:
+          name: Check RevenueCatUI API changes
+          command: |
+            bundle exec fastlane ios check_api_changes scheme:RevenueCatUI
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-ios-simulator.swiftinterface
+          destination: revenuecatui-api-ios-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-ios.swiftinterface
+          destination: revenuecatui-api-ios.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-macos.swiftinterface
+          destination: revenuecatui-api-macos.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-watchos-simulator.swiftinterface
+          destination: revenuecatui-api-watchos-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-watchos.swiftinterface
+          destination: revenuecatui-api-watchos.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-tvos-simulator.swiftinterface
+          destination: revenuecatui-api-tvos-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-tvos.swiftinterface
+          destination: revenuecatui-api-tvos.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-visionos-simulator.swiftinterface
+          destination: revenuecatui-api-visionos-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-visionos.swiftinterface
+          destination: revenuecatui-api-visionos.swiftinterface
       - slack-notify-on-fail
 
   generate-swiftinterface:
@@ -2073,7 +2118,10 @@ workflows:
       # Reduced Test Suite: Auto-run on every push
       # =============================================================
       - lint
-      - check-api-changes:
+      - check-api-changes-revenuecat:
+          context:
+            - slack-secrets-ios
+      - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
       - run-test-ios-26:
@@ -2231,7 +2279,8 @@ workflows:
           requires:
             # Reduced Test Suite
             - lint
-            - check-api-changes
+            - check-api-changes-revenuecat
+            - check-api-changes-revenuecatui
             - run-test-ios-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
@@ -2421,7 +2470,10 @@ workflows:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
     jobs:
-      - check-api-changes:
+      - check-api-changes-revenuecat:
+          context:
+            - slack-secrets-ios
+      - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
       - run-all-maestro-e2e-tests:
@@ -2514,7 +2566,8 @@ workflows:
       # =============================================================
       - all-tests-succeeded:
           requires:
-            - check-api-changes
+            - check-api-changes-revenuecat
+            - check-api-changes-revenuecatui
             - run-all-maestro-e2e-tests
             - lint
             - run-test-ios-26
