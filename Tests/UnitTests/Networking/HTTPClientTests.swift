@@ -1548,6 +1548,24 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(headerPresent.value) == true
     }
 
+    func testPassesInstallationMethodHeader() {
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        let headerPresent: Atomic<Bool> = false
+
+        stub(condition: hasHeaderNamed("X-Installation-Method",
+                                       value: SystemInfo.installationMethod)) { _ in
+            headerPresent.value = true
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        expect(headerPresent.value) == true
+    }
+
     func testPassesObserverModeHeaderCorrectlyWhenEnabled() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 

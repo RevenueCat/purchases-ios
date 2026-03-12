@@ -2101,6 +2101,11 @@ extension Purchases {
     @_spi(Internal) public var preferredLocaleOverride: String? {
         return self.systemInfo.preferredLocaleOverride
     }
+
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public static var installationMethod: String {
+        return SystemInfo.installationMethod
+    }
 }
 
 extension Purchases: InternalPurchasesType {

@@ -105,6 +105,18 @@ class SystemInfo {
         return "5.63.0-SNAPSHOT"
     }
 
+    static var installationMethod: String {
+        #if SWIFT_PACKAGE
+        return "spm"
+        #elseif COCOAPODS
+        return "cocoapods"
+        #elseif RC_XCFRAMEWORK
+        return "xcframework"
+        #else
+        return "unknown"
+        #endif
+    }
+
     static var systemVersion: String {
         return ProcessInfo.processInfo.operatingSystemVersionString
     }
