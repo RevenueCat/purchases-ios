@@ -80,6 +80,8 @@ enum ConfigureStrings {
     case sk2_required
 
     case sk2_invalid_inapp_purchase_key
+
+    case iam_enabled
 }
 
 extension ConfigureStrings: LogMessage {
@@ -210,6 +212,9 @@ extension ConfigureStrings: LogMessage {
             "invalid or not present. This error is thrown only in debug builds; in production, it will fail " +
             "silently. You must configure an In-App Purchase Key. Please see " +
             "https://rev.cat/in-app-purchase-key-configuration for more info."
+
+        case .iam_enabled:
+            return "Purchases is configured with IAM (Identity and Access Management) enabled"
         }
     }
 

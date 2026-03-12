@@ -20,11 +20,8 @@ struct IAMAuthResponse: Decodable {
     let accessToken: String?
     let refreshToken: String?
 
-    enum CodingKeys: String, CodingKey {
-        case idToken = "id_token"
-        case accessToken = "access_token"
-        case refreshToken = "refresh_token"
-    }
+    // No explicit CodingKeys: JSONDecoder.default uses .convertFromSnakeCase,
+    // which automatically maps "access_token" → accessToken, etc.
 
 }
 

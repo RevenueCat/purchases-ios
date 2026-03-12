@@ -65,4 +65,13 @@ public struct IAMLoginMethod {
         .init(.apple(idToken: idToken))
     }
 
+    internal var methodName: String {
+        switch self.methodType {
+        case .anonymous: return "anonymous"
+        case .oidc: return "oidc"
+        case .google: return "google"
+        case .apple: return "apple"
+        }
+    }
+
 }

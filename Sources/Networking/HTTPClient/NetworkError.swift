@@ -25,6 +25,8 @@ enum NetworkError: Swift.Error, Equatable {
     case unexpectedResponse(URLResponse?, Source)
     case errorResponse(ErrorResponse, HTTPStatusCode, Source)
     case signatureVerificationFailed(path: String, HTTPStatusCode, Source)
+    /// IAM mode is enabled but no session has been established yet.
+    case iamSessionNotInitialized(Source)
 
 }
 
@@ -90,6 +92,12 @@ extension NetworkError {
             code,
             .init(file: file, function: function, line: line)
         )
+    }
+
+    static func iamSessionNotInitialized(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .iamSessionNotInitialized(.init(file: file, function: function, line: line))
     }
 
 }
@@ -165,6 +173,13 @@ extension NetworkError: PurchasesErrorConvertible {
                 functionName: source.function,
                 line: source.line
             )
+
+        case let .iamSessionNotInitialized(source):
+            return ErrorUtils.iamSessionNotInitializedError(
+                fileName: source.file,
+                functionName: source.function,
+                line: source.line
+            )
         }
     }
 
@@ -197,6 +212,9 @@ extension NetworkError: DescribableError {
             return self.asPurchasesError.localizedDescription
 
         case .signatureVerificationFailed:
+            return self.asPurchasesError.localizedDescription
+
+        case .iamSessionNotInitialized:
             return self.asPurchasesError.localizedDescription
         }
     }
@@ -240,7 +258,8 @@ extension NetworkError {
              .dnsError,
              .unableToCreateRequest,
              .unexpectedResponse,
-             .signatureVerificationFailed:
+             .signatureVerificationFailed,
+             .iamSessionNotInitialized:
             return nil
         }
     }

@@ -13,7 +13,7 @@ struct MagicWeatherApp: App {
     
     init() {
         /* Enable debug logs before calling `configure`. */
-        Purchases.logLevel = .debug
+        Purchases.logLevel = .verbose
         
         /*
          Initialize the RevenueCat Purchases SDK.
@@ -22,22 +22,31 @@ struct MagicWeatherApp: App {
             Read more about Identifying Users here: https://docs.revenuecat.com/docs/user-ids
 
          */
-
+        
         Purchases.configure(
             with: Configuration.Builder(withAPIKey: Constants.apiKey)
                 .with(storeKitVersion: .storeKit2)
+//                .with(iamEnabled: true)
+                .with(entitlementVerificationMode: .disabled) 
                 .build()
         )
 
         /* Set the delegate to our shared instance of PurchasesDelegateHandler */
         Purchases.shared.delegate = PurchasesDelegateHandler.shared
     }
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .preferredColorScheme(.dark)
                 .task {
+                    do {
+                        Purchases.shared.invalidateCustomerInfoCache()
+                        try await Purchases.shared.initAnonymous()
+                    } catch {
+                        print("Error initializing anonymous session: \(error)")
+                    }
+                    
                     do {
                         // Fetch the available offerings
                         UserViewModel.shared.offerings = try await Purchases.shared.offerings()

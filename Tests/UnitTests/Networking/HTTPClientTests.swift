@@ -3828,3 +3828,80 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         expect(self.timeoutManager.recordedResults.first) == .successOnMainBackend
     }
 }
+
+// MARK: - IAM Authorization Header Tests
+extension HTTPClientTests {
+
+    func testIAMLoginRequestSendsAPIKeyAuthorizationHeader() {
+        let receivedAuthHeader: Atomic<String?> = .init(nil)
+
+        stub(condition: isPath("/auth/login")) { request in
+            receivedAuthHeader.value = request.allHTTPHeaderFields?["Authorization"]
+            return .emptySuccessResponse()
+        }
+
+        self.client.iamSessionManager = IAMSessionManager(
+            apiKey: self.apiKey,
+            baseURL: SystemInfo.apiBaseURL
+        )
+
+        let request = HTTPRequest(method: .post([:]), path: HTTPRequest.IAMAuthPath.login)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        expect(receivedAuthHeader.value) == "Bearer \(self.apiKey)"
+    }
+
+    func testIAMLoginRequestSendsAPIKeyEvenWhenActiveSessionExists() {
+        let receivedAuthHeader: Atomic<String?> = .init(nil)
+
+        stub(condition: isPath("/auth/login")) { request in
+            receivedAuthHeader.value = request.allHTTPHeaderFields?["Authorization"]
+            return .emptySuccessResponse()
+        }
+
+        let sessionManager = IAMSessionManager(apiKey: self.apiKey, baseURL: SystemInfo.apiBaseURL)
+        sessionManager.saveSession(IAMSession(
+            accessToken: "existing-access-token",
+            refreshToken: "existing-refresh-token",
+            idToken: "existing-id-token"
+        ))
+        self.client.iamSessionManager = sessionManager
+
+        let request = HTTPRequest(method: .post([:]), path: HTTPRequest.IAMAuthPath.login)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        expect(receivedAuthHeader.value) == "Bearer \(self.apiKey)"
+    }
+
+    func testResolvedAuthHeadersReturnsAPIKeyForIAMLoginPath() {
+        self.client.iamSessionManager = IAMSessionManager(
+            apiKey: self.apiKey,
+            baseURL: SystemInfo.apiBaseURL
+        )
+
+        let headers = self.client.resolvedAuthHeaders(for: HTTPRequest.IAMAuthPath.login)
+
+        expect(headers["Authorization"]) == "Bearer \(self.apiKey)"
+    }
+
+    func testResolvedAuthHeadersReturnsAPIKeyForIAMLoginPathEvenWithActiveSession() {
+        let sessionManager = IAMSessionManager(apiKey: self.apiKey, baseURL: SystemInfo.apiBaseURL)
+        sessionManager.saveSession(IAMSession(
+            accessToken: "existing-access-token",
+            refreshToken: "existing-refresh-token",
+            idToken: "existing-id-token"
+        ))
+        self.client.iamSessionManager = sessionManager
+
+        let headers = self.client.resolvedAuthHeaders(for: HTTPRequest.IAMAuthPath.login)
+
+        expect(headers["Authorization"]) == "Bearer \(self.apiKey)"
+    }
+
+}

@@ -90,6 +90,21 @@ class HTTPClient {
         with verificationMode: Signing.ResponseVerificationMode? = nil,
         completionHandler: Completion<Value>?
     ) {
+        // ======= TEMPORARY IAM DEBUG LOGGING — remove before merging =======
+        if let sessionManager = self.iamSessionManager {
+            let tokenSnippet = sessionManager.accessToken.map { "Bearer \($0.prefix(20))…" } ?? "(nil)"
+            print("[IAM-DEBUG] perform \(request.method.httpMethod) \(request.path.relativePath)"
+                + " | isIAMAuthPath=\(request.path.isIAMAuthPath) | accessToken=\(tokenSnippet)")
+        }
+        // ======= END TEMPORARY IAM DEBUG LOGGING =======
+
+        if let sessionManager = self.iamSessionManager,
+           request.path.requiresIAMSession,
+           sessionManager.accessToken == nil {
+            completionHandler?(.failure(.iamSessionNotInitialized()))
+            return
+        }
+
         self.perform(request: .init(httpRequest: request,
                                     authHeaders: self.resolvedAuthHeaders(for: request.path),
                                     defaultHeaders: self.defaultHeaders,
@@ -112,8 +127,9 @@ class HTTPClient {
             if let accessToken = sessionManager.accessToken {
                 return HTTPClient.authorizationHeader(withToken: accessToken)
             }
-            // No session yet — return empty headers; guards in the API layer will fail fast.
-            return [:]
+            // No session yet — IAMCustomerPath requests are blocked before reaching here;
+            // all other paths fall back to the API key.
+            return self.authHeaders
         }
         return self.authHeaders
     }
@@ -504,6 +520,17 @@ private extension HTTPClient {
                 requestStartTime: Date) {
         RCTestAssertNotMainThread()
 
+        // ======= TEMPORARY IAM DEBUG LOGGING — remove before merging =======
+        if let httpResp = urlResponse as? HTTPURLResponse {
+            print("[IAM-DEBUG] ↓ \(httpResp.statusCode) \(request.httpRequest.path.relativePath)")
+        } else if let networkError {
+            print("[IAM-DEBUG] ↓ error \(request.httpRequest.path.relativePath): \(networkError)")
+        }
+        if let data, let bodyText = String(data: data, encoding: .utf8) {
+            print("[IAM-DEBUG]   Response body: \(bodyText)")
+        }
+        // ======= END TEMPORARY IAM DEBUG LOGGING =======
+
         let response = self.parse(urlResponse: urlResponse,
                                   request: request,
                                   urlRequest: urlRequest,
@@ -645,6 +672,14 @@ private extension HTTPClient {
         }
 
         Logger.debug(Strings.network.api_request_started(request.httpRequest))
+
+        // ======= TEMPORARY IAM DEBUG LOGGING — remove before merging =======
+        print("[IAM-DEBUG] ↑ \(urlRequest.httpMethod ?? "?") \(urlRequest.url?.absoluteString ?? "")")
+        print("[IAM-DEBUG]   Headers: \(urlRequest.allHTTPHeaderFields?.description ?? "(none)")")
+        if let body = urlRequest.httpBody, let bodyText = String(data: body, encoding: .utf8) {
+            print("[IAM-DEBUG]   Body: \(bodyText)")
+        }
+        // ======= END TEMPORARY IAM DEBUG LOGGING =======
 
         var finalURLRequest = urlRequest
 
@@ -915,7 +950,7 @@ extension HTTPClient {
 fileprivate extension NetworkError {
     var isAllowedToRetryWithFallbackHost: Bool {
         switch self {
-        case .decoding, .unableToCreateRequest, .signatureVerificationFailed:
+        case .decoding, .unableToCreateRequest, .signatureVerificationFailed, .iamSessionNotInitialized:
             return false
         case .dnsError, .networkError, .unexpectedResponse:
             return true

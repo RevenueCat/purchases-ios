@@ -43,6 +43,16 @@ protocol HTTPRequestPath {
 
     /// The fallback relative path for this endpoint, if any.
     var fallbackRelativePath: String? { get }
+
+    /// Whether this path belongs to the IAM authentication service (uses API key, not access token).
+    var isIAMAuthPath: Bool { get }
+
+    /// Whether this path requires an active IAM session (access token) to function.
+    ///
+    /// `IAMCustomerPath` endpoints embed user identity in the Bearer token, so they cannot
+    /// fall back to an API key.  All other paths can be called with the API key when no
+    /// IAM session has been established yet.
+    var requiresIAMSession: Bool { get }
 }
 
 extension HTTPRequestPath {
@@ -59,8 +69,9 @@ extension HTTPRequestPath {
         return nil
     }
 
-    /// Whether this path belongs to the IAM authentication service (uses API key, not access token).
     var isIAMAuthPath: Bool { return false }
+
+    var requiresIAMSession: Bool { return false }
 
     var url: URL? { return self.url(proxyURL: nil) }
 
@@ -476,6 +487,8 @@ extension HTTPRequest.IAMCustomerPath: HTTPRequestPath {
     var authenticated: Bool { return true }
 
     var shouldSendEtag: Bool { return true }
+
+    var requiresIAMSession: Bool { return true }
 
     var supportsSignatureVerification: Bool { return false }
 

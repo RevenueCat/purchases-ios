@@ -26,6 +26,9 @@ class IAMAPI {
         self.sessionManager = sessionManager
     }
 
+    /// Whether an active IAM session exists (i.e. the user has authenticated at least once).
+    var hasSession: Bool { return sessionManager.hasSession }
+
     /// Authenticates using the given login method and stores the resulting session.
     ///
     /// On success the session is automatically saved in ``IAMSessionManager``.

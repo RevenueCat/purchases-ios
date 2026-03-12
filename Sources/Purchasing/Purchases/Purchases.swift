@@ -771,6 +771,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         Logger.user(Strings.configure.initial_app_user_id(isSet: appUserID != nil))
         Logger.debug(Strings.configure.response_verification_mode(systemInfo.responseVerificationMode))
         Logger.debug(Strings.configure.storekit_version(systemInfo.storeKitVersion))
+        if backend.iamAPI != nil {
+            Logger.debug(Strings.configure.iam_enabled)
+        }
 
         self.requestFetcher = requestFetcher
         self.receiptFetcher = receiptFetcher
@@ -1036,8 +1039,11 @@ public extension Purchases {
             completion(NewErrorUtils.configurationError(message: "IAM is not enabled.").asPublicError)
             return
         }
-        iamAPI.login(method: .anonymous()) { result in
-            self.operationDispatcher.dispatchOnMainThread {
+        iamAPI.login(method: .anonymous()) { [weak self] result in
+            if case .success = result {
+                self?.updateAllCaches(completion: nil)
+            }
+            self?.operationDispatcher.dispatchOnMainThread {
                 completion(result.error?.asPublicError)
             }
         }
@@ -1056,12 +1062,16 @@ public extension Purchases {
     }
 
     func loginUser(with method: IAMLoginMethod, completion: @escaping (PublicError?) -> Void) {
+        Logger.debug(Strings.identity.login_called_with_method(method.methodName))
         guard let iamAPI = self.backend.iamAPI else {
             completion(NewErrorUtils.configurationError(message: "IAM is not enabled.").asPublicError)
             return
         }
-        iamAPI.login(method: method) { result in
-            self.operationDispatcher.dispatchOnMainThread {
+        iamAPI.login(method: method) { [weak self] result in
+            if case .success = result {
+                self?.updateAllCaches(completion: nil)
+            }
+            self?.operationDispatcher.dispatchOnMainThread {
                 completion(result.error?.asPublicError)
             }
         }
@@ -2383,6 +2393,11 @@ private extension Purchases {
     }
 
     private func performInitialForegroundSetup() {
+        // When IAM is enabled, we must not make any user-specific API calls until the user
+        // has authenticated. Skip initial cache population — it will be triggered by
+        // loginUser(with:) or initAnonymous() after a session is established.
+        guard self.backend.iamAPI == nil || self.backend.iamAPI?.hasSession == true else { return }
+
         self.systemInfo.isApplicationBackgrounded { [weak self] isBackgrounded in
             guard !isBackgrounded, let self = self else { return }
 
@@ -2409,6 +2424,9 @@ private extension Purchases {
         // This is not ideal, and we should consider making the tests more resilient
         // in the future.
         guard !ProcessInfo.isRunningIntegrationTests else { return }
+        // health_report_availability uses a subscriber-scoped path that has no meaning
+        // in IAM mode — never invoke it when IAM is enabled.
+        guard self.backend.iamAPI == nil else { return }
 
         let appUserID = self.appUserID
 
@@ -2429,6 +2447,9 @@ private extension Purchases {
             // Only needed at configuration time
             return
         }
+
+        // When IAM is enabled, skip foreground refresh until the user has authenticated.
+        if let iamAPI = self.backend.iamAPI, !iamAPI.hasSession { return }
 
         if !self.systemInfo.dangerousSettings.customEntitlementComputation {
             self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,

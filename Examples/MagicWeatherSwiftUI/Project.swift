@@ -11,7 +11,7 @@ let project = Project(
             name: "MagicWeatherSwiftUI",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.revenuecat.sampleapp",
+            bundleId: "com.serialger.test-app",
             deploymentTargets: .iOS("15.0"),
             infoPlist: .extendingDefault(
                 with: [

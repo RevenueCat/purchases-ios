@@ -46,6 +46,8 @@ enum IdentityStrings {
 
     case sync_attributes_and_offerings_rate_limit_reached(maxCalls: Int, period: Int)
 
+    case login_called_with_method(String)
+
 }
 
 extension IdentityStrings: LogMessage {
@@ -88,6 +90,8 @@ extension IdentityStrings: LogMessage {
         case let .sync_attributes_and_offerings_rate_limit_reached(maxCalls, period):
             return "Sync attributes and offerings rate limit reached:\(maxCalls) per \(period) seconds. " +
             "Returning offerings from cache."
+        case let .login_called_with_method(method):
+            return "Login called with method: \(method)"
         }
     }
 

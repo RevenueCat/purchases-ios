@@ -97,22 +97,13 @@ extension IAMLoginOperation {
 
             case let .apple(idToken):
                 try container.encode("apple", forKey: .method)
-                var appleContainer = container.nestedContainer(
-                    keyedBy: AppleCodingKeys.self,
-                    forKey: .apple
-                )
-                try appleContainer.encode(idToken, forKey: .idToken)
+                try container.encode(idToken, forKey: .idToken)
             }
         }
 
         private enum CodingKeys: String, CodingKey {
             case method
             case reference
-            case idToken = "id_token"
-            case apple
-        }
-
-        private enum AppleCodingKeys: String, CodingKey {
             case idToken = "id_token"
         }
 
