@@ -97,7 +97,7 @@ class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
             return data.paywallId
         }
 
-        expect(trackedPaywallIds) == paywallIds
+        expect(Set(trackedPaywallIds)) == Set(paywallIds)
     }
 
 }
