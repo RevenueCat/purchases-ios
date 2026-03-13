@@ -23,6 +23,7 @@ enum Strings {
     case unrecognized_variable_name(variableName: String)
 
     case product_already_subscribed
+    case purchase_failed(Error)
 
     case determining_whether_to_display_paywall
     case displaying_paywall
@@ -39,6 +40,7 @@ enum Strings {
     case restoring_purchases
     case restored_purchases
     case restore_purchases_with_empty_result
+    case restore_purchases_failed(Error)
     case setting_restored_customer_info
 
     case executing_purchase_logic
@@ -357,6 +359,10 @@ extension Strings: CustomStringConvertible {
             return "Presenting exit offer paywall for offering '\(offeringId)'"
         case .errorLoadingExitOffer(let error):
             return "Error loading exit offer: \(error)"
+        case .restore_purchases_failed(let error):
+            return "Restore failed with error: \(error)"
+        case .purchase_failed(let error):
+            return "Purchase failed with error: \(error)"
         case .paywall_contains_unsupported_condition:
             return "Unsupported paywall rule encountered. " +
             "Rendering paywall without conditional configurability rules."

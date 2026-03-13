@@ -18,3 +18,4 @@
 "Continue" = "Devam et";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} denemenizi başlatın, ardından {{ total_price_and_per_month }}.";
 "Something went wrong" = "Bir şeyler yanlış gitti";
+"Purchase" = "Satın Al";
