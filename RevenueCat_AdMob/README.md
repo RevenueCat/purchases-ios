@@ -229,11 +229,11 @@ let adLoader = AdLoader(
 )
 adLoader.delegate = self
 // Pass nativeAdDelegate here. The adapter forwards callbacks to your delegates and adds tracking.
+// The adapter uses the loader's adUnitID (set when creating the AdLoader above) for tracking.
 // Do not replace adLoader.delegate after calling loadAndTrack. Avoid overwriting nativeAd.delegate
 // and nativeAd.paidEventHandler on loaded ads, or you'll override RevenueCat's listeners.
 adLoader.loadAndTrack(
     Request(),
-    adUnitID: "AD_UNIT_ID",
     placement: "feed",
     nativeAdDelegate: self
 )
@@ -261,7 +261,7 @@ Use RevenueCat's base `AdTracker` APIs directly from Objective-C integrations.
 | App Open | `AppOpenAd.loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:...)` |
 | Rewarded | `RewardedAd.loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:...)` |
 | Rewarded Interstitial | `RewardedInterstitialAd.loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:...)` |
-| Native | `AdLoader.loadAndTrack(_:adUnitID:placement:nativeAdDelegate:)` |
+| Native | `AdLoader.loadAndTrack(_:placement:nativeAdDelegate:)` |
 
 ## Events tracked
 

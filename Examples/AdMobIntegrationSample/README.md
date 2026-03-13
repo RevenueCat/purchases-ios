@@ -74,9 +74,8 @@ This sample uses RevenueCat_AdMob APIs exposed as experimental Swift SPI (`@_spi
 ### 2. Configure the app
 
 1. Open `Sources/Constants.swift`.
-2. Replace `YOUR_REVENUECAT_API_KEY_HERE` with a real key.
-3. Remove the `#error(...)` line.
-4. Keep the default AdMob test ad unit IDs for local testing.
+2. Replace `YOUR_REVENUECAT_API_KEY` with your real RevenueCat API key.
+3. Keep the default AdMob test ad unit IDs for local testing.
 
 ### 3. Build and run
 
@@ -177,7 +176,7 @@ Use the **Error Handling** section in the sample UI:
 
 ### "Missing RevenueCat API key" or build fails at startup
 
-Make sure `revenueCatAPIKey` is set in `Sources/Constants.swift` and remove the placeholder `#error(...)` line.
+Make sure `revenueCatAPIKey` in `Sources/Constants.swift` is set to your real RevenueCat API key (replace the `YOUR_REVENUECAT_API_KEY` placeholder).
 
 ### Ads not loading
 
