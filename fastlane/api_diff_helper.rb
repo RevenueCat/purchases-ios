@@ -2,73 +2,18 @@
 # Used by generate_swiftinterface and check_api_changes lanes
 
 module ApiDiffHelper
+  # TEMPORARY: Only tvOS for debugging. Revert before merging.
   PLATFORMS = [
-    {
-      sdk: "iphonesimulator",
-      platform: "iOS",
-      suffix: "-ios-simulator",
-      destination: "generic/platform=iOS Simulator"
-    },
-    {
-      sdk: "iphoneos",
-      platform: "iOS",
-      suffix: "-ios",
-      destination: "generic/platform=iOS"
-    },
-    {
-      sdk: "macosx",
-      platform: "macOS",
-      suffix: "-macos",
-      destination: "generic/platform=macOS"
-    },
-    {
-      sdk: "watchsimulator",
-      platform: "watchOS",
-      suffix: "-watchos-simulator",
-      destination: "generic/platform=watchOS Simulator"
-    },
-    {
-      sdk: "watchos",
-      platform: "watchOS",
-      suffix: "-watchos",
-      destination: "generic/platform=watchOS"
-    },
-    {
-      sdk: "appletvsimulator",
-      platform: "tvOS",
-      suffix: "-tvos-simulator",
-      destination: "generic/platform=tvOS Simulator"
-    },
     {
       sdk: "appletvos",
       platform: "tvOS",
       suffix: "-tvos",
       destination: "generic/platform=tvOS"
     },
-    {
-      sdk: "xrsimulator",
-      platform: "visionOS",
-      suffix: "-visionos-simulator",
-      destination: "generic/platform=visionOS Simulator"
-    },
-    {
-      sdk: "xros",
-      platform: "visionOS",
-      suffix: "-visionos",
-      destination: "generic/platform=visionOS"
-    },
   ].freeze
 
   PLATFORM_CHECKS = [
-    { suffix: "-ios-simulator", name: "iOS Simulator" },
-    { suffix: "-ios", name: "iOS" },
-    { suffix: "-macos", name: "macOS" },
-    { suffix: "-watchos-simulator", name: "watchOS Simulator" },
-    { suffix: "-watchos", name: "watchOS" },
-    { suffix: "-tvos-simulator", name: "tvOS Simulator" },
-    { suffix: "-tvos", name: "tvOS" },
-    { suffix: "-visionos-simulator", name: "visionOS Simulator" },
-    { suffix: "-visionos", name: "visionOS" }
+    { suffix: "-tvos", name: "tvOS" }
   ].freeze
 
   PR_SWIFTINTERFACE_DIR = "/tmp/pr-swiftinterface".freeze
