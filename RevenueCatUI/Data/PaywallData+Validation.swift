@@ -92,15 +92,7 @@ extension Offering {
         if let paywall = self.paywall {
             switch paywall.validate() {
             case let .success(template):
-                #if os(macOS)
-                let error = Offering.PaywallValidationError.platformNotSupported(
-                    "Legacy paywalls are unsupported on macOS."
-                )
-                return (paywall, paywall.locale ?? locale, template, error)
-                #else
                 return (paywall, paywall.locale ?? locale, template, nil)
-                #endif
-
             case let .failure(error):
                 let paywall: PaywallData = paywall.config.packages.isEmpty
                     ? .createDefault(with: self.availablePackages, locale: locale)
@@ -130,6 +122,13 @@ private extension PaywallData {
 
     /// - Returns: `nil` if there are no validation errors.
     func validate() -> Result<PaywallTemplate, Error> {
+        #if os(macOS)
+        let error = Offering.PaywallValidationError.platformNotSupported(
+            "Legacy paywalls are unsupported on macOS."
+        )
+        return .failure(error)
+        #else
+
         guard let template = PaywallTemplate(rawValue: self.templateName) else {
             return .failure(.invalidTemplate(self.templateName))
         }
@@ -147,6 +146,7 @@ private extension PaywallData {
         }
 
         return .success(template)
+        #endif
     }
 
     private func validateSingleTier() -> Error? {
