@@ -1908,7 +1908,6 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - revenuecat/install-public-api-diff
       - run:
           name: Generate PR branch swiftinterface
           command: |
