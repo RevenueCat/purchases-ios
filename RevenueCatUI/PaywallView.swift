@@ -14,6 +14,10 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
+#if targetEnvironment(macCatalyst)
+import UIKit
+#endif
+
 #if !os(tvOS)
 
 /// A SwiftUI view for displaying the paywall for an `Offering`.
@@ -52,6 +56,11 @@ public struct PaywallView: View {
     private var customerInfo: CustomerInfo?
     @State
     private var error: NSError?
+
+    #if os(macOS) || targetEnvironment(macCatalyst)
+    @State
+    private var containerSize: CGSize = Self.initialHostWindowSize
+    #endif
 
     private var promoOfferCache: PaywallPromoOfferCache?
 
@@ -205,6 +214,36 @@ public struct PaywallView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         self.content
+        // Fix: https://github.com/RevenueCat/purchases-ios/issues/5827
+        #if os(macOS)
+            .frame(maxWidth: self.containerSize.width > 0 ? self.containerSize.width : nil,
+                   minHeight: self.containerSize.height > 0 ? self.containerSize.height : nil)
+            .background(
+                MacOSHostWindowSizeObserver { windowSize in
+                    self.containerSize = CGSize(
+                        width: windowSize.width * PaywallSizing.hostWindowFactor,
+                        height: windowSize.height * PaywallSizing.hostWindowFactor
+                    )
+                }
+            )
+        #elseif targetEnvironment(macCatalyst)
+            .frame(minHeight: self.containerSize.height > 0 ? self.containerSize.height : nil)
+            .onAppear {
+                let allWindows = UIApplication.shared.connectedScenes
+                    .compactMap { $0 as? UIWindowScene }.flatMap { $0.windows }
+                if let host = allWindows.first(where: { $0.isKeyWindow }) {
+                    self.containerSize = CGSize(
+                        width: .zero,
+                        height: host.bounds.height * PaywallSizing.hostWindowFactor
+                    )
+                }
+            }
+            .background(
+                CatalystWindowSizeObserver(currentSize: self.containerSize) { newSize in
+                    self.containerSize = newSize
+                }
+            )
+        #endif
             .displayError(self.$error) {
                 guard let onRequestedDismissal = self.onRequestedDismissal else {
                     self.dismiss()
@@ -407,7 +446,181 @@ public struct PaywallView: View {
 
     private static let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
 
+    private static var initialHostWindowSize: CGSize {
+        #if os(macOS)
+        guard let window = NSApplication.shared.keyWindow else { return .zero }
+        return CGSize(
+            width: window.frame.width * PaywallSizing.hostWindowFactor,
+            height: window.frame.height * PaywallSizing.hostWindowFactor
+        )
+
+        #else
+        return .zero
+        #endif
+    }
 }
+
+private enum PaywallSizing {
+    static let hostWindowFactor: CGFloat = 0.8
+}
+
+#if os(macOS)
+private struct MacOSHostWindowSizeObserver: NSViewRepresentable {
+
+    let onWindowSizeChanged: (CGSize) -> Void
+
+    func makeNSView(context: Context) -> HostWindowObserverView {
+        let view = HostWindowObserverView()
+        view.onWindowSizeChanged = self.onWindowSizeChanged
+        return view
+    }
+
+    func updateNSView(_ nsView: HostWindowObserverView, context: Context) {
+        nsView.onWindowSizeChanged = self.onWindowSizeChanged
+    }
+}
+
+private final class HostWindowObserverView: NSView {
+
+    var onWindowSizeChanged: ((CGSize) -> Void)?
+
+    private weak var observedHostWindow: NSWindow?
+    private var frameObservation: NSKeyValueObservation?
+    private var sheetNotificationObserver: NSObjectProtocol?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        self.resolveAndObserveHost()
+    }
+
+    deinit {
+        self.clearObservations()
+    }
+
+    /// Finds the host (parent) window that presented this view's window as a sheet,
+    /// then begins observing the host's frame for size changes.
+    private func resolveAndObserveHost() {
+        guard let paywallWindow = self.window else {
+            self.clearObservations()
+            return
+        }
+
+        // If sheetParent is already set when viewDidMoveToWindow fires.
+        if let host = paywallWindow.sheetParent {
+            self.observeHostFrame(host)
+            return
+        }
+
+        // If the sheet relationship isn't established yet.
+        self.sheetNotificationObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.willBeginSheetNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            DispatchQueue.main.async {
+                guard let self, let host = self.window?.sheetParent else { return }
+                self.removeSheetNotificationObserver()
+                self.observeHostFrame(host)
+            }
+        }
+    }
+
+    private func observeHostFrame(_ host: NSWindow) {
+        guard self.observedHostWindow !== host else { return }
+        self.observedHostWindow = host
+        self.frameObservation = host.observe(
+            \.frame,
+            options: [.initial, .new]
+        ) { [weak self] window, _ in
+            let size = window.frame.size
+            DispatchQueue.main.async { self?.onWindowSizeChanged?(size) }
+        }
+    }
+
+    private func removeSheetNotificationObserver() {
+        if let observer = self.sheetNotificationObserver {
+            NotificationCenter.default.removeObserver(observer)
+            self.sheetNotificationObserver = nil
+        }
+    }
+
+    private func clearObservations() {
+        self.frameObservation = nil
+        self.removeSheetNotificationObserver()
+        self.observedHostWindow = nil
+    }
+}
+
+#endif
+
+#if targetEnvironment(macCatalyst)
+private struct CatalystWindowSizeObserver: UIViewRepresentable {
+
+    let currentSize: CGSize
+    let onResize: (CGSize) -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.isHidden = true
+        view.isUserInteractionEnabled = false
+        context.coordinator.subscribe(onResize: onResize)
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        context.coordinator.onResize = onResize
+
+        guard currentSize.height > 0 else { return }
+        guard let win = uiView.window else { return }
+        let current = win.bounds.size
+        guard abs(current.height - currentSize.height) > 0.5 else { return }
+
+        // Record the target before applying so the resulting NSWindowDidResizeNotification
+        // echo is recognised as self-inflicted and ignored by the Coordinator.
+        let target = CGSize(width: current.width, height: currentSize.height)
+        context.coordinator.lastSetSize = target
+
+        // preferredContentSize signals the UIKit presentation layer to resize the
+        // underlying AppKit NSPanel. On Catalyst, there is always a rootViewController.
+        win.rootViewController?.preferredContentSize = target
+    }
+
+    final class Coordinator {
+        var onResize: (CGSize) -> Void = { _ in }
+        var lastSetSize: CGSize = .zero
+
+        private var observer: NSObjectProtocol?
+
+        func subscribe(onResize: @escaping (CGSize) -> Void) {
+            guard observer == nil else { return }
+            self.onResize = onResize
+            // AppKit's NSWindow.didResizeNotification is not importable in Catalyst/UIKit targets;
+            // the notification name string is the only way to observe it from UIKit code.
+            observer = NotificationCenter.default.addObserver(
+                forName: NSNotification.Name("NSWindowDidResizeNotification"),
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self else { return }
+                let allWindows = UIApplication.shared.connectedScenes
+                    .compactMap { $0 as? UIWindowScene }.flatMap { $0.windows }
+                guard let host = allWindows.first(where: { $0.isKeyWindow }) else { return }
+                let newSize = host.bounds.size
+                guard abs(newSize.height - self.lastSetSize.height) > 2.0 else { return }
+                let targetHeight = newSize.height * PaywallSizing.hostWindowFactor
+                self.lastSetSize = CGSize(width: self.lastSetSize.width, height: targetHeight)
+                self.onResize(CGSize(width: 0, height: targetHeight))
+            }
+        }
+
+        deinit {
+            if let observer { NotificationCenter.default.removeObserver(observer) }
+        }
+    }
+}
+#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)

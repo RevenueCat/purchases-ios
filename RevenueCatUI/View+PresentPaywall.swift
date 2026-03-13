@@ -455,7 +455,6 @@ extension View {
 
 }
 
-// swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 private struct PresentingPaywallModifier: ViewModifier {
@@ -553,23 +552,9 @@ private struct PresentingPaywallModifier: ViewModifier {
                 content
                     .sheet(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { data in
                         self.paywallView(data)
-                        // The default height given to sheets on Mac Catalyst is too small, and looks terrible.
-                        // So we need to give it a more reasonable default size. This is the height of an
-                        // iPhone 6/7/8 screen. This aligns with our documentation that we will show a paywall
-                        // in a modal that is "roughly iPhone sized", and if you want to customize further you
-                        // can use PaywallView.
-                        // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls
-                        #if targetEnvironment(macCatalyst) || os(macOS)
-                            .frame(height: 667)
-                        #endif
                     }
                     .sheet(item: self.$presentedExitOffer, onDismiss: self.handleExitOfferDismiss) { offering in
                         self.exitOfferPaywallView(for: offering)
-                        #if targetEnvironment(macCatalyst) || os(macOS)
-                        // this should be minHeight, but for consistency with the first paywall it will be
-                        // like this for now
-                            .frame(height: 667)
-                        #endif
                     }
             #if !os(macOS)
             case .fullScreen:
@@ -782,7 +767,6 @@ private struct PresentingPaywallModifier: ViewModifier {
     }
 
 }
-// swiftlint:enable type_body_length
 
 // MARK: - PresentingPaywallBindingModifier
 
@@ -872,15 +856,9 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 content
                     .sheet(item: self.$offering, onDismiss: self.handleMainPaywallDismiss) { offering in
                         self.paywallView(for: offering)
-                        #if targetEnvironment(macCatalyst) || os(macOS)
-                            .frame(minHeight: 667)
-                        #endif
                     }
                     .sheet(item: self.$presentedExitOffer, onDismiss: self.handleExitOfferDismiss) { exitOffering in
                         self.exitOfferPaywallView(for: exitOffering)
-                        #if targetEnvironment(macCatalyst) || os(macOS)
-                            .frame(minHeight: 667)
-                        #endif
                     }
             #if !os(macOS)
             case .fullScreen:
