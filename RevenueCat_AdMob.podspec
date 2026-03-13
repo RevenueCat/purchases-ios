@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
-  s.name             = "RevenueCatAdMob"
+  s.name             = "RevenueCat_AdMob"
   s.version          = "5.62.0-SNAPSHOT"
   s.summary          = "AdMob adapter for RevenueCat ad tracking."
 
   s.description      = <<-DESC
-                       RevenueCatAdMob provides drop-in AdMob wrappers and extensions
+                       RevenueCat_AdMob provides drop-in AdMob wrappers and extensions
                        that automatically report ad events to RevenueCat.
                        DESC
 
@@ -25,10 +25,10 @@ Pod::Spec.new do |s|
     "DEFINES_MODULE" => "YES"
   }
 
-  s.source_files = "RevenueCatAdMob/**/*.swift"
+  s.source_files = "RevenueCat_AdMob/**/*.swift"
   s.exclude_files = [
-    "RevenueCatAdMob/Tests/**/*.swift",
-    "RevenueCatAdMob/**/Package*.swift"
+    "RevenueCat_AdMob/Tests/**/*.swift",
+    "RevenueCat_AdMob/**/Package*.swift"
   ]
 
   s.dependency "RevenueCat", s.version.to_s

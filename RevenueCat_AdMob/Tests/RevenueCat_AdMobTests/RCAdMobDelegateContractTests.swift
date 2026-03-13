@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 
 #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(GoogleMobileAds)
-@_spi(Experimental) @testable import RevenueCatAdMob
+@_spi(Experimental) @testable import RevenueCat_AdMob
 
 @available(iOS 15.0, *)
 final class RCAdMobDelegateContractTests: RCAdMobTestCase {

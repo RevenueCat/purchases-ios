@@ -88,8 +88,8 @@ let package = Package(
                  targets: ["ReceiptParser"]),
         .library(name: "RevenueCatUI",
                  targets: ["RevenueCatUI"]),
-        .library(name: "RevenueCatAdMob",
-                 targets: ["RevenueCatAdMob"])
+        .library(name: "RevenueCat_AdMob",
+                 targets: ["RevenueCat_AdMob"])
     ],
     dependencies: dependencies,
     targets: [
@@ -142,16 +142,16 @@ let package = Package(
                         .copy("Resources/background.heic"),
                         .copy("PaywallsV2/__PreviewResources__")
                     ]),
-        // RevenueCatAdMob
-        .target(name: "RevenueCatAdMob",
+        // RevenueCat_AdMob
+        .target(name: "RevenueCat_AdMob",
                 dependencies: [
                     "RevenueCat",
                     .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads")
                 ],
-                path: "RevenueCatAdMob",
+                path: "RevenueCat_AdMob",
                 exclude: ["README.md", "Tests", ".build", "Derived", "Package.resolved"]),
-        .testTarget(name: "RevenueCatAdMobTests",
-                    dependencies: ["RevenueCatAdMob"],
-                    path: "RevenueCatAdMob/Tests/RevenueCatAdMobTests")
+        .testTarget(name: "RevenueCat_AdMobTests",
+                    dependencies: ["RevenueCat_AdMob"],
+                    path: "RevenueCat_AdMob/Tests/RevenueCat_AdMobTests")
     ]
 )

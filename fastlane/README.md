@@ -146,13 +146,13 @@ Runs all the tvOS tests
 
 Runs all the watchOS tests
 
-### ios test_revenuecatadmob
+### ios test_revenuecat_admob
 
 ```sh
-[bundle exec] fastlane ios test_revenuecatadmob
+[bundle exec] fastlane ios test_revenuecat_admob
 ```
 
-Runs all RevenueCatAdMob tests (SPM package, workspace '.' like test_revenuecatui)
+Runs all RevenueCat_AdMob tests (SPM package, workspace '.' like test_revenuecatui)
 
 ### ios test_revenuecatui
 
@@ -258,10 +258,10 @@ Release to CocoaPods
 
 Release to CocoaPods
 
-### ios push_revenuecatadmob_pod
+### ios push_revenuecat_admob_pod
 
 ```sh
-[bundle exec] fastlane ios push_revenuecatadmob_pod
+[bundle exec] fastlane ios push_revenuecat_admob_pod
 ```
 
 Release to CocoaPods

@@ -1,6 +1,6 @@
 import Foundation
 import GoogleMobileAds
-@_spi(Experimental) import RevenueCatAdMob
+@_spi(Experimental) import RevenueCat_AdMob
 
 class AdMobManager: NSObject, ObservableObject {
 

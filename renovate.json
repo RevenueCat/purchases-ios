@@ -5,7 +5,7 @@
     {
       "matchPackageNames": ["swift-package-manager-google-mobile-ads"],
       "matchManagers": ["swift"],
-      "matchPaths": ["RevenueCatAdMob/**"],
+      "matchPaths": ["RevenueCat_AdMob/**"],
       "enabled": true,
       "groupName": "google-mobile-ads"
     }

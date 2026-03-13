@@ -2,23 +2,23 @@
 
 Wraps AdMob ad lifecycle callbacks to automatically track ad events in RevenueCat. Drop-in replacement for standard AdMob loading calls — add one method call and RevenueCat tracks loaded, displayed, opened, revenue, and failed-to-load events for you.
 
-The adapter is a **product of the main RevenueCat Swift package**. Add the main `purchases-ios` package and link the `RevenueCatAdMob` product only for targets that use it; other targets can depend only on RevenueCat or RevenueCatUI without resolving Google Mobile Ads.
+The adapter is a **product of the main RevenueCat Swift package**. Add the main `purchases-ios` package and link the `RevenueCat_AdMob` product only for targets that use it; other targets can depend only on RevenueCat or RevenueCatUI without resolving Google Mobile Ads.
 
 ## Installation
 
-- **Swift Package Manager:** Add the main RevenueCat package and the `RevenueCatAdMob` product to the target that uses the adapter:
+- **Swift Package Manager:** Add the main RevenueCat package and the `RevenueCat_AdMob` product to the target that uses the adapter:
   ```swift
   .package(url: "https://github.com/RevenueCat/purchases-ios", from: "5.0.0")  // or your preferred version
   ```
-  Then add the `RevenueCatAdMob` product to your target. Your app will resolve Google Mobile Ads only for targets that depend on `RevenueCatAdMob`.
+  Then add the `RevenueCat_AdMob` product to your target. Your app will resolve Google Mobile Ads only for targets that depend on `RevenueCat_AdMob`.
 
-- **Swift Package Manager (local development):** To use the adapter from a local checkout of this repo, add the package by path to the **root** of the repo (not the `RevenueCatAdMob` folder):
+- **Swift Package Manager (local development):** To use the adapter from a local checkout of this repo, add the package by path to the **root** of the repo (not the `RevenueCat_AdMob` folder):
   ```swift
   .package(path: "path/to/purchases-ios")
   ```
-  Then add the `RevenueCatAdMob` product to your target.
+  Then add the `RevenueCat_AdMob` product to your target.
 
-- **CocoaPods:** Use the `RevenueCatAdMob` pod (if published). It will pull in RevenueCat and Google Mobile Ads only for targets that use it.
+- **CocoaPods:** Use the `RevenueCat_AdMob` pod (if published). It will pull in RevenueCat and Google Mobile Ads only for targets that use it.
 
 ## Supported AdMob SDK versions
 
@@ -29,7 +29,7 @@ The adapter supports **Google Mobile Ads SDK v12.x and v13.x** (Swift API). Use 
 Import the adapter with SPI to access the experimental API surface:
 
 ```swift
-@_spi(Experimental) import RevenueCatAdMob
+@_spi(Experimental) import RevenueCat_AdMob
 ```
 
 **Placement:** All load-and-track APIs take a `placement` parameter — a string that identifies where the ad is shown in your app (e.g. `"home_banner"`, `"level_complete"`, `"app_launch"`). RevenueCat uses it for reporting and segmentation. Use consistent values across your app.
@@ -278,7 +278,7 @@ All formats automatically report these RevenueCat ad events:
 This adapter currently relies on RevenueCat's experimental surface and exposes its Swift API as experimental via `@_spi(Experimental)`.
 
 - APIs are available on iOS 15.0+ (`@available(iOS 15.0, *)`).
-- Swift usage requires `@_spi(Experimental) import RevenueCatAdMob`.
+- Swift usage requires `@_spi(Experimental) import RevenueCat_AdMob`.
 - Treat adapter API shape as experimental and review release notes when upgrading.
 - Prefer pinning to a known-good version during initial rollout.
 

@@ -630,12 +630,12 @@ jobs:
           install_xcbeautify: false
       - update-spm-installation-commit
       - run:
-          name: SPM RevenueCatAdMob Release Build
-          command: swift build -c release --target RevenueCatAdMob
+          name: SPM RevenueCat_AdMob Release Build
+          command: swift build -c release --target RevenueCat_AdMob
           no_output_timeout: 30m
       - run:
-          name: RevenueCatAdMob unit tests
-          command: bundle exec fastlane test_revenuecatadmob
+          name: RevenueCat_AdMob unit tests
+          command: bundle exec fastlane test_revenuecat_admob
           no_output_timeout: 10m
           environment:
             DEVICE: iPhone 16,OS=18.5
@@ -1434,8 +1434,8 @@ jobs:
           path: RevenueCatUI.xcframework.zip
           destination: RevenueCatUI.xcframework.zip
       - store_artifacts:
-          path: RevenueCatAdMob.xcframework.zip
-          destination: RevenueCatAdMob.xcframework.zip
+          path: RevenueCat_AdMob.xcframework.zip
+          destination: RevenueCat_AdMob.xcframework.zip
       - slack-notify-on-fail
 
   docs-build:
@@ -1508,7 +1508,7 @@ jobs:
           command: bundle exec fastlane push_revenuecatui_pod
           no_output_timeout: 30m
 
-  push-revenuecatadmob-pod:
+  push-revenuecat-admob-pod:
     executor:
       name: macos-executor
     steps:
@@ -1517,7 +1517,7 @@ jobs:
       - revenuecat/trust-github-key
       - run:
           name: Deploy new version
-          command: bundle exec fastlane push_revenuecatadmob_pod
+          command: bundle exec fastlane push_revenuecat_admob_pod
           no_output_timeout: 30m
 
   cocoapods-token-keepalive:
@@ -2294,7 +2294,7 @@ workflows:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
-      - push-revenuecatadmob-pod:
+      - push-revenuecat-admob-pod:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
@@ -2308,7 +2308,7 @@ workflows:
       - make-release:
           requires:
             - push-revenuecatui-pod
-            - push-revenuecatadmob-pod
+            - push-revenuecat-admob-pod
             - deploy-to-spm
             - docs-deploy
             - deploy-purchase-tester
