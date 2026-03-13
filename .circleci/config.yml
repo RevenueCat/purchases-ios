@@ -1911,7 +1911,18 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - revenuecat/install-public-api-diff
+      - run:
+          name: Install public-api-diff (latest)
+          command: |
+            if ~/bin/public-api-diff --help >/dev/null 2>&1; then
+              echo "public-api-diff already installed, skipping."
+              exit 0
+            fi
+            git clone https://github.com/Adyen/adyen-swift-public-api-diff.git /tmp/adyen-swift-public-api-diff
+            cd /tmp/adyen-swift-public-api-diff
+            swift build -c release
+            mkdir -p ~/bin
+            cp .build/release/public-api-diff ~/bin/
       - run:
           name: Generate PR branch swiftinterface
           command: |
