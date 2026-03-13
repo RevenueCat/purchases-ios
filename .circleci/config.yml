@@ -1914,6 +1914,17 @@ jobs:
           command: |
             bundle exec fastlane ios generate_swiftinterface
       - run:
+          name: "[DEBUG] Check if baseline files were modified by the build"
+          command: |
+            echo "=== git status of api/ ==="
+            git status api/
+            echo ""
+            echo "=== git diff --stat api/ ==="
+            git diff --stat api/
+            echo ""
+            echo "=== diff between baseline and generated (tvos) ==="
+            diff api/revenuecat-api-tvos.swiftinterface /tmp/pr-swiftinterface/RevenueCat-tvos.swiftinterface || true
+      - run:
           name: Check API changes
           command: |
             bundle exec fastlane ios check_api_changes
