@@ -2132,49 +2132,15 @@ platform :ios do
     begin
       Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
         project_root = File.expand_path("..")
-        mutex = Mutex.new
-        errors = []
 
         threads = ApiDiffHelper::PLATFORMS.map do |platform_config|
           Thread.new(platform_config) do |pc|
-            derived_data = "#{project_root}/.build-#{pc[:sdk]}"
-            sdk_path = `xcrun --sdk #{pc[:sdk]} --show-sdk-path 2>&1`.strip
-            unless $?.success?
-              mutex.synchronize { errors << "xcrun failed for #{pc[:sdk]}: #{sdk_path}" }
-              next
-            end
-
-            UI.message("Building RevenueCat for #{pc[:platform]} (#{pc[:sdk]})...")
-
-            system(
-              "xcodebuild", "clean", "build",
-              "-scheme", "RevenueCat",
-              "-derivedDataPath", derived_data,
-              "-configuration", "Release",
-              "-sdk", sdk_path,
-              "-destination", pc[:destination],
-              "BUILD_LIBRARY_FOR_DISTRIBUTION=YES",
-              chdir: project_root
-            ) or begin
-              mutex.synchronize { errors << "xcodebuild failed for #{pc[:platform]}" }
-              next
-            end
-
-            swiftinterface_files = ApiDiffHelper.find_swiftinterface_file(derived_data, pc[:sdk])
-
-            if swiftinterface_files.empty?
-              mutex.synchronize { errors << "Could not find RevenueCat.swiftinterface for #{pc[:platform]}" }
-              next
-            end
-
-            output_path = "#{temp_dir}/RevenueCat#{pc[:suffix]}.swiftinterface"
-            mutex.synchronize { FileUtils.cp(swiftinterface_files.first, output_path) }
-            UI.success("Generated #{pc[:platform]} swiftinterface")
+            ApiDiffHelper.build_swiftinterface(pc, project_root: project_root, output_dir: temp_dir)
           end
         end
 
-        threads.each(&:join)
-
+        results = threads.map(&:value)
+        errors = results.reject { |r| r[:success] }.map { |r| r[:error] }
         UI.user_error!(errors.join("\n")) if errors.any?
 
         sh("mkdir", "-p", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
