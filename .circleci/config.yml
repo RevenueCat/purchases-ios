@@ -31,6 +31,9 @@ parameters:
   generate_swiftinterface:
     default: false
     type: boolean
+  check_api_changes_only:
+    default: false
+    type: boolean
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
@@ -2015,6 +2018,11 @@ jobs:
           command: echo "All tasks passed"
 
 workflows:
+
+  check-api-changes-only:
+    when: << pipeline.parameters.check_api_changes_only >>
+    jobs:
+      - check-api-changes
 
   generate-swiftinterface:
     when: << pipeline.parameters.generate_swiftinterface >>
