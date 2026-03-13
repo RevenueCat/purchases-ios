@@ -21,6 +21,8 @@ import SwiftUI
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.openSheet) private var openSheet
+    @Environment(\.restoreInitiatedAction)
+    private var restoreInitiatedAction: RestoreInitiatedAction?
     @Environment(\.offerCodeRedemptionInitiatedAction)
     private var offerCodeRedemptionInitiatedAction: OfferCodeRedemptionInitiatedAction?
     @State private var inAppBrowserURL: URL?
@@ -110,6 +112,17 @@ struct ButtonComponentView: View {
 
     private func restorePurchases() async throws {
         guard !self.purchaseHandler.actionInProgress else { return }
+
+        if let interceptor = self.restoreInitiatedAction {
+            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
+                await withCheckedContinuation { continuation in
+                    interceptor(resume: ResumeAction { shouldProceed in
+                        continuation.resume(returning: shouldProceed)
+                    })
+                }
+            }
+            guard result else { return }
+        }
 
         Logger.debug(Strings.restoring_purchases)
 
