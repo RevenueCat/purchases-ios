@@ -1,13 +1,12 @@
 ## RevenueCat SDK
 ### ✨ New Features
-* Expose trackCustomPaywallImpression as experimental public API (#6427) via Rick (@rickvdl)
-### 🐞 Bugfixes
-* Fix RCT Tester deploy failing due to provisioning profile on SPM targets (#6444) via Antonio Pallares (@ajpallares)
+* Make custom variable number/bool setters public for UIKit (#6452) via Facundo Menzella (@facumenzella)
+* Send X-Installation-Method header in all API requests (#6431) via Antonio Pallares (@ajpallares)
 
 ## RevenueCatUI SDK
 ### 🐞 Bugfixes
-* Fix presentPaywall returning PURCHASED without actual purchase in PurchasesAreCompletedBy.myApp (#6442) via Toni Rico (@tonidero)
+* Fix: Clear in-memory offerings cache on locale override to prevent stale paywall data (#6446) via Antonio Pallares (@ajpallares)
 
 ### 🔄 Other Changes
-* Use Xcode 26 for Purchase Tester CI deployment (#6441) via Antonio Pallares (@ajpallares)
-* Remove "my apps" tab from Paywalls Tester (#6390) via Cesar de la Vega (@vegaro)
+* Remove unnecessary throws from view model inits (#6426) via Facundo Menzella (@facumenzella)
+* Fix PaywallsTester tap to use presentPaywall for exit offer support (#6449) via Drago Crnjac (@popcorn)
