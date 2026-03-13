@@ -2226,15 +2226,15 @@ platform :ios do
       return
     end
 
-    failed_platforms = []
-
-    ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
-      old_file = "../api/revenuecat-api#{platform[:suffix]}.swiftinterface"
-      new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
-
-      result = ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, platform[:name])
-      failed_platforms << result unless result[:success]
+    threads = ApiDiffHelper::PLATFORM_CHECKS.map do |platform|
+      Thread.new(platform) do |p|
+        old_file = "../api/revenuecat-api#{p[:suffix]}.swiftinterface"
+        new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{p[:suffix]}.swiftinterface"
+        ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, p[:name])
+      end
     end
+
+    failed_platforms = threads.map(&:value).reject { |r| r[:success] }
 
     if failed_platforms.any?
       ApiDiffHelper.print_failure_summary(failed_platforms)
