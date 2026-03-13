@@ -621,6 +621,27 @@ jobs:
           command: bundle exec fastlane run_api_tests
       - slack-notify-on-fail
 
+  revenuecat-admob-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "16.4"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCat_AdMob Release Build
+          command: swift build -c release --target RevenueCat_AdMob
+          no_output_timeout: 30m
+      - run:
+          name: RevenueCat_AdMob unit tests
+          command: bundle exec fastlane test_revenuecat_admob
+          no_output_timeout: 10m
+          environment:
+            DEVICE: iPhone 16,OS=18.5
+      - slack-notify-on-fail
+
   spm-receipt-parser:
     executor:
       name: macos-executor
@@ -1414,6 +1435,9 @@ jobs:
       - store_artifacts:
           path: RevenueCatUI.xcframework.zip
           destination: RevenueCatUI.xcframework.zip
+      - store_artifacts:
+          path: RevenueCat_AdMob.xcframework.zip
+          destination: RevenueCat_AdMob.xcframework.zip
       - slack-notify-on-fail
 
   docs-build:
@@ -1484,6 +1508,18 @@ jobs:
       - run:
           name: Deploy new version
           command: bundle exec fastlane push_revenuecatui_pod
+          no_output_timeout: 30m
+
+  push-revenuecat-admob-pod:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - install-bundle-dependencies
+      - revenuecat/trust-github-key
+      - run:
+          name: Deploy new version
+          command: bundle exec fastlane push_revenuecat_admob_pod
           no_output_timeout: 30m
 
   cocoapods-token-keepalive:
@@ -2272,6 +2308,10 @@ workflows:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
+      - push-revenuecat-admob-pod:
+          requires:
+            - push-revenuecat-pod
+          <<: *release-tags
       - deploy-to-spm:
           <<: *release-tags
       - docs-deploy:
@@ -2282,6 +2322,7 @@ workflows:
       - make-release:
           requires:
             - push-revenuecatui-pod
+            - push-revenuecat-admob-pod
             - deploy-to-spm
             - docs-deploy
             - deploy-purchase-tester
@@ -2486,6 +2527,9 @@ workflows:
           context:
             - slack-secrets
       - api-tests:
+          context:
+            - slack-secrets
+      - revenuecat-admob-tests:
           context:
             - slack-secrets
       - deploy-purchase-tester:

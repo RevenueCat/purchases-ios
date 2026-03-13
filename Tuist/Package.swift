@@ -19,7 +19,9 @@
             "SnapshotTesting": .framework, // default is .staticFramework,
             "RevenueCat": .framework,
             "RevenueCatUI": .framework,
+            "RevenueCat_AdMob": .framework,
             "Purchases": .framework,
+            "GoogleMobileAds": .framework,
             "OHHTTPStubs": .framework,
             "OHHTTPStubsSwift": .framework
         ]
@@ -41,6 +43,11 @@ let package = Package(
         .package(
             url: "https://github.com/RevenueCat/purchases-ios",
             branch: "main"
+        ),
+
+        .package(
+            url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
+            "12.0.0"..<"14.0.0"
         ),
         .package(
             url: "https://github.com/AliSoftware/OHHTTPStubs",

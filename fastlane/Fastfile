@@ -46,6 +46,7 @@ end
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
+  './RevenueCat_AdMob.podspec' => ['s.version          = "{x}"'],
   './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
   './.version' => ['{x}'],
   './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide'],
@@ -125,7 +126,7 @@ platform :ios do
       repo_name: REPO_NAME,
       github_api_token: ENV["GITHUB_TOKEN"],
       changelog_latest_path: CHANGELOG_LATEST_PATH,
-      upload_assets: ['RevenueCat.xcframework.zip', 'RevenueCatUI.xcframework.zip']
+      upload_assets: ['RevenueCat.xcframework.zip', 'RevenueCatUI.xcframework.zip', 'RevenueCat_AdMob.xcframework.zip']
     )
   end
 
@@ -688,6 +689,24 @@ platform :ios do
     )
   end
 
+  desc "Runs all RevenueCat_AdMob tests (SPM package, workspace '.' like test_revenuecatui)"
+  lane :test_revenuecat_admob do
+    platform = ENV['PLATFORM'] || 'iOS Simulator'
+    destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
+    sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+
+    xcodebuild(
+      workspace: '.',
+      scheme: 'RevenueCat_AdMob',
+      destination: "platform=" + platform + ",name=" + destination,
+      sdk: sdk,
+      result_bundle_path: 'fastlane/test_output/revenuecat_admob.xcresult',
+      report_formats: [:junit],
+      report_path: 'fastlane/test_output/revenuecat_admob/tests.xml',
+      test: true
+    )
+  end
+
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
@@ -1148,6 +1167,11 @@ platform :ios do
     pod_push_with_error_handling(path: "RevenueCatUI.podspec", synchronous: true)
   end
 
+  desc "Release to CocoaPods"
+  lane :push_revenuecat_admob_pod do |options|
+    pod_push_with_error_handling(path: "RevenueCat_AdMob.podspec", synchronous: true)
+  end
+
   desc "Tag current branch with current version number"
   lane :tag_current_branch do |options|
     version_number = current_version_number
@@ -1445,6 +1469,66 @@ platform :ios do
       'maccatalyst',
       'watchOS',
     ])
+    create_and_sign_xcframework_admob
+  end
+
+  # Build RevenueCat_AdMob xcframework from the root Swift package (RevenueCat_AdMob is a target in the main package).
+  # Run xcodebuild from the package root; resolve the build scheme from the package.
+  private_lane :create_and_sign_xcframework_admob do
+    project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+    product_name = "RevenueCat_AdMob"
+    output_directory = "build/xcframeworks/#{product_name}"
+    framework_paths = []
+
+    scheme = Dir.chdir(project_root) do
+      list_json = sh("xcodebuild", "-list", "-json")
+      list = JSON.parse(list_json)
+      schemes = list.dig("workspace", "schemes") || list.dig("project", "schemes") || []
+      if schemes.include?(product_name)
+        product_name
+      else
+        UI.user_error!("Scheme '#{product_name}' not found in package. Available schemes: #{schemes.join(', ')}. " \
+          "SwiftPM/Xcode scheme naming may differ from the product name.")
+      end
+    end
+
+    destinations = [
+      { platform: 'iOS', xcode_dest: 'generic/platform=iOS' },
+      { platform: 'iOS Simulator', xcode_dest: 'generic/platform=iOS Simulator' },
+      { platform: 'maccatalyst', xcode_dest: 'generic/platform=macOS,variant=Mac Catalyst' }
+    ]
+
+    destinations.each do |dest|
+      derived_data = File.join(project_root, "build", "RevenueCat_AdMob-DerivedData-#{dest[:platform].gsub(/[\s+]/, '-')}")
+      Dir.chdir(project_root) do
+        sh("xcodebuild", "build",
+           "-package-path", ".",
+           "-scheme", scheme,
+           "-destination", dest[:xcode_dest],
+           "-derivedDataPath", derived_data,
+           "-configuration", "Release",
+           "BUILD_LIBRARY_FOR_DISTRIBUTION=YES",
+           "SKIP_INSTALL=NO")
+      end
+      # SPM may put the framework under Release-<sdk>/ or Release-<sdk>/PackageFrameworks/
+      framework_path = Dir.glob(File.join(derived_data, "Build/Products/Release-**", "#{product_name}.framework")).first
+      framework_path ||= Dir.glob(File.join(derived_data, "Build/Products/Release-**", "PackageFrameworks", "#{product_name}.framework")).first
+      UI.user_error!("Could not find built framework for #{dest[:platform]}") unless framework_path && File.directory?(framework_path)
+      framework_paths << framework_path
+    end
+
+    xcframework_path = File.join(project_root, output_directory, "#{product_name}.xcframework")
+    FileUtils.mkdir_p(File.dirname(xcframework_path))
+    sh("xcodebuild", "-create-xcframework",
+       *framework_paths.flat_map { |p| ["-framework", p] },
+       "-output", xcframework_path)
+
+    xcframework_zip_path = File.join(project_root, "#{product_name}.xcframework.zip")
+    suppress_deprecation_warnings_in_headers(xcframework_path: xcframework_path)
+    sign_xcframework(file: xcframework_path)
+    Dir.chdir(File.dirname(xcframework_path)) do
+      sh("zip", "-r", "-q", xcframework_zip_path, File.basename(xcframework_path))
+    end
   end
 
   private_lane :create_and_sign_xcframework do |options|
@@ -2423,6 +2507,13 @@ lane :check_pods do
     podspec: 'RevenueCatUI.podspec',
     include_podspecs: 'RevenueCat.podspec',
     platforms: 'ios,osx,tvos,watchos,visionos',
+    fail_fast: true
+  )
+  pod_lib_lint(
+    verbose: true,
+    podspec: 'RevenueCat_AdMob.podspec',
+    include_podspecs: 'RevenueCat.podspec',
+    platforms: 'ios',
     fail_fast: true
   )
 end

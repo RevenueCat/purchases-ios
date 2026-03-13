@@ -6,6 +6,7 @@ var projects: [Path] = [
     "./Examples/rc-maestro/",
     "./Examples/MagicWeather/",
     "./Examples/MagicWeatherSwiftUI/",
+    "./Examples/AdMobIntegrationSample/",
     "./Examples/testCustomEntitlementsComputation/",
     "./Examples/PurchaseTester/",
     "./Projects/PaywallsTester",
@@ -16,7 +17,7 @@ var projects: [Path] = [
     "./Projects/RCTTester"
 ]
 
-// Include RevenueCat/RevenueCatUI Tuist projects only when using local Xcode project dependencies.
+// Include RevenueCat/RevenueCatUI/RevenueCat_AdMob Tuist projects only when using local Xcode project dependencies.
 // In all other modes (localSwiftPackage, remoteSwiftPackage, remoteXcodeProject), the SPM package
 // or external dependency provides these targets and including the local projects would cause
 // duplicate framework names ("Multiple commands produce" build errors).
@@ -24,6 +25,7 @@ switch Environment.dependencyMode {
 case .localXcodeProject:
     projects.append("./Projects/RevenueCat")
     projects.append("./Projects/RevenueCatUI")
+    projects.append("./Projects/RevenueCat_AdMob")
 case .localSwiftPackage, .remoteSwiftPackage, .remoteXcodeProject:
     break
 }
