@@ -2138,7 +2138,11 @@ platform :ios do
         threads = ApiDiffHelper::PLATFORMS.map do |platform_config|
           Thread.new(platform_config) do |pc|
             derived_data = "#{project_root}/.build-#{pc[:sdk]}"
-            sdk_path = `xcrun --sdk #{pc[:sdk]} --show-sdk-path`.strip
+            sdk_path = `xcrun --sdk #{pc[:sdk]} --show-sdk-path 2>&1`.strip
+            unless $?.success?
+              mutex.synchronize { errors << "xcrun failed for #{pc[:sdk]}: #{sdk_path}" }
+              next
+            end
 
             UI.message("Building RevenueCat for #{pc[:platform]} (#{pc[:sdk]})...")
 
@@ -2153,7 +2157,6 @@ platform :ios do
               chdir: project_root
             ) or begin
               mutex.synchronize { errors << "xcodebuild failed for #{pc[:platform]}" }
-              Thread.current.thread_variable_set(:failed, true)
               next
             end
 
