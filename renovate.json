@@ -5,7 +5,7 @@
     {
       "matchPackageNames": ["swift-package-manager-google-mobile-ads"],
       "matchManagers": ["swift"],
-      "matchPaths": ["RevenueCat_AdMob/**"],
+      "matchPaths": ["Package.swift", "Package@swift-5.8.swift", "Tuist/Package.swift"],
       "enabled": true,
       "groupName": "google-mobile-ads"
     }
