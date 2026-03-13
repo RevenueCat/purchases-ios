@@ -31,9 +31,6 @@ parameters:
   generate_swiftinterface:
     default: false
     type: boolean
-  check_api_changes_only:
-    default: false
-    type: boolean
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
@@ -1911,30 +1908,11 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - run:
-          name: Install public-api-diff (latest)
-          command: |
-            if ~/bin/public-api-diff --help >/dev/null 2>&1; then
-              echo "public-api-diff already installed, skipping."
-              exit 0
-            fi
-            git clone https://github.com/Adyen/adyen-swift-public-api-diff.git /tmp/adyen-swift-public-api-diff
-            cd /tmp/adyen-swift-public-api-diff
-            swift build -c release
-            mkdir -p ~/bin
-            cp .build/release/public-api-diff ~/bin/
+      - revenuecat/install-public-api-diff
       - run:
           name: Generate PR branch swiftinterface
           command: |
             bundle exec fastlane ios generate_swiftinterface
-      - run:
-          name: "[DEBUG] Check if baseline files were modified by the build"
-          command: |
-            echo "=== git status of api/ ==="
-            git status api/
-            echo ""
-            echo "=== diff between baseline and generated (tvos) ==="
-            diff api/revenuecat-api-tvos.swiftinterface /tmp/pr-swiftinterface/RevenueCat-tvos.swiftinterface || true
       - run:
           name: Check API changes
           command: |
@@ -2037,11 +2015,6 @@ jobs:
           command: echo "All tasks passed"
 
 workflows:
-
-  check-api-changes-only:
-    when: << pipeline.parameters.check_api_changes_only >>
-    jobs:
-      - check-api-changes
 
   generate-swiftinterface:
     when: << pipeline.parameters.generate_swiftinterface >>

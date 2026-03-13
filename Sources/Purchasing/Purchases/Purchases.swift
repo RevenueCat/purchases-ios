@@ -1584,7 +1584,7 @@ extension Purchases {
     ///
     /// Setting this will affect the display of RevenueCat UI components, such as the Paywalls.
     /// - Important: This method only takes effect after `Purchases` has been configured.
-    public func overridePreferredUILocaleRenamed(_ locale: String?) {
+    public func overridePreferredUILocale(_ locale: String?) {
         guard locale != self.systemInfo.preferredLocaleOverride else {
             return
         }
