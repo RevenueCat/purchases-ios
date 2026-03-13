@@ -35,6 +35,11 @@
                                                            storeProduct:storeProduct
                                                      offeringIdentifier:oid
                                                          webCheckoutUrl:[NSURL URLWithString:@"https://revenuecat.com"]];
+
+    package = [[RCPackage alloc] initWithIdentifier:i
+                                        packageType:RCPackageTypeAnnual
+                                       storeProduct:storeProduct
+                                 offeringIdentifier:oid];
 }
 
 + (void)checkEnums {
