@@ -1922,9 +1922,6 @@ jobs:
             echo "=== git status of api/ ==="
             git status api/
             echo ""
-            echo "=== git diff --stat api/ ==="
-            git diff --stat api/
-            echo ""
             echo "=== diff between baseline and generated (tvos) ==="
             diff api/revenuecat-api-tvos.swiftinterface /tmp/pr-swiftinterface/RevenueCat-tvos.swiftinterface || true
       - run:
