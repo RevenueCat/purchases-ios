@@ -315,11 +315,11 @@ public class PaywallViewController: UIViewController {
 
     public override func viewDidDisappear(_ animated: Bool) {
         if self.isBeingDismissed && !self.isDismissingForExitOffer {
-            // Restore the original presentation controller delegate before notifying dismissal.
-            if let originalDelegate = self.originalPresentationControllerDelegate {
-                self.presentationController?.delegate = originalDelegate
-                self.originalPresentationControllerDelegate = nil
-            }
+            // For programmatic dismissals, clean up the stored delegate here since
+            // presentationControllerDidDismiss won't be called.
+            // For interactive (swipe) dismissals, cleanup happens in presentationControllerDidDismiss
+            // after forwarding is complete.
+            self.originalPresentationControllerDelegate = nil
 
             self.delegate?.paywallViewControllerWasDismissed?(self)
             self.purchaseHandler.resetForNewSession()
@@ -588,6 +588,10 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
         if let originalDelegate = self.originalPresentationControllerDelegate, originalDelegate !== self {
             originalDelegate.presentationControllerDidDismiss?(presentationController)
         }
+
+        // Clean up after all delegate forwarding is complete.
+        // This is the last presentation controller delegate callback in the dismissal chain.
+        self.originalPresentationControllerDelegate = nil
     }
 
 }
