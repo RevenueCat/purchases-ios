@@ -269,7 +269,29 @@ fileprivate extension SubscriptionPeriod.Unit {
 
 }
 
-// MARK: - Encodable
+// MARK: - Codable
 
 extension SubscriptionPeriod.Unit: Codable { }
-extension SubscriptionPeriod: Codable { }
+
+extension SubscriptionPeriod: Codable {
+
+    enum CodingKeys: String, CodingKey {
+        case value
+        case unit
+    }
+
+    public convenience init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            value: try container.decode(Int.self, forKey: .value),
+            unit: try container.decode(Unit.self, forKey: .unit)
+        )
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.value, forKey: .value)
+        try container.encode(self.unit, forKey: .unit)
+    }
+
+}
