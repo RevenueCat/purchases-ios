@@ -166,6 +166,16 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
 
     // MARK: - overridePreferredUILocale
 
+    func testOverridePreferredUILocaleClearsProductsCache() {
+        self.setupPurchases()
+
+        self.mockProductsManager.invokedClearCacheCount = 0
+
+        self.purchases.overridePreferredUILocale("fr_FR")
+
+        expect(self.mockProductsManager.invokedClearCacheCount) == 1
+    }
+
     func testOverridePreferredUILocaleInvalidatesInMemoryCache() {
         self.setupPurchases()
 
