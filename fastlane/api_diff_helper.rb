@@ -107,6 +107,43 @@ module ApiDiffHelper
        .reject { |path| path.include?("private") }
   end
 
+  def build_swiftinterface(platform_config, project_root:, output_dir:)
+    sdk = platform_config[:sdk]
+    derived_data = "#{project_root}/.build-#{sdk}"
+
+    sdk_path = `xcrun --sdk #{sdk} --show-sdk-path 2>&1`.strip
+    unless $?.success?
+      return { success: false, error: "xcrun failed for #{sdk}: #{sdk_path}" }
+    end
+
+    Fastlane::UI.message("Building RevenueCat for #{platform_config[:platform]} (#{sdk})...")
+
+    unless system(
+      "xcodebuild", "clean", "build",
+      "-scheme", "RevenueCat",
+      "-derivedDataPath", derived_data,
+      "-configuration", "Release",
+      "-sdk", sdk_path,
+      "-destination", platform_config[:destination],
+      "BUILD_LIBRARY_FOR_DISTRIBUTION=YES",
+      chdir: project_root
+    )
+      return { success: false, error: "xcodebuild failed for #{platform_config[:platform]}" }
+    end
+
+    swiftinterface_files = find_swiftinterface_file(derived_data, sdk)
+
+    if swiftinterface_files.empty?
+      return { success: false, error: "Could not find RevenueCat.swiftinterface for #{platform_config[:platform]}" }
+    end
+
+    output_path = "#{output_dir}/RevenueCat#{platform_config[:suffix]}.swiftinterface"
+    FileUtils.cp(swiftinterface_files.first, output_path)
+    Fastlane::UI.success("Generated #{platform_config[:platform]} swiftinterface")
+
+    { success: true }
+  end
+
   def run_api_diff(api_diff_tool, old_file, new_file, platform_name)
     result = {
       platform: platform_name,

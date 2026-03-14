@@ -2131,37 +2131,22 @@ platform :ios do
 
     begin
       Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
-        ApiDiffHelper::PLATFORMS.each do |platform_config|
-          UI.message("Building RevenueCat for #{platform_config[:platform]}...")
+        project_root = File.expand_path("..")
 
-          sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
-
-          Dir.chdir("..") do
-            sh("xcodebuild", "clean", "build",
-               "-scheme", "RevenueCat",
-               "-derivedDataPath", ".build",
-               "-configuration", "Release",
-               "-sdk", sdk_path,
-               "-destination", platform_config[:destination],
-               "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
+        threads = ApiDiffHelper::PLATFORMS.map do |platform_config|
+          Thread.new(platform_config) do |pc|
+            ApiDiffHelper.build_swiftinterface(pc, project_root: project_root, output_dir: temp_dir)
           end
-
-        swiftinterface_files = ApiDiffHelper.find_swiftinterface_file("../.build", platform_config[:sdk])
-
-        if swiftinterface_files.empty?
-          UI.user_error!("Could not find RevenueCat.swiftinterface for #{platform_config[:platform]}")
         end
 
-        output_path = "#{temp_dir}/RevenueCat#{platform_config[:suffix]}.swiftinterface"
-        FileUtils.cp(swiftinterface_files.first, output_path)
-        UI.success("Generated #{platform_config[:platform]} swiftinterface")
-      end
+        results = threads.map(&:value)
+        errors = results.reject { |r| r[:success] }.map { |r| r[:error] }
+        UI.user_error!(errors.join("\n")) if errors.any?
 
-      # Copy to expected location for CI artifacts
-      sh("mkdir", "-p", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
-      sh("cp", "-r", "#{temp_dir}/.", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
-      UI.success("Swift interface files copied to #{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}")
-    end
+        sh("mkdir", "-p", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
+        sh("cp", "-r", "#{temp_dir}/.", ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
+        UI.success("Swift interface files copied to #{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}")
+      end
     ensure
       # Clean up CI.xcconfig
       cleanup_swiftinterface_xcconfig
@@ -2226,15 +2211,15 @@ platform :ios do
       return
     end
 
-    failed_platforms = []
-
-    ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
-      old_file = "../api/revenuecat-api#{platform[:suffix]}.swiftinterface"
-      new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
-
-      result = ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, platform[:name])
-      failed_platforms << result unless result[:success]
+    threads = ApiDiffHelper::PLATFORM_CHECKS.map do |platform|
+      Thread.new(platform) do |p|
+        old_file = "../api/revenuecat-api#{p[:suffix]}.swiftinterface"
+        new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{p[:suffix]}.swiftinterface"
+        ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, p[:name])
+      end
     end
+
+    failed_platforms = threads.map(&:value).reject { |r| r[:success] }
 
     if failed_platforms.any?
       ApiDiffHelper.print_failure_summary(failed_platforms)
