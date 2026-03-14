@@ -152,15 +152,34 @@ struct ImageComponentView: View {
         maxWidth: CGFloat,
         with style: ImageComponentStyle
     ) -> some View {
-        image
-            .fitToAspect(
-                self.aspectRatio(style: style),
-                contentMode: style.contentMode,
-                containerContentMode: style.contentMode
-            )
-            .frame(maxWidth: maxWidth)
+        self.applyImageWidth(
+            image
+                .fitToAspect(
+                    self.aspectRatio(style: style),
+                    contentMode: style.contentMode,
+                    containerContentMode: style.contentMode
+                ),
+            maxWidth: maxWidth,
+            size: style.size
+        )
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
+    }
+
+    @ViewBuilder
+    private func applyImageWidth<Content: View>(
+        _ view: Content,
+        maxWidth: CGFloat,
+        size: PaywallComponent.Size
+    ) -> some View {
+        switch size.width {
+        case .fill, .fixed:
+            // Using fixed width here ensures small intrinsic assets (for example SVGs)
+            // scale up to the expected rendered width.
+            view.frame(width: maxWidth)
+        case .fit, .relative:
+            view.frame(maxWidth: maxWidth)
+        }
     }
 
 }
@@ -173,6 +192,7 @@ struct ImageComponentView_Previews: PreviewProvider {
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
     static let bigImageUrl = URL(string: "https://assets.pawwalls.com/1172568_1741034533.heic")!
     static let smallImage = URL(string: "https://assets.pawwalls.com/1172568_1734493671.heic")!
+    static let icon = URL(string: "https://icons.pawwalls.com/icons/star.heic")!
 
     @ViewBuilder
     static func imageView(
@@ -279,6 +299,31 @@ struct ImageComponentView_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Image streching vertically when height=fit")
+
+        // Icons {
+        VStack {
+            imageView(
+                url: icon,
+                size: .init(width: .fixed(24), height: .fixed(24)),
+                fitMode: .fit,
+                width: 24,
+                height: 24
+            )
+            imageView(url: icon, size: .init(width: .fill, height: .fixed(24)), fitMode: .fit, width: 24, height: 24)
+            imageView(url: icon, size: .init(width: .fixed(24), height: .fill), fitMode: .fit, width: 24, height: 24)
+            imageView(
+                url: icon,
+                size: .init(width: .fixed(100), height: .fixed(100)),
+                fitMode: .fit,
+                width: 24,
+                height: 24
+            )
+            imageView(url: icon, size: .init(width: .fixed(100), height: .fill), fitMode: .fit, width: 24, height: 24)
+            imageView(url: icon, size: .init(width: .fill, height: .fixed(100)), fitMode: .fit, width: 24, height: 24)
+        }
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("icons sizing")
 
         // Light - Fit
         VStack {
