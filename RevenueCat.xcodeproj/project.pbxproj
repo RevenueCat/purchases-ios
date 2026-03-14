@@ -990,6 +990,7 @@
 		75ADC06F2E437D4900210ECA /* SimulatedStorePurchaseUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ADC06A2E437D4900210ECA /* SimulatedStorePurchaseUI.swift */; };
 		75ADC0722E437F8600210ECA /* SimulatedStoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ADC0702E437F8600210ECA /* SimulatedStoreProduct.swift */; };
 		75ADC0732E437F8600210ECA /* WebBillingProduct+SimulatedStoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ADC0712E437F8600210ECA /* WebBillingProduct+SimulatedStoreProduct.swift */; };
+		75B105EC2F517C780065607C /* SK2AlreadySubscribedDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B105EB2F517C780065607C /* SK2AlreadySubscribedDetector.swift */; };
 		75B44E4B2F195438003678FC /* TestStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B44E4A2F195438003678FC /* TestStoreTransaction.swift */; };
 		75B6DFFB2E30EC86009F0A99 /* GetWebOfferingProductsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B6DFFA2E30EC86009F0A99 /* GetWebOfferingProductsOperation.swift */; };
 		75B6DFFD2E30ECB8009F0A99 /* WebOfferingProductsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B6DFFC2E30ECB8009F0A99 /* WebOfferingProductsResponse.swift */; };
@@ -2526,6 +2527,7 @@
 		75ADC06B2E437D4900210ECA /* SimulatedStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedStoreTransaction.swift; sourceTree = "<group>"; };
 		75ADC0702E437F8600210ECA /* SimulatedStoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedStoreProduct.swift; sourceTree = "<group>"; };
 		75ADC0712E437F8600210ECA /* WebBillingProduct+SimulatedStoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WebBillingProduct+SimulatedStoreProduct.swift"; sourceTree = "<group>"; };
+		75B105EB2F517C780065607C /* SK2AlreadySubscribedDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK2AlreadySubscribedDetector.swift; sourceTree = "<group>"; };
 		75B44E4A2F195438003678FC /* TestStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreTransaction.swift; sourceTree = "<group>"; };
 		75B6DFFA2E30EC86009F0A99 /* GetWebOfferingProductsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetWebOfferingProductsOperation.swift; sourceTree = "<group>"; };
 		75B6DFFC2E30ECB8009F0A99 /* WebOfferingProductsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebOfferingProductsResponse.swift; sourceTree = "<group>"; };
@@ -3045,6 +3047,7 @@
 				FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */,
 				3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */,
 				A55D082F2722368600D919E0 /* SK2BeginRefundRequestHelper.swift */,
+				75B105EB2F517C780065607C /* SK2AlreadySubscribedDetector.swift */,
 				F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */,
 				4D6ABB0B2AF13F9400BB2A08 /* StoreKit2Receipt.swift */,
 				2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */,
@@ -6999,6 +7002,7 @@
 				16BCA3662E4D9AE400B39E7F /* LargeItemCacheType.swift in Sources */,
 				2DDF41A324F6F331005BC22D /* PurchasesReceiptParser.swift in Sources */,
 				2CB8CF9327BF538F00C34DE3 /* PlatformInfo.swift in Sources */,
+				75B105EC2F517C780065607C /* SK2AlreadySubscribedDetector.swift in Sources */,
 				757E73E42F101EAF0066DCDC /* LocalTransactionMetadataStore.swift in Sources */,
 				757E74002F1700000066DCDC /* TransactionMetadataSyncHelper.swift in Sources */,
 				35D832F4262E606500E60AC5 /* HTTPResponse.swift in Sources */,

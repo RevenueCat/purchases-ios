@@ -764,6 +764,21 @@ final class PurchasesOrchestrator {
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
 
+            // Promotional and win-back offers are for existing subscribers, so SK2
+            // returning the same transaction is expected. Skip the already-subscribed
+            // duplicate-transaction detection to avoid false positives on valid offer purchases.
+            let isOfferPurchase = promotionalOffer != nil
+                || winBackOffer != nil
+                || promotionalOfferOptions != nil
+            let existingTransactionID = isOfferPurchase
+                ? nil
+                : await SK2AlreadySubscribedDetector.alreadyPurchasedTransactionID(
+                    for: sk2Product,
+                    transactionFetcher: self.transactionFetcher,
+                    customerInfoManager: self.customerInfoManager,
+                    appUserID: self.appUserID
+                )
+
             result = try await self.purchase(sk2Product, options)
 
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
@@ -785,6 +800,15 @@ final class PurchasesOrchestrator {
                     self.clearCachedPresentedOfferingContext(for: sk2Product.id)
                 }
             case let .successfulVerifiedTransaction(verifiedTransaction):
+                if verifiedTransaction.transactionIdentifier == existingTransactionID {
+                    Logger.warn(
+                        Strings.purchase.sk2_purchase_returned_existing_transaction(
+                            productID: sk2Product.id
+                        )
+                    )
+                    throw ErrorUtils.productAlreadyPurchasedError()
+                }
+
                 userCancelled = false
                 transaction = verifiedTransaction
             }
