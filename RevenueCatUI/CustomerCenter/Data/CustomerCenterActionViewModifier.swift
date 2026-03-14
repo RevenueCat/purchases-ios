@@ -88,6 +88,10 @@ struct CustomerCenterActionViewModifier: ViewModifier {
             .sink { actions.promotionalOfferSuccess() }
             .store(in: &cancellables)
 
+        actionWrapper.promotionalOfferSucceededPublisher
+            .sink { actions.promotionalOfferSucceeded($0.0, $0.1, $0.2) }
+            .store(in: &cancellables)
+
         actionWrapper.showingChangePlansPublisher
             .sink { if let id = $0 { actions.changePlansSelected(id) } }
             .store(in: &cancellables)

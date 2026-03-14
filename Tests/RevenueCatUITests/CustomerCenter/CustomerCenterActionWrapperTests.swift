@@ -12,6 +12,7 @@
 //  Created by Facundo Menzella on 24/3/25.
 
 import Nimble
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import SwiftUI
 import XCTest
@@ -251,11 +252,51 @@ final class CustomerCenterActionWrapperTests: TestCase {
             windowHolder.window = window
         }
 
+        let transaction = StoreTransaction(MockStoreTransaction())
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
         await MainActor.run {
-            actionWrapper.handleAction(.promotionalOfferSuccess)
+            actionWrapper.handleAction(
+                .promotionalOfferSucceeded(customerInfo, transaction, "test_offer")
+            )
         }
 
         await fulfillment(of: [expectation], timeout: 1.0)
+    }
+
+    func testPromotionalOfferSucceeded() async throws {
+        let actionWrapper = await CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "promotionalOfferSucceeded")
+
+        let windowHolder = await WindowHolder()
+
+        var receivedOfferId: String?
+        await MainActor.run {
+            let testView = Text("test")
+                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
+                .onCustomerCenterPromotionalOfferSucceeded { _, _, offerId in
+                    receivedOfferId = offerId
+                    expectation.fulfill()
+                }
+
+            let viewController = UIHostingController(rootView: testView)
+            let window = UIWindow(frame: UIScreen.main.bounds)
+            window.rootViewController = viewController
+            window.makeKeyAndVisible()
+            viewController.view.layoutIfNeeded()
+
+            windowHolder.window = window
+        }
+
+        let transaction = StoreTransaction(MockStoreTransaction())
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        await MainActor.run {
+            actionWrapper.handleAction(
+                .promotionalOfferSucceeded(customerInfo, transaction, "test_offer")
+            )
+        }
+
+        await fulfillment(of: [expectation], timeout: 1.0)
+        expect(receivedOfferId).to(equal("test_offer"))
     }
 
     func testChangePlansSelected() async throws {
