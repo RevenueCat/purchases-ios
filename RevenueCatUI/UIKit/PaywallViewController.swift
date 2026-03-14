@@ -121,7 +121,11 @@ public class PaywallViewController: UIViewController {
 
     /// The original presentation controller delegate, if one was set before we took over.
     /// We forward all delegate calls to this after handling our exit offer logic.
-    private weak var originalPresentationControllerDelegate: UIAdaptivePresentationControllerDelegate?
+    /// Stored as a strong reference to prevent `objc_loadWeakRetained` crashes when the
+    /// original delegate is deallocated while UIKit is querying the presentation controller
+    /// during a swipe-to-dismiss gesture. This is safe because UIKit already retains the
+    /// presenting view controller for the duration of the presentation.
+    private var originalPresentationControllerDelegate: UIAdaptivePresentationControllerDelegate?
 
     private var purchaseHandler: PurchaseHandler {
         return configuration.purchaseHandler
@@ -311,6 +315,12 @@ public class PaywallViewController: UIViewController {
 
     public override func viewDidDisappear(_ animated: Bool) {
         if self.isBeingDismissed && !self.isDismissingForExitOffer {
+            // Restore the original presentation controller delegate before notifying dismissal.
+            if let originalDelegate = self.originalPresentationControllerDelegate {
+                self.presentationController?.delegate = originalDelegate
+                self.originalPresentationControllerDelegate = nil
+            }
+
             self.delegate?.paywallViewControllerWasDismissed?(self)
             self.purchaseHandler.resetForNewSession()
         }
