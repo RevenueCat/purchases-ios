@@ -315,12 +315,6 @@ public class PaywallViewController: UIViewController {
 
     public override func viewDidDisappear(_ animated: Bool) {
         if self.isBeingDismissed && !self.isDismissingForExitOffer {
-            // For programmatic dismissals, clean up the stored delegate here since
-            // presentationControllerDidDismiss won't be called.
-            // For interactive (swipe) dismissals, cleanup happens in presentationControllerDidDismiss
-            // after forwarding is complete.
-            self.originalPresentationControllerDelegate = nil
-
             self.delegate?.paywallViewControllerWasDismissed?(self)
             self.purchaseHandler.resetForNewSession()
         }
