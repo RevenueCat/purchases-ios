@@ -166,6 +166,39 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData) == false
     }
 
+    func testPurchaseCancelledWhenBackgroundedIncludesBackgroundedFlag() async throws {
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+        self.mockStoreKit2TransactionListener?.mockResult = .init(.userCancelled)
+
+        // Use the callback to simulate app going to background DURING the purchase flow
+        self.mockStoreKit2TransactionListener?.handleCallback = {
+            NotificationCenter.default.post(name: SystemInfo.applicationDidEnterBackgroundNotification, object: nil)
+        }
+
+        let product = try await self.fetchSk2Product()
+
+        do {
+            _ = try await self.orchestrator.purchase(
+                sk2Product: product,
+                package: nil,
+                promotionalOffer: nil,
+                winBackOffer: nil,
+                introductoryOfferEligibilityJWS: nil,
+                promotionalOfferOptions: nil)
+            fail("Expected error to be thrown")
+        } catch {
+            // Verify error is purchaseCancelledError
+            let nsError = error as NSError
+            expect(nsError.code) == ErrorCode.purchaseCancelledError.rawValue
+
+            // Verify purchaseWasBackgroundedKey is set in userInfo
+            let wasBackgrounded = nsError.userInfo[PurchasesErrorUserInfoKey.purchaseWasBackgroundedKey] as? Bool
+            expect(wasBackgrounded) == true
+        }
+
+        expect(self.backend.invokedPostReceiptData) == false
+    }
+
     #if swift(>=5.9)
     @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
     func testPurchaseSK2CancelledWithSimulatedError() async throws {

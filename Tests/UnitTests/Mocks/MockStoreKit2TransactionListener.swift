@@ -54,6 +54,9 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
     // See https://openradar.appspot.com/radar?id=4970535809187840
     var invokedHandleParameters: (purchaseResult: Box<StoreKit.Product.PurchaseResult>, Void)?
     var invokedHandleParametersList = [(purchaseResult: Box<StoreKit.Product.PurchaseResult>, Void)]()
+    /// Closure called during `handle` before returning the result. Can be used to inject
+    /// test behavior like posting notifications during the purchase flow.
+    var handleCallback: (() -> Void)?
 
     func handle(
         purchaseResult: StoreKit.Product.PurchaseResult,
@@ -63,6 +66,9 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
         self.invokedHandleCount += 1
         self.invokedHandleParameters = (.init(purchaseResult), ())
         self.invokedHandleParametersList.append((.init(purchaseResult), ()))
+
+        // Allow test code to inject behavior during the purchase flow
+        self.handleCallback?()
 
         if self.mockCancelled {
             return .userCancelled

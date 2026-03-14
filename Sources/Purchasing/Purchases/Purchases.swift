@@ -2324,6 +2324,7 @@ private extension Purchases {
 
     @objc func applicationDidEnterBackground() {
         self.systemInfo.isAppBackgroundedState = true
+        self.purchasesOrchestrator.markActivePurchasesBackgrounded()
     }
 
     @objc func applicationWillResignActive() {

@@ -371,16 +371,48 @@ enum ErrorUtils {
      * Constructs an Error with the ``ErrorCode/purchaseCancelledError`` code.
      *
      * - Note: This error is used when  a purchase is cancelled by the user.
+     *
+     * - Parameter error: The underlying error, if any.
+     * - Parameter wasBackgrounded: If `true`, adds `purchaseWasBackgroundedKey` to `userInfo`.
+     *   This indicates the app was backgrounded during the purchase (e.g., user switched to UPI app).
      */
     static func purchaseCancelledError(
         error: Error? = nil,
+        wasBackgrounded: Bool = false,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
         let errorCode = ErrorCode.purchaseCancelledError
+        var extraUserInfo: [NSError.UserInfoKey: Any] = [:]
+        if wasBackgrounded {
+            extraUserInfo[.purchaseWasBackgroundedKey] = true
+        }
         return ErrorUtils.error(with: errorCode,
                                 message: errorCode.description,
                                 underlyingError: error,
+                                extraUserInfo: extraUserInfo,
                                 fileName: fileName, functionName: functionName, line: line)
+    }
+
+    /// Maps an `SKError` to a `PurchasesError`, checking for the special case of
+    /// `AMSError.paymentSheetFailed` when the app was backgrounded (potential UPI/external payment app flow).
+    ///
+    /// When a user switches to an external payment app (e.g., UPI in India), the app goes to background
+    /// and Apple returns `AMSError.paymentSheetFailed` even though the payment may be in progress.
+    /// In this case, returns a `purchaseCancelledError` with `purchaseWasBackgroundedKey` in `userInfo`.
+    static func mapTransactionError(_ error: Error, wasBackgrounded: Bool) -> PurchasesError {
+        if let skError = error as? SKError,
+           skError.code.rawValue == SKError.UndocumentedCode.unhandledException.rawValue,
+           let underlyingError = skError.userInfo[NSUnderlyingErrorKey] as? NSError,
+           underlyingError.domain == AMSError.domain,
+           underlyingError.code == AMSError.Code.paymentSheetFailed.rawValue,
+           wasBackgrounded {
+            Logger.debug(Strings.purchase.purchase_interrupted_external_app(
+                productIdentifier: skError.userInfo["productId"] as? String ?? "unknown"
+            ))
+            return ErrorUtils.purchaseCancelledError(error: error, wasBackgrounded: true)
+        }
+
+        return ErrorUtils.purchasesError(withSKError: error)
     }
 
     /**

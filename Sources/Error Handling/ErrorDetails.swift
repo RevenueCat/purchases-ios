@@ -28,6 +28,8 @@ extension NSError.UserInfoKey {
     static let file: NSError.UserInfoKey = "source_file"
     static let function: NSError.UserInfoKey = "source_function"
 
+    static let purchaseWasBackgroundedKey: NSError.UserInfoKey = "rc_purchase_was_backgrounded"
+
 }
 
 enum ErrorDetails {
