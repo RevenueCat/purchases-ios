@@ -723,7 +723,6 @@ platform :ios do
     version_number = current_version_number
     check_no_git_tag_exists(version_number)
     check_pods
-    export_xcframeworks
     check_no_github_release_exists(version_number)
     xcframework_installation_tests
   end
@@ -1542,6 +1541,8 @@ platform :ios do
 
   desc "Test XCFramework integration by building XCFrameworkInstallationTests app"
   lane :xcframework_installation_tests do |options|
+    export_xcframeworks
+
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
 
     # Extract xcframework zip files to the root of the project

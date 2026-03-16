@@ -1673,6 +1673,20 @@ jobs:
           directory: Tests/InstallationTests/CarthageInstallation/
       - slack-notify-on-fail
 
+  installation-tests-xcframework:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout-with-minimal-permissions
+      - install-dependencies
+      - update-spm-installation-commit
+      - revenuecat/install-tuist
+      - run:
+          name: XCFramework Installation Tests
+          command: bundle exec fastlane xcframework_installation_tests
+          no_output_timeout: 30m
+      - slack-notify-on-fail
+
   lint:
     executor:
       name: macos-executor
@@ -2194,6 +2208,11 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - installation-tests-xcframework:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
 
       # SPM / Other Build Tests
       - api-tests:
@@ -2255,6 +2274,7 @@ workflows:
             - spm-revenuecat-ui-watchos
             - installation-tests-all-but-carthage
             - installation-tests-carthage
+            - installation-tests-xcframework
             - api-tests
             - spm-receipt-parser
             - deploy-purchase-tester
@@ -2485,6 +2505,9 @@ workflows:
       - installation-tests-carthage:
           context:
             - slack-secrets
+      - installation-tests-xcframework:
+          context:
+            - slack-secrets
       - api-tests:
           context:
             - slack-secrets
@@ -2540,6 +2563,7 @@ workflows:
             - spm-revenuecat-ui-watchos
             - installation-tests-all-but-carthage
             - installation-tests-carthage
+            - installation-tests-xcframework
             - api-tests
             - deploy-purchase-tester
             - emerge_binary_size_analysis
