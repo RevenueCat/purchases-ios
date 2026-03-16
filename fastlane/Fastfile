@@ -1494,6 +1494,14 @@ platform :ios do
       sh("zip", "-r", "-y", "-q", xcframework_zip_path, File.basename(xcframework_path))
     end
 
+    # Verify that the zipped xcframework passes codesign verification
+    Dir.mktmpdir("xcframework-verify") do |tmpdir|
+      sh("unzip", "-q", xcframework_zip_path, "-d", tmpdir)
+      extracted_xcframework = File.join(tmpdir, "#{product_name}.xcframework")
+      sh("codesign", "--verify", "--verbose", extracted_xcframework)
+      UI.success("Codesign verification passed for #{product_name}.xcframework.zip")
+    end
+
   end
 
   desc "Generate Tuist workspace"
