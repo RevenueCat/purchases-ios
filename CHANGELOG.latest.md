@@ -1,12 +1,13 @@
 ## RevenueCat SDK
-### ✨ New Features
-* Make custom variable number/bool setters public for UIKit (#6452) via Facundo Menzella (@facumenzella)
-* Send X-Installation-Method header in all API requests (#6431) via Antonio Pallares (@ajpallares)
+### 🐞 Bugfixes
+* [EXTERNAL] Fix xcframework zip when used as a binaryTarget in SPM (#6461) via @tehsven (#6464) via Antonio Pallares (@ajpallares)
 
 ## RevenueCatUI SDK
-### 🐞 Bugfixes
-* Fix: Clear in-memory offerings cache on locale override to prevent stale paywall data (#6446) via Antonio Pallares (@ajpallares)
+### ✨ New Features
+* Feature: Update fallback paywall (#6359) via Jacob Rakidzich (@JZDesign)
 
 ### 🔄 Other Changes
-* Remove unnecessary throws from view model inits (#6426) via Facundo Menzella (@facumenzella)
-* Fix PaywallsTester tap to use presentPaywall for exit offer support (#6449) via Drago Crnjac (@popcorn)
+* Remove experimental annotation from trackCustomPaywallImpression (#6466) via Rick (@rickvdl)
+* Add offering_id to custom paywall impression event (#6456) via Rick (@rickvdl)
+* Add codesign verification after zipping xcframework (#6465) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `e146447` to `3e8c384` (#6455) via dependabot[bot] (@dependabot[bot])

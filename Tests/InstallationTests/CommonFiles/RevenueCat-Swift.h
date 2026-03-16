@@ -1231,10 +1231,20 @@ SWIFT_CLASS_NAMED("CustomPaywallImpressionParams")
 @interface RCCustomPaywallImpressionParams : NSObject
 /// An optional identifier for the custom paywall being shown.
 @property (nonatomic, readonly, copy) NSString * _Nullable paywallId;
+/// An optional identifier for the offering associated with the custom paywall.
+/// If not provided, the SDK will use the current offering identifier from the cache.
+@property (nonatomic, readonly, copy) NSString * _Nullable offeringId;
 /// Creates parameters for a custom paywall impression.
 /// \param paywallId An optional identifier for the custom paywall being shown.
 ///
-- (nonnull instancetype)initWithPaywallId:(NSString * _Nullable)paywallId OBJC_DESIGNATED_INITIALIZER;
+/// \param offeringId An optional identifier for the offering associated with the custom paywall.
+/// If <code>nil</code>, the SDK will use the current offering identifier from the cache.
+///
+- (nonnull instancetype)initWithPaywallId:(NSString * _Nullable)paywallId offeringId:(NSString * _Nullable)offeringId OBJC_DESIGNATED_INITIALIZER;
+/// Creates parameters with only a paywall identifier.
+/// \param paywallId An optional identifier for the custom paywall being shown.
+///
+- (nonnull instancetype)initWithPaywallId:(NSString * _Nullable)paywallId;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
