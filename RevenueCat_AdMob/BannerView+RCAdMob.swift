@@ -25,6 +25,7 @@ internal extension GoogleMobileAds.BannerView {
         placement: String?,
         delegate: (any GoogleMobileAds.BannerViewDelegate)?,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
+        adFormat: RevenueCat.AdFormat = .banner,
         rcAdMob: RCAdMob
     ) {
         let previousDelegate = (self.delegate as? RCAdMobBannerViewDelegate)?.delegate ?? self.delegate
@@ -33,7 +34,8 @@ internal extension GoogleMobileAds.BannerView {
         let trackingDelegate = RCAdMobBannerViewDelegate(
             rcAdMob: rcAdMob,
             delegate: effectiveDelegate,
-            placement: placement
+            placement: placement,
+            adFormat: adFormat
         )
         objc_setAssociatedObject(
             self,
@@ -46,6 +48,7 @@ internal extension GoogleMobileAds.BannerView {
         installPaidEventHandlerWrapper(
             paidEventHandler: paidEventHandler,
             placement: placement,
+            adFormat: adFormat,
             rcAdMob: rcAdMob
         )
 
@@ -55,6 +58,7 @@ internal extension GoogleMobileAds.BannerView {
     private func installPaidEventHandlerWrapper(
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
         placement: String?,
+        adFormat: RevenueCat.AdFormat,
         rcAdMob: RCAdMob
     ) {
         let storedPaidHandler = objc_getAssociatedObject(self, &RCBannerAssociatedKeys.originalPaidHandler)
@@ -77,7 +81,7 @@ internal extension GoogleMobileAds.BannerView {
                 rcAdMob.trackRevenue(
                     placement: placement,
                     adUnitID: self.adUnitID,
-                    adFormat: RevenueCat.AdFormat.banner,
+                    adFormat: adFormat,
                     responseInfo: responseInfo,
                     adValue: adValue
                 )
@@ -102,7 +106,7 @@ internal extension GoogleMobileAds.BannerView {
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.BannerView {
 
-    /// Loads a banner ad and tracks ad events with RevenueCat while optionally forwarding callbacks.
+    /// Loads a banner or MREC ad and tracks ad events with RevenueCat while optionally forwarding callbacks.
     ///
     /// - Parameters:
     ///   - request: The AdMob request used to load the ad.
@@ -110,17 +114,20 @@ internal extension GoogleMobileAds.BannerView {
     ///   - delegate: Optional delegate that will receive banner ad callbacks.
     ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
     ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
+    ///   - adFormat: The ad format to report to RevenueCat. Defaults to `.banner`.
     func loadAndTrack(
         request: GoogleMobileAds.Request,
         placement: String? = nil,
         delegate: (any GoogleMobileAds.BannerViewDelegate)? = nil,
-        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil
+        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
+        adFormat: RevenueCat.AdFormat = .banner
     ) {
         self.loadAndTrack(
             request: request,
             placement: placement,
             delegate: delegate,
             paidEventHandler: paidEventHandler,
+            adFormat: adFormat,
             rcAdMob: .shared
         )
     }
