@@ -30,12 +30,13 @@ class CustomPaywallEventTests: TestCase {
     func testEventCreationWithPaywallId() {
         let event = CustomPaywallEvent.impression(
             Self.creationData,
-            .init(paywallId: "my_paywall_id")
+            .init(paywallId: "my_paywall_id", offeringId: "offering_1")
         )
 
         expect(event.creationData.id) == Self.creationData.id
         expect(event.creationData.date) == Self.creationData.date
         expect(event.data.paywallId) == "my_paywall_id"
+        expect(event.data.offeringId) == "offering_1"
         expect(event.feature) == .customPaywalls
         expect(event.eventDiscriminator).to(beNil())
     }
@@ -47,6 +48,7 @@ class CustomPaywallEventTests: TestCase {
         )
 
         expect(event.data.paywallId).to(beNil())
+        expect(event.data.offeringId).to(beNil())
         expect(event.feature) == .customPaywalls
         expect(event.eventDiscriminator).to(beNil())
     }
@@ -54,7 +56,10 @@ class CustomPaywallEventTests: TestCase {
     // MARK: - Request Encoding
 
     func testRequestEncodingWithPaywallId() throws {
-        let event = CustomPaywallEvent.impression(Self.creationData, .init(paywallId: "my_paywall"))
+        let event = CustomPaywallEvent.impression(
+            Self.creationData,
+            .init(paywallId: "my_paywall", offeringId: "offering_1")
+        )
         let storedEvent = try XCTUnwrap(
             StoredFeatureEvent(
                 event: event,
@@ -74,6 +79,7 @@ class CustomPaywallEventTests: TestCase {
         expect(requestEvent.appSessionID) == Self.appSessionID.uuidString
         expect(requestEvent.timestamp) == Self.creationData.date.millisecondsSince1970
         expect(requestEvent.paywallId) == "my_paywall"
+        expect(requestEvent.offeringId) == "offering_1"
     }
 
     func testRequestEncodingWithoutPaywallId() throws {
@@ -108,9 +114,9 @@ class CustomPaywallEventTests: TestCase {
         let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: storedEvent))
         expect(requestEvent.appSessionID).to(beNil())
 
-        let encoded = try JSONEncoder().encode(requestEvent)
+        let encoded = try JSONEncoder.default.encode(requestEvent)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
-        expect(json["appSessionId"]).to(beNil())
+        expect(json["app_session_id"]).to(beNil())
     }
 
     func testRequestEncodingPaywallIdOmittedWhenNil() throws {
@@ -126,10 +132,51 @@ class CustomPaywallEventTests: TestCase {
         )
 
         let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: storedEvent))
-        let encoded = try JSONEncoder().encode(requestEvent)
+        let encoded = try JSONEncoder.default.encode(requestEvent)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
 
-        expect(json["paywallId"]).to(beNil())
+        expect(json["paywall_id"]).to(beNil())
+    }
+
+    func testRequestEncodingOfferingIdAppearsInJSON() throws {
+        let event = CustomPaywallEvent.impression(
+            Self.creationData,
+            .init(paywallId: "pw", offeringId: "offering_abc")
+        )
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywalls,
+                appSessionID: nil,
+                eventDiscriminator: nil
+            )
+        )
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: storedEvent))
+        let encoded = try JSONEncoder.default.encode(requestEvent)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+
+        expect(json["offering_id"] as? String) == "offering_abc"
+    }
+
+    func testRequestEncodingOfferingIdOmittedWhenNil() throws {
+        let event = CustomPaywallEvent.impression(Self.creationData, .init(paywallId: "pw", offeringId: nil))
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywalls,
+                appSessionID: nil,
+                eventDiscriminator: nil
+            )
+        )
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: storedEvent))
+        let encoded = try JSONEncoder.default.encode(requestEvent)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+
+        expect(json["offering_id"]).to(beNil())
     }
 
     func testRequestTypeAndVersion() throws {
@@ -155,7 +202,7 @@ class CustomPaywallEventTests: TestCase {
     func testCanInitFromDeserializedEvent() throws {
         let event = CustomPaywallEvent.impression(
             Self.creationData,
-            .init(paywallId: "my_paywall")
+            .init(paywallId: "my_paywall", offeringId: "offering_round_trip")
         )
         let storedEvent = try XCTUnwrap(
             StoredFeatureEvent(
@@ -181,6 +228,7 @@ class CustomPaywallEventTests: TestCase {
         expect(requestEvent.appUserID) == Self.userID
         expect(requestEvent.appSessionID) == Self.appSessionID.uuidString
         expect(requestEvent.paywallId) == "my_paywall"
+        expect(requestEvent.offeringId) == "offering_round_trip"
     }
 
     func testTimestampPreservesMilliseconds() throws {
@@ -252,6 +300,16 @@ class CustomPaywallEventTests: TestCase {
     func testParamsDefaultPaywallIdIsNil() {
         let params = CustomPaywallImpressionParams()
         expect(params.paywallId).to(beNil())
+    }
+
+    func testParamsWithOfferingId() {
+        let params = CustomPaywallImpressionParams(paywallId: "pw", offeringId: "my_offering")
+        expect(params.offeringId) == "my_offering"
+    }
+
+    func testParamsDefaultOfferingIdIsNil() {
+        let params = CustomPaywallImpressionParams()
+        expect(params.offeringId).to(beNil())
     }
 
     // MARK: - Helpers

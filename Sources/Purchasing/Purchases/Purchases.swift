@@ -2163,10 +2163,11 @@ extension Purchases {
     @_spi(Experimental)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams) {
+        let offeringId = params.offeringId ?? self.offeringsManager.cachedOfferings?.current?.identifier
         Task {
             let event = CustomPaywallEvent.impression(
                 .init(),
-                .init(paywallId: params.paywallId)
+                .init(paywallId: params.paywallId, offeringId: offeringId)
             )
             await self.eventsManager?.track(featureEvent: event)
         }

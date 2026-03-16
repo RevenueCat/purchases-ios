@@ -29,6 +29,8 @@ class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
     }
 
     func testTrackCustomPaywallImpressionWithPaywallId() async throws {
+        self.setupMockOfferingsWithCurrentOffering(identifier: "test_offering")
+
         let params = CustomPaywallImpressionParams(paywallId: "my_paywall")
         self.purchases.trackCustomPaywallImpression(params)
 
@@ -44,6 +46,7 @@ class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
         }
 
         expect(data.paywallId) == "my_paywall"
+        expect(data.offeringId) == "test_offering"
     }
 
     func testTrackCustomPaywallImpressionWithoutParams() async throws {
@@ -81,6 +84,63 @@ class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
         expect(data.paywallId).to(beNil())
     }
 
+    func testTrackCustomPaywallImpressionIncludesOfferingId() async throws {
+        self.setupMockOfferingsWithCurrentOffering(identifier: "my_offering")
+
+        let params = CustomPaywallImpressionParams(paywallId: "pw")
+        self.purchases.trackCustomPaywallImpression(params)
+
+        let manager = try self.mockEventsManager
+
+        await expect { await manager.trackedEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = await manager.trackedEvents
+
+        guard case let .impression(_, data) = trackedEvents.first as? CustomPaywallEvent else {
+            fail("Expected CustomPaywallEvent.impression but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(data.offeringId) == "my_offering"
+    }
+
+    func testTrackCustomPaywallImpressionUsesOverriddenOfferingId() async throws {
+        self.setupMockOfferingsWithCurrentOffering(identifier: "cached_offering")
+
+        let params = CustomPaywallImpressionParams(paywallId: "pw", offeringId: "custom_offering")
+        self.purchases.trackCustomPaywallImpression(params)
+
+        let manager = try self.mockEventsManager
+
+        await expect { await manager.trackedEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = await manager.trackedEvents
+
+        guard case let .impression(_, data) = trackedEvents.first as? CustomPaywallEvent else {
+            fail("Expected CustomPaywallEvent.impression but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(data.offeringId) == "custom_offering"
+    }
+
+    func testTrackCustomPaywallImpressionOfferingIdIsNilWhenNoCachedOfferings() async throws {
+        self.purchases.trackCustomPaywallImpression(CustomPaywallImpressionParams(paywallId: "pw"))
+
+        let manager = try self.mockEventsManager
+
+        await expect { await manager.trackedEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = await manager.trackedEvents
+
+        guard case let .impression(_, data) = trackedEvents.first as? CustomPaywallEvent else {
+            fail("Expected CustomPaywallEvent.impression but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(data.offeringId).to(beNil())
+    }
+
     func testTrackMultipleImpressionsInQuickSuccession() async throws {
         let paywallIds = ["paywall_1", "paywall_2", "paywall_3"]
         for id in paywallIds {
@@ -98,6 +158,26 @@ class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
         }
 
         expect(Set(trackedPaywallIds)) == Set(paywallIds)
+    }
+
+    // MARK: - Helpers
+
+    private func setupMockOfferingsWithCurrentOffering(identifier: String) {
+        let offering = Offering(
+            identifier: identifier,
+            serverDescription: "Test offering",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        let offerings = Offerings(
+            offerings: [identifier: offering],
+            currentOfferingID: identifier,
+            placements: nil,
+            targeting: nil,
+            contents: .mockContents,
+            loadedFromDiskCache: false
+        )
+        self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(offerings)
     }
 
 }
