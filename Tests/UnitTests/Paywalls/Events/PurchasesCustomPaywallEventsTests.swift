@@ -104,6 +104,26 @@ class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
         expect(data.offeringId) == "my_offering"
     }
 
+    func testTrackCustomPaywallImpressionUsesOverriddenOfferingId() async throws {
+        self.setupMockOfferingsWithCurrentOffering(identifier: "cached_offering")
+
+        let params = CustomPaywallImpressionParams(paywallId: "pw", offeringId: "custom_offering")
+        self.purchases.trackCustomPaywallImpression(params)
+
+        let manager = try self.mockEventsManager
+
+        await expect { await manager.trackedEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = await manager.trackedEvents
+
+        guard case let .impression(_, data) = trackedEvents.first as? CustomPaywallEvent else {
+            fail("Expected CustomPaywallEvent.impression but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(data.offeringId) == "custom_offering"
+    }
+
     func testTrackCustomPaywallImpressionOfferingIdIsNilWhenNoCachedOfferings() async throws {
         self.purchases.trackCustomPaywallImpression(CustomPaywallImpressionParams(paywallId: "pw"))
 
