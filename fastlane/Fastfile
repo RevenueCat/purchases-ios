@@ -1492,7 +1492,7 @@ platform :ios do
     # Use zip -r to preserve directory structure
     # Change to the xcframework's parent directory so the zip contains the xcframework folder
     Dir.chdir(File.dirname(xcframework_path)) do
-      sh("zip", "-r", "-q", xcframework_zip_path, File.basename(xcframework_path))
+      sh("zip", "-r", "-y", "-q", xcframework_zip_path, File.basename(xcframework_path))
     end
 
   end
