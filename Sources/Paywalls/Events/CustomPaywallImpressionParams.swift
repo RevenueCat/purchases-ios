@@ -34,4 +34,10 @@ public final class CustomPaywallImpressionParams: NSObject, Sendable {
         self.offeringId = offeringId
     }
 
+    /// Creates parameters with only a paywall identifier.
+    /// - Parameter paywallId: An optional identifier for the custom paywall being shown.
+    @objc public convenience init(paywallId: String?) {
+        self.init(paywallId: paywallId, offeringId: nil)
+    }
+
 }
