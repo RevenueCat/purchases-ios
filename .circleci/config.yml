@@ -19,7 +19,8 @@ parameters:
         update_paywall_templates,
         record_paywall_screenshots,
         tuist,
-        deploy_rct_tester
+        deploy_rct_tester,
+        test_xcframework_installation
       ]
     default: default
   generate_snapshots:
@@ -2591,3 +2592,10 @@ workflows:
             - tag-release-branch
           <<: *release-branches
 
+  test-xcframework-installation:
+    when:
+      equal: [test_xcframework_installation, << pipeline.parameters.action >>]
+    jobs:
+      - installation-tests-xcframework:
+          context:
+            - slack-secrets
