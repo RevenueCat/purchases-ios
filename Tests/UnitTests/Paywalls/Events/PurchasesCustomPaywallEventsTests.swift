@@ -15,7 +15,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@_spi(Experimental) @testable import RevenueCat
+@testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
