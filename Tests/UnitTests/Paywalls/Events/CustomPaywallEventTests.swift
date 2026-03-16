@@ -114,9 +114,9 @@ class CustomPaywallEventTests: TestCase {
         let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: storedEvent))
         expect(requestEvent.appSessionID).to(beNil())
 
-        let encoded = try JSONEncoder().encode(requestEvent)
+        let encoded = try JSONEncoder.default.encode(requestEvent)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
-        expect(json["appSessionId"]).to(beNil())
+        expect(json["app_session_id"]).to(beNil())
     }
 
     func testRequestEncodingPaywallIdOmittedWhenNil() throws {
@@ -132,10 +132,10 @@ class CustomPaywallEventTests: TestCase {
         )
 
         let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: storedEvent))
-        let encoded = try JSONEncoder().encode(requestEvent)
+        let encoded = try JSONEncoder.default.encode(requestEvent)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
 
-        expect(json["paywallId"]).to(beNil())
+        expect(json["paywall_id"]).to(beNil())
     }
 
     func testRequestEncodingOfferingIdAppearsInJSON() throws {
@@ -154,7 +154,7 @@ class CustomPaywallEventTests: TestCase {
         )
 
         let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: storedEvent))
-        let encoded = try JSONEncoder().encode(requestEvent)
+        let encoded = try JSONEncoder.default.encode(requestEvent)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
 
         expect(json["offering_id"] as? String) == "offering_abc"
@@ -173,7 +173,7 @@ class CustomPaywallEventTests: TestCase {
         )
 
         let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: storedEvent))
-        let encoded = try JSONEncoder().encode(requestEvent)
+        let encoded = try JSONEncoder.default.encode(requestEvent)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
 
         expect(json["offering_id"]).to(beNil())

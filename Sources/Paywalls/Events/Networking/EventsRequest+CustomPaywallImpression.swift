@@ -79,7 +79,7 @@ extension FeatureEventsRequest.CustomPaywallEvent: Encodable {
         case appSessionID = "appSessionId"
         case timestamp
         case paywallId
-        case offeringId = "offering_id"
+        case offeringId
 
     }
 
