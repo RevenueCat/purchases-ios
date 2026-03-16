@@ -2160,7 +2160,6 @@ extension Purchases {
     ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
     ///
     /// - Parameter params: Parameters for the custom paywall impression.
-    @_spi(Experimental)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams) {
         let offeringId = params.offeringId ?? self.offeringsManager.cachedOfferings?.current?.identifier
@@ -2180,7 +2179,6 @@ extension Purchases {
     ///
     /// - Important: Each call creates a separate impression event. Call this once per paywall presentation,
     ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
-    @_spi(Experimental)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @objc public func trackCustomPaywallImpression() {
         trackCustomPaywallImpression(CustomPaywallImpressionParams())

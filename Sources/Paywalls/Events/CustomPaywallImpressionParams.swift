@@ -14,7 +14,7 @@
 import Foundation
 
 /// Parameters for tracking a custom paywall impression event.
-@_spi(Experimental) @objc(RCCustomPaywallImpressionParams)
+@objc(RCCustomPaywallImpressionParams)
 public final class CustomPaywallImpressionParams: NSObject, Sendable {
 
     /// An optional identifier for the custom paywall being shown.
