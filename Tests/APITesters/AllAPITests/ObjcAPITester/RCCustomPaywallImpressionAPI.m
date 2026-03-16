@@ -17,6 +17,8 @@
         RCCustomPaywallImpressionParams *paramsWithNil __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:nil];
         RCCustomPaywallImpressionParams *paramsWithOffering __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:@"my-paywall" offeringId:@"my-offering"];
         RCCustomPaywallImpressionParams *paramsOfferingOnly __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:nil offeringId:@"my-offering"];
+        RCCustomPaywallImpressionParams *paramsBothNil __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:nil offeringId:nil];
+        RCCustomPaywallImpressionParams *paramsIdNilOffering __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:@"my-paywall" offeringId:nil];
 
         // CustomPaywallImpressionParams properties
         NSString *paywallId __unused = paramsWithId.paywallId;

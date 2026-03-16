@@ -26,6 +26,11 @@ func checkCustomPaywallImpressionAPI() {
             offeringId: "my-offering"
         )
         let paramsOfferingOnly: CustomPaywallImpressionParams = CustomPaywallImpressionParams(offeringId: "my-offering")
+        let paramsBothNil: CustomPaywallImpressionParams = CustomPaywallImpressionParams(paywallId: nil, offeringId: nil)
+        let paramsIdNilOffering: CustomPaywallImpressionParams = CustomPaywallImpressionParams(
+            paywallId: "my-paywall",
+            offeringId: nil
+        )
 
         // CustomPaywallImpressionParams properties
         let paywallId: String? = paramsWithId.paywallId

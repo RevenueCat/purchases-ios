@@ -28,15 +28,15 @@ public final class CustomPaywallImpressionParams: NSObject, Sendable {
     /// - Parameters:
     ///   - paywallId: An optional identifier for the custom paywall being shown.
     ///   - offeringId: An optional identifier for the offering associated with the custom paywall.
-    ///     If not provided, the SDK will use the current offering identifier from the cache.
-    @objc public init(paywallId: String? = nil, offeringId: String? = nil) {
+    ///     If `nil`, the SDK will use the current offering identifier from the cache.
+    @objc public init(paywallId: String? = nil, offeringId: String?) {
         self.paywallId = paywallId
         self.offeringId = offeringId
     }
 
     /// Creates parameters with only a paywall identifier.
     /// - Parameter paywallId: An optional identifier for the custom paywall being shown.
-    @objc public convenience init(paywallId: String?) {
+    @objc public convenience init(paywallId: String? = nil) {
         self.init(paywallId: paywallId, offeringId: nil)
     }
 
