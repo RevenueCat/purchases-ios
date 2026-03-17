@@ -273,6 +273,31 @@ class PaywallFeatureEventsRequestTests: TestCase {
         expect(requestEvent.timestamp).to(equal(1_694_029_328_234))
     }
 
+    // MARK: - Placement & Targeting Tests
+
+    func testImpressionEventWithPlacementAndTargeting() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithPlacementAndTargeting)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testWithPurchaseInfoPreservesPlacementAndTargeting() {
+        let data = Self.eventDataWithPlacementAndTargeting
+
+        let result = data.withPurchaseInfo(
+            packageId: "test_package",
+            productId: "test_product",
+            errorCode: nil,
+            errorMessage: nil
+        )
+
+        expect(result.placementIdentifier) == "home_banner"
+        expect(result.targetingRevision) == 3
+        expect(result.targetingRuleId) == "rule_abc123"
+    }
+
     // MARK: - Milliseconds Precision Tests
 
     func testPaywallEventImpressionPreservesMillisecondsInCreationDate() throws {
@@ -418,6 +443,19 @@ private extension PaywallFeatureEventsRequestTests {
         localeIdentifier: "es_ES",
         darkMode: true,
         source: nil
+    )
+
+    static let eventDataWithPlacementAndTargeting: PaywallEvent.Data = .init(
+        paywallIdentifier: "test_paywall_id_1",
+        offeringIdentifier: "offering_1",
+        paywallRevision: 5,
+        sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
+        displayMode: .fullScreen,
+        localeIdentifier: "es_ES",
+        darkMode: true,
+        placementIdentifier: "home_banner",
+        targetingRevision: 3,
+        targetingRuleId: "rule_abc123"
     )
 
     static let eventDataWithSource: PaywallEvent.Data = .init(

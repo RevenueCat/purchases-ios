@@ -30,6 +30,7 @@ extension FeatureEventsRequest {
         var darkMode: Bool
         var localeIdentifier: String
         var source: PaywallSource?
+        var presentedOfferingContext: PresentedOfferingContextData?
         var exitOfferType: ExitOfferType?
         var exitOfferingID: String?
         var packageId: String?
@@ -55,6 +56,14 @@ extension FeatureEventsRequest {
         var resultingPackageIdentifier: String?
         var currentProductIdentifier: String?
         var resultingProductIdentifier: String?
+
+        struct PresentedOfferingContextData: Encodable {
+
+            var placementIdentifier: String?
+            var targetingRevision: Int?
+            var targetingRuleId: String?
+
+        }
 
     }
 
@@ -97,6 +106,19 @@ extension FeatureEventsRequest.PaywallEvent {
         let exitOfferData = decodedPaywallEvent.exitOfferData
         let componentInteractionData = decodedPaywallEvent.componentInteractionData
 
+        let presentedContext: PresentedOfferingContextData?
+        if data.placementIdentifier != nil ||
+            data.targetingRevision != nil ||
+            data.targetingRuleId != nil {
+            presentedContext = PresentedOfferingContextData(
+                placementIdentifier: data.placementIdentifier,
+                targetingRevision: data.targetingRevision,
+                targetingRuleId: data.targetingRuleId
+            )
+        } else {
+            presentedContext = nil
+        }
+
         self.init(
             id: creationData.id.uuidString,
             version: Self.version,
@@ -111,6 +133,7 @@ extension FeatureEventsRequest.PaywallEvent {
             darkMode: data.darkMode,
             localeIdentifier: data.localeIdentifier,
             source: data.source,
+            presentedOfferingContext: presentedContext,
             exitOfferType: exitOfferData?.exitOfferType,
             exitOfferingID: exitOfferData?.exitOfferingIdentifier,
             packageId: data.packageId,
@@ -182,6 +205,7 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case darkMode
         case localeIdentifier = "locale"
         case source
+        case presentedOfferingContext
         case exitOfferType
         case exitOfferingID = "exitOfferingId"
         case packageId = "packageId"
