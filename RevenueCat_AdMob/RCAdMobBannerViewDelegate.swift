@@ -16,18 +16,15 @@ internal final class RCAdMobBannerViewDelegate: NSObject, GoogleMobileAds.Banner
     weak var delegate: GoogleMobileAds.BannerViewDelegate?
     private let rcAdMob: RCAdMob
     private let placement: String?
-    private let adFormat: RevenueCat.AdFormat
 
     init(
         rcAdMob: RCAdMob = .shared,
         delegate: GoogleMobileAds.BannerViewDelegate?,
-        placement: String?,
-        adFormat: RevenueCat.AdFormat = .banner
+        placement: String?
     ) {
         self.rcAdMob = rcAdMob
         self.delegate = delegate
         self.placement = placement
-        self.adFormat = adFormat
     }
 
     func bannerViewDidReceiveAd(_ bannerView: GoogleMobileAds.BannerView) {
@@ -36,7 +33,7 @@ internal final class RCAdMobBannerViewDelegate: NSObject, GoogleMobileAds.Banner
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: bannerView.adUnitID,
-            adFormat: self.adFormat
+            adFormat: RevenueCat.AdFormat.banner
         )
         self.delegate?.bannerViewDidReceiveAd?(bannerView)
     }
@@ -45,7 +42,7 @@ internal final class RCAdMobBannerViewDelegate: NSObject, GoogleMobileAds.Banner
         self.rcAdMob.trackFailedToLoad(
             placement: self.placement,
             adUnitID: bannerView.adUnitID,
-            adFormat: self.adFormat,
+            adFormat: RevenueCat.AdFormat.banner,
             error: error
         )
         self.delegate?.bannerView?(bannerView, didFailToReceiveAdWithError: error)
@@ -57,7 +54,7 @@ internal final class RCAdMobBannerViewDelegate: NSObject, GoogleMobileAds.Banner
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: bannerView.adUnitID,
-            adFormat: self.adFormat
+            adFormat: RevenueCat.AdFormat.banner
         )
         self.delegate?.bannerViewDidRecordImpression?(bannerView)
     }
@@ -68,7 +65,7 @@ internal final class RCAdMobBannerViewDelegate: NSObject, GoogleMobileAds.Banner
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: bannerView.adUnitID,
-            adFormat: self.adFormat
+            adFormat: RevenueCat.AdFormat.banner
         )
         self.delegate?.bannerViewDidRecordClick?(bannerView)
     }
