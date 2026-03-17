@@ -245,6 +245,7 @@
 		2D90F8CA26FD257A009B9142 /* MockStoreKit2TransactionListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D90F8C926FD257A009B9142 /* MockStoreKit2TransactionListener.swift */; };
 		2D90F8CC26FD2BA1009B9142 /* StoreKitConfigTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D90F8CB26FD2BA1009B9142 /* StoreKitConfigTestCase.swift */; };
 		2D971CC12744364C0093F35F /* SKError+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D971CC02744364C0093F35F /* SKError+Extensions.swift */; };
+		21E0266C966B729FA32CEE6E /* PurchasesErrorUserInfoKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 775F5D1FCC62656024BB3107 /* PurchasesErrorUserInfoKey.swift */; };
 		2D985D102F51B7E700E1EDF5 /* SubscriberAttributesManager+Appstack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D985D0F2F51B7E700E1EDF5 /* SubscriberAttributesManager+Appstack.swift */; };
 		2D991ACA268BA56900085481 /* StoreKitRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */; };
 		2D9C5EC826F280510057FC45 /* StoreProductTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D69384426DFF93300FCDBC0 /* StoreProductTests.swift */; };
@@ -1776,6 +1777,7 @@
 		2D90F8C926FD257A009B9142 /* MockStoreKit2TransactionListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2TransactionListener.swift; sourceTree = "<group>"; };
 		2D90F8CB26FD2BA1009B9142 /* StoreKitConfigTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitConfigTestCase.swift; sourceTree = "<group>"; };
 		2D971CC02744364C0093F35F /* SKError+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SKError+Extensions.swift"; sourceTree = "<group>"; };
+		775F5D1FCC62656024BB3107 /* PurchasesErrorUserInfoKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesErrorUserInfoKey.swift; sourceTree = "<group>"; };
 		2D97458E24BDFCEF006245E9 /* IntroEligibilityCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroEligibilityCalculator.swift; sourceTree = "<group>"; };
 		2D985D0F2F51B7E700E1EDF5 /* SubscriberAttributesManager+Appstack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubscriberAttributesManager+Appstack.swift"; sourceTree = "<group>"; };
 		2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitRequestFetcher.swift; sourceTree = "<group>"; };
@@ -5891,6 +5893,7 @@
 				B34D2AA526976FC700D88C3A /* ErrorCode.swift */,
 				B3B5FBB5269CED6400104A0C /* ErrorDetails.swift */,
 				35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */,
+				775F5D1FCC62656024BB3107 /* PurchasesErrorUserInfoKey.swift */,
 				2D971CC02744364C0093F35F /* SKError+Extensions.swift */,
 				57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */,
 				57C2931428BFEF4F0054EDFC /* PurchasesError.swift */,
@@ -6901,6 +6904,7 @@
 				5721360F28B4602C006C46BE /* Purchases+nonasync.swift in Sources */,
 				57DE806D28074976008D6C6F /* Storefront.swift in Sources */,
 				B3B5FBB6269CED6400104A0C /* ErrorDetails.swift in Sources */,
+				21E0266C966B729FA32CEE6E /* PurchasesErrorUserInfoKey.swift in Sources */,
 				2D991ACA268BA56900085481 /* StoreKitRequestFetcher.swift in Sources */,
 				5723FBBE28EDE1360003BA16 /* InternalAPI.swift in Sources */,
 				A55D5D66282ECCC100FA7623 /* PostAdServicesTokenOperation.swift in Sources */,

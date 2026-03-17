@@ -144,7 +144,7 @@ extension SKError.Code {
 
 }
 
-private extension SKError {
+extension SKError {
 
     enum UndocumentedCode: Int {
 
@@ -168,7 +168,7 @@ private enum ASDServerError {
 
 }
 
-private enum AMSError {
+enum AMSError {
 
     static let domain = "AMSErrorDomain"
 

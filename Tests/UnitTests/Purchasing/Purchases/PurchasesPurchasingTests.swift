@@ -890,6 +890,47 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
     }
 
+    @MainActor
+    func testPaymentSheetFailedWhenBackgroundedReturnsCancelledErrorWithBackgroundedFlag() throws {
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+        var receivedUserCancelled: Bool?
+        var receivedError: NSError?
+
+        let unknownError = NSError(
+            domain: SKErrorDomain,
+            code: 907,
+            userInfo: [
+                NSUnderlyingErrorKey: NSError(
+                    domain: "AMSErrorDomain",
+                    code: 6,
+                    userInfo: [:]
+                )
+            ]
+        )
+
+        self.purchases.purchase(product: product) { (_, _, error, userCancelled) in
+            receivedError = error as NSError?
+            receivedUserCancelled = userCancelled
+        }
+
+        NotificationCenter.default.post(name: SystemInfo.applicationDidEnterBackgroundNotification, object: nil)
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
+        transaction.mockState = .failed
+        transaction.mockError = unknownError
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+
+        expect(receivedUserCancelled).toEventuallyNot(beNil())
+        // userCancelled is true because it's still a purchaseCancelledError (isCancelledError returns true)
+        expect(receivedUserCancelled) == true
+        expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
+
+        // Verify the purchaseWasBackgroundedKey is set in userInfo
+        let wasBackgrounded = receivedError?.userInfo[PurchasesErrorUserInfoKey.purchaseWasBackgroundedKey] as? Bool
+        expect(wasBackgrounded) == true
+    }
+
     func testSendsProductDataIfProductIsCached() {
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
 
