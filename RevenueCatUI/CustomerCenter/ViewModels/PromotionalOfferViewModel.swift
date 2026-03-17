@@ -78,9 +78,19 @@ final class PromotionalOfferViewModel: ObservableObject {
                 let transactionId = result.transaction?.transactionIdentifier ?? "-"
                 Logger.debug(Strings.promo_offer_purchase_succeeded(productId, offerId, transactionId))
                 if let transaction = result.transaction {
+                    // The new handler requires a transaction. Dispatching `.promotionalOfferSucceeded`
+                    // also fires the deprecated `promotionalOfferSuccess` publisher for backward compat.
                     self.actionWrapper.handleAction(
                         .promotionalOfferSucceeded(result.customerInfo, transaction, offerId)
                     )
+                } else {
+                    // No transaction available — fire only the legacy void handler so that existing
+                    // consumers of `onCustomerCenterPromotionalOfferSuccess` still receive the callback.
+                    // `promotionalOfferSuccess` has no CustomerCenterInternalAction case and is not part
+                    // of the legacy CustomerCenterAction enum, so we fire the publisher directly rather
+                    // than via handleAction.
+                    Logger.warning(Strings.promo_offer_nil_transaction(productId, offerId))
+                    self.actionWrapper.promotionalOfferSuccess.send(())
                 }
                 self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
             }

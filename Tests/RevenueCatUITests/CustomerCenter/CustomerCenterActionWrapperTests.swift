@@ -299,6 +299,43 @@ final class CustomerCenterActionWrapperTests: TestCase {
         expect(receivedOfferId).to(equal("test_offer"))
     }
 
+    func testPromotionalOfferSucceededAlsoFiresDeprecatedHandler() async throws {
+        let actionWrapper = await CustomerCenterActionWrapper()
+        let newExpectation = XCTestExpectation(description: "promotionalOfferSucceeded new handler fires")
+        let deprecatedExpectation = XCTestExpectation(description: "promotionalOfferSuccess deprecated handler fires")
+
+        let windowHolder = await WindowHolder()
+
+        await MainActor.run {
+            let testView = Text("test")
+                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
+                .onCustomerCenterPromotionalOfferSucceeded { _, _, _ in
+                    newExpectation.fulfill()
+                }
+                .onCustomerCenterPromotionalOfferSuccess {
+                    deprecatedExpectation.fulfill()
+                }
+
+            let viewController = UIHostingController(rootView: testView)
+            let window = UIWindow(frame: UIScreen.main.bounds)
+            window.rootViewController = viewController
+            window.makeKeyAndVisible()
+            viewController.view.layoutIfNeeded()
+
+            windowHolder.window = window
+        }
+
+        let transaction = StoreTransaction(MockStoreTransaction())
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        await MainActor.run {
+            actionWrapper.handleAction(
+                .promotionalOfferSucceeded(customerInfo, transaction, "test_offer")
+            )
+        }
+
+        await fulfillment(of: [newExpectation, deprecatedExpectation], timeout: 1.0)
+    }
+
     func testChangePlansSelected() async throws {
         let actionWrapper = await CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "changePlansSelected")

@@ -198,7 +198,9 @@ public class CustomerCenterViewController: UIViewController {
 
         if let promotionalOfferSucceeded {
             actionWrapper.promotionalOfferSucceededPublisher
-                .sink(receiveValue: { promotionalOfferSucceeded($0.0, $0.1, $0.2) })
+                .sink(receiveValue: { customerInfo, transaction, offerId in
+                    promotionalOfferSucceeded(customerInfo, transaction, offerId)
+                })
                 .store(in: &cancellables)
         }
 

@@ -70,7 +70,7 @@ struct CustomerCenterActionViewModifier: ViewModifier {
             .store(in: &cancellables)
 
         actionWrapper.refundRequestCompletedPublisher
-            .sink { actions.refundRequestCompleted($0.0, $0.1) }
+            .sink { productId, status in actions.refundRequestCompleted(productId, status) }
             .store(in: &cancellables)
     }
 
@@ -89,7 +89,9 @@ struct CustomerCenterActionViewModifier: ViewModifier {
             .store(in: &cancellables)
 
         actionWrapper.promotionalOfferSucceededPublisher
-            .sink { actions.promotionalOfferSucceeded($0.0, $0.1, $0.2) }
+            .sink { customerInfo, transaction, offerId in
+                actions.promotionalOfferSucceeded(customerInfo, transaction, offerId)
+            }
             .store(in: &cancellables)
 
         actionWrapper.showingChangePlansPublisher
@@ -97,7 +99,7 @@ struct CustomerCenterActionViewModifier: ViewModifier {
             .store(in: &cancellables)
 
         actionWrapper.customActionSelectedPublisher
-            .sink { actions.customActionSelected($0.0, $0.1) }
+            .sink { actionId, purchaseId in actions.customActionSelected(actionId, purchaseId) }
             .store(in: &cancellables)
     }
 }

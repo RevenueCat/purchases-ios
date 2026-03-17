@@ -81,6 +81,7 @@ enum Strings {
     case promo_offer_purchase_cancelled(String, String)
     case promo_offer_purchase_succeeded(String, String, String)
     case promo_offer_purchase_failed(String, String, Error)
+    case promo_offer_nil_transaction(String, String)
     case could_not_determine_type_of_custom_url
     case active_product_is_not_apple_loading_without_product_information(Store)
     case could_not_find_product_loading_without_product_information(String)
@@ -264,6 +265,10 @@ extension Strings: CustomStringConvertible {
 
         case let .promo_offer_purchase_failed(productId, offerId, error):
             return "Promotional offer purchase failed for product '\(productId)' with offer '\(offerId)': \(error)"
+
+        case let .promo_offer_nil_transaction(productId, offerId):
+            return "Promotional offer purchase for product '\(productId)' with offer '\(offerId)' succeeded " +
+            "but no transaction was returned by StoreKit."
 
         case .could_not_offer_for_any_active_subscriptions:
             return "Could not find offer with id for any active subscription"
