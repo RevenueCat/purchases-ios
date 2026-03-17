@@ -81,6 +81,8 @@ final class PromotionalOfferViewModel: ObservableObject {
                     self.actionWrapper.handleAction(
                         .promotionalOfferSucceeded(result.customerInfo, transaction, offerId)
                     )
+                } else {
+                    self.actionWrapper.promotionalOfferSuccess.send(())
                 }
                 self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
             }

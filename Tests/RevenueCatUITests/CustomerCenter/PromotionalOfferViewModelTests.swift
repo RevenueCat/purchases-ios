@@ -186,10 +186,18 @@ final class PromotionalOfferViewModelTests: TestCase {
             }
             .store(in: &cancellables)
 
+        var didReceivePromotionalOfferSuccess = false
+        actionWrapper.promotionalOfferSuccess
+            .sink { _ in
+                didReceivePromotionalOfferSuccess = true
+            }
+            .store(in: &cancellables)
+
         await viewModel.purchasePromo()
 
         expect(capturedAction!.isSuccess).to(beTrue())
         expect(didReceivePromotionalOfferSucceeded).to(beFalse())
+        await expect(didReceivePromotionalOfferSuccess).toEventually(beTrue())
     }
 
     @MainActor
