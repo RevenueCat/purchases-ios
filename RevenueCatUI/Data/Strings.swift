@@ -23,6 +23,7 @@ enum Strings {
     case unrecognized_variable_name(variableName: String)
 
     case product_already_subscribed
+    case purchase_failed(Error)
 
     case determining_whether_to_display_paywall
     case displaying_paywall
@@ -41,6 +42,7 @@ enum Strings {
     case restoring_purchases
     case restored_purchases
     case restore_purchases_with_empty_result
+    case restore_purchases_failed(Error)
     case setting_restored_customer_info
 
     case executing_purchase_logic
@@ -112,6 +114,10 @@ enum Strings {
     case prefetchedExitOffer(String)
     case presentingExitOffer(String)
     case errorLoadingExitOffer(Error)
+
+    // Conditional Configurability
+    case paywall_contains_unsupported_condition
+
 }
 
 extension Strings: CustomStringConvertible {
@@ -360,6 +366,13 @@ extension Strings: CustomStringConvertible {
         case .restore_purchases_gate_finish(with: let proceed):
             // swiftlint:disable:next line_length
             return "Restore Purchases gate complete. The SDK **\(proceed ? "will" : "will not")** attempt to restore purchases."
+        case .restore_purchases_failed(let error):
+            return "Restore failed with error: \(error)"
+        case .purchase_failed(let error):
+            return "Purchase failed with error: \(error)"
+        case .paywall_contains_unsupported_condition:
+            return "Unsupported paywall rule encountered. " +
+            "Rendering paywall without conditional configurability rules."
         }
     }
 

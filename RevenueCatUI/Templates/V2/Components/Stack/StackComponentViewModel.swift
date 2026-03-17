@@ -29,19 +29,23 @@ class StackComponentViewModel {
     let badgeViewModels: [PaywallComponentViewModel]
     let shouldApplySafeAreaInset: Bool
 
+    private let discardRules: Bool
+
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [PaywallComponentViewModel],
         shouldApplySafeAreaInset: Bool = false,
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        discardRules: Bool = false
     ) {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
         self.shouldApplySafeAreaInset = shouldApplySafeAreaInset
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
+        self.discardRules = discardRules
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     func copy(withViewModels newViewModels: [PaywallComponentViewModel]) -> StackComponentViewModel {
@@ -50,29 +54,36 @@ class StackComponentViewModel {
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
             shouldApplySafeAreaInset: self.shouldApplySafeAreaInset,
-            uiConfigProvider: self.uiConfigProvider
+            uiConfigProvider: self.uiConfigProvider,
+            discardRules: self.discardRules
         )
     }
 
-    @ViewBuilder
     // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
-        colorScheme: ColorScheme,
-        @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
-    ) -> some View {
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        colorScheme: ColorScheme
+    ) -> StackComponentStyle {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
+        )
+
         let partial = PresentedStackPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
 
-        let style = StackComponentStyle(
+        return StackComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             badgeViewModels: self.badgeViewModels,
             visible: partial?.visible ?? self.component.visible ?? true,
@@ -90,7 +101,29 @@ class StackComponentViewModel {
             overflow: partial?.overflow ?? self.component.overflow,
             colorScheme: colorScheme
         )
+    }
 
+    @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
+    func styles(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        colorScheme: ColorScheme,
+        @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
+    ) -> some View {
+        let style = styles(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            colorScheme: colorScheme
+        )
         apply(style)
     }
 

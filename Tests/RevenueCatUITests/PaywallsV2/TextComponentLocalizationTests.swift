@@ -12,7 +12,7 @@
 //  Created by Facundo Menzella on 2/16/26.
 
 import Nimble
-import RevenueCat
+@_spi(Internal) import RevenueCat
 @testable import RevenueCatUI
 import SwiftUI
 import XCTest
@@ -51,6 +51,7 @@ class TextComponentLocalizationTests: TestCase {
         _ = viewModel.styles(
             state: .default,
             condition: .compact,
+            selectedPackageId: nil,
             packageContext: PackageContext(package: nil, variableContext: .init()),
             isEligibleForIntroOffer: false,
             promoOffer: nil
@@ -176,6 +177,197 @@ class TextComponentLocalizationTests: TestCase {
         )
     }
 
+    // MARK: - Selected Package Condition Wiring Tests
+
+    @MainActor
+    func testSelectedPackageConditionUsesGlobalSelectedPackageIdInsidePackageScope() throws {
+        let viewModel = try self.makeConditionalVisibilityViewModel()
+        let packageContext = PackageContext(
+            package: TestData.annualPackage,
+            variableContext: .init(packages: [TestData.monthlyPackage, TestData.annualPackage])
+        )
+
+        var capturedVisible: Bool?
+        _ = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            selectedPackageId: TestData.monthlyPackage.identifier,
+            packageContext: packageContext,
+            isEligibleForIntroOffer: false,
+            promoOffer: nil
+        ) { style -> EmptyView in
+            capturedVisible = style.visible
+            return EmptyView()
+        }
+
+        expect(capturedVisible).to(beFalse())
+    }
+
+    @MainActor
+    func testSelectedPackageConditionMatchesGlobalSelectionEvenIfParentPackageDiffers() throws {
+        let viewModel = try self.makeConditionalVisibilityViewModel()
+        let packageContext = PackageContext(
+            package: TestData.monthlyPackage,
+            variableContext: .init(packages: [TestData.monthlyPackage, TestData.annualPackage])
+        )
+
+        var capturedVisible: Bool?
+        _ = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            selectedPackageId: TestData.annualPackage.identifier,
+            packageContext: packageContext,
+            isEligibleForIntroOffer: false,
+            promoOffer: nil
+        ) { style -> EmptyView in
+            capturedVisible = style.visible
+            return EmptyView()
+        }
+
+        expect(capturedVisible).to(beTrue())
+    }
+
+    @MainActor
+    func testSelectedPackageConditionDoesNotMatchWhenGlobalSelectionIsNil() throws {
+        let viewModel = try self.makeConditionalVisibilityViewModel()
+        let packageContext = PackageContext(
+            package: TestData.annualPackage,
+            variableContext: .init(packages: [TestData.monthlyPackage, TestData.annualPackage])
+        )
+
+        var capturedVisible: Bool?
+        _ = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            selectedPackageId: nil,
+            packageContext: packageContext,
+            isEligibleForIntroOffer: false,
+            promoOffer: nil
+        ) { style -> EmptyView in
+            capturedVisible = style.visible
+            return EmptyView()
+        }
+
+        expect(capturedVisible).to(beFalse())
+    }
+
+    @MainActor
+    func testVariableProcessingUsesPackageContextPackageNotSelectedPackage() throws {
+        let textComponent = PaywallComponent.TextComponent(
+            text: "price_text",
+            color: Self.black
+        )
+        let localizations: PaywallComponent.LocalizationDictionary = [
+            "price_text": .string("{{ product.price }}")
+        ]
+
+        let viewModel = try TextComponentViewModel(
+            localizationProvider: LocalizationProvider(locale: .current, localizedStrings: localizations),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            component: textComponent
+        )
+        let packageContext = PackageContext(
+            package: TestData.annualPackage,
+            variableContext: .init(packages: [TestData.monthlyPackage, TestData.annualPackage])
+        )
+
+        var capturedText: String?
+        _ = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            selectedPackageId: TestData.monthlyPackage.identifier,
+            packageContext: packageContext,
+            isEligibleForIntroOffer: false,
+            promoOffer: nil
+        ) { style -> EmptyView in
+            capturedText = style.text
+            return EmptyView()
+        }
+
+        expect(capturedText).to(equal(TestData.annualPackage.localizedPriceString))
+    }
+
+    @MainActor
+    func testSelectedPackageNotInConditionUsesGlobalSelectedPackageIdInsidePackageScope() throws {
+        let textComponent = PaywallComponent.TextComponent(
+            visible: false,
+            text: "badge_text",
+            color: Self.black,
+            overrides: [
+                .init(
+                    extendedConditions: [.selectedPackage(
+                        operator: .notIn,
+                        packages: [TestData.annualPackage.identifier]
+                    )],
+                    properties: .init(visible: true)
+                )
+            ]
+        )
+        let localizations: PaywallComponent.LocalizationDictionary = [
+            "badge_text": .string("Most popular!")
+        ]
+        let viewModel = try TextComponentViewModel(
+            localizationProvider: LocalizationProvider(locale: .current, localizedStrings: localizations),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            component: textComponent
+        )
+        let packageContext = PackageContext(
+            package: TestData.annualPackage,
+            variableContext: .init(packages: [TestData.monthlyPackage, TestData.annualPackage])
+        )
+
+        var capturedVisible: Bool?
+        _ = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            selectedPackageId: TestData.monthlyPackage.identifier,
+            packageContext: packageContext,
+            isEligibleForIntroOffer: false,
+            promoOffer: nil
+        ) { style -> EmptyView in
+            capturedVisible = style.visible
+            return EmptyView()
+        }
+
+        expect(capturedVisible).to(beTrue())
+    }
+
+    @MainActor
+    func testStackSelectedPackageConditionUsesGlobalSelectedPackageId() throws {
+        let stackComponent = PaywallComponent.StackComponent(
+            visible: false,
+            components: [],
+            overrides: [
+                .init(
+                    extendedConditions: [.selectedPackage(
+                        operator: .in,
+                        packages: [TestData.annualPackage.identifier]
+                    )],
+                    properties: .init(visible: true)
+                )
+            ]
+        )
+
+        let viewModel = try StackComponentViewModel(
+            component: stackComponent,
+            viewModels: [],
+            badgeViewModels: [],
+            uiConfigProvider: try Self.createUIConfigProvider()
+        )
+
+        let style = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: TestData.annualPackage.identifier,
+            customVariables: [:],
+            colorScheme: .light
+        )
+
+        expect(style.visible).to(beTrue())
+    }
+
     // MARK: - Helpers
 
     private static let black = PaywallComponent.ColorScheme(
@@ -201,6 +393,31 @@ class TextComponentLocalizationTests: TestCase {
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         let uiConfig = try decoder.decode(UIConfig.self, from: jsonData)
         return UIConfigProvider(uiConfig: uiConfig)
+    }
+
+    private func makeConditionalVisibilityViewModel() throws -> TextComponentViewModel {
+        let textComponent = PaywallComponent.TextComponent(
+            visible: false,
+            text: "badge_text",
+            color: Self.black,
+            overrides: [
+                .init(
+                    extendedConditions: [
+                        .selectedPackage(operator: .in, packages: [TestData.annualPackage.identifier])
+                    ],
+                    properties: .init(visible: true)
+                )
+            ]
+        )
+        let localizations: PaywallComponent.LocalizationDictionary = [
+            "badge_text": .string("Most popular!")
+        ]
+
+        return try TextComponentViewModel(
+            localizationProvider: LocalizationProvider(locale: .current, localizedStrings: localizations),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            component: textComponent
+        )
     }
 
 }

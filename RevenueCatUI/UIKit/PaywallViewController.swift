@@ -83,7 +83,7 @@ public class PaywallViewController: UIViewController {
     /// - Parameters:
     ///   - value: The numeric value to set.
     ///   - key: The variable key (without the `custom.` prefix).
-    @objc func setCustomVariableNumber(_ value: Double, forKey key: String) {
+    @objc public func setCustomVariableNumber(_ value: Double, forKey key: String) {
         CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .number(value)
     }
@@ -92,7 +92,7 @@ public class PaywallViewController: UIViewController {
     /// - Parameters:
     ///   - value: The boolean value to set.
     ///   - key: The variable key (without the `custom.` prefix).
-    @objc func setCustomVariableBool(_ value: Bool, forKey key: String) {
+    @objc public func setCustomVariableBool(_ value: Bool, forKey key: String) {
         CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .bool(value)
     }
@@ -438,6 +438,8 @@ public class PaywallViewController: UIViewController {
         let originalDismissHandler = self.dismissRequestedHandler
         let fonts = self.configuration.fonts
         let shouldBlock = self.shouldBlockTouchEvents
+        let performPurchase = self.purchaseHandler.performPurchase
+        let performRestore = self.purchaseHandler.performRestore
 
         // Mark that we're dismissing to show exit offer (skip dismissal notification)
         self.isDismissingForExitOffer = true
@@ -459,8 +461,8 @@ public class PaywallViewController: UIViewController {
                 fonts: fonts,
                 displayCloseButton: true,
                 shouldBlockTouchEvents: shouldBlock,
-                performPurchase: nil,
-                performRestore: nil,
+                performPurchase: performPurchase,
+                performRestore: performRestore,
                 dismissRequestedHandler: { controller in
                     // When exit offer is dismissed, call the original handler
                     if let handler = originalDismissHandler {

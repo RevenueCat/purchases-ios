@@ -282,12 +282,14 @@ extension PurchaseHandler {
 
             if result.userCancelled {
                 self.trackCancelledPurchase(package: package)
-            } else {
-                // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
-                // sees the correct state when the sheet dismisses
-                withAnimation(Constants.defaultAnimation) {
-                    self.sessionPurchaseResult = result
-                }
+            }
+
+            // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
+            // sees the correct state when the sheet dismisses.
+            // This is set for both successful and cancelled results so that
+            // onPurchaseCompleted and onPurchaseCancelled modifiers both work correctly.
+            withAnimation(Constants.defaultAnimation) {
+                self.sessionPurchaseResult = result
             }
 
             self.setResult(result)
@@ -336,12 +338,12 @@ extension PurchaseHandler {
                                              customerInfo: try await self.purchases.customerInfo(),
                                             userCancelled: result.userCancelled)
 
-        if !result.userCancelled && result.error == nil {
-            // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
-            // sees the correct state when the sheet dismisses
-            withAnimation(Constants.defaultAnimation) {
-                self.sessionPurchaseResult = resultInfo
-            }
+        // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
+        // sees the correct state when the sheet dismisses.
+        // This is set for both successful and cancelled results so that
+        // onPurchaseCompleted and onPurchaseCancelled modifiers both work correctly.
+        withAnimation(Constants.defaultAnimation) {
+            self.sessionPurchaseResult = resultInfo
         }
 
         self.setResult(resultInfo)

@@ -73,18 +73,19 @@ def check_swift_files_in_project
 
   return if missing_files.empty? && lingering_references.empty?
 
-  message = "Please keep RevenueCat.xcodeproj in sync with Tuist-generated changes.\n"
+  message = "**`RevenueCat.xcodeproj` is out of sync.**\n"
   unless missing_files.empty?
-    message += "\nThe following Swift files were added but don't appear to be included in RevenueCat.xcodeproj:\n"
-    missing_files.each { |file| message += "• #{file}\n" }
+    message += "\nThe following Swift files were added but are missing from `RevenueCat.xcodeproj`:\n"
+    missing_files.each { |file| message += "• `#{file}`\n" }
   end
 
   unless lingering_references.empty?
-    message += "\nThe following Swift files were deleted but still appear referenced in RevenueCat.xcodeproj:\n"
-    lingering_references.each { |file| message += "• #{file}\n" }
+    message += "\nThe following Swift files were deleted but still referenced in `RevenueCat.xcodeproj`:\n"
+    lingering_references.each { |file| message += "• `#{file}`\n" }
   end
 
-  message += "\nIf you've changed files using the tuist project, make sure those changes are added to RevenueCat.xcodeproj, or double-check if they should be excluded."
+  message += "\nTo fix: open `RevenueCat.xcodeproj` in Xcode, add/remove the files above in the appropriate target. "
+  message += "Check where similar files in the same directory are assigned if you're unsure which target to use."
   warn(message)
 end
 

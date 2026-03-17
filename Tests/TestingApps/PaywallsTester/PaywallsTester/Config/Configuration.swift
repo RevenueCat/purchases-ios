@@ -1,6 +1,6 @@
 //
 //  Configuration.swift
-//  PaywallsPreview
+//  PaywallsTester
 //
 //  Created by Nacho Soto on 7/13/23.
 //
@@ -8,8 +8,7 @@
 import Foundation
 import RevenueCat
 
-final class Configuration: ObservableObject {
-    static let shared = Configuration()
+enum Configuration {
 
     static let entitlement = "pro"
 
@@ -20,20 +19,10 @@ final class Configuration: ObservableObject {
     static let defaultDisplayCloseButton = true
     #endif
 
-    enum Mode: Equatable {
-        case custom, testing, demos, listOnly
-    }
-
-
-    private init() {
-
+    static func configure() {
         Purchases.logLevel = .verbose
         Purchases.proxyURL = Constants.proxyURL.flatMap { URL(string: $0) }
 
-        self.configure()
-    }
-
-    private func configure() {
         Purchases.configure(
             with: .init(withAPIKey: Constants.apiKey)
                 .with(entitlementVerificationMode: .informational)

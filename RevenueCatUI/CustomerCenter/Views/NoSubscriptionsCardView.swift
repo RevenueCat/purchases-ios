@@ -122,6 +122,7 @@ struct NoSubscriptionsCardView: View {
                     resume()
                 }
             }
+            .paywallSource(.customerCenter)
         })
         .onAppear {
             viewModel.refreshOffering()

@@ -22,12 +22,18 @@ protocol FeatureEvent: Encodable, Sendable {
     /// and then we can remove this `shouldStoreEvent` (as it will be always `true`)
     var shouldStoreEvent: Bool { get }
 
+    /// Whether tracking this event should trigger an immediate flush to the backend.
+    var isPriorityEvent: Bool { get }
+
 }
 
 extension FeatureEvent {
 
     /// By default, all events should be stored.
     var shouldStoreEvent: Bool { true }
+
+    /// By default, events are not priority events.
+    var isPriorityEvent: Bool { false }
 
 }
 
@@ -44,6 +50,8 @@ extension FeatureEvent {
             return event.customerCenterImpressionMap()
         case let event as CustomerCenterAnswerSubmittedEvent:
             return event.customerCenterAnswerSubmittedMap()
+        case let event as CustomPaywallEvent:
+            return event.customPaywallEventMap()
         default:
             return [
                 "discriminator": "unknown",
@@ -97,6 +105,35 @@ private extension CustomerCenterEvent {
             "locale": self.data.localeIdentifier,
             "display_mode": self.data.displayMode.identifier
         ]
+    }
+
+}
+
+private extension CustomPaywallEvent {
+
+    func customPaywallEventMap() -> [String: Any] {
+        let typeName: String = {
+            switch self {
+            case .impression: return "custom_paywall_impression"
+            }
+        }()
+
+        var result: [String: Any] = [
+            "discriminator": "custom_paywall_event",
+            "type": typeName,
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970
+        ]
+
+        if let paywallId = self.data.paywallId {
+            result["paywall_id"] = paywallId
+        }
+
+        if let offeringId = self.data.offeringId {
+            result["offering_id"] = offeringId
+        }
+
+        return result
     }
 
 }

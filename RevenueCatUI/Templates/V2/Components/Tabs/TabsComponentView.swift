@@ -72,11 +72,22 @@ struct LoadedTabsComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
     @Environment(\.componentViewState)
     private var componentViewState
 
     @Environment(\.screenCondition)
     private var screenCondition
+
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
 
     private let viewModel: TabsComponentViewModel
     private let onDismiss: () -> Void
@@ -184,7 +195,22 @@ struct LoadedTabsComponentView: View {
     }
 
     var body: some View {
-        if let activeTabViewModel,
+        let style = viewModel.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            ),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            colorScheme: self.colorScheme
+        )
+
+        if style.visible,
+            let activeTabViewModel,
             let tierPackageContext = self.tierPackageContexts[self.tabControlContext.selectedTabId] {
             LoadedTabComponentView(
                 stackViewModel: activeTabViewModel.stackViewModel,
