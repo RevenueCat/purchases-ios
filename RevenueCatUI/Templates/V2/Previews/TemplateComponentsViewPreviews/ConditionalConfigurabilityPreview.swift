@@ -56,7 +56,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["hide_text": .bool(true)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Text: hide_text=true (equals) → hidden")
+        .previewDisplayName("Text: hide_text=true (equals) → text hidden")
 
         // MARK: Variable condition does NOT hide text (condition doesn't match)
         TextComponentView(
@@ -85,7 +85,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["hide_text": .bool(false)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Text: hide_text=false (equals) → visible")
+        .previewDisplayName("Text: hide_text=false (equals) → text visible")
 
         // MARK: Variable condition with notEquals operator
         TextComponentView(
@@ -114,7 +114,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("premium")])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Text: tier='premium' notEquals 'free' matches → override hides")
+        .previewDisplayName("Text: tier='premium' notEquals 'free' matches → text hidden")
 
         // MARK: Variable condition changes text content
         TextComponentView(
@@ -147,7 +147,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("premium")])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Text: tier='premium' (equals) → text+color override")
+        .previewDisplayName("Text: tier='premium' (equals) → shows gold 'Welcome back, Premium!'")
 
         // MARK: Variable condition does NOT change text (no match)
         TextComponentView(
@@ -180,7 +180,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("free")])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Text: tier='free' (equals 'premium') → no override")
+        .previewDisplayName("Text: tier='free' (equals 'premium') → shows base 'Free tier'")
 
         // MARK: Missing variable — equals condition does not match
         TextComponentView(
@@ -209,7 +209,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, [:])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Text: missing variable (equals) → no match → visible")
+        .previewDisplayName("Text: missing variable (equals) → no match → text visible")
 
         // MARK: Missing variable — notEquals condition DOES match
         TextComponentView(
@@ -238,7 +238,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, [:])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Text: missing variable (notEquals) → matches → hidden")
+        .previewDisplayName("Text: missing variable (notEquals) → matches → text hidden")
 
         // MARK: Multiple conditions (AND) — both match → override applies
         TextComponentView(
@@ -268,7 +268,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("premium"), "hide_ads": .bool(true)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Text: two conditions AND both match → hidden")
+        .previewDisplayName("Text: tier=premium AND hide_ads=true both match → text hidden")
 
         // MARK: Multiple conditions (AND) — one fails → override does NOT apply
         TextComponentView(
@@ -298,7 +298,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("premium"), "hide_ads": .bool(false)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Text: two conditions AND one fails → visible")
+        .previewDisplayName("Text: tier=premium matches but hide_ads=false fails → text visible")
     }
 
 }
@@ -344,7 +344,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["hide_banner": .bool(true)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Stack: hide_banner=true (equals) → stack+children hidden")
+        .previewDisplayName("Stack: hide_banner=true (equals) → red banner and text hidden")
 
         // MARK: Stack visible when variable condition doesn't match
         StackComponentView(
@@ -381,7 +381,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["hide_banner": .bool(false)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Stack: hide_banner=false (equals) → stack visible")
+        .previewDisplayName("Stack: hide_banner=false (equals) → blue banner and text visible")
 
         // MARK: Mixed visibility — one child hidden, one visible
         StackComponentView(
@@ -421,7 +421,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["show_promo": .bool(false)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Siblings: show_promo=false (equals) → one child hidden")
+        .previewDisplayName("Stack: show_promo=false → promo text hidden, 'Always visible' shown")
 
         // MARK: Mixed visibility — both visible
         StackComponentView(
@@ -461,7 +461,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["show_promo": .bool(true)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Siblings: show_promo=true (equals) → both children visible")
+        .previewDisplayName("Stack: show_promo=true → both 'Always visible' and promo text shown")
     }
 
 }
@@ -505,7 +505,7 @@ struct DefaultPaywallBehavior_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("premium")])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Normal: rule override applies (gold text)")
+        .previewDisplayName("Normal: rule applies → shows gold 'Premium override applied!'")
 
         // MARK: Default paywall: rule override DISCARDED (discardRules=true, simulates unsupported elsewhere)
         TextComponentView(
@@ -539,7 +539,7 @@ struct DefaultPaywallBehavior_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("premium")])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Default paywall: rule override discarded (base text)")
+        .previewDisplayName("Default paywall: rule discarded → shows black 'Base text (free tier)'")
 
         // MARK: Default paywall keeps legacy overrides (compact condition still applies)
         TextComponentView(
@@ -579,7 +579,7 @@ struct DefaultPaywallBehavior_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("premium")])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Default paywall: legacy compact override kept, rule discarded")
+        .previewDisplayName("Default paywall: compact override shows blue text, variable rule discarded (not bold)")
     }
 
 }
