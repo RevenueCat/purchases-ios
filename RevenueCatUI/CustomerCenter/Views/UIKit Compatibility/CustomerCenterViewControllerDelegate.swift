@@ -87,7 +87,11 @@ public protocol CustomerCenterViewControllerDelegate: NSObjectProtocol {
     )
 
     /// Called when a promotional offer succeeds.
-    @available(*, deprecated, message: "Use customerCenterViewController(_:didSucceedWithPromotionalOffer:customerInfo:transaction:) instead")
+    @available(
+        *,
+        deprecated,
+        message: "Use customerCenterViewController(_:didSucceedWithPromotionalOffer:customerInfo:transaction:) instead"
+    )
     @objc(customerCenterViewControllerDidSucceedWithPromotionalOffer:)
     optional func customerCenterViewControllerDidSucceedWithPromotionalOffer(_ controller: CustomerCenterViewController)
 

@@ -11,6 +11,7 @@
 //
 //  Created by Will Taylor on 12/6/24.
 
+// swiftlint:disable file_length
 import Combine
 import RevenueCat
 import SwiftUI
@@ -260,7 +261,7 @@ public class CustomerCenterViewController: UIViewController {
         }
     }
 
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
     private func setupDelegateBindings(actionWrapper: CustomerCenterActionWrapper) {
         actionWrapper.restoreStartedPublisher
             .sink { [weak self] in
