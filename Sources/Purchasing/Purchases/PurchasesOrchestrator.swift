@@ -42,8 +42,7 @@ final class PurchasesOrchestrator {
     @objc weak var delegate: PurchasesOrchestratorDelegate?
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
-    private let presentedOfferingContextsByProductID: Atomic<[String: CachedPresentedOfferingContext]> = .init([:])
-    private let purchaseInitiatedPaywall: Atomic<PaywallEvent?> = nil
+    private let cachedPurchaseContextByProductID: Atomic<[String: CachedPurchaseContext]> = .init([:])
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
     private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
 
@@ -589,10 +588,11 @@ final class PurchasesOrchestrator {
             payment.quantity = quantity
         }
 
-        self.cachePresentedOfferingContext(package: package, productIdentifier: productIdentifier)
-        if let paywallEvent {
-            self.cachePurchaseInitiatedPaywall(paywallEvent)
-        }
+        self.cachePurchaseData(
+            presentedOfferingContext: package?.presentedOfferingContext,
+            paywallEvent: paywallEvent,
+            productIdentifier: productIdentifier
+        )
 
         self.productsManager.cache(StoreProduct(sk1Product: sk1Product))
 
@@ -927,25 +927,36 @@ final class PurchasesOrchestrator {
         }
     }
 
-    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
-        let cached = CachedPresentedOfferingContext(context: context, cacheDate: self.dateProvider.now())
-        self.presentedOfferingContextsByProductID.modify { $0[productIdentifier] = cached }
-    }
-
+    /// Caches purchase context (offering + optional paywall event) for a product.
+    /// Both the `.myApp` external purchase path and `PaywallExtensions` call this through
+    /// the `@_spi(Internal)` API. The SK1 purchase path also calls this internally.
     func cachePurchaseData(
-        presentedOfferingContext: PresentedOfferingContext,
+        presentedOfferingContext: PresentedOfferingContext?,
         paywallEvent: PaywallEvent?,
         productIdentifier: String
     ) {
-        self.cachePresentedOfferingContext(presentedOfferingContext, productIdentifier: productIdentifier)
-        if let paywallEvent {
-            self.cachePurchaseInitiatedPaywall(paywallEvent)
+        guard presentedOfferingContext != nil || paywallEvent != nil else { return }
+
+        if let offeringContext = presentedOfferingContext {
+            Logger.debug(Strings.purchase.caching_presented_offering_identifier(
+                offeringID: offeringContext.offeringIdentifier,
+                productID: productIdentifier
+            ))
         }
+        if paywallEvent != nil {
+            Logger.verbose(Strings.paywalls.caching_purchase_initiated_paywall)
+        }
+
+        let cached = CachedPurchaseContext(
+            offeringContext: presentedOfferingContext,
+            paywallEvent: paywallEvent,
+            cacheDate: self.dateProvider.now()
+        )
+        self.cachedPurchaseContextByProductID.modify { $0[productIdentifier] = cached }
     }
 
     func clearCachedPurchaseData(productIdentifier: String) {
-        self.clearCachedPresentedOfferingContext(for: productIdentifier)
-        self.clearPurchaseInitiatedPaywall()
+        self.cachedPurchaseContextByProductID.modify { $0.removeValue(forKey: productIdentifier) }
     }
 
     func postEventsIfNeeded(delayed: Bool = false) {
@@ -1227,7 +1238,7 @@ private extension PurchasesOrchestrator {
 
     func handleFailedTransaction(_ transaction: SKPaymentTransaction) {
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
-        self.clearCachedPresentedOfferingContext(for: storeTransaction.productIdentifier)
+        self.clearCachedPurchaseData(productIdentifier: storeTransaction.productIdentifier)
 
         if let error = transaction.error,
            let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) {
@@ -1453,12 +1464,13 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
     ) async throws {
         // Only attribute offering context and paywall data for transactions that are not known
         // to be renewals. When the reason is `nil` (i.e. iOS < 17), we still attempt
-        // attribution because the product-ID and date matching in `getAndRemovePresentedOfferingContext`
-        // and `getAndRemovePurchaseInitiatedPaywall` will safely return nil for non-matching transactions,
-        // making the misattribution case extremely unlikely.
+        // attribution because the product-ID and date matching in `getAndRemoveCachedPurchaseContext`
+        // will safely return nil for non-matching transactions, making the misattribution case
+        // extremely unlikely.
         let isKnownRenewal = transaction.reason == .renewal
-        let offeringContext = isKnownRenewal ? nil : self.getAndRemovePresentedOfferingContext(for: transaction)
-        let paywall = isKnownRenewal ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
+        let cached = isKnownRenewal ? nil : self.getAndRemoveCachedPurchaseContext(for: transaction)
+        let offeringContext = cached?.offeringContext
+        let paywall = cached?.paywallEvent
 
         let storefront = await self.storefront(from: transaction)
         let subscriberAttributes = self.unsyncedAttributes
@@ -1874,8 +1886,9 @@ private extension PurchasesOrchestrator {
                                        storefront: StorefrontType?,
                                        restored: Bool) {
         // Don't attribute offering context or paywall data for restored transactions
-        let offeringContext = restored ? nil : self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
-        let paywall = restored ? nil : self.getAndRemovePurchaseInitiatedPaywall(for: purchasedTransaction)
+        let cached = restored ? nil : self.getAndRemoveCachedPurchaseContext(for: purchasedTransaction)
+        let offeringContext = cached?.offeringContext
+        let paywall = cached?.paywallEvent
         let unsyncedAttributes = self.unsyncedAttributes
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
@@ -1929,36 +1942,22 @@ private extension PurchasesOrchestrator {
         self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
     }
 
-    func cachePresentedOfferingContext(package: Package?, productIdentifier: String) {
-        if let package = package {
-            self.cachePresentedOfferingContext(package.presentedOfferingContext,
-                                               productIdentifier: productIdentifier)
-        }
-    }
-
-    func cachePurchaseInitiatedPaywall(_ paywall: PaywallEvent) {
-        Logger.verbose(Strings.paywalls.caching_purchase_initiated_paywall)
-        self.purchaseInitiatedPaywall.value = paywall
-    }
-
-    func clearPurchaseInitiatedPaywall() {
-        Logger.verbose(Strings.paywalls.clearing_purchase_initiated_paywall)
-        self.purchaseInitiatedPaywall.value = nil
-    }
-
-    /// Wraps a `PresentedOfferingContext` with the date it was cached, used to verify
-    /// that the cached context corresponds to a specific transaction.
-    struct CachedPresentedOfferingContext {
-        let context: PresentedOfferingContext
+    /// Cached purchase context containing both offering and optional paywall event data,
+    /// keyed by product identifier. The `cacheDate` is used to verify that the cached
+    /// context corresponds to a specific transaction (not an older/newer one).
+    struct CachedPurchaseContext {
+        let offeringContext: PresentedOfferingContext?
+        let paywallEvent: PaywallEvent?
         let cacheDate: Date
     }
 
-    func clearCachedPresentedOfferingContext(for productIdentifier: String) {
-        self.presentedOfferingContextsByProductID.modify { $0.removeValue(forKey: productIdentifier) }
-    }
-
-    func getAndRemovePresentedOfferingContext(for transaction: StoreTransactionType) -> PresentedOfferingContext? {
-        return self.presentedOfferingContextsByProductID.modify { cache in
+    /// Atomically retrieves and removes the cached purchase context for a transaction.
+    /// Returns `nil` if no cached context exists for the product, or if the cache date
+    /// is after the transaction's purchase date (meaning the cache is for a later purchase).
+    func getAndRemoveCachedPurchaseContext(
+        for transaction: StoreTransactionType
+    ) -> CachedPurchaseContext? {
+        return self.cachedPurchaseContextByProductID.modify { cache in
             guard let cached = cache[transaction.productIdentifier] else {
                 return nil
             }
@@ -1968,25 +1967,7 @@ private extension PurchasesOrchestrator {
             }
 
             cache.removeValue(forKey: transaction.productIdentifier)
-            return cached.context
-        }
-    }
-
-    func getAndRemovePurchaseInitiatedPaywall(for transaction: StoreTransactionType) -> PaywallEvent? {
-        return self.purchaseInitiatedPaywall.modify { cachedPaywall in
-            guard let paywall = cachedPaywall else {
-                return nil
-            }
-
-            let shouldAttributePaywallToPurchase = paywall.data.productId == transaction.productIdentifier
-            && paywall.creationData.date <= transaction.purchaseDate
-
-            guard shouldAttributePaywallToPurchase else {
-                return nil
-            }
-
-            cachedPaywall = nil
-            return paywall
+            return cached
         }
     }
 
@@ -2261,10 +2242,9 @@ extension PurchasesOrchestrator {
         presentedOfferingContext: PresentedOfferingContext? = nil,
         presentedPaywall: PaywallEvent? = nil
     ) async throws -> CustomerInfo {
-        let cachedOfferingContext = self.getAndRemovePresentedOfferingContext(for: transaction)
-        let offeringContext = presentedOfferingContext ?? cachedOfferingContext
-        let cachedPaywall = self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
-        let paywall = presentedPaywall ?? cachedPaywall
+        let cached = self.getAndRemoveCachedPurchaseContext(for: transaction)
+        let offeringContext = presentedOfferingContext ?? cached?.offeringContext
+        let paywall = presentedPaywall ?? cached?.paywallEvent
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
