@@ -31,6 +31,14 @@ public protocol CustomerCenterViewControllerDelegate: NSObjectProtocol {
     @objc(customerCenterViewControllerDidStartRestore:)
     optional func customerCenterViewControllerDidStartRestore(_ controller: CustomerCenterViewController)
 
+    /// Called when a restore operation is about to start.
+    /// The `resume` closure must be called with `true` to proceed or `false` to cancel.
+    @objc(customerCenterViewController:didInitiateRestoreWithResume:)
+    optional func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didInitiateRestoreWith resume: @escaping (Bool) -> Void
+    )
+
     /// Called when a restore operation completes successfully.
     @objc(customerCenterViewController:didFinishRestoringWithCustomerInfo:)
     optional func customerCenterViewController(
