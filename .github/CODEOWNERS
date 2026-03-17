@@ -8,4 +8,7 @@
 /Tests/RevenueCatUITests/ @RevenueCat/customer-center
 
 # Paywalls
-/RevenueCatUI/Templates/ @RevenueCat/monetization
+/RevenueCatUI/Templates/ @RevenueCat/paywalls
+/RevenueCatUI/Views/ @RevenueCat/paywalls
+/RevenueCatUI/PaywallView.swift @RevenueCat/paywalls
+/RevenueCatUI/View+PresentPaywall* @RevenueCat/paywalls

@@ -400,7 +400,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 with: purchasedProductsFetcher,
                 productEntitlementMappingFetcher: deviceCache,
                 tracker: diagnosticsTracker,
-                observerMode: observerMode
+                observerMode: observerMode,
+                customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
             diagnosticsTracker: diagnosticsTracker
         )
@@ -809,6 +810,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         #endif
 
         self.purchasesOrchestrator.delegate = self
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
+            completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
+        }
+        #else
+        self.attribution.syncAttributesAndOfferingsIfNeededHandler = { [weak self] completion in
+            guard let self else {
+                completion(nil, nil)
+                return
+            }
+            self.syncAttributesAndOfferingsIfNeeded(completion: completion)
+        }
+        #endif
 
         // Don't update caches or run health checks in the background to avoid too many users
         // hitting the backend concurrently when launched through a notification at the same time.
@@ -1579,9 +1593,15 @@ extension Purchases {
 
         if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
             // Refetches new offerings with preferred locale
-            self.getOfferings(fetchPolicy: .default, fetchCurrent: true) { _, _ in
+            self.offeringsManager.clearInMemoryOfferingsCache()
+            self.getOfferings(fetchPolicy: .default) { _, _ in
                 // No-op
             }
+        } else {
+            Logger.debug(Strings.offering.override_preferred_locale_rate_limited(
+                maxCalls: self.overridePreferredUILocaleRateLimiter.maxCalls,
+                periodSeconds: Int(self.overridePreferredUILocaleRateLimiter.period)
+            ))
         }
     }
 }
@@ -2084,6 +2104,11 @@ extension Purchases {
     @_spi(Internal) public var preferredLocaleOverride: String? {
         return self.systemInfo.preferredLocaleOverride
     }
+
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public static var installationMethod: String {
+        return SystemInfo.installationMethod
+    }
 }
 
 extension Purchases: InternalPurchasesType {
@@ -2121,6 +2146,45 @@ extension Purchases: InternalPurchasesType {
 
 /// Necessary because `ErrorUtils` inside of `Purchases` finds the obsoleted type.
 private typealias NewErrorUtils = ErrorUtils
+
+// MARK: - Custom Paywall Impressions
+
+extension Purchases {
+
+    /// Tracks an impression for a custom paywall.
+    ///
+    /// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
+    /// This enables RevenueCat to track paywall impressions for analytics.
+    ///
+    /// - Important: Each call creates a separate impression event. Call this once per paywall presentation,
+    ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
+    ///
+    /// - Parameter params: Parameters for the custom paywall impression.
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams) {
+        let offeringId = params.offeringId ?? self.offeringsManager.cachedOfferings?.current?.identifier
+        Task {
+            let event = CustomPaywallEvent.impression(
+                .init(),
+                .init(paywallId: params.paywallId, offeringId: offeringId)
+            )
+            await self.eventsManager?.track(featureEvent: event)
+        }
+    }
+
+    /// Tracks an impression for a custom paywall with no additional parameters.
+    ///
+    /// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
+    /// This enables RevenueCat to track paywall impressions for analytics.
+    ///
+    /// - Important: Each call creates a separate impression event. Call this once per paywall presentation,
+    ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @objc public func trackCustomPaywallImpression() {
+        trackCustomPaywallImpression(CustomPaywallImpressionParams())
+    }
+
+}
 
 internal extension Purchases {
 

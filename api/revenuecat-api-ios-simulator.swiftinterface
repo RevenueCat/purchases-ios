@@ -478,6 +478,13 @@ extension RevenueCat.Attribution {
   #if compiler(>=5.3) && $NonescapableTypes
   @objc final public func setAppsFlyerConversionData(_ data: [Swift.AnyHashable : Any]?)
   #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc final public func setAppstackAttributionParams(_ data: [Swift.String : Any]?, completion: @escaping (RevenueCat.Offerings?, RevenueCat.PublicError?) -> Swift.Void)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+  final public func setAppstackAttributionParams(_ data: [Swift.String : Any]?) async throws -> RevenueCat.Offerings?
+  #endif
 }
 extension RevenueCat.Attribution : @unchecked Swift.Sendable {
 }

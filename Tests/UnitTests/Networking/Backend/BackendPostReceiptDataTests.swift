@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 class BaseBackendPostReceiptDataTests: BaseBackendTests {
 
@@ -583,7 +583,64 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: true
+            darkMode: true,
+            source: nil
+        )
+
+        let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
+                                                                     paymentMode: nil,
+                                                                     currencyCode: currencyCode,
+                                                                     price: price,
+                                                                     subscriptionGroup: group)
+
+        waitUntil { completed in
+            self.backend.post(receipt: Self.receipt,
+                              productData: productData,
+                              transactionData: .init(
+                                 presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
+                                 presentedPaywall: .impression(paywallEventCreationData, paywallEventData),
+                                 unsyncedAttributes: nil,
+                                 storeCountry: nil
+                              ),
+                              postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+                              observerMode: false,
+                              originalPurchaseCompletedBy: .revenueCat,
+                              sdkOriginated: true,
+                              appUserID: Self.userID,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
+    func testPostsReceiptDataWithPresentedPaywallAndSource() throws {
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let productIdentifier = "a_great_product"
+        let offeringIdentifier = "a_offering"
+        let price: Decimal = 10.98
+        let group = "sub_group"
+
+        let currencyCode = "BFD"
+
+        let paywallEventCreationData: PaywallEvent.CreationData = .init(
+            id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+            date: .init(timeIntervalSince1970: 1694029328)
+        )
+        let paywallEventData: PaywallEvent.Data = .init(
+            paywallIdentifier: "test_paywall_id",
+            offeringIdentifier: offeringIdentifier,
+            paywallRevision: 5,
+            sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: true,
+            source: .customerCenter
         )
 
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
@@ -1202,6 +1259,41 @@ class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests
         }
 
         expect(self.httpClient.calls).to(haveCount(1))
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPostingReceiptWithServerErrorDoesNotComputeOfflineUser() throws {
+        self.httpClient.disableSnapshotTesting()
+
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(error: .serverDown())
+        )
+
+        let customerInfo = try CustomerInfo(data: Self.validCustomerResponse)
+        self.mockOfflineCustomerInfoCreator.stubbedCreatedResult = .success(customerInfo)
+
+        let result = waitUntilValue { completed in
+            self.backend.post(receipt: Self.receipt,
+                              productData: nil,
+                              transactionData: .init(
+                                 presentedOfferingContext: nil,
+                                 unsyncedAttributes: nil,
+                                 storeCountry: nil
+                              ),
+                              postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+                              observerMode: false,
+                              originalPurchaseCompletedBy: .revenueCat,
+                              appUserID: Self.userID,
+                              completion: { result in
+                completed(result)
+            })
+        }
+
+        expect(result).to(beFailure())
+        expect(result?.error?.isServerDown) == true
+        expect(self.mockOfflineCustomerInfoCreator.createRequested) == false
+        expect(self.mockOfflineCustomerInfoCreator.createRequestCount) == 0
     }
 
 }

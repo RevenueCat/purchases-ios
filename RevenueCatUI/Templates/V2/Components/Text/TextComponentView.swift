@@ -43,6 +43,9 @@ struct TextComponentView: View {
     @Environment(\.customPaywallVariables)
     private var customVariables
 
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
     // Observing dynamicTypeSize triggers view rebuilds when Dynamic Type settings change,
     // which causes fonts to be recreated with the correct scaled size.
     @Environment(\.dynamicTypeSize)
@@ -58,6 +61,7 @@ struct TextComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
+            selectedPackageId: self.selectedPackageId,
             packageContext: self.packageContext,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package

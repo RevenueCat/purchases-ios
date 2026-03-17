@@ -18,3 +18,4 @@
 "Continue" = "ดำเนินการต่อ";
 "Default_offer_details_with_intro_offer" = "เริ่มทดลองใช้ {{ sub_offer_duration }} จากนั้นจ่ายเป็น {{ Total_price_and_per_month }}";
 "Something went wrong" = "มีบางอย่างผิดพลาด";
+"Purchase" = "ซื้อ";

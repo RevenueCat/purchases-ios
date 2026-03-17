@@ -800,11 +800,10 @@ struct App: View {
 
     @ViewBuilder
     var checkCustomPaywallVariables: some View {
-        // Only .string() is public API; .number() and .bool() are internal
         let customVariables: [String: CustomVariableValue] = [
             "player_name": .string("John"),
-            "max_health": .string("100"),
-            "is_premium": .string("true")
+            "max_health": .number(100),
+            "is_premium": .bool(true)
         ]
 
         PaywallView()
