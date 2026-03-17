@@ -460,7 +460,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     func testPurchaseWithPresentedPaywall() async throws {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
@@ -487,6 +487,39 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == Self.paywallEventWithPurchaseInfo
     }
 
+    func testPurchaseWithPaywallEventPassedAsParameter() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+        let paywallEvent = PaywallEvent.purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        )
+
+        _ = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil,
+            paywallEvent: paywallEvent
+        )
+
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEventWithPurchaseInfo
+    }
+
     func testPurchaseFailureClearsPresentedPaywall() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
         #if compiler(>=5.9)
@@ -497,7 +530,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let product = try await self.fetchSk2Product()
 
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
@@ -513,11 +546,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOfferOptions: nil
         )
 
-        // Simulate purchaseError event clearing the cache (as PurchaseHandler would do)
-        self.orchestrator.track(paywallEvent: .purchaseError(
-            Self.paywallEventCreationData,
-            Self.paywallEventForPurchaseError
-        ))
+        // Simulate clearing the cache (as PurchaseHandler would do on purchaseError)
+        self.orchestrator.clearCachedPurchaseData(productIdentifier: Self.testProductId)
 
         #if compiler(>=5.9)
         if #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) {
@@ -553,16 +583,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let product = try await self.fetchSk2Product()
 
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
 
-        // Simulate cancel event clearing the cache (as PurchaseHandler would do)
-        self.orchestrator.track(paywallEvent: .cancel(
-            Self.paywallEventCreationData,
-            Self.paywallEventWithPurchaseInfo
-        ))
+        // Simulate clearing the cache (as PurchaseHandler would do on cancel)
+        self.orchestrator.clearCachedPurchaseData(productIdentifier: Self.testProductId)
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
@@ -588,7 +615,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         // Track a purchaseInitiated event with a DIFFERENT product ID
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithDifferentProductId
         ))
@@ -621,7 +648,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         // Track a purchaseInitiated event with a date in the FUTURE (2050)
         // This simulates processing a transaction that was purchased BEFORE the paywall event
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationDataInFuture,
             Self.paywallEventWithPurchaseInfo
         ))
@@ -1029,8 +1056,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        // Track a paywall impression (only purchaseInitiated caches paywall data, not impressions)
-        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
+        // No paywall data is cached (only cachePurchaseInitiatedPaywall caches paywall data)
 
         let transaction = MockStoreTransaction()
 
@@ -1056,7 +1082,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         // Track a purchaseInitiated event (this caches the paywall data)
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
@@ -1115,7 +1141,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         // Track a purchaseInitiated event (this caches the paywall data)
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
@@ -1554,7 +1580,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         // Track a purchaseInitiated event and cache an offering context
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
@@ -1587,7 +1613,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         // Track a purchaseInitiated event and cache an offering context
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
@@ -1665,7 +1691,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         // Track a purchaseInitiated event and cache an offering context
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
@@ -1703,7 +1729,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         // Track a purchaseInitiated event and cache an offering context
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
@@ -1746,7 +1772,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         // Track a purchaseInitiated event (only purchaseInitiated caches paywall data)
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))

@@ -500,7 +500,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let product = try await self.fetchSk1Product()
         let payment = self.storeKit1Wrapper.payment(with: product)
 
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
@@ -541,7 +541,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
@@ -549,11 +549,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .failure(.unexpectedBackendResponse(.customerInfoNil))
         try await purchase()
 
-        // Simulate purchaseError event clearing the cache (as PurchaseHandler would do)
-        self.orchestrator.track(paywallEvent: .purchaseError(
-            Self.paywallEventCreationData,
-            Self.paywallEventForPurchaseError
-        ))
+        // Simulate clearing the cache (as PurchaseHandler would do on purchaseError)
+        self.orchestrator.clearCachedPurchaseData(productIdentifier: Self.testProductId)
 
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         try await purchase()
@@ -583,23 +580,20 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithPurchaseInfo
         ))
 
-        // Simulate cancel event clearing the cache (as PurchaseHandler would do)
-        self.orchestrator.track(paywallEvent: .cancel(
-            Self.paywallEventCreationData,
-            Self.paywallEventWithPurchaseInfo
-        ))
+        // Simulate clearing the cache (as PurchaseHandler would do on cancel)
+        self.orchestrator.clearCachedPurchaseData(productIdentifier: Self.testProductId)
 
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         try await purchase()
 
         // Verify the backend was called
         expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
-        // After cancel clears the cache, the purchase should have no paywall data
+        // After clearing the cache, the purchase should have no paywall data
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
         ).to(beNil())
@@ -624,11 +618,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             productIdentifier: product.productIdentifier
         )
 
-        // Cancel event clears the cached context for this product
-        self.orchestrator.track(paywallEvent: .cancel(
-            Self.paywallEventCreationData,
-            Self.paywallEventWithPurchaseInfo
-        ))
+        // Simulate clearing the cache (as PurchaseHandler would do on cancel)
+        self.orchestrator.clearCachedPurchaseData(productIdentifier: Self.testProductId)
 
         // Purchase without a package (so no new context is cached)
         _ = await withCheckedContinuation { continuation in
@@ -667,11 +658,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             productIdentifier: product.productIdentifier
         )
 
-        // PurchaseError event clears the cached context for this product
-        self.orchestrator.track(paywallEvent: .purchaseError(
-            Self.paywallEventCreationData,
-            Self.paywallEventForPurchaseError
-        ))
+        // Simulate clearing the cache (as PurchaseHandler would do on purchaseError)
+        self.orchestrator.clearCachedPurchaseData(productIdentifier: Self.testProductId)
 
         // Purchase without a package (so no new context is cached)
         _ = await withCheckedContinuation { continuation in
@@ -1092,7 +1080,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let payment = self.storeKit1Wrapper.payment(with: product)
 
         // Track a purchaseInitiated event with a DIFFERENT product ID
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationData,
             Self.paywallEventWithDifferentProductId
         ))
@@ -1124,7 +1112,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         // Track a purchaseInitiated event with a date in the FUTURE (2050)
         // This simulates processing a transaction that was purchased BEFORE the paywall event
-        self.orchestrator.track(paywallEvent: .purchaseInitiated(
+        self.orchestrator.cachePurchaseInitiatedPaywall(.purchaseInitiated(
             Self.paywallEventCreationDataInFuture,
             Self.paywallEventWithPurchaseInfo
         ))

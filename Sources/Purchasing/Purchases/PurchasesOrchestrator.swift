@@ -484,6 +484,7 @@ final class PurchasesOrchestrator {
                   introductoryOfferEligibilityJWS: String? = nil,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions? = nil,
                   metadata: [String: String]? = nil,
+                  paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
                   trackDiagnostics: Bool,
                   completion: @escaping PurchaseCompletedBlock) {
@@ -511,6 +512,7 @@ final class PurchasesOrchestrator {
             self.purchase(sk1Product: sk1Product,
                           payment: payment,
                           package: package,
+                          paywallEvent: paywallEvent,
                           quantity: quantity,
                           wrapper: storeKit1Wrapper,
                           completion: completionWithTracking)
@@ -523,6 +525,7 @@ final class PurchasesOrchestrator {
                           introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
                           promotionalOfferOptions: promotionalOfferOptions,
                           metadata: metadata,
+                          paywallEvent: paywallEvent,
                           quantity: quantity,
                           completion: completionWithTracking)
         } else if let simulatedStoreProduct = product.testStoreProduct {
@@ -553,6 +556,7 @@ final class PurchasesOrchestrator {
     func purchase(sk1Product: SK1Product,
                   payment: SKMutablePayment,
                   package: Package?,
+                  paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
                   wrapper: StoreKit1Wrapper,
                   completion: @escaping PurchaseCompletedBlock) {
@@ -586,6 +590,9 @@ final class PurchasesOrchestrator {
         }
 
         self.cachePresentedOfferingContext(package: package, productIdentifier: productIdentifier)
+        if let paywallEvent {
+            self.cachePurchaseInitiatedPaywall(paywallEvent)
+        }
 
         self.productsManager.cache(StoreProduct(sk1Product: sk1Product))
 
@@ -638,6 +645,7 @@ final class PurchasesOrchestrator {
                   introductoryOfferEligibilityJWS: String?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
+                  paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
         _ = Task<Void, Never> {
@@ -650,6 +658,7 @@ final class PurchasesOrchestrator {
                     introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
                     promotionalOfferOptions: promotionalOfferOptions,
                     metadata: metadata,
+                    paywallEvent: paywallEvent,
                     quantity: quantity
                 )
 
@@ -690,6 +699,7 @@ final class PurchasesOrchestrator {
                   introductoryOfferEligibilityJWS: String?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
+                  paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
         var options: Set<Product.PurchaseOption> = [.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)]
@@ -803,7 +813,8 @@ final class PurchasesOrchestrator {
                     transaction,
                     .purchase,
                     metadata,
-                    presentedOfferingContext: presentedOfferingContext
+                    presentedOfferingContext: presentedOfferingContext,
+                    presentedPaywall: paywallEvent
                 )
                 self.postFeatureEventsIfNeeded()
             } else {
@@ -917,25 +928,20 @@ final class PurchasesOrchestrator {
         self.presentedOfferingContextsByProductID.modify { $0[productIdentifier] = cached }
     }
 
-    func track(paywallEvent: PaywallEvent) {
-        switch paywallEvent {
-        case .purchaseInitiated:
-            // The presentedOfferingContext is cached separately by `cachePresentedOfferingContext`,
-            // both when the purchase is initiated through the SDK's purchase method
-            // and when initiated from a paywall (via PurchaseHandler).
+    func cachePurchaseData(
+        presentedOfferingContext: PresentedOfferingContext,
+        paywallEvent: PaywallEvent?,
+        productIdentifier: String
+    ) {
+        self.cachePresentedOfferingContext(presentedOfferingContext, productIdentifier: productIdentifier)
+        if let paywallEvent {
             self.cachePurchaseInitiatedPaywall(paywallEvent)
-
-        case .cancel, .purchaseError:
-            self.clearPurchaseInitiatedPaywall()
-            if let productId = paywallEvent.data.productId {
-                self.clearCachedPresentedOfferingContext(for: productId)
-            } else {
-                Logger.error(Strings.paywalls.missing_product_id_for_paywall_event)
-            }
-
-        case .impression, .close, .exitOffer:
-            break
         }
+    }
+
+    func clearCachedPurchaseData(productIdentifier: String) {
+        self.clearCachedPresentedOfferingContext(for: productIdentifier)
+        self.clearPurchaseInitiatedPaywall()
     }
 
     func postEventsIfNeeded(delayed: Bool = false) {
@@ -2248,11 +2254,13 @@ extension PurchasesOrchestrator {
         _ transaction: StoreTransaction,
         _ initiationSource: PostReceiptSource.InitiationSource,
         _ metadata: [String: String]?,
-        presentedOfferingContext: PresentedOfferingContext? = nil
+        presentedOfferingContext: PresentedOfferingContext? = nil,
+        presentedPaywall: PaywallEvent? = nil
     ) async throws -> CustomerInfo {
         let cachedOfferingContext = self.getAndRemovePresentedOfferingContext(for: transaction)
         let offeringContext = presentedOfferingContext ?? cachedOfferingContext
-        let paywall = self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
+        let cachedPaywall = self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
+        let paywall = presentedPaywall ?? cachedPaywall
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(

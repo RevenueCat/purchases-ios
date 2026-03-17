@@ -61,11 +61,18 @@ final class MockPurchases: PaywallPurchasesType {
         return try await self.customerInfoBlock()
     }
 
-    func purchase(package: Package) async throws -> PurchaseResultData {
+    func purchase(
+        package: Package,
+        paywallEvent: PaywallEvent?
+    ) async throws -> PurchaseResultData {
         return try await self.purchaseBlock(package)
     }
 
-    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+    func purchase(
+        package: Package,
+        promotionalOffer: PromotionalOffer,
+        paywallEvent: PaywallEvent?
+    ) async throws -> PurchaseResultData {
         return try await self.purchaseBlock(package)
     }
 
@@ -78,9 +85,28 @@ final class MockPurchases: PaywallPurchasesType {
     }
 
     private(set) var cachedPresentedOfferingContextByProductID: [String: PresentedOfferingContext] = [:]
+    private(set) var cachedPaywallEventByProductID: [String: PaywallEvent] = [:]
+    private(set) var clearedProductIDs: [String] = []
 
     func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
         self.cachedPresentedOfferingContextByProductID[productIdentifier] = context
+    }
+
+    func cachePurchaseData(
+        presentedOfferingContext: PresentedOfferingContext,
+        paywallEvent: PaywallEvent?,
+        productIdentifier: String
+    ) {
+        self.cachedPresentedOfferingContextByProductID[productIdentifier] = presentedOfferingContext
+        if let paywallEvent {
+            self.cachedPaywallEventByProductID[productIdentifier] = paywallEvent
+        }
+    }
+
+    func clearCachedPurchaseData(productIdentifier: String) {
+        self.cachedPresentedOfferingContextByProductID.removeValue(forKey: productIdentifier)
+        self.cachedPaywallEventByProductID.removeValue(forKey: productIdentifier)
+        self.clearedProductIDs.append(productIdentifier)
     }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -108,7 +134,7 @@ extension PaywallPurchasesType {
         restore: @escaping (@escaping MockPurchases.RestoreBlock) -> MockPurchases.RestoreBlock
     ) -> PaywallPurchasesType {
         return MockPurchases { package in
-            try await purchase(self.purchase(package:))(package)
+            try await purchase({ try await self.purchase(package: $0, paywallEvent: nil) })(package)
         } restorePurchases: {
             try await restore(self.restorePurchases)()
         } trackEvent: { event in
@@ -123,7 +149,7 @@ extension PaywallPurchasesType {
         trackEvent: @escaping (@escaping MockPurchases.TrackEventBlock) -> MockPurchases.TrackEventBlock
     ) -> PaywallPurchasesType {
         return MockPurchases { package in
-            try await self.purchase(package: package)
+            try await self.purchase(package: package, paywallEvent: nil)
         } restorePurchases: {
             try await self.restorePurchases()
         } trackEvent: { event in
