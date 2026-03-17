@@ -12,10 +12,9 @@ final class RCAdMobAPISurfaceTests: RCAdMobTestCase {
             GoogleMobileAds.Request,
             String?,
             GoogleMobileAds.BannerViewDelegate?,
-            ((GoogleMobileAds.AdValue) -> Void)?,
-            RevenueCat.AdFormat
+            ((GoogleMobileAds.AdValue) -> Void)?
         ) -> Void = GoogleMobileAds.BannerView.loadAndTrack(
-            request:placement:delegate:paidEventHandler:adFormat:
+            request:placement:delegate:paidEventHandler:
         )
         let nativeLoadAndTrackWithDelegate:
             (GoogleMobileAds.AdLoader) -> (
