@@ -93,6 +93,7 @@ struct RestorePurchasesAlert: View {
                     restoreInitiated: self.externalActions.restoreInitiated
                 )
                 if !didStartRestore {
+                    self.customerCenterViewModel.onDismissRestorePurchasesAlert()
                     self.isPresented = false
                     self.viewModel.alertType = .loading
                 }
