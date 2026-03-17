@@ -43,8 +43,10 @@ import SwiftUI
         restoreInitiated: (@MainActor @Sendable (ResumeAction) -> Void)? = nil
     ) async -> Bool {
         if let restoreInitiated {
+            Logger.debug(Strings.restore_purchases_gate_start)
             let shouldProceed = await withCheckedContinuation { continuation in
                 restoreInitiated(ResumeAction { shouldProceed in
+                    Logger.debug(Strings.restore_purchases_gate_finish(with: shouldProceed))
                     continuation.resume(returning: shouldProceed)
                 })
             }
