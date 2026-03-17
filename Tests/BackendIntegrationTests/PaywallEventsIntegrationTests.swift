@@ -152,7 +152,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
             fail("Expected error")
         } catch {
             // Simulate PurchaseHandler clearing the cache on error
-            self.purchases.clearCachedPurchaseData(productIdentifier: productId)
+            try self.purchases.clearCachedPurchaseData(productIdentifier: productId)
         }
 
         self.logger.clearMessages()
