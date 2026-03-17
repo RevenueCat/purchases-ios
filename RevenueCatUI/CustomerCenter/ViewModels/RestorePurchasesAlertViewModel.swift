@@ -14,6 +14,8 @@
 import Foundation
 import SwiftUI
 
+private let defaultRestoreInitiatedTimeoutNanoseconds: UInt64 = 60_000_000_000
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -24,6 +26,7 @@ import SwiftUI
     var alertType: RestorePurchasesAlertViewModel.AlertType = .loading
 
     private let actionWrapper: CustomerCenterActionWrapper
+    private let restoreInitiatedTimeoutNanoseconds: UInt64
 
     enum AlertType: Identifiable {
         case loading, purchasesRecovered, purchasesNotFound
@@ -32,13 +35,39 @@ import SwiftUI
 
     init(
         purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
-        actionWrapper: CustomerCenterActionWrapper
+        actionWrapper: CustomerCenterActionWrapper,
+        restoreInitiatedTimeoutNanoseconds: UInt64 = defaultRestoreInitiatedTimeoutNanoseconds
     ) {
         self.actionWrapper = actionWrapper
+        self.restoreInitiatedTimeoutNanoseconds = restoreInitiatedTimeoutNanoseconds
     }
 
-    func performRestore(purchasesProvider: CustomerCenterPurchasesType) async {
+    func performRestore(
+        purchasesProvider: CustomerCenterPurchasesType,
+        restoreInitiated: @escaping @MainActor @Sendable (ResumeAction) -> Void
+    ) async -> Bool {
         self.alertType = .loading
+
+        let shouldProceed = await withCheckedContinuation { continuation in
+            let resume = self.singleUseResumeAction(for: continuation)
+
+            Task { @MainActor [restoreInitiatedTimeoutNanoseconds = self.restoreInitiatedTimeoutNanoseconds] in
+                try? await Task.sleep(nanoseconds: restoreInitiatedTimeoutNanoseconds)
+                resume(shouldProceed: true)
+            }
+
+            // Legacy action handlers should take precedence over environment callbacks.
+            if self.actionWrapper.hasLegacyActionHandler {
+                self.actionWrapper.handleAction(.restoreInitiated(resume))
+            } else {
+                restoreInitiated(resume)
+            }
+        }
+
+        guard shouldProceed else {
+            return false
+        }
+
         self.actionWrapper.handleAction(.restoreStarted)
 
         do {
@@ -53,6 +82,35 @@ import SwiftUI
             self.actionWrapper.handleAction(.restoreFailed(error))
             self.alertType = .purchasesNotFound
         }
+
+        return true
+    }
+
+    private func singleUseResumeAction(for continuation: CheckedContinuation<Bool, Never>) -> ResumeAction {
+        final class ResumeState: @unchecked Sendable {
+            private let lock = NSLock()
+            private var didResume = false
+
+            func tryResume(
+                shouldProceed: Bool,
+                continuation: CheckedContinuation<Bool, Never>
+            ) {
+                self.lock.lock()
+                defer { self.lock.unlock() }
+
+                guard !self.didResume else { return }
+                self.didResume = true
+                continuation.resume(returning: shouldProceed)
+            }
+        }
+
+        let state = ResumeState()
+
+        let resume = ResumeAction(action: { shouldProceed in
+            state.tryResume(shouldProceed: shouldProceed, continuation: continuation)
+        })
+
+        return resume
     }
 
 }

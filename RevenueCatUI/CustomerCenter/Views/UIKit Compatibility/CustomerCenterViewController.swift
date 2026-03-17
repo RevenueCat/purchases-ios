@@ -15,6 +15,8 @@ import Combine
 import RevenueCat
 import SwiftUI
 
+// swiftlint:disable file_length
+
 #if canImport(UIKit) && os(iOS)
 
 /// Use the Customer Center in your app to help your customers manage common support tasks.
@@ -43,6 +45,7 @@ public class CustomerCenterViewController: UIViewController {
 
     /// The action wrapper for the current view, used for Swift closure-based handlers
     private var actionWrapper: CustomerCenterActionWrapper?
+    private var restoreInitiated: CustomerCenterView.RestoreInitiatedHandler?
 
     /// Create a view controller with a delegate for receiving callbacks.
     ///
@@ -55,6 +58,7 @@ public class CustomerCenterViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
 
         self.delegate = delegate
+        self.restoreInitiated = nil
 
         let actionWrapper = CustomerCenterActionWrapper()
         setupDelegateBindings(actionWrapper: actionWrapper)
@@ -70,10 +74,14 @@ public class CustomerCenterViewController: UIViewController {
         customerCenterActionHandler: CustomerCenterActionHandler?
     ) {
         super.init(nibName: nil, bundle: nil)
+        self.restoreInitiated = nil
 
         let actionWrapper = CustomerCenterActionWrapper()
 
         if let handler = customerCenterActionHandler {
+            self.restoreInitiated = { resume in
+                handler(.restoreInitiated(resume))
+            }
             actionWrapper.restoreStartedPublisher
                 .sink { handler(.restoreStarted) }
                 .store(in: &cancellables)
@@ -103,6 +111,7 @@ public class CustomerCenterViewController: UIViewController {
     // swiftlint:disable cyclomatic_complexity function_body_length
     /// Create a view controller to handle common customer support tasks with individual action handlers
     /// - Parameters:
+    ///   - restoreInitiated: Handler called when a restore operation is about to start.
     ///   - restoreStarted: Handler called when a restore operation starts.
     ///   - restoreCompleted: Handler called when a restore operation completes successfully.
     ///   - restoreFailed: Handler called when a restore operation fails.
@@ -111,6 +120,7 @@ public class CustomerCenterViewController: UIViewController {
     ///   - refundRequestCompleted: Handler called when a refund request completes.
     ///   - feedbackSurveyCompleted: Handler called when a feedback survey is completed.
     public init(
+        restoreInitiated: CustomerCenterView.RestoreInitiatedHandler? = nil,
         restoreStarted: CustomerCenterView.RestoreStartedHandler? = nil,
         restoreCompleted: CustomerCenterView.RestoreCompletedHandler? = nil,
         restoreFailed: CustomerCenterView.RestoreFailedHandler? = nil,
@@ -124,6 +134,7 @@ public class CustomerCenterViewController: UIViewController {
         promotionalOfferSuccess: CustomerCenterView.PromotionalOfferSuccessHandler? = nil
     ) {
         super.init(nibName: nil, bundle: nil)
+        self.restoreInitiated = restoreInitiated
 
         let actionWrapper = CustomerCenterActionWrapper()
 
@@ -222,7 +233,7 @@ public class CustomerCenterViewController: UIViewController {
     // MARK: - Private
 
     /// The hosting controller that contains the SwiftUI CustomerCenterView
-    private var hostingController: UIHostingController<CustomerCenterView>? {
+    private var hostingController: UIHostingController<CustomerCenterViewWithModifiers>? {
         willSet {
             guard let oldController = self.hostingController else { return }
 
@@ -346,7 +357,30 @@ public class CustomerCenterViewController: UIViewController {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private extension CustomerCenterViewController {
-    func createHostingController() -> UIHostingController<CustomerCenterView> {
+    func createRestoreInitiatedHandler() -> CustomerCenterView.RestoreInitiatedHandler {
+        return { [weak self] resume in
+            guard let self else {
+                resume(shouldProceed: true)
+                return
+            }
+
+            if let restoreInitiated = self.restoreInitiated {
+                restoreInitiated(resume)
+                return
+            }
+
+            let callback: (Bool) -> Void = { shouldProceed in
+                Task { @MainActor in
+                    resume(shouldProceed: shouldProceed)
+                }
+            }
+
+            self.delegate?.customerCenterViewController?(self, didInitiateRestoreWith: callback)
+                ?? resume(shouldProceed: true)
+        }
+    }
+
+    func createHostingController() -> UIHostingController<CustomerCenterViewWithModifiers> {
         let navigationOptions = CustomerCenterNavigationOptions(
             onCloseHandler: { [weak self] in
                 guard let self else { return }
@@ -361,18 +395,26 @@ private extension CustomerCenterViewController {
             }
         )
 
-        let view: CustomerCenterView
+        let rootView: CustomerCenterView
         if let wrapper = self.actionWrapper {
-            view = CustomerCenterView(
+            rootView = CustomerCenterView(
                 actionWrapper: wrapper,
                 mode: .default,
                 navigationOptions: navigationOptions
             )
         } else {
-            view = CustomerCenterView(navigationOptions: navigationOptions)
+            rootView = CustomerCenterView(navigationOptions: navigationOptions)
         }
 
-        let controller = UIHostingController(rootView: view)
+        let handler = self.createRestoreInitiatedHandler()
+        let controller = UIHostingController(
+            rootView: CustomerCenterViewWithModifiers(
+                customerCenterView: rootView,
+                restoreInitiated: { shouldResume in
+                    handler(shouldResume)
+                }
+            )
+        )
 
         // make the background of the container clear so that if there are cutouts, they don't get
         // overridden by the hostingController's view's background.
@@ -381,5 +423,4 @@ private extension CustomerCenterViewController {
         return controller
     }
 }
-
 #endif

@@ -21,6 +21,7 @@ import SwiftUI
 internal enum CustomerCenterInternalAction {
 
     // Actions that map directly to public CustomerCenterAction cases
+    case restoreInitiated(ResumeAction)
     case restoreStarted
     case restoreFailed(Error)
     case restoreCompleted(CustomerInfo)
@@ -40,6 +41,8 @@ internal enum CustomerCenterInternalAction {
     /// Returns nil for actions that don't have a legacy CustomerCenterAction equivalent
     var asLegacyAction: CustomerCenterAction? {
         switch self {
+        case .restoreInitiated(let resume):
+            return .restoreInitiated(resume)
         case .restoreStarted:
             return .restoreStarted
         case .restoreFailed(let error):
@@ -87,6 +90,10 @@ final class CustomerCenterActionWrapper {
         self.legacyActionHandler = legacyActionHandler
     }
 
+    var hasLegacyActionHandler: Bool {
+        return self.legacyActionHandler != nil
+    }
+
     // swiftlint:disable:next cyclomatic_complexity
     func handleAction(_ action: CustomerCenterInternalAction) {
         if let legacyAction = action.asLegacyAction {
@@ -94,6 +101,9 @@ final class CustomerCenterActionWrapper {
         }
 
         switch action {
+        case .restoreInitiated:
+            break
+
         case .restoreStarted:
             restoreStarted.send(())
 

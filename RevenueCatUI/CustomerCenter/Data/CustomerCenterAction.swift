@@ -2,6 +2,8 @@ import RevenueCat
 
 /// Typealias for handler for Customer center actions
 /// - Note: This handler is deprecated. Please use the view modifiers in View+CustomerCenterActions.swift instead.
+/// - Important: When handling ``CustomerCenterAction/restoreInitiated(_:)``, invoke the provided `resume` callback
+/// exactly once to either continue (`true`) or cancel (`false`) restore.
 @available(*, deprecated, message: """
 Use the view modifiers in View+CustomerCenterActions.swift instead.
 For example, use .onCustomerCenterRestoreStarted(), .onCustomerCenterRestoreCompleted(), etc.
@@ -15,6 +17,11 @@ internal typealias DeprecatedCustomerCenterActionHandler = @MainActor @Sendable 
 /// Represents an event the customer may perform during the Customer Center flow
 public enum CustomerCenterAction {
 
+    /// Before attempting to restore purchases, this is a gating mechanism that can be used
+    /// to perform additional logic and then choose whether restore should proceed.
+    ///
+    /// Call the given `ResumeAction` exactly once to continue (`true`) or cancel (`false`) the restore flow.
+    case restoreInitiated(_ resume: ResumeAction)
     /// Starting the restoration process
     case restoreStarted
     /// Restore errored out

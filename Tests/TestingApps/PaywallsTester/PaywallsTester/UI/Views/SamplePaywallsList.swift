@@ -301,6 +301,8 @@ extension SamplePaywallsList {
 
     func handleCustomerCenterAction(action: CustomerCenterAction) {
         switch action {
+        case .restoreInitiated(_):
+            print("CustomerCenter: restoreInitiated")
         case .restoreCompleted(_):
             print("CustomerCenter: restoreCompleted")
         case .restoreStarted:

@@ -423,6 +423,108 @@ final class CustomerCenterActionWrapperTests: TestCase {
 
         await fulfillment(of: [customActionExpectation], timeout: 1.0)
     }
+
+    func testRestoreInitiatedLegacyHandlerCanCancelRestore() async throws {
+        let purchasesProvider = await MockCustomerCenterPurchases()
+        purchasesProvider.restorePurchasesResult = .success(CustomerInfoFixtures.customerInfoWithGoogleSubscriptions)
+
+        let restoreInitiatedExpectation = XCTestExpectation(description: "restoreInitiated legacy handler called")
+        let actionWrapper = await CustomerCenterActionWrapper(legacyActionHandler: { action in
+            guard case let .restoreInitiated(resume) = action else { return }
+
+            resume(shouldProceed: false)
+            restoreInitiatedExpectation.fulfill()
+        })
+
+        let viewModel = await RestorePurchasesAlertViewModel(actionWrapper: actionWrapper)
+        var environmentHandlerCalled = false
+
+        let didProceed = await viewModel.performRestore(
+            purchasesProvider: purchasesProvider,
+            restoreInitiated: { _ in
+                environmentHandlerCalled = true
+            }
+        )
+
+        await fulfillment(of: [restoreInitiatedExpectation], timeout: 1.0)
+        expect(didProceed).to(beFalse())
+        expect(environmentHandlerCalled).to(beFalse())
+        expect(purchasesProvider.restorePurchasesCallCount) == 0
+    }
+
+    func testRestoreInitiatedLegacyHandlerCanProceedWithRestore() async throws {
+        let purchasesProvider = await MockCustomerCenterPurchases()
+        purchasesProvider.restorePurchasesResult = .success(CustomerInfoFixtures.customerInfoWithGoogleSubscriptions)
+
+        let restoreInitiatedExpectation = XCTestExpectation(description: "restoreInitiated legacy handler called")
+        let actionWrapper = await CustomerCenterActionWrapper(legacyActionHandler: { action in
+            guard case let .restoreInitiated(resume) = action else { return }
+
+            resume(shouldProceed: true)
+            restoreInitiatedExpectation.fulfill()
+        })
+
+        let viewModel = await RestorePurchasesAlertViewModel(actionWrapper: actionWrapper)
+
+        let didProceed = await viewModel.performRestore(
+            purchasesProvider: purchasesProvider,
+            restoreInitiated: { _ in
+                XCTFail("Environment handler should not be used when legacy handler is present.")
+            }
+        )
+
+        await fulfillment(of: [restoreInitiatedExpectation], timeout: 1.0)
+        expect(didProceed).to(beTrue())
+        expect(purchasesProvider.restorePurchasesCallCount) == 1
+    }
+
+    func testRestoreInitiatedLegacyHandlerWithoutResumeAutoProceedsAfterTimeout() async throws {
+        let purchasesProvider = await MockCustomerCenterPurchases()
+        purchasesProvider.restorePurchasesResult = .success(CustomerInfoFixtures.customerInfoWithGoogleSubscriptions)
+
+        let restoreInitiatedExpectation = XCTestExpectation(description: "restoreInitiated legacy handler called")
+        let actionWrapper = await CustomerCenterActionWrapper(legacyActionHandler: { action in
+            guard case .restoreInitiated = action else { return }
+            restoreInitiatedExpectation.fulfill()
+        })
+
+        let viewModel = await RestorePurchasesAlertViewModel(
+            actionWrapper: actionWrapper,
+            restoreInitiatedTimeoutNanoseconds: 50_000_000
+        )
+
+        let didProceed = await viewModel.performRestore(
+            purchasesProvider: purchasesProvider,
+            restoreInitiated: { _ in
+                XCTFail("Environment handler should not be used when legacy handler is present.")
+            }
+        )
+
+        await fulfillment(of: [restoreInitiatedExpectation], timeout: 1.0)
+        expect(didProceed).to(beTrue())
+        expect(purchasesProvider.restorePurchasesCallCount) == 1
+    }
+
+    func testRestoreInitiatedEnvironmentHandlerWithoutResumeAutoProceedsAfterTimeout() async throws {
+        let purchasesProvider = await MockCustomerCenterPurchases()
+        purchasesProvider.restorePurchasesResult = .success(CustomerInfoFixtures.customerInfoWithGoogleSubscriptions)
+
+        let actionWrapper = await CustomerCenterActionWrapper()
+        let viewModel = await RestorePurchasesAlertViewModel(
+            actionWrapper: actionWrapper,
+            restoreInitiatedTimeoutNanoseconds: 50_000_000
+        )
+
+        let didProceed = await viewModel.performRestore(
+            purchasesProvider: purchasesProvider,
+            restoreInitiated: { _ in
+                // Intentionally not calling resume to verify timeout fallback.
+            }
+        )
+
+        expect(didProceed).to(beTrue())
+        expect(purchasesProvider.restorePurchasesCallCount) == 1
+    }
 }
 
 #endif

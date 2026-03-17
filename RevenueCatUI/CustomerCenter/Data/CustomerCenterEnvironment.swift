@@ -108,6 +108,9 @@ extension EnvironmentValues {
 /// registering environment handlers to avoid overriding host handlers.
 final class CustomerCenterExternalActions: @unchecked Sendable {
     // Composite closures invoked by the SDK
+    var restoreInitiated: @MainActor @Sendable (ResumeAction) -> Void = { resume in
+        resume(shouldProceed: true)
+    }
     var restoreStarted: @MainActor @Sendable () -> Void = {}
     var restoreFailed: @MainActor @Sendable (Error) -> Void = { _ in }
     var restoreCompleted: @MainActor @Sendable (CustomerInfo) -> Void = { _ in }

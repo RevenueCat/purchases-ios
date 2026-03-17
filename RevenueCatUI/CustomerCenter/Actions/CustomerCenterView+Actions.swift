@@ -16,6 +16,8 @@ import SwiftUI
 
 #if os(iOS)
 
+// swiftlint:disable file_length
+
 // MARK: - CustomerCenterView Extension
 
 @available(iOS 15.0, *)
@@ -26,7 +28,10 @@ extension CustomerCenterView {
 
     // MARK: - Typealias Declarations
 
-    /// A closure used for notifying of restore initiation in the Customer Center.
+    /// A closure used for intercepting restore before it starts in the Customer Center.
+    public typealias RestoreInitiatedHandler = @MainActor @Sendable (_ resume: ResumeAction) -> Void
+
+    /// A closure used for notifying of restore start in the Customer Center.
     public typealias RestoreStartedHandler = @MainActor @Sendable () -> Void
 
     /// A closure used for notifying of restore failure in the Customer Center.
@@ -63,6 +68,15 @@ extension CustomerCenterView {
     public typealias ChangePlansHandler = @MainActor @Sendable (_ optionId: String) -> Void
 
     // MARK: - View Modifiers
+
+    fileprivate struct OnRestoreInitiatedModifier: ViewModifier {
+        let handler: RestoreInitiatedHandler
+        func body(content: Content) -> some View {
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.restoreInitiated = handler as @MainActor @Sendable (ResumeAction) -> Void
+            }
+        }
+    }
 
     fileprivate struct OnRestoreStartedModifier: ViewModifier {
         let handler: RestoreStartedHandler
@@ -175,7 +189,39 @@ extension CustomerCenterView {
 @available(watchOS, unavailable)
 extension View {
 
+    /// Invokes the given closure when restore is about to be initiated in the Customer Center,
+    /// allowing you to intercept and gate restore.
+    /// The restore process won't proceed until you invoke `resume`.
+    ///
+    /// - Important: Invoke `resume` exactly once.
+    /// - Note: If a deprecated `CustomerCenterActionHandler` is also configured, its
+    /// ``CustomerCenterAction/restoreInitiated(_:)`` handling takes precedence over this modifier.
+    /// Example:
+    /// ```swift
+    ///  var body: some View {
+    ///     ContentView()
+    ///         .sheet(isPresented: self.$displayCustomerCenter) {
+    ///             CustomerCenterView()
+    ///                 .onCustomerCenterRestoreInitiated { resume in
+    ///                     authenticateUser { success in
+    ///                         resume(shouldProceed: success)
+    ///                     }
+    ///                 }
+    ///         }
+    ///  }
+    /// ```
+    public func onCustomerCenterRestoreInitiated(
+        _ handler: @escaping CustomerCenterView.RestoreInitiatedHandler
+    ) -> some View {
+        return self.modifier(CustomerCenterView.OnRestoreInitiatedModifier(handler: handler))
+    }
+
     /// Invokes the given closure when a restore begins in the Customer Center.
+    ///
+    /// - Note: This callback is invoked after restore has started.
+    ///   If you need to intercept restore before it begins, use
+    ///   ``onCustomerCenterRestoreInitiated(_:)``.
+    ///
     /// Example:
     /// ```swift
     ///  var body: some View {

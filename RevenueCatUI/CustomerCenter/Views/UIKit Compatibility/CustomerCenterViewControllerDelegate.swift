@@ -27,6 +27,14 @@ import RevenueCat
 @objc(RCCustomerCenterViewControllerDelegate)
 public protocol CustomerCenterViewControllerDelegate: NSObjectProtocol {
 
+    /// Called when a restore operation is about to start.
+    /// Invoke `resume` with `true` to continue restore, or `false` to cancel.
+    @objc(customerCenterViewController:didInitiateRestoreWithResume:)
+    optional func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didInitiateRestoreWith resume: @escaping (Bool) -> Void
+    )
+
     /// Called when a restore operation starts.
     @objc(customerCenterViewControllerDidStartRestore:)
     optional func customerCenterViewControllerDidStartRestore(_ controller: CustomerCenterViewController)

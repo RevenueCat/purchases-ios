@@ -35,6 +35,7 @@ public struct CustomerCenterNavigationLink<Label: View>: View {
     @ViewBuilder private let label: () -> Label
 
     // Stored handlers for later updating if needed
+    private var restoreInitiatedHandler: CustomerCenterView.RestoreInitiatedHandler?
     private var restoreStartedHandler: CustomerCenterView.RestoreStartedHandler?
     private var restoreCompletedHandler: CustomerCenterView.RestoreCompletedHandler?
     private var restoreFailedHandler: CustomerCenterView.RestoreFailedHandler?
@@ -69,6 +70,9 @@ public struct CustomerCenterNavigationLink<Label: View>: View {
 
             // Map the legacy handler to individual handlers
             if let handler = customerCenterActionHandler {
+                self.restoreInitiatedHandler = { resume in
+                    handler(.restoreInitiated(resume))
+                }
                 self.restoreStartedHandler = { handler(.restoreStarted) }
                 self.restoreCompletedHandler = { handler(.restoreCompleted($0)) }
                 self.restoreFailedHandler = { handler(.restoreFailed($0)) }
@@ -107,6 +111,9 @@ public struct CustomerCenterNavigationLink<Label: View>: View {
                     usesExistingNavigation: true,
                     shouldShowCloseButton: false
                 ))
+                .applyIfLet(self.restoreInitiatedHandler) { view, handler in
+                    view.onCustomerCenterRestoreInitiated(handler)
+                }
                 .applyIfLet(self.restoreStartedHandler) { view, handler in
                     view.onCustomerCenterRestoreStarted(handler)
                 }

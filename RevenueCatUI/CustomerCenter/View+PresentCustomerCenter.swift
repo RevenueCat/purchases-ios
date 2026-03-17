@@ -59,6 +59,7 @@ extension View {
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         // Convert the legacy handler to individual handlers if one is provided
+        var restoreInitiatedHandler: CustomerCenterView.RestoreInitiatedHandler?
         var restoreStartedHandler: CustomerCenterView.RestoreStartedHandler?
         var restoreCompletedHandler: CustomerCenterView.RestoreCompletedHandler?
         var restoreFailedHandler: CustomerCenterView.RestoreFailedHandler?
@@ -68,6 +69,9 @@ extension View {
         var feedbackSurveyCompletedHandler: CustomerCenterView.FeedbackSurveyCompletedHandler?
 
         if let handler = customerCenterActionHandler {
+            restoreInitiatedHandler = { resume in
+                handler(.restoreInitiated(resume))
+            }
             restoreStartedHandler = { handler(.restoreStarted) }
             restoreCompletedHandler = { handler(.restoreCompleted($0)) }
             restoreFailedHandler = { handler(.restoreFailed($0)) }
@@ -83,6 +87,7 @@ extension View {
                 onDismiss: onDismiss,
                 myAppPurchaseLogic: nil,
                 presentationMode: presentationMode,
+                restoreInitiated: restoreInitiatedHandler,
                 restoreStarted: restoreStartedHandler,
                 restoreCompleted: restoreCompletedHandler,
                 restoreFailed: restoreFailedHandler,
@@ -124,6 +129,7 @@ extension View {
     ///   - isPresented: A binding that determines whether the Customer Center is visible.
     ///   - presentationMode: Specifies how the Customer Center should be presented (e.g., as a sheet or fullscreen).
     ///   - myAppPurchaseLogic: Optional custom purchase logic for "my app" purchases.
+    ///   - restoreInitiated: Handler called when a restore operation is about to begin.
     ///   - restoreStarted: Handler called when a restore operation starts.
     ///   - restoreCompleted: Handler called when a restore operation completes successfully.
     ///   - restoreFailed: Handler called when a restore operation fails.
@@ -137,6 +143,7 @@ extension View {
     public func presentCustomerCenter(
         isPresented: Binding<Bool>,
         presentationMode: CustomerCenterPresentationMode = .default,
+        restoreInitiated: CustomerCenterView.RestoreInitiatedHandler? = nil,
         restoreStarted: CustomerCenterView.RestoreStartedHandler? = nil,
         restoreCompleted: CustomerCenterView.RestoreCompletedHandler? = nil,
         restoreFailed: CustomerCenterView.RestoreFailedHandler? = nil,
@@ -155,6 +162,7 @@ extension View {
                 onDismiss: onDismiss,
                 myAppPurchaseLogic: nil,
                 presentationMode: presentationMode,
+                restoreInitiated: restoreInitiated,
                 restoreStarted: restoreStarted,
                 restoreCompleted: restoreCompleted,
                 restoreFailed: restoreFailed,
@@ -177,6 +185,7 @@ extension View {
 private struct PresentingCustomerCenterModifier: ViewModifier {
 
     let presentationMode: CustomerCenterPresentationMode
+    let restoreInitiated: CustomerCenterView.RestoreInitiatedHandler?
     let restoreStarted: CustomerCenterView.RestoreStartedHandler?
     let restoreCompleted: CustomerCenterView.RestoreCompletedHandler?
     let restoreFailed: CustomerCenterView.RestoreFailedHandler?
@@ -196,6 +205,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         onDismiss: (() -> Void)?,
         myAppPurchaseLogic: MyAppPurchaseLogic?,
         presentationMode: CustomerCenterPresentationMode,
+        restoreInitiated: CustomerCenterView.RestoreInitiatedHandler? = nil,
         restoreStarted: CustomerCenterView.RestoreStartedHandler? = nil,
         restoreCompleted: CustomerCenterView.RestoreCompletedHandler? = nil,
         restoreFailed: CustomerCenterView.RestoreFailedHandler? = nil,
@@ -211,6 +221,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         self._isPresented = isPresented
         self.presentationMode = presentationMode
         self.onDismiss = onDismiss
+        self.restoreInitiated = restoreInitiated
         self.restoreStarted = restoreStarted
         self.restoreCompleted = restoreCompleted
         self.restoreFailed = restoreFailed
@@ -256,6 +267,13 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     private func customerCenterView() -> some View {
         // Build the view and attach environment-based handlers
         return CustomerCenterView()
+            .onCustomerCenterRestoreInitiated { [restoreInitiated] resume in
+                if let restoreInitiated {
+                    restoreInitiated(resume)
+                } else {
+                    resume(shouldProceed: true)
+                }
+            }
             .onCustomerCenterRestoreStarted { [restoreStarted] in
                 restoreStarted?()
             }
