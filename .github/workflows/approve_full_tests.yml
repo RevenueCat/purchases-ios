@@ -101,14 +101,19 @@ jobs:
           echo "Found approval request: $APPROVAL_REQUEST_ID"
 
           # 4. Approve it
-          HTTP_STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" -X POST \
+          RESPONSE_FILE=$(mktemp)
+          HTTP_STATUS=$(curl -s --max-time 15 -w "%{http_code}" -o "$RESPONSE_FILE" -X POST \
             -H "Circle-Token: $CCI_TOKEN" \
             "https://circleci.com/api/v2/workflow/$WORKFLOW_ID/approve/$APPROVAL_REQUEST_ID")
 
           if [[ "$HTTP_STATUS" != "202" ]]; then
             echo "::error::Failed to approve job. CircleCI returned HTTP $HTTP_STATUS"
+            echo "Response body:"
+            cat "$RESPONSE_FILE"
+            rm -f "$RESPONSE_FILE"
             exit 1
           fi
+          rm -f "$RESPONSE_FILE"
 
           echo "Successfully approved '$APPROVAL_JOB_NAME' in workflow '$WORKFLOW_NAME'"
 
