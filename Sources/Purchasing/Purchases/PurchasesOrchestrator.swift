@@ -762,7 +762,7 @@ final class PurchasesOrchestrator {
                 #endif
             }
 
-            self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
+            let presentedOfferingContext = package?.presentedOfferingContext
 
             result = try await self.purchase(sk2Product, options)
 
@@ -779,10 +779,7 @@ final class PurchasesOrchestrator {
                 userCancelled = true
                 transaction = nil
                 if self.systemInfo.dangerousSettings.customEntitlementComputation {
-                    // handleSK2ProductPurchaseError will clear the cached context
                     throw ErrorUtils.purchaseCancelledError()
-                } else {
-                    self.clearCachedPresentedOfferingContext(for: sk2Product.id)
                 }
             case let .successfulVerifiedTransaction(verifiedTransaction):
                 userCancelled = false
@@ -802,7 +799,12 @@ final class PurchasesOrchestrator {
                     )
                 }
 
-                customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
+                customerInfo = try await self.handlePurchasedTransaction(
+                    transaction,
+                    .purchase,
+                    metadata,
+                    presentedOfferingContext: presentedOfferingContext
+                )
                 self.postFeatureEventsIfNeeded()
             } else {
                 // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
@@ -837,8 +839,6 @@ final class PurchasesOrchestrator {
         promotionalOfferId: String?,
         winBackOfferApplied: Bool
     ) async throws -> PurchaseResultData {
-        self.clearCachedPresentedOfferingContext(for: productId)
-
         if case StoreKitError.userCancelled = error {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
                 throw ErrorUtils.purchaseCancelledError()
@@ -2247,9 +2247,10 @@ extension PurchasesOrchestrator {
     private func handlePurchasedTransaction(
         _ transaction: StoreTransaction,
         _ initiationSource: PostReceiptSource.InitiationSource,
-        _ metadata: [String: String]?
+        _ metadata: [String: String]?,
+        presentedOfferingContext: PresentedOfferingContext? = nil
     ) async throws -> CustomerInfo {
-        let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
+        let offeringContext = presentedOfferingContext ?? self.getAndRemovePresentedOfferingContext(for: transaction)
         let paywall = self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
