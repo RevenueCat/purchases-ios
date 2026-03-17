@@ -658,12 +658,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
-    func testPurchaseBeforePaywallEventDoesNotIncludePaywallData() async throws {
+    func testCachedPaywallEventIsAttributedRegardlessOfEventCreationDate() async throws {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        // Track a purchaseInitiated event with a date in the FUTURE (2050)
-        // This simulates processing a transaction that was purchased BEFORE the paywall event
+        // Cache a paywall event whose internal creation date is far in the future.
+        // With the unified cache, only the cache insertion date (dateProvider.now()) is used
+        // for the date guard — not the event's own creation date.
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: nil,
             paywallEvent: .purchaseInitiated(
@@ -687,13 +688,12 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                  introductoryOfferEligibilityJWS: nil,
                                                  promotionalOfferOptions: nil)
 
-        // Verify the backend was called
         expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
-        // The paywall data should NOT be included because the transaction's purchase date
-        // is before the paywall event's creation date
+        // The paywall IS attributed because the cache date (from dateProvider.now())
+        // is before the transaction's purchase date.
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
-        ).to(beNil())
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEventWithPurchaseInfo
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -1690,7 +1690,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == "test_offering"
     }
 
-    func testSK2TransactionListenerDoesNotAttributeOfferingContextWhenPurchaseDateIsBeforeCacheDate() async throws {
+    func testSK2TransactionListenerDoesNotAttributeCachedDataWhenPurchaseDateIsBeforeCacheDate() async throws {
         self.setUpStoreKit2Listener()
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
@@ -1703,10 +1703,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             purchaseDate: pastDate
         )
 
-        // Cache the offering context AFTER the transaction's purchase date
+        // Cache both offering context and paywall event AFTER the transaction's purchase date
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "test_offering"),
-            paywallEvent: nil,
+            paywallEvent: .purchaseInitiated(
+                Self.paywallEventCreationData,
+                Self.paywallEventWithPurchaseInfo
+            ),
             productIdentifier: Self.testProductId
         )
 
@@ -1716,9 +1719,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         )
 
         expect(self.backend.invokedPostReceiptData) == true
-        // The offering context should NOT be attributed because the transaction's purchase date
-        // is before the cache date (the paywall was shown after the purchase happened)
+        // Neither offering context nor paywall should be attributed because the
+        // transaction's purchase date is before the cache date
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
     }
 
     func testSK2TransactionListenerDelegateIncludesAttributionForPurchaseReason() async throws {

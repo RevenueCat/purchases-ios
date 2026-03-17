@@ -285,9 +285,9 @@ class PurchaseHandlerTests: TestCase {
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
         let expectedProductId = TestData.packageWithIntroOffer.storeProduct.productIdentifier
-        let cachedContext = mockPurchases.cachedPresentedOfferingContextByProductID[expectedProductId]
-        expect(cachedContext).toNot(beNil())
-        expect(cachedContext?.offeringIdentifier)
+        let cachedData = mockPurchases.cachedPurchaseDataByProductID[expectedProductId]
+        expect(cachedData).toNot(beNil())
+        expect(cachedData?.presentedOfferingContext.offeringIdentifier)
             == TestData.packageWithIntroOffer.presentedOfferingContext.offeringIdentifier
     }
 
@@ -322,9 +322,9 @@ class PurchaseHandlerTests: TestCase {
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
         let expectedProductId = TestData.packageWithIntroOffer.storeProduct.productIdentifier
-        let cachedContext = mockPurchases.cachedPresentedOfferingContextByProductID[expectedProductId]
-        expect(cachedContext).toNot(beNil())
-        expect(cachedContext?.offeringIdentifier)
+        let cachedData = mockPurchases.cachedPurchaseDataByProductID[expectedProductId]
+        expect(cachedData).toNot(beNil())
+        expect(cachedData?.presentedOfferingContext.offeringIdentifier)
             == TestData.packageWithIntroOffer.presentedOfferingContext.offeringIdentifier
     }
 

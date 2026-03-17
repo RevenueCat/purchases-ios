@@ -77,8 +77,12 @@ final class MockPurchases: PaywallPurchasesType {
         await self.trackEventBlock(paywallEvent)
     }
 
-    private(set) var cachedPresentedOfferingContextByProductID: [String: PresentedOfferingContext] = [:]
-    private(set) var cachedPaywallEventByProductID: [String: PaywallEvent] = [:]
+    struct CachedPurchaseData {
+        let presentedOfferingContext: PresentedOfferingContext
+        let paywallEvent: PaywallEvent?
+    }
+
+    private(set) var cachedPurchaseDataByProductID: [String: CachedPurchaseData] = [:]
     private(set) var clearedProductIDs: [String] = []
 
     func cachePurchaseData(
@@ -86,15 +90,14 @@ final class MockPurchases: PaywallPurchasesType {
         paywallEvent: PaywallEvent?,
         productIdentifier: String
     ) {
-        self.cachedPresentedOfferingContextByProductID[productIdentifier] = presentedOfferingContext
-        if let paywallEvent {
-            self.cachedPaywallEventByProductID[productIdentifier] = paywallEvent
-        }
+        self.cachedPurchaseDataByProductID[productIdentifier] = CachedPurchaseData(
+            presentedOfferingContext: presentedOfferingContext,
+            paywallEvent: paywallEvent
+        )
     }
 
     func clearCachedPurchaseData(productIdentifier: String) {
-        self.cachedPresentedOfferingContextByProductID.removeValue(forKey: productIdentifier)
-        self.cachedPaywallEventByProductID.removeValue(forKey: productIdentifier)
+        self.cachedPurchaseDataByProductID.removeValue(forKey: productIdentifier)
         self.clearedProductIDs.append(productIdentifier)
     }
 

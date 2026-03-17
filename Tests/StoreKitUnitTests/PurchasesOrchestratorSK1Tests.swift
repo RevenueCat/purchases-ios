@@ -1127,14 +1127,15 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
-    func testPurchaseBeforePaywallEventDoesNotIncludePaywallData() async throws {
+    func testCachedPaywallEventIsAttributedRegardlessOfEventCreationDate() async throws {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         let product = try await self.fetchSk1Product()
         let payment = self.storeKit1Wrapper.payment(with: product)
 
-        // Track a purchaseInitiated event with a date in the FUTURE (2050)
-        // This simulates processing a transaction that was purchased BEFORE the paywall event
+        // Cache a paywall event whose internal creation date is far in the future.
+        // With the unified cache, only the cache insertion date (dateProvider.now()) is used
+        // for the date guard — not the event's own creation date.
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: nil,
             paywallEvent: .purchaseInitiated(
@@ -1155,13 +1156,12 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
-        // Verify the backend was called
         expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
-        // The paywall data should NOT be included because the transaction's purchase date
-        // is before the paywall event's creation date
+        // The paywall IS attributed because the cache date (from dateProvider.now())
+        // is before the transaction's purchase date.
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
-        ).to(beNil())
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEventWithPurchaseInfo
     }
 
     // MARK: - AdServices and Attributes
