@@ -2250,7 +2250,8 @@ extension PurchasesOrchestrator {
         _ metadata: [String: String]?,
         presentedOfferingContext: PresentedOfferingContext? = nil
     ) async throws -> CustomerInfo {
-        let offeringContext = presentedOfferingContext ?? self.getAndRemovePresentedOfferingContext(for: transaction)
+        let cachedOfferingContext = self.getAndRemovePresentedOfferingContext(for: transaction)
+        let offeringContext = presentedOfferingContext ?? cachedOfferingContext
         let paywall = self.getAndRemovePurchaseInitiatedPaywall(for: transaction)
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
