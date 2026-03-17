@@ -175,14 +175,7 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     func purchase(
         package: Package,
-        paywallEvent: PaywallEvent?
-    ) async throws -> PurchaseResultData {
-        fatalError("Should not be able to purchase")
-    }
-
-    func purchase(
-        package: Package,
-        promotionalOffer: PromotionalOffer,
+        promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData {
         fatalError("Should not be able to purchase")
@@ -194,10 +187,6 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     func track(paywallEvent: PaywallEvent) async {
         // Ignoring events from loading paywall view
-    }
-
-    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
-        // No-op for loading paywall
     }
 
     func cachePurchaseData(presentedOfferingContext: PresentedOfferingContext,

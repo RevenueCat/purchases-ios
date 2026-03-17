@@ -48,7 +48,9 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
         let paywallEvent = PaywallEvent.purchaseInitiated(.init(), self.eventData)
 
         let transaction = try await XCTAsyncUnwrap(
-            try await self.purchases.purchase(package: package, paywallEvent: paywallEvent).transaction
+            try await self.purchases.purchase(
+                package: package, promotionalOffer: nil, paywallEvent: paywallEvent
+            ).transaction
         )
 
         self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)

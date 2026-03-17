@@ -32,13 +32,7 @@ protocol PaywallPurchasesType: Sendable {
     @Sendable
     func purchase(
         package: Package,
-        paywallEvent: PaywallEvent?
-    ) async throws -> PurchaseResultData
-
-    @Sendable
-    func purchase(
-        package: Package,
-        promotionalOffer: PromotionalOffer,
+        promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData
 
@@ -50,9 +44,6 @@ protocol PaywallPurchasesType: Sendable {
 
     @Sendable
     func track(paywallEvent: PaywallEvent) async
-
-    @Sendable
-    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String)
 
     @Sendable
     func cachePurchaseData(

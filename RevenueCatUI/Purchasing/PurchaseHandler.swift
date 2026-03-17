@@ -275,14 +275,9 @@ extension PurchaseHandler {
         do {
             let result: PurchaseResultData
 
-            if let promotionalOffer {
-                result = try await self.purchases.purchase(package: package,
-                                                           promotionalOffer: promotionalOffer,
-                                                           paywallEvent: paywallEvent)
-            } else {
-                result = try await self.purchases.purchase(package: package,
-                                                           paywallEvent: paywallEvent)
-            }
+            result = try await self.purchases.purchase(package: package,
+                                                       promotionalOffer: promotionalOffer,
+                                                       paywallEvent: paywallEvent)
 
             if result.userCancelled {
                 self.trackCancelledPurchase(package: package)
@@ -644,14 +639,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     func purchase(
         package: Package,
-        paywallEvent: PaywallEvent?
-    ) async throws -> PurchaseResultData {
-        throw ErrorCode.configurationError
-    }
-
-    func purchase(
-        package: Package,
-        promotionalOffer: PromotionalOffer,
+        promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData {
         throw ErrorCode.configurationError
@@ -662,8 +650,6 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func track(paywallEvent: PaywallEvent) async {}
-
-    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {}
 
     func cachePurchaseData(presentedOfferingContext: PresentedOfferingContext,
                            paywallEvent: PaywallEvent?,

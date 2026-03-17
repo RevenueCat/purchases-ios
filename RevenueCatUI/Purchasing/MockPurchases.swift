@@ -63,14 +63,7 @@ final class MockPurchases: PaywallPurchasesType {
 
     func purchase(
         package: Package,
-        paywallEvent: PaywallEvent?
-    ) async throws -> PurchaseResultData {
-        return try await self.purchaseBlock(package)
-    }
-
-    func purchase(
-        package: Package,
-        promotionalOffer: PromotionalOffer,
+        promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData {
         return try await self.purchaseBlock(package)
@@ -87,10 +80,6 @@ final class MockPurchases: PaywallPurchasesType {
     private(set) var cachedPresentedOfferingContextByProductID: [String: PresentedOfferingContext] = [:]
     private(set) var cachedPaywallEventByProductID: [String: PaywallEvent] = [:]
     private(set) var clearedProductIDs: [String] = []
-
-    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
-        self.cachedPresentedOfferingContextByProductID[productIdentifier] = context
-    }
 
     func cachePurchaseData(
         presentedOfferingContext: PresentedOfferingContext,
@@ -134,7 +123,9 @@ extension PaywallPurchasesType {
         restore: @escaping (@escaping MockPurchases.RestoreBlock) -> MockPurchases.RestoreBlock
     ) -> PaywallPurchasesType {
         return MockPurchases { package in
-            try await purchase({ try await self.purchase(package: $0, paywallEvent: nil) })(package)
+            try await purchase({
+                try await self.purchase(package: $0, promotionalOffer: nil, paywallEvent: nil)
+            })(package)
         } restorePurchases: {
             try await restore(self.restorePurchases)()
         } trackEvent: { event in
@@ -149,7 +140,7 @@ extension PaywallPurchasesType {
         trackEvent: @escaping (@escaping MockPurchases.TrackEventBlock) -> MockPurchases.TrackEventBlock
     ) -> PaywallPurchasesType {
         return MockPurchases { package in
-            try await self.purchase(package: package, paywallEvent: nil)
+            try await self.purchase(package: package, promotionalOffer: nil, paywallEvent: nil)
         } restorePurchases: {
             try await self.restorePurchases()
         } trackEvent: { event in

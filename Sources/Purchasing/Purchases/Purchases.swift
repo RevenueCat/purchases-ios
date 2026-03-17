@@ -2078,23 +2078,9 @@ extension Purchases: @unchecked Sendable {}
 
 extension Purchases {
 
-    /// Used when purchasing through `SwiftUI` paywalls.
-    @_spi(Internal) public func cachePresentedOfferingContext(_ context: PresentedOfferingContext,
-                                                              productIdentifier: String) {
-        Logger.debug(Strings.purchase.caching_presented_offering_identifier(
-            offeringID: context.offeringIdentifier,
-            productID: productIdentifier
-        ))
-
-        self.purchasesOrchestrator.cachePresentedOfferingContext(
-            context,
-            productIdentifier: productIdentifier
-        )
-    }
-
-    /// Caches both the `PresentedOfferingContext` and an optional `PaywallEvent` for a product.
-    /// Used by `RevenueCatUI` when `purchasesAreCompletedBy` is `.myApp` so that
-    /// `Transaction.updates` can attribute the purchase to the paywall.
+    /// Caches the `PresentedOfferingContext` and an optional `PaywallEvent` for a product.
+    /// Used by `RevenueCatUI` for StoreView integration and when `purchasesAreCompletedBy` is `.myApp`
+    /// so that `Transaction.updates` can attribute the purchase to the paywall/offering.
     @_spi(Internal) public func cachePurchaseData(
         presentedOfferingContext: PresentedOfferingContext,
         paywallEvent: PaywallEvent?,
@@ -2114,41 +2100,19 @@ extension Purchases {
         self.purchasesOrchestrator.clearCachedPurchaseData(productIdentifier: productIdentifier)
     }
 
-    /// Purchases a package, optionally passing the paywall event through the purchase call tree
-    /// so the SK2 path can attribute the purchase deterministically.
+    /// Purchases a package, optionally with a promotional offer and/or paywall event.
+    /// The paywall event is passed through the purchase call tree so the SK2 path
+    /// can attribute the purchase deterministically.
     @_spi(Internal) public func purchase(
         package: Package,
+        promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData {
         return try await withUnsafeThrowingContinuation { continuation in
             self.purchasesOrchestrator.purchase(
                 product: package.storeProduct,
                 package: package,
-                promotionalOffer: nil,
-                metadata: nil,
-                paywallEvent: paywallEvent,
-                trackDiagnostics: true
-            ) { transaction, customerInfo, error, userCancelled in
-                continuation.resume(
-                    with: Result(customerInfo, error)
-                        .map { PurchaseResultData(transaction, $0, userCancelled) }
-                )
-            }
-        }
-    }
-
-    /// Purchases a package with a promotional offer, optionally passing the paywall event through the purchase
-    /// call tree so the SK2 path can attribute the purchase deterministically.
-    @_spi(Internal) public func purchase(
-        package: Package,
-        promotionalOffer: PromotionalOffer,
-        paywallEvent: PaywallEvent?
-    ) async throws -> PurchaseResultData {
-        return try await withUnsafeThrowingContinuation { continuation in
-            self.purchasesOrchestrator.purchase(
-                product: package.storeProduct,
-                package: package,
-                promotionalOffer: promotionalOffer.signedData,
+                promotionalOffer: promotionalOffer?.signedData,
                 metadata: nil,
                 paywallEvent: paywallEvent,
                 trackDiagnostics: true
