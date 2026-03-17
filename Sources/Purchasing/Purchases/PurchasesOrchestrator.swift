@@ -612,6 +612,10 @@ final class PurchasesOrchestrator {
                                                        storeKitVersion: .storeKit1,
                                                        purchaseResult: nil, // SK2 only
                                                        error: error)
+                if cancelled || error != nil {
+                    self.clearCachedPurchaseData(productIdentifier: productIdentifier)
+                }
+
                 if !cancelled {
                     if let error = error {
                         Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(

@@ -270,7 +270,6 @@ extension PurchaseHandler {
 
         self.startAction(.purchase)
         let paywallEvent = self.trackPurchaseInitiated(package: package)
-        let productIdentifier = package.storeProduct.productIdentifier
 
         do {
             let result: PurchaseResultData
@@ -281,7 +280,6 @@ extension PurchaseHandler {
 
             if result.userCancelled {
                 self.trackCancelledPurchase(package: package)
-                self.purchases.clearCachedPurchaseData(productIdentifier: productIdentifier)
             }
 
             // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
@@ -296,7 +294,6 @@ extension PurchaseHandler {
 
         } catch {
             self.trackPurchaseError(package: package, error: error)
-            self.purchases.clearCachedPurchaseData(productIdentifier: productIdentifier)
             self.purchaseError = error
             throw error
         }
