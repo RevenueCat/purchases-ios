@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.14.0
+  revenuecat: revenuecat/sdks-common-config@3.15.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -2295,7 +2295,7 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
-      - revenuecat/enable-auto-merge-release-pr:
+      - revenuecat/merge-release-pr:
           repo_name: purchases-ios
           requires:
             - make-release
