@@ -57,10 +57,10 @@ public class CustomerCenterViewController: UIViewController {
     /// - Parameter delegate: The delegate to receive Customer Center callbacks.
     @objc
     public init(delegate: CustomerCenterViewControllerDelegate?) {
+        self.restoreInitiatedHandler = nil
         super.init(nibName: nil, bundle: nil)
 
         self.delegate = delegate
-        self.restoreInitiatedHandler = nil
 
         let actionWrapper = CustomerCenterActionWrapper()
         setupDelegateBindings(actionWrapper: actionWrapper)
@@ -75,8 +75,8 @@ public class CustomerCenterViewController: UIViewController {
     public init(
         customerCenterActionHandler: CustomerCenterActionHandler?
     ) {
-        super.init(nibName: nil, bundle: nil)
         self.restoreInitiatedHandler = nil
+        super.init(nibName: nil, bundle: nil)
 
         let actionWrapper = CustomerCenterActionWrapper()
 
@@ -133,8 +133,8 @@ public class CustomerCenterViewController: UIViewController {
         onCustomAction: CustomerCenterView.CustomActionHandler? = nil,
         promotionalOfferSuccess: CustomerCenterView.PromotionalOfferSuccessHandler? = nil
     ) {
-        super.init(nibName: nil, bundle: nil)
         self.restoreInitiatedHandler = restoreInitiated
+        super.init(nibName: nil, bundle: nil)
 
         let actionWrapper = CustomerCenterActionWrapper()
 
@@ -233,7 +233,7 @@ public class CustomerCenterViewController: UIViewController {
     // MARK: - Private
 
     /// The hosting controller that contains the SwiftUI CustomerCenterView
-    private var hostingController: UIHostingController<AnyView>? {
+    private var hostingController: UIHostingController<CustomerCenterViewWithModifiers>? {
         willSet {
             guard let oldController = self.hostingController else { return }
 
@@ -357,7 +357,7 @@ public class CustomerCenterViewController: UIViewController {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private extension CustomerCenterViewController {
-    func createHostingController() -> UIHostingController<AnyView> {
+    func createHostingController() -> UIHostingController<CustomerCenterViewWithModifiers> {
         let navigationOptions = CustomerCenterNavigationOptions(
             onCloseHandler: { [weak self] in
                 guard let self else { return }
@@ -383,15 +383,13 @@ private extension CustomerCenterViewController {
             view = CustomerCenterView(navigationOptions: navigationOptions)
         }
 
-        let rootView = AnyView(
-            view.onCustomerCenterRestoreInitiated { [weak self] resume in
-                guard let self else {
-                    resume()
-                    return
-                }
-                self.handleRestoreInitiated(resume)
+        let rootView = CustomerCenterViewWithModifiers(view: view, onRestoreInitiated: { [weak self] resume in
+            guard let self else {
+                resume()
+                return
             }
-        )
+            self.handleRestoreInitiated(resume)
+        })
 
         let controller = UIHostingController(rootView: rootView)
 
@@ -417,6 +415,21 @@ private extension CustomerCenterViewController {
 
         self.delegate?.customerCenterViewController?(self, didInitiateRestoreWith: bridgedResume)
             ?? bridgedResume(true)
+    }
+}
+
+/// A view to encapsulate the CustomerCenterView with additional modifiers so that we avoid using AnyView
+/// which is bad for SwiftUI re-rendering optimizations
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct CustomerCenterViewWithModifiers: View {
+    let view: CustomerCenterView
+    let onRestoreInitiated: CustomerCenterView.RestoreInitiatedHandler
+
+    var body: some View {
+        view.onCustomerCenterRestoreInitiated(onRestoreInitiated)
     }
 }
 
