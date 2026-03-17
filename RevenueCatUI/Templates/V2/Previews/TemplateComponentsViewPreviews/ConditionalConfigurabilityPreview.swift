@@ -114,7 +114,7 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["tier": .string("premium")])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Text: tier='premium' (notEquals 'free') → hidden")
+        .previewDisplayName("Text: tier='premium' notEquals 'free' matches → override hides")
 
         // MARK: Variable condition changes text content
         TextComponentView(
@@ -181,6 +181,124 @@ struct ConditionalVisibility_Previews: PreviewProvider {
         .environment(\.customPaywallVariables, ["tier": .string("free")])
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Text: tier='free' (equals 'premium') → no override")
+
+        // MARK: Missing variable — equals condition does not match
+        TextComponentView(
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Visible because variable is missing")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [
+                        .init(
+                            extendedConditions: [
+                                .variable(operator: .equals, variable: "missing_var", value: .bool(true))
+                            ],
+                            properties: .init(visible: false)
+                        )
+                    ]
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .environment(\.customPaywallVariables, [:])
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Text: missing variable (equals) → no match → visible")
+
+        // MARK: Missing variable — notEquals condition DOES match
+        TextComponentView(
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hidden because missing var notEquals anything")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [
+                        .init(
+                            extendedConditions: [
+                                .variable(operator: .notEquals, variable: "missing_var", value: .string("any"))
+                            ],
+                            properties: .init(visible: false)
+                        )
+                    ]
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .environment(\.customPaywallVariables, [:])
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Text: missing variable (notEquals) → matches → hidden")
+
+        // MARK: Multiple conditions (AND) — both match → override applies
+        TextComponentView(
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Both conditions met → hidden")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [
+                        .init(
+                            extendedConditions: [
+                                .variable(operator: .equals, variable: "tier", value: .string("premium")),
+                                .variable(operator: .equals, variable: "hide_ads", value: .bool(true))
+                            ],
+                            properties: .init(visible: false)
+                        )
+                    ]
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .environment(\.customPaywallVariables, ["tier": .string("premium"), "hide_ads": .bool(true)])
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Text: two conditions AND both match → hidden")
+
+        // MARK: Multiple conditions (AND) — one fails → override does NOT apply
+        TextComponentView(
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("One condition fails → visible")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [
+                        .init(
+                            extendedConditions: [
+                                .variable(operator: .equals, variable: "tier", value: .string("premium")),
+                                .variable(operator: .equals, variable: "hide_ads", value: .bool(true))
+                            ],
+                            properties: .init(visible: false)
+                        )
+                    ]
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .environment(\.customPaywallVariables, ["tier": .string("premium"), "hide_ads": .bool(false)])
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Text: two conditions AND one fails → visible")
     }
 
 }
@@ -266,98 +384,84 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
         .previewDisplayName("Stack: hide_banner=false (equals) → stack visible")
 
         // MARK: Mixed visibility — one child hidden, one visible
-        VStack(spacing: 0) {
-            TextComponentView(
-                viewModel: try! .init(
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [
-                            "id_always": .string("Always visible text")
-                        ]
-                    ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                    component: .init(
-                        text: "id_always",
-                        color: .init(light: .hex("#000000"))
-                    )
-                )
-            )
-
-            TextComponentView(
-                viewModel: try! .init(
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [
-                            "id_conditional": .string("Conditionally hidden text")
-                        ]
-                    ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                    component: .init(
-                        text: "id_conditional",
-                        color: .init(light: .hex("#ff0000")),
-                        overrides: [
-                            .init(
-                                extendedConditions: [
-                                    .variable(operator: .equals, variable: "show_promo", value: .bool(false))
-                                ],
-                                properties: .init(visible: false)
-                            )
-                        ]
-                    )
-                )
-            )
-        }
+        StackComponentView(
+            viewModel: try! .init(
+                component: .init(
+                    components: [
+                        .text(.init(
+                            text: "id_always",
+                            color: .init(light: .hex("#000000"))
+                        )),
+                        .text(.init(
+                            text: "id_conditional",
+                            color: .init(light: .hex("#ff0000")),
+                            overrides: [
+                                .init(
+                                    extendedConditions: [
+                                        .variable(operator: .equals, variable: "show_promo", value: .bool(false))
+                                    ],
+                                    properties: .init(visible: false)
+                                )
+                            ]
+                        ))
+                    ],
+                    size: .init(width: .fill, height: .fit)
+                ),
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_always": .string("Always visible text"),
+                        "id_conditional": .string("Conditionally hidden text")
+                    ]
+                ),
+                colorScheme: .light
+            ),
+            onDismiss: {}
+        )
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["show_promo": .bool(false)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Siblings: show_promo=false (equals) → one hidden")
+        .previewDisplayName("Siblings: show_promo=false (equals) → one child hidden")
 
         // MARK: Mixed visibility — both visible
-        VStack(spacing: 0) {
-            TextComponentView(
-                viewModel: try! .init(
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [
-                            "id_always": .string("Always visible text")
-                        ]
-                    ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                    component: .init(
-                        text: "id_always",
-                        color: .init(light: .hex("#000000"))
-                    )
-                )
-            )
-
-            TextComponentView(
-                viewModel: try! .init(
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [
-                            "id_conditional": .string("Conditionally shown text")
-                        ]
-                    ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                    component: .init(
-                        text: "id_conditional",
-                        color: .init(light: .hex("#00AA00")),
-                        overrides: [
-                            .init(
-                                extendedConditions: [
-                                    .variable(operator: .equals, variable: "show_promo", value: .bool(false))
-                                ],
-                                properties: .init(visible: false)
-                            )
-                        ]
-                    )
-                )
-            )
-        }
+        StackComponentView(
+            viewModel: try! .init(
+                component: .init(
+                    components: [
+                        .text(.init(
+                            text: "id_always",
+                            color: .init(light: .hex("#000000"))
+                        )),
+                        .text(.init(
+                            text: "id_conditional",
+                            color: .init(light: .hex("#00AA00")),
+                            overrides: [
+                                .init(
+                                    extendedConditions: [
+                                        .variable(operator: .equals, variable: "show_promo", value: .bool(false))
+                                    ],
+                                    properties: .init(visible: false)
+                                )
+                            ]
+                        ))
+                    ],
+                    size: .init(width: .fill, height: .fit)
+                ),
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_always": .string("Always visible text"),
+                        "id_conditional": .string("Conditionally shown text")
+                    ]
+                ),
+                colorScheme: .light
+            ),
+            onDismiss: {}
+        )
         .previewRequiredPaywallsV2Properties()
         .environment(\.customPaywallVariables, ["show_promo": .bool(true)])
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Siblings: show_promo=true (equals) → both visible")
+        .previewDisplayName("Siblings: show_promo=true (equals) → both children visible")
     }
 
 }
