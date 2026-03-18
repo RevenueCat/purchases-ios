@@ -371,9 +371,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat *
 /// App open ad format displayed at app launch
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull appOpen;)
 + (RCAdFormat * _Nonnull)appOpen SWIFT_WARN_UNUSED_RESULT;
-/// Medium rectangle ad format
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull mrec;)
-+ (RCAdFormat * _Nonnull)mrec SWIFT_WARN_UNUSED_RESULT;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
