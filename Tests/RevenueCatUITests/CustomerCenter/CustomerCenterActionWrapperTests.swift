@@ -269,12 +269,12 @@ final class CustomerCenterActionWrapperTests: TestCase {
 
         let windowHolder = await WindowHolder()
 
-        var receivedOfferId: String?
+        let receivedOfferId: Atomic<String?> = .init(nil)
         await MainActor.run {
             let testView = Text("test")
                 .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
                 .onCustomerCenterPromotionalOfferSucceeded { _, _, offerId in
-                    receivedOfferId = offerId
+                    receivedOfferId.value = offerId
                     expectation.fulfill()
                 }
 
@@ -296,7 +296,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
         }
 
         await fulfillment(of: [expectation], timeout: 1.0)
-        expect(receivedOfferId).to(equal("test_offer"))
+        expect(receivedOfferId.value).to(equal("test_offer"))
     }
 
     func testPromotionalOfferSucceededAlsoFiresDeprecatedHandler() async throws {
