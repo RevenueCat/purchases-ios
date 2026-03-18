@@ -6,7 +6,7 @@ var projects: [Path] = [
     "./Examples/rc-maestro/",
     "./Examples/MagicWeather/",
     "./Examples/MagicWeatherSwiftUI/",
-    "./Examples/AdMobIntegrationSample/",
+    "./AdapterSDKs/RevenueCatAdMob/Examples/AdMobIntegrationSample/",
     "./Examples/testCustomEntitlementsComputation/",
     "./Examples/PurchaseTester/",
     "./Projects/PaywallsTester",

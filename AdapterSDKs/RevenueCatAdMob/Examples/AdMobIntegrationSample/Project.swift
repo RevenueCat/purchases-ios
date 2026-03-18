@@ -21,7 +21,7 @@ let project = Project(
             dependencies: [
                 .revenueCat,
                 .revenueCatAdMob,
-                .external(name: "GoogleMobileAds"),
+                .external(name: "GoogleMobileAds")
             ],
             settings: .appTarget
         )

@@ -1,3 +1,5 @@
+// swiftlint:disable:next blanket_disable_command
+// swiftlint:disable identifier_name
 import Foundation
 import GoogleMobileAds
 @_spi(Experimental) import RevenueCatAdMob
@@ -169,6 +171,7 @@ class AdMobManager: NSObject, ObservableObject {
         }
     }
 
+    // swiftlint:disable:next line_length
     func showRewardedInterstitialAd(from viewController: UIViewController, userDidEarnRewardHandler: @escaping () -> Void) {
         guard let ad = rewardedInterstitialAd else {
             print("⚠️ Rewarded Interstitial not ready")
@@ -278,4 +281,3 @@ extension AdMobManager: NativeAdLoaderDelegate, AdLoaderDelegate {
         }
     }
 }
-

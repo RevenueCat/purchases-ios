@@ -1,6 +1,6 @@
-import SwiftUI
 import GoogleMobileAds
 import RevenueCat
+import SwiftUI
 
 @main
 struct AdMobIntegrationSampleApp: App {

@@ -20,6 +20,7 @@ let project = Project(
                     excluding: [
                         "../../AdapterSDKs/RevenueCatAdMob/.build/**",
                         "../../AdapterSDKs/RevenueCatAdMob/Tests/**",
+                        "../../AdapterSDKs/RevenueCatAdMob/Examples/**",
                         "../../AdapterSDKs/RevenueCatAdMob/Package.swift"
                     ]
                 )

@@ -1,5 +1,5 @@
-import SwiftUI
 import GoogleMobileAds
+import SwiftUI
 
 struct HomeView: View {
     @StateObject private var adManager = AdMobManager()
@@ -151,7 +151,12 @@ private struct AdFormatDetailView: View {
                 case .native:
                     self.nativeBlock(
                         status: adManager.nativeAdStatus,
-                        onLoad: { adManager.loadNativeAd(adUnitID: Constants.AdMob.nativeAdUnitID, placement: "native_main") },
+                        onLoad: {
+                            adManager.loadNativeAd(
+                                adUnitID: Constants.AdMob.nativeAdUnitID,
+                                placement: "native_main"
+                            )
+                        },
                         nativeAd: adManager.nativeAd
                     )
 
