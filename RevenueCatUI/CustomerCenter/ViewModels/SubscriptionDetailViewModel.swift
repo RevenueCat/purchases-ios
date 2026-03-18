@@ -100,8 +100,10 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     func didAppear() {
         cancellables.removeAll()
 
-        actionWrapper.promotionalOfferSucceededPublisher
-            .sink { [weak self] _ in self?.refreshPurchase() }
+        // promotionalOfferSuccessPublisher fires in both paths: with-transaction
+        // (via handleAction side effect) and nil-transaction (direct send).
+        actionWrapper.promotionalOfferSuccessPublisher
+            .sink { [weak self] in self?.refreshPurchase() }
             .store(in: &cancellables)
 
         actionWrapper.showingManageSubscriptionsPublisher
