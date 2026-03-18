@@ -3,7 +3,7 @@ import XCTest
 #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(GoogleMobileAds)
 import GoogleMobileAds
 @_spi(Experimental) import RevenueCat
-@_spi(Experimental) @testable import RevenueCat_AdMob
+@_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
 final class RCAdMobPrecisionMappingTests: RCAdMobTestCase {

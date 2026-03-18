@@ -49,8 +49,8 @@ let package = Package(
                  targets: ["ReceiptParser"]),
         .library(name: "RevenueCatUI",
                  targets: ["RevenueCatUI"]),
-        .library(name: "RevenueCat_AdMob",
-                 targets: ["RevenueCat_AdMob"])
+        .library(name: "RevenueCatAdMob",
+                 targets: ["RevenueCatAdMob"])
     ],
     dependencies: dependencies,
     targets: [
@@ -92,16 +92,16 @@ let package = Package(
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
                     resources: [.copy("Resources/header.heic"), .copy("Resources/background.heic")]),
-        // RevenueCat_AdMob
-        .target(name: "RevenueCat_AdMob",
+        // RevenueCatAdMob
+        .target(name: "RevenueCatAdMob",
                 dependencies: [
                     "RevenueCat",
                     .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads")
                 ],
-                path: "RevenueCat_AdMob",
-                exclude: ["README.md", "Tests", ".build", "Derived", "Package.resolved"]),
-        .testTarget(name: "RevenueCat_AdMobTests",
-                    dependencies: ["RevenueCat_AdMob"],
-                    path: "RevenueCat_AdMob/Tests/RevenueCat_AdMobTests")
+                path: "AdapterSDKs/RevenueCatAdMob",
+                exclude: ["README.md", "Tests", ".build", "Derived", "Package.resolved", "Support"]),
+        .testTarget(name: "RevenueCatAdMobTests",
+                    dependencies: ["RevenueCatAdMob"],
+                    path: "AdapterSDKs/RevenueCatAdMob/Tests/RevenueCatAdMobTests")
     ]
 )

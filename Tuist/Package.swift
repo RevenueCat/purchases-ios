@@ -19,7 +19,7 @@
             "SnapshotTesting": .framework, // default is .staticFramework,
             "RevenueCat": .framework,
             "RevenueCatUI": .framework,
-            "RevenueCat_AdMob": .framework,
+            "RevenueCatAdMob": .framework,
             "Purchases": .framework,
             "GoogleMobileAds": .framework,
             "OHHTTPStubs": .framework,

@@ -630,11 +630,11 @@ jobs:
           install_xcbeautify: false
       - update-spm-installation-commit
       - run:
-          name: SPM RevenueCat_AdMob Release Build
-          command: swift build -c release --target RevenueCat_AdMob
+          name: SPM RevenueCatAdMob Release Build
+          command: swift build -c release --target RevenueCatAdMob
           no_output_timeout: 30m
       - run:
-          name: RevenueCat_AdMob unit tests
+          name: RevenueCatAdMob unit tests
           command: bundle exec fastlane test_revenuecat_admob
           no_output_timeout: 10m
           environment:
@@ -1434,8 +1434,8 @@ jobs:
           path: RevenueCatUI.xcframework.zip
           destination: RevenueCatUI.xcframework.zip
       - store_artifacts:
-          path: RevenueCat_AdMob.xcframework.zip
-          destination: RevenueCat_AdMob.xcframework.zip
+          path: RevenueCatAdMob.xcframework.zip
+          destination: RevenueCatAdMob.xcframework.zip
       - slack-notify-on-fail
 
   docs-build:

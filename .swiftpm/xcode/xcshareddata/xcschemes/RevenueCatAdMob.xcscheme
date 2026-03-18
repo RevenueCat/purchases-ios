@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RevenueCat_AdMob"
-               BuildableName = "RevenueCat_AdMob"
-               BlueprintName = "RevenueCat_AdMob"
+               BlueprintIdentifier = "RevenueCatAdMob"
+               BuildableName = "RevenueCatAdMob"
+               BlueprintName = "RevenueCatAdMob"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RevenueCat_AdMobTests"
-               BuildableName = "RevenueCat_AdMobTests"
-               BlueprintName = "RevenueCat_AdMobTests"
+               BlueprintIdentifier = "RevenueCatAdMobTests"
+               BuildableName = "RevenueCatAdMobTests"
+               BlueprintName = "RevenueCatAdMobTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>
@@ -60,9 +60,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "RevenueCat_AdMob"
-            BuildableName = "RevenueCat_AdMob"
-            BlueprintName = "RevenueCat_AdMob"
+            BlueprintIdentifier = "RevenueCatAdMob"
+            BuildableName = "RevenueCatAdMob"
+            BlueprintName = "RevenueCatAdMob"
             ReferencedContainer = "container:">
          </BuildableReference>
       </MacroExpansion>

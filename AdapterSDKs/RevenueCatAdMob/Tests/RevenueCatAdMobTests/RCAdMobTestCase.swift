@@ -1,4 +1,4 @@
 import XCTest
 
-/// Local base class for RevenueCat_AdMob unit tests.
+/// Local base class for RevenueCatAdMob unit tests.
 typealias RCAdMobTestCase = XCTestCase

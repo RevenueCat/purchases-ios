@@ -1,6 +1,6 @@
 # AdMob Integration Sample
 
-This sample app demonstrates how to integrate Google AdMob with RevenueCat's ad event tracking using the `RevenueCat_AdMob` adapter library. The adapter handles event mapping automatically: load ads through adapter APIs and RevenueCat events are tracked for you.
+This sample app demonstrates how to integrate Google AdMob with RevenueCat's ad event tracking using the `RevenueCatAdMob` adapter library. The adapter handles event mapping automatically: load ads through adapter APIs and RevenueCat events are tracked for you.
 
 ## Overview
 
@@ -38,11 +38,11 @@ This sample uses **Google Mobile Ads SDK v13** Swift API (no `GAD` prefix):
 
 ## Experimental API notice
 
-This sample uses RevenueCat_AdMob APIs exposed as experimental Swift SPI (`@_spi(Experimental)`), and behavior may evolve before full stabilization.
+This sample uses RevenueCatAdMob APIs exposed as experimental Swift SPI (`@_spi(Experimental)`), and behavior may evolve before full stabilization.
 
 - Adapter APIs shown in this sample are available on iOS 15.0+.
-- Swift imports must use `@_spi(Experimental) import RevenueCat_AdMob`.
-- Review release notes when upgrading `RevenueCat_AdMob`.
+- Swift imports must use `@_spi(Experimental) import RevenueCatAdMob`.
+- Review release notes when upgrading `RevenueCatAdMob`.
 - Prefer pinning a known-good adapter version during rollout.
 
 ---
@@ -54,7 +54,7 @@ This sample uses RevenueCat_AdMob APIs exposed as experimental Swift SPI (`@_spi
 - A valid RevenueCat API key
 - AdMob test ad unit IDs (included in this sample)
 - **Google Mobile Ads SDK v13** (Swift API; this sample uses v13 naming)
-- `RevenueCat`, `GoogleMobileAds`, and `RevenueCat_AdMob` dependencies (RevenueCat_AdMob is a product of the main purchases-ios package; add the repo once and link the `RevenueCat_AdMob` product)
+- `RevenueCat`, `GoogleMobileAds`, and `RevenueCatAdMob` dependencies (RevenueCatAdMob is a product of the main purchases-ios package; add the repo once and link the `RevenueCatAdMob` product)
 
 ---
 
@@ -101,7 +101,7 @@ The sample prints diagnostics in the Xcode console and emits RevenueCat ad event
 
 ## How it works
 
-`RevenueCat_AdMob` sits between AdMob and RevenueCat, mapping AdMob callbacks to RevenueCat ad events automatically:
+`RevenueCatAdMob` sits between AdMob and RevenueCat, mapping AdMob callbacks to RevenueCat ad events automatically:
 
 ```text
 ┌─────────────┐
@@ -112,7 +112,7 @@ The sample prints diagnostics in the Xcode console and emits RevenueCat ad event
        │ Ad callbacks
        ▼
 ┌─────────────────────┐
-│  RevenueCat_AdMob    │
+│  RevenueCatAdMob    │
 │  (Adapter Library)  │
 │                     │
 │  Tracks: Loaded,    │

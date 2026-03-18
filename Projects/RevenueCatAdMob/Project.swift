@@ -2,23 +2,23 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 
 let project = Project(
-    name: "RevenueCat_AdMob",
+    name: "RevenueCatAdMob",
     organizationName: .revenueCatOrgName,
     settings: .framework,
     targets: [
         .target(
-            name: "RevenueCat_AdMob",
+            name: "RevenueCatAdMob",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.revenuecat.RevenueCat_AdMob",
+            bundleId: "com.revenuecat.RevenueCatAdMob",
             deploymentTargets: .iOS("15.0"),
             infoPlist: .default,
             sources: [
                 .glob(
-                    "../../RevenueCat_AdMob/**/*.swift",
+                    "../../AdapterSDKs/RevenueCatAdMob/**/*.swift",
                     excluding: [
-                        "../../RevenueCat_AdMob/.build/**",
-                        "../../RevenueCat_AdMob/Tests/**"
+                        "../../AdapterSDKs/RevenueCatAdMob/.build/**",
+                        "../../AdapterSDKs/RevenueCatAdMob/Tests/**"
                     ]
                 )
             ],
@@ -28,28 +28,28 @@ let project = Project(
             ]
         ),
         .target(
-            name: "RevenueCat_AdMobTests",
+            name: "RevenueCatAdMobTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "com.revenuecat.RevenueCat_AdMobTests",
+            bundleId: "com.revenuecat.RevenueCatAdMobTests",
             deploymentTargets: .iOS("15.0"),
             infoPlist: .default,
             sources: [
-                "../../RevenueCat_AdMob/Tests/RevenueCat_AdMobTests/**/*.swift"
+                "../../AdapterSDKs/RevenueCatAdMob/Tests/RevenueCatAdMobTests/**/*.swift"
             ],
             dependencies: [
-                .target(name: "RevenueCat_AdMob"),
+                .target(name: "RevenueCatAdMob"),
                 .external(name: "GoogleMobileAds")
             ]
         )
     ],
     schemes: [
         .scheme(
-            name: "RevenueCat_AdMob",
+            name: "RevenueCatAdMob",
             shared: true,
-            buildAction: .buildAction(targets: ["RevenueCat_AdMob"]),
+            buildAction: .buildAction(targets: ["RevenueCatAdMob"]),
             testAction: .targets([
-                .testableTarget(target: .init(stringLiteral: "RevenueCat_AdMobTests"))
+                .testableTarget(target: .init(stringLiteral: "RevenueCatAdMobTests"))
             ]),
             runAction: .runAction(configuration: "Debug"),
             archiveAction: .archiveAction(configuration: "Release"),
