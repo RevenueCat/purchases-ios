@@ -1433,9 +1433,6 @@ jobs:
       - store_artifacts:
           path: RevenueCatUI.xcframework.zip
           destination: RevenueCatUI.xcframework.zip
-      - store_artifacts:
-          path: RevenueCatAdMob.xcframework.zip
-          destination: RevenueCatAdMob.xcframework.zip
       - slack-notify-on-fail
 
   docs-build:

@@ -125,7 +125,7 @@ platform :ios do
       repo_name: REPO_NAME,
       github_api_token: ENV["GITHUB_TOKEN"],
       changelog_latest_path: CHANGELOG_LATEST_PATH,
-      upload_assets: ['RevenueCat.xcframework.zip', 'RevenueCatUI.xcframework.zip', 'RevenueCatAdMob.xcframework.zip']
+      upload_assets: ['RevenueCat.xcframework.zip', 'RevenueCatUI.xcframework.zip']
     )
   end
 
@@ -1463,66 +1463,6 @@ platform :ios do
       'maccatalyst',
       'watchOS',
     ])
-    create_and_sign_xcframework_admob
-  end
-
-  # Build RevenueCatAdMob xcframework from the root Swift package (RevenueCatAdMob is a target in the main package).
-  # Run xcodebuild from the package root; resolve the build scheme from the package.
-  private_lane :create_and_sign_xcframework_admob do
-    project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
-    product_name = "RevenueCatAdMob"
-    output_directory = "build/xcframeworks/#{product_name}"
-    framework_paths = []
-
-    scheme = Dir.chdir(project_root) do
-      list_json = sh("xcodebuild", "-list", "-json")
-      list = JSON.parse(list_json)
-      schemes = list.dig("workspace", "schemes") || list.dig("project", "schemes") || []
-      if schemes.include?(product_name)
-        product_name
-      else
-        UI.user_error!("Scheme '#{product_name}' not found in package. Available schemes: #{schemes.join(', ')}. " \
-          "SwiftPM/Xcode scheme naming may differ from the product name.")
-      end
-    end
-
-    destinations = [
-      { platform: 'iOS', xcode_dest: 'generic/platform=iOS' },
-      { platform: 'iOS Simulator', xcode_dest: 'generic/platform=iOS Simulator' },
-      { platform: 'maccatalyst', xcode_dest: 'generic/platform=macOS,variant=Mac Catalyst' }
-    ]
-
-    destinations.each do |dest|
-      derived_data = File.join(project_root, "build", "RevenueCatAdMob-DerivedData-#{dest[:platform].gsub(/[\s+]/, '-')}")
-      Dir.chdir(project_root) do
-        sh("xcodebuild", "build",
-           "-package-path", ".",
-           "-scheme", scheme,
-           "-destination", dest[:xcode_dest],
-           "-derivedDataPath", derived_data,
-           "-configuration", "Release",
-           "BUILD_LIBRARY_FOR_DISTRIBUTION=YES",
-           "SKIP_INSTALL=NO")
-      end
-      # SPM may put the framework under Release-<sdk>/ or Release-<sdk>/PackageFrameworks/
-      framework_path = Dir.glob(File.join(derived_data, "Build/Products/Release-**", "#{product_name}.framework")).first
-      framework_path ||= Dir.glob(File.join(derived_data, "Build/Products/Release-**", "PackageFrameworks", "#{product_name}.framework")).first
-      UI.user_error!("Could not find built framework for #{dest[:platform]}") unless framework_path && File.directory?(framework_path)
-      framework_paths << framework_path
-    end
-
-    xcframework_path = File.join(project_root, output_directory, "#{product_name}.xcframework")
-    FileUtils.mkdir_p(File.dirname(xcframework_path))
-    sh("xcodebuild", "-create-xcframework",
-       *framework_paths.flat_map { |p| ["-framework", p] },
-       "-output", xcframework_path)
-
-    xcframework_zip_path = File.join(project_root, "#{product_name}.xcframework.zip")
-    suppress_deprecation_warnings_in_headers(xcframework_path: xcframework_path)
-    sign_xcframework(file: xcframework_path)
-    Dir.chdir(File.dirname(xcframework_path)) do
-      sh("zip", "-r", "-q", xcframework_zip_path, File.basename(xcframework_path))
-    end
   end
 
   private_lane :create_and_sign_xcframework do |options|
