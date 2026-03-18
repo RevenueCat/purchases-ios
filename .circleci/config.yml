@@ -1508,18 +1508,6 @@ jobs:
           command: bundle exec fastlane push_revenuecatui_pod
           no_output_timeout: 30m
 
-  push-revenuecat-admob-pod:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout
-      - install-bundle-dependencies
-      - revenuecat/trust-github-key
-      - run:
-          name: Deploy new version
-          command: bundle exec fastlane push_revenuecat_admob_pod
-          no_output_timeout: 30m
-
   cocoapods-token-keepalive:
     docker:
       - image: cimg/ruby:3.3
@@ -2294,10 +2282,6 @@ workflows:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
-      - push-revenuecat-admob-pod:
-          requires:
-            - push-revenuecat-pod
-          <<: *release-tags
       - deploy-to-spm:
           <<: *release-tags
       - docs-deploy:
@@ -2308,7 +2292,6 @@ workflows:
       - make-release:
           requires:
             - push-revenuecatui-pod
-            - push-revenuecat-admob-pod
             - deploy-to-spm
             - docs-deploy
             - deploy-purchase-tester
