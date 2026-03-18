@@ -91,7 +91,7 @@ class PurchaseHandlerTests: TestCase {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
 
         let handler = PurchaseHandler(
-            purchases: MockPurchases { _ in
+            purchases: MockPurchases { _, _, _ in
                 return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: true)
             } restorePurchases: {
                 return TestData.customerInfo
@@ -130,7 +130,7 @@ class PurchaseHandlerTests: TestCase {
         let handler = PurchaseHandler(
             purchases: MockPurchases(
                 purchasesAreCompletedBy: .myApp
-            ) { _ in
+            ) { _, _, _ in
                 return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
             } restorePurchases: {
                 return TestData.customerInfo
@@ -173,7 +173,7 @@ class PurchaseHandlerTests: TestCase {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
 
         let handler = PurchaseHandler(
-            purchases: MockPurchases { _ in
+            purchases: MockPurchases { _, _, _ in
                 throw error
             } restorePurchases: {
                 return TestData.customerInfo
@@ -219,7 +219,7 @@ class PurchaseHandlerTests: TestCase {
         let handler = PurchaseHandler(
             purchases: MockPurchases(
                 purchasesAreCompletedBy: .myApp
-            ) { _ in
+            ) { _, _, _ in
                 return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
             } restorePurchases: {
                 return TestData.customerInfo
@@ -261,7 +261,7 @@ class PurchaseHandlerTests: TestCase {
     }
 
     func testPurchasePassesPaywallEventAsParameterWhenCompletedByRevenueCat() async throws {
-        let mockPurchases = MockPurchases { _ in
+        let mockPurchases = MockPurchases { _, _, _ in
             return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
         } restorePurchases: {
             return TestData.customerInfo
@@ -292,7 +292,7 @@ class PurchaseHandlerTests: TestCase {
     func testPurchaseCachesPurchaseDataWhenCompletedByMyApp() async throws {
         let mockPurchases = MockPurchases(
             purchasesAreCompletedBy: .myApp
-        ) { _ in
+        ) { _, _, _ in
             return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
         } restorePurchases: {
             return TestData.customerInfo
@@ -473,7 +473,7 @@ class PurchaseHandlerTests: TestCase {
 
         let handler = PurchaseHandler(
             purchases: MockPurchases(
-                purchase: { _ in
+                purchase: { _, _, _ in
                 return (
                     transaction: nil,
                     customerInfo: TestData.customerInfo,
@@ -570,7 +570,7 @@ private final class AsyncPurchaseHandler {
 
     init() {
         self.purchaseHandler = .init(
-            purchases: MockPurchases { [weak instance = self] _ in
+            purchases: MockPurchases { [weak instance = self] _, _, _ in
                 let instance = try XCTUnwrap(instance)
 
                 await instance.createAndWaitForContinuation()
