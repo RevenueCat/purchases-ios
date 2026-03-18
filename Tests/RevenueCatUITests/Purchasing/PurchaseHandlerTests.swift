@@ -260,7 +260,7 @@ class PurchaseHandlerTests: TestCase {
         expect(errorEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
     }
 
-    func testPurchaseCachesPresentedOfferingContextWhenCompletedByRevenueCat() async throws {
+    func testPurchasePassesPaywallEventAsParameterWhenCompletedByRevenueCat() async throws {
         let mockPurchases = MockPurchases { _ in
             return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
         } restorePurchases: {
@@ -284,11 +284,9 @@ class PurchaseHandlerTests: TestCase {
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
-        let expectedProductId = TestData.packageWithIntroOffer.storeProduct.productIdentifier
-        let cachedData = mockPurchases.cachedPurchaseDataByProductID[expectedProductId]
-        expect(cachedData).toNot(beNil())
-        expect(cachedData?.presentedOfferingContext.offeringIdentifier)
-            == TestData.packageWithIntroOffer.presentedOfferingContext.offeringIdentifier
+        // .revenueCat path passes paywallEvent as a parameter, NOT via caching
+        expect(mockPurchases.lastPurchasePaywallEvent).toNot(beNil())
+        expect(mockPurchases.cachedPurchaseDataByProductID).to(beEmpty())
     }
 
     func testPurchaseCachesPresentedOfferingContextWhenCompletedByMyApp() async throws {

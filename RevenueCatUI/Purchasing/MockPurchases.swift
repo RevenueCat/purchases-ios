@@ -61,11 +61,14 @@ final class MockPurchases: PaywallPurchasesType {
         return try await self.customerInfoBlock()
     }
 
+    private(set) var lastPurchasePaywallEvent: PaywallEvent?
+
     func purchase(
         package: Package,
         promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData {
+        self.lastPurchasePaywallEvent = paywallEvent
         return try await self.purchaseBlock(package)
     }
 
