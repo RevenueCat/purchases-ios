@@ -38,7 +38,7 @@ extension PurchaseHandler {
     ) -> Self {
         return self.init(
             purchases: MockPurchases(purchasesAreCompletedBy: purchasesAreCompletedBy,
-                                     preferredLocaleOverride: preferredLocaleOverride) { _ in
+                                     preferredLocaleOverride: preferredLocaleOverride) { _, _, _ in
                 return (
                     // No current way to create a mock transaction with RevenueCat's public methods.
                     transaction: nil,
@@ -60,8 +60,8 @@ extension PurchaseHandler {
 
     static func cancelling(purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat) -> Self {
         return .mock(purchasesAreCompletedBy: purchasesAreCompletedBy)
-            .map { block in {
-                    var result = try await block($0)
+            .map { block in { package, offer, event in
+                    var result = try await block(package, offer, event)
                     result.userCancelled = true
                     return result
                 }
@@ -71,7 +71,7 @@ extension PurchaseHandler {
     /// - Returns: `PurchaseHandler` that throws `error` for purchases and restores.
     static func failing(_ error: Error) -> Self {
         return self.init(
-            purchases: MockPurchases { _ in
+            purchases: MockPurchases { _, _, _ in
                 throw error
             } restorePurchases: {
                 throw error
@@ -85,10 +85,10 @@ extension PurchaseHandler {
 
     /// Creates a copy of this `PurchaseHandler` with a delay.
     func with(delay seconds: TimeInterval) -> Self {
-        return self.map { purchaseBlock in {
+        return self.map { purchaseBlock in { package, offer, event in
             await Task.sleep(seconds: seconds)
 
-            return try await purchaseBlock($0)
+            return try await purchaseBlock(package, offer, event)
         }
         } restore: { restoreBlock in {
             await Task.sleep(seconds: seconds)
