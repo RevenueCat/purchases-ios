@@ -51,6 +51,7 @@ Tests/purchases-ios-snapshots
 
 # SwiftPM/Xcode-generated workspace metadata (machine-specific, avoid noisy diffs and CI variance)
 AdapterSDKs/RevenueCatAdMob/.swiftpm/
+AdapterSDKs/RevenueCatAdMob/Package.resolved
 
 # This is the "SPM" scheme, which is duplicated with the scheme in the project
 # and that breaks Carthage because it appears twice in `xcodebuild -list`
