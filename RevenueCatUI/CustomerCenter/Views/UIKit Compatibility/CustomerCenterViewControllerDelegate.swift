@@ -88,12 +88,16 @@ public protocol CustomerCenterViewControllerDelegate: NSObjectProtocol {
 
     /// Called when a promotional offer succeeds.
     /// - Note: Prefer ``customerCenterViewController(_:didSucceedWithPromotionalOffer:customerInfo:transaction:)``
-    /// which also provides purchase details.
+    /// which also provides purchase details. If both methods are implemented, both will be called
+    /// on a successful promotional offer purchase.
     @objc(customerCenterViewControllerDidSucceedWithPromotionalOffer:)
     optional func customerCenterViewControllerDidSucceedWithPromotionalOffer(_ controller: CustomerCenterViewController)
 
     /// Called when a promotional offer purchase completes successfully,
     /// providing the resulting customer info, transaction, and the promotional offer identifier.
+    /// - Note: If the delegate also implements
+    /// ``customerCenterViewControllerDidSucceedWithPromotionalOffer(_:)``,
+    /// both methods will be called.
     @objc(customerCenterViewController:didSucceedWithPromotionalOffer:customerInfo:transaction:)
     optional func customerCenterViewController(
         _ controller: CustomerCenterViewController,
