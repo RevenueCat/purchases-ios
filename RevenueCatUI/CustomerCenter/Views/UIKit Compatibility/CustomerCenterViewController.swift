@@ -18,7 +18,7 @@ import SwiftUI
 
 #if canImport(UIKit) && os(iOS)
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length type_body_length
 
 /// Use the Customer Center in your app to help your customers manage common support tasks.
 ///
