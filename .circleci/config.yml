@@ -606,6 +606,7 @@ jobs:
       - run:
           name: Check pods and deployment targets
           command: bundle exec fastlane check_pods
+      - slack-notify-on-fail
 
   api-tests:
     executor:
@@ -853,6 +854,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
+      - slack-notify-on-fail
 
   spm-revenuecat-ui-watchos:
     executor:
@@ -1835,6 +1837,7 @@ jobs:
       - run:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
+      - slack-notify-on-fail
 
   emerge_binary_size_analysis:
     executor:
@@ -2093,11 +2096,21 @@ workflows:
       - check-api-changes:
           context:
             - slack-secrets-ios
-      - run-test-ios-26
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-26
-      - emerge_purchases_ui_snapshot_tests
-      - emerge_binary_size_analysis
+      - run-test-ios-26:
+          context:
+            - slack-secrets
+      - pod-lib-lint:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-26:
+          context:
+            - slack-secrets
+      - emerge_purchases_ui_snapshot_tests:
+          context:
+            - slack-secrets
+      - emerge_binary_size_analysis:
+          context:
+            - slack-secrets
       - build-tv-watch-mac-and-visionos:
           context:
             - slack-secrets
@@ -2506,10 +2519,18 @@ workflows:
           context:
             - slack-secrets
       - lint
-      - run-test-ios-26
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-26
-      - emerge_purchases_ui_snapshot_tests
+      - run-test-ios-26:
+          context:
+            - slack-secrets
+      - pod-lib-lint:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-26:
+          context:
+            - slack-secrets
+      - emerge_purchases_ui_snapshot_tests:
+          context:
+            - slack-secrets
 
       # =============================================================
       # All tests gate for release branches

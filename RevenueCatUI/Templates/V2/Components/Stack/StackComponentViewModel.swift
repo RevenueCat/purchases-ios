@@ -45,7 +45,7 @@ class StackComponentViewModel {
         self.badgeViewModels = badgeViewModels
         self.shouldApplySafeAreaInset = shouldApplySafeAreaInset
         self.discardRules = discardRules
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     func copy(withViewModels newViewModels: [PaywallComponentViewModel]) throws -> StackComponentViewModel {
@@ -69,10 +69,9 @@ class StackComponentViewModel {
         customVariables: [String: CustomVariableValue],
         colorScheme: ColorScheme
     ) -> StackComponentStyle {
-        let conditionContext = ConditionContext(
+        let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables,
-            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
+            customVariables: customVariables
         )
 
         let partial = PresentedStackPartial.buildPartial(

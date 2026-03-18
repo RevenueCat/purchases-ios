@@ -140,7 +140,7 @@ extension PresentedPartial {
         switch condition {
         // Screen size conditions
         case .compact, .medium, .expanded:
-            return activeCondition.applicableConditions.contains(condition)
+            return activeCondition.includes(condition)
 
         // Selection state
         case .selected:
@@ -277,12 +277,16 @@ extension PresentedPartial {
 
 private extension ScreenCondition {
 
-    /// Returns applicable condition types based on current screen condition
-    var applicableConditions: [PaywallComponent.ExtendedCondition] {
-        switch self {
-        case .compact: return [.compact]
-        case .medium: return [.compact, .medium]
-        case .expanded: return [.compact, .medium, .expanded]
+    /// Checks whether a screen-size condition applies to the current screen condition.
+    /// More specific conditions include less specific ones (e.g., `.expanded` includes `.compact` and `.medium`).
+    func includes(_ condition: PaywallComponent.ExtendedCondition) -> Bool {
+        switch (self, condition) {
+        case (.compact, .compact),
+             (.medium, .compact), (.medium, .medium),
+             (.expanded, .compact), (.expanded, .medium), (.expanded, .expanded):
+            return true
+        default:
+            return false
         }
     }
 
@@ -302,7 +306,7 @@ extension Array {
     >(
         discardRules: Bool = false,
         convert: (T) throws -> P
-    ) throws -> PresentedOverrides<P>
+    ) rethrows -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
         let overridesToProcess: Self
         if discardRules {
@@ -321,6 +325,14 @@ extension Array {
                 properties: presentedPartial
             )
         }
+    }
+
+    /// Convenience overload when the partial type is already the presented type (identity conversion).
+    func toPresentedOverrides<T: PaywallPartialComponent & PresentedPartial>(
+        discardRules: Bool = false
+    ) -> PresentedOverrides<T>
+    where Element == PaywallComponent.ComponentOverride<T> {
+        toPresentedOverrides(discardRules: discardRules) { $0 }
     }
 
     func hasUnsupportedCondition<T: PaywallPartialComponent>() -> Bool
