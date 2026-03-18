@@ -18,6 +18,8 @@ import SwiftUI
 
 #if canImport(UIKit) && os(iOS)
 
+// swiftlint:disable file_length
+
 /// Use the Customer Center in your app to help your customers manage common support tasks.
 ///
 /// Customer Center is a self-service UI that can be added to your app to help
@@ -45,6 +47,9 @@ public class CustomerCenterViewController: UIViewController {
     /// The action wrapper for the current view, used for Swift closure-based handlers
     private var actionWrapper: CustomerCenterActionWrapper?
 
+    /// Optional handler for intercepting restore before it begins.
+    private let restoreInitiatedHandler: CustomerCenterView.RestoreInitiatedHandler?
+
     /// Create a view controller with a delegate for receiving callbacks.
     ///
     /// This initializer is designed for Objective-C compatibility.
@@ -53,6 +58,7 @@ public class CustomerCenterViewController: UIViewController {
     /// - Parameter delegate: The delegate to receive Customer Center callbacks.
     @objc
     public init(delegate: CustomerCenterViewControllerDelegate?) {
+        self.restoreInitiatedHandler = nil
         super.init(nibName: nil, bundle: nil)
 
         self.delegate = delegate
@@ -70,6 +76,7 @@ public class CustomerCenterViewController: UIViewController {
     public init(
         customerCenterActionHandler: CustomerCenterActionHandler?
     ) {
+        self.restoreInitiatedHandler = nil
         super.init(nibName: nil, bundle: nil)
 
         let actionWrapper = CustomerCenterActionWrapper()
@@ -104,6 +111,8 @@ public class CustomerCenterViewController: UIViewController {
     // swiftlint:disable cyclomatic_complexity function_body_length
     /// Create a view controller to handle common customer support tasks with individual action handlers
     /// - Parameters:
+    ///   - restoreInitiated: Handler called before a restore operation starts.
+    ///     Call `resume` to proceed or cancel.
     ///   - restoreStarted: Handler called when a restore operation starts.
     ///   - restoreCompleted: Handler called when a restore operation completes successfully.
     ///   - restoreFailed: Handler called when a restore operation fails.
@@ -112,6 +121,7 @@ public class CustomerCenterViewController: UIViewController {
     ///   - refundRequestCompleted: Handler called when a refund request completes.
     ///   - feedbackSurveyCompleted: Handler called when a feedback survey is completed.
     public init(
+        restoreInitiated: CustomerCenterView.RestoreInitiatedHandler? = nil,
         restoreStarted: CustomerCenterView.RestoreStartedHandler? = nil,
         restoreCompleted: CustomerCenterView.RestoreCompletedHandler? = nil,
         restoreFailed: CustomerCenterView.RestoreFailedHandler? = nil,
@@ -125,6 +135,7 @@ public class CustomerCenterViewController: UIViewController {
         promotionalOfferSuccess: (@MainActor @Sendable () -> Void)? = nil,
         promotionalOfferSucceeded: CustomerCenterView.PromotionalOfferSucceededHandler? = nil
     ) {
+        self.restoreInitiatedHandler = restoreInitiated
         super.init(nibName: nil, bundle: nil)
 
         let actionWrapper = CustomerCenterActionWrapper()
@@ -232,7 +243,7 @@ public class CustomerCenterViewController: UIViewController {
     // MARK: - Private
 
     /// The hosting controller that contains the SwiftUI CustomerCenterView
-    private var hostingController: UIHostingController<CustomerCenterView>? {
+    private var hostingController: UIHostingController<CustomerCenterViewWithModifiers>? {
         willSet {
             guard let oldController = self.hostingController else { return }
 
@@ -368,7 +379,7 @@ public class CustomerCenterViewController: UIViewController {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private extension CustomerCenterViewController {
-    func createHostingController() -> UIHostingController<CustomerCenterView> {
+    func createHostingController() -> UIHostingController<CustomerCenterViewWithModifiers> {
         let navigationOptions = CustomerCenterNavigationOptions(
             onCloseHandler: { [weak self] in
                 guard let self else { return }
@@ -394,13 +405,53 @@ private extension CustomerCenterViewController {
             view = CustomerCenterView(navigationOptions: navigationOptions)
         }
 
-        let controller = UIHostingController(rootView: view)
+        let rootView = CustomerCenterViewWithModifiers(view: view, onRestoreInitiated: { [weak self] resume in
+            guard let self else {
+                resume()
+                return
+            }
+            self.handleRestoreInitiated(resume)
+        })
+
+        let controller = UIHostingController(rootView: rootView)
 
         // make the background of the container clear so that if there are cutouts, they don't get
         // overridden by the hostingController's view's background.
         controller.view.backgroundColor = .clear
 
         return controller
+    }
+
+    @MainActor
+    func handleRestoreInitiated(_ resumeAction: ResumeAction) {
+        if let restoreInitiatedHandler {
+            restoreInitiatedHandler(resumeAction)
+            return
+        }
+
+        let bridgedResume: (Bool) -> Void = { shouldProceed in
+            Task { @MainActor in
+                resumeAction(shouldProceed: shouldProceed)
+            }
+        }
+
+        self.delegate?.customerCenterViewController?(self, didInitiateRestoreWith: bridgedResume)
+            ?? bridgedResume(true)
+    }
+}
+
+/// A view to encapsulate the CustomerCenterView with additional modifiers so that we avoid using AnyView
+/// which is bad for SwiftUI re-rendering optimizations
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct CustomerCenterViewWithModifiers: View {
+    let view: CustomerCenterView
+    let onRestoreInitiated: CustomerCenterView.RestoreInitiatedHandler
+
+    var body: some View {
+        view.onCustomerCenterRestoreInitiated(onRestoreInitiated)
     }
 }
 

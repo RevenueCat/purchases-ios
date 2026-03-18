@@ -22,6 +22,7 @@ func checkCustomerCenterViewControllerAPI(
 
     // Full initializer with individual handlers
     let _ = CustomerCenterViewController(
+        restoreInitiated: { _ in },
         restoreStarted: {},
         restoreCompleted: { _ in },
         restoreFailed: { _ in },
@@ -41,6 +42,11 @@ func checkCustomerCenterViewControllerAPI(
 private class MockCustomerCenterViewControllerDelegate: NSObject, CustomerCenterViewControllerDelegate {
 
     func customerCenterViewControllerDidStartRestore(_ controller: CustomerCenterViewController) {}
+
+    func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didInitiateRestoreWith resume: @escaping (Bool) -> Void
+    ) {}
 
     func customerCenterViewController(
         _ controller: CustomerCenterViewController,

@@ -31,6 +31,7 @@ struct TestViewPlusPresentCustomerCenter: View {
             .presentCustomerCenter(
                 isPresented: $isPresented,
                 presentationMode: .sheet,
+                restoreInitiated: { (_: ResumeAction) in },
                 restoreStarted: {},
                 restoreCompleted: { (customerInfo: CustomerInfo) in
                     _ = customerInfo
@@ -68,6 +69,7 @@ struct TestViewPlusPresentCustomerCenter: View {
 struct TestCustomerCenterViewActionsAPI: View {
     var body: some View {
         CustomerCenterView()
+            .onCustomerCenterRestoreInitiated({ (_: ResumeAction) in })
             .onCustomerCenterRestoreStarted({})
             .onCustomerCenterRestoreFailed({ (error: Error) in
                 _ = error

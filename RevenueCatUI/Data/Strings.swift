@@ -37,6 +37,8 @@ enum Strings {
     case image_result(Result<(), ImageLoader.Error>)
     case image_failed_to_load(URL, Error)
 
+    case restore_purchases_gate_start
+    case restore_purchases_gate_finish(with: Bool)
     case restoring_purchases
     case restored_purchases
     case restore_purchases_with_empty_result
@@ -364,6 +366,11 @@ extension Strings: CustomStringConvertible {
             return "Presenting exit offer paywall for offering '\(offeringId)'"
         case .errorLoadingExitOffer(let error):
             return "Error loading exit offer: \(error)"
+        case .restore_purchases_gate_start:
+            return "Restore Purchases Initiated… waiting for resumable callback to proceed."
+        case .restore_purchases_gate_finish(with: let proceed):
+            // swiftlint:disable:next line_length
+            return "Restore Purchases gate complete. The SDK **\(proceed ? "will" : "will not")** attempt to restore purchases."
         case .restore_purchases_failed(let error):
             return "Restore failed with error: \(error)"
         case .purchase_failed(let error):
