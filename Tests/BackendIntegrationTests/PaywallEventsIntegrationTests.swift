@@ -58,7 +58,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
 
     func testPurchasingPackageWithCachedPurchaseData() async throws {
         let productId = self.package.storeProduct.productIdentifier
-        self.purchases.cachePurchaseData(
+        try self.purchases.cachePurchaseData(
             presentedOfferingContext: self.package.presentedOfferingContext,
             paywallEvent: .purchaseInitiated(.init(), self.eventData),
             productIdentifier: productId
@@ -73,12 +73,12 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
 
     func testPurchasingPackageAfterClearingCachedPurchaseData() async throws {
         let productId = self.package.storeProduct.productIdentifier
-        self.purchases.cachePurchaseData(
+        try self.purchases.cachePurchaseData(
             presentedOfferingContext: self.package.presentedOfferingContext,
             paywallEvent: .purchaseInitiated(.init(), self.eventData),
             productIdentifier: productId
         )
-        self.purchases.clearCachedPurchaseData(productIdentifier: productId)
+        try self.purchases.clearCachedPurchaseData(productIdentifier: productId)
 
         let transaction = try await XCTAsyncUnwrap(
             try await self.purchases.purchase(package: self.package).transaction
@@ -102,7 +102,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
 
     func testCachedPurchaseDataSurvivesCloseEvent() async throws {
         let productId = self.package.storeProduct.productIdentifier
-        self.purchases.cachePurchaseData(
+        try self.purchases.cachePurchaseData(
             presentedOfferingContext: self.package.presentedOfferingContext,
             paywallEvent: .purchaseInitiated(.init(), self.eventData),
             productIdentifier: productId
@@ -121,7 +121,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
             exitOfferType: .dismiss,
             exitOfferingIdentifier: "exit_offer_id"
         )
-        self.purchases.cachePurchaseData(
+        try self.purchases.cachePurchaseData(
             presentedOfferingContext: self.package.presentedOfferingContext,
             paywallEvent: .purchaseInitiated(.init(), self.eventData),
             productIdentifier: productId
@@ -141,7 +141,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
         try await self.testSession.setSimulatedError(.generic(.networkError(URLError(.unknown))), forAPI: .purchase)
 
         let productId = self.package.storeProduct.productIdentifier
-        self.purchases.cachePurchaseData(
+        try self.purchases.cachePurchaseData(
             presentedOfferingContext: self.package.presentedOfferingContext,
             paywallEvent: .purchaseInitiated(.init(), self.eventData),
             productIdentifier: productId
