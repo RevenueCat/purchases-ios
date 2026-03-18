@@ -145,6 +145,7 @@ extension CustomerCenterView {
         }
     }
 
+    @available(*, deprecated)
     fileprivate struct OnPromotionalOfferSuccess: ViewModifier {
         let handler: PromotionalOfferSuccessHandler
         func body(content: Content) -> some View {

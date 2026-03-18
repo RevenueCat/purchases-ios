@@ -122,7 +122,7 @@ public class CustomerCenterViewController: UIViewController {
         managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
         changePlansSelected: CustomerCenterView.ChangePlansHandler? = nil,
         onCustomAction: CustomerCenterView.CustomActionHandler? = nil,
-        promotionalOfferSuccess: CustomerCenterView.PromotionalOfferSuccessHandler? = nil,
+        promotionalOfferSuccess: (@MainActor @Sendable () -> Void)? = nil,
         promotionalOfferSucceeded: CustomerCenterView.PromotionalOfferSucceededHandler? = nil
     ) {
         super.init(nibName: nil, bundle: nil)
