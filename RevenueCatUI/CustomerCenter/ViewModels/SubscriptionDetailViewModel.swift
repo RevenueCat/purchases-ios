@@ -100,8 +100,8 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     func didAppear() {
         cancellables.removeAll()
 
-        actionWrapper.promotionalOfferSuccessPublisher
-            .sink { [weak self] in self?.refreshPurchase() }
+        actionWrapper.promotionalOfferSucceededPublisher
+            .sink { [weak self] _ in self?.refreshPurchase() }
             .store(in: &cancellables)
 
         actionWrapper.showingManageSubscriptionsPublisher
