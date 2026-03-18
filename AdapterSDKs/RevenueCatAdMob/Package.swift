@@ -23,12 +23,9 @@ let package = Package(
             dependencies: [
                 .product(name: "RevenueCat", package: "purchases-ios"),
                 .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads")
-            ],
-            path: ".",
-            exclude: ["README.md", "Tests", ".build", "Derived", "Package.resolved", "Support"]),
+            ]),
         .testTarget(
             name: "RevenueCatAdMobTests",
-            dependencies: ["RevenueCatAdMob"],
-            path: "Tests/RevenueCatAdMobTests")
+            dependencies: ["RevenueCatAdMob"])
     ]
 )
