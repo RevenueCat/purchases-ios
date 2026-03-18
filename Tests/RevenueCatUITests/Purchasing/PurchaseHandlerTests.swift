@@ -289,7 +289,7 @@ class PurchaseHandlerTests: TestCase {
         expect(mockPurchases.cachedPurchaseDataByProductID).to(beEmpty())
     }
 
-    func testPurchaseCachesPresentedOfferingContextWhenCompletedByMyApp() async throws {
+    func testPurchaseCachesPurchaseDataWhenCompletedByMyApp() async throws {
         let mockPurchases = MockPurchases(
             purchasesAreCompletedBy: .myApp
         ) { _ in
@@ -319,11 +319,13 @@ class PurchaseHandlerTests: TestCase {
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
+        // .myApp path caches both offering context and paywall event
         let expectedProductId = TestData.packageWithIntroOffer.storeProduct.productIdentifier
         let cachedData = mockPurchases.cachedPurchaseDataByProductID[expectedProductId]
         expect(cachedData).toNot(beNil())
         expect(cachedData?.presentedOfferingContext.offeringIdentifier)
             == TestData.packageWithIntroOffer.presentedOfferingContext.offeringIdentifier
+        expect(cachedData?.paywallEvent).toNot(beNil())
     }
 
     func testInProgressPropertiesDuringPurchase() async throws {
