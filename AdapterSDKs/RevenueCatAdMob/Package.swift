@@ -5,7 +5,13 @@ import PackageDescription
 let package = Package(
     name: "RevenueCatAdMob",
     platforms: [
-        .iOS(.v15)
+        .iOS(.v15),
+        // The adapter is iOS-only, but SPM requires platform minimums >= those of dependencies.
+        // RevenueCat declares macOS 10.15 / tvOS 13 / watchOS 6.2, so we must match them here
+        // or SPM fills in lower defaults and fails dependency resolution.
+        .macOS(.v10_15),
+        .tvOS(.v13),
+        .watchOS("6.2")
     ],
     products: [
         .library(name: "RevenueCatAdMob", targets: ["RevenueCatAdMob"])
