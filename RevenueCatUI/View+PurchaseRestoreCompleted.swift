@@ -100,7 +100,6 @@ public struct RestoreInitiatedAction: Sendable {
     }
 
     /// Invokes the action with the resume callback.
-    @MainActor
     func callAsFunction(resume: ResumeAction) {
         action(resume)
     }

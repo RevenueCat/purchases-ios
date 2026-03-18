@@ -116,10 +116,12 @@ struct NoSubscriptionsCardView: View {
                 )
             )
             .onRestoreInitiated { resume in
-                if let restoreInitiated = self.externalActions.restoreInitiated {
-                    restoreInitiated(resume)
-                } else {
-                    resume()
+                Task(priority: .userInitiated) { @MainActor in
+                    if let restoreInitiated = self.externalActions.restoreInitiated {
+                        restoreInitiated(resume)
+                    } else {
+                        resume()
+                    }
                 }
             }
             .paywallSource(.customerCenter)
