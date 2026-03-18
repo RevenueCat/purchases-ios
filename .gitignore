@@ -101,6 +101,7 @@ Examples/**/xcshareddata/**
 # We can't avoid the whole folder yet because RC and RCUI need to be tested through the package, rather than the workspace
 .swiftpm/xcode/xcshareddata/xcschemes/ReceiptParser.xcscheme
 .swiftpm/xcode/xcshareddata/xcschemes/RevenueCat_CustomEntitlementComputation.xcscheme
+.swiftpm/xcode/xcshareddata/xcschemes/RevenueCatAdMob.xcscheme
 Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.storekit
 
 # Claude Code

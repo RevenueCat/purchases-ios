@@ -40,17 +40,12 @@ extension TargetDependency {
         }
     }
 
-    /// Returns the RevenueCatAdMob dependency based on the dependency mode
+    /// Returns the RevenueCatAdMob dependency — always a local Tuist project (standalone package, not in root SPM)
     /// - Returns: A TargetDependency for RevenueCatAdMob
     public static var revenueCatAdMob: TargetDependency {
-        switch Environment.dependencyMode {
-        case .localSwiftPackage, .remoteSwiftPackage:
-            return .revenueCatAdMobSwiftPackageDependency
-        case .remoteXcodeProject:
-            return .revenueCatAdMobRemoteXcodeProjectDependency
-        case .localXcodeProject:
-            return .revenueCatAdMobXcodeProjectDependency
-        }
+        .project(
+            target: "RevenueCatAdMob",
+            path: .relativeToRoot("Projects/RevenueCatAdMob"))
     }
 
     /// Returns the ReceiptParser dependency based on the dependency mode
@@ -102,25 +97,6 @@ extension TargetDependency {
         .project(
             target: "RevenueCatUI",
             path: .relativeToRoot("Projects/RevenueCatUI"))
-    }
-
-    // MARK: - RevenueCatAdMob
-
-    /// RevenueCatAdMob as a native Xcode SPM package dependency (used for both local and remote SPM modes)
-    static var revenueCatAdMobSwiftPackageDependency: TargetDependency {
-        .package(product: "RevenueCatAdMob", type: .runtime)
-    }
-
-    /// RevenueCatAdMob as a Tuist-managed XcodeProj dependency (resolved via Tuist/Package.swift)
-    static var revenueCatAdMobRemoteXcodeProjectDependency: TargetDependency {
-        .external(name: "RevenueCatAdMob")
-    }
-
-    /// RevenueCatAdMob as a local Tuist project target dependency
-    static var revenueCatAdMobXcodeProjectDependency: TargetDependency {
-        .project(
-            target: "RevenueCatAdMob",
-            path: .relativeToRoot("Projects/RevenueCatAdMob"))
     }
 
     // MARK: - Custom Entitlement Computation

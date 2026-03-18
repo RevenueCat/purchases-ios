@@ -689,14 +689,14 @@ platform :ios do
     )
   end
 
-  desc "Runs all RevenueCatAdMob tests (SPM package, workspace '.' like test_revenuecatui)"
+  desc "Runs all RevenueCatAdMob tests (standalone SPM package under AdapterSDKs/RevenueCatAdMob)"
   lane :test_revenuecat_admob do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
 
     xcodebuild(
-      workspace: '.',
+      workspace: 'AdapterSDKs/RevenueCatAdMob',
       scheme: 'RevenueCatAdMob',
       destination: "platform=" + platform + ",name=" + destination,
       sdk: sdk,
