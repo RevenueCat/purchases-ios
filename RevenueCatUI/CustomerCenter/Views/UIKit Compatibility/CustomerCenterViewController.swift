@@ -11,6 +11,7 @@
 //
 //  Created by Will Taylor on 12/6/24.
 
+// swiftlint:disable file_length
 import Combine
 import RevenueCat
 import SwiftUI
@@ -121,7 +122,8 @@ public class CustomerCenterViewController: UIViewController {
         managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
         changePlansSelected: CustomerCenterView.ChangePlansHandler? = nil,
         onCustomAction: CustomerCenterView.CustomActionHandler? = nil,
-        promotionalOfferSuccess: CustomerCenterView.PromotionalOfferSuccessHandler? = nil
+        promotionalOfferSuccess: (@MainActor @Sendable () -> Void)? = nil,
+        promotionalOfferSucceeded: CustomerCenterView.PromotionalOfferSucceededHandler? = nil
     ) {
         super.init(nibName: nil, bundle: nil)
 
@@ -195,6 +197,14 @@ public class CustomerCenterViewController: UIViewController {
                 .store(in: &cancellables)
         }
 
+        if let promotionalOfferSucceeded {
+            actionWrapper.promotionalOfferSucceededPublisher
+                .sink(receiveValue: { customerInfo, transaction, offerId in
+                    promotionalOfferSucceeded(customerInfo, transaction, offerId)
+                })
+                .store(in: &cancellables)
+        }
+
         self.actionWrapper = actionWrapper
     }
     // swiftlint:enable cyclomatic_complexity function_body_length
@@ -251,7 +261,7 @@ public class CustomerCenterViewController: UIViewController {
         }
     }
 
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
     private func setupDelegateBindings(actionWrapper: CustomerCenterActionWrapper) {
         actionWrapper.restoreStartedPublisher
             .sink { [weak self] in
@@ -335,6 +345,18 @@ public class CustomerCenterViewController: UIViewController {
             .sink { [weak self] in
                 guard let self else { return }
                 self.delegate?.customerCenterViewControllerDidSucceedWithPromotionalOffer?(self)
+            }
+            .store(in: &cancellables)
+
+        actionWrapper.promotionalOfferSucceededPublisher
+            .sink { [weak self] customerInfo, transaction, offerId in
+                guard let self else { return }
+                self.delegate?.customerCenterViewController?(
+                    self,
+                    didSucceedWithPromotionalOffer: offerId,
+                    customerInfo: customerInfo,
+                    transaction: transaction
+                )
             }
             .store(in: &cancellables)
     }

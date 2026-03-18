@@ -32,7 +32,8 @@ func checkCustomerCenterViewControllerAPI(
         managementOptionSelected: { _ in },
         changePlansSelected: { _ in },
         onCustomAction: { _, _ in },
-        promotionalOfferSuccess: {}
+        promotionalOfferSuccess: {},
+        promotionalOfferSucceeded: { _, _, _ in }
     )
 }
 
@@ -81,6 +82,13 @@ private class MockCustomerCenterViewControllerDelegate: NSObject, CustomerCenter
     ) {}
 
     func customerCenterViewControllerDidSucceedWithPromotionalOffer(_ controller: CustomerCenterViewController) {}
+
+    func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didSucceedWithPromotionalOffer offerId: String,
+        customerInfo: CustomerInfo,
+        transaction: StoreTransaction
+    ) {}
 
     func customerCenterViewControllerWasDismissed(_ controller: CustomerCenterViewController) {}
 }
