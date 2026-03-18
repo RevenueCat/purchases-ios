@@ -269,7 +269,8 @@ extension PurchaseHandler {
         }
 
         self.startAction(.purchase)
-        let paywallEvent = self.trackPurchaseInitiated(package: package)
+        let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        if let paywallEvent { self.track(paywallEvent) }
 
         do {
             let result: PurchaseResultData
@@ -318,7 +319,8 @@ extension PurchaseHandler {
         }
 
         self.startAction(.purchase)
-        let paywallEvent = self.trackPurchaseInitiated(package: package)
+        let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        if let paywallEvent { self.track(paywallEvent) }
         let productIdentifier = package.storeProduct.productIdentifier
         self.purchases.cachePurchaseData(
             presentedOfferingContext: package.presentedOfferingContext,
@@ -483,12 +485,9 @@ extension PurchaseHandler {
         return true
     }
 
-    /// Tracks a purchase initiated event for analytics and returns the event
-    /// - Parameters:
-    ///   - package: The package being purchased
-    /// - Returns: the paywall event if tracking succeeded, `nil` otherwise
-    @discardableResult
-    func trackPurchaseInitiated(package: Package) -> PaywallEvent? {
+    /// Creates a purchase-initiated paywall event for the given package.
+    /// - Returns: the event, or `nil` if event data is unavailable.
+    func createPurchaseInitiatedEvent(package: Package) -> PaywallEvent? {
         guard let data = self.eventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return nil
@@ -500,11 +499,9 @@ extension PurchaseHandler {
             errorCode: nil,
             errorMessage: nil
         )
-        let event = PaywallEvent.purchaseInitiated(.init(), purchaseData)
-        self.track(event)
-
-        return event
+        return PaywallEvent.purchaseInitiated(.init(), purchaseData)
     }
+
 
     /// Tracks a purchase error event.
     /// - Parameters:
