@@ -502,7 +502,6 @@ extension PurchaseHandler {
         return PaywallEvent.purchaseInitiated(.init(), purchaseData)
     }
 
-
     /// Tracks a purchase error event.
     /// - Parameters:
     ///   - package: The package that was being purchased
