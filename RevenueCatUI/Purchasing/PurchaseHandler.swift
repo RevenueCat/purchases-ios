@@ -484,7 +484,6 @@ extension PurchaseHandler {
     }
 
     /// Tracks a purchase initiated event for analytics and returns the event
-    /// so it can be passed through the purchase call tree.
     /// - Parameters:
     ///   - package: The package being purchased
     /// - Returns: the paywall event if tracking succeeded, `nil` otherwise
