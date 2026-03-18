@@ -4,6 +4,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "RevenueCatAdMob",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .framework,
     targets: [
         .target(
@@ -18,7 +19,8 @@ let project = Project(
                     "../../AdapterSDKs/RevenueCatAdMob/**/*.swift",
                     excluding: [
                         "../../AdapterSDKs/RevenueCatAdMob/.build/**",
-                        "../../AdapterSDKs/RevenueCatAdMob/Tests/**"
+                        "../../AdapterSDKs/RevenueCatAdMob/Tests/**",
+                        "../../AdapterSDKs/RevenueCatAdMob/Package.swift"
                     ]
                 )
             ],
