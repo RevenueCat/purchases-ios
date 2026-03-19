@@ -1,7 +1,7 @@
 import Foundation
 import XCTest
 
-#if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(GoogleMobileAds)
+#if os(iOS) && canImport(GoogleMobileAds)
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)

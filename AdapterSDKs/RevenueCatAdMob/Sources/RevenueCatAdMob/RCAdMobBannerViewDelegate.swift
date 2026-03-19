@@ -6,7 +6,7 @@
 
 import Foundation
 
-#if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(GoogleMobileAds)
+#if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
 @_spi(Experimental) import RevenueCat
 
