@@ -1022,4 +1022,15 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == false
     }
 
+    // MARK: - ATT consent status on unsyncedAttributesByKey
+
+    func testUnsyncedAttributesByKeySetsATTConsentStatusBeforeReading() {
+        let appUserID = mockIdentityManager.currentAppUserID
+
+        _ = self.attribution.unsyncedAttributesByKey(appUserID: appUserID)
+
+        expect(self.mockSubscriberAttributesManager.invokedSetATTConsentStatus) == true
+        expect(self.mockSubscriberAttributesManager.invokedSetATTConsentStatusParameters?.appUserID) == appUserID
+    }
+
 }

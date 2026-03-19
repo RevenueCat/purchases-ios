@@ -598,7 +598,8 @@ extension Attribution {
     }
 
     func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttribute.Dictionary {
-        self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: appUserID)
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: appUserID)
+        return self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: appUserID)
     }
 
     var unsyncedAdServicesToken: String? {
