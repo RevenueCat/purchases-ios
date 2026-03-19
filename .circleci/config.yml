@@ -640,6 +640,14 @@ jobs:
           no_output_timeout: 10m
           environment:
             DEVICE: iPhone 17,OS=26.2
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecat_admob
+      - store_test_results:
+          path: fastlane/test_output/revenuecat_admob/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
       - slack-notify-on-fail
 
   spm-receipt-parser:
