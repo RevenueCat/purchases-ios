@@ -1520,7 +1520,6 @@ public extension Purchases {
 
     /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
     func track(paywallEvent: PaywallEvent) async {
-        self.purchasesOrchestrator.track(paywallEvent: paywallEvent)
         await self.eventsManager?.track(featureEvent: paywallEvent)
     }
 
@@ -1593,9 +1592,15 @@ extension Purchases {
 
         if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
             // Refetches new offerings with preferred locale
-            self.getOfferings(fetchPolicy: .default, fetchCurrent: true) { _, _ in
+            self.offeringsManager.clearInMemoryOfferingsCache()
+            self.getOfferings(fetchPolicy: .default) { _, _ in
                 // No-op
             }
+        } else {
+            Logger.debug(Strings.offering.override_preferred_locale_rate_limited(
+                maxCalls: self.overridePreferredUILocaleRateLimiter.maxCalls,
+                periodSeconds: Int(self.overridePreferredUILocaleRateLimiter.period)
+            ))
         }
     }
 }
@@ -2073,18 +2078,51 @@ extension Purchases: @unchecked Sendable {}
 
 extension Purchases {
 
-    /// Used when purchasing through `SwiftUI` paywalls.
-    @_spi(Internal) public func cachePresentedOfferingContext(_ context: PresentedOfferingContext,
-                                                              productIdentifier: String) {
-        Logger.debug(Strings.purchase.caching_presented_offering_identifier(
-            offeringID: context.offeringIdentifier,
-            productID: productIdentifier
-        ))
-
-        self.purchasesOrchestrator.cachePresentedOfferingContext(
-            context,
+    /// Caches the `PresentedOfferingContext` and an optional `PaywallEvent` for a product.
+    /// Used by `RevenueCatUI` for StoreView integration and when `purchasesAreCompletedBy` is `.myApp`
+    /// so that `Transaction.updates` can attribute the purchase to the paywall/offering.
+    @_spi(Internal) public func cachePurchaseData(
+        presentedOfferingContext: PresentedOfferingContext,
+        paywallEvent: PaywallEvent?,
+        productIdentifier: String
+    ) {
+        self.purchasesOrchestrator.cachePurchaseData(
+            presentedOfferingContext: presentedOfferingContext,
+            paywallEvent: paywallEvent,
             productIdentifier: productIdentifier
         )
+    }
+
+    /// Clears cached purchase data for a product.
+    /// Used by `RevenueCatUI` when `purchasesAreCompletedBy` is `.myApp`
+    /// and the purchase is cancelled or fails.
+    @_spi(Internal) public func clearCachedPurchaseData(productIdentifier: String) {
+        self.purchasesOrchestrator.clearCachedPurchaseData(productIdentifier: productIdentifier)
+    }
+
+    /// Purchases a package, optionally with a promotional offer and/or paywall event.
+    /// The paywall event is passed through the purchase call tree so the SK2 path
+    /// can attribute the purchase deterministically.
+    @_spi(Internal) public func purchase(
+        package: Package,
+        promotionalOffer: PromotionalOffer?,
+        paywallEvent: PaywallEvent?
+    ) async throws -> PurchaseResultData {
+        return try await withUnsafeThrowingContinuation { continuation in
+            self.purchasesOrchestrator.purchase(
+                product: package.storeProduct,
+                package: package,
+                promotionalOffer: promotionalOffer?.signedData,
+                metadata: nil,
+                paywallEvent: paywallEvent,
+                trackDiagnostics: true
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(
+                    with: Result(customerInfo, error)
+                        .map { PurchaseResultData(transaction, $0, userCancelled) }
+                )
+            }
+        }
     }
 
     // swiftlint:disable missing_docs
@@ -2097,6 +2135,11 @@ extension Purchases {
     // swiftlint:disable missing_docs
     @_spi(Internal) public var preferredLocaleOverride: String? {
         return self.systemInfo.preferredLocaleOverride
+    }
+
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public static var installationMethod: String {
+        return SystemInfo.installationMethod
     }
 }
 
@@ -2138,17 +2181,39 @@ private typealias NewErrorUtils = ErrorUtils
 
 // MARK: - Custom Paywall Impressions
 
-internal extension Purchases {
+extension Purchases {
 
     /// Tracks an impression for a custom paywall.
+    ///
+    /// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
+    /// This enables RevenueCat to track paywall impressions for analytics.
+    ///
+    /// - Important: Each call creates a separate impression event. Call this once per paywall presentation,
+    ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
+    ///
     /// - Parameter params: Parameters for the custom paywall impression.
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func trackCustomPaywallImpression(_ params: CustomPaywallEvent.Params = .init()) async {
-        let event = CustomPaywallEvent.impression(
-            .init(),
-            .init(paywallId: params.paywallId)
-        )
-        await self.eventsManager?.track(featureEvent: event)
+    @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams) {
+        let offeringId = params.offeringId ?? self.offeringsManager.cachedOfferings?.current?.identifier
+        Task {
+            let event = CustomPaywallEvent.impression(
+                .init(),
+                .init(paywallId: params.paywallId, offeringId: offeringId)
+            )
+            await self.eventsManager?.track(featureEvent: event)
+        }
+    }
+
+    /// Tracks an impression for a custom paywall with no additional parameters.
+    ///
+    /// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
+    /// This enables RevenueCat to track paywall impressions for analytics.
+    ///
+    /// - Important: Each call creates a separate impression event. Call this once per paywall presentation,
+    ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @objc public func trackCustomPaywallImpression() {
+        trackCustomPaywallImpression(CustomPaywallImpressionParams())
     }
 
 }

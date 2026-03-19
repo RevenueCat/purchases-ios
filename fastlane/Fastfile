@@ -1484,7 +1484,8 @@ platform :ios do
       include_debug_symbols: true,
       # Set SKIP_INSTALL and BUILD_LIBRARY_FOR_DISTRIBUTION.
       # See https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle#Set-up-the-project
-      override_xcargs: true
+      override_xcargs: true,
+      xcargs: "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) RC_XCFRAMEWORK'"
     )
 
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
@@ -1509,7 +1510,15 @@ platform :ios do
     # Use zip -r to preserve directory structure
     # Change to the xcframework's parent directory so the zip contains the xcframework folder
     Dir.chdir(File.dirname(xcframework_path)) do
-      sh("zip", "-r", "-q", xcframework_zip_path, File.basename(xcframework_path))
+      sh("zip", "-r", "-y", "-q", xcframework_zip_path, File.basename(xcframework_path))
+    end
+
+    # Verify that the zipped xcframework passes codesign verification
+    Dir.mktmpdir("xcframework-verify") do |tmpdir|
+      sh("unzip", "-q", xcframework_zip_path, "-d", tmpdir)
+      extracted_xcframework = File.join(tmpdir, "#{product_name}.xcframework")
+      sh("codesign", "--verify", "--verbose", extracted_xcframework)
+      UI.success("Codesign verification passed for #{product_name}.xcframework.zip")
     end
 
   end
@@ -2045,9 +2054,10 @@ platform :ios do
     xcconfig_path = "#{project_root}/CI.xcconfig"
     File.write(xcconfig_path, [
       "// Auto-generated for RCT Tester deployment. Do not commit to VCS.",
-      "REVENUECAT_API_KEY = #{api_key}"
+      "REVENUECAT_API_KEY = #{api_key}",
+      "RCT_PROVISIONING_PROFILE = #{provisioning_profile_name}"
     ].join("\n"))
-    UI.success("Created CI.xcconfig with REVENUECAT_API_KEY")
+    UI.success("Created CI.xcconfig with REVENUECAT_API_KEY and RCT_PROVISIONING_PROFILE")
 
     # Generate the Tuist workspace (must happen after CI.xcconfig is written)
     tuist_generate(query: "RCTTester")
@@ -2067,6 +2077,12 @@ platform :ios do
       )
     end
 
+    # PROVISIONING_PROFILE_SPECIFIER is set at the target level in the Tuist
+    # Project.swift via the RCT_PROVISIONING_PROFILE xcconfig variable (written
+    # to CI.xcconfig above). It must NOT be passed as an xcarg because xcargs
+    # apply globally to all targets, including SPM resource bundle targets
+    # (RevenueCat_RevenueCat, RevenueCat_RevenueCatUI) which don't support
+    # provisioning profiles.
     build_ios_app(
       workspace: workspace_path,
       scheme: "RCTTester - Live Config",
@@ -2075,8 +2091,7 @@ platform :ios do
       export_method: 'app-store',
       xcargs: "CODE_SIGN_STYLE=Manual " \
               "DEVELOPMENT_TEAM=8SXR2327BM " \
-              "CODE_SIGN_IDENTITY='Apple Distribution' " \
-              "PROVISIONING_PROFILE_SPECIFIER='#{provisioning_profile_name}'",
+              "CODE_SIGN_IDENTITY='Apple Distribution'",
       export_options: {
         signingStyle: "manual",
         manageAppVersionAndBuildNumber: false,

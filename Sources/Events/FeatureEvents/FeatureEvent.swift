@@ -129,6 +129,10 @@ private extension CustomPaywallEvent {
             result["paywall_id"] = paywallId
         }
 
+        if let offeringId = self.data.offeringId {
+            result["offering_id"] = offeringId
+        }
+
         return result
     }
 

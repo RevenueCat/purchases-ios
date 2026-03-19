@@ -36,7 +36,7 @@ class TabsComponentViewModel {
         tabViewModels: [TabViewModel],
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
-    ) throws {
+    ) {
         self.component = component
         self.controlStackViewModel = controlStackViewModel
         self.tabViewModels = Dictionary(uniqueKeysWithValues: tabViewModels.map { tabViewModel in
@@ -104,7 +104,7 @@ class TabViewModel {
         defaultSelectedPackage: Package?,
         packages: [Package],
         uiConfigProvider: UIConfigProvider
-    ) throws {
+    ) {
         self.tab = tab
         self.stackViewModel = stackViewModel
         self.defaultSelectedPackage = defaultSelectedPackage

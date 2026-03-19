@@ -83,7 +83,7 @@ public class PaywallViewController: UIViewController {
     /// - Parameters:
     ///   - value: The numeric value to set.
     ///   - key: The variable key (without the `custom.` prefix).
-    @objc func setCustomVariableNumber(_ value: Double, forKey key: String) {
+    @objc public func setCustomVariableNumber(_ value: Double, forKey key: String) {
         CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .number(value)
     }
@@ -92,7 +92,7 @@ public class PaywallViewController: UIViewController {
     /// - Parameters:
     ///   - value: The boolean value to set.
     ///   - key: The variable key (without the `custom.` prefix).
-    @objc func setCustomVariableBool(_ value: Bool, forKey key: String) {
+    @objc public func setCustomVariableBool(_ value: Bool, forKey key: String) {
         CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .bool(value)
     }
@@ -663,6 +663,13 @@ public protocol PaywallViewControllerDelegate: AnyObject {
                                         didInitiatePurchaseWith package: Package,
                                         resume: @escaping (Bool) -> Void)
 
+    /// Notifies that a restore is about to be initiated.
+    /// This allows the delegate to gate the restore flow (e.g., requiring authentication).
+    /// The `resume` closure **must** be called to either proceed (`true`) or cancel (`false`) the restore.
+    @objc(paywallViewController:didInitiateRestoreWithResume:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didInitiateRestoreWith resume: @escaping (Bool) -> Void)
+
 }
 
 // MARK: - Private
@@ -670,6 +677,7 @@ public protocol PaywallViewControllerDelegate: AnyObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PaywallViewController {
 
+    // swiftlint:disable:next function_body_length
     func createHostingController() -> UIHostingController<PaywallContainerView> {
         // Always route close button through exit offer handling
         let onRequestedDismissal: () -> Void = { [weak self] in
@@ -717,7 +725,8 @@ private extension PaywallViewController {
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
             },
-            purchaseInitiated: self.createPurchaseInitiatedHandler()
+            purchaseInitiated: self.createPurchaseInitiatedHandler(),
+            restoreInitiated: self.createRestoreInitiatedHandler()
         )
 
         let controller = UIHostingController(rootView: container)
@@ -737,6 +746,17 @@ private extension PaywallViewController {
                 return
             }
             self.delegate?.paywallViewController?(self, didInitiatePurchaseWith: package, resume: resume)
+                ?? resume(true)
+        }
+    }
+
+    private func createRestoreInitiatedHandler() -> (@escaping (Bool) -> Void) -> Void {
+        return { [weak self] resume in
+            guard let self else {
+                resume(true)
+                return
+            }
+            self.delegate?.paywallViewController?(self, didInitiateRestoreWith: resume)
                 ?? resume(true)
         }
     }
@@ -761,6 +781,7 @@ private struct PaywallContainerView: View {
     let onSizeChange: (CGSize) -> Void
 
     let purchaseInitiated: (Package, @escaping (Bool) -> Void) -> Void
+    let restoreInitiated: (@escaping (Bool) -> Void) -> Void
 
     var body: some View {
         PaywallView(configuration: self.configuration)
@@ -776,6 +797,13 @@ private struct PaywallContainerView: View {
             .onRequestedDismissal(self.requestedDismissal)
             .onPurchaseInitiated { package, resumeAction in
                 self.purchaseInitiated(package) { shouldProceed in
+                    Task { @MainActor in
+                        resumeAction(shouldProceed: shouldProceed)
+                    }
+                }
+            }
+            .onRestoreInitiated { resumeAction in
+                self.restoreInitiated { shouldProceed in
                     Task { @MainActor in
                         resumeAction(shouldProceed: shouldProceed)
                     }

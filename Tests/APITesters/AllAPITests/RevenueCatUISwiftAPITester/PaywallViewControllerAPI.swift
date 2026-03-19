@@ -188,6 +188,9 @@ final class Delegate: PaywallViewControllerDelegate {
                                didInitiatePurchaseWith package: Package,
                                resume: @escaping (Bool) -> Void) {}
 
+    func paywallViewController(_ controller: PaywallViewController,
+                               didInitiateRestoreWith resume: @escaping (Bool) -> Void) {}
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)

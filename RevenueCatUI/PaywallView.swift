@@ -233,11 +233,15 @@ public struct PaywallView: View {
                                      purchaseHandler: self.purchaseHandler)
                     .transition(Self.transition)
                 } else {
-                    #if os(macOS)
-                    DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
-                    #else
-                    LoadingPaywallView(mode: self.mode,
-                                       displayCloseButton: self.displayCloseButton)
+                    // Loading state using the default paywall view
+                    DefaultPaywallView(
+                        handler: purchaseHandler,
+                        offering: MockData.loadingOffering,
+                        isFooterPaywall: mode != .fullScreen
+                    )
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                        .redacted(reason: .placeholder)
                         .transition(Self.transition)
                         .task {
                             do {
@@ -256,7 +260,6 @@ public struct PaywallView: View {
                                 self.error = error
                             }
                         }
-                    #endif
                 }
             } else {
                 DebugErrorView("Purchases has not been configured.", releaseBehavior: .fatalError)
@@ -362,10 +365,6 @@ public struct PaywallView: View {
                 )
             }
         } else {
-            #if os(macOS)
-            DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
-            #else
-            // For V1 paywalls, use zeroDecimalPlaceCountries from PaywallData
             let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
                 countries: offering.paywall?.zeroDecimalPlaceCountries
             )
@@ -374,7 +373,7 @@ public struct PaywallView: View {
                 locale: purchaseHandler.preferredLocaleOverride ?? .current
             )
 
-            let paywallView = LoadedOfferingPaywallView(
+            LoadedOfferingPaywallView(
                 offering: offering,
                 activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                 paywall: paywall,
@@ -385,25 +384,13 @@ public struct PaywallView: View {
                 introEligibility: checker,
                 purchaseHandler: purchaseHandler,
                 locale: displayedLocale,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                error: error
             )
-
-            if let error {
-                DebugErrorView(
-                    "\(error.description)\n" +
-                    "You can fix this by editing the paywall in the RevenueCat dashboard.\n" +
-                    "The displayed paywall contains default configuration.\n" +
-                    "This error will be hidden in production.",
-                    replacement: paywallView
-                )
-            } else {
-                paywallView
-            }
-            #endif
         }
     }
 
-    // MARK: -
+    // MARK: - Transition
 
     private static let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
 
@@ -489,7 +476,6 @@ private extension PaywallViewConfiguration.Content {
 // MARK: -
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable, message: "Legacy paywalls are unavailable on macOS")
 @available(tvOS, unavailable)
 struct LoadedOfferingPaywallView: View {
 
@@ -501,6 +487,7 @@ struct LoadedOfferingPaywallView: View {
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
     private let showZeroDecimalPlacePrices: Bool
+    private let error: Offering.PaywallValidationError?
 
     @StateObject
     private var introEligibility: IntroEligibilityViewModel
@@ -532,7 +519,8 @@ struct LoadedOfferingPaywallView: View {
         introEligibility: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler,
         locale: Locale,
-        showZeroDecimalPlacePrices: Bool
+        showZeroDecimalPlacePrices: Bool,
+        error: Offering.PaywallValidationError? = nil
     ) {
         self.offering = offering
         self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
@@ -547,6 +535,7 @@ struct LoadedOfferingPaywallView: View {
         self._purchaseHandler = .init(initialValue: purchaseHandler)
         self.locale = locale
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        self.error = error
     }
 
     var body: some View {
@@ -555,7 +544,7 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: PurchaseInProgressPreferenceKey.self,
                         value: self.purchaseHandler.packageBeingPurchased)
             .preference(key: PurchasedResultPreferenceKey.self,
-                        value: .init(data: self.purchaseHandler.purchaseResult))
+                        value: .init(data: self.purchaseHandler.sessionPurchaseResult))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
             .preference(key: RestoreInProgressPreferenceKey.self,
@@ -564,6 +553,24 @@ struct LoadedOfferingPaywallView: View {
                         value: self.purchaseHandler.purchaseError as NSError?)
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
+    }
+
+    @ViewBuilder
+    private func paywallView(withConfig configuration: Result<TemplateViewConfiguration, any Error>) -> some View {
+        if let error {
+            DefaultPaywallView(
+                handler: purchaseHandler,
+                warning: .from(error: error),
+                offering: offering,
+                isFooterPaywall: mode != .fullScreen
+            )
+        } else {
+            self.paywall
+                .createView(for: self.offering,
+                            template: self.template,
+                            configuration: configuration,
+                            introEligibility: self.introEligibility)
+        }
     }
 
     @ViewBuilder
@@ -577,12 +584,7 @@ struct LoadedOfferingPaywallView: View {
             locale: self.locale,
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
         )
-
-        let view = self.paywall
-            .createView(for: self.offering,
-                        template: self.template,
-                        configuration: configuration,
-                        introEligibility: self.introEligibility)
+        let view = paywallView(withConfig: configuration)
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
@@ -611,7 +613,9 @@ struct LoadedOfferingPaywallView: View {
                                 color: self.getCloseButtonColor(configuration: configuration)
                             )
                         }
+                    #if !os(macOS)
                         .toolbarBackground(.hidden, for: .navigationBar)
+                    #endif
                 } else {
                     view
                         .toolbar {
@@ -621,7 +625,9 @@ struct LoadedOfferingPaywallView: View {
                         }
                 }
             }
+            #if !os(macOS)
             .navigationViewStyle(.stack)
+            #endif
         } else {
             view
         }

@@ -18,3 +18,4 @@
 "Continue" = "Настави";
 "Default_offer_details_with_intro_offer" = "Започните пробни период од {{ sub_offer_duration }}, затим {{ total_price_and_per_month }}.";
 "Something went wrong" = "Нешто није у реду";
+"Purchase" = "Купи";
