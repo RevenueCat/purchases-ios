@@ -77,9 +77,9 @@ struct PurchaseButtonComponentView: View {
         }
         .disabled(self.shouldBeDisabled)
         .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
-        #if canImport(SafariServices) && canImport(UIKit)
+        #if canImport(WebKit) && canImport(UIKit) && !os(tvOS)
         .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-            SafariView(url: self.inAppBrowserURL!)
+            WebCheckoutView(url: self.inAppBrowserURL!)
         }
         #endif
     }

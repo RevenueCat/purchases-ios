@@ -52,9 +52,9 @@ class PurchaseButtonComponentViewModel {
             case .inAppCheckout:
                 return .inAppCheckout
             case .webCheckout:
-                return .webCheckout(.init(autoDismiss: true, openMethod: .externalBrowser))
+                return .webCheckout(.init(autoDismiss: true, openMethod: .inAppBrowser))
             case .webProductSelection:
-                return .webProductSelection(.init(autoDismiss: true, openMethod: .externalBrowser))
+                return .webProductSelection(.init(autoDismiss: true, openMethod: .inAppBrowser))
             }
         })
     }
@@ -71,13 +71,13 @@ class PurchaseButtonComponentViewModel {
             return nil
         case .webCheckout(let webCheckout):
             if let checkoutUrl = packageContext?.package?.webCheckoutUrl ?? offering.webCheckoutUrl {
-                return (checkoutUrl, webCheckout.openMethod ?? .externalBrowser, webCheckout.autoDismiss ?? true)
+                return (checkoutUrl, .inAppBrowser, false)
             } else {
                 return nil
             }
         case .webProductSelection(let webCheckout):
             if let checkoutUrl = offering.webCheckoutUrl {
-                return (checkoutUrl, webCheckout.openMethod ?? .externalBrowser, webCheckout.autoDismiss ?? true)
+                return (checkoutUrl, .inAppBrowser, false)
             } else {
                 return nil
             }
@@ -87,12 +87,12 @@ class PurchaseButtonComponentViewModel {
                    let packageParam = customWebCheckout.customUrl.packageParam {
                     let url = customUrl.appending(name: packageParam, value: package.identifier)
                     return (url,
-                            customWebCheckout.openMethod ?? .externalBrowser,
-                            customWebCheckout.autoDismiss ?? true)
+                            .inAppBrowser,
+                            false)
                 } else {
                     return (customUrl,
-                            customWebCheckout.openMethod ?? .externalBrowser,
-                            customWebCheckout.autoDismiss ?? true)
+                            .inAppBrowser,
+                            false)
                 }
             } else {
                 return nil
