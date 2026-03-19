@@ -9,7 +9,7 @@
 //
 //  WebCheckoutView.swift
 //
-//  Created by Andrés Pallares on 2026-03-19.
+//  Created by Antonio Pallares on 2026-03-19.
 
 #if canImport(WebKit) && canImport(UIKit) && !os(tvOS)
 
@@ -46,7 +46,7 @@ struct WebCheckoutView: View {
                 }
             }
         }
-        .modifier(LargeDetentModifier())
+        .modifier(MediumDetentModifier())
     }
 }
 
@@ -112,10 +112,10 @@ private struct WebCheckoutWebView: UIViewRepresentable {
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
-private struct LargeDetentModifier: ViewModifier {
+private struct MediumDetentModifier: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 16.0, *) {
-            content.presentationDetents([.large])
+            content.presentationDetents([.medium])
         } else {
             content
         }
