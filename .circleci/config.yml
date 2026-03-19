@@ -2011,6 +2011,42 @@ jobs:
             git push origin
             git push --tags
 
+  deploy-to-admob-spm:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - checkout
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
+      - run:
+          name: Deploy RevenueCatAdMob to purchases-ios-admob
+          command: |
+            VERSION="${CIRCLE_TAG}"
+
+            # Clone the target repo
+            git clone git@github.com:RevenueCat/purchases-ios-admob.git target-repo
+            cd target-repo
+
+            # Clear existing contents (except .git)
+            git rm -rf . || true
+
+            # Copy adapter sources
+            cp -r ../AdapterSDKs/RevenueCatAdMob/* .
+
+            # Rewrite Package.swift: replace local path dep with versioned dep
+            sed -i 's|.package(name: "purchases-ios", path: "../..")|.package(url: "https://github.com/RevenueCat/purchases-ios.git", exact: "'"${VERSION}"'")|' Package.swift
+
+            # Remove Package.resolved (consumers resolve their own)
+            rm -f Package.resolved
+
+            # Commit, tag, and push
+            git add -A
+            git commit -m "Release ${VERSION}"
+            git tag "${VERSION}"
+            git push origin main
+            git push origin "${VERSION}"
+
   bump-sdk-in-rc-mobile-app:
     docker:
       - image: cimg/ruby:3.2.0
@@ -2309,6 +2345,8 @@ workflows:
           <<: *release-tags
       - deploy-to-spm:
           <<: *release-tags
+      - deploy-to-admob-spm:
+          <<: *release-tags
       - docs-deploy:
           <<: *release-tags
       - deploy-purchase-tester:
@@ -2318,6 +2356,7 @@ workflows:
           requires:
             - push-revenuecatui-pod
             - deploy-to-spm
+            - deploy-to-admob-spm
             - docs-deploy
             - deploy-purchase-tester
           <<: *release-tags
