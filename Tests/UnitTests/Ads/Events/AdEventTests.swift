@@ -222,7 +222,7 @@ class AdEventTests: TestCase {
         let event2 = AdRevenue(
             networkName: "AdMob",
             mediatorName: .appLovin,
-            adFormat: .mrec,
+            adFormat: .other,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
@@ -238,7 +238,7 @@ class AdEventTests: TestCase {
         let event1 = AdRevenue(
             networkName: "AdMob",
             mediatorName: .appLovin,
-            adFormat: .mrec,
+            adFormat: .other,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
@@ -250,7 +250,7 @@ class AdEventTests: TestCase {
         let event2 = AdRevenue(
             networkName: "AdMob",
             mediatorName: .appLovin,
-            adFormat: .mrec,
+            adFormat: .other,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",

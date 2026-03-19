@@ -6,7 +6,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "RevenueCatTests",
     organizationName: .revenueCatOrgName,
-    packages: .projectPackages,
+    packages: .projectPackages + .adMobPackage,
     settings: .framework,
     targets: [
 
@@ -214,6 +214,25 @@ let project = Project(
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
+        // MARK: – RevenueCatAdMobTests
+        .target(
+            name: "RevenueCatAdMobTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.revenuecat.RevenueCatAdMobTests",
+            deploymentTargets: .iOS("15.0"),
+            infoPlist: .default,
+            sources: [
+                "../../AdapterSDKs/RevenueCatAdMob/Tests/RevenueCatAdMobTests/**/*.swift"
+            ],
+            dependencies: [
+                .revenueCat,
+                .revenueCatAdMob,
+                .googleMobileAds
+            ],
+            metadata: .metadata(tags: ["RevenueCatTests"])
+        ),
+
         // MARK: – RevenueCatUITests
         .target(
             name: "RevenueCatUITests",
@@ -264,6 +283,16 @@ let project = Project(
             buildAction: .buildAction(targets: ["ReceiptParserTests"]),
             testAction: .targets([
                 .testableTarget(target: .init(stringLiteral: "ReceiptParserTests"))
+            ]),
+            runAction: .runAction(configuration: "Debug")
+        ),
+
+        .scheme(
+            name: "RevenueCatAdMobTests",
+            shared: true,
+            buildAction: .buildAction(targets: ["RevenueCatAdMobTests"]),
+            testAction: .targets([
+                .testableTarget(target: .init(stringLiteral: "RevenueCatAdMobTests"))
             ]),
             runAction: .runAction(configuration: "Debug")
         ),

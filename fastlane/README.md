@@ -146,6 +146,14 @@ Runs all the tvOS tests
 
 Runs all the watchOS tests
 
+### ios test_revenuecat_admob
+
+```sh
+[bundle exec] fastlane ios test_revenuecat_admob
+```
+
+Runs all RevenueCat_AdMob tests (SPM package, workspace '.' like test_revenuecatui)
+
 ### ios test_revenuecatui
 
 ```sh
@@ -162,13 +170,13 @@ Runs all RevenueCatUI tests
 
 Release checks
 
-### ios build_tv_watch_mac
+### ios build_tv_watch_mac_visionos
 
 ```sh
-[bundle exec] fastlane ios build_tv_watch_mac
+[bundle exec] fastlane ios build_tv_watch_mac_visionos
 ```
 
-build tvOS, watchOS, macOS
+build tvOS, watchOS, macOS and visionOS
 
 ### ios build_mac
 
@@ -177,14 +185,6 @@ build tvOS, watchOS, macOS
 ```
 
 macOS build
-
-### ios build_visionos
-
-```sh
-[bundle exec] fastlane ios build_visionos
-```
-
-visionOS build
 
 ### ios build_and_upload_emerge_binary_size_analysis
 
@@ -258,6 +258,14 @@ Release to CocoaPods
 
 Release to CocoaPods
 
+### ios push_revenuecat_admob_pod
+
+```sh
+[bundle exec] fastlane ios push_revenuecat_admob_pod
+```
+
+Release to CocoaPods
+
 ### ios tag_current_branch
 
 ```sh
@@ -298,6 +306,14 @@ Trigger CircleCI job to generate snapshots for RevenueCat
 
 Trigger CircleCI job to generate snapshots for RevenueCatUI
 
+### ios trigger_generate_swiftinterface
+
+```sh
+[bundle exec] fastlane ios trigger_generate_swiftinterface
+```
+
+Trigger CircleCI job to generate and update baseline swiftinterface files
+
 ### ios create_snapshot_pr
 
 ```sh
@@ -305,6 +321,14 @@ Trigger CircleCI job to generate snapshots for RevenueCatUI
 ```
 
 Creates a new PR after new snapshot files were generated
+
+### ios create_swiftinterface_pr
+
+```sh
+[bundle exec] fastlane ios create_swiftinterface_pr
+```
+
+Creates a new PR after new swiftinterface baseline files were generated
 
 ### ios create_snapshots_repo_pr
 
@@ -326,14 +350,6 @@ Creates RevenueCat-Swift.h for a new release
 
 ```sh
 [bundle exec] fastlane ios export_xcframeworks
-```
-
-
-
-### ios test_xcframework_export_and_integration
-
-```sh
-[bundle exec] fastlane ios test_xcframework_export_and_integration
 ```
 
 
@@ -409,6 +425,14 @@ Generate & publish docs
 ```
 
 Build and deploy PurchaseTesterSwiftUI
+
+### ios deploy_rct_tester
+
+```sh
+[bundle exec] fastlane ios deploy_rct_tester
+```
+
+Deploy RCT Tester to TestFlight
 
 ### ios fetch_snapshots
 
