@@ -29,35 +29,6 @@ let project = Project(
                 .revenueCat,
                 .external(name: "GoogleMobileAds")
             ]
-        ),
-        .target(
-            name: "RevenueCatAdMobTests",
-            destinations: .iOS,
-            product: .unitTests,
-            bundleId: "com.revenuecat.RevenueCatAdMobTests",
-            deploymentTargets: .iOS("15.0"),
-            infoPlist: .default,
-            sources: [
-                "../../AdapterSDKs/RevenueCatAdMob/Tests/RevenueCatAdMobTests/**/*.swift"
-            ],
-            dependencies: [
-                .target(name: "RevenueCatAdMob"),
-                .external(name: "GoogleMobileAds")
-            ]
-        )
-    ],
-    schemes: [
-        .scheme(
-            name: "RevenueCatAdMob",
-            shared: true,
-            buildAction: .buildAction(targets: ["RevenueCatAdMob"]),
-            testAction: .targets([
-                .testableTarget(target: .init(stringLiteral: "RevenueCatAdMobTests"))
-            ]),
-            runAction: .runAction(configuration: "Debug"),
-            archiveAction: .archiveAction(configuration: "Release"),
-            profileAction: .profileAction(configuration: "Release"),
-            analyzeAction: .analyzeAction(configuration: "Debug")
         )
     ]
 )
