@@ -624,7 +624,7 @@ jobs:
   revenuecat-admob-tests:
     executor:
       name: macos-executor
-      xcode_version: "16.4"
+      xcode_version: "26.3"
     steps:
       - checkout
       - install-dependencies:
@@ -639,7 +639,7 @@ jobs:
           command: bundle exec fastlane test_revenuecat_admob
           no_output_timeout: 10m
           environment:
-            DEVICE: iPhone 16,OS=18.5
+            DEVICE: iPhone 17,OS=26.2
       - slack-notify-on-fail
 
   spm-receipt-parser:
