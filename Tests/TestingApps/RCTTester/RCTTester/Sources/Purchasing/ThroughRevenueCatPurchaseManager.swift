@@ -5,7 +5,9 @@
 
 import Foundation
 import RevenueCat
+#if !os(tvOS)
 import RevenueCatUI
+#endif
 import StoreKit
 
 /// Purchase manager that uses RevenueCat's purchase methods with manual transaction finishing.
@@ -21,7 +23,7 @@ final class ThroughRevenueCatPurchaseManager: PurchaseManager {
 
     // MARK: - PurchaseManager
 
-    /// Returns `MyAppPurchaseLogic` because paywalls need custom purchase handling.
+    #if !os(tvOS)
     var myAppPurchaseLogic: MyAppPurchaseLogic? {
         return MyAppPurchaseLogic(
             performPurchase: { [weak self] package in
@@ -49,6 +51,7 @@ final class ThroughRevenueCatPurchaseManager: PurchaseManager {
             }
         )
     }
+    #endif
 
     /// Purchases a package using RevenueCat's purchase method, then finishes the transaction.
     func purchase(package: Package) async -> PurchaseOperationResult {
