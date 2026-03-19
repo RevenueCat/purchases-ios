@@ -2226,6 +2226,11 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - revenuecat-admob-tests:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
       - deploy-purchase-tester:
           dry_run: true
           requires:
