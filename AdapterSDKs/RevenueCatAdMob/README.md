@@ -6,7 +6,7 @@ The adapter is a **standalone Swift package** under `AdapterSDKs/RevenueCatAdMob
 
 ## Installation
 
-- **Swift Package Manager:** Add the `purchases-ios-admob` package (once published) to your project:
+- **Swift Package Manager:** Add the `purchases-ios-admob` package to your project:
   ```swift
   .package(url: "https://github.com/RevenueCat/purchases-ios-admob", from: "5.0.0")
   ```
