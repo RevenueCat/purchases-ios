@@ -2290,6 +2290,7 @@ workflows:
             - installation-tests-carthage
             - api-tests
             - spm-receipt-parser
+            - revenuecat-admob-tests
             - deploy-purchase-tester
             - run-all-maestro-e2e-tests
             - docs-build
@@ -2577,6 +2578,7 @@ workflows:
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
+            - revenuecat-admob-tests
             - deploy-purchase-tester
             - emerge_binary_size_analysis
 
