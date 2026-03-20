@@ -4,6 +4,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "AdMobIntegrationSample",
     organizationName: .revenueCatOrgName,
+    // RevenueCat is resolved transitively via the AdMob package's dependency on purchases-ios.
     packages: .adMobPackage,
     settings: .appProject,
     targets: [
