@@ -108,7 +108,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                 configuration: feedbackSurvey,
                 path: path) { [weak self] in
                     Task {
-                        await self?.onPathSelected(path: path)
+                        await self?.onPathSelected(path: path, withActiveProductId: withActiveProductId)
                     }
                 }
 
@@ -123,18 +123,18 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                 case .success(let promotionalOfferData):
                     self.promotionalOfferData = promotionalOfferData
                 case .failure:
-                    await self.onPathSelected(path: path)
+                    await self.onPathSelected(path: path, withActiveProductId: withActiveProductId)
                     self.loadingPath = nil
                 }
             } else {
                 Logger.debug(Strings.promo_offer_not_eligible_for_product(
                     promotionalOffer.iosOfferId, withActiveProductId ?? ""
                 ))
-                await self.onPathSelected(path: path)
+                await self.onPathSelected(path: path, withActiveProductId: withActiveProductId)
             }
 
         default:
-            await self.onPathSelected(path: path)
+            await self.onPathSelected(path: path, withActiveProductId: withActiveProductId)
         }
     }
 
@@ -171,7 +171,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 private extension BaseManageSubscriptionViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-    private func onPathSelected(path: CustomerCenterConfigData.HelpPath) async {
+    private func onPathSelected(path: CustomerCenterConfigData.HelpPath, withActiveProductId: String? = nil) async {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
@@ -199,7 +199,7 @@ private extension BaseManageSubscriptionViewModel {
                 .customActionSelected(
                     CustomActionData(
                         actionIdentifier: actionIdentifier,
-                        purchaseIdentifier: purchaseInformation?.productIdentifier
+                        purchaseIdentifier: purchaseInformation?.productIdentifier ?? withActiveProductId
                     )
                 )
             )
