@@ -59,9 +59,11 @@ class BackendPaywallEventTests: BaseBackendTests {
             displayMode: .fullScreen,
             localeIdentifier: "es_ES",
             darkMode: true,
-            placementIdentifier: "home_banner",
-            targetingRevision: 3,
-            targetingRuleId: "rule_abc123"
+            presentedOfferingContext: .init(
+                offeringIdentifier: "offering_1",
+                placementIdentifier: "home_banner",
+                targetingContext: .init(revision: 3, ruleId: "rule_abc123")
+            )
         )
         let event = PaywallEvent.impression(Self.eventCreation1, eventData)
         let storedEvent: StoredFeatureEvent = try Self.createStoredFeatureEvent(from: event)
