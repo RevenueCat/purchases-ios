@@ -597,9 +597,15 @@ extension Attribution {
                                                                           completion: completion)
     }
 
-    func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttribute.Dictionary {
+    /// Refreshes the cached ATT consent status so it will be included in the next attribute sync.
+    /// The value is also injected inline by `CustomerAPI.post(receipt:...)`, but caching it here
+    /// ensures it gets marked as synced via `markAttributesAsSynced`.
+    func setATTConsentStatus(forAppUserID appUserID: String) {
         self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: appUserID)
-        return self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: appUserID)
+    }
+
+    func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttribute.Dictionary {
+        self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: appUserID)
     }
 
     var unsyncedAdServicesToken: String? {

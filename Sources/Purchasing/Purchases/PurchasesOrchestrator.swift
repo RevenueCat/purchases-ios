@@ -47,8 +47,10 @@ final class PurchasesOrchestrator {
     private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
-    private var unsyncedAttributes: SubscriberAttribute.Dictionary {
-        self.attribution.unsyncedAttributesByKey(appUserID: self.appUserID)
+    /// Refreshes the cached ATT consent status and returns all unsynced subscriber attributes.
+    private func refreshATTStatusAndGetUnsyncedAttributes() -> SubscriberAttribute.Dictionary {
+        self.attribution.setATTConsentStatus(forAppUserID: self.appUserID)
+        return self.attribution.unsyncedAttributesByKey(appUserID: self.appUserID)
     }
 
     private let productsManager: ProductsManagerType
@@ -1473,7 +1475,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let paywall = cached?.paywallEvent
 
         let storefront = await self.storefront(from: transaction)
-        let subscriberAttributes = self.unsyncedAttributes
+        let subscriberAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
             presentedOfferingContext: offeringContext,
@@ -1693,7 +1695,7 @@ private extension PurchasesOrchestrator {
                           initiationSource: PostReceiptSource.InitiationSource,
                           completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         let currentAppUserID = self.appUserID
-        let unsyncedAttributes = self.unsyncedAttributes
+        let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
 
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
         // https://rev.cat/apple-restoring-purchased-products
@@ -1756,7 +1758,7 @@ private extension PurchasesOrchestrator {
                                   initiationSource: PostReceiptSource.InitiationSource,
                                   completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         let currentAppUserID = self.appUserID
-        let unsyncedAttributes = self.unsyncedAttributes
+        let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
 
         _ = Task<Void, Never> {
             let transaction = await self.transactionFetcher.firstVerifiedTransaction
@@ -1889,7 +1891,7 @@ private extension PurchasesOrchestrator {
         let cached = restored ? nil : self.getAndRemoveCachedPurchaseContext(for: purchasedTransaction)
         let offeringContext = cached?.offeringContext
         let paywall = cached?.paywallEvent
-        let unsyncedAttributes = self.unsyncedAttributes
+        let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
                 presentedOfferingContext: offeringContext,
@@ -2245,7 +2247,7 @@ extension PurchasesOrchestrator {
         let cached = self.getAndRemoveCachedPurchaseContext(for: transaction)
         let offeringContext = presentedOfferingContext ?? cached?.offeringContext
         let paywall = presentedPaywall ?? cached?.paywallEvent
-        let unsyncedAttributes = self.unsyncedAttributes
+        let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
             presentedOfferingContext: offeringContext,

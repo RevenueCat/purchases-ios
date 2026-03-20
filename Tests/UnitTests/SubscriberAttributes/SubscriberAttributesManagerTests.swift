@@ -2910,6 +2910,30 @@ class SubscriberAttributesManagerTests: TestCase {
         // Should NOT post to backend — nothing unsynced
         expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 0
     }
+
+    func testSyncAttributesForAllUsersOnlySetsATTConsentStatusForCurrentUser() {
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        // Unsynced attributes exist for both current and old anonymous user
+        let oldAttribute = SubscriberAttribute(withKey: "$email",
+                                               value: "test@example.com",
+                                               isSynced: false,
+                                               setTime: Date())
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [
+            "kratos": [:],
+            "old-anonymous-user": ["$email": oldAttribute]
+        ]
+
+        self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: "kratos")
+
+        // ATT consent status should only be written for the current user
+        let attStores = self.mockDeviceCache.invokedStoreParametersList.filter {
+            $0.attribute.key == "$attConsentStatus"
+        }
+        for store in attStores {
+            expect(store.appUserID) == "kratos"
+        }
+    }
 }
 
 private extension SubscriberAttributesManagerTests {
