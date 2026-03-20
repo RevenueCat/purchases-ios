@@ -88,8 +88,10 @@ final class MockLargeItemCache: LargeItemCacheType {
         switch directoryType {
         case .cache:
             directoryName = "cache"
+        #if !os(tvOS)
         case .applicationSupport:
             directoryName = "applicationSupport"
+        #endif
         }
         return URL(string: "file:///mock/\(directoryName)/\(basePath)")
     }
