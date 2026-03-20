@@ -57,19 +57,19 @@ extension FeatureEventsRequest {
         var currentProductIdentifier: String?
         var resultingProductIdentifier: String?
 
-        struct PresentedOfferingContextData: Encodable {
-
-            var placementIdentifier: String?
-            var targetingRevision: Int?
-            var targetingRuleId: String?
-
-        }
-
     }
 
 }
 
 extension FeatureEventsRequest.PaywallEvent {
+
+    struct PresentedOfferingContextData: Encodable {
+
+        var placementIdentifier: String?
+        var targetingRevision: Int?
+        var targetingRuleId: String?
+
+    }
 
     enum EventType: String {
 
