@@ -69,6 +69,22 @@ extension FeatureEventsRequest.PaywallEvent {
         var targetingRevision: Int?
         var targetingRuleId: String?
 
+        /// Returns `nil` if all fields are `nil`.
+        init?(
+            placementIdentifier: String?,
+            targetingRevision: Int?,
+            targetingRuleId: String?
+        ) {
+            guard placementIdentifier != nil ||
+                    targetingRevision != nil ||
+                    targetingRuleId != nil else {
+                return nil
+            }
+            self.placementIdentifier = placementIdentifier
+            self.targetingRevision = targetingRevision
+            self.targetingRuleId = targetingRuleId
+        }
+
     }
 
     enum EventType: String {
@@ -106,19 +122,6 @@ extension FeatureEventsRequest.PaywallEvent {
         let exitOfferData = decodedPaywallEvent.exitOfferData
         let componentInteractionData = decodedPaywallEvent.componentInteractionData
 
-        let presentedContext: PresentedOfferingContextData?
-        if data.placementIdentifier != nil ||
-            data.targetingRevision != nil ||
-            data.targetingRuleId != nil {
-            presentedContext = PresentedOfferingContextData(
-                placementIdentifier: data.placementIdentifier,
-                targetingRevision: data.targetingRevision,
-                targetingRuleId: data.targetingRuleId
-            )
-        } else {
-            presentedContext = nil
-        }
-
         self.init(
             id: creationData.id.uuidString,
             version: Self.version,
@@ -133,7 +136,11 @@ extension FeatureEventsRequest.PaywallEvent {
             darkMode: data.darkMode,
             localeIdentifier: data.localeIdentifier,
             source: data.source,
-            presentedOfferingContext: presentedContext,
+            presentedOfferingContext: PresentedOfferingContextData(
+                placementIdentifier: data.placementIdentifier,
+                targetingRevision: data.targetingRevision,
+                targetingRuleId: data.targetingRuleId
+            ),
             exitOfferType: exitOfferData?.exitOfferType,
             exitOfferingID: exitOfferData?.exitOfferingIdentifier,
             packageId: data.packageId,
