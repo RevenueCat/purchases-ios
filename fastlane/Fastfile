@@ -2240,25 +2240,13 @@ platform :ios do
 
   desc "Check API changes and report results"
   lane :check_api_changes do
-    api_diff_tool = File.expand_path("~/bin/public-api-diff")
-
-    unless File.exist?(api_diff_tool)
-      UI.error("API diff tool not found at #{api_diff_tool}")
-      UI.important("To install locally, run:")
-      UI.important("  git clone https://github.com/Adyen/adyen-swift-public-api-diff.git ~/tools/adyen-swift-public-api-diff")
-      UI.important("  cd ~/tools/adyen-swift-public-api-diff && swift build -c release")
-      UI.important("  mkdir -p ~/bin && cp .build/release/public-api-diff ~/bin/")
-      UI.message("Skipping API diff check (tool not available locally)")
-      return
-    end
-
     failed_platforms = []
 
     ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
       old_file = "../api/revenuecat-api#{platform[:suffix]}.swiftinterface"
       new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
 
-      result = ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, platform[:name])
+      result = ApiDiffHelper.run_api_diff(old_file, new_file, platform[:name])
       failed_platforms << result unless result[:success]
     end
 
