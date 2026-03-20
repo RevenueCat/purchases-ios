@@ -2615,6 +2615,12 @@ extension RevenueCat.Purchases {
 }
 extension RevenueCat.Purchases : @unchecked Swift.Sendable {
 }
+extension RevenueCat.Purchases {
+  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @objc final public func trackCustomPaywallImpression(_ params: RevenueCat.CustomPaywallImpressionParams)
+  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @objc final public func trackCustomPaywallImpression()
+}
 @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
 extension RevenueCat.Purchases {
   final public func eligibleWinBackOffers(forProduct product: RevenueCat.StoreProduct) async throws -> [RevenueCat.WinBackOffer]
@@ -3163,6 +3169,17 @@ extension RevenueCat.EntitlementInfos {
   }
 }
 extension RevenueCat.EntitlementInfos : Swift.Sendable {
+}
+@objc(RCCustomPaywallImpressionParams) final public class CustomPaywallImpressionParams : ObjectiveC.NSObject, Swift.Sendable {
+  @objc final public let paywallId: Swift.String?
+  @objc final public let offeringId: Swift.String?
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc public init(paywallId: Swift.String? = nil, offeringId: Swift.String?)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc convenience public init(paywallId: Swift.String? = nil)
+  #endif
+  @objc deinit
 }
 @objc(RCStoreMessageType) public enum StoreMessageType : Swift.Int, Swift.CaseIterable, Swift.Sendable {
   case billingIssue = 0
