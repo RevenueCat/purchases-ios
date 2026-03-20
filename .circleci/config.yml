@@ -2321,6 +2321,8 @@ workflows:
       - deploy-to-spm:
           <<: *release-tags
       - deploy-to-purchases-ios-admob:
+          requires:
+            - deploy-to-spm
           <<: *release-tags
       - docs-deploy:
           <<: *release-tags

@@ -31,9 +31,11 @@ rsync -a --exclude='.build/' --exclude='.swiftpm/' --exclude='Examples/' --exclu
 # Rewrite Package.swift: replace local path dep with versioned dep
 # sed -i behaves differently on macOS (requires '') vs Linux (no argument)
 if [[ "$(uname)" == "Darwin" ]]; then
-    sed -i '' 's|.package(name: "purchases-ios", path: "../..")|.package(url: "https://github.com/RevenueCat/purchases-ios.git", exact: "'"${VERSION}"'")|' Package.swift
+    sed -i '' 's|.package(name: "purchases-ios", path: "../..")|.package(url: "https://github.com/RevenueCat/purchases-ios-spm.git", exact: "'"${VERSION}"'")|' Package.swift
+    sed -i '' 's|package: "purchases-ios"|package: "purchases-ios-spm"|' Package.swift
 else
-    sed -i 's|.package(name: "purchases-ios", path: "../..")|.package(url: "https://github.com/RevenueCat/purchases-ios.git", exact: "'"${VERSION}"'")|' Package.swift
+    sed -i 's|.package(name: "purchases-ios", path: "../..")|.package(url: "https://github.com/RevenueCat/purchases-ios-spm.git", exact: "'"${VERSION}"'")|' Package.swift
+    sed -i 's|package: "purchases-ios"|package: "purchases-ios-spm"|' Package.swift
 fi
 
 if [ "${LIVE_RUN}" = "--live-run" ]; then
