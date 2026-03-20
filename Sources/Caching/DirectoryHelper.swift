@@ -26,12 +26,16 @@ enum DirectoryHelper {
     }
 
     static func baseUrl(for type: DirectoryType, inAppSpecificDirectory: Bool = true) -> URL? {
-        guard let baseDirectory = type.url, let bundleIdentifier = Bundle.main.bundleIdentifier else {
+        guard let baseDirectory = type.url else {
             return nil
         }
 
         guard inAppSpecificDirectory else {
             return baseDirectory
+        }
+
+        guard let bundleIdentifier = Bundle.main.bundleIdentifier else {
+            return nil
         }
 
         let appSpecificRevenueCatDirectory = "\(bundleIdentifier).revenuecat"

@@ -112,7 +112,10 @@ extension AdEventStore {
     static func createDefault(
         persistenceDirectory: URL?
     ) throws -> AdEventStore {
-        let url = Self.url(in: try persistenceDirectory ?? Self.defaultPersistenceDirectory)
+        guard let directory = persistenceDirectory ?? Self.defaultPersistenceDirectory else {
+            throw AdEventStoreError.unableToResolvePersistenceDirectory
+        }
+        let url = Self.url(in: directory)
         Logger.verbose(AdEventStoreStrings.initializing(url))
 
         return try .init(handler: FileHandler(url))
@@ -126,42 +129,29 @@ extension AdEventStore {
         return self.revenueCatFolder(in: container).appendingPathComponent("ad_event_store")
     }
 
-    // See https://nemecek.be/blog/57/making-files-from-your-app-available-in-the-ios-files-app
-    // We don't want to store events in the documents directory in case app makes their documents
-    // accessible via the Files app.
-    // swiftlint:disable avoid_using_directory_apis_directly
-    private static var defaultPersistenceDirectory: URL {
-        get throws {
-            // tvOS only supports writing files to the caches directory.
-            #if os(tvOS)
-            if #available(tvOS 16.0, *) {
-                return URL.cachesDirectory
-            } else {
-                return try Self.fileManager.url(
-                    for: .cachesDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                )
-            }
-            #else
-            if #available(iOS 16.0, macOS 13.0, watchOS 9.0, *) {
-                return URL.applicationSupportDirectory
-            } else {
-                return try Self.fileManager.url(
-                    for: .applicationSupportDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                )
-            }
-            #endif
+    private static var defaultPersistenceDirectory: URL? {
+        #if os(tvOS)
+        let directoryType = DirectoryHelper.DirectoryType.cache
+        #else
+        let directoryType = DirectoryHelper.DirectoryType.applicationSupport()
+        #endif
+        return DirectoryHelper.baseUrl(for: directoryType, inAppSpecificDirectory: false)
+    }
+
+}
+
+// MARK: - Errors
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private enum AdEventStoreError: LocalizedError {
+    case unableToResolvePersistenceDirectory
+
+    var errorDescription: String? {
+        switch self {
+        case .unableToResolvePersistenceDirectory:
+            return "AdEventStore: unable to resolve persistence directory"
         }
     }
-    // swiftlint:enable avoid_using_directory_apis_directly
-
-    private static let fileManager: FileManager = .default
-
 }
 
 // MARK: - Messages

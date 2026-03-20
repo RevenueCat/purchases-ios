@@ -112,7 +112,10 @@ extension FeatureEventStore {
         persistenceDirectory: URL?,
         documentsDirectory: URL? = nil
     ) throws -> FeatureEventStore {
-        let url = Self.url(in: try persistenceDirectory ?? Self.defaultPersistenceDirectory)
+        guard let directory = persistenceDirectory ?? Self.defaultPersistenceDirectory else {
+            throw FeatureEventStoreError.unableToResolvePersistenceDirectory
+        }
+        let url = Self.url(in: directory)
         Logger.verbose(FeatureEventStoreStrings.initializing(url))
 
         let documentsDirectory = try documentsDirectory ?? Self.documentsDirectory
@@ -142,39 +145,16 @@ extension FeatureEventStore {
         }
     }
 
-    // See https://nemecek.be/blog/57/making-files-from-your-app-available-in-the-ios-files-app
-    // We don't want to store events in the documents directory in case app makes their documents
-    // accessible via the Files app.
-    // swiftlint:disable avoid_using_directory_apis_directly
-    private static var defaultPersistenceDirectory: URL {
-        get throws {
-            // tvOS only supports writing files to the caches directory.
-            #if os(tvOS)
-            if #available(tvOS 16.0, *) {
-                return URL.cachesDirectory
-            } else {
-                return try Self.fileManager.url(
-                    for: .cachesDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                )
-            }
-            #else
-            if #available(iOS 16.0, macOS 13.0, watchOS 9.0, *) {
-                return URL.applicationSupportDirectory
-            } else {
-                return try Self.fileManager.url(
-                    for: .applicationSupportDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                )
-            }
-            #endif
-        }
+    private static var defaultPersistenceDirectory: URL? {
+        #if os(tvOS)
+        let directoryType = DirectoryHelper.DirectoryType.cache
+        #else
+        let directoryType = DirectoryHelper.DirectoryType.applicationSupport()
+        #endif
+        return DirectoryHelper.baseUrl(for: directoryType, inAppSpecificDirectory: false)
     }
 
+    // swiftlint:disable avoid_using_directory_apis_directly
     private static var documentsDirectory: URL {
         get throws {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
@@ -193,6 +173,20 @@ extension FeatureEventStore {
 
     private static let fileManager: FileManager = .default
 
+}
+
+// MARK: - Errors
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private enum FeatureEventStoreError: LocalizedError {
+    case unableToResolvePersistenceDirectory
+
+    var errorDescription: String? {
+        switch self {
+        case .unableToResolvePersistenceDirectory:
+            return "FeatureEventStore: unable to resolve persistence directory"
+        }
+    }
 }
 
 // MARK: - Messages
