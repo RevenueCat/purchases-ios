@@ -109,10 +109,10 @@ internal actor FeatureEventStore: FeatureEventStoreType {
 extension FeatureEventStore {
 
     static func createDefault(
-        applicationSupportDirectory: URL?,
+        persistenceDirectory: URL?,
         documentsDirectory: URL? = nil
     ) throws -> FeatureEventStore {
-        let url = Self.url(in: try applicationSupportDirectory ?? Self.applicationSupportDirectory)
+        let url = Self.url(in: try persistenceDirectory ?? Self.defaultPersistenceDirectory)
         Logger.verbose(FeatureEventStoreStrings.initializing(url))
 
         let documentsDirectory = try documentsDirectory ?? Self.documentsDirectory
@@ -146,9 +146,22 @@ extension FeatureEventStore {
     // We don't want to store events in the documents directory in case app makes their documents
     // accessible via the Files app.
     // swiftlint:disable avoid_using_directory_apis_directly
-    private static var applicationSupportDirectory: URL {
+    private static var defaultPersistenceDirectory: URL {
         get throws {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            // tvOS only supports writing files to the caches directory.
+            #if os(tvOS)
+            if #available(tvOS 16.0, *) {
+                return URL.cachesDirectory
+            } else {
+                return try Self.fileManager.url(
+                    for: .cachesDirectory,
+                    in: .userDomainMask,
+                    appropriateFor: nil,
+                    create: true
+                )
+            }
+            #else
+            if #available(iOS 16.0, macOS 13.0, watchOS 9.0, *) {
                 return URL.applicationSupportDirectory
             } else {
                 return try Self.fileManager.url(
@@ -158,6 +171,7 @@ extension FeatureEventStore {
                     create: true
                 )
             }
+            #endif
         }
     }
 

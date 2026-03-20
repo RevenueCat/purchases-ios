@@ -490,13 +490,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         do {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 let adEventStore: AdEventStoreType? = try? AdEventStore.createDefault(
-                    applicationSupportDirectory: applicationSupportDirectory
+                    persistenceDirectory: applicationSupportDirectory
                 )
                 eventsManager = EventsManager(
                     internalAPI: backend.internalAPI,
                     userProvider: identityManager,
                     store: try FeatureEventStore.createDefault(
-                        applicationSupportDirectory: applicationSupportDirectory
+                        persistenceDirectory: applicationSupportDirectory
                     ),
                     systemInfo: systemInfo,
                     adEventStore: adEventStore
