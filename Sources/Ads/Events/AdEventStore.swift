@@ -109,16 +109,25 @@ internal actor AdEventStore: AdEventStoreType {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension AdEventStore {
 
+    // See https://nemecek.be/blog/57/making-files-from-your-app-available-in-the-ios-files-app
+    // We don't want to store events in the documents directory in case app makes their documents
+    // accessible via the Files app.
     static func createDefault(
         persistenceDirectory: URL?
-    ) throws -> AdEventStore {
-        guard let directory = persistenceDirectory ?? Self.defaultPersistenceDirectory else {
-            throw AdEventStoreError.unableToResolvePersistenceDirectory
+    ) -> AdEventStore? {
+        guard let directory = persistenceDirectory ?? DirectoryHelper.defaultPersistenceBaseUrl else {
+            Logger.error(AdEventStoreStrings.error_resolving_persistence_directory)
+            return nil
         }
         let url = Self.url(in: directory)
         Logger.verbose(AdEventStoreStrings.initializing(url))
 
-        return try .init(handler: FileHandler(url))
+        do {
+            return try .init(handler: FileHandler(url))
+        } catch {
+            Logger.error(AdEventStoreStrings.error_initializing(error))
+            return nil
+        }
     }
 
     private static func revenueCatFolder(in container: URL) -> URL {
@@ -129,32 +138,6 @@ extension AdEventStore {
         return self.revenueCatFolder(in: container).appendingPathComponent("ad_event_store")
     }
 
-    // See https://nemecek.be/blog/57/making-files-from-your-app-available-in-the-ios-files-app
-    // We don't want to store events in the documents directory in case app makes their documents
-    // accessible via the Files app.
-    private static var defaultPersistenceDirectory: URL? {
-        #if os(tvOS)
-        let directoryType = DirectoryHelper.DirectoryType.cache
-        #else
-        let directoryType = DirectoryHelper.DirectoryType.applicationSupport()
-        #endif
-        return DirectoryHelper.baseUrl(for: directoryType, inAppSpecificDirectory: false)
-    }
-
-}
-
-// MARK: - Errors
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum AdEventStoreError: LocalizedError {
-    case unableToResolvePersistenceDirectory
-
-    var errorDescription: String? {
-        switch self {
-        case .unableToResolvePersistenceDirectory:
-            return "AdEventStore: unable to resolve persistence directory"
-        }
-    }
 }
 
 // MARK: - Messages
@@ -164,6 +147,8 @@ private enum AdEventStoreError: LocalizedError {
 private enum AdEventStoreStrings {
 
     case initializing(URL)
+    case error_resolving_persistence_directory
+    case error_initializing(Error)
 
     case storing_event(String)
     case storing_event_without_json
@@ -186,6 +171,12 @@ extension AdEventStoreStrings: LogMessage {
         switch self {
         case let .initializing(directory):
             return "Initializing AdEventStore: \(directory.absoluteString)"
+
+        case .error_resolving_persistence_directory:
+            return "AdEventStore: unable to resolve persistence directory"
+
+        case let .error_initializing(error):
+            return "Error initializing AdEventStore: \((error as NSError).description)"
 
         case let .storing_event(eventDescription):
             return "Storing ad event: \(eventDescription)"

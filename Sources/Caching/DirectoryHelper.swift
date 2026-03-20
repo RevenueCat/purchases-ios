@@ -25,6 +25,18 @@ enum DirectoryHelper {
         case applicationSupport(overrideURL: URL? = nil)
     }
 
+    /// The raw base persistence directory for the current platform.
+    /// On tvOS this is `Library/Caches`; on all other platforms it is `Library/Application Support`.
+    /// Does **not** include the app-specific `{bundleId}.revenuecat` subdirectory.
+    static var defaultPersistenceBaseUrl: URL? {
+        #if os(tvOS)
+        let directoryType = DirectoryType.cache
+        #else
+        let directoryType = DirectoryType.applicationSupport()
+        #endif
+        return Self.baseUrl(for: directoryType, inAppSpecificDirectory: false)
+    }
+
     static func baseUrl(for type: DirectoryType, inAppSpecificDirectory: Bool = true) -> URL? {
         guard let baseDirectory = type.url else {
             return nil
