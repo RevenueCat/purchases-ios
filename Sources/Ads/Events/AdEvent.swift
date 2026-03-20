@@ -103,9 +103,6 @@ internal protocol AdImpressionEventData: AdEventData {
     /// App open ad format displayed at app launch
     @objc public static let appOpen = AdFormat(rawValue: "app_open")
 
-    /// Medium rectangle ad format
-    @objc public static let mrec = AdFormat(rawValue: "mrec")
-
     // MARK: - NSObject overrides for equality
 
     public override func isEqual(_ object: Any?) -> Bool {

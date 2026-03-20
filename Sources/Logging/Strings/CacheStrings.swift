@@ -20,6 +20,7 @@ enum CacheStrings {
     case failed_to_save_codable_to_cache(Error)
     case failed_to_delete_old_cache_directory(Error)
     case failed_to_migrate_file(String, Error)
+    case application_support_not_available_on_tvos
 
 }
 
@@ -34,6 +35,9 @@ extension CacheStrings: LogMessage {
             return "Failed to delete old cache directory: \(error)"
         case .failed_to_migrate_file(let path, let error):
             return "Failed to migrate file from \(path): \(error)"
+        case .application_support_not_available_on_tvos:
+            return "applicationSupportDirectory override ignored: " +
+                "Application Support is not writable on tvOS, using Caches directory instead."
         }
     }
 

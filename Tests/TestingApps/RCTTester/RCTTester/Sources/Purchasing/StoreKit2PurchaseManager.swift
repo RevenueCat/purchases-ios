@@ -5,7 +5,9 @@
 
 import Foundation
 import RevenueCat
+#if !os(tvOS)
 import RevenueCatUI
+#endif
 import StoreKit
 
 /// Purchase manager that makes purchases directly with StoreKit 2.
@@ -22,6 +24,7 @@ final class StoreKit2PurchaseManager: PurchaseManager {
 
     // MARK: - PurchaseManager
 
+    #if !os(tvOS)
     var myAppPurchaseLogic: MyAppPurchaseLogic? {
         return MyAppPurchaseLogic(
             performPurchase: { [weak self] package in
@@ -49,6 +52,7 @@ final class StoreKit2PurchaseManager: PurchaseManager {
             }
         )
     }
+    #endif
 
     /// Purchases a product directly using StoreKit 2's `Product.purchase()`.
     func purchase(product: StoreProduct) async -> PurchaseOperationResult {

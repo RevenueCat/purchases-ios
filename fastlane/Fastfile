@@ -688,6 +688,24 @@ platform :ios do
     )
   end
 
+  desc "Runs all RevenueCatAdMob tests (standalone SPM package under AdapterSDKs/RevenueCatAdMob)"
+  lane :test_revenuecat_admob do
+    platform = ENV['PLATFORM'] || 'iOS Simulator'
+    destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
+    sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+
+    xcodebuild(
+      workspace: 'AdapterSDKs/RevenueCatAdMob',
+      scheme: 'RevenueCatAdMob',
+      destination: "platform=" + platform + ",name=" + destination,
+      sdk: sdk,
+      result_bundle_path: 'fastlane/test_output/revenuecat_admob.xcresult',
+      report_formats: [:junit],
+      report_path: 'fastlane/test_output/revenuecat_admob/tests.xml',
+      test: true
+    )
+  end
+
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
@@ -1492,7 +1510,15 @@ platform :ios do
     # Use zip -r to preserve directory structure
     # Change to the xcframework's parent directory so the zip contains the xcframework folder
     Dir.chdir(File.dirname(xcframework_path)) do
-      sh("zip", "-r", "-q", xcframework_zip_path, File.basename(xcframework_path))
+      sh("zip", "-r", "-y", "-q", xcframework_zip_path, File.basename(xcframework_path))
+    end
+
+    # Verify that the zipped xcframework passes codesign verification
+    Dir.mktmpdir("xcframework-verify") do |tmpdir|
+      sh("unzip", "-q", xcframework_zip_path, "-d", tmpdir)
+      extracted_xcframework = File.join(tmpdir, "#{product_name}.xcframework")
+      sh("codesign", "--verify", "--verbose", extracted_xcframework)
+      UI.success("Codesign verification passed for #{product_name}.xcframework.zip")
     end
 
   end

@@ -1,12 +1,14 @@
 ## RevenueCat SDK
-### ✨ New Features
-* Make custom variable number/bool setters public for UIKit (#6452) via Facundo Menzella (@facumenzella)
-* Send X-Installation-Method header in all API requests (#6431) via Antonio Pallares (@ajpallares)
+### 🐞 Bugfixes
+* Pass presentedOfferingContext and paywallEvent through SK2 purchase path instead of caching (#6472) via Antonio Pallares (@ajpallares)
 
 ## RevenueCatUI SDK
-### 🐞 Bugfixes
-* Fix: Clear in-memory offerings cache on locale override to prevent stale paywall data (#6446) via Antonio Pallares (@ajpallares)
+### Customer Center
+#### ✨ New Features
+* Add PromotionalOfferSucceededHandler with purchase data (#6420) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* Remove unnecessary throws from view model inits (#6426) via Facundo Menzella (@facumenzella)
-* Fix PaywallsTester tap to use presentPaywall for exit offer support (#6449) via Drago Crnjac (@popcorn)
+* Fix concurrency error in CustomerCenterActionWrapperTests on Xcode 15 (#6477) via Antonio Pallares (@ajpallares)
+* Improve conditional visibility previews (#6471) via Facundo Menzella (@facumenzella)
+* Replace enable-auto-merge-release-pr with merge-release-pr orb job (#6470) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `3e8c384` to `9a6911b` (#6469) via dependabot[bot] (@dependabot[bot])

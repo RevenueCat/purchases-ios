@@ -16,6 +16,8 @@ import SwiftUI
 
 #if os(iOS)
 
+// swiftlint:disable file_length
+
 // MARK: - CustomerCenterView Extension
 
 @available(iOS 15.0, *)
@@ -25,6 +27,9 @@ import SwiftUI
 extension CustomerCenterView {
 
     // MARK: - Typealias Declarations
+
+    /// A closure used for intercepting restore initiation in the Customer Center.
+    public typealias RestoreInitiatedHandler = @MainActor @Sendable (_ resume: ResumeAction) -> Void
 
     /// A closure used for notifying of restore initiation in the Customer Center.
     public typealias RestoreStartedHandler = @MainActor @Sendable () -> Void
@@ -57,12 +62,28 @@ extension CustomerCenterView {
     @MainActor @Sendable (_ actionIdentifier: String, _ purchaseIdentifier: String?) -> Void
 
     /// A closure used for notifying when a promotional offer succeeded.
+    @available(*, deprecated, message: "Use PromotionalOfferSucceededHandler instead")
     public typealias PromotionalOfferSuccessHandler = @MainActor @Sendable () -> Void
+
+    /// A closure used for notifying when a promotional offer purchase completes successfully,
+    /// providing the resulting customer info, transaction, and the promotional offer identifier.
+    public typealias PromotionalOfferSucceededHandler =
+    @MainActor @Sendable (_ customerInfo: CustomerInfo, _ transaction: StoreTransaction,
+                           _ offerId: String) -> Void
 
     /// A closure used for notifying when the change plan button has been selected
     public typealias ChangePlansHandler = @MainActor @Sendable (_ optionId: String) -> Void
 
     // MARK: - View Modifiers
+
+    fileprivate struct OnRestoreInitiatedModifier: ViewModifier {
+        let handler: RestoreInitiatedHandler
+        func body(content: Content) -> some View {
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.restoreInitiated = handler as @MainActor @Sendable (ResumeAction) -> Void
+            }
+        }
+    }
 
     fileprivate struct OnRestoreStartedModifier: ViewModifier {
         let handler: RestoreStartedHandler
@@ -138,7 +159,8 @@ extension CustomerCenterView {
         }
     }
 
-    struct OnPromotionalOfferSuccess: ViewModifier {
+    @available(*, deprecated)
+    fileprivate struct OnPromotionalOfferSuccess: ViewModifier {
         let handler: PromotionalOfferSuccessHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterExternalActions) { actions in
@@ -147,7 +169,17 @@ extension CustomerCenterView {
         }
     }
 
-    struct OnChangePlansSelected: ViewModifier {
+    fileprivate struct OnPromotionalOfferSucceeded: ViewModifier {
+        let handler: PromotionalOfferSucceededHandler
+        func body(content: Content) -> some View {
+            content.transformEnvironment(\.customerCenterExternalActions) { actions in
+                actions.promotionalOfferSucceeded =
+                    handler as @MainActor @Sendable (CustomerInfo, StoreTransaction, String) -> Void
+            }
+        }
+    }
+
+    fileprivate struct OnChangePlansSelected: ViewModifier {
         let handler: ChangePlansHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterExternalActions) { actions in
@@ -175,6 +207,27 @@ extension CustomerCenterView {
 @available(watchOS, unavailable)
 extension View {
 
+    /// Invokes the given closure when restore is about to be initiated in the Customer Center,
+    /// allowing you to intercept and gate the restore flow.
+    /// The restore will not proceed until the `resume` callback is invoked.
+    ///
+    /// Example:
+    /// ```swift
+    ///  var body: some View {
+    ///     CustomerCenterView()
+    ///         .onCustomerCenterRestoreInitiated { resume in
+    ///             authenticateUser { success in
+    ///                 resume(shouldProceed: success)
+    ///             }
+    ///         }
+    ///  }
+    /// ```
+    public func onCustomerCenterRestoreInitiated(
+        _ handler: @escaping CustomerCenterView.RestoreInitiatedHandler
+    ) -> some View {
+        return self.modifier(CustomerCenterView.OnRestoreInitiatedModifier(handler: handler))
+    }
+
     /// Invokes the given closure when a restore begins in the Customer Center.
     /// Example:
     /// ```swift
@@ -188,6 +241,10 @@ extension View {
     ///         }
     ///  }
     /// ```
+    ///
+    /// - Note: This callback is invoked after restore has started.
+    ///   If you need to intercept restore before it begins, use
+    ///   ``onCustomerCenterRestoreInitiated(_:)`` instead.
     public func onCustomerCenterRestoreStarted(
         _ handler: @escaping CustomerCenterView.RestoreStartedHandler
     ) -> some View {
@@ -322,17 +379,26 @@ extension View {
     }
 
     /// Invokes the given closure when a promotional offer purchase completes successfully in the Customer Center.
-    /// Example:
-    /// ```swift
-    /// CustomerCenterView()
-    ///     .onCustomerCenterPromotionalOfferSuccess {
-    ///         // Refresh UI or reload data
-    ///     }
-    /// ```
+    @available(*, deprecated, message: "Use onCustomerCenterPromotionalOfferSucceeded instead")
     public func onCustomerCenterPromotionalOfferSuccess(
         _ handler: @escaping CustomerCenterView.PromotionalOfferSuccessHandler
     ) -> some View {
         return self.modifier(CustomerCenterView.OnPromotionalOfferSuccess(handler: handler))
+    }
+
+    /// Invokes the given closure when a promotional offer purchase completes successfully in the Customer Center,
+    /// providing the resulting customer info, transaction, and the promotional offer identifier.
+    /// Example:
+    /// ```swift
+    /// CustomerCenterView()
+    ///     .onCustomerCenterPromotionalOfferSucceeded { customerInfo, transaction, offerId in
+    ///         print("Promo offer \(offerId) succeeded")
+    ///     }
+    /// ```
+    public func onCustomerCenterPromotionalOfferSucceeded(
+        _ handler: @escaping CustomerCenterView.PromotionalOfferSucceededHandler
+    ) -> some View {
+        return self.modifier(CustomerCenterView.OnPromotionalOfferSucceeded(handler: handler))
     }
 
     /// Invokes the given closure when the user chooses the Change Plans option in the Customer Center.

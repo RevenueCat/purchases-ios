@@ -67,9 +67,11 @@ extension CustomPaywallEvent {
     struct Data {
 
         var paywallId: String?
+        var offeringId: String?
 
-        init(paywallId: String?) {
+        init(paywallId: String?, offeringId: String? = nil) {
             self.paywallId = paywallId
+            self.offeringId = offeringId
         }
 
     }
