@@ -18,3 +18,4 @@
 "Continue" = "ďalej";
 "Default_offer_details_with_intro_offer" = "Začnite skúšobnú verziu {{ sub_offer_duration }}, potom {{ total_price_and_per_month }}.";
 "Something went wrong" = "Niečo sa pokazilo";
+"Purchase" = "Kúpiť";

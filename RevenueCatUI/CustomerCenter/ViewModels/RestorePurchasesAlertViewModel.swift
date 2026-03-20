@@ -37,7 +37,22 @@ import SwiftUI
         self.actionWrapper = actionWrapper
     }
 
-    func performRestore(purchasesProvider: CustomerCenterPurchasesType) async {
+    @discardableResult
+    func performRestore(
+        purchasesProvider: CustomerCenterPurchasesType,
+        restoreInitiated: (@MainActor @Sendable (ResumeAction) -> Void)? = nil
+    ) async -> Bool {
+        if let restoreInitiated {
+            Logger.debug(Strings.restore_purchases_gate_start)
+            let shouldProceed = await withCheckedContinuation { continuation in
+                restoreInitiated(ResumeAction { shouldProceed in
+                    Logger.debug(Strings.restore_purchases_gate_finish(with: shouldProceed))
+                    continuation.resume(returning: shouldProceed)
+                })
+            }
+            guard shouldProceed else { return false }
+        }
+
         self.alertType = .loading
         self.actionWrapper.handleAction(.restoreStarted)
 
@@ -53,6 +68,8 @@ import SwiftUI
             self.actionWrapper.handleAction(.restoreFailed(error))
             self.alertType = .purchasesNotFound
         }
+
+        return true
     }
 
 }

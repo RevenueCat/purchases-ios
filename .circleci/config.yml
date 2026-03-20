@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@dev:045d2d8cd7ac24d4591c662de97e133c1eff795a
+  revenuecat: revenuecat/sdks-common-config@3.15.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -391,24 +391,6 @@ commands:
       - scan-and-archive:
           directory: << parameters.directory >>
 
-  setup-git-credentials:
-    steps:
-      - run:
-          name: Setup Git config
-          command: |
-            git config --global user.email $GIT_EMAIL
-            git config --global user.name $GIT_USERNAME
-
-  trust-github-key:
-    steps:
-      - run:
-          name: Trust GitHub key
-          command: |
-            for ip in $(dig @8.8.8.8 github.com +short); \
-            do ssh-keyscan github.com,$ip; \
-            ssh-keyscan $ip; \
-            done 2>/dev/null >> ~/.ssh/known_hosts
-
   update-spm-installation-commit:
     steps:
       - run:
@@ -563,7 +545,7 @@ commands:
       - when:
           condition: << parameters.condition >>
           steps:
-            - setup-git-credentials
+            - revenuecat/setup-git-credentials
             - run:
                 name: Run << parameters.job >>
                 command: bundle exec fastlane << parameters.job >> version:"<< parameters.version >>"
@@ -624,6 +606,7 @@ jobs:
       - run:
           name: Check pods and deployment targets
           command: bundle exec fastlane check_pods
+      - slack-notify-on-fail
 
   api-tests:
     executor:
@@ -636,6 +619,35 @@ jobs:
       - run:
           name: API Tests
           command: bundle exec fastlane run_api_tests
+      - slack-notify-on-fail
+
+  revenuecat-admob-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "26.3"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatAdMob Release Build
+          command: cd AdapterSDKs/RevenueCatAdMob && swift build -c release
+          no_output_timeout: 30m
+      - run:
+          name: RevenueCatAdMob unit tests
+          command: bundle exec fastlane test_revenuecat_admob
+          no_output_timeout: 10m
+          environment:
+            DEVICE: iPhone 17,OS=26.2
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecat_admob
+      - store_test_results:
+          path: fastlane/test_output/revenuecat_admob/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
       - slack-notify-on-fail
 
   spm-receipt-parser:
@@ -850,6 +862,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
+      - slack-notify-on-fail
 
   spm-revenuecat-ui-watchos:
     executor:
@@ -1400,7 +1413,7 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - trust-github-key
+      - revenuecat/trust-github-key
       # Bundler
       - restore_cache:
           keys:
@@ -1439,7 +1452,7 @@ jobs:
       # https://github.com/RevenueCat/purchases-ios/pull/1997
       xcode_version: "14.3.1"
     steps:
-      - setup-git-credentials
+      - revenuecat/setup-git-credentials
       - checkout
       - install-bundle-dependencies
       - run:
@@ -1456,7 +1469,7 @@ jobs:
       # https://github.com/RevenueCat/purchases-ios/pull/1997
       xcode_version: "14.3.1"
     steps:
-      - setup-git-credentials
+      - revenuecat/setup-git-credentials
       - checkout
       - install-bundle-dependencies
       - run:
@@ -1470,7 +1483,7 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - trust-github-key
+      - revenuecat/trust-github-key
       - install-dependencies
       - update-spm-installation-commit
       - run:
@@ -1484,7 +1497,7 @@ jobs:
     steps:
       - checkout
       - install-bundle-dependencies
-      - trust-github-key
+      - revenuecat/trust-github-key
       - run:
           name: Deploy new version
           command: bundle exec fastlane push_revenuecat_pod
@@ -1496,7 +1509,7 @@ jobs:
     steps:
       - checkout
       - install-bundle-dependencies
-      - trust-github-key
+      - revenuecat/trust-github-key
       - run:
           name: Deploy new version
           command: bundle exec fastlane push_revenuecatui_pod
@@ -1519,8 +1532,8 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - setup-git-credentials
-      - trust-github-key
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - run:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
@@ -1732,9 +1745,15 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - setup-git-credentials
-      - trust-github-key
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - install-rubydocker-dependencies
+      - run:
+          name: Check Release PR is approved
+          command: |
+            echo "Verifying that the release PR has been approved by an org member with write permissions."
+            echo "This check prevents tagging a release before the PR is properly reviewed."
+            bundle exec fastlane run validate_pr_approved
       - run:
           name: Tag branch
           command: bundle exec fastlane tag_current_branch
@@ -1744,8 +1763,8 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - setup-git-credentials
-      - trust-github-key
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - install-dependencies
       - run:
           name: Create automatic PR
@@ -1766,8 +1785,8 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - setup-git-credentials
-      - trust-github-key
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - install-dependencies
       - update-spm-installation-commit
       - run:
@@ -1780,14 +1799,15 @@ jobs:
   deploy-purchase-tester:
     executor:
       name: macos-executor
+      xcode_version: "26.3"
     parameters:
       dry_run:
         type: boolean
         default: false
     steps:
       - checkout
-      - setup-git-credentials
-      - trust-github-key
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - install-dependencies
       - update-spm-installation-commit
       - run:
@@ -1805,8 +1825,8 @@ jobs:
         default: false
     steps:
       - checkout
-      - setup-git-credentials
-      - trust-github-key
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - install-dependencies
       - revenuecat/install-tuist
       - run:
@@ -1819,28 +1839,30 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - setup-git-credentials
-      - trust-github-key
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - install-dependencies
       - update-spm-installation-commit
       - run:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
+      - slack-notify-on-fail
 
   emerge_binary_size_analysis:
     executor:
       name: macos-executor
     steps:
       - checkout
-      - setup-git-credentials
-      - trust-github-key
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - install-dependencies
 
-      # LOCAL_SOURCE
+      # LOCAL_SOURCE (uses Xcode project targets, needs TUIST_RC_XCODE_PROJECT)
       - run:
           name: Set BinarySizeTest integration method (LOCAL_SOURCE)
           command: |
             echo 'export TUIST_BINARY_SIZE_TEST_INTEGRATION_METHOD=LOCAL_SOURCE' >> "$BASH_ENV"
+            echo 'export TUIST_RC_XCODE_PROJECT=true' >> "$BASH_ENV"
       - tuist-generate-workspace:
           query: "BinarySizeTest"
       - run:
@@ -1852,6 +1874,7 @@ jobs:
           name: Set BinarySizeTest integration method (COCOAPODS)
           command: |
             echo 'export TUIST_BINARY_SIZE_TEST_INTEGRATION_METHOD=COCOAPODS' >> "$BASH_ENV"
+            echo 'unset TUIST_RC_XCODE_PROJECT' >> "$BASH_ENV"
       - tuist-generate-workspace:
           query: "BinarySizeTest"
       - run:
@@ -1883,7 +1906,7 @@ jobs:
           command: bundle exec fastlane ios fetch_paywall_preview_resources
       - run:
           name: Clone paywall-rendering-validation repository
-          command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
+          command: git clone https://github.com/RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
       - revenuecat/setup-git-credentials
       - run:
           name: Set GitHub token environment variable
@@ -1976,14 +1999,15 @@ jobs:
     resource_class: small
     steps:
       - checkout
-      - setup-git-credentials
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
           command: |
-            git clone https://github.com/RevenueCat/purchases-ios.git
+            git clone git@github.com:RevenueCat/purchases-ios.git
             cd purchases-ios
             git fetch --tags
-            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm.git
+            git remote set-url origin git@github.com:RevenueCat/purchases-ios-spm.git
             git push origin
             git push --tags
 
@@ -1995,11 +2019,20 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - setup-git-credentials
+      - revenuecat/setup-git-credentials
       - install-rubydocker-dependencies
       - run:
           name: Trigger RC App Pipeline
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
+
+  all-tests-succeeded:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - run:
+          name: All tests succeeded
+          command: echo "All tests succeeded"
 
   all-tasks-passed:
     docker:
@@ -2007,8 +2040,8 @@ jobs:
     resource_class: small
     steps:
       - run:
-          name: All tests passed
-          command: echo "All tests passed"
+          name: All tasks passed
+          command: echo "All tasks passed"
 
 workflows:
 
@@ -2077,11 +2110,21 @@ workflows:
       - check-api-changes:
           context:
             - slack-secrets-ios
-      - run-test-ios-26
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-26
-      - emerge_purchases_ui_snapshot_tests
-      - emerge_binary_size_analysis
+      - run-test-ios-26:
+          context:
+            - slack-secrets
+      - pod-lib-lint:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-26:
+          context:
+            - slack-secrets
+      - emerge_purchases_ui_snapshot_tests:
+          context:
+            - slack-secrets
+      - emerge_binary_size_analysis:
+          context:
+            - slack-secrets
       - build-tv-watch-mac-and-visionos:
           context:
             - slack-secrets
@@ -2193,6 +2236,11 @@ workflows:
           context:
             - slack-secrets
       - spm-receipt-parser:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - revenuecat-admob-tests:
           requires:
             - approve-full-tests
           context:
@@ -2448,28 +2496,25 @@ workflows:
       not:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
-      - make-release:
-          <<: *release-tags
       - push-revenuecat-pod:
-          requires:
-            - make-release
           <<: *release-tags
       - push-revenuecatui-pod:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
       - deploy-to-spm:
-          requires:
-            - make-release
           <<: *release-tags
       - docs-deploy:
-          requires:
-            - make-release
           <<: *release-tags
       - deploy-purchase-tester:
           dry_run: false
+          <<: *release-tags
+      - make-release:
           requires:
-            - make-release
+            - push-revenuecatui-pod
+            - deploy-to-spm
+            - docs-deploy
+            - deploy-purchase-tester
           <<: *release-tags
       - deploy-rct-tester:
           dry_run: false
@@ -2480,14 +2525,19 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
+      - revenuecat/merge-release-pr:
+          repo_name: purchases-ios
+          requires:
+            - make-release
+            - deploy-rct-tester
+            - bump-sdk-in-rc-mobile-app
+          <<: *release-tags
 
   snapshot-bump:
     when:
       and:
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - not:
-            equal: ["release-train", << pipeline.schedule.name >>]
         - not:
             equal: [bump, << pipeline.parameters.action >>]
     jobs:
@@ -2531,7 +2581,7 @@ workflows:
     when:
       and:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ["maestro_e2e_tests", << pipeline.schedule.name >>]
+        - equal: ["daily-maestro-e2e-tests", << pipeline.schedule.name >>]
     jobs:
       - run-all-maestro-e2e-tests:
           context:
@@ -2592,7 +2642,7 @@ workflows:
     when:
       and:
         - not:
-            equal: ["release-train", << pipeline.schedule.name >>]
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
             equal: [bump, << pipeline.parameters.action >>]
         - not:
@@ -2668,6 +2718,9 @@ workflows:
       - api-tests:
           context:
             - slack-secrets
+      - revenuecat-admob-tests:
+          context:
+            - slack-secrets
       - deploy-purchase-tester:
           dry_run: true
           context:
@@ -2676,15 +2729,23 @@ workflows:
           context:
             - slack-secrets
       - lint
-      - run-test-ios-26
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-26
-      - emerge_purchases_ui_snapshot_tests
+      - run-test-ios-26:
+          context:
+            - slack-secrets
+      - pod-lib-lint:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-26:
+          context:
+            - slack-secrets
+      - emerge_purchases_ui_snapshot_tests:
+          context:
+            - slack-secrets
 
       # =============================================================
-      # Summary gate: all tests passed
+      # All tests gate for release branches
       # =============================================================
-      - all-tasks-passed:
+      - all-tests-succeeded:
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
@@ -2717,9 +2778,9 @@ workflows:
             - emerge_binary_size_analysis
 
       # =============================================================
-      # Release tagging: only on release branches
-      # Requires both release-checks and all-tasks-passed before
-      # the hold can be approved.
+      # Release tagging: only on release branches.
+      # The approve-release hold gates tagging until a maintainer
+      # manually approves.
       # =============================================================
       - release-checks:
           <<: *release-branches
@@ -2727,10 +2788,15 @@ workflows:
           type: approval
           requires:
             - release-checks
-            - all-tasks-passed
+            - all-tests-succeeded
           <<: *release-branches
       - tag-release-branch:
           requires:
             - approve-release
+          <<: *release-branches
+
+      - all-tasks-passed:
+          requires:
+            - tag-release-branch
           <<: *release-branches
 

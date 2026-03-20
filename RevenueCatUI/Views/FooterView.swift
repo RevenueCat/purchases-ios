@@ -193,6 +193,9 @@ private struct RestorePurchasesButton: View {
     let localizedBundle: Bundle
     let purchaseHandler: PurchaseHandler
 
+    @Environment(\.restoreInitiatedAction)
+    private var restoreInitiatedAction: RestoreInitiatedAction?
+
     @State
     private var restoredCustomerInfo: CustomerInfo?
 
@@ -201,6 +204,21 @@ private struct RestorePurchasesButton: View {
 
     var body: some View {
         AsyncButton {
+            guard !self.purchaseHandler.actionInProgress else { return }
+
+            if let interceptor = self.restoreInitiatedAction {
+                Logger.debug(Strings.restore_purchases_gate_start)
+                let result = await self.purchaseHandler.withPendingPurchaseContinuation {
+                    await withCheckedContinuation { continuation in
+                        interceptor(resume: ResumeAction { shouldProceed in
+                            Logger.debug(Strings.restore_purchases_gate_finish(with: shouldProceed))
+                            continuation.resume(returning: shouldProceed)
+                        })
+                    }
+                }
+                guard result else { return }
+            }
+
             Logger.debug(Strings.restoring_purchases)
 
             do {

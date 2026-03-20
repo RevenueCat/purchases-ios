@@ -25,6 +25,7 @@ struct App: View {
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
 
     private var purchaseInitiated = { (_: Package, _: ResumeAction) in }
+    private var restoreInitiated = { (_: ResumeAction) in }
 
     #if !os(watchOS)
     private var paywallTierChange: PaywallTierChangeHandler = { (_: PaywallData.Tier, _: String) in }
@@ -787,6 +788,7 @@ struct App: View {
     var checkPaywallViewModifiers: some View {
         Text("")
             .onPurchaseInitiated(self.purchaseInitiated)
+            .onRestoreInitiated(self.restoreInitiated)
             .onPurchaseStarted(self.purchaseOfPackageStarted)
             .onPurchaseCompleted(self.purchaseOrRestoreCompleted)
             .onPurchaseCompleted(self.purchaseCompleted)
@@ -798,11 +800,10 @@ struct App: View {
 
     @ViewBuilder
     var checkCustomPaywallVariables: some View {
-        // Only .string() is public API; .number() and .bool() are internal
         let customVariables: [String: CustomVariableValue] = [
             "player_name": .string("John"),
-            "max_health": .string("100"),
-            "is_premium": .string("true")
+            "max_health": .number(100),
+            "is_premium": .bool(true)
         ]
 
         PaywallView()

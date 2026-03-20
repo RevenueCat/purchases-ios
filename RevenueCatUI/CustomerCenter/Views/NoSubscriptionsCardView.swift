@@ -25,6 +25,9 @@ struct NoSubscriptionsCardView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customerCenterExternalActions)
+    private var externalActions: CustomerCenterExternalActions
+
     @StateObject
     private var viewModel: NoSubscriptionsCardViewModel
 
@@ -112,6 +115,16 @@ struct NoSubscriptionsCardView: View {
                                               performRestore: viewModel.performRestore)
                 )
             )
+            .onRestoreInitiated { resume in
+                Task(priority: .userInitiated) { @MainActor in
+                    if let restoreInitiated = self.externalActions.restoreInitiated {
+                        restoreInitiated(resume)
+                    } else {
+                        resume()
+                    }
+                }
+            }
+            .paywallSource(.customerCenter)
         })
         .onAppear {
             viewModel.refreshOffering()

@@ -2453,6 +2453,263 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     // endregion
+    // region Appstack Attribution Data
+
+    func testSetAppstackAttributionParamsSetsAllAttributes() {
+        let fullData: [String: Any] = [
+            "appstack_id": "appstack_id_value",
+            "appstack_adnetwork": "facebook",
+            "appstack_campaign": "summer_sale",
+            "appstack_adset": "test_adset",
+            "appstack_ad": "test_ad",
+            "appstack_keywords": "test_keywords",
+            "fbclid": "fb_click_id",
+            "gclid": "google_click_id",
+            "wbraid": "wbraid_value",
+            "gbraid": "gbraid_value",
+            "ttclid": "tiktok_click_id"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(fullData, appUserID: "kratos")
+
+        // 5 campaign pairs (reserved + custom) = 10, 5 click IDs = 5, 4 device identifiers + 1 appstack_id = 5
+        expect(self.mockDeviceCache.invokedStoreCount) == 20
+
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "appstack_id_value"
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "facebook"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "facebook"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "summer_sale"
+        expect(self.findInvokedAttribute(withName: "appstack_campaign").value) == "summer_sale"
+        expect(self.findInvokedAttribute(withName: "$adGroup").value) == "test_adset"
+        expect(self.findInvokedAttribute(withName: "appstack_adset").value) == "test_adset"
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "test_ad"
+        expect(self.findInvokedAttribute(withName: "appstack_ad").value) == "test_ad"
+        expect(self.findInvokedAttribute(withName: "$keyword").value) == "test_keywords"
+        expect(self.findInvokedAttribute(withName: "appstack_keywords").value) == "test_keywords"
+        expect(self.findInvokedAttribute(withName: "fbclid").value) == "fb_click_id"
+        expect(self.findInvokedAttribute(withName: "gclid").value) == "google_click_id"
+        expect(self.findInvokedAttribute(withName: "wbraid").value) == "wbraid_value"
+        expect(self.findInvokedAttribute(withName: "gbraid").value) == "gbraid_value"
+        expect(self.findInvokedAttribute(withName: "ttclid").value) == "tiktok_click_id"
+    }
+
+    func testSetAppstackAttributionParamsWithNilDoesNothing() {
+        self.subscriberAttributesManager.setAppstackAttributionParams(nil, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetAppstackAttributionParamsWithEmptyDictDoesNothing() {
+        self.subscriberAttributesManager.setAppstackAttributionParams([:], appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetAppstackAttributionParamsMissingAppstackIdDoesNotTriggerDeviceIdentifiers() {
+        let dataWithoutId: [String: Any] = [
+            "appstack_adnetwork": "facebook",
+            "appstack_campaign": "summer_sale"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithoutId, appUserID: "kratos")
+
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$idfa" }))
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$idfv" }))
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$appstackId" }))
+    }
+
+    func testSetAppstackAttributionParamsAppstackIdTriggersDeviceIdentifiers() {
+        self.subscriberAttributesManager.setAppstackAttributionParams(
+            ["appstack_id": "test_id"],
+            appUserID: "kratos"
+        )
+
+        // 4 device identifiers + 1 appstack_id
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
+
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "test_id"
+        checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetAppstackAttributionParamsAppstackIdDoesNotTriggerDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        self.subscriberAttributesManager.setAppstackAttributionParams(
+            ["appstack_id": "test_id"],
+            appUserID: "kratos"
+        )
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "test_id"
+        checkDeviceIdentifiersAreNotSet()
+    }
+
+    func testSetAppstackAttributionParamsCampaignKeysDualStorage() {
+        self.subscriberAttributesManager.setAppstackAttributionParams(
+            ["appstack_adnetwork": "google"],
+            appUserID: "kratos"
+        )
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "google"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "google"
+    }
+
+    func testSetAppstackAttributionParamsHandlesNilValuesInDictionary() {
+        let nilValue: String? = nil
+        let dataWithNilValues: [String: Any] = [
+            "appstack_adnetwork": nilValue as Any,
+            "appstack_campaign": "valid_campaign"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithNilValues, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "valid_campaign"
+        expect(self.findInvokedAttribute(withName: "appstack_campaign").value) == "valid_campaign"
+    }
+
+    func testSetAppstackAttributionParamsHandlesEmptyStringValues() {
+        let dataWithEmptyStrings: [String: Any] = [
+            "appstack_adnetwork": "",
+            "appstack_campaign": "valid_campaign"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithEmptyStrings, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "valid_campaign"
+        expect(self.findInvokedAttribute(withName: "appstack_campaign").value) == "valid_campaign"
+    }
+
+    func testSetAppstackAttributionParamsHandlesNSNullValues() {
+        let dataWithNSNull: [String: Any] = [
+            "appstack_adnetwork": NSNull(),
+            "appstack_campaign": "valid_campaign"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithNSNull, appUserID: "kratos")
+
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(invokedParams).to(containElementSatisfying({ $0.attribute.key == "$campaign" }))
+    }
+
+    func testSetAppstackAttributionParamsHandlesIntegerValues() {
+        let dataWithIntegers: [String: Any] = [
+            "appstack_adnetwork": 12345
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithIntegers, appUserID: "kratos")
+
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "12345"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "12345"
+    }
+
+    func testSetAppstackAttributionParamsHandlesDoubleValues() {
+        let dataWithDoubles: [String: Any] = [
+            "appstack_campaign": 12345.67
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithDoubles, appUserID: "kratos")
+
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "12345.67"
+        expect(self.findInvokedAttribute(withName: "appstack_campaign").value) == "12345.67"
+    }
+
+    func testSetAppstackAttributionParamsWithOnlyClickIds() {
+        let clickIdData: [String: Any] = [
+            "fbclid": "fb_click_id",
+            "gclid": "google_click_id"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(clickIdData, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        expect(self.findInvokedAttribute(withName: "fbclid").value) == "fb_click_id"
+        expect(self.findInvokedAttribute(withName: "gclid").value) == "google_click_id"
+
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$appstackId" }))
+    }
+
+    func testSetAppstackAttributionParamsWithOnlyAppstackIdSetsOnlyReservedId() {
+        self.subscriberAttributesManager.setAppstackAttributionParams(
+            ["appstack_id": "test_id"],
+            appUserID: "kratos"
+        )
+
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "appstack_adnetwork" }))
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$campaign" }))
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "test_id"
+    }
+
+    func testSetAppstackAttributionParamsIgnoresUnrelatedFields() {
+        let dataWithExtraFields: [String: Any] = [
+            "appstack_adnetwork": "google",
+            "some_random_field": "value",
+            "install_time": "2024-01-15",
+            "unrelated": NSNull()
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithExtraFields, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "google"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "google"
+    }
+
+    func testSetAppstackAttributionParamsWithNSDictionary() {
+        let nsDictionary: NSDictionary = [
+            "appstack_adnetwork": "facebook",
+            "appstack_campaign": "test_campaign",
+            "appstack_id": "test_id"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(
+            nsDictionary as? [String: Any],
+            appUserID: "kratos"
+        )
+
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "facebook"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "facebook"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "test_campaign"
+        expect(self.findInvokedAttribute(withName: "appstack_campaign").value) == "test_campaign"
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "test_id"
+    }
+
+    func testSetAppstackAttributionParamsTypicalIntegration() {
+        let attributionParams: [String: Any] = [
+            "appstack_id": "as_install_abc123",
+            "appstack_adnetwork": "Meta",
+            "appstack_campaign": "Summer Sale 2024",
+            "appstack_adset": "US Lookalike",
+            "appstack_ad": "video_v2",
+            "appstack_keywords": "fitness app",
+            "fbclid": "IwAR2abc123",
+            "gclid": "Cj0KCQiA",
+            "ttclid": "tt_click_xyz"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(attributionParams, appUserID: "kratos")
+
+        // 5 campaign pairs = 10, 3 click IDs = 3, 4 device identifiers + 1 appstack_id = 5
+        expect(self.mockDeviceCache.invokedStoreCount) == 18
+
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "as_install_abc123"
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "Meta"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "Meta"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "Summer Sale 2024"
+        expect(self.findInvokedAttribute(withName: "$adGroup").value) == "US Lookalike"
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "video_v2"
+        expect(self.findInvokedAttribute(withName: "$keyword").value) == "fitness app"
+        expect(self.findInvokedAttribute(withName: "fbclid").value) == "IwAR2abc123"
+        expect(self.findInvokedAttribute(withName: "gclid").value) == "Cj0KCQiA"
+        expect(self.findInvokedAttribute(withName: "ttclid").value) == "tt_click_xyz"
+    }
+
+    // endregion
     // region Attribution Data conversion
 
     func testConvertAttributionDataAndSetAsSubscriberAttributesConvertsAndSetsTheAttributes() {

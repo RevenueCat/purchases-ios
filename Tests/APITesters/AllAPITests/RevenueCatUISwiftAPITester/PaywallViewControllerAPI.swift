@@ -107,6 +107,8 @@ func paywallViewControllerAPI(_ delegate: Delegate,
 func customVariableValueAPI() {
     // CustomVariableValue type and static constructors
     let _: CustomVariableValue = .string("test")
+    let _: CustomVariableValue = .number(42)
+    let _: CustomVariableValue = .bool(true)
 
     // Accessing underlying value
     let stringValue: CustomVariableValue = .string("hello")
@@ -185,6 +187,9 @@ final class Delegate: PaywallViewControllerDelegate {
     func paywallViewController(_ controller: PaywallViewController,
                                didInitiatePurchaseWith package: Package,
                                resume: @escaping (Bool) -> Void) {}
+
+    func paywallViewController(_ controller: PaywallViewController,
+                               didInitiateRestoreWith resume: @escaping (Bool) -> Void) {}
 
 }
 

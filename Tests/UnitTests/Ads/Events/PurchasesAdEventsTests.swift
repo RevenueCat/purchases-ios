@@ -146,7 +146,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         let revenueData = AdRevenue(
             networkName: "AdMob",
             mediatorName: .appLovin,
-            adFormat: .mrec,
+            adFormat: .other,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
@@ -168,7 +168,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         expect(eventData.networkName) == "AdMob"
         expect(eventData.mediatorName) == .appLovin
-        expect(eventData.adFormat) == .mrec
+        expect(eventData.adFormat) == .other
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.impressionId) == "impression-123"

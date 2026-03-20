@@ -31,6 +31,14 @@ public protocol CustomerCenterViewControllerDelegate: NSObjectProtocol {
     @objc(customerCenterViewControllerDidStartRestore:)
     optional func customerCenterViewControllerDidStartRestore(_ controller: CustomerCenterViewController)
 
+    /// Called when a restore operation is about to start.
+    /// The `resume` closure must be called with `true` to proceed or `false` to cancel.
+    @objc(customerCenterViewController:didInitiateRestoreWithResume:)
+    optional func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didInitiateRestoreWith resume: @escaping (Bool) -> Void
+    )
+
     /// Called when a restore operation completes successfully.
     @objc(customerCenterViewController:didFinishRestoringWithCustomerInfo:)
     optional func customerCenterViewController(
@@ -87,8 +95,24 @@ public protocol CustomerCenterViewControllerDelegate: NSObjectProtocol {
     )
 
     /// Called when a promotional offer succeeds.
+    /// - Note: Prefer ``customerCenterViewController(_:didSucceedWithPromotionalOffer:customerInfo:transaction:)``
+    /// which also provides purchase details. If both methods are implemented, both will be called
+    /// on a successful promotional offer purchase.
     @objc(customerCenterViewControllerDidSucceedWithPromotionalOffer:)
     optional func customerCenterViewControllerDidSucceedWithPromotionalOffer(_ controller: CustomerCenterViewController)
+
+    /// Called when a promotional offer purchase completes successfully,
+    /// providing the resulting customer info, transaction, and the promotional offer identifier.
+    /// - Note: If the delegate also implements
+    /// ``customerCenterViewControllerDidSucceedWithPromotionalOffer(_:)``,
+    /// both methods will be called.
+    @objc(customerCenterViewController:didSucceedWithPromotionalOffer:customerInfo:transaction:)
+    optional func customerCenterViewController(
+        _ controller: CustomerCenterViewController,
+        didSucceedWithPromotionalOffer offerId: String,
+        customerInfo: CustomerInfo,
+        transaction: StoreTransaction
+    )
 
     /// Called when the Customer Center is dismissed.
     /// Make sure to call dismiss(animated: ) on the CustomerCenterViewController to actually dismiss
