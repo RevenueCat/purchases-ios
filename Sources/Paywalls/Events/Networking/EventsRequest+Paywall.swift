@@ -38,19 +38,19 @@ extension FeatureEventsRequest {
         var errorCode: Int?
         var errorMessage: String?
 
-        struct PresentedOfferingContextData: Encodable {
-
-            var placementIdentifier: String?
-            var targetingRevision: Int?
-            var targetingRuleId: String?
-
-        }
-
     }
 
 }
 
 extension FeatureEventsRequest.PaywallEvent {
+
+    struct PresentedOfferingContextData: Encodable {
+
+        var placementIdentifier: String?
+        var targetingRevision: Int?
+        var targetingRuleId: String?
+
+    }
 
     enum EventType: String {
 
