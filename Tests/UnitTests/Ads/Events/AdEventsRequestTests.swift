@@ -295,7 +295,7 @@ private extension AdFeatureEventsRequestTests {
     static let revenueData: AdRevenue = .init(
         networkName: "AdMob",
         mediatorName: .appLovin,
-        adFormat: .mrec,
+        adFormat: .other,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123",

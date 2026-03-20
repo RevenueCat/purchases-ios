@@ -688,6 +688,24 @@ platform :ios do
     )
   end
 
+  desc "Runs all RevenueCatAdMob tests (standalone SPM package under AdapterSDKs/RevenueCatAdMob)"
+  lane :test_revenuecat_admob do
+    platform = ENV['PLATFORM'] || 'iOS Simulator'
+    destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
+    sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+
+    xcodebuild(
+      workspace: 'AdapterSDKs/RevenueCatAdMob',
+      scheme: 'RevenueCatAdMob',
+      destination: "platform=" + platform + ",name=" + destination,
+      sdk: sdk,
+      result_bundle_path: 'fastlane/test_output/revenuecat_admob.xcresult',
+      report_formats: [:junit],
+      report_path: 'fastlane/test_output/revenuecat_admob/tests.xml',
+      test: true
+    )
+  end
+
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"

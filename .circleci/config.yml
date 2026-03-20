@@ -621,6 +621,35 @@ jobs:
           command: bundle exec fastlane run_api_tests
       - slack-notify-on-fail
 
+  revenuecat-admob-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "26.3"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatAdMob Release Build
+          command: cd AdapterSDKs/RevenueCatAdMob && swift build -c release
+          no_output_timeout: 30m
+      - run:
+          name: RevenueCatAdMob unit tests
+          command: bundle exec fastlane test_revenuecat_admob
+          no_output_timeout: 10m
+          environment:
+            DEVICE: iPhone 17,OS=26.2
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecat_admob
+      - store_test_results:
+          path: fastlane/test_output/revenuecat_admob/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
+      - slack-notify-on-fail
+
   spm-receipt-parser:
     executor:
       name: macos-executor
@@ -2206,6 +2235,11 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - revenuecat-admob-tests:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
       - deploy-purchase-tester:
           dry_run: true
           requires:
@@ -2486,6 +2520,9 @@ workflows:
           context:
             - slack-secrets
       - api-tests:
+          context:
+            - slack-secrets
+      - revenuecat-admob-tests:
           context:
             - slack-secrets
       - deploy-purchase-tester:
