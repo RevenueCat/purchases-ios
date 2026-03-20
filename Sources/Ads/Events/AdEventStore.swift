@@ -129,6 +129,9 @@ extension AdEventStore {
         return self.revenueCatFolder(in: container).appendingPathComponent("ad_event_store")
     }
 
+    // See https://nemecek.be/blog/57/making-files-from-your-app-available-in-the-ios-files-app
+    // We don't want to store events in the documents directory in case app makes their documents
+    // accessible via the Files app.
     private static var defaultPersistenceDirectory: URL? {
         #if os(tvOS)
         let directoryType = DirectoryHelper.DirectoryType.cache
