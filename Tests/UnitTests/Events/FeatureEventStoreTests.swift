@@ -34,21 +34,21 @@ class FeatureEventStoreTests: TestCase {
     // - MARK: -
 
     func testCreateDefaultDoesNotThrow() throws {
-        _ = try FeatureEventStore.createDefault(applicationSupportDirectory: nil)
+        _ = try FeatureEventStore.createDefault(persistenceDirectory: nil)
     }
 
     func testPersistsEventsAcrossInitialization() async throws {
         let container = Self.temporaryFolder()
 
         var store = try FeatureEventStore.createDefault(
-            applicationSupportDirectory: container
+            persistenceDirectory: container
         )
 
         await store.store(.randomImpressionEvent())
         await self.verifyEventsInStore(store, expectedCount: 1)
 
         store = try FeatureEventStore.createDefault(
-            applicationSupportDirectory: container
+            persistenceDirectory: container
         )
         await self.verifyEventsInStore(store, expectedCount: 1)
     }
@@ -58,7 +58,7 @@ class FeatureEventStoreTests: TestCase {
         let documents = Self.temporaryFolder()
 
         // 1. Initialize store with documents directory:
-        var store = try FeatureEventStore.createDefault(applicationSupportDirectory: documents)
+        var store = try FeatureEventStore.createDefault(persistenceDirectory: documents)
 
         // 2. Store event
         await store.store(.randomImpressionEvent())
@@ -66,13 +66,13 @@ class FeatureEventStoreTests: TestCase {
 
         // 3. Initialize store with new directories
         store = try FeatureEventStore.createDefault(
-            applicationSupportDirectory: applicationSupport,
+            persistenceDirectory: applicationSupport,
             documentsDirectory: documents
         )
         await self.verifyEventsInStore(store, expectedCount: 0)
 
         // 4. Verify events were removed
-        store = try FeatureEventStore.createDefault(applicationSupportDirectory: documents)
+        store = try FeatureEventStore.createDefault(persistenceDirectory: documents)
         await self.verifyEventsInStore(store, expectedCount: 0)
     }
 
