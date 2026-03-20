@@ -3,6 +3,8 @@
 //  RCTTester
 //
 
+#if !os(tvOS)
+
 import SwiftUI
 import RevenueCat
 import RevenueCatUI
@@ -76,3 +78,5 @@ private struct InfoRow: View {
         }
     }
 }
+
+#endif
