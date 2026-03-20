@@ -4,7 +4,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "AdMobIntegrationSample",
     organizationName: .revenueCatOrgName,
-    packages: .projectPackages + .adMobPackage,
+    packages: .adMobPackage,
     settings: .appProject,
     targets: [
         .target(
@@ -17,7 +17,7 @@ let project = Project(
                 "UILaunchScreen": [:],
                 "GADApplicationIdentifier": "ca-app-pub-3940256099942544~1458002511"
             ]),
-            sources: ["Sources/**"],
+            sources: ["../../AdapterSDKs/RevenueCatAdMob/Examples/AdMobIntegrationSample/Sources/**"],
             dependencies: [
                 .revenueCat,
                 .revenueCatAdMob,
