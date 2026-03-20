@@ -44,6 +44,9 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
     ) {
         let directoryType: DirectoryHelper.DirectoryType
         #if os(tvOS)
+        if applicationSupportDirectory != nil {
+            Logger.warn(CacheStrings.application_support_not_available_on_tvos)
+        }
         directoryType = .cache
         #else
         directoryType = .applicationSupport(overrideURL: applicationSupportDirectory)
