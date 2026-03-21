@@ -12,6 +12,8 @@ The adapter is a **standalone Swift package** under `AdapterSDKs/RevenueCatAdMob
   ```
   Then add the `RevenueCatAdMob` product to your target.
 
+  > **Note:** If your project depends on RevenueCat via SPM, use the [`purchases-ios-spm`](https://github.com/RevenueCat/purchases-ios-spm) package (not `purchases-ios`). The adapter's published package already declares this dependency correctly, but if you add RevenueCat separately, make sure both resolve from the same `purchases-ios-spm` repository to avoid duplicate package errors.
+
 - **Swift Package Manager (local development):** To use the adapter from a local checkout of this repo, add the package by path to the `AdapterSDKs/RevenueCatAdMob` directory:
   ```swift
   .package(path: "path/to/purchases-ios/AdapterSDKs/RevenueCatAdMob")
