@@ -5,16 +5,16 @@ set -euo pipefail
 # Rewrites the local path dependency to a versioned dependency, then commits, tags, and pushes.
 #
 # Usage:
-#   ci_scripts/deploy-admob-spm.sh <version>              # dry run (default)
-#   ci_scripts/deploy-admob-spm.sh <version> --live-run   # commits, tags, and pushes
+#   ci_scripts/deploy-admob-spm.sh <version>              # commits, tags, and pushes
+#   ci_scripts/deploy-admob-spm.sh <version> --dry-run    # preview changes without pushing
 
-VERSION="${1:?Usage: deploy-admob-spm.sh <version> [--live-run]}"
-LIVE_RUN="${2:-}"
+VERSION="${1:?Usage: deploy-admob-spm.sh <version> [--dry-run]}"
+DRY_RUN="${2:-}"
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ADAPTER_DIR="${REPO_ROOT}/AdapterSDKs/RevenueCatAdMob"
 WORK_DIR="$(mktemp -d)"
-if [ "${LIVE_RUN}" = "--live-run" ]; then
+if [ "${DRY_RUN}" != "--dry-run" ]; then
     trap 'rm -rf "${WORK_DIR}"' EXIT
 fi
 
@@ -38,19 +38,19 @@ else
     sed -i 's|package: "purchases-ios"|package: "purchases-ios-spm"|' Package.swift
 fi
 
-if [ "${LIVE_RUN}" = "--live-run" ]; then
-    git add -A
-    git commit -m "Release ${VERSION}"
-    git tag "${VERSION}"
-    git push origin main
-    git push origin "${VERSION}"
-else
+if [ "${DRY_RUN}" = "--dry-run" ]; then
     echo "=== Dry run: showing rewritten Package.swift ==="
     cat Package.swift
     echo ""
     echo "=== Files that would be committed ==="
     git add -A
     git status
-    echo "=== Dry run complete — pass --live-run to push ==="
+    echo "=== Dry run complete — remove --dry-run to push ==="
     echo "=== Work dir kept at: ${WORK_DIR} ==="
+else
+    git add -A
+    git commit -m "Release ${VERSION}"
+    git tag "${VERSION}"
+    git push origin main
+    git push origin "${VERSION}"
 fi

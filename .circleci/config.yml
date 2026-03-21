@@ -2020,7 +2020,7 @@ jobs:
       - revenuecat/trust-github-key
       - run:
           name: Deploy RevenueCatAdMob to purchases-ios-admob
-          command: ci_scripts/deploy-admob-spm.sh "${CIRCLE_TAG}" --live-run
+          command: ci_scripts/deploy-admob-spm.sh "${CIRCLE_TAG}"
 
   bump-sdk-in-rc-mobile-app:
     docker:
