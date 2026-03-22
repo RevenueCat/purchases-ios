@@ -25,8 +25,8 @@ cd "${WORK_DIR}"
 # Clear existing contents (except .git)
 git rm -rf . 2>/dev/null || true
 
-# Copy adapter sources (exclude SPM build artifacts)
-rsync -a "${ADAPTER_DIR}/" .
+# Copy adapter sources
+cp -a "${ADAPTER_DIR}/." .
 
 # Rewrite Package.swift: replace local path dep with versioned dep
 # sed -i behaves differently on macOS (requires '') vs Linux (no argument)
