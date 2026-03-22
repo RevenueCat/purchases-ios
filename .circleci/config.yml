@@ -2020,7 +2020,7 @@ jobs:
       - revenuecat/trust-github-key
       - run:
           name: Deploy RevenueCatAdMob to purchases-ios-admob
-          command: ci_scripts/deploy-admob-spm.sh "${CIRCLE_TAG}"
+          command: ci_scripts/deploy-admob-spm.sh "5.66.0"
 
   bump-sdk-in-rc-mobile-app:
     docker:
@@ -2312,47 +2312,10 @@ workflows:
       not:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
-      - push-revenuecat-pod:
-          <<: *release-tags
-      - push-revenuecatui-pod:
-          requires:
-            - push-revenuecat-pod
-          <<: *release-tags
-      - deploy-to-spm:
-          <<: *release-tags
       - deploy-to-purchases-ios-admob:
-          requires:
-            - deploy-to-spm
-          <<: *release-tags
-      - docs-deploy:
-          <<: *release-tags
-      - deploy-purchase-tester:
-          dry_run: false
-          <<: *release-tags
-      - make-release:
-          requires:
-            - push-revenuecatui-pod
-            - deploy-to-spm
-            - deploy-to-purchases-ios-admob
-            - docs-deploy
-            - deploy-purchase-tester
-          <<: *release-tags
-      - deploy-rct-tester:
-          dry_run: false
-          requires:
-            - make-release
-          <<: *release-tags
-      - bump-sdk-in-rc-mobile-app:
-          requires:
-            - make-release
-          <<: *release-tags
-      - revenuecat/merge-release-pr:
-          repo_name: purchases-ios
-          requires:
-            - make-release
-            - deploy-rct-tester
-            - bump-sdk-in-rc-mobile-app
-          <<: *release-tags
+          filters:
+            branches:
+              only: release-admob-adapter
 
   snapshot-bump:
     when:
