@@ -153,8 +153,7 @@ private struct AdFormatDetailView: View {
                         status: adManager.nativeAdStatus,
                         onLoad: {
                             adManager.loadNativeAd(
-                                adUnitID: Constants.AdMob.nativeAdUnitID,
-                                placement: "native_main"
+                                adUnitID: Constants.AdMob.nativeAdUnitID
                             )
                         },
                         nativeAd: adManager.nativeAd
@@ -165,8 +164,7 @@ private struct AdFormatDetailView: View {
                         status: adManager.nativeVideoAdStatus,
                         onLoad: {
                             adManager.loadNativeAd(
-                                adUnitID: Constants.AdMob.nativeVideoAdUnitID,
-                                placement: "native_video_main"
+                                adUnitID: Constants.AdMob.nativeVideoAdUnitID
                             )
                         },
                         nativeAd: adManager.nativeVideoAd

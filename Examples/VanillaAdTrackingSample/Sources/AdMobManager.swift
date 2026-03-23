@@ -263,7 +263,7 @@ class AdMobManager: NSObject, ObservableObject {
 
     // MARK: - Native Ad
 
-    func loadNativeAd(adUnitID: String = Constants.AdMob.nativeAdUnitID, placement: String) {
+    func loadNativeAd(adUnitID: String = Constants.AdMob.nativeAdUnitID) {
         if adUnitID == Constants.AdMob.nativeAdUnitID {
             nativeAdStatus = "Loading..."
         } else if adUnitID == Constants.AdMob.nativeVideoAdUnitID {
