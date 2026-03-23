@@ -70,16 +70,15 @@ class AdMobManager: NSObject, ObservableObject {
         }
     }
 
-    /// Installs a `paidEventHandler` that forwards revenue to RevenueCat.
+    /// Creates a `paidEventHandler` closure that forwards revenue to RevenueCat.
     @available(iOS 15.0, *)
-    private func installPaidEventHandler(
-        on target: HasPaidEventHandler,
+    private func makePaidEventHandler(
         responseInfo: ResponseInfo?,
         placement: String,
         adUnitId: String,
         adFormat: RevenueCat.AdFormat
-    ) {
-        target.paidEventHandler = { [weak self] adValue in
+    ) -> (AdValue) -> Void {
+        return { [weak self] adValue in
             guard let self else { return }
             self.adTracker.trackAdRevenue(AdRevenue(
                 networkName: self.networkName(from: responseInfo),
@@ -113,17 +112,26 @@ class AdMobManager: NSObject, ObservableObject {
         interstitialStatus = "Loading..."
 
         InterstitialAd.load(
-            withAdUnitID: Constants.AdMob.interstitialAdUnitID,
+            with: Constants.AdMob.interstitialAdUnitID,
             request: Request()
         ) { [weak self] ad, error in
             guard let self else { return }
-            self.handleFullScreenLoad(
-                ad: ad, error: error,
+            if let error {
+                self.handleFullScreenLoadFailure(
+                    error: error, placement: "interstitial_main",
+                    adUnitId: Constants.AdMob.interstitialAdUnitID,
+                    adFormat: .interstitial, statusKeyPath: \.interstitialStatus
+                )
+                return
+            }
+            guard let ad else { return }
+            self.interstitialAd = ad
+            self.handleFullScreenLoadSuccess(
+                ad: ad, responseInfo: ad.responseInfo,
                 placement: "interstitial_main",
                 adUnitId: Constants.AdMob.interstitialAdUnitID,
-                adFormat: .interstitial,
-                statusKeyPath: \.interstitialStatus
-            ) { self.interstitialAd = $0 }
+                adFormat: .interstitial, statusKeyPath: \.interstitialStatus
+            ) { ad.paidEventHandler = $0 }
         }
     }
 
@@ -141,17 +149,26 @@ class AdMobManager: NSObject, ObservableObject {
         appOpenStatus = "Loading..."
 
         AppOpenAd.load(
-            withAdUnitID: Constants.AdMob.appOpenAdUnitID,
+            with: Constants.AdMob.appOpenAdUnitID,
             request: Request()
         ) { [weak self] ad, error in
             guard let self else { return }
-            self.handleFullScreenLoad(
-                ad: ad, error: error,
+            if let error {
+                self.handleFullScreenLoadFailure(
+                    error: error, placement: "app_open_main",
+                    adUnitId: Constants.AdMob.appOpenAdUnitID,
+                    adFormat: .appOpen, statusKeyPath: \.appOpenStatus
+                )
+                return
+            }
+            guard let ad else { return }
+            self.appOpenAd = ad
+            self.handleFullScreenLoadSuccess(
+                ad: ad, responseInfo: ad.responseInfo,
                 placement: "app_open_main",
                 adUnitId: Constants.AdMob.appOpenAdUnitID,
-                adFormat: .appOpen,
-                statusKeyPath: \.appOpenStatus
-            ) { self.appOpenAd = $0 }
+                adFormat: .appOpen, statusKeyPath: \.appOpenStatus
+            ) { ad.paidEventHandler = $0 }
         }
     }
 
@@ -169,17 +186,26 @@ class AdMobManager: NSObject, ObservableObject {
         rewardedStatus = "Loading..."
 
         RewardedAd.load(
-            withAdUnitID: Constants.AdMob.rewardedAdUnitID,
+            with: Constants.AdMob.rewardedAdUnitID,
             request: Request()
         ) { [weak self] ad, error in
             guard let self else { return }
-            self.handleFullScreenLoad(
-                ad: ad, error: error,
+            if let error {
+                self.handleFullScreenLoadFailure(
+                    error: error, placement: "rewarded_main",
+                    adUnitId: Constants.AdMob.rewardedAdUnitID,
+                    adFormat: .rewarded, statusKeyPath: \.rewardedStatus
+                )
+                return
+            }
+            guard let ad else { return }
+            self.rewardedAd = ad
+            self.handleFullScreenLoadSuccess(
+                ad: ad, responseInfo: ad.responseInfo,
                 placement: "rewarded_main",
                 adUnitId: Constants.AdMob.rewardedAdUnitID,
-                adFormat: .rewarded,
-                statusKeyPath: \.rewardedStatus
-            ) { self.rewardedAd = $0 }
+                adFormat: .rewarded, statusKeyPath: \.rewardedStatus
+            ) { ad.paidEventHandler = $0 }
         }
     }
 
@@ -200,17 +226,26 @@ class AdMobManager: NSObject, ObservableObject {
         rewardedInterstitialStatus = "Loading..."
 
         RewardedInterstitialAd.load(
-            withAdUnitID: Constants.AdMob.rewardedInterstitialAdUnitID,
+            with: Constants.AdMob.rewardedInterstitialAdUnitID,
             request: Request()
         ) { [weak self] ad, error in
             guard let self else { return }
-            self.handleFullScreenLoad(
-                ad: ad, error: error,
+            if let error {
+                self.handleFullScreenLoadFailure(
+                    error: error, placement: "rewarded_interstitial_main",
+                    adUnitId: Constants.AdMob.rewardedInterstitialAdUnitID,
+                    adFormat: .rewardedInterstitial, statusKeyPath: \.rewardedInterstitialStatus
+                )
+                return
+            }
+            guard let ad else { return }
+            self.rewardedInterstitialAd = ad
+            self.handleFullScreenLoadSuccess(
+                ad: ad, responseInfo: ad.responseInfo,
                 placement: "rewarded_interstitial_main",
                 adUnitId: Constants.AdMob.rewardedInterstitialAdUnitID,
-                adFormat: .rewardedInterstitial,
-                statusKeyPath: \.rewardedInterstitialStatus
-            ) { self.rewardedInterstitialAd = $0 }
+                adFormat: .rewardedInterstitial, statusKeyPath: \.rewardedInterstitialStatus
+            ) { ad.paidEventHandler = $0 }
         }
     }
 
@@ -267,31 +302,15 @@ class AdMobManager: NSObject, ObservableObject {
     // MARK: - Full-Screen Load Helper
 
     @available(iOS 15.0, *)
-    private func handleFullScreenLoad<Ad: AnyObject & FullScreenPresentingAd>(
-        ad: Ad?,
-        error: Error?,
+    private func handleFullScreenLoadSuccess(
+        ad: some FullScreenPresentingAd & AnyObject,
+        responseInfo: ResponseInfo?,
         placement: String,
         adUnitId: String,
         adFormat: RevenueCat.AdFormat,
         statusKeyPath: ReferenceWritableKeyPath<AdMobManager, String>,
-        store: (Ad) -> Void
+        setPaidEventHandler: (@escaping (AdValue) -> Void) -> Void
     ) {
-        if let error {
-            print("❌ \(adFormat.rawValue) failed: \(error.localizedDescription)")
-            self[keyPath: statusKeyPath] = "Failed"
-            adTracker.trackAdFailedToLoad(AdFailedToLoad(
-                mediatorName: .adMob,
-                adFormat: adFormat,
-                placement: placement,
-                adUnitId: adUnitId,
-                mediatorErrorCode: (error as NSError).code
-            ))
-            return
-        }
-
-        guard let ad else { return }
-
-        let responseInfo = (ad as? HasResponseInfo)?.responseInfo
         print("✅ \(adFormat.rawValue) loaded")
 
         adTracker.trackAdLoaded(AdLoaded(
@@ -311,35 +330,35 @@ class AdMobManager: NSObject, ObservableObject {
             responseInfo: responseInfo
         )
 
-        installPaidEventHandler(
-            on: ad as! HasPaidEventHandler,
+        setPaidEventHandler(makePaidEventHandler(
             responseInfo: responseInfo,
             placement: placement,
             adUnitId: adUnitId,
             adFormat: adFormat
-        )
+        ))
 
-        store(ad)
         self[keyPath: statusKeyPath] = "Ready"
     }
+
+    @available(iOS 15.0, *)
+    private func handleFullScreenLoadFailure(
+        error: Error,
+        placement: String,
+        adUnitId: String,
+        adFormat: RevenueCat.AdFormat,
+        statusKeyPath: ReferenceWritableKeyPath<AdMobManager, String>
+    ) {
+        print("❌ \(adFormat.rawValue) failed: \(error.localizedDescription)")
+        self[keyPath: statusKeyPath] = "Failed"
+        adTracker.trackAdFailedToLoad(AdFailedToLoad(
+            mediatorName: .adMob,
+            adFormat: adFormat,
+            placement: placement,
+            adUnitId: adUnitId,
+            mediatorErrorCode: (error as NSError).code
+        ))
+    }
 }
-
-// MARK: - Protocol for paidEventHandler access
-
-private protocol HasPaidEventHandler: AnyObject {
-    var paidEventHandler: ((AdValue) -> Void)? { get set }
-}
-
-private protocol HasResponseInfo {
-    var responseInfo: ResponseInfo? { get }
-}
-
-extension InterstitialAd: HasPaidEventHandler, HasResponseInfo {}
-extension AppOpenAd: HasPaidEventHandler, HasResponseInfo {}
-extension RewardedAd: HasPaidEventHandler, HasResponseInfo {}
-extension RewardedInterstitialAd: HasPaidEventHandler, HasResponseInfo {}
-extension BannerView: HasPaidEventHandler, HasResponseInfo {}
-extension NativeAd: HasPaidEventHandler, HasResponseInfo {}
 
 // MARK: - BannerViewDelegate
 
@@ -348,20 +367,20 @@ extension AdMobManager: BannerViewDelegate {
         guard #available(iOS 15.0, *) else { return }
         let responseInfo = bannerView.responseInfo
         let adUnitId = bannerView.adUnitID ?? ""
+        let placement = bannerView === errorTestBannerView ? "error_test" : "home_banner"
 
         adTracker.trackAdLoaded(AdLoaded(
             networkName: networkName(from: responseInfo),
             mediatorName: .adMob,
             adFormat: .banner,
-            placement: bannerView === errorTestBannerView ? "error_test" : "home_banner",
+            placement: placement,
             adUnitId: adUnitId,
             impressionId: impressionId(from: responseInfo)
         ))
 
-        installPaidEventHandler(
-            on: bannerView,
+        bannerView.paidEventHandler = makePaidEventHandler(
             responseInfo: responseInfo,
-            placement: bannerView === errorTestBannerView ? "error_test" : "home_banner",
+            placement: placement,
             adUnitId: adUnitId,
             adFormat: .banner
         )
@@ -497,8 +516,7 @@ extension AdMobManager: NativeAdLoaderDelegate, AdLoaderDelegate {
 
         nativeAd.delegate = self
 
-        installPaidEventHandler(
-            on: nativeAd,
+        nativeAd.paidEventHandler = makePaidEventHandler(
             responseInfo: responseInfo,
             placement: placement,
             adUnitId: adUnitId,
