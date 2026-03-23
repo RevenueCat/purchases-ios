@@ -24,6 +24,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseStoreKitIntegrationTests 
     private var syncedAttributes: [(userID: String, attributes: [String: String])] = []
 
     private static let testEmail = "test@revenuecat.com"
+    private static let attKey = ReservedSubscriberAttribute.consentStatus.rawValue
 
     @MainActor
     override func setUp() {
@@ -33,18 +34,20 @@ class SubscriberAttributesManagerIntegrationTests: BaseStoreKitIntegrationTests 
         self.attribution.delegate = self
 
         self.userID = Purchases.shared.appUserID
+
         self.syncedAttributes = []
     }
 
     // MARK: -
 
-    func testNothingToSync() {
+    func testNothingToSyncBesidesATTConsentStatus() {
         waitUntil { completion in
-            let parameters = Purchases.shared.syncSubscriberAttributes(completion: {
+            Purchases.shared.syncSubscriberAttributes(completion: {
                 completion()
             })
 
-            expect(parameters) == 0
+            // No user-set attributes should have been synced
+            expect(self.syncedAttributes).to(beEmpty())
         }
     }
 
@@ -219,8 +222,12 @@ extension SubscriberAttributesManagerIntegrationTests: AttributionDelegate {
 
     func attribution(didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
                      forUserID userID: String) {
+        // Strip ATT consent status — tested separately in ATTConsentStatusIntegrationTests.
+        let filtered = attributes.filter { $0.key != Self.attKey }
+        guard !filtered.isEmpty else { return }
+
         self.syncedAttributes.append(
-            (userID: userID, attributes: attributes.mapValues { $0.value })
+            (userID: userID, attributes: filtered.mapValues { $0.value })
         )
     }
 
