@@ -524,6 +524,8 @@ extension AdMobManager: NativeAdLoaderDelegate, AdLoaderDelegate {
             nativeAdStatus = "Ready"
         }
 
+        nativeAd.delegate = self
+
         guard #available(iOS 15.0, *) else { return }
         let responseInfo = nativeAd.responseInfo
         let adUnitId = adLoader.adUnitID
@@ -537,8 +539,6 @@ extension AdMobManager: NativeAdLoaderDelegate, AdLoaderDelegate {
             adUnitId: adUnitId,
             impressionId: impressionId(from: responseInfo)
         ))
-
-        nativeAd.delegate = self
 
         nativeAd.paidEventHandler = makePaidEventHandler(
             responseInfo: responseInfo,
