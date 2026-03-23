@@ -1,6 +1,6 @@
 # Vanilla Ad Tracking Sample
 
-This sample app demonstrates how to manually track Google AdMob ad events with RevenueCat **without** using the `RevenueCatAdMob` adapter library. Instead of automatic tracking via `loadAndTrack` APIs, this sample calls `Purchases.shared.adTracker.trackXxx(...)` directly in each AdMob callback.
+This sample app demonstrates how to track Google AdMob ad events with RevenueCat by calling `Purchases.shared.adTracker.trackXxx(...)` directly in each AdMob callback.
 
 ## Overview
 
@@ -187,19 +187,6 @@ In the app:
 4. Interact with the ad and dismiss it.
 
 The sample prints diagnostics in the Xcode console and emits RevenueCat ad events for each format. For dashboard verification, background the app after testing to trigger SDK flush.
-
----
-
-## Comparison with the adapter sample
-
-| Aspect | Adapter Sample (`RevenueCatAdMob`) | This Vanilla Sample |
-|--------|-------------------------------------|---------------------|
-| Import | `@_spi(Experimental) import RevenueCatAdMob` | `@_spi(Experimental) import RevenueCat` |
-| Load API | `XxxAd.loadAndTrack(...)` | `XxxAd.load(...)` + manual `adTracker.trackAdLoaded(...)` |
-| Revenue | Automatic via adapter wrapping | Manual `paidEventHandler` + `adTracker.trackAdRevenue(...)` |
-| Delegates | Passed through `loadAndTrack` | Set directly + call `adTracker.trackAdDisplayed/Opened` in callbacks |
-| Precision | Handled by adapter | Manual mapping function |
-| Boilerplate | Minimal | Significant — every callback needs manual tracking calls |
 
 ---
 
