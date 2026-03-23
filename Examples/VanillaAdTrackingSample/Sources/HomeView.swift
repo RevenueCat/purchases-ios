@@ -297,10 +297,11 @@ struct NativeAdViewRepresentable: UIViewRepresentable {
 
         let ctaButton = UIButton(type: .system)
         ctaButton.setTitle(nativeAd.callToAction, for: .normal)
-        ctaButton.backgroundColor = .systemBlue
-        ctaButton.setTitleColor(.white, for: .normal)
         ctaButton.layer.cornerRadius = 8
-        var configuration = UIButton.Configuration.plain()
+        ctaButton.clipsToBounds = true
+        var configuration = UIButton.Configuration.filled()
+        configuration.baseBackgroundColor = .systemBlue
+        configuration.baseForegroundColor = .white
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20)
         ctaButton.configuration = configuration
 
