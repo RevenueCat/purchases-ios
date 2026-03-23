@@ -901,6 +901,11 @@ jobs:
       name: macos-executor
 
     steps:
+      - run:
+          name: Erase tvOS simulator to clear accumulated temp directories
+          command: |
+            xcrun simctl shutdown "Apple TV" 2>/dev/null || true
+            xcrun simctl erase "Apple TV"
       - checkout
       - install-dependencies
       - run:
