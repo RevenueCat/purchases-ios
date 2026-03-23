@@ -40,27 +40,28 @@ class FeatureEventStoreTests: TestCase {
     // The condition is persistent for the entire test run but intermittent across
     // CI runs. We probe the filesystem first and skip when it's unhealthy, so the
     // test still validates the real default path on healthy simulators.
-    func testCreateDefaultDoesNotThrow() throws {
+    func testCreateDefaultReturnsNonNil() throws {
         #if os(tvOS)
         try Self.skipIfCachesDirectoryIsNotWritable()
         #endif
 
-        _ = try FeatureEventStore.createDefault(persistenceDirectory: nil)
+        let store = FeatureEventStore.createDefault(persistenceDirectory: nil)
+        expect(store).toNot(beNil())
     }
 
     func testPersistsEventsAcrossInitialization() async throws {
         let container = Self.temporaryFolder()
 
-        var store = try FeatureEventStore.createDefault(
+        var store = try XCTUnwrap(FeatureEventStore.createDefault(
             persistenceDirectory: container
-        )
+        ))
 
         await store.store(.randomImpressionEvent())
         await self.verifyEventsInStore(store, expectedCount: 1)
 
-        store = try FeatureEventStore.createDefault(
+        store = try XCTUnwrap(FeatureEventStore.createDefault(
             persistenceDirectory: container
-        )
+        ))
         await self.verifyEventsInStore(store, expectedCount: 1)
     }
 
@@ -69,21 +70,21 @@ class FeatureEventStoreTests: TestCase {
         let documents = Self.temporaryFolder()
 
         // 1. Initialize store with documents directory:
-        var store = try FeatureEventStore.createDefault(persistenceDirectory: documents)
+        var store = try XCTUnwrap(FeatureEventStore.createDefault(persistenceDirectory: documents))
 
         // 2. Store event
         await store.store(.randomImpressionEvent())
         await self.verifyEventsInStore(store, expectedCount: 1)
 
         // 3. Initialize store with new directories
-        store = try FeatureEventStore.createDefault(
+        store = try XCTUnwrap(FeatureEventStore.createDefault(
             persistenceDirectory: applicationSupport,
             documentsDirectory: documents
-        )
+        ))
         await self.verifyEventsInStore(store, expectedCount: 0)
 
         // 4. Verify events were removed
-        store = try FeatureEventStore.createDefault(persistenceDirectory: documents)
+        store = try XCTUnwrap(FeatureEventStore.createDefault(persistenceDirectory: documents))
         await self.verifyEventsInStore(store, expectedCount: 0)
     }
 

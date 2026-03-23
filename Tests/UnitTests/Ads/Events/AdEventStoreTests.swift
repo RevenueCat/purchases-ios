@@ -40,27 +40,28 @@ class AdEventStoreTests: TestCase {
     // The condition is persistent for the entire test run but intermittent across
     // CI runs. We probe the filesystem first and skip when it's unhealthy, so the
     // test still validates the real default path on healthy simulators.
-    func testCreateDefaultDoesNotThrow() throws {
+    func testCreateDefaultReturnsNonNil() throws {
         #if os(tvOS)
         try Self.skipIfCachesDirectoryIsNotWritable()
         #endif
 
-        _ = try AdEventStore.createDefault(persistenceDirectory: nil)
+        let store = AdEventStore.createDefault(persistenceDirectory: nil)
+        expect(store).toNot(beNil())
     }
 
     func testPersistsEventsAcrossInitialization() async throws {
         let container = Self.temporaryFolder()
 
-        var store = try AdEventStore.createDefault(
+        var store = try XCTUnwrap(AdEventStore.createDefault(
             persistenceDirectory: container
-        )
+        ))
 
         await store.store(.randomDisplayedEvent())
         await self.verifyEventsInStore(store, expectedCount: 1)
 
-        store = try AdEventStore.createDefault(
+        store = try XCTUnwrap(AdEventStore.createDefault(
             persistenceDirectory: container
-        )
+        ))
         await self.verifyEventsInStore(store, expectedCount: 1)
     }
 
