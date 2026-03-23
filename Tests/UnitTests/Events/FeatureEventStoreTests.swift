@@ -322,7 +322,12 @@ class FeatureEventStoreTests: TestCase {
 private extension FeatureEventStoreTests {
 
     static func skipIfCachesDirectoryIsNotWritable() throws {
-        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        let caches: URL
+        if #available(tvOS 16.0, *) {
+            caches = URL.cachesDirectory
+        } else {
+            caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        }
         let probe = caches.appendingPathComponent("revenuecat_probe_\(UUID().uuidString)")
         do {
             try FileManager.default.createDirectory(at: probe, withIntermediateDirectories: true)
