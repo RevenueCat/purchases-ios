@@ -28,7 +28,7 @@ class DeviceCacheTests: TestCase {
             try? fileManager.removeItem(at: oldDirectory)
         }
 
-        if let cacheURL = DirectoryHelper.baseUrl(for: .cache()) {
+        if let cacheURL = DirectoryHelper.baseUrl(for: .cache) {
             try? fileManager.removeItem(at: cacheURL)
         }
 
@@ -931,7 +931,7 @@ class DeviceCacheTests: TestCase {
         XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL2.path))
 
         // swiftlint:disable:next line_length
-        let newDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache())?.appendingPathComponent("device-cache"))
+        let newDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache"))
 
         // Verify new directory does not exist yet
         XCTAssertFalse(fileManager.fileExists(atPath: newDirectoryURL.path))
@@ -991,7 +991,7 @@ class DeviceCacheTests: TestCase {
         XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
 
         // swiftlint:disable:next line_length
-        let newDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache())?.appendingPathComponent("device-cache"))
+        let newDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache"))
 
         // Verify new directory does not exist yet
         XCTAssertFalse(fileManager.fileExists(atPath: newDirectoryURL.path))
@@ -1156,7 +1156,7 @@ class DeviceCacheTests: TestCase {
         )
 
         let newDirectoryURL = try XCTUnwrap(
-            DirectoryHelper.baseUrl(for: .cache())?.appendingPathComponent("device-cache")
+            DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache")
         )
         let newFileURL = newDirectoryURL.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID).rawValue)
 

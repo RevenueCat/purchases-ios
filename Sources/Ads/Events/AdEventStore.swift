@@ -113,10 +113,9 @@ extension AdEventStore {
     // We don't want to store events in the documents directory in case app makes their documents
     // accessible via the Files app.
     static func createDefault(
-        persistenceDirectory: URL?,
-        defaultPersistenceBaseUrl: URL? = DirectoryHelper.defaultPersistenceBaseUrl
+        persistenceDirectory: URL?
     ) -> AdEventStore? {
-        guard let directory = persistenceDirectory ?? defaultPersistenceBaseUrl else {
+        guard let directory = persistenceDirectory ?? DirectoryHelper.defaultPersistenceBaseUrl else {
             Logger.error(AdEventStoreStrings.error_resolving_persistence_directory)
             return nil
         }

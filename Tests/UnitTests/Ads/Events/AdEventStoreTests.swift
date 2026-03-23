@@ -33,11 +33,21 @@ class AdEventStoreTests: TestCase {
 
     // - MARK: -
 
+    // On tvOS, `DirectoryHelper.defaultPersistenceBaseUrl` resolves to `Library/Caches/`.
+    // Some CI simulator instances have a corrupted caches directory where creating the
+    // fixed `revenuecat/` subdirectory fails with EIO (POSIX code 5). This is not
+    // tvOS-specific — the same error reproduces on iOS simulators when forced to use
+    // `Library/Caches/` — but tvOS is the only platform that uses it in production.
+    // Using a UUID-based subdirectory under `Library/Caches/` avoids the corrupted path
+    // while still exercising the same caches filesystem and code path.
     func testCreateDefaultReturnsNonNil() throws {
+        #if os(tvOS)
         let store = AdEventStore.createDefault(
-            persistenceDirectory: nil,
-            defaultPersistenceBaseUrl: Self.uniqueCachesDirectory()
+            persistenceDirectory: Self.uniqueCachesDirectory()
         )
+        #else
+        let store = AdEventStore.createDefault(persistenceDirectory: nil)
+        #endif
         expect(store).toNot(beNil())
     }
 

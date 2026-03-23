@@ -150,7 +150,7 @@ private extension DiagnosticsFileHandler {
 
     static var diagnosticsFileURL: URL? {
         #if os(tvOS)
-        let directoryType = DirectoryHelper.DirectoryType.cache()
+        let directoryType = DirectoryHelper.DirectoryType.cache
         #else
         let directoryType = DirectoryHelper.DirectoryType.applicationSupport()
         #endif
