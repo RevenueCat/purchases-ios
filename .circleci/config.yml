@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.15.0
+  revenuecat: revenuecat/sdks-common-config@3.16.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -1738,26 +1738,6 @@ jobs:
           name: Run Danger
           command: bundle exec danger --verbose
 
-  tag-release-branch:
-    docker:
-      - image: cimg/ruby:3.2.0
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
-    steps:
-      - checkout
-      - revenuecat/setup-git-credentials
-      - revenuecat/trust-github-key
-      - install-rubydocker-dependencies
-      - run:
-          name: Check Release PR is approved
-          command: |
-            echo "Verifying that the release PR has been approved by an org member with write permissions."
-            echo "This check prevents tagging a release before the PR is properly reviewed."
-            bundle exec fastlane run validate_pr_approved
-      - run:
-          name: Tag branch
-          command: bundle exec fastlane tag_current_branch
-
   release-train:
     executor:
       name: macos-executor
@@ -2612,13 +2592,13 @@ workflows:
             - release-checks
             - all-tests-succeeded
           <<: *release-branches
-      - tag-release-branch:
+      - revenuecat/tag-current-branch:
           requires:
             - approve-release
           <<: *release-branches
 
       - all-tasks-passed:
           requires:
-            - tag-release-branch
+            - revenuecat/tag-current-branch
           <<: *release-branches
 
