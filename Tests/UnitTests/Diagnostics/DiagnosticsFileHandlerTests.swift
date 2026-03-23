@@ -316,7 +316,7 @@ class DiagnosticsFileOldFileDeletionTests: TestCase {
 
     private static var persistenceDirectoryType: DirectoryHelper.DirectoryType {
         #if os(tvOS)
-        return .cache
+        return .cache()
         #else
         return .applicationSupport()
         #endif

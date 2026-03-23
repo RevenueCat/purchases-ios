@@ -31,7 +31,7 @@ class ETagManagerTests: TestCase {
             try? fileManager.removeItem(at: oldETagDirectory)
         }
 
-        if let cacheURL = DirectoryHelper.baseUrl(for: .cache) {
+        if let cacheURL = DirectoryHelper.baseUrl(for: .cache()) {
             try? fileManager.removeItem(at: cacheURL)
         }
 
@@ -1118,7 +1118,7 @@ class ETagManagerTests: TestCase {
 
         // Verify new directory is created in cache location
         let newETagDirectory = try XCTUnwrap(
-            DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent(ETagManager.cacheBasePath)
+            DirectoryHelper.baseUrl(for: .cache())?.appendingPathComponent(ETagManager.cacheBasePath)
         )
 
         XCTAssertTrue(fileManager.fileExists(atPath: newETagDirectory.path))

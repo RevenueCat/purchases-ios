@@ -49,7 +49,7 @@ extension LargeItemCacheType {
     func createCacheDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool = true) -> URL? {
         createDirectoryIfNeeded(
             basePath: basePath,
-            directoryType: .cache,
+            directoryType: .cache(),
             inAppSpecificDirectory: inAppSpecificDirectory
         )
     }

@@ -113,9 +113,10 @@ extension FeatureEventStore {
     // accessible via the Files app.
     static func createDefault(
         persistenceDirectory: URL?,
-        documentsDirectory: URL? = nil
+        documentsDirectory: URL? = nil,
+        defaultPersistenceBaseUrl: URL? = DirectoryHelper.defaultPersistenceBaseUrl
     ) -> FeatureEventStore? {
-        guard let directory = persistenceDirectory ?? DirectoryHelper.defaultPersistenceBaseUrl else {
+        guard let directory = persistenceDirectory ?? defaultPersistenceBaseUrl else {
             Logger.error(FeatureEventStoreStrings.error_resolving_persistence_directory)
             return nil
         }

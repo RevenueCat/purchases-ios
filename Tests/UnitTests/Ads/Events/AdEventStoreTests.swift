@@ -33,19 +33,11 @@ class AdEventStoreTests: TestCase {
 
     // - MARK: -
 
-    // On tvOS CI, some simulator instances have a broken filesystem where
-    // creating subdirectories under Library/Caches fails with EIO (POSIX code 5).
-    // This is an environment issue: the simulator's disk image is corrupted or
-    // has accumulated too many temporary directories (rdar://50553219, FB13722352).
-    // The condition is persistent for the entire test run but intermittent across
-    // CI runs. We probe the filesystem first and skip when it's unhealthy, so the
-    // test still validates the real default path on healthy simulators.
     func testCreateDefaultReturnsNonNil() throws {
-        // #if os(tvOS)
-        // try Self.skipIfCachesDirectoryIsNotWritable()
-        // #endif
-
-        let store = AdEventStore.createDefault(persistenceDirectory: nil)
+        let store = AdEventStore.createDefault(
+            persistenceDirectory: nil,
+            defaultPersistenceBaseUrl: Self.uniqueCachesDirectory()
+        )
         expect(store).toNot(beNil())
     }
 
@@ -229,21 +221,16 @@ class AdEventStoreTests: TestCase {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension AdEventStoreTests {
 
-    // static func skipIfCachesDirectoryIsNotWritable() throws {
-    //     let caches: URL
-    //     if #available(tvOS 16.0, *) {
-    //         caches = URL.cachesDirectory
-    //     } else {
-    //         caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-    //     }
-    //     let probe = caches.appendingPathComponent("revenuecat")
-    //     do {
-    //         try FileManager.default.createDirectory(at: probe, withIntermediateDirectories: true)
-    //         try FileManager.default.removeItem(at: probe)
-    //     } catch {
-    //         throw XCTSkip("Library/Caches/revenuecat is not writable on this simulator: \(error)")
-    //     }
-    // }
+    static func uniqueCachesDirectory() -> URL {
+        let caches: URL
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            caches = URL.cachesDirectory
+        } else {
+            // swiftlint:disable:next force_unwrapping
+            caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        }
+        return caches.appendingPathComponent(UUID().uuidString, isDirectory: true)
+    }
 
     static func temporaryFolder() -> URL {
         return FileManager.default
