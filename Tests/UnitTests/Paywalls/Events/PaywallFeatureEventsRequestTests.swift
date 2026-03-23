@@ -352,6 +352,52 @@ class PaywallFeatureEventsRequestTests: TestCase {
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
+    // MARK: - Backward Compatibility Tests
+
+    func testOldStoredEventWithoutPlacementAndTargetingDeserializesCorrectly() throws {
+        // First, generate a valid stored event JSON using the current serializer,
+        // then strip the placement/targeting fields to simulate the old format.
+        let event = PaywallEvent.impression(
+            .init(
+                id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+                date: .init(timeIntervalSince1970: 1694029328)
+            ),
+            .init(
+                paywallIdentifier: "test_paywall_id",
+                offeringIdentifier: "offering",
+                paywallRevision: 0,
+                sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
+                displayMode: .fullScreen,
+                localeIdentifier: "es_ES",
+                darkMode: true,
+                source: nil
+            )
+        )
+        let storedEvent = try XCTUnwrap(StoredFeatureEvent(
+            event: event,
+            userID: "test-user",
+            feature: .paywalls,
+            appSessionID: Self.appSessionID,
+            eventDiscriminator: "impression"
+        ))
+
+        // Serialize, then strip any placement/targeting keys from the inner event JSON
+        // to simulate an event stored before these fields existed
+        var serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        serialized = serialized
+            .replacingOccurrences(of: ",\"placement_identifier\":null", with: "")
+            .replacingOccurrences(of: ",\"targeting_revision\":null", with: "")
+            .replacingOccurrences(of: ",\"targeting_rule_id\":null", with: "")
+
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+        expect(deserialized.userID) == "test-user"
+        expect(deserialized.feature) == .paywalls
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: deserialized))
+        expect(requestEvent.offeringID) == "offering"
+        expect(requestEvent.presentedOfferingContext).to(beNil())
+    }
+
     // MARK: - Milliseconds Precision Tests
 
     func testPaywallEventImpressionPreservesMillisecondsInCreationDate() throws {
