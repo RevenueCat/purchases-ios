@@ -1,0 +1,6 @@
+Package.resolved
+.build/
+.swiftpm/
+*.xcodeproj/
+Derived/
+Examples/
