@@ -47,7 +47,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseStoreKitIntegrationTests 
             })
 
             // No user-set attributes should have been synced
-            expect(self.syncedAttributes).to(beEmpty())
+            expect(self.syncedAttributesExcludingATT).to(beEmpty())
         }
     }
 
@@ -70,7 +70,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseStoreKitIntegrationTests 
         self.attribution.setEmail(Self.testEmail)
         errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 0)
-        expect(self.syncedAttributes)
+        expect(self.syncedAttributesExcludingATT)
             .to(
                 haveCount(1),
                 description: "Attribute should not have synced again"
@@ -222,18 +222,24 @@ extension SubscriberAttributesManagerIntegrationTests: AttributionDelegate {
 
     func attribution(didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
                      forUserID userID: String) {
-        // Strip ATT consent status — tested separately in ATTConsentStatusIntegrationTests.
-        let filtered = attributes.filter { $0.key != Self.attKey }
-        guard !filtered.isEmpty else { return }
-
         self.syncedAttributes.append(
-            (userID: userID, attributes: filtered.mapValues { $0.value })
+            (userID: userID, attributes: attributes.mapValues { $0.value })
         )
     }
 
 }
 
 private extension SubscriberAttributesManagerIntegrationTests {
+
+    /// Synced attributes excluding ATT consent status, which is tested separately
+    /// in ``ATTConsentStatusIntegrationTests``.
+    var syncedAttributesExcludingATT: [(userID: String, attributes: [String: String])] {
+        self.syncedAttributes.compactMap { entry in
+            let filtered = entry.attributes.filter { $0.key != Self.attKey }
+            guard !filtered.isEmpty else { return nil }
+            return (userID: entry.userID, attributes: filtered)
+        }
+    }
 
     func reserved(_ attribute: ReservedSubscriberAttribute) -> String {
         return attribute.rawValue
@@ -282,12 +288,13 @@ private extension SubscriberAttributesManagerIntegrationTests {
     ) {
         expect(
             file: file, line: line,
-            self.syncedAttributes
+            self.syncedAttributesExcludingATT
         ).to(
             containElementSatisfying {
                 $0.userID == userID && $0.attributes == attributes
             },
-            description: "Attribute request not found. Synced attributes: \(self.syncedAttributes)"
+            description: "Attribute request not found. "
+                + "Synced attributes (excluding ATT): \(self.syncedAttributesExcludingATT)"
         )
     }
 

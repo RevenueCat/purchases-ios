@@ -49,8 +49,9 @@ final class PurchasesOrchestrator {
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     /// Refreshes the cached ATT consent status and returns all unsynced subscriber attributes.
     private func refreshATTStatusAndGetUnsyncedAttributes() -> SubscriberAttribute.Dictionary {
-        self.attribution.setATTConsentStatus(forAppUserID: self.appUserID)
-        return self.attribution.unsyncedAttributesByKey(appUserID: self.appUserID)
+        let appUserID = self.appUserID
+        self.attribution.setATTConsentStatus(forAppUserID: appUserID)
+        return self.attribution.unsyncedAttributesByKey(appUserID: appUserID)
     }
 
     private let productsManager: ProductsManagerType
