@@ -2010,6 +2010,18 @@ jobs:
             git push origin
             git push --tags
 
+  deploy-to-purchases-ios-admob:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - checkout
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
+      - run:
+          name: Deploy RevenueCatAdMob to purchases-ios-admob
+          command: ci_scripts/deploy-admob-spm.sh "${CIRCLE_TAG}"
+
   bump-sdk-in-rc-mobile-app:
     docker:
       - image: cimg/ruby:3.2.0
@@ -2290,6 +2302,7 @@ workflows:
             - installation-tests-carthage
             - api-tests
             - spm-receipt-parser
+            - revenuecat-admob-tests
             - deploy-purchase-tester
             - run-all-maestro-e2e-tests
             - docs-build
@@ -2307,6 +2320,10 @@ workflows:
           <<: *release-tags
       - deploy-to-spm:
           <<: *release-tags
+      - deploy-to-purchases-ios-admob:
+          requires:
+            - deploy-to-spm
+          <<: *release-tags
       - docs-deploy:
           <<: *release-tags
       - deploy-purchase-tester:
@@ -2316,6 +2333,7 @@ workflows:
           requires:
             - push-revenuecatui-pod
             - deploy-to-spm
+            - deploy-to-purchases-ios-admob
             - docs-deploy
             - deploy-purchase-tester
           <<: *release-tags
@@ -2577,6 +2595,7 @@ workflows:
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
+            - revenuecat-admob-tests
             - deploy-purchase-tester
             - emerge_binary_size_analysis
 
