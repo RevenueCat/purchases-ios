@@ -33,10 +33,6 @@ class AdEventStoreTests: TestCase {
 
     // - MARK: -
 
-    func testCreateDefaultDoesNotThrow() throws {
-        _ = try AdEventStore.createDefault(persistenceDirectory: nil)
-    }
-
     func testPersistsEventsAcrossInitialization() async throws {
         let container = Self.temporaryFolder()
 

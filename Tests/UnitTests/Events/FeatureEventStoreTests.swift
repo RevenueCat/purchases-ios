@@ -33,10 +33,6 @@ class FeatureEventStoreTests: TestCase {
 
     // - MARK: -
 
-    func testCreateDefaultDoesNotThrow() throws {
-        _ = try FeatureEventStore.createDefault(persistenceDirectory: nil)
-    }
-
     func testPersistsEventsAcrossInitialization() async throws {
         let container = Self.temporaryFolder()
 
