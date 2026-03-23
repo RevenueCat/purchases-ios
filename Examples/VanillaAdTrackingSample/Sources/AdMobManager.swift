@@ -7,6 +7,7 @@ import RevenueCat
 
 // MARK: - AdMobManager
 
+@MainActor
 class AdMobManager: NSObject, ObservableObject {
 
     var bannerView: BannerView?
