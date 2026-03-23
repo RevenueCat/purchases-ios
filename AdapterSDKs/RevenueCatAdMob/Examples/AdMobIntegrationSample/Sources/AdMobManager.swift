@@ -227,7 +227,7 @@ class AdMobManager: NSObject, ObservableObject {
     }
 }
 
-// MARK: - FullScreenContentDelegate (AdMob v12)
+// MARK: - FullScreenContentDelegate
 
 extension AdMobManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ ad: any FullScreenPresentingAd) {
@@ -247,7 +247,7 @@ extension AdMobManager: FullScreenContentDelegate {
     }
 }
 
-// MARK: - NativeAdLoaderDelegate / AdLoaderDelegate (AdMob v12)
+// MARK: - NativeAdLoaderDelegate / AdLoaderDelegate
 
 extension AdMobManager: NativeAdLoaderDelegate, AdLoaderDelegate {
     func adLoader(_ adLoader: AdLoader, didReceive nativeAd: NativeAd) {
