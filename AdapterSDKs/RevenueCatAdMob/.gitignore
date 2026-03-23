@@ -1,4 +1,5 @@
 Package.resolved
+!Examples/**/Package.resolved
 .build/
 .swiftpm/
 .DS_Store
