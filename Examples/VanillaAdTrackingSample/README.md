@@ -172,10 +172,9 @@ This sample uses `.adMob` as the `MediatorName` in all tracking calls since it u
 
 ### 3. Build and run
 
-1. Open `VanillaAdTrackingSample.xcodeproj` directly.
-2. Xcode resolves the local `RevenueCat` package and remote `GoogleMobileAds` package automatically.
-3. Select the `VanillaAdTrackingSample` scheme.
-4. Run on an iPhone simulator or device.
+1. From the repository root, run `tuist generate` to generate the Xcode workspace.
+2. Open the generated workspace and select the `VanillaAdTrackingSample` scheme.
+3. Run on an iPhone simulator or device.
 
 ### 4. Verify ad events
 
