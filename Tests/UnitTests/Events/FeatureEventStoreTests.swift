@@ -328,22 +328,12 @@ private extension FeatureEventStoreTests {
         } else {
             caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         }
-        let probe = caches.appendingPathComponent("revenuecat_probe_\(UUID().uuidString)")
-        NSLog("[skipIfCachesDirectoryIsNotWritable] caches URL: \(caches)")
-        NSLog("[skipIfCachesDirectoryIsNotWritable] probe URL: \(probe)")
-        NSLog("[skipIfCachesDirectoryIsNotWritable] caches exists: \(FileManager.default.fileExists(atPath: caches.path))")
-        NSLog("[skipIfCachesDirectoryIsNotWritable] caches isDir: \(FileManager.default.fileExists(atPath: caches.path))")
-        if let attrs = try? FileManager.default.attributesOfItem(atPath: caches.path) {
-            NSLog("[skipIfCachesDirectoryIsNotWritable] caches attrs: \(attrs)")
-        }
+        let probe = caches.appendingPathComponent("revenuecat")
         do {
             try FileManager.default.createDirectory(at: probe, withIntermediateDirectories: true)
-            NSLog("[skipIfCachesDirectoryIsNotWritable] probe created successfully")
             try FileManager.default.removeItem(at: probe)
-            NSLog("[skipIfCachesDirectoryIsNotWritable] probe removed successfully")
         } catch {
-            NSLog("[skipIfCachesDirectoryIsNotWritable] probe FAILED: \(error)")
-            throw XCTSkip("Library/Caches is not writable on this simulator: \(error)")
+            throw XCTSkip("Library/Caches/revenuecat is not writable on this simulator: \(error)")
         }
     }
 
