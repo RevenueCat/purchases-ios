@@ -464,6 +464,27 @@ extension AdMobManager: FullScreenContentDelegate {
         ))
     }
 
+    func ad(_ ad: any FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+        print("❌ Full-screen ad failed to present: \(error.localizedDescription)")
+
+        let key = ObjectIdentifier(ad as AnyObject)
+        fullScreenAdMetadata.removeValue(forKey: key)
+
+        if ad is InterstitialAd {
+            interstitialAd = nil
+            interstitialStatus = "Not Loaded"
+        } else if ad is AppOpenAd {
+            appOpenAd = nil
+            appOpenStatus = "Not Loaded"
+        } else if ad is RewardedAd {
+            rewardedAd = nil
+            rewardedStatus = "Not Loaded"
+        } else if ad is RewardedInterstitialAd {
+            rewardedInterstitialAd = nil
+            rewardedInterstitialStatus = "Not Loaded"
+        }
+    }
+
     func adDidDismissFullScreenContent(_ ad: any FullScreenPresentingAd) {
         let key = ObjectIdentifier(ad as AnyObject)
         fullScreenAdMetadata.removeValue(forKey: key)
