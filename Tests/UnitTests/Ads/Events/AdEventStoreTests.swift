@@ -33,23 +33,24 @@ class AdEventStoreTests: TestCase {
 
     // - MARK: -
 
-    func testCreateDefaultDoesNotThrow() throws {
-        _ = try AdEventStore.createDefault(applicationSupportDirectory: nil)
+    func testCreateDefaultReturnsNonNil() {
+        let store = AdEventStore.createDefault(persistenceDirectory: nil)
+        expect(store).toNot(beNil())
     }
 
     func testPersistsEventsAcrossInitialization() async throws {
         let container = Self.temporaryFolder()
 
-        var store = try AdEventStore.createDefault(
-            applicationSupportDirectory: container
-        )
+        var store = try XCTUnwrap(AdEventStore.createDefault(
+            persistenceDirectory: container
+        ))
 
         await store.store(.randomDisplayedEvent())
         await self.verifyEventsInStore(store, expectedCount: 1)
 
-        store = try AdEventStore.createDefault(
-            applicationSupportDirectory: container
-        )
+        store = try XCTUnwrap(AdEventStore.createDefault(
+            persistenceDirectory: container
+        ))
         await self.verifyEventsInStore(store, expectedCount: 1)
     }
 

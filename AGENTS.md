@@ -101,6 +101,10 @@ The SDK is heavily concurrent — StoreKit callbacks, delegate calls, caching, a
 
 When modifying internal state, use these primitives. Don't introduce bare property access to shared mutable state without synchronization.
 
+### Logging
+
+When logging to the debug console, follow the pattern with the strings in RevenueCatUI/Data/Strings.swift
+
 ### API Annotations
 - **`@_spi(Internal)`** — APIs that are public only to be accessible by other modules or hybrid SDKs, not intended for external developer use
 - **`@available`** — platform availability annotations for StoreKit 2 and other iOS version-specific features
@@ -167,7 +171,7 @@ When creating a pull request, **always add one of these labels** to categorize t
 
 **Additional scope labels** (add alongside the primary label above):
 - `pr:RevenueCatUI` — Changes specific to the RevenueCatUI module (paywalls, customer center)
-- `feat:Paywalls_V2` — Changes related to Paywalls V2 (requires `pr:RevenueCatUI` as well)
+- `feat:PaywallsV2` — Changes related to Paywalls V2 (requires `pr:RevenueCatUI` as well)
 - `feat:Customer Center` — Changes related to Customer Center (requires `pr:RevenueCatUI` as well)
 
 ## Code Review Guidelines

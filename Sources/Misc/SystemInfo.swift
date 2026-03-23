@@ -102,7 +102,19 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.61.0"
+        return "5.67.0-SNAPSHOT"
+    }
+
+    static var installationMethod: String {
+        #if SWIFT_PACKAGE
+        return "spm"
+        #elseif COCOAPODS
+        return "cocoapods"
+        #elseif RC_XCFRAMEWORK
+        return "xcframework"
+        #else
+        return "unknown"
+        #endif
     }
 
     static var systemVersion: String {

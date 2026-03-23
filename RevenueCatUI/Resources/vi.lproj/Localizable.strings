@@ -18,3 +18,4 @@
 "Continue" = "Tiếp tục";
 "Default_offer_details_with_intro_offer" = "Bắt đầu dùng thử {{ sub_offer_duration }}, sau đó là {{ Total_price_and_per_month }}.";
 "Something went wrong" = "Đã xảy ra lỗi";
+"Purchase" = "Mua";

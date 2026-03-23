@@ -9,10 +9,10 @@ let project = Project(
     targets: [
         .target(
             name: "RCTTester",
-            destinations: .iOS,
+            destinations: [.iPhone, .iPad, .appleTv],
             product: .app,
             bundleId: "com.revenuecat.rcttester",
-            deploymentTargets: .iOS("15.0"),
+            deploymentTargets: .multiplatform(iOS: "15.0", tvOS: "17.0"),
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [
@@ -38,6 +38,7 @@ let project = Project(
             ],
             settings: .appTarget(including: [
                 "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+                "PROVISIONING_PROFILE_SPECIFIER": "$(RCT_PROVISIONING_PROFILE)",
             ])
         )
     ],

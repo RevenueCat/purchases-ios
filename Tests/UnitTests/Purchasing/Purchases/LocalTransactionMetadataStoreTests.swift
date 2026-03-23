@@ -31,6 +31,26 @@ class LocalTransactionMetadataStoreTests: TestCase {
 
     // MARK: - storeMetadata tests
 
+    func testInitUsesCacheDirectoryOnTvOS() throws {
+        #if os(tvOS)
+        let invocation = try XCTUnwrap(self.mockCache.createDirectoryInvocations.first)
+        switch invocation.directoryType {
+        case .cache:
+            break
+        default:
+            fail("Expected .cache directory type on tvOS, got \(invocation.directoryType)")
+        }
+        #else
+        let invocation = try XCTUnwrap(self.mockCache.createDirectoryInvocations.first)
+        switch invocation.directoryType {
+        case .applicationSupport:
+            break
+        default:
+            fail("Expected .applicationSupport directory type, got \(invocation.directoryType)")
+        }
+        #endif
+    }
+
     func testStoreMetadataStoresCorrectly() throws {
         let transactionId = "test_transaction_123"
         let metadata = self.createTestMetadata()

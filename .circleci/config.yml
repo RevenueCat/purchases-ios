@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.13.0
+  revenuecat: revenuecat/sdks-common-config@3.16.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -606,6 +606,7 @@ jobs:
       - run:
           name: Check pods and deployment targets
           command: bundle exec fastlane check_pods
+      - slack-notify-on-fail
 
   api-tests:
     executor:
@@ -618,6 +619,35 @@ jobs:
       - run:
           name: API Tests
           command: bundle exec fastlane run_api_tests
+      - slack-notify-on-fail
+
+  revenuecat-admob-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "26.3"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatAdMob Release Build
+          command: cd AdapterSDKs/RevenueCatAdMob && swift build -c release
+          no_output_timeout: 30m
+      - run:
+          name: RevenueCatAdMob unit tests
+          command: bundle exec fastlane test_revenuecat_admob
+          no_output_timeout: 10m
+          environment:
+            DEVICE: iPhone 17,OS=26.2
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecat_admob
+      - store_test_results:
+          path: fastlane/test_output/revenuecat_admob/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
       - slack-notify-on-fail
 
   spm-receipt-parser:
@@ -832,6 +862,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
+      - slack-notify-on-fail
 
   spm-revenuecat-ui-watchos:
     executor:
@@ -1707,26 +1738,6 @@ jobs:
           name: Run Danger
           command: bundle exec danger --verbose
 
-  tag-release-branch:
-    docker:
-      - image: cimg/ruby:3.2.0
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
-    steps:
-      - checkout
-      - revenuecat/setup-git-credentials
-      - revenuecat/trust-github-key
-      - install-rubydocker-dependencies
-      - run:
-          name: Check Release PR is approved
-          command: |
-            echo "Verifying that the release PR has been approved by an org member with write permissions."
-            echo "This check prevents tagging a release before the PR is properly reviewed."
-            bundle exec fastlane run validate_pr_approved
-      - run:
-          name: Tag branch
-          command: bundle exec fastlane tag_current_branch
-
   release-train:
     executor:
       name: macos-executor
@@ -1768,6 +1779,7 @@ jobs:
   deploy-purchase-tester:
     executor:
       name: macos-executor
+      xcode_version: "26.3"
     parameters:
       dry_run:
         type: boolean
@@ -1814,6 +1826,7 @@ jobs:
       - run:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
+      - slack-notify-on-fail
 
   emerge_binary_size_analysis:
     executor:
@@ -1904,7 +1917,6 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - revenuecat/install-public-api-diff
       - run:
           name: Generate PR branch swiftinterface
           command: |
@@ -1977,6 +1989,18 @@ jobs:
             git remote set-url origin git@github.com:RevenueCat/purchases-ios-spm.git
             git push origin
             git push --tags
+
+  deploy-to-purchases-ios-admob:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - checkout
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
+      - run:
+          name: Deploy RevenueCatAdMob to purchases-ios-admob
+          command: ci_scripts/deploy-admob-spm.sh "${CIRCLE_TAG}"
 
   bump-sdk-in-rc-mobile-app:
     docker:
@@ -2072,11 +2096,21 @@ workflows:
       - check-api-changes:
           context:
             - slack-secrets-ios
-      - run-test-ios-26
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-26
-      - emerge_purchases_ui_snapshot_tests
-      - emerge_binary_size_analysis
+      - run-test-ios-26:
+          context:
+            - slack-secrets
+      - pod-lib-lint:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-26:
+          context:
+            - slack-secrets
+      - emerge_purchases_ui_snapshot_tests:
+          context:
+            - slack-secrets
+      - emerge_binary_size_analysis:
+          context:
+            - slack-secrets
       - build-tv-watch-mac-and-visionos:
           context:
             - slack-secrets
@@ -2192,6 +2226,11 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - revenuecat-admob-tests:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
       - deploy-purchase-tester:
           dry_run: true
           requires:
@@ -2243,6 +2282,7 @@ workflows:
             - installation-tests-carthage
             - api-tests
             - spm-receipt-parser
+            - revenuecat-admob-tests
             - deploy-purchase-tester
             - run-all-maestro-e2e-tests
             - docs-build
@@ -2260,6 +2300,10 @@ workflows:
           <<: *release-tags
       - deploy-to-spm:
           <<: *release-tags
+      - deploy-to-purchases-ios-admob:
+          requires:
+            - deploy-to-spm
+          <<: *release-tags
       - docs-deploy:
           <<: *release-tags
       - deploy-purchase-tester:
@@ -2269,6 +2313,7 @@ workflows:
           requires:
             - push-revenuecatui-pod
             - deploy-to-spm
+            - deploy-to-purchases-ios-admob
             - docs-deploy
             - deploy-purchase-tester
           <<: *release-tags
@@ -2281,7 +2326,7 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
-      - revenuecat/enable-auto-merge-release-pr:
+      - revenuecat/merge-release-pr:
           repo_name: purchases-ios
           requires:
             - make-release
@@ -2474,6 +2519,9 @@ workflows:
       - api-tests:
           context:
             - slack-secrets
+      - revenuecat-admob-tests:
+          context:
+            - slack-secrets
       - deploy-purchase-tester:
           dry_run: true
           context:
@@ -2482,10 +2530,18 @@ workflows:
           context:
             - slack-secrets
       - lint
-      - run-test-ios-26
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-26
-      - emerge_purchases_ui_snapshot_tests
+      - run-test-ios-26:
+          context:
+            - slack-secrets
+      - pod-lib-lint:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-26:
+          context:
+            - slack-secrets
+      - emerge_purchases_ui_snapshot_tests:
+          context:
+            - slack-secrets
 
       # =============================================================
       # All tests gate for release branches
@@ -2519,6 +2575,7 @@ workflows:
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
+            - revenuecat-admob-tests
             - deploy-purchase-tester
             - emerge_binary_size_analysis
 
@@ -2535,13 +2592,13 @@ workflows:
             - release-checks
             - all-tests-succeeded
           <<: *release-branches
-      - tag-release-branch:
+      - revenuecat/tag-current-branch:
           requires:
             - approve-release
           <<: *release-branches
 
       - all-tasks-passed:
           requires:
-            - tag-release-branch
+            - revenuecat/tag-current-branch
           <<: *release-branches
 

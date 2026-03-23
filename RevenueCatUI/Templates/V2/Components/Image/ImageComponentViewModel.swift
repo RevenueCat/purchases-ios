@@ -58,10 +58,9 @@ class ImageComponentViewModel {
         customVariables: [String: CustomVariableValue],
         colorScheme: ColorScheme
     ) -> ImageComponentStyle {
-        let conditionContext = ConditionContext(
+        let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables,
-            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
+            customVariables: customVariables
         )
 
         let localizedPartial = LocalizedImagePartial.buildPartial(

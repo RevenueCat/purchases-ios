@@ -22,12 +22,18 @@ protocol FeatureEvent: Encodable, Sendable {
     /// and then we can remove this `shouldStoreEvent` (as it will be always `true`)
     var shouldStoreEvent: Bool { get }
 
+    /// Whether tracking this event should trigger an immediate flush to the backend.
+    var isPriorityEvent: Bool { get }
+
 }
 
 extension FeatureEvent {
 
     /// By default, all events should be stored.
     var shouldStoreEvent: Bool { true }
+
+    /// By default, events are not priority events.
+    var isPriorityEvent: Bool { false }
 
 }
 
@@ -121,6 +127,10 @@ private extension CustomPaywallEvent {
 
         if let paywallId = self.data.paywallId {
             result["paywall_id"] = paywallId
+        }
+
+        if let offeringId = self.data.offeringId {
+            result["offering_id"] = offeringId
         }
 
         return result

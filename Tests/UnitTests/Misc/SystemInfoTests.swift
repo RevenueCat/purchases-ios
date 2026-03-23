@@ -31,6 +31,12 @@ class SystemInfoTests: TestCase {
         expect(systemInfo.platformFlavorVersion) == flavorVersion
     }
 
+    func testInstallationMethodIsNotEmpty() {
+        let method = SystemInfo.installationMethod
+        expect(method).toNot(beEmpty())
+        expect(["spm", "cocoapods", "xcframework", "unknown"]).to(contain(method))
+    }
+
     func testFinishTransactions() {
         var finishTransactions = false
         var systemInfo = SystemInfo(platformInfo: nil,

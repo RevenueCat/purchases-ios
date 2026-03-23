@@ -269,25 +269,26 @@ extension PurchaseHandler {
         }
 
         self.startAction(.purchase)
-        self.trackPurchaseInitiated(package: package)
+        let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        if let paywallEvent { self.track(paywallEvent) }
 
         do {
             let result: PurchaseResultData
 
-            if let promotionalOffer {
-                result = try await self.purchases.purchase(package: package, promotionalOffer: promotionalOffer)
-            } else {
-                result = try await self.purchases.purchase(package: package)
-            }
+            result = try await self.purchases.purchase(package: package,
+                                                       promotionalOffer: promotionalOffer,
+                                                       paywallEvent: paywallEvent)
 
             if result.userCancelled {
                 self.trackCancelledPurchase(package: package)
-            } else {
-                // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
-                // sees the correct state when the sheet dismisses
-                withAnimation(Constants.defaultAnimation) {
-                    self.sessionPurchaseResult = result
-                }
+            }
+
+            // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
+            // sees the correct state when the sheet dismisses.
+            // This is set for both successful and cancelled results so that
+            // onPurchaseCompleted and onPurchaseCancelled modifiers both work correctly.
+            withAnimation(Constants.defaultAnimation) {
+                self.sessionPurchaseResult = result
             }
 
             self.setResult(result)
@@ -318,16 +319,25 @@ extension PurchaseHandler {
         }
 
         self.startAction(.purchase)
-        self.trackPurchaseInitiated(package: package)
+        let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        if let paywallEvent { self.track(paywallEvent) }
+        let productIdentifier = package.storeProduct.productIdentifier
+        self.purchases.cachePurchaseData(
+            presentedOfferingContext: package.presentedOfferingContext,
+            paywallEvent: paywallEvent,
+            productIdentifier: productIdentifier
+        )
 
         let result = await externalPurchaseMethod(package)
 
         if result.userCancelled {
             self.trackCancelledPurchase(package: package)
+            self.purchases.clearCachedPurchaseData(productIdentifier: productIdentifier)
         }
 
         if let error = result.error {
             self.trackPurchaseError(package: package, error: error)
+            self.purchases.clearCachedPurchaseData(productIdentifier: productIdentifier)
             self.purchaseError = error
             throw error
         }
@@ -336,12 +346,12 @@ extension PurchaseHandler {
                                              customerInfo: try await self.purchases.customerInfo(),
                                             userCancelled: result.userCancelled)
 
-        if !result.userCancelled && result.error == nil {
-            // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
-            // sees the correct state when the sheet dismisses
-            withAnimation(Constants.defaultAnimation) {
-                self.sessionPurchaseResult = resultInfo
-            }
+        // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
+        // sees the correct state when the sheet dismisses.
+        // This is set for both successful and cancelled results so that
+        // onPurchaseCompleted and onPurchaseCancelled modifiers both work correctly.
+        withAnimation(Constants.defaultAnimation) {
+            self.sessionPurchaseResult = resultInfo
         }
 
         self.setResult(resultInfo)
@@ -475,15 +485,12 @@ extension PurchaseHandler {
         return true
     }
 
-    /// Tracks a purchase initiated event.
-    /// - Parameters:
-    ///   - package: The package being purchased
-    /// - Returns: whether the event was tracked
-    @discardableResult
-    func trackPurchaseInitiated(package: Package) -> Bool {
+    /// Creates a purchase-initiated paywall event for the given package.
+    /// - Returns: the event, or `nil` if event data is unavailable.
+    func createPurchaseInitiatedEvent(package: Package) -> PaywallEvent? {
         guard let data = self.eventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
-            return false
+            return nil
         }
 
         let purchaseData = data.withPurchaseInfo(
@@ -492,13 +499,7 @@ extension PurchaseHandler {
             errorCode: nil,
             errorMessage: nil
         )
-        self.track(.purchaseInitiated(.init(), purchaseData))
-        self.purchases.cachePresentedOfferingContext(
-            package.presentedOfferingContext,
-            productIdentifier: package.storeProduct.productIdentifier
-        )
-
-        return true
+        return PaywallEvent.purchaseInitiated(.init(), purchaseData)
     }
 
     /// Tracks a purchase error event.
@@ -628,11 +629,11 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         return info
     }
 
-    func purchase(package: Package) async throws -> PurchaseResultData {
-        throw ErrorCode.configurationError
-    }
-
-    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+    func purchase(
+        package: Package,
+        promotionalOffer: PromotionalOffer?,
+        paywallEvent: PaywallEvent?
+    ) async throws -> PurchaseResultData {
         throw ErrorCode.configurationError
     }
 
@@ -642,7 +643,11 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     func track(paywallEvent: PaywallEvent) async {}
 
-    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {}
+    func cachePurchaseData(presentedOfferingContext: PresentedOfferingContext,
+                           paywallEvent: PaywallEvent?,
+                           productIdentifier: String) {}
+
+    func clearCachedPurchaseData(productIdentifier: String) {}
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {}
@@ -767,6 +772,20 @@ extension EnvironmentValues {
     var purchaseInitiatedAction: PurchaseInitiatedAction? {
         get { self[PurchaseInitiatedActionKey.self] }
         set { self[PurchaseInitiatedActionKey.self] = newValue }
+    }
+}
+
+/// `EnvironmentKey` for storing the restore initiated interceptor action.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct RestoreInitiatedActionKey: EnvironmentKey {
+    static let defaultValue: RestoreInitiatedAction? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var restoreInitiatedAction: RestoreInitiatedAction? {
+        get { self[RestoreInitiatedActionKey.self] }
+        set { self[RestoreInitiatedActionKey.self] = newValue }
     }
 }
 

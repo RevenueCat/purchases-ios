@@ -36,7 +36,7 @@ class TabsComponentViewModel {
         tabViewModels: [TabViewModel],
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
-    ) throws {
+    ) {
         self.component = component
         self.controlStackViewModel = controlStackViewModel
         self.tabViewModels = Dictionary(uniqueKeysWithValues: tabViewModels.map { tabViewModel in
@@ -46,7 +46,7 @@ class TabsComponentViewModel {
         self.defaultTabId = component.defaultTabId
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -59,10 +59,9 @@ class TabsComponentViewModel {
         customVariables: [String: CustomVariableValue],
         colorScheme: ColorScheme
     ) -> TabsComponentStyle {
-        let conditionContext = ConditionContext(
+        let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables,
-            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
+            customVariables: customVariables
         )
 
         let partial = PresentedTabsPartial.buildPartial(
@@ -105,7 +104,7 @@ class TabViewModel {
         defaultSelectedPackage: Package?,
         packages: [Package],
         uiConfigProvider: UIConfigProvider
-    ) throws {
+    ) {
         self.tab = tab
         self.stackViewModel = stackViewModel
         self.defaultSelectedPackage = defaultSelectedPackage

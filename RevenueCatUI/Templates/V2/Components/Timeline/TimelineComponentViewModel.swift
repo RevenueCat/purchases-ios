@@ -36,12 +36,12 @@ class TimelineComponentViewModel {
         items: [TimelineItemViewModel],
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
-    ) throws {
+    ) {
         self.component = component
         self.items = items
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     @ViewBuilder
@@ -55,10 +55,9 @@ class TimelineComponentViewModel {
         customVariables: [String: CustomVariableValue],
         @ViewBuilder apply: @escaping (TimelineComponentStyle) -> some View
     ) -> some View {
-        let conditionContext = ConditionContext(
+        let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables,
-            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
+            customVariables: customVariables
         )
         let partial = PresentedTimelinePartial.buildPartial(
             state: state,
@@ -103,13 +102,13 @@ class TimelineItemViewModel {
          description: TextComponentViewModel?,
          icon: IconComponentViewModel,
          uiConfigProvider: UIConfigProvider,
-         discardRules: Bool = false) throws {
+         discardRules: Bool = false) {
         self.component = component
         self.title = title
         self.description = description
         self.icon = icon
         self.uiConfigProvider = uiConfigProvider
-        self.presentedOverrides = try component.overrides?.toPresentedOverrides(discardRules: discardRules) { $0 }
+        self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     @ViewBuilder
@@ -123,10 +122,9 @@ class TimelineItemViewModel {
         customVariables: [String: CustomVariableValue],
         @ViewBuilder apply: @escaping (TimelineItemStyle) -> some View
     ) -> some View {
-        let conditionContext = ConditionContext(
+        let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables,
-            defaultCustomVariables: self.uiConfigProvider.defaultCustomVariables
+            customVariables: customVariables
         )
         let partial = PresentedTimelineItemPartial.buildPartial(
             state: state,

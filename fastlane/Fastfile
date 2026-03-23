@@ -688,6 +688,24 @@ platform :ios do
     )
   end
 
+  desc "Runs all RevenueCatAdMob tests (standalone SPM package under AdapterSDKs/RevenueCatAdMob)"
+  lane :test_revenuecat_admob do
+    platform = ENV['PLATFORM'] || 'iOS Simulator'
+    destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
+    sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+
+    xcodebuild(
+      workspace: 'AdapterSDKs/RevenueCatAdMob',
+      scheme: 'RevenueCatAdMob',
+      destination: "platform=" + platform + ",name=" + destination,
+      sdk: sdk,
+      result_bundle_path: 'fastlane/test_output/revenuecat_admob.xcresult',
+      report_formats: [:junit],
+      report_path: 'fastlane/test_output/revenuecat_admob/tests.xml',
+      test: true
+    )
+  end
+
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
@@ -1466,7 +1484,8 @@ platform :ios do
       include_debug_symbols: true,
       # Set SKIP_INSTALL and BUILD_LIBRARY_FOR_DISTRIBUTION.
       # See https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle#Set-up-the-project
-      override_xcargs: true
+      override_xcargs: true,
+      xcargs: "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) RC_XCFRAMEWORK'"
     )
 
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
@@ -1491,7 +1510,15 @@ platform :ios do
     # Use zip -r to preserve directory structure
     # Change to the xcframework's parent directory so the zip contains the xcframework folder
     Dir.chdir(File.dirname(xcframework_path)) do
-      sh("zip", "-r", "-q", xcframework_zip_path, File.basename(xcframework_path))
+      sh("zip", "-r", "-y", "-q", xcframework_zip_path, File.basename(xcframework_path))
+    end
+
+    # Verify that the zipped xcframework passes codesign verification
+    Dir.mktmpdir("xcframework-verify") do |tmpdir|
+      sh("unzip", "-q", xcframework_zip_path, "-d", tmpdir)
+      extracted_xcframework = File.join(tmpdir, "#{product_name}.xcframework")
+      sh("codesign", "--verify", "--verbose", extracted_xcframework)
+      UI.success("Codesign verification passed for #{product_name}.xcframework.zip")
     end
 
   end
@@ -2027,9 +2054,10 @@ platform :ios do
     xcconfig_path = "#{project_root}/CI.xcconfig"
     File.write(xcconfig_path, [
       "// Auto-generated for RCT Tester deployment. Do not commit to VCS.",
-      "REVENUECAT_API_KEY = #{api_key}"
+      "REVENUECAT_API_KEY = #{api_key}",
+      "RCT_PROVISIONING_PROFILE = #{provisioning_profile_name}"
     ].join("\n"))
-    UI.success("Created CI.xcconfig with REVENUECAT_API_KEY")
+    UI.success("Created CI.xcconfig with REVENUECAT_API_KEY and RCT_PROVISIONING_PROFILE")
 
     # Generate the Tuist workspace (must happen after CI.xcconfig is written)
     tuist_generate(query: "RCTTester")
@@ -2049,6 +2077,12 @@ platform :ios do
       )
     end
 
+    # PROVISIONING_PROFILE_SPECIFIER is set at the target level in the Tuist
+    # Project.swift via the RCT_PROVISIONING_PROFILE xcconfig variable (written
+    # to CI.xcconfig above). It must NOT be passed as an xcarg because xcargs
+    # apply globally to all targets, including SPM resource bundle targets
+    # (RevenueCat_RevenueCat, RevenueCat_RevenueCatUI) which don't support
+    # provisioning profiles.
     build_ios_app(
       workspace: workspace_path,
       scheme: "RCTTester - Live Config",
@@ -2057,8 +2091,7 @@ platform :ios do
       export_method: 'app-store',
       xcargs: "CODE_SIGN_STYLE=Manual " \
               "DEVELOPMENT_TEAM=8SXR2327BM " \
-              "CODE_SIGN_IDENTITY='Apple Distribution' " \
-              "PROVISIONING_PROFILE_SPECIFIER='#{provisioning_profile_name}'",
+              "CODE_SIGN_IDENTITY='Apple Distribution'",
       export_options: {
         signingStyle: "manual",
         manageAppVersionAndBuildNumber: false,
@@ -2207,25 +2240,13 @@ platform :ios do
 
   desc "Check API changes and report results"
   lane :check_api_changes do
-    api_diff_tool = File.expand_path("~/bin/public-api-diff")
-
-    unless File.exist?(api_diff_tool)
-      UI.error("API diff tool not found at #{api_diff_tool}")
-      UI.important("To install locally, run:")
-      UI.important("  git clone https://github.com/Adyen/adyen-swift-public-api-diff.git ~/tools/adyen-swift-public-api-diff")
-      UI.important("  cd ~/tools/adyen-swift-public-api-diff && swift build -c release")
-      UI.important("  mkdir -p ~/bin && cp .build/release/public-api-diff ~/bin/")
-      UI.message("Skipping API diff check (tool not available locally)")
-      return
-    end
-
     failed_platforms = []
 
     ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
       old_file = "../api/revenuecat-api#{platform[:suffix]}.swiftinterface"
       new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
 
-      result = ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, platform[:name])
+      result = ApiDiffHelper.run_api_diff(old_file, new_file, platform[:name])
       failed_platforms << result unless result[:success]
     end
 

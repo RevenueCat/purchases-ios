@@ -209,7 +209,7 @@ struct APIKeyDashboardList: View {
                                 #else
                                 OfferButton(offering: offering) {
                                     self.isLoadingPaywall = true
-                                    self.presentedPaywall = .init(offering: offering, mode: .default)
+                                    self.presentPaywallOffering = offering
                                 }
                                     #if !os(watchOS)
                                     .contextMenu {
@@ -263,6 +263,7 @@ struct APIKeyDashboardList: View {
         #endif
                 .presentPaywallIfNeededModifier(offering: $offeringToPresent)
                 .presentPaywall(offering: $presentPaywallOffering, onDismiss: { })
+                .customPaywallVariables(self.customVariables)
                 .onChange(of: offeringToPresent) { offering in
                     if offering != nil {
                         self.isLoadingPaywall = false
