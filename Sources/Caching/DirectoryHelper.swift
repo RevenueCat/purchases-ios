@@ -25,7 +25,7 @@ enum DirectoryHelper {
         case applicationSupport(overrideURL: URL? = nil)
     }
 
-    /// The raw base persistence directory for the current platform.
+    /// The raw base persistence directory in the app's container for the current platform.
     /// On tvOS this is `Library/Caches`; on all other platforms it is `Library/Application Support`.
     /// Does **not** include the app-specific `{bundleId}.revenuecat` subdirectory.
     static var defaultPersistenceBaseUrl: URL? {
