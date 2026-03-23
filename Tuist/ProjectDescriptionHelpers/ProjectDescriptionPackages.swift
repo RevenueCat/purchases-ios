@@ -20,7 +20,7 @@ extension Array<ProjectDescription.Package> {
                 .package(path: .relativeToRoot(".")),
                 .package(
                     url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
-                    .upToNextMajor(from: "12.0.0")
+                    .upToNextMajor(from: "13.0.0")
                 )
             ]
         case .remoteSwiftPackage:
@@ -28,7 +28,7 @@ extension Array<ProjectDescription.Package> {
                 .package(url: "https://github.com/RevenueCat/purchases-ios", .branch("main")),
                 .package(
                     url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
-                    .upToNextMajor(from: "12.0.0")
+                    .upToNextMajor(from: "13.0.0")
                 )
             ]
         case .localXcodeProject, .remoteXcodeProject:
