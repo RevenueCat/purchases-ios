@@ -47,7 +47,7 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
         if applicationSupportDirectory != nil {
             Logger.warn(CacheStrings.application_support_not_available_on_tvos)
         }
-        directoryType = .cache
+        directoryType = .cache()
         #else
         directoryType = .applicationSupport(overrideURL: applicationSupportDirectory)
         #endif
