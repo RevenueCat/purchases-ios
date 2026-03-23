@@ -33,7 +33,18 @@ class AdEventStoreTests: TestCase {
 
     // - MARK: -
 
+    // On tvOS CI, some simulator instances have a broken filesystem where
+    // creating subdirectories under Library/Caches fails with EIO (POSIX code 5).
+    // This is an environment issue: the simulator's disk image is corrupted or
+    // has accumulated too many temporary directories (rdar://50553219, FB13722352).
+    // The condition is persistent for the entire test run but intermittent across
+    // CI runs. We probe the filesystem first and skip when it's unhealthy, so the
+    // test still validates the real default path on healthy simulators.
     func testCreateDefaultDoesNotThrow() throws {
+        #if os(tvOS)
+        try Self.skipIfCachesDirectoryIsNotWritable()
+        #endif
+
         _ = try AdEventStore.createDefault(persistenceDirectory: nil)
     }
 
@@ -216,6 +227,17 @@ class AdEventStoreTests: TestCase {
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension AdEventStoreTests {
+
+    static func skipIfCachesDirectoryIsNotWritable() throws {
+        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        let probe = caches.appendingPathComponent("revenuecat_probe_\(UUID().uuidString)")
+        do {
+            try FileManager.default.createDirectory(at: probe, withIntermediateDirectories: true)
+            try FileManager.default.removeItem(at: probe)
+        } catch {
+            throw XCTSkip("Library/Caches is not writable on this simulator: \(error)")
+        }
+    }
 
     static func temporaryFolder() -> URL {
         return FileManager.default
