@@ -26,7 +26,7 @@ internal final class SynchronizedLargeItemCache {
     init(
         cache: LargeItemCacheType,
         basePath: String,
-        directoryType: DirectoryHelper.DirectoryType = .cache
+        directoryType: DirectoryHelper.DirectoryType = .cache()
     ) {
         self.cache = cache
         self.lock = Lock(.nonRecursive)
