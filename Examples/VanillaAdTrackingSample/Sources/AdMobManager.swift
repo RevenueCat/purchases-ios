@@ -389,12 +389,13 @@ extension AdMobManager: BannerViewDelegate {
     func bannerViewDidRecordImpression(_ bannerView: BannerView) {
         guard #available(iOS 15.0, *) else { return }
         let responseInfo = bannerView.responseInfo
+        let placement = bannerView === errorTestBannerView ? "error_test" : "home_banner"
 
         adTracker.trackAdDisplayed(AdDisplayed(
             networkName: networkName(from: responseInfo),
             mediatorName: .adMob,
             adFormat: .banner,
-            placement: "home_banner",
+            placement: placement,
             adUnitId: bannerView.adUnitID ?? "",
             impressionId: impressionId(from: responseInfo)
         ))
@@ -403,12 +404,13 @@ extension AdMobManager: BannerViewDelegate {
     func bannerViewDidRecordClick(_ bannerView: BannerView) {
         guard #available(iOS 15.0, *) else { return }
         let responseInfo = bannerView.responseInfo
+        let placement = bannerView === errorTestBannerView ? "error_test" : "home_banner"
 
         adTracker.trackAdOpened(AdOpened(
             networkName: networkName(from: responseInfo),
             mediatorName: .adMob,
             adFormat: .banner,
-            placement: "home_banner",
+            placement: placement,
             adUnitId: bannerView.adUnitID ?? "",
             impressionId: impressionId(from: responseInfo)
         ))
