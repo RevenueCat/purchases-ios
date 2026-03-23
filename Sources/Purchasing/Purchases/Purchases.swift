@@ -487,27 +487,22 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         )
 
         let eventsManager: EventsManagerType?
-        do {
-            if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                let adEventStore: AdEventStoreType? = try? AdEventStore.createDefault(
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
+           let featureEventStore = FeatureEventStore.createDefault(
+            persistenceDirectory: applicationSupportDirectory
+           ) {
+            eventsManager = EventsManager(
+                internalAPI: backend.internalAPI,
+                userProvider: identityManager,
+                store: featureEventStore,
+                systemInfo: systemInfo,
+                adEventStore: AdEventStore.createDefault(
                     persistenceDirectory: applicationSupportDirectory
                 )
-                eventsManager = EventsManager(
-                    internalAPI: backend.internalAPI,
-                    userProvider: identityManager,
-                    store: try FeatureEventStore.createDefault(
-                        persistenceDirectory: applicationSupportDirectory
-                    ),
-                    systemInfo: systemInfo,
-                    adEventStore: adEventStore
-                )
-                Logger.verbose(Strings.paywalls.event_manager_initialized)
-            } else {
-                Logger.verbose(Strings.paywalls.event_manager_not_initialized_not_available)
-                eventsManager = nil
-            }
-        } catch {
-            Logger.verbose(Strings.paywalls.event_manager_failed_to_initialize(error))
+            )
+            Logger.verbose(Strings.paywalls.event_manager_initialized)
+        } else {
+            Logger.verbose(Strings.paywalls.event_manager_not_initialized_not_available)
             eventsManager = nil
         }
 

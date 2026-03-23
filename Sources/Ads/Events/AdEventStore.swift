@@ -109,13 +109,25 @@ internal actor AdEventStore: AdEventStoreType {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension AdEventStore {
 
+    // See https://nemecek.be/blog/57/making-files-from-your-app-available-in-the-ios-files-app
+    // We don't want to store events in the documents directory in case app makes their documents
+    // accessible via the Files app.
     static func createDefault(
         persistenceDirectory: URL?
-    ) throws -> AdEventStore {
-        let url = Self.url(in: try persistenceDirectory ?? Self.defaultPersistenceDirectory)
+    ) -> AdEventStore? {
+        guard let directory = persistenceDirectory ?? DirectoryHelper.defaultPersistenceBaseUrl else {
+            Logger.error(AdEventStoreStrings.error_resolving_persistence_directory)
+            return nil
+        }
+        let url = Self.url(in: directory)
         Logger.verbose(AdEventStoreStrings.initializing(url))
 
-        return try .init(handler: FileHandler(url))
+        do {
+            return try .init(handler: FileHandler(url))
+        } catch {
+            Logger.error(AdEventStoreStrings.error_initializing(error))
+            return nil
+        }
     }
 
     private static func revenueCatFolder(in container: URL) -> URL {
@@ -126,42 +138,6 @@ extension AdEventStore {
         return self.revenueCatFolder(in: container).appendingPathComponent("ad_event_store")
     }
 
-    // See https://nemecek.be/blog/57/making-files-from-your-app-available-in-the-ios-files-app
-    // We don't want to store events in the documents directory in case app makes their documents
-    // accessible via the Files app.
-    // swiftlint:disable avoid_using_directory_apis_directly
-    private static var defaultPersistenceDirectory: URL {
-        get throws {
-            // tvOS only supports writing files to the caches directory.
-            #if os(tvOS)
-            if #available(tvOS 16.0, *) {
-                return URL.cachesDirectory
-            } else {
-                return try Self.fileManager.url(
-                    for: .cachesDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                )
-            }
-            #else
-            if #available(iOS 16.0, macOS 13.0, watchOS 9.0, *) {
-                return URL.applicationSupportDirectory
-            } else {
-                return try Self.fileManager.url(
-                    for: .applicationSupportDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                )
-            }
-            #endif
-        }
-    }
-    // swiftlint:enable avoid_using_directory_apis_directly
-
-    private static let fileManager: FileManager = .default
-
 }
 
 // MARK: - Messages
@@ -171,6 +147,8 @@ extension AdEventStore {
 private enum AdEventStoreStrings {
 
     case initializing(URL)
+    case error_resolving_persistence_directory
+    case error_initializing(Error)
 
     case storing_event(String)
     case storing_event_without_json
@@ -193,6 +171,12 @@ extension AdEventStoreStrings: LogMessage {
         switch self {
         case let .initializing(directory):
             return "Initializing AdEventStore: \(directory.absoluteString)"
+
+        case .error_resolving_persistence_directory:
+            return "AdEventStore: unable to resolve persistence directory"
+
+        case let .error_initializing(error):
+            return "Error initializing AdEventStore: \((error as NSError).description)"
 
         case let .storing_event(eventDescription):
             return "Storing ad event: \(eventDescription)"

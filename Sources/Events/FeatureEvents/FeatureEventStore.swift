@@ -108,17 +108,28 @@ internal actor FeatureEventStore: FeatureEventStoreType {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension FeatureEventStore {
 
+    // See https://nemecek.be/blog/57/making-files-from-your-app-available-in-the-ios-files-app
+    // We don't want to store events in the documents directory in case app makes their documents
+    // accessible via the Files app.
     static func createDefault(
         persistenceDirectory: URL?,
         documentsDirectory: URL? = nil
-    ) throws -> FeatureEventStore {
-        let url = Self.url(in: try persistenceDirectory ?? Self.defaultPersistenceDirectory)
+    ) -> FeatureEventStore? {
+        guard let directory = persistenceDirectory ?? DirectoryHelper.defaultPersistenceBaseUrl else {
+            Logger.error(FeatureEventStoreStrings.error_resolving_persistence_directory)
+            return nil
+        }
+        let url = Self.url(in: directory)
         Logger.verbose(FeatureEventStoreStrings.initializing(url))
 
-        let documentsDirectory = try documentsDirectory ?? Self.documentsDirectory
-        Self.removeLegacyDirectoryIfExists(documentsDirectory)
+        Self.removeLegacyDocumentsStore(overrideDocumentsDirectory: documentsDirectory)
 
-        return try .init(handler: FileHandler(url))
+        do {
+            return try .init(handler: FileHandler(url))
+        } catch {
+            Logger.error(FeatureEventStoreStrings.error_initializing(error))
+            return nil
+        }
     }
 
     private static func revenueCatFolder(in container: URL) -> URL {
@@ -129,7 +140,16 @@ extension FeatureEventStore {
         return self.revenueCatFolder(in: container).appendingPathComponent("paywall_event_store")
     }
 
-    private static func removeLegacyDirectoryIfExists(_ documentsDirectory: URL) {
+    private static func removeLegacyDocumentsStore(overrideDocumentsDirectory: URL?) {
+        let documentsDirectory: URL
+        if let overrideDocumentsDirectory {
+            documentsDirectory = overrideDocumentsDirectory
+        } else if let resolved = Self.resolveDocumentsDirectory() {
+            documentsDirectory = resolved
+        } else {
+            return
+        }
+
         let url = Self.revenueCatFolder(in: documentsDirectory)
         guard Self.fileManager.fileExists(atPath: url.relativePath) else { return }
 
@@ -142,51 +162,17 @@ extension FeatureEventStore {
         }
     }
 
-    // See https://nemecek.be/blog/57/making-files-from-your-app-available-in-the-ios-files-app
-    // We don't want to store events in the documents directory in case app makes their documents
-    // accessible via the Files app.
     // swiftlint:disable avoid_using_directory_apis_directly
-    private static var defaultPersistenceDirectory: URL {
-        get throws {
-            // tvOS only supports writing files to the caches directory.
-            #if os(tvOS)
-            if #available(tvOS 16.0, *) {
-                return URL.cachesDirectory
-            } else {
-                return try Self.fileManager.url(
-                    for: .cachesDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                )
-            }
-            #else
-            if #available(iOS 16.0, macOS 13.0, watchOS 9.0, *) {
-                return URL.applicationSupportDirectory
-            } else {
-                return try Self.fileManager.url(
-                    for: .applicationSupportDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                )
-            }
-            #endif
-        }
-    }
-
-    private static var documentsDirectory: URL {
-        get throws {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                return URL.documentsDirectory
-            } else {
-                return try Self.fileManager.url(
-                    for: .documentDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                )
-            }
+    private static func resolveDocumentsDirectory() -> URL? {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return URL.documentsDirectory
+        } else {
+            return try? Self.fileManager.url(
+                for: .documentDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            )
         }
     }
     // swiftlint:enable avoid_using_directory_apis_directly
@@ -202,6 +188,8 @@ extension FeatureEventStore {
 private enum FeatureEventStoreStrings {
 
     case initializing(URL)
+    case error_resolving_persistence_directory
+    case error_initializing(Error)
 
     case removing_old_documents_store(URL)
     case error_removing_old_documents_store(Error)
@@ -227,6 +215,12 @@ extension FeatureEventStoreStrings: LogMessage {
         switch self {
         case let .initializing(directory):
             return "Initializing FeatureEventStore: \(directory.absoluteString)"
+
+        case .error_resolving_persistence_directory:
+            return "FeatureEventStore: unable to resolve persistence directory"
+
+        case let .error_initializing(error):
+            return "Error initializing FeatureEventStore: \((error as NSError).description)"
 
         case let .removing_old_documents_store(url):
             return "Removing old store: \(url)"
