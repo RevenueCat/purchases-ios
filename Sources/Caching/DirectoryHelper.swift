@@ -29,11 +29,11 @@ enum DirectoryHelper {
     /// On tvOS this is `Library/Caches`; on all other platforms it is `Library/Application Support`.
     /// Does **not** include the app-specific `{bundleId}.revenuecat` subdirectory.
     static var defaultPersistenceBaseUrl: URL? {
-        #if os(tvOS)
+//        #if os(tvOS)
         let directoryType = DirectoryType.cache
-        #else
-        let directoryType = DirectoryType.applicationSupport()
-        #endif
+//        #else
+//        let directoryType = DirectoryType.applicationSupport()
+//        #endif
         return Self.baseUrl(for: directoryType, inAppSpecificDirectory: false)
     }
 

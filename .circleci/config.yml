@@ -20,7 +20,7 @@ parameters:
         record_paywall_screenshots,
         tuist,
         deploy_rct_tester,
-        stress-test-tvos
+        stress-test-unit-tests
       ]
     default: default
   generate_snapshots:
@@ -2065,11 +2065,11 @@ workflows:
       - run-revenuecat-ui-ios-26
       - spm-revenuecat-ui-watchos
 
-  # TEMPORARY: Stress-test tvOS to validate simulator erase fix.
-  # Trigger with action: stress-test-tvos
-  stress-test-tvos:
+  # TEMPORARY:
+  # Trigger with action: stress-test-unit-tests
+  stress-test-unit-tests:
     when:
-      equal: [stress-test-tvos, << pipeline.parameters.action >>]
+      equal: [stress-test-unit-tests, << pipeline.parameters.action >>]
     jobs:
       - run-test-tvos-and-macos:
           name: stress-tvos-1
@@ -2077,16 +2077,24 @@ workflows:
           name: stress-tvos-2
       - run-test-tvos-and-macos:
           name: stress-tvos-3
-      - run-test-tvos-and-macos:
-          name: stress-tvos-4
-      - run-test-tvos-and-macos:
-          name: stress-tvos-5
-      - run-test-tvos-and-macos:
-          name: stress-tvos-6
-      - run-test-tvos-and-macos:
-          name: stress-tvos-7
-      - run-test-tvos-and-macos:
-          name: stress-tvos-8
+      - run-test-watchos:
+          name: stress-watchos-1
+      - run-test-watchos:
+          name: stress-watchos-2
+      - run-test-watchos:
+          name: stress-watchos-3
+      - run-test-ios-26:
+          name: stress-ios-26-1
+      - run-test-ios-26:
+          name: stress-ios-26-2
+      - run-test-ios-26:
+          name: stress-ios-26-3
+      - run-test-ios-18-and-17:
+          name: stress-ios-18-and-17-1
+      - run-test-ios-18-and-17:
+          name: stress-ios-18-and-17-2
+      - run-test-ios-18-and-17:
+          name: stress-ios-18-and-17-3
 
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
   # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields

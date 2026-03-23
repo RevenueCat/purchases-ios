@@ -41,9 +41,9 @@ class AdEventStoreTests: TestCase {
     // CI runs. We probe the filesystem first and skip when it's unhealthy, so the
     // test still validates the real default path on healthy simulators.
     func testCreateDefaultReturnsNonNil() throws {
-        #if os(tvOS)
-        try Self.skipIfCachesDirectoryIsNotWritable()
-        #endif
+        // #if os(tvOS)
+        // try Self.skipIfCachesDirectoryIsNotWritable()
+        // #endif
 
         let store = AdEventStore.createDefault(persistenceDirectory: nil)
         expect(store).toNot(beNil())
@@ -229,21 +229,21 @@ class AdEventStoreTests: TestCase {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension AdEventStoreTests {
 
-    static func skipIfCachesDirectoryIsNotWritable() throws {
-        let caches: URL
-        if #available(tvOS 16.0, *) {
-            caches = URL.cachesDirectory
-        } else {
-            caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        }
-        let probe = caches.appendingPathComponent("revenuecat")
-        do {
-            try FileManager.default.createDirectory(at: probe, withIntermediateDirectories: true)
-            try FileManager.default.removeItem(at: probe)
-        } catch {
-            throw XCTSkip("Library/Caches/revenuecat is not writable on this simulator: \(error)")
-        }
-    }
+    // static func skipIfCachesDirectoryIsNotWritable() throws {
+    //     let caches: URL
+    //     if #available(tvOS 16.0, *) {
+    //         caches = URL.cachesDirectory
+    //     } else {
+    //         caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+    //     }
+    //     let probe = caches.appendingPathComponent("revenuecat")
+    //     do {
+    //         try FileManager.default.createDirectory(at: probe, withIntermediateDirectories: true)
+    //         try FileManager.default.removeItem(at: probe)
+    //     } catch {
+    //         throw XCTSkip("Library/Caches/revenuecat is not writable on this simulator: \(error)")
+    //     }
+    // }
 
     static func temporaryFolder() -> URL {
         return FileManager.default
