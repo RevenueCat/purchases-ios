@@ -502,6 +502,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             )
             Logger.verbose(Strings.paywalls.event_manager_initialized)
         } else {
+            Logger.verbose(Strings.paywalls.event_manager_not_initialized_not_available)
             eventsManager = nil
         }
 
