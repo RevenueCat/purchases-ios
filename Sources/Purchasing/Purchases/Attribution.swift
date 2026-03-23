@@ -597,9 +597,9 @@ extension Attribution {
                                                                           completion: completion)
     }
 
-    /// Refreshes the cached ATT consent status so it will be included in the next attribute sync.
-    /// The value is also injected inline by `CustomerAPI.post(receipt:...)`, but caching it here
-    /// ensures it gets marked as synced via `markAttributesAsSynced`.
+    /// Caches the current ATT consent status as a subscriber attribute.
+    /// Called from `PurchasesOrchestrator.refreshATTStatusAndGetUnsyncedAttributes` (receipt posts)
+    /// and from `SubscriberAttributesManager.syncAttributesForAllUsers` (foreground/background/login/logout).
     func setATTConsentStatus(forAppUserID appUserID: String) {
         self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: appUserID)
     }

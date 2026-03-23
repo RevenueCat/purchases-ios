@@ -223,10 +223,10 @@ class SubscriberAttributesManager {
         setReservedAttribute(.deviceVersion, value: "true", appUserID: appUserID)
     }
 
-    /// Caches the current ATT consent status so it is included in the next attribute sync.
-    /// Called from `Attribution.setATTConsentStatus` (receipt posts) and `syncAttributesForAllUsers`
-    /// (foreground/background/login/logout) to ensure the cached value is always fresh.
-    /// Note: `CustomerAPI.post(receipt:...)` also injects this value inline at post time.
+    /// Caches the current ATT consent status as a subscriber attribute.
+    /// Called from `Attribution.setATTConsentStatus` which is invoked by
+    /// `PurchasesOrchestrator.refreshATTStatusAndGetUnsyncedAttributes` (receipt posts)
+    /// and by `syncAttributesForAllUsers` (foreground/background/login/logout).
     func setATTConsentStatus(forAppUserID appUserID: String) {
         let status = attributionFetcher.authorizationStatus
         setReservedAttribute(.consentStatus, value: status.description, appUserID: appUserID)
