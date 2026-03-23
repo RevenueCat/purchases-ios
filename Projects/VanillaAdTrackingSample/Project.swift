@@ -4,7 +4,12 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "VanillaAdTrackingSample",
     organizationName: .revenueCatOrgName,
-    packages: .vanillaAdTrackingPackages,
+    packages: .projectPackages + [
+        .package(
+            url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
+            .upToNextMajor(from: "13.0.0")
+        )
+    ],
     settings: .appProject,
     targets: [
         .target(
