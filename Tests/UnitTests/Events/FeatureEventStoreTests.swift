@@ -34,11 +34,11 @@ class FeatureEventStoreTests: TestCase {
     // - MARK: -
 
     // On tvOS, `DirectoryHelper.defaultPersistenceBaseUrl` resolves to `Library/Caches/`.
-    // Some CI simulator instances have a corrupted caches directory where creating the
-    // fixed `revenuecat/` subdirectory fails with EIO (POSIX code 5). This is not
-    // tvOS-specific — the same error reproduces on iOS simulators when forced to use
-    // `Library/Caches/` — but tvOS is the only platform that uses it in production.
-    // Using a UUID-based subdirectory under `Library/Caches/` avoids the corrupted path
+    // On some CI runs, creating the fixed `revenuecat/` subdirectory under `Library/Caches/`
+    // fails with EIO (POSIX code 5). We haven't been able to reproduce this locally.
+    // This is not tvOS-specific — the same error reproduces on iOS simulators when forced
+    // to use `Library/Caches/` — but tvOS is the only platform that uses it in production.
+    // Using a UUID-based subdirectory under `Library/Caches/` sidesteps the issue
     // while still exercising the same caches filesystem and code path.
     func testCreateDefaultReturnsNonNil() throws {
         #if os(tvOS)
