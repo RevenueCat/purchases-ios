@@ -1,6 +1,5 @@
 Package.resolved
 .build/
 .swiftpm/
-*.xcodeproj/
+.DS_Store
 Derived/
-Examples/

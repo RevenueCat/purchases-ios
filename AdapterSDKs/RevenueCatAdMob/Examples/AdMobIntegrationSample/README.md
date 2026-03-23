@@ -79,10 +79,8 @@ This sample uses RevenueCatAdMob APIs exposed as experimental Swift SPI (`@_spi(
 
 ### 3. Build and run
 
-From the `purchases-ios` repository:
-
-1. Generate the workspace (if needed): `tuist generate --no-open`
-2. Open `RevenueCat-Tuist.xcworkspace`.
+1. Open `AdMobIntegrationSample.xcodeproj` directly.
+2. Xcode resolves the local `RevenueCatAdMob` package automatically.
 3. Select the `AdMobIntegrationSample` scheme.
 4. Run on an iPhone simulator or device.
 
