@@ -33,15 +33,15 @@ class FeatureEventStoreTests: TestCase {
 
     // - MARK: -
 
-    // On tvOS, `DirectoryHelper.defaultPersistenceBaseUrl` resolves to `Library/Caches/`.
-    // On some CI runs, creating the fixed `revenuecat/` subdirectory under `Library/Caches/`
-    // fails with EIO (POSIX code 5). We haven't been able to reproduce this locally.
-    // This is not tvOS-specific — the same error reproduces on iOS simulators when forced
-    // to use `Library/Caches/` — but tvOS is the only platform that uses it in production.
-    // Using a UUID-based subdirectory under `Library/Caches/` sidesteps the issue
-    // while still exercising the same caches filesystem and code path.
     func testCreateDefaultReturnsNonNil() throws {
         #if os(tvOS)
+        // On tvOS, `DirectoryHelper.defaultPersistenceBaseUrl` resolves to `Library/Caches/`.
+        // On some CI runs, creating the fixed `revenuecat/` subdirectory under `Library/Caches/`
+        // fails with EIO (POSIX code 5). We haven't been able to reproduce this locally.
+        // This is not tvOS-specific — the same error reproduces on iOS simulators when forced
+        // to use `Library/Caches/` — but tvOS is the only platform that uses it in production.
+        // Using a UUID-based subdirectory under `Library/Caches/` sidesteps the issue
+        // while still exercising the same caches filesystem and code path.
         let store = FeatureEventStore.createDefault(
             persistenceDirectory: Self.uniqueCachesDirectory()
         )
