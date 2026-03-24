@@ -185,6 +185,37 @@ public class PaywallViewController: UIViewController {
         )
     }
 
+    /// Objective-C compatible initializer that accepts a ``PaywallPurchaseHandler`` for custom
+    /// purchase and restore logic.
+    /// - Parameter offering: The `Offering` containing the desired paywall to display.
+    /// `Offerings.current` will be used by default.
+    /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    /// - Parameter shouldBlockTouchEvents: Whether to intercept all touch events propagated through this VC.
+    /// - Parameter purchaseHandler: An object implementing ``PaywallPurchaseHandler`` for custom
+    /// purchase and restore logic. Only used when `Purchases` has been configured with
+    /// `.with(purchasesAreCompletedBy: .myApp)`.
+    /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
+    /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall.
+    @objc
+    public convenience init(
+        offering: Offering? = nil,
+        displayCloseButton: Bool = false,
+        shouldBlockTouchEvents: Bool = false,
+        purchaseHandler: PaywallPurchaseHandler?,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
+        let bridged = Self.bridgePurchaseHandler(purchaseHandler)
+        self.init(
+            content: .optionalOffering(offering),
+            fonts: DefaultPaywallFontProvider(),
+            displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: shouldBlockTouchEvents,
+            performPurchase: bridged.performPurchase,
+            performRestore: bridged.performRestore,
+            dismissRequestedHandler: dismissRequestedHandler
+        )
+    }
+
     /// Initialize a `PaywallViewController` with an offering identifier.
     /// - Parameter offeringIdentifier: The identifier for the offering with paywall to display.
     /// - Parameter fonts: A ``PaywallFontProvider``.
@@ -759,6 +790,68 @@ private extension PaywallViewController {
             self.delegate?.paywallViewController?(self, didInitiateRestoreWith: resume)
                 ?? resume(true)
         }
+    }
+
+}
+
+// MARK: - PaywallPurchaseHandler
+
+/// Objective-C compatible protocol for handling custom purchase and restore logic.
+///
+/// Implement this protocol to provide custom purchase and restore behavior when `Purchases`
+/// has been configured with `.with(purchasesAreCompletedBy: .myApp)`.
+///
+/// Pass an instance to the ``PaywallViewController`` or ``PaywallFooterViewController``
+/// initializer via the `purchaseHandler` parameter.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@objc(RCPaywallPurchaseHandler)
+public protocol PaywallPurchaseHandler {
+
+    /// Performs a purchase for the given package.
+    /// - Parameters:
+    ///   - package: The `Package` to purchase.
+    ///   - completion: Must be called when the purchase completes.
+    ///     - `userCancelled`: `true` if the user cancelled the purchase; otherwise, `false`.
+    ///     - `error`: An optional error that occurred during the purchase, or `nil` if none.
+    @objc func performPurchase(
+        for package: Package,
+        completion: @escaping (_ userCancelled: Bool, _ error: Error?) -> Void
+    )
+
+    /// Performs a restore operation.
+    /// - Parameter completion: Must be called when the restore completes.
+    ///   - `success`: `true` if the restore succeeded; otherwise, `false`.
+    ///   - `error`: An optional error that occurred during the restore, or `nil` if none.
+    @objc func performRestore(
+        completion: @escaping (_ success: Bool, _ error: Error?) -> Void
+    )
+
+}
+
+// MARK: - ObjC bridging
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension PaywallViewController {
+
+    static func bridgePurchaseHandler(
+        _ handler: PaywallPurchaseHandler?
+    ) -> (performPurchase: PerformPurchase?, performRestore: PerformRestore?) {
+        guard let handler else { return (nil, nil) }
+        let purchase: PerformPurchase = { package in
+            await withCheckedContinuation { continuation in
+                handler.performPurchase(for: package) { userCancelled, error in
+                    continuation.resume(returning: (userCancelled, error))
+                }
+            }
+        }
+        let restore: PerformRestore = {
+            await withCheckedContinuation { continuation in
+                handler.performRestore { success, error in
+                    continuation.resume(returning: (success, error))
+                }
+            }
+        }
+        return (purchase, restore)
     }
 
 }

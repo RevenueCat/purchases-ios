@@ -15,6 +15,7 @@ func paywallViewControllerAPI(_ delegate: Delegate,
                               _ offering: Offering?,
                               _ performPurchase: PerformPurchase?,
                               _ performRestore: PerformRestore?,
+                              _ purchaseHandler: PaywallPurchaseHandler?,
                               _ dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?) {
     let fontProvider: PaywallFontProvider = CustomPaywallFontProvider(fontName: "test")
 
@@ -88,6 +89,17 @@ func paywallViewControllerAPI(_ delegate: Delegate,
                                                     performPurchase: performPurchase,
                                                     performRestore: performRestore,
                                                     dismissRequestedHandler: dismissRequestedHandler)
+    let _: UIViewController = PaywallViewController(purchaseHandler: purchaseHandler)
+    let _: UIViewController = PaywallViewController(offering: offering,
+                                                    purchaseHandler: purchaseHandler)
+    let _: UIViewController = PaywallViewController(offering: offering,
+                                                    displayCloseButton: true,
+                                                    purchaseHandler: purchaseHandler)
+    let _: UIViewController = PaywallViewController(offering: offering,
+                                                    displayCloseButton: true,
+                                                    shouldBlockTouchEvents: true,
+                                                    purchaseHandler: purchaseHandler,
+                                                    dismissRequestedHandler: dismissRequestedHandler)
 
     controller.update(with: offering!)
     controller.update(with: "offering_identifier")
@@ -120,6 +132,7 @@ func paywallFooterViewControllerAPI(_ delegate: Delegate,
                                     _ offering: Offering?,
                                     _ performPurchase: PerformPurchase?,
                                     _ performRestore: PerformRestore?,
+                                    _ purchaseHandler: PaywallPurchaseHandler?,
                                     _ dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?) {
     let controller = PaywallFooterViewController()
     controller.delegate = delegate
@@ -146,6 +159,31 @@ func paywallFooterViewControllerAPI(_ delegate: Delegate,
                                                           performPurchase: performPurchase!,
                                                           performRestore: performRestore!,
                                                           dismissRequestedHandler: dismissRequestedHandler)
+    let _: UIViewController = PaywallFooterViewController(purchaseHandler: purchaseHandler)
+    let _: UIViewController = PaywallFooterViewController(offering: offering,
+                                                          purchaseHandler: purchaseHandler)
+    let _: UIViewController = PaywallFooterViewController(offering: offering,
+                                                          purchaseHandler: purchaseHandler,
+                                                          dismissRequestedHandler: dismissRequestedHandler)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+func paywallPurchaseHandlerAPI() {
+    let _: PaywallPurchaseHandler.Type = PaywallPurchaseHandler.self
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+final class TestPurchaseHandler: PaywallPurchaseHandler {
+
+    func performPurchase(for package: Package,
+                         completion: @escaping (Bool, (any Error)?) -> Void) {
+        completion(false, nil)
+    }
+
+    func performRestore(completion: @escaping (Bool, (any Error)?) -> Void) {
+        completion(true, nil)
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
