@@ -742,6 +742,7 @@
 		5791FE4A2994453500F1FEDA /* Signing+ResponseVerification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FE492994453500F1FEDA /* Signing+ResponseVerification.swift */; };
 		579234E327F7788900B39C68 /* BaseBackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */; };
 		579234E527F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579234E427F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift */; };
+		EF970D13102945639A882001 /* ATTConsentStatusIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF970D13102945639A882002 /* ATTConsentStatusIntegrationTests.swift */; };
 		5793397028E77A5100C1232C /* PaymentQueueWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5793396F28E77A5100C1232C /* PaymentQueueWrapperTests.swift */; };
 		5793397228E77A6E00C1232C /* MockPaymentQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5793397128E77A6E00C1232C /* MockPaymentQueue.swift */; };
 		579415D2293689DD00218FBC /* Codable+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579415D1293689DD00218FBC /* Codable+Extensions.swift */; };
@@ -2311,6 +2312,7 @@
 		5791FE492994453500F1FEDA /* Signing+ResponseVerification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Signing+ResponseVerification.swift"; sourceTree = "<group>"; };
 		579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseBackendIntegrationTests.swift; sourceTree = "<group>"; };
 		579234E427F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesManagerIntegrationTests.swift; sourceTree = "<group>"; };
+		EF970D13102945639A882002 /* ATTConsentStatusIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATTConsentStatusIntegrationTests.swift; sourceTree = "<group>"; };
 		5793396F28E77A5100C1232C /* PaymentQueueWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentQueueWrapperTests.swift; sourceTree = "<group>"; };
 		5793397128E77A6E00C1232C /* MockPaymentQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPaymentQueue.swift; sourceTree = "<group>"; };
 		579415D1293689DD00218FBC /* Codable+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Codable+Extensions.swift"; sourceTree = "<group>"; };
@@ -4131,6 +4133,7 @@
 				579189FC28F4966500BF4963 /* OtherIntegrationTests.swift */,
 				57488AFE29CA58050000EE7E /* LoadShedderIntegrationTests.swift */,
 				579234E427F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift */,
+				EF970D13102945639A882002 /* ATTConsentStatusIntegrationTests.swift */,
 				4FA696BC2A0020A000D228B1 /* MainThreadMonitor.swift */,
 				2DD6E5882C544C420068E695 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */,
 				2DE61A83264190830021CEA0 /* Constants.swift */,
@@ -7666,6 +7669,7 @@
 				2DE61A84264190830021CEA0 /* Constants.swift in Sources */,
 				5753EE10294B93CC00CBAB54 /* BaseStoreKitIntegrationTests.swift in Sources */,
 				579234E527F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift in Sources */,
+				EF970D13102945639A882001 /* ATTConsentStatusIntegrationTests.swift in Sources */,
 				4F2018732A15797D0061F6EF /* TestLogHandler.swift in Sources */,
 				FDD8225C2E12161B00EA5FA3 /* VirtualCurrencyIntegrationTests.swift in Sources */,
 				4F90AFCB2A3915340047E63F /* TestMessage.swift in Sources */,
