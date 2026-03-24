@@ -231,17 +231,6 @@ class AdEventStoreTests: TestCase {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension AdEventStoreTests {
 
-    static func uniqueCachesDirectory() -> URL {
-        let caches: URL
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            caches = URL.cachesDirectory
-        } else {
-            // swiftlint:disable:next force_unwrapping
-            caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        }
-        return caches.appendingPathComponent(UUID().uuidString, isDirectory: true)
-    }
-
     static func temporaryFolder() -> URL {
         return FileManager.default
             .temporaryDirectory
