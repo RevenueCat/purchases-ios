@@ -66,6 +66,17 @@ internal final class PaywallPromoOfferCache: ObservableObject {
         }
     }
 
+    /// Returns `true` only when the promotional offer has been successfully signed.
+    ///
+    /// Use this for condition evaluation (determining which override applies) to avoid
+    /// activating the `promo_offer` condition prematurely based on optimistic eligibility.
+    /// Optimistic eligibility (`isMostLikelyEligible`) fires as soon as subscription history
+    /// is known — before signing completes — which can cause combined overrides like
+    /// `selected + promo_offer` to win over `intro_offer`, hiding the intro price display.
+    func isSignedEligible(for package: Package?) -> Bool {
+        return get(for: package) != nil
+    }
+
     func get(for package: Package?) -> PromotionalOffer? {
         guard let package else { return nil }
 

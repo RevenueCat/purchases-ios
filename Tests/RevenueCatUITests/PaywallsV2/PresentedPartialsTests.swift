@@ -1382,6 +1382,118 @@ class PresentedPartialsTests: TestCase {
         expect(result).to(beNil())
     }
 
+    // MARK: - Intro Offer Hidden by Optimistic Promo Offer
+
+    // Mirrors the Logia paywall override array:
+    //   #1 selected            → "regular_price"
+    //   #2 intro_offer         → "intro_price_strikethrough"   ← correct intro display
+    //   #3 promo_offer         → "promo_price_strikethrough"
+    //   #4 selected+promo_offer→ "offer_price_no_strikethrough" ← wins last, hides intro
+    private var logiaStyleOverrides: PresentedOverrides<TestPartial> {
+        [
+            PresentedOverride(conditions: [.selected],
+                              properties: TestPartial(value: "regular_price")),
+            PresentedOverride(conditions: [.introOffer],
+                              properties: TestPartial(value: "intro_price_strikethrough")),
+            PresentedOverride(conditions: [.promoOffer],
+                              properties: TestPartial(value: "promo_price_strikethrough")),
+            PresentedOverride(conditions: [.selected, .promoOffer],
+                              properties: TestPartial(value: "offer_price_no_strikethrough"))
+        ]
+    }
+
+    func testIntroOffer_WithoutPromoOffer_ShowsIntroPrice() throws {
+        // When only intro_offer is active (no promo), override #2 should win over #1.
+        let result = TestPartial.buildPartial(
+            state: .selected,
+            condition: .compact,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: logiaStyleOverrides
+        )
+
+        expect(result?.value).to(equal("intro_price_strikethrough"))
+    }
+
+    func testIntroOffer_WithOptimisticPromoOffer_HidesIntroPrice_BugRepro() throws {
+        // BUG: when promo_offer becomes optimistically true (subscription history exists
+        // but no signed offer yet), override #4 (selected+promo_offer) wins last and
+        // shows `{{ product.offer_price }}` — which falls back to the regular price,
+        // hiding the correct intro price + strikethrough display.
+        let result = TestPartial.buildPartial(
+            state: .selected,
+            condition: .compact,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: true, // optimistic — hasAnySubscriptionHistory=true, offer not signed
+            conditionContext: ConditionContext(),
+            with: logiaStyleOverrides
+        )
+
+        // The combined override wins, hiding the intro offer display.
+        expect(result?.value).to(equal("offer_price_no_strikethrough"))
+        // DESIRED: should equal "intro_price_strikethrough" when no actual signed offer exists.
+    }
+
+    func testIntroOffer_WithSignedPromoOffer_ShowsPromoPrice() throws {
+        // When promo offer is actually signed, the combined override correctly wins.
+        // This is the intended behavior — no bug here.
+        let result = TestPartial.buildPartial(
+            state: .selected,
+            condition: .compact,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: true, // actually signed
+            conditionContext: ConditionContext(),
+            with: logiaStyleOverrides
+        )
+
+        expect(result?.value).to(equal("offer_price_no_strikethrough"))
+    }
+
+    func testIntroOffer_WhenPromoEligibilityUsesActualSigning_ShowsIntroPrice() throws {
+        // FIX: when isEligibleForPromoOffer reflects actual signed eligibility
+        // (false until signed), override #2 (intro_offer) correctly wins even
+        // when the user has subscription history.
+        let result = TestPartial.buildPartial(
+            state: .selected,
+            condition: .compact,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: false, // fix: use isSignedEligible, not isMostLikelyEligible
+            conditionContext: ConditionContext(),
+            with: logiaStyleOverrides
+        )
+
+        expect(result?.value).to(equal("intro_price_strikethrough"))
+    }
+
+    func testPromoOffer_WithoutIntroOffer_ShowsPromoPrice() throws {
+        // Sanity check: promo_offer alone (no intro) shows promo display.
+        let result = TestPartial.buildPartial(
+            state: .selected,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: true,
+            conditionContext: ConditionContext(),
+            with: logiaStyleOverrides
+        )
+
+        expect(result?.value).to(equal("offer_price_no_strikethrough"))
+    }
+
+    func testNoOffers_ShowsRegularPrice() throws {
+        // Sanity check: neither offer active, selected shows regular price.
+        let result = TestPartial.buildPartial(
+            state: .selected,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: logiaStyleOverrides
+        )
+
+        expect(result?.value).to(equal("regular_price"))
+    }
+
     // MARK: - Different Condition Types on Sibling Components (Bug Bash Section 6)
 
     func testDifferentConditionTypes_EvaluateIndependently() throws {

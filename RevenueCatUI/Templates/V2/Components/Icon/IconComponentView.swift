@@ -52,7 +52,7 @@ struct IconComponentView: View {
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
             ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isSignedEligible(
                 for: self.packageContext.package
             ),
             selectedPackageId: self.selectedPackageId,
