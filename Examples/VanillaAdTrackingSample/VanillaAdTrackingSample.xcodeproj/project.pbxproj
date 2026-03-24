@@ -29,7 +29,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0F533E695F7CF7622F35FCD1 /* purchases-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "purchases-ios"; path = ../..; sourceTree = "<group>"; };
 		0F6570A337104A67AA05D79A /* VanillaAdTrackingSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VanillaAdTrackingSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		329609D8E9BFC17DE8FC91C9 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		4327881DBAFF923E0833CA38 /* AdMobManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobManager.swift; sourceTree = "<group>"; };
@@ -81,20 +80,11 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
-		A5BC885D77115891AE773381 /* Packages */ = {
-			isa = PBXGroup;
-			children = (
-				0F533E695F7CF7622F35FCD1 /* purchases-ios */,
-			);
-			name = Packages;
-			sourceTree = "<group>";
-		};
 		CB81F35405EDFD1A24E4527A = {
 			isa = PBXGroup;
 			children = (
 				75120B4DB6F102BA35EEEB54 /* Products */,
 				077565DCD9C04BC98F39FD97 /* Project */,
-				A5BC885D77115891AE773381 /* Packages */,
 			);
 			sourceTree = "<group>";
 		};
@@ -144,8 +134,8 @@
 			);
 			mainGroup = CB81F35405EDFD1A24E4527A;
 			packageReferences = (
+				D774E246E7D9D925CBB51ECC /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 				230AD3C1212D2F2FCA3EC8D8 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
-				26D9CB654161440F07132F08 /* XCLocalSwiftPackageReference "../.." */,
 			);
 			productRefGroup = 75120B4DB6F102BA35EEEB54 /* Products */;
 			projectDirPath = "";
@@ -378,13 +368,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		26D9CB654161440F07132F08 /* XCLocalSwiftPackageReference "../.." */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../..;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		230AD3C1212D2F2FCA3EC8D8 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -392,6 +375,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 13.0.0;
+			};
+		};
+		D774E246E7D9D925CBB51ECC /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.66.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
