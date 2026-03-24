@@ -24,7 +24,9 @@ let project = Project(
                 .revenueCat,
                 .googleMobileAds
             ],
-            settings: .appTarget
+            settings: .appTarget(including: [
+                "DEVELOPMENT_TEAM": ""
+            ])
         )
     ]
 )
