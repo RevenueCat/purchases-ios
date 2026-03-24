@@ -2758,6 +2758,182 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedStoreParameters).to(beNil())
     }
     // endregion
+
+    // MARK: - setATTConsentStatus
+
+    func testSetATTConsentStatusStoresValueAsConsentStatus() {
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        guard let storedAttribute = self.mockDeviceCache.invokedStoreParameters?.attribute else {
+            fail("Expected stored attribute")
+            return
+        }
+        expect(storedAttribute.key) == "$attConsentStatus"
+        expect(storedAttribute.value) == "authorized"
+        expect(storedAttribute.isSynced) == false
+    }
+
+    func testSetATTConsentStatusDoesNotWriteWhenValueUnchanged() {
+        let existingAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                    value: "notDetermined",
+                                                    isSynced: true,
+                                                    setTime: Date())
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = existingAttribute
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .notDetermined
+
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetATTConsentStatusMarksUnsyncedWhenValueChanged() {
+        let existingAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                    value: "notDetermined",
+                                                    isSynced: true,
+                                                    setTime: Date())
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = existingAttribute
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        guard let storedAttribute = self.mockDeviceCache.invokedStoreParameters?.attribute else {
+            fail("Expected stored attribute")
+            return
+        }
+        expect(storedAttribute.key) == "$attConsentStatus"
+        expect(storedAttribute.value) == "authorized"
+        expect(storedAttribute.isSynced) == false
+    }
+
+    func testUnsyncedAttributesByKeyDoesNotSetATTConsentStatus() {
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        _ = self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: "kratos")
+
+        // unsyncedAttributesByKey is a pure read — it should not write ATT status as a side effect
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSyncAttributesForAllUsersSyncsATTConsentStatusWhenChanged() {
+        // Simulate a previously synced "notDetermined" value
+        let existingAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                    value: "notDetermined",
+                                                    isSynced: true,
+                                                    setTime: Date())
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = existingAttribute
+
+        // ATT status has changed to authorized (e.g. user responded to ATT prompt)
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        // Return the newly-written attribute as unsynced so it gets posted to backend
+        let unsyncedATTAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                       value: "authorized",
+                                                       isSynced: false,
+                                                       setTime: Date())
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [
+            "kratos": ["$attConsentStatus": unsyncedATTAttribute]
+        ]
+
+        self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: "kratos")
+
+        // Verify the changed value was cached
+        let storeParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(storeParams).to(containElementSatisfying({
+            $0.attribute.key == "$attConsentStatus" && $0.attribute.value == "authorized"
+        }))
+
+        // Verify it was posted to the backend
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 1
+        let postedAttributes = self.mockBackend.invokedPostSubscriberAttributesParameters?.subscriberAttributes
+        expect(postedAttributes?["$attConsentStatus"]?.value) == "authorized"
+    }
+
+    func testSyncAttributesForAllUsersDoesNotSyncATTConsentStatusWhenUnchanged() {
+        // Simulate a previously synced "authorized" value
+        let existingAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                    value: "authorized",
+                                                    isSynced: true,
+                                                    setTime: Date())
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = existingAttribute
+
+        // ATT status is still authorized — no change
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        // No unsynced attributes
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [:]
+
+        self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: "kratos")
+
+        // Should not have written a new value (no change)
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+
+        // Should not have posted to backend
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 0
+    }
+
+    func testATTConsentStatusNotRepostedAfterAlreadySyncedViaSetATTConsentStatus() {
+        // No cached value initially
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = nil
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        // 1. First call (simulates receipt-post path calling setATTConsentStatus)
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: "kratos")
+
+        // Verify it was stored
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        expect(self.mockDeviceCache.invokedStoreParameters?.attribute.key) == "$attConsentStatus"
+        expect(self.mockDeviceCache.invokedStoreParameters?.attribute.value) == "authorized"
+
+        // 2. Simulate that the value was synced (receipt post succeeded and marked it synced)
+        let syncedAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                  value: "authorized",
+                                                  isSynced: true,
+                                                  setTime: Date())
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = syncedAttribute
+
+        // Reset store count to track only new writes
+        self.mockDeviceCache.invokedStoreCount = 0
+
+        // No unsynced attributes (everything was synced by the receipt post)
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [:]
+
+        // 3. Foreground/background triggers syncAttributesForAllUsers
+        self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: "kratos")
+
+        // Should NOT write again — value hasn't changed
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+
+        // Should NOT post to backend — nothing unsynced
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 0
+    }
+
+    func testSyncAttributesForAllUsersOnlySetsATTConsentStatusForCurrentUser() {
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        // Unsynced attributes exist for both current and old anonymous user
+        let oldAttribute = SubscriberAttribute(withKey: "$email",
+                                               value: "test@example.com",
+                                               isSynced: false,
+                                               setTime: Date())
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [
+            "kratos": [:],
+            "old-anonymous-user": ["$email": oldAttribute]
+        ]
+
+        self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: "kratos")
+
+        // ATT consent status should only be written for the current user
+        let attStores = self.mockDeviceCache.invokedStoreParametersList.filter {
+            $0.attribute.key == "$attConsentStatus"
+        }
+        for store in attStores {
+            expect(store.appUserID) == "kratos"
+        }
+    }
 }
 
 private extension SubscriberAttributesManagerTests {
