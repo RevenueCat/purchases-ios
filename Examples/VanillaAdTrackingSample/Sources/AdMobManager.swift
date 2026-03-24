@@ -277,14 +277,15 @@ class AdMobManager: NSObject, ObservableObject {
             adTypes: [.native],
             options: nil
         )
-        adLoader.delegate = self
-        adLoader.load(Request())
 
         if adUnitID == Constants.AdMob.nativeAdUnitID {
             nativeAdLoader = adLoader
         } else if adUnitID == Constants.AdMob.nativeVideoAdUnitID {
             nativeVideoAdLoader = adLoader
         }
+
+        adLoader.delegate = self
+        adLoader.load(Request())
     }
 
     // MARK: - Error Testing
