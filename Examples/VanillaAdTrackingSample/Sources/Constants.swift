@@ -10,6 +10,7 @@ enum Constants {
     ///
     /// NOTE: For this sample app, you can use any valid RevenueCat API key.
     /// The sample demonstrates ad event tracking, not subscription functionality.
+    #error("Modify this property to reflect your app's API key, then comment this line out.")
     static let revenueCatAPIKey = "YOUR_REVENUECAT_API_KEY"
 
     /// AdMob Test Ad Unit IDs

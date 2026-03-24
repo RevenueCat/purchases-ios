@@ -9,7 +9,7 @@ var projects: [Path] = [
     "./Examples/testCustomEntitlementsComputation/",
     "./Examples/PurchaseTester/",
     "./Projects/AdMobIntegrationSample",
-    "./Projects/VanillaAdTrackingSample",
+    "./Examples/VanillaAdTrackingSample",
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",

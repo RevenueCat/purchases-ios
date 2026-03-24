@@ -18,11 +18,8 @@ let project = Project(
             product: .app,
             bundleId: "com.revenuecat.sample.VanillaAdTrackingSample",
             deploymentTargets: .iOS("15.0"),
-            infoPlist: .extendingDefault(with: [
-                "UILaunchScreen": [:],
-                "GADApplicationIdentifier": "ca-app-pub-3940256099942544~1458002511"
-            ]),
-            sources: ["../../Examples/VanillaAdTrackingSample/Sources/**"],
+            infoPlist: .file(path: "Info.plist"),
+            sources: ["Sources/**"],
             dependencies: [
                 .revenueCat,
                 .googleMobileAds
