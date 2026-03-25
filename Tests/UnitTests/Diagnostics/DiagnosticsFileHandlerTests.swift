@@ -314,13 +314,20 @@ class DiagnosticsFileOldFileDeletionTests: TestCase {
 
     fileprivate var handler: DiagnosticsFileHandler!
 
+    private static var persistenceDirectoryType: DirectoryHelper.DirectoryType {
+        #if os(tvOS)
+        return .cache
+        #else
+        return .applicationSupport()
+        #endif
+    }
+
     override func setUp() async throws {
         try await super.setUp()
 
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        // Remove any stored data used in migration tests
-        if let url = DirectoryHelper.baseUrl(for: .applicationSupport()),
+        if let url = DirectoryHelper.baseUrl(for: Self.persistenceDirectoryType),
            FileManager.default.fileExists(atPath: url.path) {
             try FileManager.default.removeItem(at: url)
         }
@@ -355,8 +362,10 @@ class DiagnosticsFileOldFileDeletionTests: TestCase {
         expect(FileManager.default.fileExists(atPath: oldDiagnosticsFile.path)).to(beFalse())
         expect(FileManager.default.fileExists(atPath: comRevenueCatFolder.path)).to(beFalse())
 
-        // Verify new file is created
-        let persistenceDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .applicationSupport()))
+        // Verify new file is created in the correct persistence directory
+        let persistenceDirectoryURL = try XCTUnwrap(
+            DirectoryHelper.baseUrl(for: Self.persistenceDirectoryType)
+        )
 
         let newDiagnosticsFileURL = persistenceDirectoryURL
             .appendingPathComponent("diagnostics", isDirectory: true)
@@ -380,8 +389,9 @@ class DiagnosticsFileOldFileDeletionTests: TestCase {
             attributes: nil
         )
 
-        // Verify new file is created
-        let persistenceDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .applicationSupport()))
+        let persistenceDirectoryURL = try XCTUnwrap(
+            DirectoryHelper.baseUrl(for: Self.persistenceDirectoryType)
+        )
 
         let newDiagnosticsFileURL = persistenceDirectoryURL
             .appendingPathComponent("diagnostics", isDirectory: true)

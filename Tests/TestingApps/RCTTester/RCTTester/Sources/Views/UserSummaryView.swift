@@ -94,6 +94,7 @@ struct UserSummaryView: View {
                         }
                     }
 
+                    #if !os(tvOS)
                     Divider()
 
                     Button {
@@ -101,6 +102,7 @@ struct UserSummaryView: View {
                     } label: {
                         Label("Copy", systemImage: "doc.on.doc")
                     }
+                    #endif
                 } label: {
                     Image(systemName: "ellipsis")
                         .frame(width: 44, height: 44)

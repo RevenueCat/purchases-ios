@@ -8,6 +8,7 @@ var projects: [Path] = [
     "./Examples/MagicWeatherSwiftUI/",
     "./Examples/testCustomEntitlementsComputation/",
     "./Examples/PurchaseTester/",
+    "./Projects/AdMobIntegrationSample",
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",
@@ -15,6 +16,9 @@ var projects: [Path] = [
     "./Projects/BinarySizeTest",
     "./Projects/RCTTester"
 ]
+
+// RevenueCatAdMob is a standalone package (not in root SPM), so always include its Tuist project.
+projects.append("./Projects/RevenueCatAdMob")
 
 // Include RevenueCat/RevenueCatUI Tuist projects only when using local Xcode project dependencies.
 // In all other modes (localSwiftPackage, remoteSwiftPackage, remoteXcodeProject), the SPM package

@@ -165,6 +165,7 @@ extension RevenueCat.PaywallEvent {
     public var localeIdentifier: Swift.String
     public var darkMode: Swift.Bool
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @available(*, deprecated, message: "This initializer will be removed in a future version.")
     public init(offering: RevenueCat.Offering, paywall: RevenueCat.PaywallData, sessionID: RevenueCat.PaywallEvent.SessionID, displayMode: RevenueCat.PaywallViewMode, locale: Foundation.Locale, darkMode: Swift.Bool)
   }
 }
@@ -2599,6 +2600,12 @@ extension RevenueCat.Purchases {
 }
 extension RevenueCat.Purchases : @unchecked Swift.Sendable {
 }
+extension RevenueCat.Purchases {
+  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @objc final public func trackCustomPaywallImpression(_ params: RevenueCat.CustomPaywallImpressionParams)
+  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @objc final public func trackCustomPaywallImpression()
+}
 @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
 extension RevenueCat.Purchases {
   final public func eligibleWinBackOffers(forProduct product: RevenueCat.StoreProduct) async throws -> [RevenueCat.WinBackOffer]
@@ -3113,6 +3120,17 @@ extension RevenueCat.EntitlementInfos {
   }
 }
 extension RevenueCat.EntitlementInfos : Swift.Sendable {
+}
+@objc(RCCustomPaywallImpressionParams) final public class CustomPaywallImpressionParams : ObjectiveC.NSObject, Swift.Sendable {
+  @objc final public let paywallId: Swift.String?
+  @objc final public let offeringId: Swift.String?
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc public init(paywallId: Swift.String? = nil, offeringId: Swift.String?)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc convenience public init(paywallId: Swift.String? = nil)
+  #endif
+  @objc deinit
 }
 @objc(RCStoreMessageType) public enum StoreMessageType : Swift.Int, Swift.CaseIterable, Swift.Sendable {
   case billingIssue = 0
@@ -3725,16 +3743,18 @@ public protocol PaywallPartialComponent : RevenueCat.PaywallComponentBase {
 extension RevenueCat.PaywallComponent {
   public typealias ComponentOverrides<T> = [RevenueCat.PaywallComponent.ComponentOverride<T>] where T : RevenueCat.PaywallPartialComponent
   public struct ComponentOverride<T> : Swift.Codable, Swift.Sendable, Swift.Hashable, Swift.Equatable where T : RevenueCat.PaywallPartialComponent {
-    public let conditions: [RevenueCat.PaywallComponent.Condition]
+    public var conditions: [RevenueCat.PaywallComponent.Condition] {
+      get
+    }
     public let properties: T
     public init(conditions: [RevenueCat.PaywallComponent.Condition], properties: T)
-    public static func == (a: RevenueCat.PaywallComponent.ComponentOverride<T>, b: RevenueCat.PaywallComponent.ComponentOverride<T>) -> Swift.Bool
+    public init(from decoder: any Swift.Decoder) throws
     public func encode(to encoder: any Swift.Encoder) throws
+    public static func == (a: RevenueCat.PaywallComponent.ComponentOverride<T>, b: RevenueCat.PaywallComponent.ComponentOverride<T>) -> Swift.Bool
     public func hash(into hasher: inout Swift.Hasher)
     public var hashValue: Swift.Int {
       get
     }
-    public init(from decoder: any Swift.Decoder) throws
   }
   public enum Condition : Swift.String, Swift.Codable, Swift.Sendable, Swift.Hashable, Swift.Equatable {
     case compact
@@ -3744,8 +3764,6 @@ extension RevenueCat.PaywallComponent {
     case promoOffer
     case selected
     case unsupported
-    public func encode(to encoder: any Swift.Encoder) throws
-    public init(from decoder: any Swift.Decoder) throws
     #if compiler(>=5.3) && $NonescapableTypes
     public init?(rawValue: Swift.String)
     #endif
