@@ -1217,6 +1217,8 @@ jobs:
               exit 1
             fi
             echo "iOS 14.5 runtime is ready"
+            echo "=== Installation log ==="
+            cat /tmp/ios14_runtime_install.log 2>/dev/null || echo "(no log found)"
       - run:
           name: Run iOS 14 tests
           command: bundle exec fastlane test_ios skip_sk_tests:true
