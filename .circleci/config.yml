@@ -1120,7 +1120,7 @@ jobs:
             {
               RUNTIME="iOS 14.5"
               MAX_RETRIES=3
-              INSTALL_TIMEOUT=600
+              INSTALL_TIMEOUT=180
               ATTEMPT=1
               LOG=/tmp/ios14_runtime_install.log
 
