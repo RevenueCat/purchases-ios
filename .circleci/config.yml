@@ -125,20 +125,6 @@ commands:
           event: fail
           template: basic_fail_1
 
-  install-runtime:
-    parameters:
-      runtime-name:
-        type: string
-    steps:
-      - install-dependencies:
-          install_xcbeautify: false
-          install_xcodes: true
-      - run:
-          name: Install simulator
-          command: | # Print all available simulators and install required one
-            xcodes runtimes
-            sudo xcodes runtimes install "<< parameters.runtime-name >>"
-
   install-bundle-dependencies:
     parameters:
       directory:
@@ -1126,21 +1112,12 @@ jobs:
           no_output_timeout: 30m
 
       # Start iOS 14.5 runtime download in the background so it can proceed
-      # while iOS 15 tests run.
+      # while iOS 15 tests run. Includes timeout detection and retry logic
+      # to handle hangs during the "Installing Runtime" phase.
       - run:
           name: Start iOS 14.5 runtime installation (background)
           command: |
-            {
-              echo "=== Available runtimes ===" > /tmp/ios14_runtime_install.log
-              xcodes runtimes >> /tmp/ios14_runtime_install.log 2>&1
-              echo "=== Installing iOS 14.5 ===" >> /tmp/ios14_runtime_install.log
-              sudo xcodes runtimes install "iOS 14.5" >> /tmp/ios14_runtime_install.log 2>&1
-              if [ $? -eq 0 ]; then
-                touch /tmp/ios14_runtime_ready
-              else
-                touch /tmp/ios14_runtime_failed
-              fi
-            } &
+            scripts/install-ios-runtime.sh "iOS 14.5" &
             disown
             echo "Started iOS 14.5 runtime installation in background"
 
@@ -1178,27 +1155,7 @@ jobs:
       # === iOS 14 tests ===
       - run:
           name: Wait for iOS 14.5 runtime installation
-          command: |
-            MAX_WAIT=1800  # 30 minutes
-            ELAPSED=0
-            echo "Waiting for iOS 14.5 runtime installation to complete..."
-            while [ ! -f /tmp/ios14_runtime_ready ] && [ ! -f /tmp/ios14_runtime_failed ]; do
-              if [ $ELAPSED -ge $MAX_WAIT ]; then
-                echo "Timed out after ${MAX_WAIT}s waiting for iOS 14.5 runtime installation."
-                echo "Installation log:"
-                cat /tmp/ios14_runtime_install.log 2>/dev/null || echo "(no log found)"
-                exit 1
-              fi
-              sleep 10
-              ELAPSED=$((ELAPSED + 10))
-              echo "Still waiting... ${ELAPSED}s elapsed ($(date))"
-            done
-            if [ -f /tmp/ios14_runtime_failed ]; then
-              echo "iOS 14.5 runtime installation failed:"
-              cat /tmp/ios14_runtime_install.log
-              exit 1
-            fi
-            echo "iOS 14.5 runtime is ready"
+          command: scripts/wait-for-ios-runtime.sh
       - run:
           name: Run iOS 14 tests
           command: bundle exec fastlane test_ios skip_sk_tests:true
