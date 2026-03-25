@@ -109,31 +109,6 @@ struct SamplePaywallsList: View {
                 displayCloseButton: Self.displayCloseButton,
                 introEligibility: Self.introEligibility
             ))
-
-        #if os(iOS)
-        case .nestedPaywallsPrototype:
-            NestedPaywallsPrototypeView(
-                pages: [
-                    .init(
-                        id: PaywallTemplate.template1.rawValue,
-                        title: PaywallTemplate.template1.name,
-                        offering: Self.loader.offering(for: .template1)
-                    ),
-                    .init(
-                        id: PaywallTemplate.template3.rawValue,
-                        title: PaywallTemplate.template3.name,
-                        offering: Self.loader.offering(for: .template3)
-                    ),
-                    .init(
-                        id: PaywallTemplate.template7.rawValue,
-                        title: PaywallTemplate.template7.name,
-                        offering: Self.loader.offering(for: .template7)
-                    )
-                ],
-                customerInfo: Self.loader.customerInfo,
-                introEligibility: Self.introEligibility
-            )
-        #endif
         #endif
         #if canImport(UIKit) && os(iOS)
         case .customerCenterSheet,
@@ -245,16 +220,6 @@ struct SamplePaywallsList: View {
                     TemplateLabel(name: "Sheet", icon: "person.fill")
                 }
             }
-
-            #if DEBUG
-            Section("MultiPage POC") {
-                Button {
-                    self.display = .nestedPaywallsPrototype
-                } label: {
-                    TemplateLabel(name: "Present", icon: "square.on.square")
-                }
-            }
-            #endif
             #endif
 
             #if DEBUG && !os(watchOS)
@@ -374,9 +339,6 @@ private extension SamplePaywallsList {
         case missingPaywall
         case unrecognizedPaywall
         case componentPaywall(PaywallComponentsData)
-        #if os(iOS)
-        case nestedPaywallsPrototype
-        #endif
         #endif
 
         @available(watchOS, unavailable)
@@ -413,11 +375,6 @@ extension SamplePaywallsList.Display: Identifiable {
 
         case .componentPaywall:
             return "component-paywall"
-
-        #if os(iOS)
-        case .nestedPaywallsPrototype:
-            return "nested-paywalls-prototype"
-        #endif
 
         #endif
         case .customerCenterSheet:
@@ -459,241 +416,9 @@ extension PaywallTemplate {
 }
 #endif
 
-#if DEBUG && os(iOS)
-
-private struct NestedPaywallsPrototypeView: View {
-
-    struct PrototypePage: Identifiable {
-        let id: String
-        let title: String
-        let offering: Offering
-    }
-
-    private enum Constants {
-        static let sideItemMaxWidth: CGFloat = 128
-    }
-
-    private let pages: [PrototypePage]
-    private let customerInfo: CustomerInfo
-    private let introEligibility: TrialOrIntroEligibilityChecker
-
-    @Environment(\.dismiss)
-    private var dismiss
-
-    @StateObject
-    private var purchaseHandler: PurchaseHandler
-
-    @State
-    private var navigationStack: [PrototypePage.ID]
-
-    @State
-    private var transitionIsForward: Bool = true
-
-    @State
-    private var leadingItemWidth: CGFloat = 0
-
-    @State
-    private var trailingItemWidth: CGFloat = 0
-
-    init(
-        pages: [PrototypePage],
-        customerInfo: CustomerInfo,
-        introEligibility: TrialOrIntroEligibilityChecker
-    ) {
-        precondition(!pages.isEmpty, "NestedPaywallsPrototypeView requires at least one page")
-
-        self.pages = pages
-        self.customerInfo = customerInfo
-        self.introEligibility = introEligibility
-        self._purchaseHandler = .init(wrappedValue: .default())
-        self._navigationStack = .init(initialValue: [pages[0].id])
-    }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            self.navigationBar
-
-            ZStack {
-                self.paywallPage(self.currentPage)
-                    .id(self.currentPage.id)
-                    .transition(self.transition(forward: self.transitionIsForward))
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
-            .animation(.easeInOut(duration: 0.25), value: self.navigationStack)
-        }
-    }
-
-    private var navigationBar: some View {
-        ZStack {
-            HStack(spacing: 12) {
-                self.leadingNavigationItem
-                    .fixedSize(horizontal: true, vertical: false)
-                    .frame(maxWidth: Constants.sideItemMaxWidth, alignment: .leading)
-                    .onWidthChange { width in
-                        self.leadingItemWidth = width
-                    }
-
-                Spacer(minLength: 0)
-
-                self.trailingNavigationItem
-                    .fixedSize(horizontal: true, vertical: false)
-                    .frame(maxWidth: Constants.sideItemMaxWidth, alignment: .trailing)
-                    .onWidthChange { width in
-                        self.trailingItemWidth = width
-                    }
-            }
-
-            Text(self.currentTitle)
-                .font(.system(size: 17, weight: .semibold))
-                .lineLimit(1)
-                .truncationMode(.tail)
-                .padding(.horizontal, self.titleHorizontalInset)
-        }
-        .frame(height: 44)
-        .padding(.horizontal, 16)
-        .padding(.top, 4)
-        .padding(.bottom, 8)
-        .background(.ultraThinMaterial)
-        .overlay(alignment: .bottom) {
-            Divider()
-        }
-    }
-
-    @ViewBuilder
-    private var leadingNavigationItem: some View {
-        if let previousPage = self.previousPage {
-            Button {
-                self.pop()
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 17, weight: .semibold))
-                    Text(previousPage.title)
-                        .font(.system(size: 17))
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                }
-                .foregroundStyle(.blue)
-            }
-            .buttonStyle(.plain)
-        } else {
-            Button("Close") {
-                self.dismiss()
-            }
-            .font(.system(size: 17))
-            .foregroundStyle(.blue)
-            .buttonStyle(.plain)
-        }
-    }
-
-    @ViewBuilder
-    private var trailingNavigationItem: some View {
-        if let nextPage = self.nextPage {
-            Button("Next") {
-                self.push(nextPage)
-            }
-            .font(.system(size: 17))
-            .foregroundStyle(.blue)
-            .buttonStyle(.plain)
-        } else {
-            Button("Close") {
-                self.dismiss()
-            }
-            .font(.system(size: 17))
-            .foregroundStyle(.blue)
-            .buttonStyle(.plain)
-        }
-    }
-
-    private var currentTitle: String {
-        return self.currentPage.title
-    }
-
-    private var titleHorizontalInset: CGFloat {
-        return max(self.leadingItemWidth, self.trailingItemWidth) + 12
-    }
-
-    private var currentPage: PrototypePage {
-        return self.page(for: self.navigationStack.last) ?? self.pages[0]
-    }
-
-    private var previousPage: PrototypePage? {
-        return self.navigationStack.dropLast().last.flatMap(self.page(for:))
-    }
-
-    private var nextPage: PrototypePage? {
-        guard let currentIndex = self.currentPageIndex else {
-            return nil
-        }
-
-        let nextIndex = currentIndex + 1
-        guard nextIndex < self.pages.count else {
-            return nil
-        }
-
-        return self.pages[nextIndex]
-    }
-
-    private var currentPageIndex: Int? {
-        return self.pages.firstIndex(where: { $0.id == self.currentPage.id })
-    }
-
-    private func paywallPage(_ page: PrototypePage) -> some View {
-        PaywallView(configuration: .init(
-            offering: page.offering,
-            customerInfo: self.customerInfo,
-            mode: .fullScreen,
-            displayCloseButton: false,
-            introEligibility: self.introEligibility,
-            purchaseHandler: self.purchaseHandler
-        ))
-        .onRequestedDismissal { }
-    }
-
-    private func push(_ page: PrototypePage) {
-        guard self.navigationStack.last != page.id else {
-            return
-        }
-
-        self.transitionIsForward = true
-        withAnimation(.easeInOut(duration: 0.25)) {
-            self.navigationStack.append(page.id)
-        }
-    }
-
-    private func pop() {
-        guard self.navigationStack.count > 1 else {
-            return
-        }
-
-        self.transitionIsForward = false
-        withAnimation(.easeInOut(duration: 0.25)) {
-            self.navigationStack.removeLast()
-        }
-    }
-
-    private func transition(forward: Bool) -> AnyTransition {
-        return .asymmetric(
-            insertion: .move(edge: forward ? .trailing : .leading).combined(with: .opacity),
-            removal: .move(edge: forward ? .leading : .trailing).combined(with: .opacity)
-        )
-    }
-
-    private func page(for id: PrototypePage.ID?) -> PrototypePage? {
-        guard let id else {
-            return nil
-        }
-
-        return self.pages.first(where: { $0.id == id })
-    }
-
-}
-
-#endif
-
 struct SamplePaywallsList_Previews: PreviewProvider {
     static var previews: some View {
         SamplePaywallsList()
     }
 }
+
