@@ -1845,7 +1845,7 @@ jobs:
           command: bundle exec fastlane ios fetch_paywall_preview_resources
       - run:
           name: Clone paywall-rendering-validation repository
-          command: git clone https://github.com/RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
+          command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
       - run:
           name: Set GitHub token environment variable
           command: |
