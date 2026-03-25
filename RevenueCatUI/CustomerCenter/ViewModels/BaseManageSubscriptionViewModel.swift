@@ -73,6 +73,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     private(set) var refundRequestStatus: RefundRequestStatus?
 
     private var error: Error?
+    private var loadingActiveProductId: String?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     let paths: [CustomerCenterConfigData.HelpPath]
     private(set) var purchasesProvider: CustomerCenterPurchasesType
@@ -115,6 +116,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         case let .promotionalOffer(promotionalOffer) where purchaseInformation?.store == .appStore:
             if promotionalOffer.eligible, let productIdentifier = purchaseInformation?.productIdentifier {
                 self.loadingPath = path
+                self.loadingActiveProductId = withActiveProductId
                 let result = await loadPromotionalOfferUseCase.execute(
                     promoOfferDetails: promotionalOffer,
                     forProductId: productIdentifier
@@ -125,6 +127,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                 case .failure:
                     await self.onPathSelected(path: path, withActiveProductId: withActiveProductId)
                     self.loadingPath = nil
+                    self.loadingActiveProductId = nil
                 }
             } else {
                 Logger.debug(Strings.promo_offer_not_eligible_for_product(
@@ -140,14 +143,16 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 
     func onDismissPromotionalOffer(action: PromotionalOfferViewAction) {
         self.promotionalOfferData = nil
+        let capturedActiveProductId = self.loadingActiveProductId
         defer {
             self.loadingPath = nil
+            self.loadingActiveProductId = nil
         }
 
         if let path = self.loadingPath,
            !action.shouldTerminateCurrentPathFlow {
             Task.detached(priority: .userInitiated) { @MainActor in
-                await self.onPathSelected(path: path)
+                await self.onPathSelected(path: path, withActiveProductId: capturedActiveProductId)
             }
         }
     }
