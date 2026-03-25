@@ -2134,7 +2134,7 @@ platform :ios do
     Dir.chdir("../Tests") do
       if !File.directory?(PAYWALL_PREVIEW_RESOURCES_REPO_NAME)
         UI.important("Cloning paywall-preview-resources repo")
-        sh "git", "clone", "https://github.com/RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git"
+        sh "git", "clone", "git@github.com:RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git"
       end
 
       commit = current_paywall_preview_resources_commit
