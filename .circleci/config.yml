@@ -1173,20 +1173,52 @@ jobs:
           no_output_timeout: 30m
 
       # Start iOS 14.5 runtime download in the background so it can proceed
-      # while iOS 15 tests run.
+      # while iOS 15 tests run. Includes timeout detection and retry logic
+      # to handle hangs during the "Installing Runtime" phase.
       - run:
           name: Start iOS 14.5 runtime installation (background)
           command: |
             {
-              echo "=== Available runtimes ===" > /tmp/ios14_runtime_install.log
-              xcodes runtimes >> /tmp/ios14_runtime_install.log 2>&1
-              echo "=== Installing iOS 14.5 ===" >> /tmp/ios14_runtime_install.log
-              sudo xcodes runtimes install "iOS 14.5" >> /tmp/ios14_runtime_install.log 2>&1
-              if [ $? -eq 0 ]; then
-                touch /tmp/ios14_runtime_ready
-              else
-                touch /tmp/ios14_runtime_failed
-              fi
+              RUNTIME="iOS 14.5"
+              MAX_RETRIES=3
+              INSTALL_TIMEOUT=600
+              ATTEMPT=1
+              LOG=/tmp/ios14_runtime_install.log
+
+              echo "=== Available runtimes ===" > "$LOG"
+              xcodes runtimes >> "$LOG" 2>&1
+
+              while [ "$ATTEMPT" -le "$MAX_RETRIES" ]; do
+                echo "=== Installing $RUNTIME (attempt $ATTEMPT/$MAX_RETRIES) ===" >> "$LOG"
+
+                sudo xcodes runtimes install "$RUNTIME" >> "$LOG" 2>&1 &
+                INSTALL_PID=$!
+                ELAPSED=0
+
+                while kill -0 "$INSTALL_PID" 2>/dev/null; do
+                  if [ "$ELAPSED" -ge "$INSTALL_TIMEOUT" ]; then
+                    echo "Install hung after ${INSTALL_TIMEOUT}s — killing process (attempt $ATTEMPT)" >> "$LOG"
+                    sudo kill -9 "$INSTALL_PID" 2>/dev/null
+                    wait "$INSTALL_PID" 2>/dev/null
+                    break
+                  fi
+                  sleep 10
+                  ELAPSED=$((ELAPSED + 10))
+                done
+
+                if wait "$INSTALL_PID" 2>/dev/null; then
+                  echo "Runtime $RUNTIME installed successfully" >> "$LOG"
+                  touch /tmp/ios14_runtime_ready
+                  exit 0
+                fi
+
+                echo "Attempt $ATTEMPT failed" >> "$LOG"
+                ATTEMPT=$((ATTEMPT + 1))
+                [ "$ATTEMPT" -le "$MAX_RETRIES" ] && sleep 10
+              done
+
+              echo "Failed to install $RUNTIME after $MAX_RETRIES attempts" >> "$LOG"
+              touch /tmp/ios14_runtime_failed
             } &
             disown
             echo "Started iOS 14.5 runtime installation in background"
