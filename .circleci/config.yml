@@ -125,67 +125,6 @@ commands:
           event: fail
           template: basic_fail_1
 
-  install-runtime:
-    parameters:
-      runtime-name:
-        type: string
-      max-retries:
-        type: integer
-        default: 3
-      install-timeout:
-        type: integer
-        default: 600
-    steps:
-      - install-dependencies:
-          install_xcbeautify: false
-          install_xcodes: true
-      - run:
-          name: Install simulator
-          no_output_timeout: 15m
-          command: |
-            xcodes runtimes
-
-            RUNTIME="<< parameters.runtime-name >>"
-            MAX_RETRIES=<< parameters.max-retries >>
-            TIMEOUT=<< parameters.install-timeout >>
-            ATTEMPT=1
-
-            while [ "$ATTEMPT" -le "$MAX_RETRIES" ]; do
-              echo "=== Installing $RUNTIME (attempt $ATTEMPT/$MAX_RETRIES, timeout ${TIMEOUT}s) ==="
-
-              sudo xcodes runtimes install "$RUNTIME" &
-              INSTALL_PID=$!
-              ELAPSED=0
-
-              while kill -0 "$INSTALL_PID" 2>/dev/null; do
-                if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
-                  echo "Install hung after ${TIMEOUT}s — killing process"
-                  sudo kill -9 "$INSTALL_PID" 2>/dev/null
-                  wait "$INSTALL_PID" 2>/dev/null
-                  break
-                fi
-                sleep 10
-                ELAPSED=$((ELAPSED + 10))
-                echo "Installing... ${ELAPSED}s elapsed"
-              done
-
-              if wait "$INSTALL_PID" 2>/dev/null; then
-                echo "Runtime $RUNTIME installed successfully"
-                exit 0
-              fi
-
-              echo "Attempt $ATTEMPT failed"
-              ATTEMPT=$((ATTEMPT + 1))
-
-              if [ "$ATTEMPT" -le "$MAX_RETRIES" ]; then
-                echo "Retrying in 10s..."
-                sleep 10
-              fi
-            done
-
-            echo "Failed to install $RUNTIME after $MAX_RETRIES attempts"
-            exit 1
-
   install-bundle-dependencies:
     parameters:
       directory:
