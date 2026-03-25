@@ -176,7 +176,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 private extension BaseManageSubscriptionViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-    private func onPathSelected(path: CustomerCenterConfigData.HelpPath, withActiveProductId: String? = nil) async {
+    private func onPathSelected(path: CustomerCenterConfigData.HelpPath, withActiveProductId: String?) async {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
