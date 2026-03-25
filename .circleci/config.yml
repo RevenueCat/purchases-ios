@@ -1839,6 +1839,7 @@ jobs:
       - checkout
       - install-dependencies
       - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - run:
           name: Fetch paywall-preview-resources
           command: bundle exec fastlane ios fetch_paywall_preview_resources
