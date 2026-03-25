@@ -1120,7 +1120,8 @@ jobs:
             {
               RUNTIME="iOS 14.5"
               MAX_RETRIES=3
-              INSTALL_TIMEOUT=5  # TEMPORARY: set to 5s to test retry logic, revert to 180 before merging
+              INSTALL_TIMEOUT=180
+              FORCE_FAIL_UNTIL_ATTEMPT=3  # TEMPORARY: force first 2 attempts to fail, remove before merging
               ATTEMPT=1
               LOG=/tmp/ios14_runtime_install.log
 
@@ -1130,8 +1131,15 @@ jobs:
               while [ "$ATTEMPT" -le "$MAX_RETRIES" ]; do
                 echo "=== Installing $RUNTIME (attempt $ATTEMPT/$MAX_RETRIES) ===" >> "$LOG"
 
-                sudo xcodes runtimes install "$RUNTIME" >> "$LOG" 2>&1 &
-                INSTALL_PID=$!
+                # TEMPORARY: force failure on early attempts to test retry logic
+                if [ "$ATTEMPT" -lt "$FORCE_FAIL_UNTIL_ATTEMPT" ]; then
+                  echo "TESTING: Forcing failure on attempt $ATTEMPT" >> "$LOG"
+                  false &
+                  INSTALL_PID=$!
+                else
+                  sudo xcodes runtimes install "$RUNTIME" >> "$LOG" 2>&1 &
+                  INSTALL_PID=$!
+                fi
                 ELAPSED=0
 
                 while kill -0 "$INSTALL_PID" 2>/dev/null; do
