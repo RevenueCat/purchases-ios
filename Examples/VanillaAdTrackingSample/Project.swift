@@ -4,11 +4,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "VanillaAdTrackingSample",
     organizationName: .revenueCatOrgName,
-    packages: [
-        .package(
-            url: "https://github.com/RevenueCat/purchases-ios-spm",
-            .upToNextMajor(from: "5.66.0")
-        ),
+    packages: .projectPackages + [
         .package(
             url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
             .upToNextMajor(from: "13.0.0")
@@ -25,7 +21,7 @@ let project = Project(
             infoPlist: .file(path: "Info.plist"),
             sources: ["Sources/**"],
             dependencies: [
-                .package(product: "RevenueCat", type: .runtime),
+                .revenueCat,
                 .googleMobileAds
             ],
             settings: .appTarget(including: [

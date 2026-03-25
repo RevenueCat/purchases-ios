@@ -211,7 +211,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 8SXR2327BM;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -299,7 +299,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 8SXR2327BM;
+				DEVELOPMENT_TEAM = '';
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -390,10 +390,12 @@
 /* Begin XCSwiftPackageProductDependency section */
 		28EE205657475F2A12069D7B /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = D774E246E7D9D925CBB51ECC /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCat;
 		};
 		F37F9820EE376E496C6E13B8 /* GoogleMobileAds */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 230AD3C1212D2F2FCA3EC8D8 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
 			productName = GoogleMobileAds;
 		};
 /* End XCSwiftPackageProductDependency section */
