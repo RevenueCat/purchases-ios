@@ -26,6 +26,8 @@ class PackageComponentViewModel {
     let package: Package?
     let stackViewModel: StackComponentViewModel
     let hasPurchaseButton: Bool
+    /// True when `visible` is explicitly false and there are no overrides that could make it visible.
+    let isStaticallyHidden: Bool
 
     private let componentVisible: Bool?
     private let uiConfigProvider: UIConfigProvider
@@ -40,6 +42,7 @@ class PackageComponentViewModel {
         discardRules: Bool = false
     ) {
         self.componentVisible = component.visible
+        self.isStaticallyHidden = component.visible == false && component.overrides == nil
         self.uiConfigProvider = uiConfigProvider
         self.isSelectedByDefault = component.isSelectedByDefault
         self.promotionalOfferProductCode = component.applePromoOfferProductCode

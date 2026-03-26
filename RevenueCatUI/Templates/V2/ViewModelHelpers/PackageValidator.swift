@@ -19,7 +19,8 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageValidator {
 
-    typealias PackageInfo = (package: Package, isSelectedByDefault: Bool, promotionalOfferProductCode: String?)
+    // swiftlint:disable:next line_length
+    typealias PackageInfo = (package: Package, isSelectedByDefault: Bool, promotionalOfferProductCode: String?, isStaticallyHidden: Bool)
 
     private(set) var packageInfos: [PackageInfo] = []
 
@@ -36,7 +37,9 @@ class PackageValidator {
     }
 
     var defaultSelectedPackage: Package? {
-        let defaultSelectedPackage = packageInfos.first(where: { pkg in
+        let visiblePackages = packageInfos.filter { !$0.isStaticallyHidden }
+
+        let defaultSelectedPackage = visiblePackages.first(where: { pkg in
             return pkg.isSelectedByDefault
         })
 
@@ -46,7 +49,7 @@ class PackageValidator {
         }
 
         Logger.warning(Strings.paywall_could_not_find_default_package)
-        return packageInfos.first?.package
+        return visiblePackages.first?.package
     }
 
 }
