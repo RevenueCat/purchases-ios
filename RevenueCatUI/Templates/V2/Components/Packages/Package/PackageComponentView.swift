@@ -57,13 +57,13 @@ struct PackageComponentView: View {
     var body: some View {
         if let package = self.viewModel.package,
            viewModel.visible(
-               state: componentViewState,
+               state: packageViewState,
                condition: screenCondition,
                isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(
-                   package: packageContext.package
+                   package: package
                ),
                isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(
-                   for: packageContext.package
+                   for: package
                ),
                selectedPackageId: selectedPackageId,
                customVariables: customVariables
