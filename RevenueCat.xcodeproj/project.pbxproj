@@ -1353,6 +1353,8 @@
 		FACD00022F61A1230073D2DE /* TextComponentLocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD00012F61A1230073D2DE /* TextComponentLocalizationTests.swift */; };
 		FACD00042F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD00032F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift */; };
 		FACD00062F61A1230073D2DE /* PackageComponentVisibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD00052F61A1230073D2DE /* PackageComponentVisibilityTests.swift */; };
+		FACD00082F61A1230073D2DE /* PackageComponentViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */; };
+		FACD000A2F61A1230073D2DE /* PackageValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */; };
 		FD05A71A2EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */; };
 		FD15AF5B2DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */; };
 		FD15AF5C2DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF592DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift */; };
@@ -2882,6 +2884,8 @@
 		FACD00012F61A1230073D2DE /* TextComponentLocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextComponentLocalizationTests.swift; sourceTree = "<group>"; };
 		FACD00032F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactoryBadgeTests.swift; sourceTree = "<group>"; };
 		FACD00052F61A1230073D2DE /* PackageComponentVisibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentVisibilityTests.swift; sourceTree = "<group>"; };
+		FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentViewTests.swift; sourceTree = "<group>"; };
+		FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageValidatorTests.swift; sourceTree = "<group>"; };
 		FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PromotionalOfferPurchaseOptions.swift; sourceTree = "<group>"; };
 		FD15AF572DF9A8F30062467E /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesScrollViewWithOSBackgroundSection.swift; sourceTree = "<group>"; };
 		FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalanceListRow.swift; sourceTree = "<group>"; };
@@ -3072,6 +3076,8 @@
 				FACD00012F61A1230073D2DE /* TextComponentLocalizationTests.swift */,
 				FACD00032F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift */,
 				FACD00052F61A1230073D2DE /* PackageComponentVisibilityTests.swift */,
+				FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */,
+				FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */,
 				FD4253DD2F1DBD7E0073D2DE /* FileImageLoaderTests.swift */,
 				57BFCD0F2EEB1234009E5844 /* TabsPackageSelectionResolverTests.swift */,
 				57BFCD0A2EEB0E56009E5844 /* TabsPackageInheritanceTests.swift */,
@@ -8107,6 +8113,8 @@
 				FACD00022F61A1230073D2DE /* TextComponentLocalizationTests.swift in Sources */,
 				FACD00042F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift in Sources */,
 				FACD00062F61A1230073D2DE /* PackageComponentVisibilityTests.swift in Sources */,
+				FACD00082F61A1230073D2DE /* PackageComponentViewTests.swift in Sources */,
+				FACD000A2F61A1230073D2DE /* PackageValidatorTests.swift in Sources */,
 				DBD2432F2EBDF4BC0066AC6F /* PromotionalOfferViewTests.swift in Sources */,
 				577782B52D9182A200F97EB4 /* CustomerCenterActionWrapperTests.swift in Sources */,
 				03C06FC52D4553C000600693 /* PresentedPartialsTests.swift in Sources */,
