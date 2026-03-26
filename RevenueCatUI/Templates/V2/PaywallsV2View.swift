@@ -98,6 +98,9 @@ struct PaywallsV2View: View {
     @Environment(\.paywallSource)
     private var paywallSource
 
+    @Environment(\.customPaywallVariables)
+    private var customPaywallVariables
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -238,6 +241,26 @@ struct PaywallsV2View: View {
                             for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
                         )
                         _ = await (introCheck, promoCheck)
+
+                        // Re-evaluate the default selected package now that eligibility is known.
+                        // The initial selection (from defaultSelectedPackage) is based on static
+                        // visibility only; a package with conditional visibility overrides may now
+                        // resolve differently. Update the context so the purchase button always
+                        // targets a visible package.
+                        let screenCond = ScreenCondition.from(self.horizontalSizeClass)
+                        let validator = paywallState.viewModelFactory.packageValidator
+                        if let resolved = validator.resolveDefaultSelectedPackage(
+                            condition: screenCond,
+                            introEligibilityContext: introOfferEligibilityContext,
+                            promoOfferCache: paywallPromoOfferCache,
+                            customVariables: customPaywallVariables
+                        ) {
+                            selectedPackageContext.update(
+                                package: resolved,
+                                variableContext: selectedPackageContext.variableContext
+                            )
+                        }
+
                         didFinishEligibilityCheck = true
                     }
                     // Note: preferences need to be applied after `.toolbar` call

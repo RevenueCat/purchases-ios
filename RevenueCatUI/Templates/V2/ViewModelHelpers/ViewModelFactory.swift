@@ -206,7 +206,7 @@ struct ViewModelFactory {
                     promotionalOfferProductCode: viewModel.promotionalOfferProductCode,
                     isStaticallyHidden: viewModel.isStaticallyHidden
                 )
-                packageValidator.add(packageInfo)
+                packageValidator.add(packageInfo, viewModel: viewModel)
             }
 
             return .package(viewModel)
@@ -365,9 +365,7 @@ struct ViewModelFactory {
                 )
 
                 // Merging into entire paywall package validator
-                for packageInfo in tabPackageValidator.packageInfos {
-                    packageValidator.add(packageInfo)
-                }
+                packageValidator.merge(from: tabPackageValidator)
 
                 return .init(
                     tab: tab,
