@@ -197,6 +197,11 @@ struct DefaultPaywallView: View {
                     }
 
                     let restoreButton = Button {
+                        self.handler.trackControlInteraction(
+                            componentType: .button,
+                            componentName: PaywallControlInteraction.restoreButtonName,
+                            componentValue: PaywallControlInteraction.ComponentValue.restorePurchases.rawValue
+                        )
                         Task(priority: .userInitiated) {
                             do {
                                 _ = try await handler.restorePurchases()

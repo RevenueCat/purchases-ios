@@ -77,7 +77,7 @@ struct FooterView: View {
     var body: some View {
         HStack {
             if self.mode.displayAllPlansButton, let binding = self.displayingAllPlans {
-                Self.allPlansButton(binding, bundle: self.localizedBundle)
+                self.allPlansButton(binding)
 
                 if self.configuration.displayRestorePurchases || self.tosURL != nil || self.privacyURL != nil {
                     self.separator
@@ -99,7 +99,14 @@ struct FooterView: View {
                 LinkButton(
                     localizedBundle: self.localizedBundle,
                     url: url,
-                    titles: "Terms and conditions", "Terms"
+                    titles: "Terms and conditions", "Terms",
+                    onTap: {
+                        self.purchaseHandler.trackControlInteraction(
+                            componentType: .button,
+                            componentName: PaywallControlInteraction.termsLinkName,
+                            componentValue: PaywallControlInteraction.ComponentValue.navigateToTerms.rawValue
+                        )
+                    }
                 )
 
                 if self.privacyURL != nil {
@@ -111,7 +118,14 @@ struct FooterView: View {
                 LinkButton(
                     localizedBundle: self.localizedBundle,
                     url: url,
-                    titles: "Privacy policy", "Privacy"
+                    titles: "Privacy policy", "Privacy",
+                    onTap: {
+                        self.purchaseHandler.trackControlInteraction(
+                            componentType: .button,
+                            componentName: PaywallControlInteraction.privacyLinkName,
+                            componentValue: PaywallControlInteraction.ComponentValue.navigateToPrivacyPolicy.rawValue
+                        )
+                    }
                 )
             }
         }
@@ -125,13 +139,18 @@ struct FooterView: View {
         #endif
     }
 
-    private static func allPlansButton(_ binding: Binding<Bool>, bundle: Bundle) -> some View {
+    private func allPlansButton(_ binding: Binding<Bool>) -> some View {
         Button {
+            self.purchaseHandler.trackControlInteraction(
+                componentType: .button,
+                componentName: PaywallControlInteraction.allPlansButtonName,
+                componentValue: PaywallControlInteraction.ComponentValue.toggleAllPlans.rawValue
+            )
             withAnimation(Constants.toggleAllPlansAnimation) {
                 binding.wrappedValue.toggle()
             }
         } label: {
-            Text("All subscriptions", bundle: bundle)
+            Text("All subscriptions", bundle: self.localizedBundle)
         }
         .frame(minHeight: Constants.minimumButtonHeight)
     }
@@ -220,6 +239,11 @@ private struct RestorePurchasesButton: View {
             }
 
             Logger.debug(Strings.restoring_purchases)
+            self.purchaseHandler.trackControlInteraction(
+                componentType: .button,
+                componentName: PaywallControlInteraction.restoreButtonName,
+                componentValue: PaywallControlInteraction.ComponentValue.restorePurchases.rawValue
+            )
 
             do {
                 let (customerInfo, success) = try await self.purchaseHandler.restorePurchases()
@@ -280,16 +304,19 @@ private struct LinkButton: View {
 
     let url: URL
     let titles: [String]
+    let onTap: (() -> Void)?
 
-    init(localizedBundle: Bundle, url: URL, titles: String...) {
+    init(localizedBundle: Bundle, url: URL, titles: String..., onTap: (() -> Void)? = nil) {
         self.localizedBundle = localizedBundle
         self.url = url
         self.titles = titles
+        self.onTap = onTap
     }
 
     var body: some View {
         #if canImport(WebKit) && !os(macOS) && !targetEnvironment(macCatalyst)
         Button {
+            self.onTap?()
             self.displayLink = true
         } label: {
             self.content
@@ -317,6 +344,9 @@ private struct LinkButton: View {
         Link(destination: self.url) {
             self.content
         }
+        .simultaneousGesture(TapGesture().onEnded {
+            self.onTap?()
+        })
         #endif
     }
 

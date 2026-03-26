@@ -213,7 +213,14 @@ struct Template7View: TemplateViewType {
                     backgroundColor: self.currentColors.tierControlBackground,
                     textColor: self.currentColors.tierControlForeground,
                     selectedBackgroundColor: self.currentColors.tierControlSelectedBackground,
-                    selectedTextColor: self.currentColors.tierControlSelectedForeground
+                    selectedTextColor: self.currentColors.tierControlSelectedForeground,
+                    onSelectTier: { tier in
+                        self.purchaseHandler.trackControlInteraction(
+                            componentType: .tab,
+                            componentName: PaywallControlInteraction.tierSelectorName,
+                            componentValue: self.tierNames[tier] ?? ""
+                        )
+                    }
                 )
             }
         }

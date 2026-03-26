@@ -252,11 +252,6 @@ class ButtonComponentCodableTests: TestCase {
         let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
 
         expect(decodedButton.name) == "View-All-Plans-Button"
-        expect(
-            decodedButton.name
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .flatMap { $0.isEmpty ? nil : $0 }
-        ) == "View-All-Plans-Button"
     }
 
     func testComponentNameIsNilWhenNameAbsent() throws {
@@ -273,33 +268,7 @@ class ButtonComponentCodableTests: TestCase {
         let jsonData = jsonString.data(using: .utf8)!
         let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
 
-        expect(
-            decodedButton.name
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .flatMap { $0.isEmpty ? nil : $0 }
-        ).to(beNil())
-    }
-
-    func testComponentNameIsNilWhenNameWhitespaceOnly() throws {
-        let jsonString = """
-        {
-            "type": "button",
-            "id": "fallback-id",
-            "name": "   ",
-            "action": {
-                "type": "restore_purchases"
-            },
-            "stack": \(jsonStringDefaultStack)
-        }
-        """
-        let jsonData = jsonString.data(using: .utf8)!
-        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
-
-        expect(
-            decodedButton.name
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .flatMap { $0.isEmpty ? nil : $0 }
-        ).to(beNil())
+        expect(decodedButton.name).to(beNil())
     }
 
 }
