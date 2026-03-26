@@ -2380,12 +2380,28 @@ extension RevenueCat.PaywallComponent {
   final public class PackageComponent : RevenueCat.PaywallComponentBase {
     final public let packageID: Swift.String
     final public let isSelectedByDefault: Swift.Bool
+    final public let visible: Swift.Bool?
     final public let stack: RevenueCat.PaywallComponent.StackComponent
+    final public let overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialPackageComponent>?
     #if compiler(>=5.3) && $NonescapableTypes
-    public init(packageID: Swift.String, isSelectedByDefault: Swift.Bool, applePromoOfferProductCode: Swift.String?, stack: RevenueCat.PaywallComponent.StackComponent)
+    public init(packageID: Swift.String, isSelectedByDefault: Swift.Bool, visible: Swift.Bool? = nil, applePromoOfferProductCode: Swift.String?, stack: RevenueCat.PaywallComponent.StackComponent, overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialPackageComponent>? = nil)
     #endif
     final public func hash(into hasher: inout Swift.Hasher)
     public static func == (lhs: RevenueCat.PaywallComponent.PackageComponent, rhs: RevenueCat.PaywallComponent.PackageComponent) -> Swift.Bool
+    @objc deinit
+    final public func encode(to encoder: any Swift.Encoder) throws
+    final public var hashValue: Swift.Int {
+      get
+    }
+    public init(from decoder: any Swift.Decoder) throws
+  }
+  final public class PartialPackageComponent : RevenueCat.PaywallPartialComponent {
+    final public let visible: Swift.Bool?
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init(visible: Swift.Bool? = nil)
+    #endif
+    final public func hash(into hasher: inout Swift.Hasher)
+    public static func == (lhs: RevenueCat.PaywallComponent.PartialPackageComponent, rhs: RevenueCat.PaywallComponent.PartialPackageComponent) -> Swift.Bool
     @objc deinit
     final public func encode(to encoder: any Swift.Encoder) throws
     final public var hashValue: Swift.Int {
