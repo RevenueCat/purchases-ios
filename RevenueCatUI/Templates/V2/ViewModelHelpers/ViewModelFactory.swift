@@ -194,7 +194,9 @@ struct ViewModelFactory {
                 component: component,
                 offering: offering,
                 stackViewModel: stackViewModel,
-                hasPurchaseButton: hasPurchaseButton
+                hasPurchaseButton: hasPurchaseButton,
+                uiConfigProvider: uiConfigProvider,
+                discardRules: discardRules
             )
 
             if let package = viewModel.package {
