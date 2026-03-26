@@ -170,7 +170,8 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
             TabControlContext(
                 controlStackViewModel: controlStackViewModel,
                 tabIds: ["1", "2"],
-                defaultTabId: "1"
+                defaultTabId: "1",
+                name: "Off toggle"
             )
         )
         .environmentObject(PurchaseHandler.default())
@@ -199,7 +200,8 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
             TabControlContext(
                 controlStackViewModel: controlStackViewModel,
                 tabIds: ["1", "2"],
-                defaultTabId: "2"
+                defaultTabId: "2",
+                name: "On toggle"
             )
         )
         .environmentObject(PurchaseHandler.default())

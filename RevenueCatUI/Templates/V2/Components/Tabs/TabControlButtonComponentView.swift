@@ -55,8 +55,8 @@ struct TabControlButtonComponentView: View {
             self.tabControlContext.selectedTabId = self.viewModel.component.tabId
             self.purchaseHandler.trackControlInteraction(
                 componentType: .tab,
-                componentName: self.viewModel.component.name,
-                componentValue: self.viewModel.component.tabId
+                componentName: self.tabControlContext.name,
+                componentValue: self.viewModel.component.name ?? ""
             )
         } label: {
             StackComponentView(

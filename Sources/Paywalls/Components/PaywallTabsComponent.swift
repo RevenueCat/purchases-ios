@@ -153,6 +153,7 @@ public extension PaywallComponent {
         }
 
         let type: ComponentType
+        public let name: String?
         public let visible: Bool?
         public let size: Size
         public let padding: Padding
@@ -169,6 +170,7 @@ public extension PaywallComponent {
         public let overrides: ComponentOverrides<PartialTabsComponent>?
 
         public init(
+            name: String? = nil,
             visible: Bool? = nil,
             size: Size = .init(width: .fill, height: .fit),
             padding: Padding = .zero,
@@ -185,6 +187,7 @@ public extension PaywallComponent {
             overrides: ComponentOverrides<PartialTabsComponent>? = nil
         ) {
             self.type = .stack
+            self.name = name
             self.visible = visible
             self.size = size
             self.padding = padding
@@ -203,6 +206,7 @@ public extension PaywallComponent {
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(size)
             hasher.combine(padding)
@@ -219,6 +223,7 @@ public extension PaywallComponent {
 
         public static func == (lhs: TabsComponent, rhs: TabsComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.name == rhs.name &&
                    lhs.visible == rhs.visible &&
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&

@@ -29,6 +29,7 @@ class TabsComponentViewModel {
     let tabViewModels: [String: TabViewModel]
     let tabIds: [String]
     let defaultTabId: String?
+    let name: String?
 
     init(
         component: PaywallComponent.TabsComponent,
@@ -44,6 +45,7 @@ class TabsComponentViewModel {
         })
         self.tabIds = tabViewModels.map(\.tab.id)
         self.defaultTabId = component.defaultTabId
+        self.name = component.name
         self.uiConfigProvider = uiConfigProvider
 
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
