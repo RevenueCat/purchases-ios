@@ -36,6 +36,9 @@ extension FeatureEventsRequest {
         var productId: String?
         var errorCode: Int?
         var errorMessage: String?
+        var componentType: PaywallControlComponentType?
+        var componentName: String?
+        var componentValue: String?
 
     }
 
@@ -51,6 +54,7 @@ extension FeatureEventsRequest.PaywallEvent {
         case exitOffer = "paywall_exit_offer"
         case purchaseInitiated = "paywall_purchase_initiated"
         case purchaseError = "paywall_purchase_error"
+        case controlInteraction = "paywall_control_interaction"
 
     }
 
@@ -66,6 +70,7 @@ extension FeatureEventsRequest.PaywallEvent {
             let creationData = paywallEvent.creationData
             let data = paywallEvent.data
             let exitOfferData = paywallEvent.exitOfferData
+            let controlInteractionData = paywallEvent.controlInteractionData
 
             self.init(
                 id: creationData.id.uuidString,
@@ -86,7 +91,10 @@ extension FeatureEventsRequest.PaywallEvent {
                 packageId: data.packageId,
                 productId: data.productId,
                 errorCode: data.errorCode,
-                errorMessage: data.errorMessage
+                errorMessage: data.errorMessage,
+                componentType: controlInteractionData?.componentType,
+                componentName: controlInteractionData?.componentName,
+                componentValue: controlInteractionData?.componentValue
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -109,6 +117,7 @@ private extension PaywallEvent {
         case .exitOffer: return .exitOffer
         case .purchaseInitiated: return .purchaseInitiated
         case .purchaseError: return .purchaseError
+        case .controlInteraction: return .controlInteraction
         }
 
     }
@@ -142,6 +151,9 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case productId = "productId"
         case errorCode
         case errorMessage
+        case componentType
+        case componentName
+        case componentValue
 
     }
 

@@ -221,12 +221,17 @@ func checkPaywallEvent(_ event: PaywallEvent) {
     case let .purchaseError(creationData, data):
         checkPaywallEventCreationData(creationData)
         checkPaywallEventData(data)
+    case let .controlInteraction(creationData, data, interactionData):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
+        checkControlInteractionData(interactionData)
     @unknown default: break
     }
 
     let _: PaywallEvent.CreationData = event.creationData
     let _: PaywallEvent.Data = event.data
     let _: PaywallEvent.ExitOfferData? = event.exitOfferData
+    let _: PaywallEvent.ControlInteractionData? = event.controlInteractionData
 }
 
 func checkPaywallEventCreationData(_ creationData: PaywallEvent.CreationData) {
@@ -326,5 +331,17 @@ func checkExitOfferData(_ data: PaywallEvent.ExitOfferData) {
     let _: PaywallEvent.ExitOfferData = PaywallEvent.ExitOfferData(
         exitOfferType: exitOfferType,
         exitOfferingIdentifier: exitOfferingIdentifier
+    )
+}
+
+func checkControlInteractionData(_ data: PaywallEvent.ControlInteractionData) {
+    let componentType: PaywallControlComponentType = data.componentType
+    let componentName: String? = data.componentName
+    let componentValue: String = data.componentValue
+
+    let _: PaywallEvent.ControlInteractionData = PaywallEvent.ControlInteractionData(
+        componentType: componentType,
+        componentName: componentName,
+        componentValue: componentValue
     )
 }

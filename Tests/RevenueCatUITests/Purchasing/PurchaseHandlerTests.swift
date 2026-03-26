@@ -464,6 +464,55 @@ class PurchaseHandlerTests: TestCase {
 
     }
 
+    func testTrackControlInteractionSendsExpectedPaywallEvent() async throws {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+
+        let handler = PurchaseHandler(
+            purchases: MockPurchases(
+                purchase: { _, _, _ in
+                    (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+                },
+                restorePurchases: { TestData.customerInfo },
+                trackEvent: { event in
+                    trackedEvents.modify { $0.append(event) }
+                },
+                customerInfo: { TestData.customerInfo }
+            )
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+
+        expect(handler.trackControlInteraction(componentType: .tab, componentName: nil, componentValue: "a")) == false
+
+        handler.trackPaywallImpression(eventData)
+
+        expect(handler.trackControlInteraction(componentType: .tab, componentName: "n", componentValue: "id1")) == true
+
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        let interactionEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .controlInteraction = $0 { return true }
+            return false
+        }))
+
+        guard case let .controlInteraction(_, data, interaction) = interactionEvent else {
+            fail("Expected controlInteraction event")
+            return
+        }
+
+        expect(data.sessionIdentifier) == eventData.sessionIdentifier
+        expect(interaction.componentType) == .tab
+        expect(interaction.componentName) == "n"
+        expect(interaction.componentValue) == "id1"
+    }
+
     func testPaywallSourceIsPropagatedToTrackedEvents() async throws {
         let impressionExpectation = expectation(description: "Impression tracked")
         let closeExpectation = expectation(description: "Close tracked")
@@ -492,7 +541,7 @@ class PurchaseHandlerTests: TestCase {
                         impressionExpectation.fulfill()
                     case .close:
                         closeExpectation.fulfill()
-                    case .cancel, .exitOffer, .purchaseInitiated, .purchaseError:
+                    case .cancel, .exitOffer, .purchaseInitiated, .purchaseError, .controlInteraction:
                         break
                     }
                 }

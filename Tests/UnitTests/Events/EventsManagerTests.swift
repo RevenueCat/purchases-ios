@@ -190,6 +190,34 @@ class EventsManagerTests: TestCase {
         expect(map["type"] as? String) == "paywall_purchase_error"
     }
 
+    func testPaywallControlInteractionToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ControlInteractionData(componentType: .carousel, componentValue: "1")
+        let event: PaywallEvent = .controlInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_control_interaction"
+        expect(map["component_type"] as? String) == "carousel"
+        expect(map["component_value"] as? String) == "1"
+    }
+
+    func testTrackControlInteractionEventStores() async throws {
+        let event: PaywallEvent = .controlInteraction(
+            .random(),
+            .random(),
+            .init(componentType: .button, componentValue: "navigate_back")
+        )
+
+        await self.manager.track(featureEvent: event)
+
+        let events = await self.store.storedEvents
+        expect(events) == [
+            try createStoredFeatureEvent(from: event)
+        ]
+    }
+
     // MARK: - toMap (Customer Center Events)
 
     func testCustomerCenterImpressionToMap() {

@@ -136,4 +136,49 @@ class ButtonComponentViewModel {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension ButtonComponentViewModel.Action {
+
+    /// `component_value` for ``PurchaseHandler/trackControlInteraction(componentType:componentName:componentValue:)``.
+    var paywallControlInteractionValue: String {
+        switch self {
+        case .restorePurchases:
+            return "restore_purchases"
+        case .navigateBack:
+            return "navigate_back"
+        case .unknown:
+            return "unknown"
+        case .sheet:
+            return "navigate_to_sheet"
+        case .navigateTo(let destination):
+            return destination.paywallControlInteractionValue
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension ButtonComponentViewModel.Destination {
+
+    fileprivate var paywallControlInteractionValue: String {
+        switch self {
+        case .customerCenter:
+            return "navigate_to_customer_center"
+        case .offerCodeRedemptionSheet:
+            return "navigate_to_offer_code"
+        case .url:
+            return "navigate_to_url"
+        case .privacyPolicy:
+            return "navigate_to_privacy_policy"
+        case .terms:
+            return "navigate_to_terms"
+        case .webPaywallLink:
+            return "navigate_to_web_paywall_link"
+        case .unknown:
+            return "navigate_to_unknown"
+        }
+    }
+
+}
+
 #endif

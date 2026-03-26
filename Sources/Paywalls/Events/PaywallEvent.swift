@@ -21,6 +21,20 @@ public enum ExitOfferType: String, Codable, Sendable {
 
 }
 
+/// Wire `component_type` values for ``PaywallEvent/controlInteraction(_:_:_:)`` (paywall control interactions).
+public enum PaywallControlComponentType: String, Codable, Sendable, Hashable {
+
+    /// Tab control button selection (`component_value` is the tab id).
+    case tab
+    /// Tab control toggle (`component_value` is `"on"` or `"off"`); wire value is `"switch"`.
+    case toggleSwitch = "switch"
+    /// Carousel page change (`component_value` is the 0-based page index as a string).
+    case carousel
+    /// Non-purchase button (`component_value` is the action discriminator).
+    case button
+
+}
+
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum PaywallEvent: FeatureEvent {
 
@@ -48,7 +62,7 @@ public enum PaywallEvent: FeatureEvent {
         switch self {
         case .purchaseInitiated, .purchaseError:
             return false
-        case .impression, .cancel, .close, .exitOffer:
+        case .impression, .cancel, .close, .exitOffer, .controlInteraction:
             return true
         }
     }
@@ -57,7 +71,7 @@ public enum PaywallEvent: FeatureEvent {
         switch self {
         case .impression:
             return true
-        case .cancel, .close, .exitOffer, .purchaseInitiated, .purchaseError:
+        case .cancel, .close, .exitOffer, .controlInteraction, .purchaseInitiated, .purchaseError:
             return false
         }
     }
@@ -79,6 +93,9 @@ public enum PaywallEvent: FeatureEvent {
 
     /// A purchase from the paywall failed with an error.
     case purchaseError(CreationData, Data)
+
+    /// User interacted with a paywall control (tabs, carousel, non-purchase button, etc.).
+    case controlInteraction(CreationData, Data, ControlInteractionData)
 
 }
 
@@ -271,6 +288,31 @@ extension PaywallEvent {
 
 extension PaywallEvent {
 
+    /// Data for a ``PaywallEvent/controlInteraction(_:_:_:)`` event.
+    public struct ControlInteractionData {
+
+        // swiftlint:disable missing_docs
+        public var componentType: PaywallControlComponentType
+        public var componentName: String?
+        public var componentValue: String
+
+        public init(
+            componentType: PaywallControlComponentType,
+            componentName: String? = nil,
+            componentValue: String
+        ) {
+            self.componentType = componentType
+            self.componentName = componentName
+            self.componentValue = componentValue
+        }
+        // swiftlint:enable missing_docs
+
+    }
+
+}
+
+extension PaywallEvent {
+
     /// - Returns: the underlying ``PaywallEvent/CreationData-swift.struct`` for this event.
     public var creationData: CreationData {
         switch self {
@@ -280,6 +322,7 @@ extension PaywallEvent {
         case let .exitOffer(creationData, _, _): return creationData
         case let .purchaseInitiated(creationData, _): return creationData
         case let .purchaseError(creationData, _): return creationData
+        case let .controlInteraction(creationData, _, _): return creationData
         }
     }
 
@@ -292,14 +335,23 @@ extension PaywallEvent {
         case let .exitOffer(_, data, _): return data
         case let .purchaseInitiated(_, data): return data
         case let .purchaseError(_, data): return data
+        case let .controlInteraction(_, data, _): return data
         }
     }
 
     /// - Returns: the underlying ``PaywallEvent/ExitOfferData-swift.struct`` for exit offer events, nil otherwise.
     public var exitOfferData: ExitOfferData? {
         switch self {
-        case .impression, .cancel, .close, .purchaseInitiated, .purchaseError: return nil
+        case .impression, .cancel, .close, .purchaseInitiated, .purchaseError, .controlInteraction: return nil
         case let .exitOffer(_, _, exitOfferData): return exitOfferData
+        }
+    }
+
+    /// - Returns: control interaction payload for ``PaywallEvent/controlInteraction(_:_:_:)``, nil for other events.
+    public var controlInteractionData: ControlInteractionData? {
+        switch self {
+        case .impression, .cancel, .close, .exitOffer, .purchaseInitiated, .purchaseError: return nil
+        case let .controlInteraction(_, _, interactionData): return interactionData
         }
     }
 
@@ -338,4 +390,5 @@ extension PaywallEvent.Data {
 extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
 extension PaywallEvent.Data: Equatable, Codable, Sendable {}
 extension PaywallEvent.ExitOfferData: Equatable, Codable, Sendable {}
+extension PaywallEvent.ControlInteractionData: Equatable, Codable, Sendable {}
 extension PaywallEvent: Equatable, Codable, Sendable {}

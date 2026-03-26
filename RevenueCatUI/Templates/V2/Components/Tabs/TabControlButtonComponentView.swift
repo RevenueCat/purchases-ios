@@ -35,6 +35,9 @@ struct TabControlButtonComponentView: View {
     @EnvironmentObject
     private var tabControlContext: TabControlContext
 
+    @EnvironmentObject
+    private var purchaseHandler: PurchaseHandler
+
     private let viewModel: TabControlButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -50,6 +53,11 @@ struct TabControlButtonComponentView: View {
     var body: some View {
         Button {
             self.tabControlContext.selectedTabId = self.viewModel.component.tabId
+            self.purchaseHandler.trackControlInteraction(
+                componentType: .tab,
+                componentName: self.viewModel.component.name,
+                componentValue: self.viewModel.component.tabId
+            )
         } label: {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,

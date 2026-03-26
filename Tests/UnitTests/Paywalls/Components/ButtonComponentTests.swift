@@ -236,6 +236,72 @@ class ButtonComponentCodableTests: TestCase {
         XCTAssertEqual(decodedButton, buttonComponent)
     }
 
+    func testDecodesNameIgnoresExtraIdInJSON() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "id": "mUr08cu4AC",
+            "name": "View-All-Plans-Button",
+            "action": {
+                "type": "restore_purchases"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        expect(decodedButton.name) == "View-All-Plans-Button"
+        expect(
+            decodedButton.name
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .flatMap { $0.isEmpty ? nil : $0 }
+        ) == "View-All-Plans-Button"
+    }
+
+    func testComponentNameIsNilWhenNameAbsent() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "id": "mUr08cu4AC",
+            "action": {
+                "type": "restore_purchases"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        expect(
+            decodedButton.name
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .flatMap { $0.isEmpty ? nil : $0 }
+        ).to(beNil())
+    }
+
+    func testComponentNameIsNilWhenNameWhitespaceOnly() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "id": "fallback-id",
+            "name": "   ",
+            "action": {
+                "type": "restore_purchases"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        expect(
+            decodedButton.name
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .flatMap { $0.isEmpty ? nil : $0 }
+        ).to(beNil())
+    }
+
 }
 
 #endif

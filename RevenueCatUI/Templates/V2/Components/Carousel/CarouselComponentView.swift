@@ -44,6 +44,9 @@ struct CarouselComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
+    @EnvironmentObject
+    private var purchaseHandler: PurchaseHandler
+
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
 
@@ -81,7 +84,8 @@ struct CarouselComponentView: View {
                         pageControl: style.pageControl,
                         msTimePerSlide: style.autoAdvance?.msTimePerPage,
                         msTransitionTime: style.autoAdvance?.msTransitionTime,
-                        autoAdvanceTransitionType: style.autoAdvance?.transitionType
+                        autoAdvanceTransitionType: style.autoAdvance?.transitionType,
+                        onOriginalPageIndexChanged: self.trackCarouselControlInteraction
                     ).clipped()
                 }
                 // Need to set height since geometry reader has no intrinsic height
@@ -100,6 +104,14 @@ struct CarouselComponentView: View {
                 .padding(style.margin)
             }
         }
+    }
+
+    private func trackCarouselControlInteraction(originalPageIndex: Int) {
+        self.purchaseHandler.trackControlInteraction(
+            componentType: .carousel,
+            componentName: self.viewModel.componentName,
+            componentValue: String(originalPageIndex)
+        )
     }
 
 }
@@ -130,6 +142,8 @@ private struct CarouselView<Content: View>: View {
     private let cardWidth: CGFloat
 
     private let pageControl: DisplayablePageControl?
+
+    private let onOriginalPageIndexChanged: ((Int) -> Void)?
 
     /// Optional auto-play timings (in milliseconds).
     private let msTimePerSlide: Int?
@@ -180,7 +194,8 @@ private struct CarouselView<Content: View>: View {
         /// If either of these is nil, auto‐play is off.
         msTimePerSlide: Int?,
         msTransitionTime: Int?,
-        autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType?
+        autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType?,
+        onOriginalPageIndexChanged: ((Int) -> Void)? = nil
     ) {
         self.width = width
         self.pageAlignment = pageAlignment
@@ -190,6 +205,7 @@ private struct CarouselView<Content: View>: View {
         self.spacing = spacing
         self.cardWidth = cardWidth
         self.pageControl = pageControl
+        self.onOriginalPageIndexChanged = onOriginalPageIndexChanged
         self.msTimePerSlide = msTimePerSlide
         self.msTransitionTime = msTransitionTime
         self.autoAdvanceTransitionType = autoAdvanceTransitionType
@@ -309,6 +325,12 @@ private struct CarouselView<Content: View>: View {
             DispatchQueue.main.async {
                 self.isInitialized = true
             }
+        }
+        .onChangeOf(self.index) { newIndex in
+            guard self.isInitialized, self.originalCount > 0 else { return }
+
+            let originalIndex = self.loop ? newIndex % self.originalCount : newIndex
+            self.onOriginalPageIndexChanged?(originalIndex)
         }
         .onDisappear {
             // Stop the timer if view disappears
@@ -838,6 +860,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
         }
         .padding(.vertical)
         .previewRequiredPaywallsV2Properties()
+        .environmentObject(PurchaseHandler.default())
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Examples")
     }

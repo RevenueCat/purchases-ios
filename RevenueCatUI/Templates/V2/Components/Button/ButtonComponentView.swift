@@ -90,6 +90,8 @@ struct ButtonComponentView: View {
     }
 
     private func performAction() async throws {
+        self.trackButtonControlInteraction()
+
         switch viewModel.action {
         case .restorePurchases:
             try await restorePurchases()
@@ -108,6 +110,14 @@ struct ButtonComponentView: View {
                 openSheet(sheetViewModel)
             }
         }
+    }
+
+    private func trackButtonControlInteraction() {
+        self.purchaseHandler.trackControlInteraction(
+            componentType: .button,
+            componentName: self.viewModel.component.name,
+            componentValue: self.viewModel.action.paywallControlInteractionValue
+        )
     }
 
     private func restorePurchases() async throws {
@@ -243,6 +253,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
+        .environmentObject(PurchaseHandler.default())
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Default")
     }

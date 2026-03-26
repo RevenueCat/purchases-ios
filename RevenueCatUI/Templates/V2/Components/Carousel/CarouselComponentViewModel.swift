@@ -44,6 +44,10 @@ class CarouselComponentViewModel {
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
+    var componentName: String? {
+        self.component.name
+    }
+
     @ViewBuilder
     // swiftlint:disable:next function_parameter_count
     func styles(

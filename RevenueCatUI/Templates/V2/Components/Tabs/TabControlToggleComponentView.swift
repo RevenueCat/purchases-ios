@@ -35,11 +35,17 @@ struct TabControlToggleComponentView: View {
     @EnvironmentObject
     private var tabControlContext: TabControlContext
 
+    @EnvironmentObject
+    private var purchaseHandler: PurchaseHandler
+
     private let viewModel: TabControlToggleComponentViewModel
     private let onDismiss: () -> Void
 
     @State
     private var isOn: Bool = false
+
+    @State
+    private var isSyncingIsOnFromContext = false
 
     init(viewModel: TabControlToggleComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -64,10 +70,19 @@ struct TabControlToggleComponentView: View {
                 )
             }
             .onChangeOf(self.isOn) { newValue in
+                if self.isSyncingIsOnFromContext {
+                    return
+                }
+
                 let tabIds = tabControlContext.tabIds
                 guard tabIds.count >= 2 else { return }
 
                 tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
+                self.purchaseHandler.trackControlInteraction(
+                    componentType: .toggleSwitch,
+                    componentName: self.viewModel.component.name,
+                    componentValue: newValue ? "on" : "off"
+                )
             }
             .onChangeOf(tabControlContext.selectedTabId) { newSelectedTabId in
                 let newIsOn = computeIsOn(
@@ -75,7 +90,11 @@ struct TabControlToggleComponentView: View {
                     tabIds: tabControlContext.tabIds
                 )
                 if self.isOn != newIsOn {
+                    self.isSyncingIsOnFromContext = true
                     self.isOn = newIsOn
+                    DispatchQueue.main.async {
+                        self.isSyncingIsOnFromContext = false
+                    }
                 }
             }
     }
@@ -154,6 +173,7 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
                 defaultTabId: "1"
             )
         )
+        .environmentObject(PurchaseHandler.default())
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Off")
 
@@ -182,6 +202,7 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
                 defaultTabId: "2"
             )
         )
+        .environmentObject(PurchaseHandler.default())
         .previewLayout(.sizeThatFits)
         .previewDisplayName("On")
     }

@@ -74,10 +74,11 @@ private extension PaywallEvent {
             case .exitOffer: return "paywall_exit_offer"
             case .purchaseInitiated: return "paywall_purchase_initiated"
             case .purchaseError: return "paywall_purchase_error"
+            case .controlInteraction: return "paywall_control_interaction"
             }
         }()
 
-        return [
+        var result: [String: Any] = [
             "discriminator": "paywalls",
             "type": typeName,
             "id": self.creationData.id.uuidString,
@@ -89,6 +90,16 @@ private extension PaywallEvent {
             "locale": self.data.localeIdentifier,
             "dark_mode": self.data.darkMode
         ]
+
+        if let interaction = self.controlInteractionData {
+            result["component_type"] = interaction.componentType.rawValue
+            result["component_value"] = interaction.componentValue
+            if let name = interaction.componentName {
+                result["component_name"] = name
+            }
+        }
+
+        return result
     }
 
 }
