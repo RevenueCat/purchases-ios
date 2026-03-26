@@ -360,6 +360,20 @@ class ToPresentedOverridesTests: TestCase {
         expect(PaywallComponent.package(package).containsUnsupportedConditions()).to(beTrue())
     }
 
+    func testPackageWithUnsupportedConditionInOwnOverrides_ReturnsTrue() throws {
+        let package = PaywallComponent.PackageComponent(
+            packageID: "monthly",
+            isSelectedByDefault: false,
+            applePromoOfferProductCode: nil,
+            stack: .init(components: []),
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init(visible: false))
+            ]
+        )
+
+        expect(PaywallComponent.package(package).containsUnsupportedConditions()).to(beTrue())
+    }
+
     func testButtonSheetWithUnsupportedCondition_ReturnsTrue() throws {
         let sheetText = PaywallComponent.TextComponent(
             text: "text_1",
