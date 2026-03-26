@@ -1,0 +1,56 @@
+{
+  "type": "tabs",
+  "id": "ignored-tabs-id",
+  "name": "PackagesTabs",
+  "visible": true,
+  "size": {
+    "width": { "type": "fill" },
+    "height": { "type": "fit" }
+  },
+  "padding": {
+    "top": 0, "bottom": 0, "leading": 0, "trailing": 0
+  },
+  "margin": {
+    "top": 0, "bottom": 0, "leading": 0, "trailing": 0
+  },
+  "control": {
+    "type": "buttons",
+    "stack": {
+      "type": "stack",
+      "dimension": {
+        "type": "horizontal",
+        "alignment": "center",
+        "distribution": "start"
+      },
+      "size": {
+        "width": { "type": "fit" },
+        "height": { "type": "fit" }
+      },
+      "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+      "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+      "components": []
+    }
+  },
+  "tabs": [
+    {
+      "type": "tab",
+      "id": "tab-1",
+      "name": "Standard",
+      "stack": {
+        "type": "stack",
+        "dimension": {
+          "type": "vertical",
+          "alignment": "center",
+          "distribution": "start"
+        },
+        "size": {
+          "width": { "type": "fill" },
+          "height": { "type": "fit" }
+        },
+        "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+        "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+        "components": []
+      }
+    }
+  ]
+}

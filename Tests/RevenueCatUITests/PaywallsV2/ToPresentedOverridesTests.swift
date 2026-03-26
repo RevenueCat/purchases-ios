@@ -237,6 +237,24 @@ class ToPresentedOverridesTests: TestCase {
         expect(tabs.containsUnsupportedConditions()).to(beFalse())
     }
 
+    func testTabsComponentDecodesNameIgnoresExtraIdInJSON() throws {
+        let tabs = try JSONDecoder.default.decode(
+            PaywallComponent.TabsComponent.self,
+            from: Self.jsonDataFixture(named: "TabsComponentWithNameAndIgnoredId")
+        )
+
+        expect(tabs.name) == "PackagesTabs"
+    }
+
+    func testCarouselComponentDecodesNameIgnoresExtraIdInJSON() throws {
+        let carousel = try JSONDecoder.default.decode(
+            PaywallComponent.CarouselComponent.self,
+            from: Self.jsonDataFixture(named: "CarouselComponentWithNameAndIgnoredId")
+        )
+
+        expect(carousel.name) == "Carousel-Reviews"
+    }
+
     func testTimelineWithUnsupportedConditionInTitle_ReturnsTrue() throws {
         let timeline = PaywallComponent.TimelineComponent(
             iconAlignment: nil,
@@ -583,6 +601,27 @@ class ToPresentedOverridesTests: TestCase {
 
         let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
         expect(result.count).to(equal(3))
+    }
+
+}
+
+private extension ToPresentedOverridesTests {
+
+    static func jsonDataFixture(
+        named fileName: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws -> Data {
+        let url = try XCTUnwrap(
+            URL(fileURLWithPath: String(describing: file))
+                .deletingLastPathComponent()
+                .appendingPathComponent("JSON")
+                .appendingPathComponent(fileName + ".json"),
+            "Could not find JSON fixture: '\(fileName).json'",
+            file: file,
+            line: line
+        )
+        return try XCTUnwrap(Data(contentsOf: url), file: file, line: line)
     }
 
 }

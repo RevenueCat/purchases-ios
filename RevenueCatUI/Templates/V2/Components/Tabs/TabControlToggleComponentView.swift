@@ -80,7 +80,7 @@ struct TabControlToggleComponentView: View {
                 tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
                 self.purchaseHandler.trackControlInteraction(
                     componentType: .toggleSwitch,
-                    componentName: self.viewModel.component.name,
+                    componentName: self.tabControlContext.name,
                     componentValue: newValue ? "on" : "off"
                 )
             }

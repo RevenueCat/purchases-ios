@@ -1,0 +1,27 @@
+{
+  "type": "carousel",
+  "id": "ignored-carousel-id",
+  "name": "Carousel-Reviews",
+  "pages": [
+    {
+      "type": "stack",
+      "dimension": {
+        "type": "vertical",
+        "alignment": "center",
+        "distribution": "start"
+      },
+      "size": {
+        "width": { "type": "fill" },
+        "height": { "type": "fit" }
+      },
+      "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+      "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+      "components": []
+    }
+  ],
+  "page_alignment": "center",
+  "page_spacing": 0,
+  "page_peek": 20,
+  "initial_page_index": 0,
+  "loop": false
+}
