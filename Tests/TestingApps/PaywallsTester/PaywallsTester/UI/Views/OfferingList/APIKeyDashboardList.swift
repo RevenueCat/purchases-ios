@@ -292,8 +292,12 @@ struct APIKeyDashboardList: View {
             switch selectedMode {
             case .fullScreen:
                 self.presentedPaywallCover = .init(offering: offering, mode: selectedMode)
-            case .sheet, .footer, .condensedFooter:
+            case .sheet:
                 self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            #if !os(watchOS) && !os(macOS)
+            case .footer, .condensedFooter:
+                self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            #endif
             case .presentIfNeeded:
                 self.offeringToPresent = offering
             case .presentPaywall:

@@ -94,6 +94,8 @@ public enum PaywallEvent: FeatureEvent {
         case carousel
         /// Non-purchase button (`component_value` is the action discriminator).
         case button
+        /// Tappable link in paywall text / markdown (`component_url` is set).
+        case text
 
     }
 

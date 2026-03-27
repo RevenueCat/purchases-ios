@@ -74,7 +74,8 @@ struct TextComponentView: View {
                 NonLocalizedMarkdownText(
                     text: style.text,
                     font: style.font,
-                    fontWeight: style.fontWeight
+                    fontWeight: style.fontWeight,
+                    componentName: style.name
                 )
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
@@ -94,9 +95,16 @@ struct TextComponentView: View {
 /// Parses markdown using AttributedString and does not use bundle assets for localization
 private struct NonLocalizedMarkdownText: View {
 
+    @EnvironmentObject
+    private var purchaseHandler: PurchaseHandler
+
+    @Environment(\.openURL)
+    private var parentOpenURL
+
     let text: String
     let font: Font
     let fontWeight: Font.Weight
+    let componentName: String?
 
     var markdownText: AttributedString? {
         /*
@@ -139,6 +147,20 @@ private struct NonLocalizedMarkdownText: View {
             if let markdownText = self.markdownText {
                 // Use markdown if we can successfully parse it
                 Text(markdownText)
+                    .environment(\.openURL, OpenURLAction { url in
+                        _ = self.purchaseHandler.trackControlInteraction(
+                            componentType: .text,
+                            componentName: self.componentName,
+                            componentValue: "navigate_to_url",
+                            componentURL: url
+                        )
+#if os(watchOS)
+                        self.parentOpenURL(url)
+#else
+                        self.parentOpenURL(url) { _ in }
+#endif
+                        return .handled
+                    })
             } else {
                 // Display text as is because markdown is priority
                 Text(self.text)

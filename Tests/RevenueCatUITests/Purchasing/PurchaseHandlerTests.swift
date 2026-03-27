@@ -513,6 +513,59 @@ class PurchaseHandlerTests: TestCase {
         expect(interaction.componentValue) == "id1"
     }
 
+    func testTrackControlInteraction_TextTypeIncludesComponentURLForMarkdownLinkStyle() async throws {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+
+        let handler = PurchaseHandler(
+            purchases: MockPurchases(
+                purchase: { _, _, _ in
+                    (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+                },
+                restorePurchases: { TestData.customerInfo },
+                trackEvent: { event in
+                    trackedEvents.modify { $0.append(event) }
+                },
+                customerInfo: { TestData.customerInfo }
+            )
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+
+        let linkURL = try XCTUnwrap(URL(string: "https://example.com/doc"))
+        handler.trackPaywallImpression(eventData)
+
+        expect(handler.trackControlInteraction(
+            componentType: .text,
+            componentName: nil,
+            componentValue: "navigate_to_url",
+            componentURL: linkURL
+        )) == true
+
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        let interactionEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .controlInteraction = $0 { return true }
+            return false
+        }))
+
+        guard case let .controlInteraction(_, _, interaction) = interactionEvent else {
+            fail("Expected controlInteraction event")
+            return
+        }
+
+        expect(interaction.componentType) == .text
+        expect(interaction.componentValue) == "navigate_to_url"
+        expect(interaction.componentURL) == linkURL
+        expect(interaction.componentName).to(beNil())
+    }
+
     func testPaywallSourceIsPropagatedToTrackedEvents() async throws {
         let impressionExpectation = expectation(description: "Impression tracked")
         let closeExpectation = expectation(description: "Close tracked")

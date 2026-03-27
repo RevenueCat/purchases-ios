@@ -220,6 +220,41 @@ class EventsManagerTests: TestCase {
         expect(map["component_url"] as? String) == url.absoluteString
     }
 
+    func testPaywallControlInteractionToMap_TextMarkdownLinkUsesTextComponentType() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let url = URL(string: "https://example.com/help")!
+        let interaction = PaywallEvent.ControlInteractionData(
+            componentType: .text,
+            componentName: nil,
+            componentValue: "navigate_to_url",
+            componentURL: url
+        )
+        let event: PaywallEvent = .controlInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "text"
+        expect(map["component_value"] as? String) == "navigate_to_url"
+        expect(map["component_url"] as? String) == url.absoluteString
+    }
+
+    func testPaywallControlInteractionToMap_TextMarkdownLinkIncludesComponentNameWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let url = URL(string: "https://example.com/help")!
+        let interaction = PaywallEvent.ControlInteractionData(
+            componentType: .text,
+            componentName: "legal_footer",
+            componentValue: "navigate_to_url",
+            componentURL: url
+        )
+        let event: PaywallEvent = .controlInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "text"
+        expect(map["component_name"] as? String) == "legal_footer"
+    }
+
     func testTrackControlInteractionEventStores() async throws {
         let event: PaywallEvent = .controlInteraction(
             .random(),
