@@ -344,9 +344,9 @@ private struct LinkButton: View {
         Link(destination: self.url) {
             self.content
         }
-        .simultaneousGesture(TapGesture().onEnded {
+        .onTapGesture {
             self.onTap?()
-        })
+        }
         #endif
     }
 
