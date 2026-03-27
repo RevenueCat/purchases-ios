@@ -1595,11 +1595,17 @@ platform :ios do
       UI.success("✓ Extracted #{xcframework_name}")
     end
 
-    # Generate Tuist workspace with XCFrameworkInstallationTests included
-    UI.message("Generating Tuist workspace with XCFrameworkInstallationTests...")
+    # Generate Tuist project for XCFrameworkInstallationTests
+    UI.message("Generating Tuist project for XCFrameworkInstallationTests...")
     tuist_generate(env_vars: { "INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS" => "true" })
 
-    workspace_path = File.join(project_root, "RevenueCat-Tuist.xcworkspace")
+    # Use the project directly instead of the workspace to ensure the build
+    # uses the xcframeworks and not source targets from other workspace projects.
+    project_path = File.join(project_root, "Projects", "XCFrameworkInstallationTests", "XCFrameworkInstallationTests.xcodeproj")
+
+    unless File.directory?(project_path)
+      UI.user_error!("XCFrameworkInstallationTests project not found at #{project_path}")
+    end
 
     # Build for each destination to verify xcframework integration
     # These destinations match the platforms exported in the xcframework:
@@ -1644,7 +1650,7 @@ platform :ios do
     destinations.each_with_index do |dest_info, index|
       UI.message("\n[#{index + 1}/#{destinations.length}] Building for #{dest_info[:description]}...")
       xcodebuild(
-        workspace: workspace_path,
+        project: project_path,
         scheme: "XCFrameworkInstallationTests",
         destination: dest_info[:destination],
         configuration: "Debug",
