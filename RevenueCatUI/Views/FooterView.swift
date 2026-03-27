@@ -298,6 +298,9 @@ private struct LinkButton: View {
 
     private let localizedBundle: Bundle
 
+    @Environment(\.openURL)
+    private var openURL
+
     @Namespace
     private var namespace
 
@@ -346,9 +349,19 @@ private struct LinkButton: View {
         Link(destination: self.url) {
             self.content
         }
-        .onTapGesture {
-            self.onTap?()
-        }
+        .environment(\.openURL,
+            OpenURLAction { url in
+                if url == self.url {
+                    self.onTap?()
+                }
+                #if os(watchOS)
+                self.openURL(url)
+                #else
+                self.openURL(url) { _ in }
+                #endif
+                return .handled
+            }
+        )
         #endif
     }
 
