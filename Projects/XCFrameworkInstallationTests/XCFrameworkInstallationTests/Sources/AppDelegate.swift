@@ -1,5 +1,7 @@
 @_spi(Internal) import RevenueCat
+#if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
 import RevenueCatUI
+#endif
 
 #if os(iOS) || os(tvOS) || os(visionOS)
 import UIKit
@@ -48,9 +50,11 @@ class Tester {
 
         // Tests that RevenueCatUI can be imported and the types are available
         // This verifies that the xcframework is linked correctly
+        #if os(iOS) || targetEnvironment(macCatalyst)
         if #available(iOS 15.0, macOS 12.0, *) {
             _ = PaywallViewController()
         }
+        #endif
 
         assert(Purchases.installationMethod == "xcframework",
                "Expected 'xcframework' but got '\(Purchases.installationMethod)'")

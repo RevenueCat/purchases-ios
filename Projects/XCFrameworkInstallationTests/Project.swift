@@ -1,20 +1,18 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
+// Limited to platforms supported by both RevenueCat and RevenueCatUI xcframeworks
 let destinations: Destinations = [
     .iPhone,
     .iPad,
-    .mac,
     .macCatalyst,
-    .appleWatch,
-    .appleVision
+    .appleWatch
 ]
 
 let deploymentTargets: DeploymentTargets = .multiplatform(
     iOS: "13.0",
     macOS: "11.0",
-    watchOS: "7.0",
-    visionOS: "1.3"
+    watchOS: "7.0"
 )
 
 let project = Project(
