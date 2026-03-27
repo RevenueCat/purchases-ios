@@ -40,7 +40,8 @@ let project = Project(
                 "XCFrameworkInstallationTests/Sources/**/*.swift"
             ],
             dependencies: [
-                .xcframework(path: "../../RevenueCat.xcframework")
+                .xcframework(path: "../../RevenueCat.xcframework"),
+                .xcframework(path: "../../RevenueCatUI.xcframework")
             ],
             settings: .appTarget
         )
