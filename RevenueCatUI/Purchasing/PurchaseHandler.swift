@@ -547,14 +547,14 @@ extension PurchaseHandler {
 
     /// Tracks a paywall control interaction.
     /// - Parameters:
-    ///   - componentType: Category of the control (see ``PaywallControlComponentType``).
+    ///   - componentType: Category of the control (see ``PaywallEvent/ControlType``).
     ///   - componentName: Optional builder `name` from the paywall JSON; `nil` when the control has no usable name
     ///   - componentValue: Type-specific payload, e.g. selected tab id, `"on"` / `"off"` for a switch,
     ///     0-based carousel page index as a string, or a button action discriminator (e.g. `"restore_purchases"`)
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackControlInteraction(
-        componentType: PaywallControlComponentType,
+        componentType: PaywallEvent.ControlType,
         componentName: String?,
         componentValue: String
     ) -> Bool {

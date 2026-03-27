@@ -21,20 +21,6 @@ public enum ExitOfferType: String, Codable, Sendable {
 
 }
 
-/// Wire `component_type` values for ``PaywallEvent/controlInteraction(_:_:_:)`` (paywall control interactions).
-public enum PaywallControlComponentType: String, Codable, Sendable, Hashable {
-
-    /// Tab control button selection (`component_value` is the tab id).
-    case tab
-    /// Tab control toggle (`component_value` is `"on"` or `"off"`); wire value is `"switch"`.
-    case toggleSwitch = "switch"
-    /// Carousel page change (`component_value` is the 0-based page index as a string).
-    case carousel
-    /// Non-purchase button (`component_value` is the action discriminator).
-    case button
-
-}
-
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum PaywallEvent: FeatureEvent {
 
@@ -96,6 +82,20 @@ public enum PaywallEvent: FeatureEvent {
 
     /// User interacted with a paywall control (tabs, carousel, non-purchase button, etc.).
     case controlInteraction(CreationData, Data, ControlInteractionData)
+
+    /// Wire `component_type` values for ``PaywallEvent/controlInteraction(_:_:_:)`` (paywall control interactions).
+    public enum ControlType: String, Codable, Sendable, Hashable {
+
+        /// Tab control button selection (`component_value` is the tab id).
+        case tab
+        /// Tab control toggle (`component_value` is `"on"` or `"off"`); wire value is `"switch"`.
+        case toggleSwitch = "switch"
+        /// Carousel page change (`component_value` is the 0-based page index as a string).
+        case carousel
+        /// Non-purchase button (`component_value` is the action discriminator).
+        case button
+
+    }
 
 }
 
@@ -292,12 +292,12 @@ extension PaywallEvent {
     public struct ControlInteractionData {
 
         // swiftlint:disable missing_docs
-        public var componentType: PaywallControlComponentType
+        public var componentType: ControlType
         public var componentName: String?
         public var componentValue: String
 
         public init(
-            componentType: PaywallControlComponentType,
+            componentType: ControlType,
             componentName: String? = nil,
             componentValue: String
         ) {
