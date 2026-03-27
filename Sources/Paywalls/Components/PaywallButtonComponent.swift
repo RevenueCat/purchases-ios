@@ -58,10 +58,10 @@ public extension PaywallComponent {
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(type, forKey: .type)
-            try container.encode(name, forKey: .name)
+            try container.encodeIfPresent(name, forKey: .name)
             try container.encode(action, forKey: .action)
             try container.encode(stack, forKey: .stack)
-            try container.encode(transition, forKey: .transition)
+            try container.encodeIfPresent(transition, forKey: .transition)
         }
 
         public func hash(into hasher: inout Hasher) {
