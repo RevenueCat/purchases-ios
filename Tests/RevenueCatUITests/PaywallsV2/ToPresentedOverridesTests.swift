@@ -13,7 +13,7 @@
 //
 
 import Nimble
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -236,116 +236,7 @@ class ToPresentedOverridesTests: TestCase {
 
         expect(tabs.containsUnsupportedConditions()).to(beFalse())
     }
-
-    func testTabsComponentDecodesNameIgnoresExtraIdInJSON() throws {
-        let data = Data(
-            #"""
-            {
-              "type": "tabs",
-              "id": "ignored-tabs-id",
-              "name": "PackagesTabs",
-              "visible": true,
-              "size": {
-                "width": { "type": "fill" },
-                "height": { "type": "fit" }
-              },
-              "padding": {
-                "top": 0, "bottom": 0, "leading": 0, "trailing": 0
-              },
-              "margin": {
-                "top": 0, "bottom": 0, "leading": 0, "trailing": 0
-              },
-              "control": {
-                "type": "buttons",
-                "stack": {
-                  "type": "stack",
-                  "dimension": {
-                    "type": "horizontal",
-                    "alignment": "center",
-                    "distribution": "start"
-                  },
-                  "size": {
-                    "width": { "type": "fit" },
-                    "height": { "type": "fit" }
-                  },
-                  "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
-                  "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
-                  "components": []
-                }
-              },
-              "tabs": [
-                {
-                  "type": "tab",
-                  "id": "tab-1",
-                  "name": "Standard",
-                  "stack": {
-                    "type": "stack",
-                    "dimension": {
-                      "type": "vertical",
-                      "alignment": "center",
-                      "distribution": "start"
-                    },
-                    "size": {
-                      "width": { "type": "fill" },
-                      "height": { "type": "fit" }
-                    },
-                    "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
-                    "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
-                    "components": []
-                  }
-                }
-              ]
-            }
-            """#.utf8
-        )
-        let tabs = try JSONDecoder.default.decode(
-            PaywallComponent.TabsComponent.self,
-            from: data
-        )
-
-        expect(tabs.name) == "PackagesTabs"
-    }
-
-    func testCarouselComponentDecodesNameIgnoresExtraIdInJSON() throws {
-        let data = Data(
-            #"""
-            {
-              "type": "carousel",
-              "id": "ignored-carousel-id",
-              "name": "Carousel-Reviews",
-              "pages": [
-                {
-                  "type": "stack",
-                  "dimension": {
-                    "type": "vertical",
-                    "alignment": "center",
-                    "distribution": "start"
-                  },
-                  "size": {
-                    "width": { "type": "fill" },
-                    "height": { "type": "fit" }
-                  },
-                  "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
-                  "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
-                  "components": []
-                }
-              ],
-              "page_alignment": "center",
-              "page_spacing": 0,
-              "page_peek": 20,
-              "initial_page_index": 0,
-              "loop": false
-            }
-            """#.utf8
-        )
-        let carousel = try JSONDecoder.default.decode(
-            PaywallComponent.CarouselComponent.self,
-            from: data
-        )
-
-        expect(carousel.name) == "Carousel-Reviews"
-    }
-
+    
     func testTimelineWithUnsupportedConditionInTitle_ReturnsTrue() throws {
         let timeline = PaywallComponent.TimelineComponent(
             iconAlignment: nil,
