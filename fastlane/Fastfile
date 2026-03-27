@@ -1642,7 +1642,8 @@ platform :ios do
         scheme: "XCFrameworkInstallationTests",
         destination: dest_info[:destination],
         configuration: "Debug",
-        derivedDataPath: File.join(project_root, "build")
+        derivedDataPath: File.join(project_root, "build"),
+        xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO"
       )
       UI.success("✓ Built successfully for #{dest_info[:description]}")
     end
