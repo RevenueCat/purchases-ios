@@ -1649,13 +1649,13 @@ platform :ios do
     UI.message("\nBuilding XCFrameworkInstallationTests for #{destinations.length} destination(s)...")
     destinations.each_with_index do |dest_info, index|
       UI.message("\n[#{index + 1}/#{destinations.length}] Building for #{dest_info[:description]}...")
-      sh("xcodebuild",
-         "-project", project_path,
-         "-scheme", "XCFrameworkInstallationTests",
-         "-destination", dest_info[:destination],
-         "-configuration", "Debug",
-         "-derivedDataPath", File.join(project_root, "build"),
-         "build")
+      xcodebuild(
+        project: project_path,
+        scheme: "XCFrameworkInstallationTests",
+        destination: dest_info[:destination],
+        configuration: "Debug",
+        derivedDataPath: File.join(project_root, "build")
+      )
       UI.success("✓ Built successfully for #{dest_info[:description]}")
     end
 
