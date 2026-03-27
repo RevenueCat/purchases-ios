@@ -349,7 +349,8 @@ private struct LinkButton: View {
         Link(destination: self.url) {
             self.content
         }
-        .environment(\.openURL,
+        .environment(
+            \.openURL,
             OpenURLAction { url in
                 if url == self.url {
                     self.onTap?()

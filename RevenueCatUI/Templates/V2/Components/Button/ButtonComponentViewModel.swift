@@ -139,7 +139,6 @@ class ButtonComponentViewModel {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension ButtonComponentViewModel.Action {
 
-    /// `component_value` for ``PurchaseHandler/trackControlInteraction(componentType:componentName:componentValue:componentURL:)``.
     var paywallControlInteractionValue: String {
         switch self {
         case .restorePurchases:
@@ -155,7 +154,6 @@ extension ButtonComponentViewModel.Action {
         }
     }
 
-    /// `component_url` when the control opens a specific URL (see ``PurchaseHandler/trackControlInteraction(componentType:componentName:componentValue:componentURL:)``).
     var paywallControlInteractionURL: URL? {
         switch self {
         case .navigateTo(let destination):
