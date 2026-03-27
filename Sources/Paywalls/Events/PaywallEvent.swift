@@ -86,7 +86,7 @@ public enum PaywallEvent: FeatureEvent {
     /// Wire `component_type` values for ``PaywallEvent/controlInteraction(_:_:_:)`` (paywall control interactions).
     public enum ControlType: String, Codable, Sendable, Hashable {
 
-        /// Tab control button selection (`component_value` is the tab id).
+        /// Tab control button selection (`component_value` is the tab builder name).
         case tab
         /// Tab control toggle (`component_value` is `"on"` or `"off"`); wire value is `"switch"`.
         case toggleSwitch = "switch"
