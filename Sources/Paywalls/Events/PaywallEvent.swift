@@ -300,6 +300,13 @@ extension PaywallEvent {
         /// Destination URL for URL-based controls (e.g. terms, privacy, generic links), when applicable.
         public var componentURL: URL?
 
+        private enum CodingKeys: String, CodingKey {
+            case componentType
+            case componentName
+            case componentValue
+            case componentURL = "componentUrl"
+        }
+
         public init(
             componentType: ControlType,
             componentName: String? = nil,
