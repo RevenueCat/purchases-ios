@@ -227,6 +227,12 @@ private struct RestorePurchasesButton: View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
 
+            self.purchaseHandler.trackControlInteraction(
+                componentType: .button,
+                componentName: PaywallControlInteraction.restoreButtonName,
+                componentValue: PaywallControlInteraction.ComponentValue.restorePurchases.rawValue
+            )
+
             if let interceptor = self.restoreInitiatedAction {
                 Logger.debug(Strings.restore_purchases_gate_start)
                 let result = await self.purchaseHandler.withPendingPurchaseContinuation {
@@ -241,11 +247,6 @@ private struct RestorePurchasesButton: View {
             }
 
             Logger.debug(Strings.restoring_purchases)
-            self.purchaseHandler.trackControlInteraction(
-                componentType: .button,
-                componentName: PaywallControlInteraction.restoreButtonName,
-                componentValue: PaywallControlInteraction.ComponentValue.restorePurchases.rawValue
-            )
 
             do {
                 let (customerInfo, success) = try await self.purchaseHandler.restorePurchases()
