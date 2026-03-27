@@ -236,7 +236,7 @@ class ToPresentedOverridesTests: TestCase {
 
         expect(tabs.containsUnsupportedConditions()).to(beFalse())
     }
-    
+
     func testTimelineWithUnsupportedConditionInTitle_ReturnsTrue() throws {
         let timeline = PaywallComponent.TimelineComponent(
             iconAlignment: nil,
