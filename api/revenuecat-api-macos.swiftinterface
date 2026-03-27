@@ -149,6 +149,21 @@ public enum PaywallEvent {
   case exitOffer(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data, RevenueCat.PaywallEvent.ExitOfferData)
   case purchaseInitiated(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data)
   case purchaseError(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data)
+  case controlInteraction(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data, RevenueCat.PaywallEvent.ControlInteractionData)
+  public enum ControlType : Swift.String, Swift.Codable, Swift.Sendable, Swift.Hashable {
+    case tab
+    case toggleSwitch
+    case carousel
+    case button
+    case text
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.String)
+    #endif
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
 }
 extension RevenueCat.PaywallEvent {
   public struct CreationData {
@@ -182,6 +197,17 @@ extension RevenueCat.PaywallEvent {
   }
 }
 extension RevenueCat.PaywallEvent {
+  public struct ControlInteractionData {
+    public var componentType: RevenueCat.PaywallEvent.ControlType
+    public var componentName: Swift.String?
+    public var componentValue: Swift.String
+    public var componentURL: Foundation.URL?
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init(componentType: RevenueCat.PaywallEvent.ControlType, componentName: Swift.String? = nil, componentValue: Swift.String, componentURL: Foundation.URL? = nil)
+    #endif
+  }
+}
+extension RevenueCat.PaywallEvent {
   public var creationData: RevenueCat.PaywallEvent.CreationData {
     get
   }
@@ -190,6 +216,11 @@ extension RevenueCat.PaywallEvent {
   }
   #if compiler(>=5.3) && $NonescapableTypes
   public var exitOfferData: RevenueCat.PaywallEvent.ExitOfferData? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var controlInteractionData: RevenueCat.PaywallEvent.ControlInteractionData? {
     get
   }
   #endif
@@ -206,6 +237,11 @@ extension RevenueCat.PaywallEvent.Data : Swift.Equatable, Swift.Codable, Swift.S
 }
 extension RevenueCat.PaywallEvent.ExitOfferData : Swift.Equatable, Swift.Codable, Swift.Sendable {
   public static func == (a: RevenueCat.PaywallEvent.ExitOfferData, b: RevenueCat.PaywallEvent.ExitOfferData) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+extension RevenueCat.PaywallEvent.ControlInteractionData : Swift.Equatable, Swift.Codable, Swift.Sendable {
+  public static func == (a: RevenueCat.PaywallEvent.ControlInteractionData, b: RevenueCat.PaywallEvent.ControlInteractionData) -> Swift.Bool
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
@@ -3271,11 +3307,12 @@ extension RevenueCat.PresentedOfferingContext.TargetingContext : Swift.Sendable 
 }
 extension RevenueCat.PaywallComponent {
   final public class ButtonComponent : RevenueCat.PaywallComponentBase {
+    final public let name: Swift.String?
     final public let action: RevenueCat.PaywallComponent.ButtonComponent.Action
     final public let stack: RevenueCat.PaywallComponent.StackComponent
     final public let transition: RevenueCat.PaywallComponent.Transition?
     #if compiler(>=5.3) && $NonescapableTypes
-    public init(action: RevenueCat.PaywallComponent.ButtonComponent.Action, stack: RevenueCat.PaywallComponent.StackComponent, transition: RevenueCat.PaywallComponent.Transition? = nil)
+    public init(name: Swift.String? = nil, action: RevenueCat.PaywallComponent.ButtonComponent.Action, stack: RevenueCat.PaywallComponent.StackComponent, transition: RevenueCat.PaywallComponent.Transition? = nil)
     #endif
     required public init(from decoder: any Swift.Decoder) throws
     final public func encode(to encoder: any Swift.Encoder) throws
@@ -3648,6 +3685,7 @@ extension RevenueCat.StoreProductDiscount {
 extension RevenueCat.PaywallComponent {
   final public class TextComponent : RevenueCat.PaywallComponentBase {
     final public let visible: Swift.Bool?
+    final public let name: Swift.String?
     final public let text: RevenueCat.PaywallComponent.LocalizationKey
     final public let fontName: Swift.String?
     final public let fontWeight: RevenueCat.PaywallComponent.FontWeight
@@ -3664,7 +3702,7 @@ extension RevenueCat.PaywallComponent {
       get
     }
     #if compiler(>=5.3) && $NonescapableTypes
-    public init(visible: Swift.Bool? = nil, text: Swift.String, fontName: Swift.String? = nil, fontWeight: RevenueCat.PaywallComponent.FontWeight = .regular, color: RevenueCat.PaywallComponent.ColorScheme, backgroundColor: RevenueCat.PaywallComponent.ColorScheme? = nil, size: RevenueCat.PaywallComponent.Size = .init(width: .fill, height: .fit), padding: RevenueCat.PaywallComponent.Padding = .zero, margin: RevenueCat.PaywallComponent.Padding = .zero, fontSize: CoreFoundation.CGFloat = 16, horizontalAlignment: RevenueCat.PaywallComponent.HorizontalAlignment = .center, overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialTextComponent>? = nil, fontWeightInt: Swift.Int? = nil)
+    public init(visible: Swift.Bool? = nil, name: Swift.String? = nil, text: Swift.String, fontName: Swift.String? = nil, fontWeight: RevenueCat.PaywallComponent.FontWeight = .regular, color: RevenueCat.PaywallComponent.ColorScheme, backgroundColor: RevenueCat.PaywallComponent.ColorScheme? = nil, size: RevenueCat.PaywallComponent.Size = .init(width: .fill, height: .fit), padding: RevenueCat.PaywallComponent.Padding = .zero, margin: RevenueCat.PaywallComponent.Padding = .zero, fontSize: CoreFoundation.CGFloat = 16, horizontalAlignment: RevenueCat.PaywallComponent.HorizontalAlignment = .center, overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialTextComponent>? = nil, fontWeightInt: Swift.Int? = nil)
     #endif
     required public init(from decoder: any Swift.Decoder) throws
     final public func encode(to encoder: any Swift.Encoder) throws
@@ -3677,6 +3715,7 @@ extension RevenueCat.PaywallComponent {
   }
   final public class PartialTextComponent : RevenueCat.PaywallPartialComponent {
     final public let visible: Swift.Bool?
+    final public let name: Swift.String?
     final public let text: RevenueCat.PaywallComponent.LocalizationKey?
     final public let fontName: Swift.String?
     final public let fontWeight: RevenueCat.PaywallComponent.FontWeight?
@@ -3694,7 +3733,7 @@ extension RevenueCat.PaywallComponent {
     }
     #endif
     #if compiler(>=5.3) && $NonescapableTypes
-    public init(visible: Swift.Bool? = true, text: RevenueCat.PaywallComponent.LocalizationKey? = nil, fontName: Swift.String? = nil, fontWeight: RevenueCat.PaywallComponent.FontWeight? = nil, color: RevenueCat.PaywallComponent.ColorScheme? = nil, backgroundColor: RevenueCat.PaywallComponent.ColorScheme? = nil, size: RevenueCat.PaywallComponent.Size? = nil, padding: RevenueCat.PaywallComponent.Padding? = nil, margin: RevenueCat.PaywallComponent.Padding? = nil, fontSize: CoreFoundation.CGFloat? = nil, horizontalAlignment: RevenueCat.PaywallComponent.HorizontalAlignment? = nil, fontWeightInt: Swift.Int? = nil)
+    public init(visible: Swift.Bool? = true, name: Swift.String? = nil, text: RevenueCat.PaywallComponent.LocalizationKey? = nil, fontName: Swift.String? = nil, fontWeight: RevenueCat.PaywallComponent.FontWeight? = nil, color: RevenueCat.PaywallComponent.ColorScheme? = nil, backgroundColor: RevenueCat.PaywallComponent.ColorScheme? = nil, size: RevenueCat.PaywallComponent.Size? = nil, padding: RevenueCat.PaywallComponent.Padding? = nil, margin: RevenueCat.PaywallComponent.Padding? = nil, fontSize: CoreFoundation.CGFloat? = nil, horizontalAlignment: RevenueCat.PaywallComponent.HorizontalAlignment? = nil, fontWeightInt: Swift.Int? = nil)
     #endif
     final public func hash(into hasher: inout Swift.Hasher)
     public static func == (lhs: RevenueCat.PaywallComponent.PartialTextComponent, rhs: RevenueCat.PaywallComponent.PartialTextComponent) -> Swift.Bool
@@ -4862,8 +4901,11 @@ extension RevenueCat.StoreProduct {
 extension RevenueCat.PaywallComponent {
   final public class TabControlButtonComponent : Swift.Codable, Swift.Sendable, Swift.Hashable, Swift.Equatable {
     final public let tabId: Swift.String
+    final public let name: Swift.String?
     final public let stack: RevenueCat.PaywallComponent.StackComponent
-    public init(tabId: Swift.String, stack: RevenueCat.PaywallComponent.StackComponent)
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init(tabId: Swift.String, stack: RevenueCat.PaywallComponent.StackComponent, name: Swift.String? = nil)
+    #endif
     final public func hash(into hasher: inout Swift.Hasher)
     public static func == (lhs: RevenueCat.PaywallComponent.TabControlButtonComponent, rhs: RevenueCat.PaywallComponent.TabControlButtonComponent) -> Swift.Bool
     @objc deinit
@@ -4874,11 +4916,14 @@ extension RevenueCat.PaywallComponent {
     public init(from decoder: any Swift.Decoder) throws
   }
   final public class TabControlToggleComponent : Swift.Codable, Swift.Sendable, Swift.Hashable, Swift.Equatable {
+    final public let name: Swift.String?
     final public let thumbColorOn: RevenueCat.PaywallComponent.ColorScheme
     final public let thumbColorOff: RevenueCat.PaywallComponent.ColorScheme
     final public let trackColorOn: RevenueCat.PaywallComponent.ColorScheme
     final public let trackColorOff: RevenueCat.PaywallComponent.ColorScheme
-    public init(defaultValue: Swift.Bool, thumbColorOn: RevenueCat.PaywallComponent.ColorScheme, thumbColorOff: RevenueCat.PaywallComponent.ColorScheme, trackColorOn: RevenueCat.PaywallComponent.ColorScheme, trackColorOff: RevenueCat.PaywallComponent.ColorScheme)
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init(defaultValue: Swift.Bool, name: Swift.String? = nil, thumbColorOn: RevenueCat.PaywallComponent.ColorScheme, thumbColorOff: RevenueCat.PaywallComponent.ColorScheme, trackColorOn: RevenueCat.PaywallComponent.ColorScheme, trackColorOff: RevenueCat.PaywallComponent.ColorScheme)
+    #endif
     final public func hash(into hasher: inout Swift.Hasher)
     public static func == (lhs: RevenueCat.PaywallComponent.TabControlToggleComponent, rhs: RevenueCat.PaywallComponent.TabControlToggleComponent) -> Swift.Bool
     @objc deinit
@@ -4937,6 +4982,7 @@ extension RevenueCat.PaywallComponent {
       }
       public init(from decoder: any Swift.Decoder) throws
     }
+    final public let name: Swift.String?
     final public let visible: Swift.Bool?
     final public let size: RevenueCat.PaywallComponent.Size
     final public let padding: RevenueCat.PaywallComponent.Padding
@@ -4950,7 +4996,7 @@ extension RevenueCat.PaywallComponent {
     final public let defaultTabId: Swift.String?
     final public let overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialTabsComponent>?
     #if compiler(>=5.3) && $NonescapableTypes
-    public init(visible: Swift.Bool? = nil, size: RevenueCat.PaywallComponent.Size = .init(width: .fill, height: .fit), padding: RevenueCat.PaywallComponent.Padding = .zero, margin: RevenueCat.PaywallComponent.Padding = .zero, background: RevenueCat.PaywallComponent.Background? = nil, shape: RevenueCat.PaywallComponent.Shape? = nil, border: RevenueCat.PaywallComponent.Border? = nil, shadow: RevenueCat.PaywallComponent.Shadow? = nil, control: RevenueCat.PaywallComponent.TabsComponent.TabControl, tabs: [RevenueCat.PaywallComponent.TabsComponent.Tab], defaultTabId: Swift.String? = nil, overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialTabsComponent>? = nil)
+    public init(name: Swift.String? = nil, visible: Swift.Bool? = nil, size: RevenueCat.PaywallComponent.Size = .init(width: .fill, height: .fit), padding: RevenueCat.PaywallComponent.Padding = .zero, margin: RevenueCat.PaywallComponent.Padding = .zero, background: RevenueCat.PaywallComponent.Background? = nil, shape: RevenueCat.PaywallComponent.Shape? = nil, border: RevenueCat.PaywallComponent.Border? = nil, shadow: RevenueCat.PaywallComponent.Shadow? = nil, control: RevenueCat.PaywallComponent.TabsComponent.TabControl, tabs: [RevenueCat.PaywallComponent.TabsComponent.Tab], defaultTabId: Swift.String? = nil, overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialTabsComponent>? = nil)
     #endif
     final public func hash(into hasher: inout Swift.Hasher)
     public static func == (lhs: RevenueCat.PaywallComponent.TabsComponent, rhs: RevenueCat.PaywallComponent.TabsComponent) -> Swift.Bool
@@ -5066,6 +5112,7 @@ extension RevenueCat.PaywallComponent {
       }
       public init(from decoder: any Swift.Decoder) throws
     }
+    final public let name: Swift.String?
     final public let visible: Swift.Bool?
     final public let size: RevenueCat.PaywallComponent.Size?
     final public let padding: RevenueCat.PaywallComponent.Padding?
@@ -5084,7 +5131,7 @@ extension RevenueCat.PaywallComponent {
     final public let pageControl: RevenueCat.PaywallComponent.CarouselComponent.PageControl?
     final public let overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialCarouselComponent>?
     #if compiler(>=5.3) && $NonescapableTypes
-    public init(visible: Swift.Bool? = nil, size: RevenueCat.PaywallComponent.Size? = nil, padding: RevenueCat.PaywallComponent.Padding? = .zero, margin: RevenueCat.PaywallComponent.Padding? = .zero, background: RevenueCat.PaywallComponent.Background? = nil, shape: RevenueCat.PaywallComponent.Shape? = nil, border: RevenueCat.PaywallComponent.Border? = nil, shadow: RevenueCat.PaywallComponent.Shadow? = nil, pages: [RevenueCat.PaywallComponent.StackComponent], pageAlignment: RevenueCat.PaywallComponent.VerticalAlignment = .center, pageSpacing: Swift.Int = 0, pagePeek: Swift.Int = 20, initialPageIndex: Swift.Int = 0, loop: Swift.Bool = false, autoAdvance: RevenueCat.PaywallComponent.CarouselComponent.AutoAdvanceSlides? = nil, pageControl: RevenueCat.PaywallComponent.CarouselComponent.PageControl? = nil, overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialCarouselComponent>? = nil)
+    public init(name: Swift.String? = nil, visible: Swift.Bool? = nil, size: RevenueCat.PaywallComponent.Size? = nil, padding: RevenueCat.PaywallComponent.Padding? = .zero, margin: RevenueCat.PaywallComponent.Padding? = .zero, background: RevenueCat.PaywallComponent.Background? = nil, shape: RevenueCat.PaywallComponent.Shape? = nil, border: RevenueCat.PaywallComponent.Border? = nil, shadow: RevenueCat.PaywallComponent.Shadow? = nil, pages: [RevenueCat.PaywallComponent.StackComponent], pageAlignment: RevenueCat.PaywallComponent.VerticalAlignment = .center, pageSpacing: Swift.Int = 0, pagePeek: Swift.Int = 20, initialPageIndex: Swift.Int = 0, loop: Swift.Bool = false, autoAdvance: RevenueCat.PaywallComponent.CarouselComponent.AutoAdvanceSlides? = nil, pageControl: RevenueCat.PaywallComponent.CarouselComponent.PageControl? = nil, overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialCarouselComponent>? = nil)
     #endif
     public static func == (lhs: RevenueCat.PaywallComponent.CarouselComponent, rhs: RevenueCat.PaywallComponent.CarouselComponent) -> Swift.Bool
     final public func hash(into hasher: inout Swift.Hasher)
@@ -5215,6 +5262,7 @@ extension RevenueCat.VerificationResult : Swift.RawRepresentable {}
 extension RevenueCat.ExitOfferType : Swift.Equatable {}
 extension RevenueCat.ExitOfferType : Swift.Hashable {}
 extension RevenueCat.ExitOfferType : Swift.RawRepresentable {}
+extension RevenueCat.PaywallEvent.ControlType : Swift.RawRepresentable {}
 extension RevenueCat.StoreProduct : Swift.Sendable {}
 extension RevenueCat.StoreProduct.ProductCategory : Swift.Equatable {}
 extension RevenueCat.StoreProduct.ProductCategory : Swift.Hashable {}
