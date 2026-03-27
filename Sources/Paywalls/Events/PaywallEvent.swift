@@ -21,6 +21,22 @@ public enum ExitOfferType: String, Codable, Sendable {
 
 }
 
+/// The type for the paywall control interactions.
+public enum ControlType: String, Codable, Sendable, Hashable {
+
+    /// Tab control button selection (`component_value` is the tab builder name).
+    case tab
+    /// Tab control toggle (`component_value` is `"on"` or `"off"`); wire value is `"switch"`.
+    case toggleSwitch = "switch"
+    /// Carousel page change (`component_value` is the 0-based page index as a string).
+    case carousel
+    /// Non-purchase button (`component_value` is the action discriminator).
+    case button
+    /// Tappable link in paywall text / markdown (`component_url` is set).
+    case text
+
+}
+
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum PaywallEvent: FeatureEvent {
 
@@ -82,22 +98,6 @@ public enum PaywallEvent: FeatureEvent {
 
     /// User interacted with a paywall control (tabs, carousel, non-purchase button, etc.).
     case controlInteraction(CreationData, Data, ControlInteractionData)
-
-    /// Wire `component_type` values for ``PaywallEvent/controlInteraction(_:_:_:)`` (paywall control interactions).
-    public enum ControlType: String, Codable, Sendable, Hashable {
-
-        /// Tab control button selection (`component_value` is the tab builder name).
-        case tab
-        /// Tab control toggle (`component_value` is `"on"` or `"off"`); wire value is `"switch"`.
-        case toggleSwitch = "switch"
-        /// Carousel page change (`component_value` is the 0-based page index as a string).
-        case carousel
-        /// Non-purchase button (`component_value` is the action discriminator).
-        case button
-        /// Tappable link in paywall text / markdown (`component_url` is set).
-        case text
-
-    }
 
 }
 

@@ -36,7 +36,7 @@ extension FeatureEventsRequest {
         var productId: String?
         var errorCode: Int?
         var errorMessage: String?
-        var componentType: RevenueCat.PaywallEvent.ControlType?
+        var componentType: ControlType?
         var componentName: String?
         var componentValue: String?
         var componentURL: URL?
@@ -156,7 +156,7 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case componentType
         case componentName
         case componentValue
-        case componentURL
+        case componentURL = "componentUrl"
 
     }
 
