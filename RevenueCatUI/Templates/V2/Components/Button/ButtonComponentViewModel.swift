@@ -139,7 +139,7 @@ class ButtonComponentViewModel {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension ButtonComponentViewModel.Action {
 
-    /// `component_value` for ``PurchaseHandler/trackControlInteraction(componentType:componentName:componentValue:)``.
+    /// `component_value` for ``PurchaseHandler/trackControlInteraction(componentType:componentName:componentValue:componentURL:)``.
     var paywallControlInteractionValue: String {
         switch self {
         case .restorePurchases:
@@ -152,6 +152,16 @@ extension ButtonComponentViewModel.Action {
             return "navigate_to_sheet"
         case .navigateTo(let destination):
             return destination.paywallControlInteractionValue
+        }
+    }
+
+    /// `component_url` when the control opens a specific URL (see ``PurchaseHandler/trackControlInteraction(componentType:componentName:componentValue:componentURL:)``).
+    var paywallControlInteractionURL: URL? {
+        switch self {
+        case .navigateTo(let destination):
+            return destination.paywallControlInteractionURL
+        case .restorePurchases, .navigateBack, .unknown, .sheet:
+            return nil
         }
     }
 
@@ -176,6 +186,15 @@ extension ButtonComponentViewModel.Destination {
             return "navigate_to_web_paywall_link"
         case .unknown:
             return "navigate_to_unknown"
+        }
+    }
+
+    fileprivate var paywallControlInteractionURL: URL? {
+        switch self {
+        case .url(let url, _), .privacyPolicy(let url, _), .terms(let url, _), .webPaywallLink(let url, _):
+            return url
+        case .customerCenter, .offerCodeRedemptionSheet, .unknown:
+            return nil
         }
     }
 

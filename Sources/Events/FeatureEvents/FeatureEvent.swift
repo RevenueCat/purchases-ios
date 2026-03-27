@@ -97,6 +97,9 @@ private extension PaywallEvent {
             if let name = interaction.componentName {
                 result["component_name"] = name
             }
+            if let url = interaction.componentURL {
+                result["component_url"] = url.absoluteString
+            }
         }
 
         return result

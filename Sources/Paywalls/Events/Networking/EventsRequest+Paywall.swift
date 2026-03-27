@@ -39,6 +39,7 @@ extension FeatureEventsRequest {
         var componentType: RevenueCat.PaywallEvent.ControlType?
         var componentName: String?
         var componentValue: String?
+        var componentURL: URL?
 
     }
 
@@ -94,7 +95,8 @@ extension FeatureEventsRequest.PaywallEvent {
                 errorMessage: data.errorMessage,
                 componentType: controlInteractionData?.componentType,
                 componentName: controlInteractionData?.componentName,
-                componentValue: controlInteractionData?.componentValue
+                componentValue: controlInteractionData?.componentValue,
+                componentURL: controlInteractionData?.componentURL
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -154,6 +156,7 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case componentType
         case componentName
         case componentValue
+        case componentURL
 
     }
 

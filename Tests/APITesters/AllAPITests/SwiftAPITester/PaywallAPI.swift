@@ -338,10 +338,12 @@ func checkControlInteractionData(_ data: PaywallEvent.ControlInteractionData) {
     let componentType: PaywallEvent.ControlType = data.componentType
     let componentName: String? = data.componentName
     let componentValue: String = data.componentValue
+    let componentURL: URL? = data.componentURL
 
     let _: PaywallEvent.ControlInteractionData = PaywallEvent.ControlInteractionData(
         componentType: componentType,
         componentName: componentName,
-        componentValue: componentValue
+        componentValue: componentValue,
+        componentURL: componentURL
     )
 }

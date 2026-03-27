@@ -104,7 +104,8 @@ struct FooterView: View {
                         self.purchaseHandler.trackControlInteraction(
                             componentType: .button,
                             componentName: PaywallControlInteraction.termsLinkName,
-                            componentValue: PaywallControlInteraction.ComponentValue.navigateToTerms.rawValue
+                            componentValue: PaywallControlInteraction.ComponentValue.navigateToTerms.rawValue,
+                            componentURL: url
                         )
                     }
                 )
@@ -123,7 +124,8 @@ struct FooterView: View {
                         self.purchaseHandler.trackControlInteraction(
                             componentType: .button,
                             componentName: PaywallControlInteraction.privacyLinkName,
-                            componentValue: PaywallControlInteraction.ComponentValue.navigateToPrivacyPolicy.rawValue
+                            componentValue: PaywallControlInteraction.ComponentValue.navigateToPrivacyPolicy.rawValue,
+                            componentURL: url
                         )
                     }
                 )

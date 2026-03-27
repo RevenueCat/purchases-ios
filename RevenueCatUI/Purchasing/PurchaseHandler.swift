@@ -551,12 +551,14 @@ extension PurchaseHandler {
     ///   - componentName: Optional builder `name` from the paywall JSON; `nil` when the control has no usable name
     ///   - componentValue: Type-specific payload, e.g. selected tab id, `"on"` / `"off"` for a switch,
     ///     0-based carousel page index as a string, or a button action discriminator (e.g. `"restore_purchases"`)
+    ///   - componentURL: Optional destination URL for URL-based controls (terms, privacy, generic links).
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackControlInteraction(
         componentType: PaywallEvent.ControlType,
         componentName: String?,
-        componentValue: String
+        componentValue: String,
+        componentURL: URL? = nil
     ) -> Bool {
         guard let data = self.eventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
@@ -566,7 +568,8 @@ extension PurchaseHandler {
         let interactionData = PaywallEvent.ControlInteractionData(
             componentType: componentType,
             componentName: componentName,
-            componentValue: componentValue
+            componentValue: componentValue,
+            componentURL: componentURL
         )
         self.track(.controlInteraction(.init(), data, interactionData))
         return true

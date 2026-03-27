@@ -116,7 +116,8 @@ struct ButtonComponentView: View {
         self.purchaseHandler.trackControlInteraction(
             componentType: .button,
             componentName: self.viewModel.component.name,
-            componentValue: self.viewModel.action.paywallControlInteractionValue
+            componentValue: self.viewModel.action.paywallControlInteractionValue,
+            componentURL: self.viewModel.action.paywallControlInteractionURL
         )
     }
 

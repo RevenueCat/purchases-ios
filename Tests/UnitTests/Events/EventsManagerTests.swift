@@ -201,6 +201,23 @@ class EventsManagerTests: TestCase {
         expect(map["type"] as? String) == "paywall_control_interaction"
         expect(map["component_type"] as? String) == "carousel"
         expect(map["component_value"] as? String) == "1"
+        expect(map["component_url"]).to(beNil())
+    }
+
+    func testPaywallControlInteractionToMap_IncludesComponentURLWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let url = URL(string: "https://example.com/terms")!
+        let interaction = PaywallEvent.ControlInteractionData(
+            componentType: .button,
+            componentName: "terms",
+            componentValue: "navigate_to_terms",
+            componentURL: url
+        )
+        let event: PaywallEvent = .controlInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_url"] as? String) == url.absoluteString
     }
 
     func testTrackControlInteractionEventStores() async throws {

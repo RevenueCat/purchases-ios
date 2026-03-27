@@ -295,15 +295,19 @@ extension PaywallEvent {
         public var componentType: ControlType
         public var componentName: String?
         public var componentValue: String
+        /// Destination URL for URL-based controls (e.g. terms, privacy, generic links), when applicable.
+        public var componentURL: URL?
 
         public init(
             componentType: ControlType,
             componentName: String? = nil,
-            componentValue: String
+            componentValue: String,
+            componentURL: URL? = nil
         ) {
             self.componentType = componentType
             self.componentName = componentName
             self.componentValue = componentValue
+            self.componentURL = componentURL
         }
         // swiftlint:enable missing_docs
 
