@@ -85,7 +85,7 @@ struct CarouselComponentView: View {
                         msTimePerSlide: style.autoAdvance?.msTimePerPage,
                         msTransitionTime: style.autoAdvance?.msTransitionTime,
                         autoAdvanceTransitionType: style.autoAdvance?.transitionType,
-                        onOriginalPageIndexChanged: self.trackCarouselControlInteraction
+                        onUserInitiatedOriginalPageIndexChange: self.trackCarouselControlInteraction
                     ).clipped()
                 }
                 // Need to set height since geometry reader has no intrinsic height
@@ -143,7 +143,7 @@ private struct CarouselView<Content: View>: View {
 
     private let pageControl: DisplayablePageControl?
 
-    private let onOriginalPageIndexChanged: ((Int) -> Void)?
+    private let onUserInitiatedOriginalPageIndexChange: ((Int) -> Void)?
 
     /// Optional auto-play timings (in milliseconds).
     private let msTimePerSlide: Int?
@@ -195,7 +195,7 @@ private struct CarouselView<Content: View>: View {
         msTimePerSlide: Int?,
         msTransitionTime: Int?,
         autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType?,
-        onOriginalPageIndexChanged: ((Int) -> Void)? = nil
+        onUserInitiatedOriginalPageIndexChange: ((Int) -> Void)? = nil
     ) {
         self.width = width
         self.pageAlignment = pageAlignment
@@ -205,7 +205,7 @@ private struct CarouselView<Content: View>: View {
         self.spacing = spacing
         self.cardWidth = cardWidth
         self.pageControl = pageControl
-        self.onOriginalPageIndexChanged = onOriginalPageIndexChanged
+        self.onUserInitiatedOriginalPageIndexChange = onUserInitiatedOriginalPageIndexChange
         self.msTimePerSlide = msTimePerSlide
         self.msTransitionTime = msTransitionTime
         self.autoAdvanceTransitionType = autoAdvanceTransitionType
@@ -325,12 +325,6 @@ private struct CarouselView<Content: View>: View {
             DispatchQueue.main.async {
                 self.isInitialized = true
             }
-        }
-        .onChangeOf(self.index) { newIndex in
-            guard self.isInitialized, self.originalCount > 0 else { return }
-
-            let originalIndex = self.loop ? newIndex % self.originalCount : newIndex
-            self.onOriginalPageIndexChanged?(originalIndex)
         }
         .onDisappear {
             // Stop the timer if view disappears
@@ -457,6 +451,9 @@ private struct CarouselView<Content: View>: View {
 
     private func handleDragEnd(translation: CGFloat) {
         let threshold = cardWidth * 0.2
+        let originalPageIndexBefore: Int? = self.originalCount > 0
+            ? (self.loop ? self.index % self.originalCount : self.index)
+            : nil
 
         withAnimation(.easeInOut(duration: 0.25)) {
             self.dragOffset = 0
@@ -480,6 +477,19 @@ private struct CarouselView<Content: View>: View {
 
         // Pause auto-play for 10 seconds
         pauseAutoPlay(for: 10)
+
+        // `onUserInitiatedOriginalPageIndexChange` is only invoked from here so timer-driven auto-advance does not emit
+        // paywall_control_interaction events (see `startAutoPlayIfNeeded`).
+        guard self.isInitialized,
+              let originalPageIndexBefore,
+              self.originalCount > 0 else { return }
+
+        let originalPageIndexAfter = self.loop
+            ? self.index % self.originalCount
+            : self.index
+        guard originalPageIndexAfter != originalPageIndexBefore else { return }
+
+        self.onUserInitiatedOriginalPageIndexChange?(originalPageIndexAfter)
     }
 
     private var autoPlayEnabled: Bool {
