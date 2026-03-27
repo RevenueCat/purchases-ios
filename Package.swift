@@ -134,8 +134,7 @@ let package = Package(
                     resources: [
                         .copy("Resources/header.heic"),
                         .copy("Resources/background.heic"),
-                        .copy("PaywallsV2/__PreviewResources__"),
-                        .copy("PaywallsV2/JSON")
+                        .copy("PaywallsV2/__PreviewResources__")
                     ])
     ]
 )

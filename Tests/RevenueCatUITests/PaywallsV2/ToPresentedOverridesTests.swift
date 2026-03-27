@@ -238,18 +238,109 @@ class ToPresentedOverridesTests: TestCase {
     }
 
     func testTabsComponentDecodesNameIgnoresExtraIdInJSON() throws {
+        let data = Data(
+            #"""
+            {
+              "type": "tabs",
+              "id": "ignored-tabs-id",
+              "name": "PackagesTabs",
+              "visible": true,
+              "size": {
+                "width": { "type": "fill" },
+                "height": { "type": "fit" }
+              },
+              "padding": {
+                "top": 0, "bottom": 0, "leading": 0, "trailing": 0
+              },
+              "margin": {
+                "top": 0, "bottom": 0, "leading": 0, "trailing": 0
+              },
+              "control": {
+                "type": "buttons",
+                "stack": {
+                  "type": "stack",
+                  "dimension": {
+                    "type": "horizontal",
+                    "alignment": "center",
+                    "distribution": "start"
+                  },
+                  "size": {
+                    "width": { "type": "fit" },
+                    "height": { "type": "fit" }
+                  },
+                  "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                  "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                  "components": []
+                }
+              },
+              "tabs": [
+                {
+                  "type": "tab",
+                  "id": "tab-1",
+                  "name": "Standard",
+                  "stack": {
+                    "type": "stack",
+                    "dimension": {
+                      "type": "vertical",
+                      "alignment": "center",
+                      "distribution": "start"
+                    },
+                    "size": {
+                      "width": { "type": "fill" },
+                      "height": { "type": "fit" }
+                    },
+                    "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                    "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                    "components": []
+                  }
+                }
+              ]
+            }
+            """#.utf8
+        )
         let tabs = try JSONDecoder.default.decode(
             PaywallComponent.TabsComponent.self,
-            from: Self.jsonDataFixture(named: "TabsComponentWithNameAndIgnoredId")
+            from: data
         )
 
         expect(tabs.name) == "PackagesTabs"
     }
 
     func testCarouselComponentDecodesNameIgnoresExtraIdInJSON() throws {
+        let data = Data(
+            #"""
+            {
+              "type": "carousel",
+              "id": "ignored-carousel-id",
+              "name": "Carousel-Reviews",
+              "pages": [
+                {
+                  "type": "stack",
+                  "dimension": {
+                    "type": "vertical",
+                    "alignment": "center",
+                    "distribution": "start"
+                  },
+                  "size": {
+                    "width": { "type": "fill" },
+                    "height": { "type": "fit" }
+                  },
+                  "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                  "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                  "components": []
+                }
+              ],
+              "page_alignment": "center",
+              "page_spacing": 0,
+              "page_peek": 20,
+              "initial_page_index": 0,
+              "loop": false
+            }
+            """#.utf8
+        )
         let carousel = try JSONDecoder.default.decode(
             PaywallComponent.CarouselComponent.self,
-            from: Self.jsonDataFixture(named: "CarouselComponentWithNameAndIgnoredId")
+            from: data
         )
 
         expect(carousel.name) == "Carousel-Reviews"
@@ -601,27 +692,6 @@ class ToPresentedOverridesTests: TestCase {
 
         let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
         expect(result.count).to(equal(3))
-    }
-
-}
-
-private extension ToPresentedOverridesTests {
-
-    static func jsonDataFixture(
-        named fileName: String,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) throws -> Data {
-        let url = try XCTUnwrap(
-            URL(fileURLWithPath: String(describing: file))
-                .deletingLastPathComponent()
-                .appendingPathComponent("JSON")
-                .appendingPathComponent(fileName + ".json"),
-            "Could not find JSON fixture: '\(fileName).json'",
-            file: file,
-            line: line
-        )
-        return try XCTUnwrap(Data(contentsOf: url), file: file, line: line)
     }
 
 }
