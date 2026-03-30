@@ -50,9 +50,9 @@ var dependencies: [Package.Dependency] = [
     .package(
         url: "https://github.com/pointfreeco/swift-snapshot-testing",
         exact: "1.18.9"
-    )
+    ),
     // Rust core library
-    .package(url: "https://github.com/RevenueCat/purchases-core", branch: "rust")
+    .package(url: "git@github.com:RevenueCat/purchases-core.git", branch: "rust")
 ]
 if shouldIncludeDocCPlugin {
     // Versions 1.4.0 and 1.4.1 are failing to compile, so we are pinning it to 1.3.0 for now
