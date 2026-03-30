@@ -33,9 +33,11 @@ cp -a "${ADAPTER_DIR}/." .
 if [[ "$(uname)" == "Darwin" ]]; then
     sed -i '' 's|.package(name: "purchases-ios", path: "../..")|.package(url: "https://github.com/RevenueCat/purchases-ios-spm.git", exact: "'"${VERSION}"'")|' Package.swift
     sed -i '' 's|package: "purchases-ios"|package: "purchases-ios-spm"|' Package.swift
+    sed -i '' 's|from: "[^"]*")|from: "'"${VERSION}"'")|' README.md
 else
     sed -i 's|.package(name: "purchases-ios", path: "../..")|.package(url: "https://github.com/RevenueCat/purchases-ios-spm.git", exact: "'"${VERSION}"'")|' Package.swift
     sed -i 's|package: "purchases-ios"|package: "purchases-ios-spm"|' Package.swift
+    sed -i 's|from: "[^"]*")|from: "'"${VERSION}"'")|' README.md
 fi
 
 if [ "${DRY_RUN}" = "--dry-run" ]; then
