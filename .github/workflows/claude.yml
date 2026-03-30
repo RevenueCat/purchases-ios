@@ -13,6 +13,6 @@ on:
 
 jobs:
   claude:
-    uses: revenuecat/sdk-github-workflows/.github/workflows/claude.yml@v5
+    uses: revenuecat/sdk-github-workflows/.github/workflows/claude.yml@2706a8a289c29c710a2d2b34178399253eddb221 # v5
     secrets:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

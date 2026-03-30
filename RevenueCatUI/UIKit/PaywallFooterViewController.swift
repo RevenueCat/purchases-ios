@@ -55,6 +55,35 @@ public final class PaywallFooterViewController: PaywallViewController {
                    dismissRequestedHandler: dismissRequestedHandler)
     }
 
+    /// Objective-C compatible initializer that accepts a ``PaywallPurchaseHandler`` for custom
+    /// purchase and restore logic.
+    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// `Offerings.current` will be used by default.
+    /// - Parameter purchaseHandler: An object implementing ``PaywallPurchaseHandler`` for custom
+    /// purchase and restore logic.
+    /// - Parameter dismissRequestedHandler: If this is not set, the paywall footer will close itself
+    /// automatically after a successful purchase. Otherwise use this handler to handle dismissals
+    /// of the paywall.
+    ///
+    /// - Important: `purchaseHandler` is only used when `Purchases` has been configured with
+    /// `.with(purchasesAreCompletedBy: .myApp)`. Otherwise, the default purchase and restore
+    /// implementations are used and the handler is ignored.
+    @objc
+    public init(
+        offering: Offering? = nil,
+        purchaseHandler: PaywallPurchaseHandler?,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
+        let bridged = Self.bridgePurchaseHandler(purchaseHandler)
+        super.init(content: .optionalOffering(offering),
+                   fonts: DefaultPaywallFontProvider(),
+                   displayCloseButton: false,
+                   shouldBlockTouchEvents: false,
+                   performPurchase: bridged.performPurchase,
+                   performRestore: bridged.performRestore,
+                   dismissRequestedHandler: dismissRequestedHandler)
+    }
+
     /// Initialize a `PaywallFooterViewController` with an optional `Offering`.
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// `Offerings.current` will be used by default.

@@ -688,6 +688,24 @@ platform :ios do
     )
   end
 
+  desc "Runs all RevenueCatAdMob tests (standalone SPM package under AdapterSDKs/RevenueCatAdMob)"
+  lane :test_revenuecat_admob do
+    platform = ENV['PLATFORM'] || 'iOS Simulator'
+    destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
+    sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+
+    xcodebuild(
+      workspace: 'AdapterSDKs/RevenueCatAdMob',
+      scheme: 'RevenueCatAdMob',
+      destination: "platform=" + platform + ",name=" + destination,
+      sdk: sdk,
+      result_bundle_path: 'fastlane/test_output/revenuecat_admob.xcresult',
+      report_formats: [:junit],
+      report_path: 'fastlane/test_output/revenuecat_admob/tests.xml',
+      test: true
+    )
+  end
+
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
@@ -1578,66 +1596,64 @@ platform :ios do
       UI.success("✓ Extracted #{xcframework_name}")
     end
 
-    # Generate Tuist workspace with XCFrameworkInstallationTests included
-    UI.message("Generating Tuist workspace with XCFrameworkInstallationTests...")
+    # Generate Tuist project for XCFrameworkInstallationTests
+    UI.message("Generating Tuist project for XCFrameworkInstallationTests...")
     tuist_generate(env_vars: { "INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS" => "true" })
 
-    workspace_path = File.join(project_root, "RevenueCat-Tuist.xcworkspace")
+    # Use the project directly instead of the workspace to ensure the build
+    # uses the xcframeworks and not source targets from other workspace projects.
+    project_path = File.join(project_root, "Projects", "XCFrameworkInstallationTests", "XCFrameworkInstallationTests.xcodeproj")
 
-    # Build for each destination to verify xcframework integration
-    # These destinations match the platforms exported in the xcframework:
-    # iOS, macOS, Mac Catalyst, watchOS, visionOS
-    destinations = [
-      {
-        destination: "generic/platform=iOS Simulator",
-        description: "iOS Simulator"
-      },
-      {
-        destination: "generic/platform=iOS",
-        description: "iOS Device"
-      },
-      {
-        destination: "generic/platform=macOS,variant=Mac Catalyst",
-        description: "Mac Catalyst"
-      },
-      {
-        destination: "generic/platform=macOS",
-        description: "macOS"
-      },
-      {
-        destination: "generic/platform=watchOS Simulator",
-        description: "watchOS Simulator"
-      },
-      {
-        destination: "generic/platform=watchOS",
-        description: "watchOS Device"
-      },
-      {
-        destination: "generic/platform=visionOS Simulator",
-        description: "visionOS Simulator"
-      },
-      {
-        destination: "generic/platform=visionOS",
-        description: "visionOS Device"
-      }
-    ]
-
-    # Build for each destination
-    UI.message("\nBuilding XCFrameworkInstallationTests for #{destinations.length} destination(s)...")
-    destinations.each_with_index do |dest_info, index|
-      UI.message("\n[#{index + 1}/#{destinations.length}] Building for #{dest_info[:description]}...")
-      xcodebuild(
-        workspace: workspace_path,
-        scheme: "XCFrameworkInstallationTests",
-        destination: dest_info[:destination],
-        configuration: "Debug",
-        derivedDataPath: File.join(project_root, "build"),
-        clean: index == 0  # Only clean on first build
-      )
-      UI.success("✓ Built successfully for #{dest_info[:description]}")
+    unless File.directory?(project_path)
+      UI.user_error!("XCFrameworkInstallationTests project not found at #{project_path}")
     end
 
-    UI.success("\n✓ XCFramework integration test passed - XCFrameworkInstallationTests built successfully for all destinations")
+    # RevenueCat xcframework: all platforms
+    revenuecat_destinations = [
+      { destination: "generic/platform=iOS Simulator", description: "iOS Simulator" },
+      { destination: "generic/platform=iOS", description: "iOS Device" },
+      { destination: "generic/platform=macOS,variant=Mac Catalyst", description: "Mac Catalyst" },
+      { destination: "generic/platform=macOS", description: "macOS" },
+      { destination: "generic/platform=watchOS Simulator", description: "watchOS Simulator" },
+      { destination: "generic/platform=watchOS", description: "watchOS Device" },
+      { destination: "generic/platform=visionOS Simulator", description: "visionOS Simulator" },
+      { destination: "generic/platform=visionOS", description: "visionOS Device" }
+    ]
+
+    # RevenueCatUI xcframework: iOS, Mac Catalyst, watchOS only
+    revenuecatui_destinations = [
+      { destination: "generic/platform=iOS Simulator", description: "iOS Simulator" },
+      { destination: "generic/platform=iOS", description: "iOS Device" },
+      { destination: "generic/platform=macOS,variant=Mac Catalyst", description: "Mac Catalyst" },
+      { destination: "generic/platform=watchOS Simulator", description: "watchOS Simulator" },
+      { destination: "generic/platform=watchOS", description: "watchOS Device" }
+    ]
+
+    schemes = [
+      { scheme: "XCFrameworkInstallationTests", destinations: revenuecat_destinations },
+      { scheme: "XCFrameworkUIInstallationTests", destinations: revenuecatui_destinations }
+    ]
+
+    schemes.each do |scheme_info|
+      scheme = scheme_info[:scheme]
+      destinations = scheme_info[:destinations]
+
+      UI.message("\nBuilding #{scheme} for #{destinations.length} destination(s)...")
+      destinations.each_with_index do |dest_info, index|
+        UI.message("[#{index + 1}/#{destinations.length}] Building #{scheme} for #{dest_info[:description]}...")
+        xcodebuild(
+          project: project_path,
+          scheme: scheme,
+          destination: dest_info[:destination],
+          configuration: "Debug",
+          derivedDataPath: File.join(project_root, "build"),
+          xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO"
+        )
+        UI.success("✓ Built successfully for #{dest_info[:description]}")
+      end
+    end
+
+    UI.success("\n✓ XCFramework integration test passed - all schemes built successfully for all destinations")
   end
 
   desc "Run BackendIntegrationTests"
@@ -2116,7 +2132,7 @@ platform :ios do
     Dir.chdir("../Tests") do
       if !File.directory?(PAYWALL_PREVIEW_RESOURCES_REPO_NAME)
         UI.important("Cloning paywall-preview-resources repo")
-        sh "git", "clone", "https://github.com/RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git"
+        sh "git", "clone", "git@github.com:RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git"
       end
 
       commit = current_paywall_preview_resources_commit
@@ -2222,25 +2238,13 @@ platform :ios do
 
   desc "Check API changes and report results"
   lane :check_api_changes do
-    api_diff_tool = File.expand_path("~/bin/public-api-diff")
-
-    unless File.exist?(api_diff_tool)
-      UI.error("API diff tool not found at #{api_diff_tool}")
-      UI.important("To install locally, run:")
-      UI.important("  git clone https://github.com/Adyen/adyen-swift-public-api-diff.git ~/tools/adyen-swift-public-api-diff")
-      UI.important("  cd ~/tools/adyen-swift-public-api-diff && swift build -c release")
-      UI.important("  mkdir -p ~/bin && cp .build/release/public-api-diff ~/bin/")
-      UI.message("Skipping API diff check (tool not available locally)")
-      return
-    end
-
     failed_platforms = []
 
     ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
       old_file = "../api/revenuecat-api#{platform[:suffix]}.swiftinterface"
       new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/RevenueCat#{platform[:suffix]}.swiftinterface"
 
-      result = ApiDiffHelper.run_api_diff(api_diff_tool, old_file, new_file, platform[:name])
+      result = ApiDiffHelper.run_api_diff(old_file, new_file, platform[:name])
       failed_platforms << result unless result[:success]
     end
 
