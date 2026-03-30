@@ -36,9 +36,10 @@ extension PurchaseHandler {
         .dropFirst()
         .eraseToAnyPublisher()
     ) -> Self {
-        return self.init(
-            purchases: MockPurchases(purchasesAreCompletedBy: purchasesAreCompletedBy,
-                                     preferredLocaleOverride: preferredLocaleOverride) { _, _, _ in
+        let purchases = MockPurchases(
+            purchasesAreCompletedBy: purchasesAreCompletedBy,
+            preferredLocaleOverride: preferredLocaleOverride
+        ) { _, _, _ in
                 return (
                     // No current way to create a mock transaction with RevenueCat's public methods.
                     transaction: nil,
@@ -51,14 +52,19 @@ extension PurchaseHandler {
                 Logger.debug("Tracking event: \(event)")
             } customerInfo: {
                 return customerInfo
-            },
+            }
+        return self.init(
+            purchases: purchases,
+            eventDispatcher: Self.testEventDispatcher,
             performPurchase: performPurchase,
             performRestore: performRestore,
             purchaseResultPublisher: purchaseResultPublisher
         )
     }
 
-    static func cancelling(purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat) -> Self {
+    static func cancelling(
+        purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
+    ) -> Self {
         return .mock(purchasesAreCompletedBy: purchasesAreCompletedBy)
             .map { block in { package, offer, event in
                     var result = try await block(package, offer, event)
@@ -79,7 +85,8 @@ extension PurchaseHandler {
                 Logger.debug("Tracking event: \(event)")
             } customerInfo: {
                 throw error
-            }
+            },
+            eventDispatcher: Self.testEventDispatcher
         )
     }
 
@@ -104,6 +111,19 @@ extension Task where Success == Never, Failure == Never {
 
     static func sleep(seconds: TimeInterval) async {
         try? await Self.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchaseHandler {
+
+    /// Test event dispatcher that uses `Task { }` instead of `Task.detached(priority: .background)`.
+    /// Non-detached tasks inherit the caller's actor context and priority, so events are delivered
+    /// promptly without the aggressive deprioritization that `Task.detached(priority: .background)`
+    /// causes on iOS 26+ CI environments.
+    static let testEventDispatcher: EventDispatcher = { work in
+        Task { await work() }
     }
 
 }
