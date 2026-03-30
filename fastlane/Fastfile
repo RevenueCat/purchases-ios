@@ -1596,66 +1596,64 @@ platform :ios do
       UI.success("✓ Extracted #{xcframework_name}")
     end
 
-    # Generate Tuist workspace with XCFrameworkInstallationTests included
-    UI.message("Generating Tuist workspace with XCFrameworkInstallationTests...")
+    # Generate Tuist project for XCFrameworkInstallationTests
+    UI.message("Generating Tuist project for XCFrameworkInstallationTests...")
     tuist_generate(env_vars: { "INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS" => "true" })
 
-    workspace_path = File.join(project_root, "RevenueCat-Tuist.xcworkspace")
+    # Use the project directly instead of the workspace to ensure the build
+    # uses the xcframeworks and not source targets from other workspace projects.
+    project_path = File.join(project_root, "Projects", "XCFrameworkInstallationTests", "XCFrameworkInstallationTests.xcodeproj")
 
-    # Build for each destination to verify xcframework integration
-    # These destinations match the platforms exported in the xcframework:
-    # iOS, macOS, Mac Catalyst, watchOS, visionOS
-    destinations = [
-      {
-        destination: "generic/platform=iOS Simulator",
-        description: "iOS Simulator"
-      },
-      {
-        destination: "generic/platform=iOS",
-        description: "iOS Device"
-      },
-      {
-        destination: "generic/platform=macOS,variant=Mac Catalyst",
-        description: "Mac Catalyst"
-      },
-      {
-        destination: "generic/platform=macOS",
-        description: "macOS"
-      },
-      {
-        destination: "generic/platform=watchOS Simulator",
-        description: "watchOS Simulator"
-      },
-      {
-        destination: "generic/platform=watchOS",
-        description: "watchOS Device"
-      },
-      {
-        destination: "generic/platform=visionOS Simulator",
-        description: "visionOS Simulator"
-      },
-      {
-        destination: "generic/platform=visionOS",
-        description: "visionOS Device"
-      }
-    ]
-
-    # Build for each destination
-    UI.message("\nBuilding XCFrameworkInstallationTests for #{destinations.length} destination(s)...")
-    destinations.each_with_index do |dest_info, index|
-      UI.message("\n[#{index + 1}/#{destinations.length}] Building for #{dest_info[:description]}...")
-      xcodebuild(
-        workspace: workspace_path,
-        scheme: "XCFrameworkInstallationTests",
-        destination: dest_info[:destination],
-        configuration: "Debug",
-        derivedDataPath: File.join(project_root, "build"),
-        clean: index == 0  # Only clean on first build
-      )
-      UI.success("✓ Built successfully for #{dest_info[:description]}")
+    unless File.directory?(project_path)
+      UI.user_error!("XCFrameworkInstallationTests project not found at #{project_path}")
     end
 
-    UI.success("\n✓ XCFramework integration test passed - XCFrameworkInstallationTests built successfully for all destinations")
+    # RevenueCat xcframework: all platforms
+    revenuecat_destinations = [
+      { destination: "generic/platform=iOS Simulator", description: "iOS Simulator" },
+      { destination: "generic/platform=iOS", description: "iOS Device" },
+      { destination: "generic/platform=macOS,variant=Mac Catalyst", description: "Mac Catalyst" },
+      { destination: "generic/platform=macOS", description: "macOS" },
+      { destination: "generic/platform=watchOS Simulator", description: "watchOS Simulator" },
+      { destination: "generic/platform=watchOS", description: "watchOS Device" },
+      { destination: "generic/platform=visionOS Simulator", description: "visionOS Simulator" },
+      { destination: "generic/platform=visionOS", description: "visionOS Device" }
+    ]
+
+    # RevenueCatUI xcframework: iOS, Mac Catalyst, watchOS only
+    revenuecatui_destinations = [
+      { destination: "generic/platform=iOS Simulator", description: "iOS Simulator" },
+      { destination: "generic/platform=iOS", description: "iOS Device" },
+      { destination: "generic/platform=macOS,variant=Mac Catalyst", description: "Mac Catalyst" },
+      { destination: "generic/platform=watchOS Simulator", description: "watchOS Simulator" },
+      { destination: "generic/platform=watchOS", description: "watchOS Device" }
+    ]
+
+    schemes = [
+      { scheme: "XCFrameworkInstallationTests", destinations: revenuecat_destinations },
+      { scheme: "XCFrameworkUIInstallationTests", destinations: revenuecatui_destinations }
+    ]
+
+    schemes.each do |scheme_info|
+      scheme = scheme_info[:scheme]
+      destinations = scheme_info[:destinations]
+
+      UI.message("\nBuilding #{scheme} for #{destinations.length} destination(s)...")
+      destinations.each_with_index do |dest_info, index|
+        UI.message("[#{index + 1}/#{destinations.length}] Building #{scheme} for #{dest_info[:description]}...")
+        xcodebuild(
+          project: project_path,
+          scheme: scheme,
+          destination: dest_info[:destination],
+          configuration: "Debug",
+          derivedDataPath: File.join(project_root, "build"),
+          xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO"
+        )
+        UI.success("✓ Built successfully for #{dest_info[:description]}")
+      end
+    end
+
+    UI.success("\n✓ XCFramework integration test passed - all schemes built successfully for all destinations")
   end
 
   desc "Run BackendIntegrationTests"
