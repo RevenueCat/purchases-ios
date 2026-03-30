@@ -2619,7 +2619,7 @@ extension RevenueCat.Purchases {
   @objc final public func eligibleWinBackOffers(forPackage package: RevenueCat.Package, completion: @escaping @Sendable ([RevenueCat.WinBackOffer]?, RevenueCat.PublicError?) -> Swift.Void)
   #endif
 }
-@objc(RCSubscriptionPeriod) final public class SubscriptionPeriod : ObjectiveC.NSObject {
+@objc(RCSubscriptionPeriod) final public class SubscriptionPeriod : ObjectiveC.NSObject, Swift.Codable {
   @objc final public let value: Swift.Int
   @objc final public let unit: RevenueCat.SubscriptionPeriod.Unit
   public init(value: Swift.Int, unit: RevenueCat.SubscriptionPeriod.Unit)
@@ -2643,6 +2643,8 @@ extension RevenueCat.Purchases {
     @objc get
   }
   @objc deinit
+  final public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
 }
 extension RevenueCat.SubscriptionPeriod {
   @available(iOS, unavailable, renamed: "value")
@@ -2671,10 +2673,6 @@ extension RevenueCat.SubscriptionPeriod {
   }
 }
 extension RevenueCat.SubscriptionPeriod.Unit : Swift.Codable {
-}
-extension RevenueCat.SubscriptionPeriod : Swift.Codable {
-  final public func encode(to encoder: any Swift.Encoder) throws
-  public init(from decoder: any Swift.Decoder) throws
 }
 @objc(RCPurchaseOwnershipType) public enum PurchaseOwnershipType : Swift.Int {
   case purchased = 0
