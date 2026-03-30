@@ -47,6 +47,56 @@ public class PaywallViewController: UIViewController {
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
+    /// Custom variables to be used in paywall text replacement.
+    ///
+    /// Variables are defined in the RevenueCat dashboard using the `{{ custom.key }}` syntax.
+    ///
+    /// - Important: Set this property before presenting the view controller.
+    ///   Changes made after presentation will not be reflected in the paywall.
+    ///
+    /// ### Example
+    /// ```swift
+    /// let vc = PaywallViewController(offering: offering)
+    /// vc.customVariables = [
+    ///     "player_name": .string("John")
+    /// ]
+    /// present(vc, animated: true)
+    /// ```
+    public var customVariables: [String: CustomVariableValue] = [:] {
+        didSet {
+            assert(hostingController == nil, "Custom variables can only be set before presenting the paywall")
+        }
+    }
+
+    // MARK: - Objective-C Custom Variable Methods
+
+    /// Sets a string custom variable value for the given key.
+    /// - Parameters:
+    ///   - value: The string value to set.
+    ///   - key: The variable key (without the `custom.` prefix).
+    @objc public func setCustomVariable(_ value: String, forKey key: String) {
+        CustomVariableKeyValidator.validate(key)
+        self.customVariables[key] = .string(value)
+    }
+
+    /// Sets a numeric custom variable value for the given key.
+    /// - Parameters:
+    ///   - value: The numeric value to set.
+    ///   - key: The variable key (without the `custom.` prefix).
+    @objc public func setCustomVariableNumber(_ value: Double, forKey key: String) {
+        CustomVariableKeyValidator.validate(key)
+        self.customVariables[key] = .number(value)
+    }
+
+    /// Sets a boolean custom variable value for the given key.
+    /// - Parameters:
+    ///   - value: The boolean value to set.
+    ///   - key: The variable key (without the `custom.` prefix).
+    @objc public func setCustomVariableBool(_ value: Bool, forKey key: String) {
+        CustomVariableKeyValidator.validate(key)
+        self.customVariables[key] = .bool(value)
+    }
+
     private final var shouldBlockTouchEvents: Bool
     private final var dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
 
@@ -76,6 +126,9 @@ public class PaywallViewController: UIViewController {
     private var purchaseHandler: PurchaseHandler {
         return configuration.purchaseHandler
     }
+
+    /// The promo offer cache, shared with exit offer paywall to avoid race conditions.
+    private var promoOfferCache: PaywallPromoOfferCache
 
     /// Initialize a `PaywallViewController` with an optional `Offering`.
     /// - Parameter offering: The `Offering` containing the desired paywall to display.
@@ -128,6 +181,37 @@ public class PaywallViewController: UIViewController {
             shouldBlockTouchEvents: shouldBlockTouchEvents,
             performPurchase: performPurchase,
             performRestore: performRestore,
+            dismissRequestedHandler: dismissRequestedHandler
+        )
+    }
+
+    /// Objective-C compatible initializer that accepts a ``PaywallPurchaseHandler`` for custom
+    /// purchase and restore logic.
+    /// - Parameter offering: The `Offering` containing the desired paywall to display.
+    /// `Offerings.current` will be used by default.
+    /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    /// - Parameter shouldBlockTouchEvents: Whether to intercept all touch events propagated through this VC.
+    /// - Parameter purchaseHandler: An object implementing ``PaywallPurchaseHandler`` for custom
+    /// purchase and restore logic. Only used when `Purchases` has been configured with
+    /// `.with(purchasesAreCompletedBy: .myApp)`.
+    /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
+    /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall.
+    @objc
+    public convenience init(
+        offering: Offering? = nil,
+        displayCloseButton: Bool = false,
+        shouldBlockTouchEvents: Bool = false,
+        purchaseHandler: PaywallPurchaseHandler?,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
+        let bridged = Self.bridgePurchaseHandler(purchaseHandler)
+        self.init(
+            content: .optionalOffering(offering),
+            fonts: DefaultPaywallFontProvider(),
+            displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: shouldBlockTouchEvents,
+            performPurchase: bridged.performPurchase,
+            performRestore: bridged.performRestore,
             dismissRequestedHandler: dismissRequestedHandler
         )
     }
@@ -199,18 +283,24 @@ public class PaywallViewController: UIViewController {
         shouldBlockTouchEvents: Bool,
         performPurchase: PerformPurchase?,
         performRestore: PerformRestore?,
-        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?,
+        promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         self.shouldBlockTouchEvents = shouldBlockTouchEvents
         self.dismissRequestedHandler = dismissRequestedHandler
         let handler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+
+        self.promoOfferCache = promoOfferCache ?? PaywallPromoOfferCache(
+            subscriptionHistoryTracker: handler.subscriptionHistoryTracker
+        )
 
         self.configuration = .init(
             content: content,
             mode: Self.mode,
             fonts: fonts,
             displayCloseButton: displayCloseButton,
-            purchaseHandler: handler
+            purchaseHandler: handler,
+            promoOfferCache: self.promoOfferCache
         )
 
         super.init(nibName: nil, bundle: nil)
@@ -379,6 +469,8 @@ public class PaywallViewController: UIViewController {
         let originalDismissHandler = self.dismissRequestedHandler
         let fonts = self.configuration.fonts
         let shouldBlock = self.shouldBlockTouchEvents
+        let performPurchase = self.purchaseHandler.performPurchase
+        let performRestore = self.purchaseHandler.performRestore
 
         // Mark that we're dismissing to show exit offer (skip dismissal notification)
         self.isDismissingForExitOffer = true
@@ -396,10 +488,12 @@ public class PaywallViewController: UIViewController {
             )
 
             let exitOfferVC = PaywallViewController(
-                offering: offering,
+                content: .offering(offering),
                 fonts: fonts,
                 displayCloseButton: true,
                 shouldBlockTouchEvents: shouldBlock,
+                performPurchase: performPurchase,
+                performRestore: performRestore,
                 dismissRequestedHandler: { controller in
                     // When exit offer is dismissed, call the original handler
                     if let handler = originalDismissHandler {
@@ -407,7 +501,8 @@ public class PaywallViewController: UIViewController {
                     } else {
                         controller.dismiss(animated: true)
                     }
-                }
+                },
+                promoOfferCache: self.promoOfferCache
             )
 
             // Set delegate directly - exit offer is now standalone
@@ -591,6 +686,21 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     optional func paywallViewController(_ controller: PaywallViewController,
                                         willPresentExitOfferController exitOfferController: PaywallViewController)
 
+    /// Notifies that a purchase is about to be initiated, before the payment sheet is displayed.
+    /// This allows the delegate to gate the purchase flow (e.g., requiring authentication).
+    /// The `resume` closure **must** be called to either proceed (`true`) or cancel (`false`) the purchase.
+    @objc(paywallViewController:didInitiatePurchaseWithPackage:resume:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didInitiatePurchaseWith package: Package,
+                                        resume: @escaping (Bool) -> Void)
+
+    /// Notifies that a restore is about to be initiated.
+    /// This allows the delegate to gate the restore flow (e.g., requiring authentication).
+    /// The `resume` closure **must** be called to either proceed (`true`) or cancel (`false`) the restore.
+    @objc(paywallViewController:didInitiateRestoreWithResume:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didInitiateRestoreWith resume: @escaping (Bool) -> Void)
+
 }
 
 // MARK: - Private
@@ -598,6 +708,7 @@ public protocol PaywallViewControllerDelegate: AnyObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PaywallViewController {
 
+    // swiftlint:disable:next function_body_length
     func createHostingController() -> UIHostingController<PaywallContainerView> {
         // Always route close button through exit offer handling
         let onRequestedDismissal: () -> Void = { [weak self] in
@@ -607,6 +718,7 @@ private extension PaywallViewController {
 
         let container = PaywallContainerView(
             configuration: self.configuration,
+            customVariables: self.customVariables,
             purchaseStarted: { [weak self] package in
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidStartPurchase?(self)
@@ -643,7 +755,9 @@ private extension PaywallViewController {
             onSizeChange: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
-            }
+            },
+            purchaseInitiated: self.createPurchaseInitiatedHandler(),
+            restoreInitiated: self.createRestoreInitiatedHandler()
         )
 
         let controller = UIHostingController(rootView: container)
@@ -656,12 +770,97 @@ private extension PaywallViewController {
         return controller
     }
 
+    private func createPurchaseInitiatedHandler() -> (Package, @escaping (Bool) -> Void) -> Void {
+        return { [weak self] package, resume in
+            guard let self else {
+                resume(true)
+                return
+            }
+            self.delegate?.paywallViewController?(self, didInitiatePurchaseWith: package, resume: resume)
+                ?? resume(true)
+        }
+    }
+
+    private func createRestoreInitiatedHandler() -> (@escaping (Bool) -> Void) -> Void {
+        return { [weak self] resume in
+            guard let self else {
+                resume(true)
+                return
+            }
+            self.delegate?.paywallViewController?(self, didInitiateRestoreWith: resume)
+                ?? resume(true)
+        }
+    }
+
+}
+
+// MARK: - PaywallPurchaseHandler
+
+/// Objective-C compatible protocol for handling custom purchase and restore logic.
+///
+/// Implement this protocol to provide custom purchase and restore behavior when `Purchases`
+/// has been configured with `.with(purchasesAreCompletedBy: .myApp)`.
+///
+/// Pass an instance to the ``PaywallViewController`` or ``PaywallFooterViewController``
+/// initializer via the `purchaseHandler` parameter.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@objc(RCPaywallPurchaseHandler)
+public protocol PaywallPurchaseHandler {
+
+    /// Performs a purchase for the given package.
+    /// - Parameters:
+    ///   - package: The `Package` to purchase.
+    ///   - completion: Must be called when the purchase completes.
+    ///     - `userCancelled`: `true` if the user cancelled the purchase; otherwise, `false`.
+    ///     - `error`: An optional error that occurred during the purchase, or `nil` if none.
+    @objc func performPurchase(
+        for package: Package,
+        completion: @escaping (_ userCancelled: Bool, _ error: Error?) -> Void
+    )
+
+    /// Performs a restore operation.
+    /// - Parameter completion: Must be called when the restore completes.
+    ///   - `success`: `true` if the restore succeeded; otherwise, `false`.
+    ///   - `error`: An optional error that occurred during the restore, or `nil` if none.
+    @objc func performRestore(
+        completion: @escaping (_ success: Bool, _ error: Error?) -> Void
+    )
+
+}
+
+// MARK: - ObjC bridging
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension PaywallViewController {
+
+    static func bridgePurchaseHandler(
+        _ handler: PaywallPurchaseHandler?
+    ) -> (performPurchase: PerformPurchase?, performRestore: PerformRestore?) {
+        guard let handler else { return (nil, nil) }
+        let purchase: PerformPurchase = { package in
+            await withCheckedContinuation { continuation in
+                handler.performPurchase(for: package) { userCancelled, error in
+                    continuation.resume(returning: (userCancelled, error))
+                }
+            }
+        }
+        let restore: PerformRestore = {
+            await withCheckedContinuation { continuation in
+                handler.performRestore { success, error in
+                    continuation.resume(returning: (success, error))
+                }
+            }
+        }
+        return (purchase, restore)
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct PaywallContainerView: View {
 
     var configuration: PaywallViewConfiguration
+    var customVariables: [String: CustomVariableValue]
 
     let purchaseStarted: PurchaseOfPackageStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
@@ -674,8 +873,12 @@ private struct PaywallContainerView: View {
 
     let onSizeChange: (CGSize) -> Void
 
+    let purchaseInitiated: (Package, @escaping (Bool) -> Void) -> Void
+    let restoreInitiated: (@escaping (Bool) -> Void) -> Void
+
     var body: some View {
         PaywallView(configuration: self.configuration)
+            .customPaywallVariables(self.customVariables)
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
@@ -685,6 +888,20 @@ private struct PaywallContainerView: View {
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
             .onRequestedDismissal(self.requestedDismissal)
+            .onPurchaseInitiated { package, resumeAction in
+                self.purchaseInitiated(package) { shouldProceed in
+                    Task { @MainActor in
+                        resumeAction(shouldProceed: shouldProceed)
+                    }
+                }
+            }
+            .onRestoreInitiated { resumeAction in
+                self.restoreInitiated { shouldProceed in
+                    Task { @MainActor in
+                        resumeAction(shouldProceed: shouldProceed)
+                    }
+                }
+            }
     }
 
 }

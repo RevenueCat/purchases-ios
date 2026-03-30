@@ -124,7 +124,8 @@ class HTTPClient {
             RequestHeader.retryCount.rawValue: "0",
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)",
             "X-Is-Backgrounded": "\(self.systemInfo.isAppBackgroundedState)",
-            "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)"
+            "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)",
+            "X-Installation-Method": SystemInfo.installationMethod
         ]
 
         if let storefront = self.systemInfo.storefront {
@@ -606,8 +607,8 @@ private extension HTTPClient {
         #endif
 
         finalURLRequest.timeoutInterval = requestTimeoutManager.timeout(
-            for: request.httpRequest.path,
-            isFallback: request.isFallbackURLRequest
+            isFallback: request.isFallbackURLRequest,
+            fallbackAvailable: request.httpRequest.path.supportsFallbackURLs && SystemInfo.proxyURL == nil
         )
 
         // swiftlint:disable:next redundant_void_return

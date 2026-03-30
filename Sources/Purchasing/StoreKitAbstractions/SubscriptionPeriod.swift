@@ -18,7 +18,7 @@ import StoreKit
 /// Use the value and the unit together to determine the subscription period.
 /// For example, if the unit is  `.month`, and the value is `3`, the subscription period is three months.
 @objc(RCSubscriptionPeriod)
-public final class SubscriptionPeriod: NSObject {
+public final class SubscriptionPeriod: NSObject, Codable {
 
     /// The number of period units.
     @objc public let value: Int
@@ -271,5 +271,4 @@ fileprivate extension SubscriptionPeriod.Unit {
 
 // MARK: - Encodable
 
-extension SubscriptionPeriod.Unit: Encodable { }
-extension SubscriptionPeriod: Encodable { }
+extension SubscriptionPeriod.Unit: Codable { }

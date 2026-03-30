@@ -73,19 +73,55 @@ def check_swift_files_in_project
 
   return if missing_files.empty? && lingering_references.empty?
 
-  message = "Please keep RevenueCat.xcodeproj in sync with Tuist-generated changes.\n"
+  message = "**`RevenueCat.xcodeproj` is out of sync.**\n"
   unless missing_files.empty?
-    message += "\nThe following Swift files were added but don't appear to be included in RevenueCat.xcodeproj:\n"
-    missing_files.each { |file| message += "• #{file}\n" }
+    message += "\nThe following Swift files were added but are missing from `RevenueCat.xcodeproj`:\n"
+    missing_files.each { |file| message += "• `#{file}`\n" }
   end
 
   unless lingering_references.empty?
-    message += "\nThe following Swift files were deleted but still appear referenced in RevenueCat.xcodeproj:\n"
-    lingering_references.each { |file| message += "• #{file}\n" }
+    message += "\nThe following Swift files were deleted but still referenced in `RevenueCat.xcodeproj`:\n"
+    lingering_references.each { |file| message += "• `#{file}`\n" }
   end
 
-  message += "\nIf you've changed files using the tuist project, make sure those changes are added to RevenueCat.xcodeproj, or double-check if they should be excluded."
+  message += "\nTo fix: open `RevenueCat.xcodeproj` in Xcode, add/remove the files above in the appropriate target. "
+  message += "Check where similar files in the same directory are assigned if you're unsure which target to use."
   warn(message)
 end
 
 check_swift_files_in_project
+
+# Check for new public enums in Swift files
+def check_for_public_enums
+  swift_files = (git.added_files + git.modified_files)
+    .select { |file| file.start_with?('Sources/') || file.start_with?('RevenueCatUI/') }
+    .select { |file| file.end_with?('.swift') }
+    .select { |file| File.exist?(file) }
+
+  public_enum_pattern = /^\+\s*public\s+enum\s+/
+  spi_public_enum_pattern = /@_spi\([^)]*\)\s*public\s+enum/
+
+  files_with_public_enums = []
+
+  swift_files.each do |file|
+    diff = git.diff_for_file(file)
+    next unless diff
+
+    diff.patch.each_line do |line|
+      if line.match?(public_enum_pattern) && !line.match?(spi_public_enum_pattern)
+        files_with_public_enums << file
+        break
+      end
+    end
+  end
+
+  return if files_with_public_enums.empty?
+
+  message = "Public enums should not be added. Consider using a struct with static properties or an @objc enum instead.\n\n"
+  message += "The following files contain new public enums:\n"
+  files_with_public_enums.each { |file| message += "• #{file}\n" }
+
+  warn(message)
+end
+
+check_for_public_enums

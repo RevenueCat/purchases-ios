@@ -28,6 +28,7 @@ final class MockStoreTransaction: StoreTransactionType {
     let storefront: RCStorefront?
     let jwsRepresentation: String?
     let environment: StoreEnvironment?
+    let reason: TransactionReason?
 
     init(jwsRepresentation: String? = nil, environment: StoreEnvironment = .sandbox) {
         self.productIdentifier = UUID().uuidString
@@ -37,6 +38,7 @@ final class MockStoreTransaction: StoreTransactionType {
         self.storefront = nil
         self.jwsRepresentation = jwsRepresentation
         self.environment = environment
+        self.reason = nil
     }
 
     private let _hasKnownPurchaseDate: Atomic<Bool> = true

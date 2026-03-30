@@ -21,6 +21,7 @@ extension FeatureEventsRequest {
         let version: Int
         var type: EventType
         var appUserID: String
+        var paywallID: String?
         var sessionID: String
         var offeringID: String
         var paywallRevision: Int
@@ -28,8 +29,13 @@ extension FeatureEventsRequest {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
+        var source: PaywallSource?
         var exitOfferType: ExitOfferType?
         var exitOfferingID: String?
+        var packageId: String?
+        var productId: String?
+        var errorCode: Int?
+        var errorMessage: String?
 
     }
 
@@ -43,6 +49,8 @@ extension FeatureEventsRequest.PaywallEvent {
         case cancel = "paywall_cancel"
         case close = "paywall_close"
         case exitOffer = "paywall_exit_offer"
+        case purchaseInitiated = "paywall_purchase_initiated"
+        case purchaseError = "paywall_purchase_error"
 
     }
 
@@ -64,6 +72,7 @@ extension FeatureEventsRequest.PaywallEvent {
                 version: Self.version,
                 type: paywallEvent.eventType,
                 appUserID: storedEvent.userID,
+                paywallID: data.paywallIdentifier,
                 sessionID: data.sessionIdentifier.uuidString,
                 offeringID: data.offeringIdentifier,
                 paywallRevision: data.paywallRevision,
@@ -71,8 +80,13 @@ extension FeatureEventsRequest.PaywallEvent {
                 displayMode: data.displayMode,
                 darkMode: data.darkMode,
                 localeIdentifier: data.localeIdentifier,
+                source: data.source,
                 exitOfferType: exitOfferData?.exitOfferType,
-                exitOfferingID: exitOfferData?.exitOfferingIdentifier
+                exitOfferingID: exitOfferData?.exitOfferingIdentifier,
+                packageId: data.packageId,
+                productId: data.productId,
+                errorCode: data.errorCode,
+                errorMessage: data.errorMessage
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -93,6 +107,8 @@ private extension PaywallEvent {
         case .cancel: return .cancel
         case .close: return .close
         case .exitOffer: return .exitOffer
+        case .purchaseInitiated: return .purchaseInitiated
+        case .purchaseError: return .purchaseError
         }
 
     }
@@ -111,6 +127,7 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case version
         case type
         case appUserID = "appUserId"
+        case paywallID = "paywallId"
         case sessionID = "sessionId"
         case offeringID = "offeringId"
         case paywallRevision
@@ -118,8 +135,13 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case displayMode
         case darkMode
         case localeIdentifier = "locale"
+        case source
         case exitOfferType
         case exitOfferingID = "exitOfferingId"
+        case packageId = "packageId"
+        case productId = "productId"
+        case errorCode
+        case errorMessage
 
     }
 

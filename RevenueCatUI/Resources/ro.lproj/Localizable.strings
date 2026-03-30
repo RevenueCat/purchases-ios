@@ -18,3 +18,4 @@
 "Continue" = "Continua";
 "Default_offer_details_with_intro_offer" = "Începeți perioada de încercare de {{ sub_offer_duration }}, apoi {{ total_price_and_per_month }}.";
 "Something went wrong" = "Ceva n-a mers bine";
+"Purchase" = "Cumpără";

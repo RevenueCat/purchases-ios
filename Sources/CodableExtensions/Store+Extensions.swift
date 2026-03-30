@@ -67,6 +67,7 @@ private extension Store {
         case .external: return "external"
         case .paddle: return "paddle"
         case .testStore: return "test_store"
+        case .galaxy: return "galaxy"
         }
     }
 

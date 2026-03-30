@@ -18,3 +18,4 @@
 "Continue" = "Жалғастыру";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} сынақ нұсқасын бастаңыз, содан кейін {{ total_price_and_per_month }}.";
 "Something went wrong" = "Бірдеңе дұрыс болмады";
+"Purchase" = "Сатып алу";

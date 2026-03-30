@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "RevenueCat"
-  s.version          = "5.56.0-SNAPSHOT"
+  s.version          = "5.68.0-SNAPSHOT"
   s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.documentation_url = "https://docs.revenuecat.com/"
 
   s.framework      = 'StoreKit'
-  s.swift_version  = '5.7'
+  s.swift_version  = '5.8'
 
   s.ios.deployment_target = '13.0'
   s.watchos.deployment_target = '6.2'
@@ -24,8 +24,9 @@ Pod::Spec.new do |s|
   
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
-    'SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*]' => '$(inherited) VISION_OS',
-    'SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*]' => '$(inherited) VISION_OS',
+    'SWIFT_ACTIVE_COMPILATION_CONDITIONS' => '$(inherited) COCOAPODS',
+    'SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*]' => '$(inherited) COCOAPODS VISION_OS',
+    'SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*]' => '$(inherited) COCOAPODS VISION_OS',
   }
 
   s.source_files = 'Sources/**/*.swift'

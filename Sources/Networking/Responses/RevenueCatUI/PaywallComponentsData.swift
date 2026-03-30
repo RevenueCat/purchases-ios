@@ -73,6 +73,9 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         }
     }
 
+    /// The unique identifier for this paywall.
+    public var id: String?
+
     public var templateName: String
 
     /// The base remote URL where assets for this paywall are stored.
@@ -101,6 +104,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public var errorInfo: [String: EquatableError]?
 
     private enum CodingKeys: String, CodingKey {
+        case id
         case templateName
         case componentsConfig
         case componentsLocalizations
@@ -111,7 +115,8 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         case exitOffers
     }
 
-    public init(templateName: String,
+    public init(id: String? = nil,
+                templateName: String,
                 assetBaseURL: URL,
                 componentsConfig: ComponentsConfig,
                 componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
@@ -119,6 +124,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
                 defaultLocaleIdentifier: String,
                 zeroDecimalPlaceCountries: [String] = [],
                 exitOffers: ExitOffers? = nil) {
+        self.id = id
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig
@@ -137,6 +143,8 @@ extension PaywallComponentsData {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         var errors: [String: EquatableError] = [:]
+
+        id = try container.decodeIfPresent(String.self, forKey: .id)
 
         do {
             templateName = try container.decode(String.self, forKey: .templateName)
@@ -208,6 +216,7 @@ extension PaywallComponentsData {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
+        try container.encodeIfPresent(id, forKey: .id)
         try container.encode(templateName, forKey: .templateName)
         try container.encode(assetBaseURL, forKey: .assetBaseURL)
         try container.encode(componentsConfig, forKey: .componentsConfig)

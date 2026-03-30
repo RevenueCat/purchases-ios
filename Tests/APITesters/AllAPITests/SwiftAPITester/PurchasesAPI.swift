@@ -404,6 +404,10 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
     }
     #endif
 
+    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+        purchases.recordPurchase(productID: "") { (_: StoreTransaction?, _: PublicError?) in }
+    }
+
     purchases.redeemWebPurchase(webPurchaseRedemption: webPurchaseRedemption, completion: redemptionCompletion)
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION

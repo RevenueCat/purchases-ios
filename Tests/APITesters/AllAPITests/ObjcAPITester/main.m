@@ -30,6 +30,8 @@
 #import "RCSubscriptionPeriodAPI.h"
 #import "RCTransactionAPI.h"
 #import "RCVerificationResultAPI.h"
+#import "RCPaywallViewControllerAPI.h"
+#import "RCCustomPaywallImpressionAPI.h"
 
 @import StoreKit;
 
@@ -87,6 +89,11 @@ int main(int argc, const char * argv[]) {
         [RCTransactionAPI checkAPI];
 
         [RCVerificationResultAPI checkAPI];
+
+        if (@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)) {
+            [RCPaywallViewControllerAPI checkAPI];
+            [RCCustomPaywallImpressionAPI checkAPI];
+        }
     }
     return 0;
 }

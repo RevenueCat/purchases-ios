@@ -21,6 +21,8 @@ import SwiftUI
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.openSheet) private var openSheet
+    @Environment(\.restoreInitiatedAction)
+    private var restoreInitiatedAction: RestoreInitiatedAction?
     @Environment(\.offerCodeRedemptionInitiatedAction)
     private var offerCodeRedemptionInitiatedAction: OfferCodeRedemptionInitiatedAction?
     @State private var inAppBrowserURL: URL?
@@ -72,11 +74,8 @@ struct ButtonComponentView: View {
                 )
             }
             .withTransition(viewModel.component.transition)
-            .applyIf(self.shouldBeDisabled, apply: { view in
-                view
-                    .disabled(true)
-                    .opacity(0.35)
-            })
+            .disabled(self.shouldBeDisabled)
+            .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 SafariView(url: self.inAppBrowserURL!)
@@ -113,6 +112,19 @@ struct ButtonComponentView: View {
 
     private func restorePurchases() async throws {
         guard !self.purchaseHandler.actionInProgress else { return }
+
+        if let interceptor = self.restoreInitiatedAction {
+            Logger.debug(Strings.restore_purchases_gate_start)
+            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
+                await withCheckedContinuation { continuation in
+                    interceptor(resume: ResumeAction { shouldProceed in
+                        Logger.debug(Strings.restore_purchases_gate_finish(with: shouldProceed))
+                        continuation.resume(returning: shouldProceed)
+                    })
+                }
+            }
+            guard result else { return }
+        }
 
         Logger.debug(Strings.restoring_purchases)
 

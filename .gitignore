@@ -49,11 +49,16 @@ Tests/purchases-ios-snapshots
 
 # SPM
 
+# SwiftPM/Xcode-generated workspace metadata (machine-specific, avoid noisy diffs and CI variance)
+AdapterSDKs/RevenueCatAdMob/.swiftpm/
+
 # This is the "SPM" scheme, which is duplicated with the scheme in the project
 # and that breaks Carthage because it appears twice in `xcodebuild -list`
 .swiftpm/xcode/xcshareddata/xcschemes/RevenueCat.xcscheme
 
 Examples/**/Package.resolved
+Tuist/Package.resolved
+.package.resolved
 
 Tests/InstallationTests/SPMInstallation/SPMInstallation.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
@@ -96,3 +101,8 @@ Examples/**/xcshareddata/**
 # We can't avoid the whole folder yet because RC and RCUI need to be tested through the package, rather than the workspace
 .swiftpm/xcode/xcshareddata/xcschemes/ReceiptParser.xcscheme
 .swiftpm/xcode/xcshareddata/xcschemes/RevenueCat_CustomEntitlementComputation.xcscheme
+.swiftpm/xcode/xcshareddata/xcschemes/RevenueCatAdMob.xcscheme
+Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.storekit
+
+# Claude Code
+.claude/

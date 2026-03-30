@@ -15,8 +15,44 @@
 import Foundation
 
 // swiftlint:disable file_length type_body_length
+
+/// Caches data in `UserDefaults` and in-memory caches.
+///
+/// ## Thread Safety
+///
+/// `UserDefaults` is thread-safe for individual read and write operations according to Apple's documentation.
+/// This means simple get/set operations on single keys are safe without additional synchronization.
+///
+/// However, **read-modify-write (RMW) operations are NOT atomic** and can have race conditions when
+/// accessed from multiple threads simultaneously. This class uses two different `UserDefaults` wrappers:
+///
+/// ### Lock-free wrapper (`userDefaults`)
+/// Used for simple read/write operations that don't require atomicity. This avoids deadlocks that can occur
+/// when the main thread waits for a lock while a background thread holds it and writes to UserDefaults
+/// (which posts `didChangeNotification` to main queue).
+///
+/// ### Locking wrapper (`lockingUserDefaults`)
+/// Used for **subscriber attribute write operations** which require atomic read-modify-write:
+/// - `store(subscriberAttributesByKey:)`, `deleteAttributesIfSynced()`, `copySubscriberAttributes()`,
+///   `cleanupSubscriberAttributes()`, `clearCaches()`
+///
+/// Read-only subscriber attribute operations (`subscriberAttribute()`, `unsyncedAttributesByKey()`,
+/// `unsyncedAttributesForAllUsers()`) use the lock-free wrapper since they don't modify data.
+///
+/// The locking wrapper has a potential deadlock risk if called from the main thread while a background thread
+/// holds the lock. This will be addressed in a future PR by refactoring subscriber attributes to use
+/// individual keys, eliminating the need for RMW operations.
+///
+/// ### SK2 Observer Mode Transaction IDs
+/// `registerNewSyncedSK2ObserverModeTransactionIDs()` performs RMW using a dedicated lock
+/// (`cachedSyncedSK2ObserverModeTransactionIDsLock`) that is separate from the subscriber attributes lock.
+///
+/// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/4137
+/// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/5729
+///
 class DeviceCache {
-    private static let defaultBasePath = "RevenueCat"
+    private static let defaultBasePath = "device-cache"
+    private static let oldDefaultBasePath = "RevenueCat"
 
     var cachedAppUserID: String? { return self._cachedAppUserID.value }
     var cachedLegacyAppUserID: String? { return self._cachedLegacyAppUserID.value }
@@ -24,28 +60,34 @@ class DeviceCache {
 
     private let systemInfo: SystemInfo
     private let userDefaults: SynchronizedUserDefaults
+    private let lockingUserDefaults: LockingSynchronizedUserDefaults
     private let largeItemCache: SynchronizedLargeItemCache
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
+    private let fileManager: FileManager
 
     private let _cachedAppUserID: Atomic<String?>
     private let _cachedLegacyAppUserID: Atomic<String?>
 
-    private var userDefaultsObserver: NSObjectProtocol?
+    private let offeringsCachePreferredLocales: Atomic<[String]> = .init([])
 
-    private var offeringsCachePreferredLocales: [String] = []
-    private let cacheURL: URL?
+    private let migrationLock = Lock(.nonRecursive)
 
     init(systemInfo: SystemInfo,
          userDefaults: UserDefaults,
-         fileManager: LargeItemCacheType = FileManager.default,
+         cache: LargeItemCacheType = FileManager.default,
+         fileManager: FileManager = FileManager.default,
          offeringsCachedObject: InMemoryCachedObject<Offerings> = .init()) {
         self.offeringsCachedObject = offeringsCachedObject
         self.systemInfo = systemInfo
         self.userDefaults = .init(userDefaults: userDefaults)
+        self.lockingUserDefaults = .init(userDefaults: userDefaults)
         self._cachedAppUserID = .init(userDefaults.string(forKey: CacheKeys.appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults))
-        self.cacheURL = fileManager.createDocumentDirectoryIfNeeded(basePath: Self.defaultBasePath)
-        self.largeItemCache = .init(cache: fileManager, basePath: Self.defaultBasePath)
+        self.largeItemCache = .init(
+            cache: cache,
+            basePath: Self.defaultBasePath
+        )
+        self.fileManager = fileManager
 
         Logger.verbose(Strings.purchase.device_cache_init(self))
     }
@@ -62,7 +104,14 @@ class DeviceCache {
         userDefaults.write { defaults in
             defaults.removeObject(forKey: key)
         }
-        return self.largeItemCache.value(forKey: key.rawValue)
+
+        // Try to get from new cache location first
+        if let value: Value = try? self.largeItemCache.value(forKey: key.rawValue) {
+            return value
+        }
+
+        // Check old documents directory and migrate if found
+        return self.migrateAndReturnValueIfNeeded(for: key.rawValue)
     }
 
     // MARK: - appUserID
@@ -75,7 +124,7 @@ class DeviceCache {
     }
 
     func clearCaches(oldAppUserID: String, andSaveWithNewUserID newUserID: String) {
-        self.userDefaults.write { userDefaults in
+        self.lockingUserDefaults.write { userDefaults in
             userDefaults.removeObject(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
             userDefaults.removeObject(
                 forKey: CacheKey.customerInfo(oldAppUserID)
@@ -108,6 +157,9 @@ class DeviceCache {
 
         // Clear offerings cache from large item cache
         self.largeItemCache.removeObject(forKey: CacheKey.offerings(oldAppUserID).rawValue)
+
+        // Delete old offerings file from documents directory if it exists
+        self.deleteOldFileIfNeeded(for: CacheKey.offerings(oldAppUserID).rawValue)
     }
 
     // MARK: - CustomerInfo
@@ -171,18 +223,31 @@ class DeviceCache {
         // during the get offerings request, before this cache method gets called.
         // For the cache we need the preferred locales that were used in the request.
         self.cacheInMemory(offerings: offerings)
-        self.offeringsCachePreferredLocales = preferredLocales
-        self.largeItemCache.set(codable: offerings.contents, forKey: CacheKey.offerings(appUserID).rawValue)
+        self.offeringsCachePreferredLocales.value = preferredLocales
+
+        let key = CacheKey.offerings(appUserID).rawValue
+        if self.largeItemCache.set(codable: offerings.contents, forKey: key) {
+
+            // Delete old file from documents directory if it exists
+            self.deleteOldFileIfNeeded(for: key)
+        }
     }
 
     func cacheInMemory(offerings: Offerings) {
         self.offeringsCachedObject.cache(instance: offerings)
     }
 
+    func clearInMemoryOfferingsCache() {
+        self.offeringsCachedObject.clearCache()
+    }
+
     func clearOfferingsCache(appUserID: String) {
         self.offeringsCachedObject.clearCache()
-        self.offeringsCachePreferredLocales = []
+        self.offeringsCachePreferredLocales.value = []
         self.largeItemCache.removeObject(forKey: CacheKey.offerings(appUserID).rawValue)
+
+        // Delete old offerings file from documents directory if it exists
+        self.deleteOldFileIfNeeded(for: CacheKey.offerings(appUserID).rawValue)
     }
 
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
@@ -192,12 +257,12 @@ class DeviceCache {
                                                            isSandbox: self.systemInfo.isSandbox)
         ) ||
         // Locale-based staleness
-        self.offeringsCachePreferredLocales != self.systemInfo.preferredLocales
+        self.offeringsCachePreferredLocales.value != self.systemInfo.preferredLocales
     }
 
     func forceOfferingsCacheStale() {
         self.offeringsCachedObject.clearCacheTimestamp()
-        self.offeringsCachePreferredLocales = []
+        self.offeringsCachePreferredLocales.value = []
     }
 
     func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {
@@ -211,6 +276,10 @@ class DeviceCache {
     }
 
     // MARK: - subscriber attributes
+    // Write operations use `lockingUserDefaults` to ensure atomic read-modify-write.
+    // Read operations use the lock-free `userDefaults` since they don't modify data.
+    // This will be addressed in a future PR by refactoring subscriber attributes to use
+    // individual keys, eliminating the need for RMW operations.
 
     func store(subscriberAttribute: SubscriberAttribute, appUserID: String) {
         store(subscriberAttributesByKey: [subscriberAttribute.key: subscriberAttribute], appUserID: appUserID)
@@ -221,7 +290,7 @@ class DeviceCache {
             return
         }
 
-        self.userDefaults.write {
+        self.lockingUserDefaults.write {
             Self.store($0, subscriberAttributesByKey: subscriberAttributesByKey, appUserID: appUserID)
         }
     }
@@ -243,7 +312,7 @@ class DeviceCache {
     }
 
     func cleanupSubscriberAttributes() {
-        self.userDefaults.write {
+        self.lockingUserDefaults.write {
             Self.migrateSubscriberAttributes($0)
             Self.deleteSyncedSubscriberAttributesForOtherUsers($0)
         }
@@ -270,7 +339,7 @@ class DeviceCache {
     }
 
     func deleteAttributesIfSynced(appUserID: String) {
-        self.userDefaults.write {
+        self.lockingUserDefaults.write {
             guard Self.unsyncedAttributesByKey($0, appUserID: appUserID).isEmpty else {
                 return
             }
@@ -279,7 +348,7 @@ class DeviceCache {
     }
 
     func copySubscriberAttributes(oldAppUserID: String, newAppUserID: String) {
-        self.userDefaults.write {
+        self.lockingUserDefaults.write {
             let unsyncedAttributesToCopy = Self.unsyncedAttributesByKey($0, appUserID: oldAppUserID)
             guard !unsyncedAttributesToCopy.isEmpty else {
                 return
@@ -349,13 +418,17 @@ class DeviceCache {
     }
 
     func store(productEntitlementMapping: ProductEntitlementMapping) {
+        let productEntitlementMappingKey = CacheKeys.productEntitlementMapping.rawValue
         if self.largeItemCache.set(
             codable: productEntitlementMapping,
-            forKey: CacheKeys.productEntitlementMapping.rawValue
+            forKey: productEntitlementMappingKey
         ) {
             self.userDefaults.write {
                 $0.set(Date(), forKey: CacheKeys.productEntitlementMappingLastUpdated)
             }
+
+            // Delete old file if it still exists
+            self.deleteOldFileIfNeeded(for: productEntitlementMappingKey)
         }
     }
 
@@ -460,7 +533,7 @@ class DeviceCache {
 
     }
 
-    fileprivate enum CacheKey: DeviceCacheKeyType {
+    internal enum CacheKey: DeviceCacheKeyType {
 
         static let base = "com.revenuecat.userdefaults."
         static let legacySubscriberAttributesBase = "\(Self.base)subscriberAttributes."
@@ -778,6 +851,120 @@ private extension DeviceCache {
     }
 
     static let productEntitlementMappingCacheDuration: DispatchTimeInterval = .hours(25)
+
+    /*
+     We were previously storing these cache files in the Documents directory
+     which may end up in the Files app or the user's Documents directory on macOS.
+     We'll migrate files to the caches directory and try to delete the old documents
+     directory if it's empty after migrating.
+     */
+
+    // MARK: - Migration Helpers
+
+    // swiftlint:disable avoid_using_directory_apis_directly
+    private func oldDocumentsDirectoryURL() -> URL? {
+        let documentsDirectoryURL: URL?
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            documentsDirectoryURL = URL.documentsDirectory
+        } else {
+            documentsDirectoryURL = fileManager.urls(
+                for: .documentDirectory,
+                in: .userDomainMask
+            ).first
+        }
+        return documentsDirectoryURL?.appendingPathComponent(Self.oldDefaultBasePath)
+    }
+
+    // swiftlint:enable avoid_using_directory_apis_directly
+    private func migrateAndReturnValueIfNeeded<Value: Codable>(for key: String) -> Value? {
+        return self.migrationLock.perform {
+            guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else { return nil }
+
+            let oldFileURL = oldDirectoryURL.appendingPathComponent(key)
+
+            // Check if file already exists in new location (it may have been migrated before the lock was released)
+            if let value: Value = try? self.largeItemCache.value(forKey: key) {
+                // File already migrated, clean up old file if it still exists
+                if fileManager.fileExists(atPath: oldFileURL.path) {
+                    try? fileManager.removeItem(at: oldFileURL)
+                    self.deleteOldDocumentsDirectoryIfEmpty()
+                }
+                return value
+            }
+
+            // Make sure the old file (still) exists
+            guard fileManager.fileExists(atPath: oldFileURL.path) else {
+                return nil
+            }
+
+            // Try to load from old location
+            // If decoding of the file from the old location fails, remove it since the file is corrupt
+            guard let data = try? Data(contentsOf: oldFileURL),
+                  let value: Value = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
+                try? fileManager.removeItem(at: oldFileURL)
+                return nil
+            }
+
+            guard let newCacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: Self.defaultBasePath) else {
+                return nil
+            }
+            let newFileURL = newCacheURL.appendingPathComponent(key)
+
+            // Make sure the new location exists
+            guard fileManager.fileExists(atPath: newCacheURL.path) else {
+                return value
+            }
+
+            // Migrate file to new location
+            do {
+                try fileManager.moveItem(at: oldFileURL, to: newFileURL)
+                self.deleteOldDocumentsDirectoryIfEmpty()
+            } catch {
+                Logger.error(Strings.cache.failed_to_migrate_file(oldFileURL.path, error))
+            }
+
+            return value
+        }
+    }
+
+    private func deleteOldFileIfNeeded(for key: String) {
+        guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else {
+            return
+        }
+
+        let oldFileURL = oldDirectoryURL.appendingPathComponent(key)
+
+        // Use fileManager directly for file operations since LargeItemCacheType doesn't provide fileExists
+        guard fileManager.fileExists(atPath: oldFileURL.path) else {
+            return
+        }
+
+        // Delete old file if it exists
+        do {
+            try fileManager.removeItem(at: oldFileURL)
+            self.deleteOldDocumentsDirectoryIfEmpty()
+        } catch {
+            Logger.error(Strings.cache.failed_to_delete_old_cache_directory(error))
+        }
+    }
+
+    private func deleteOldDocumentsDirectoryIfEmpty() {
+        guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else {
+            return
+        }
+
+        // Use fileManager directly for file operations since LargeItemCacheType doesn't provide these
+        guard fileManager.fileExists(atPath: oldDirectoryURL.path),
+              (try? fileManager.contentsOfDirectory(atPath: oldDirectoryURL.path).isEmpty) == true else {
+            return
+        }
+
+        do {
+            try fileManager.removeItem(at: oldDirectoryURL)
+        } catch {
+            Logger.error(Strings.cache.failed_to_delete_old_cache_directory(error))
+        }
+    }
 
 }
 
