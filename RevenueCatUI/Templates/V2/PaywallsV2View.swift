@@ -113,13 +113,6 @@ struct PaywallsV2View: View {
     private let purchaseHandler: PurchaseHandler
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
-    @State private var didFinishEligibilityCheck: Bool = false
-
-    // There is a timing issue where the screen will completely render before the offers cache is primed
-    // This is necessary to ensure that the view displays the offer text when it is available
-    private var redrawTrigger: String {
-        return "PaywallsV2View-\(didFinishEligibilityCheck ? "Checked" : "pending")"
-    }
 
     @StateObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
@@ -209,7 +202,6 @@ struct PaywallsV2View: View {
                         selectedPackageContext: self.selectedPackageContext,
                         onDismiss: self.onDismiss
                     )
-                    .id(redrawTrigger)
                     .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
                     .environmentObject(self.purchaseHandler)
                     .environmentObject(self.introOfferEligibilityContext)
@@ -227,10 +219,6 @@ struct PaywallsV2View: View {
                         }
                     }
                     .task {
-                        guard !didFinishEligibilityCheck else {
-                            return
-                        }
-
                         async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
                             for: paywallState.packages
                         )
@@ -238,7 +226,6 @@ struct PaywallsV2View: View {
                             for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
                         )
                         _ = await (introCheck, promoCheck)
-                        didFinishEligibilityCheck = true
                     }
                     // Note: preferences need to be applied after `.toolbar` call
                     .preference(key: PurchaseInProgressPreferenceKey.self,
