@@ -1,6 +1,7 @@
 @_spi(Internal) import RevenueCat
+import RevenueCatUI
 
-#if os(iOS) || os(tvOS) || os(visionOS)
+#if os(iOS)
 import UIKit
 
 @main
@@ -13,17 +14,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ = Tester()
 
         return true
-    }
-}
-
-#elseif os(macOS)
-import AppKit
-
-@main
-class AppDelegate: NSObject, NSApplicationDelegate {
-
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        _ = Tester()
     }
 }
 
@@ -42,6 +32,12 @@ class AppDelegate: NSObject, WKApplicationDelegate {
 class Tester {
     init() {
         Purchases.configure(withAPIKey: "")
+
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        if #available(iOS 15.0, macOS 12.0, *) {
+            _ = PaywallViewController()
+        }
+        #endif
 
         assert(Purchases.installationMethod == "xcframework",
                "Expected 'xcframework' but got '\(Purchases.installationMethod)'")
