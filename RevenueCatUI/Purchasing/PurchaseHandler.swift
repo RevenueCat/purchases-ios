@@ -33,6 +33,7 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
+    private let eventDispatcher: EventDispatcher
 
     /// Where responsibility for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
@@ -137,6 +138,7 @@ final class PurchaseHandler: ObservableObject {
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
+        eventDispatcher: EventDispatcher? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -145,6 +147,7 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
+        self.eventDispatcher = eventDispatcher ?? Self.backgroundEventDispatcher
         self.performPurchase = performPurchase
         self.performRestore = performRestore
 
@@ -574,7 +577,8 @@ extension PurchaseHandler {
     ) -> Self {
         return .init(
             isConfigured: self.isConfigured,
-            purchases: self.purchases.map(purchase: purchase, restore: restore)
+            purchases: self.purchases.map(purchase: purchase, restore: restore),
+            eventDispatcher: self.eventDispatcher
         )
     }
 
@@ -583,7 +587,8 @@ extension PurchaseHandler {
     ) -> Self {
         return .init(
             isConfigured: self.isConfigured,
-            purchases: self.purchases.map(trackEvent: trackEvent)
+            purchases: self.purchases.map(trackEvent: trackEvent),
+            eventDispatcher: self.eventDispatcher
         )
     }
 
@@ -597,8 +602,26 @@ extension PurchaseHandler {
 private extension PurchaseHandler {
 
     func track(_ event: PaywallEvent) {
-        Task.detached(priority: .background) { [purchases = self.purchases] in
+        self.eventDispatcher { [purchases = self.purchases] in
             await purchases.track(paywallEvent: event)
+        }
+    }
+
+}
+
+// MARK: - Event Dispatching
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchaseHandler {
+
+    /// Closure that schedules async work for event tracking.
+    /// Production uses `Task.detached(priority: .background)`;
+    /// tests can inject `Task { }` to inherit the caller's priority.
+    typealias EventDispatcher = @Sendable (@Sendable @escaping () async -> Void) -> Void
+
+    static let backgroundEventDispatcher: EventDispatcher = { work in
+        Task.detached(priority: .background) {
+            await work()
         }
     }
 
