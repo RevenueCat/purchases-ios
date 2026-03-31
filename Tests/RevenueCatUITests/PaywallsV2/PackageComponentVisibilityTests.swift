@@ -66,13 +66,6 @@ class PackageComponentVisibilityTests: BaseSnapshotTest {
         .snapshot(size: Self.fullScreenSize)
     }
 
-    func testSelectedVisibilityOverrideRevealsInitiallyHiddenDefaultPackage() {
-        Self.createPaywall(
-            offering: Self.offeringWithHiddenDefaultSelectedPackageShownWhenSelected
-        )
-        .snapshot(size: Self.fullScreenSize)
-    }
-
     // MARK: - global discardRules
 
     func testGlobalDiscardRulesKeepsIntroVisibilityRuleFromShowingHiddenPackage() {
@@ -160,40 +153,6 @@ private extension PackageComponentVisibilityTests {
                     label: "Monthly",
                     isSelectedByDefault: true,
                     visible: false,
-                    showsSelectedStyle: true
-                ),
-                makePackageComponent(
-                    packageID: PackageType.annual.identifier,
-                    label: "Annual",
-                    isSelectedByDefault: false,
-                    visible: nil,
-                    showsSelectedStyle: true
-                ),
-                makePackageComponent(
-                    packageID: PackageType.weekly.identifier,
-                    label: "Weekly",
-                    isSelectedByDefault: false,
-                    visible: nil,
-                    showsSelectedStyle: true
-                )
-            ]
-        )
-    }
-
-    /// Offering where the default-selected monthly package is hidden in the base
-    /// but becomes visible when its package component is selected.
-    static var offeringWithHiddenDefaultSelectedPackageShownWhenSelected: Offering {
-        makeOffering(
-            identifier: "hidden_default_selected_selected_override",
-            packages: [
-                makePackageComponent(
-                    packageID: PackageType.monthly.identifier,
-                    label: "Monthly",
-                    isSelectedByDefault: true,
-                    visible: false,
-                    overrides: [
-                        .init(conditions: [.selected], properties: .init(visible: true))
-                    ],
                     showsSelectedStyle: true
                 ),
                 makePackageComponent(

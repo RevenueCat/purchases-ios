@@ -24,11 +24,38 @@ import SwiftUI
 private enum PackageVisibilityPreview {
 
     static let monthlyPackage = PreviewMock.monthlyStandardPackage
+    static let monthlyPackageWithIntro = Package(
+        identifier: monthlyPackage.identifier,
+        packageType: .monthly,
+        storeProduct: TestStoreProduct(
+            localizedTitle: "Monthly Standard",
+            price: 4.99,
+            currencyCode: "USD",
+            localizedPriceString: "$4.99",
+            productIdentifier: "com.revenuecat.preview.monthly_standard_intro",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Monthly Standard",
+            subscriptionGroupIdentifier: "preview_group",
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            introductoryDiscount: .init(
+                identifier: "intro",
+                price: 0,
+                localizedPriceString: "$0.00",
+                paymentMode: .freeTrial,
+                subscriptionPeriod: .init(value: 7, unit: .day),
+                numberOfPeriods: 1,
+                type: .introductory
+            ),
+            locale: Locale(identifier: "en_US")
+        ).toStoreProduct(),
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
+    )
     static let annualPackage = PreviewMock.annualStandardPackage
     static let weeklyPackage = PreviewMock.weeklyStandardPackage
 
     static let availablePackages: [Package] = [
-        monthlyPackage,
+        monthlyPackageWithIntro,
         annualPackage,
         weeklyPackage
     ]
@@ -187,7 +214,7 @@ struct PackageVisibilityPreview_Previews: PreviewProvider {
                         isSelectedByDefault: true
                     ),
                     PackageVisibilityPreview.packageComponent(
-                        packageID: PackageVisibilityPreview.monthlyPackage.identifier,
+                        packageID: PackageVisibilityPreview.monthlyPackageWithIntro.identifier,
                         title: "monthly",
                         isSelectedByDefault: false,
                         visible: false,
@@ -217,7 +244,7 @@ struct PackageVisibilityPreview_Previews: PreviewProvider {
                         isSelectedByDefault: true
                     ),
                     PackageVisibilityPreview.packageComponent(
-                        packageID: PackageVisibilityPreview.monthlyPackage.identifier,
+                        packageID: PackageVisibilityPreview.monthlyPackageWithIntro.identifier,
                         title: "monthly",
                         isSelectedByDefault: false,
                         visible: false,
@@ -238,35 +265,6 @@ struct PackageVisibilityPreview_Previews: PreviewProvider {
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Package: intro ineligible → hidden monthly stays hidden")
 
-        PackageVisibilityPreview.paywallView(
-            paywallComponents: PackageVisibilityPreview.paywallComponents(
-                packages: [
-                    PackageVisibilityPreview.packageComponent(
-                        packageID: PackageVisibilityPreview.monthlyPackage.identifier,
-                        title: "monthly",
-                        isSelectedByDefault: true,
-                        visible: false,
-                        overrides: [
-                            .init(conditions: [.selected], properties: .init(visible: true))
-                        ]
-                    ),
-                    PackageVisibilityPreview.packageComponent(
-                        packageID: PackageVisibilityPreview.annualPackage.identifier,
-                        title: "annual",
-                        isSelectedByDefault: false
-                    ),
-                    PackageVisibilityPreview.packageComponent(
-                        packageID: PackageVisibilityPreview.weeklyPackage.identifier,
-                        title: "weekly",
-                        isSelectedByDefault: false
-                    )
-                ]
-            ),
-            introEligibilityChecker: .default()
-        )
-        .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 800))
-        .previewDisplayName("Package: selected override reveals the default-selected monthly card")
     }
 
 }
