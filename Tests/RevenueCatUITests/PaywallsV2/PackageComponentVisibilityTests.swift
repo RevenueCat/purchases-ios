@@ -12,7 +12,7 @@
 //  Created by RevenueCat on 3/26/26.
 
 import Nimble
-import RevenueCat
+@_spi(Internal) import RevenueCat
 @testable import RevenueCatUI
 import SnapshotTesting
 import SwiftUI
@@ -53,6 +53,32 @@ class PackageComponentVisibilityTests: BaseSnapshotTest {
         Self.createPaywall(
             offering: Self.offeringWithPackageHiddenUnlessIntroEligible,
             introEligibility: Self.ineligibleChecker
+        )
+        .snapshot(size: Self.fullScreenSize)
+    }
+
+    // MARK: - selection + visibility interactions
+
+    func testStaticHiddenDefaultSelectedPackageFallsBackToFirstVisiblePackage() {
+        Self.createPaywall(
+            offering: Self.offeringWithHiddenDefaultSelectedPackageFallback
+        )
+        .snapshot(size: Self.fullScreenSize)
+    }
+
+    func testSelectedVisibilityOverrideRevealsInitiallyHiddenDefaultPackage() {
+        Self.createPaywall(
+            offering: Self.offeringWithHiddenDefaultSelectedPackageShownWhenSelected
+        )
+        .snapshot(size: Self.fullScreenSize)
+    }
+
+    // MARK: - global discardRules
+
+    func testGlobalDiscardRulesKeepsIntroVisibilityRuleFromShowingHiddenPackage() {
+        Self.createPaywall(
+            offering: Self.offeringWithDiscardRulesHidingPackage,
+            introEligibility: Self.eligibleChecker
         )
         .snapshot(size: Self.fullScreenSize)
     }
@@ -123,13 +149,124 @@ private extension PackageComponentVisibilityTests {
         )
     }
 
+    /// Offering where the default-selected monthly package is statically hidden,
+    /// so the paywall should fall back to the first visible package and render it as selected.
+    static var offeringWithHiddenDefaultSelectedPackageFallback: Offering {
+        makeOffering(
+            identifier: "hidden_default_selected_fallback",
+            packages: [
+                makePackageComponent(
+                    packageID: PackageType.monthly.identifier,
+                    label: "Monthly",
+                    isSelectedByDefault: true,
+                    visible: false,
+                    showsSelectedStyle: true
+                ),
+                makePackageComponent(
+                    packageID: PackageType.annual.identifier,
+                    label: "Annual",
+                    isSelectedByDefault: false,
+                    visible: nil,
+                    showsSelectedStyle: true
+                ),
+                makePackageComponent(
+                    packageID: PackageType.weekly.identifier,
+                    label: "Weekly",
+                    isSelectedByDefault: false,
+                    visible: nil,
+                    showsSelectedStyle: true
+                )
+            ]
+        )
+    }
+
+    /// Offering where the default-selected monthly package is hidden in the base
+    /// but becomes visible when its package component is selected.
+    static var offeringWithHiddenDefaultSelectedPackageShownWhenSelected: Offering {
+        makeOffering(
+            identifier: "hidden_default_selected_selected_override",
+            packages: [
+                makePackageComponent(
+                    packageID: PackageType.monthly.identifier,
+                    label: "Monthly",
+                    isSelectedByDefault: true,
+                    visible: false,
+                    overrides: [
+                        .init(conditions: [.selected], properties: .init(visible: true))
+                    ],
+                    showsSelectedStyle: true
+                ),
+                makePackageComponent(
+                    packageID: PackageType.annual.identifier,
+                    label: "Annual",
+                    isSelectedByDefault: false,
+                    visible: nil,
+                    showsSelectedStyle: true
+                ),
+                makePackageComponent(
+                    packageID: PackageType.weekly.identifier,
+                    label: "Weekly",
+                    isSelectedByDefault: false,
+                    visible: nil,
+                    showsSelectedStyle: true
+                )
+            ]
+        )
+    }
+
+    /// Offering where a visibility rule would normally reveal the monthly package for an intro-eligible user,
+    /// but another unsupported condition anywhere in the paywall forces global discardRules.
+    static var offeringWithDiscardRulesHidingPackage: Offering {
+        let unsupportedText = PaywallComponent.TextComponent(
+            text: "Unsupported condition elsewhere",
+            color: .init(light: .hex("#111111")),
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init(color: .init(light: .hex("#FF0000"))))
+            ]
+        )
+
+        return makeOffering(
+            identifier: "hidden_unless_intro_eligible_discard_rules",
+            leadingComponents: [
+                .text(unsupportedText)
+            ],
+            packages: [
+                makePackageComponent(
+                    packageID: PackageType.annual.identifier,
+                    label: "Annual",
+                    isSelectedByDefault: true,
+                    visible: nil,
+                    showsSelectedStyle: true
+                ),
+                makePackageComponent(
+                    packageID: PackageType.monthly.identifier,
+                    label: "Monthly (Trial)",
+                    isSelectedByDefault: false,
+                    visible: false,
+                    overrides: [
+                        .init(conditions: [.introOffer], properties: .init(visible: true))
+                    ],
+                    showsSelectedStyle: true
+                ),
+                makePackageComponent(
+                    packageID: PackageType.weekly.identifier,
+                    label: "Weekly",
+                    isSelectedByDefault: false,
+                    visible: nil,
+                    showsSelectedStyle: true
+                )
+            ]
+        )
+    }
+
     // MARK: - Helpers
 
     static func makeOffering(
         identifier: String,
+        leadingComponents: [PaywallComponent] = [],
         packages: [PaywallComponent.PackageComponent]
     ) -> Offering {
-        let packageComponents: [PaywallComponent] = packages.map { .package($0) }
+        let packageComponents: [PaywallComponent] = leadingComponents + packages.map { .package($0) }
 
         let rootStack = PaywallComponent.StackComponent(
             components: packageComponents,
@@ -174,29 +311,53 @@ private extension PackageComponentVisibilityTests {
     static func makePackageComponent(
         packageID: String,
         label: String,
-        visible: Bool?
+        isSelectedByDefault: Bool = false,
+        visible: Bool?,
+        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialPackageComponent>? = nil,
+        showsSelectedStyle: Bool = false
     ) -> PaywallComponent.PackageComponent {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
-            isSelectedByDefault: false,
+            isSelectedByDefault: isSelectedByDefault,
             visible: visible,
             applePromoOfferProductCode: nil,
-            stack: makePackageStack(label: label)
+            stack: makePackageStack(label: label, showsSelectedStyle: showsSelectedStyle),
+            overrides: overrides
         )
     }
 
-    static func makePackageStack(label: String) -> PaywallComponent.StackComponent {
+    static func makePackageStack(label: String, showsSelectedStyle: Bool = false) -> PaywallComponent.StackComponent {
+        let textOverrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialTextComponent>?
+        let stackOverrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent>?
+
+        if showsSelectedStyle {
+            textOverrides = [
+                .init(conditions: [.selected], properties: .init(color: .init(light: .hex("#D83B01"))))
+            ]
+            stackOverrides = [
+                .init(conditions: [.selected], properties: .init(
+                    border: .init(color: .init(light: .hex("#D83B01")), width: 3)
+                ))
+            ]
+        } else {
+            textOverrides = nil
+            stackOverrides = nil
+        }
+
         return PaywallComponent.StackComponent(
             components: [
                 .text(PaywallComponent.TextComponent(
                     text: label,
                     color: .init(light: .hex("#000000")),
-                    padding: .init(top: 8, bottom: 8, leading: 12, trailing: 12)
+                    padding: .init(top: 8, bottom: 8, leading: 12, trailing: 12),
+                    overrides: textOverrides
                 ))
             ],
             dimension: .vertical(.leading, .start),
             backgroundColor: .init(light: .hex("#F0F0F0")),
-            padding: .init(top: 8, bottom: 8, leading: 12, trailing: 12)
+            padding: .init(top: 8, bottom: 8, leading: 12, trailing: 12),
+            border: showsSelectedStyle ? .init(color: .init(light: .hex("#C8C2B8")), width: 2) : nil,
+            overrides: stackOverrides
         )
     }
 
