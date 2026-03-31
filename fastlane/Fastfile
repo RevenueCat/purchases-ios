@@ -114,6 +114,31 @@ platform :ios do
     )
   end
 
+  desc "Make github release for purchases-ios-admob"
+  lane :admob_github_release do |options|
+    version = options[:version] || current_version_number
+    changelog = Fastlane::Helper::VersioningHelper.auto_generate_changelog(
+      REPO_NAME,
+      ENV["GITHUB_TOKEN"],
+      0,
+      false,
+      nil,
+      nil,
+      version,
+      filter_label: 'pr:admob'
+    )
+
+    changelog_path = File.join(Dir.tmpdir, 'CHANGELOG.admob.latest.md')
+    File.write(changelog_path, changelog.empty? ? "Release #{version}" : changelog)
+
+    create_github_release(
+      version: version,
+      repo_name: 'purchases-ios-admob',
+      github_api_token: ENV["GITHUB_TOKEN"],
+      changelog_latest_path: changelog_path
+    )
+  end
+
   desc "Creates PR changing version to next minor adding a -SNAPSHOT suffix"
   lane :prepare_next_version do |options|
     create_next_snapshot_version(
