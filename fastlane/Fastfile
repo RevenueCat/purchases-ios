@@ -1485,7 +1485,7 @@ platform :ios do
       # Set SKIP_INSTALL and BUILD_LIBRARY_FOR_DISTRIBUTION.
       # See https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle#Set-up-the-project
       override_xcargs: true,
-      xcargs: "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) RC_XCFRAMEWORK'"
+      xcargs: "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) RC_XCFRAMEWORK' DEFINES_MODULE=YES"
     )
 
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
@@ -1495,6 +1495,31 @@ platform :ios do
     # Verify xcframework was created
     unless File.directory?(xcframework_path)
       UI.user_error!("XCFramework not found at #{xcframework_path}")
+    end
+
+    # Embed PrivacyInfo.xcprivacy in each framework slice
+    privacy_manifest = File.join(project_root, "Sources", "PrivacyInfo.xcprivacy")
+    if File.exist?(privacy_manifest)
+      Dir.glob(File.join(xcframework_path, "**", "#{product_name}.framework")).each do |framework_path|
+        FileUtils.cp(privacy_manifest, framework_path)
+        UI.message("Embedded PrivacyInfo.xcprivacy in #{framework_path}")
+      end
+    end
+
+    # Generate module.modulemap for pure-Swift frameworks that don't have one.
+    # This is needed for Obj-C code to find the module via @import.
+    Dir.glob(File.join(xcframework_path, "**", "#{product_name}.framework")).each do |framework_path|
+      modules_dir = File.join(framework_path, "Modules")
+      modulemap_path = File.join(modules_dir, "module.modulemap")
+      next if File.exist?(modulemap_path)
+
+      FileUtils.mkdir_p(modules_dir)
+      File.write(modulemap_path, <<~MODULEMAP)
+        module #{product_name} {
+          export *
+        }
+      MODULEMAP
+      UI.message("Generated module.modulemap in #{framework_path}")
     end
 
     # Post-process headers to suppress StoreKit 1 deprecation warnings
