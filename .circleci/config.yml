@@ -2299,7 +2299,6 @@ workflows:
           requires:
             - push-revenuecatui-pod
             - deploy-to-spm
-            - deploy-to-purchases-ios-admob
             - docs-deploy
             - deploy-purchase-tester
           <<: *release-tags
