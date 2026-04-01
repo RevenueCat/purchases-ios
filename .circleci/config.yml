@@ -513,6 +513,9 @@ commands:
           name: Generate Tuist workspace
           command: |
             export PATH="$HOME/.local/share/mise/shims:$PATH"
+            # Skip external test/dev dependencies to speed up tuist install.
+            # No CI job currently needs them (tests run via SPM, not Tuist).
+            export TUIST_INCLUDE_TEST_DEPENDENCIES=false
             if [ -n "<< parameters.query >>" ]; then
               tuist install && tuist generate << parameters.query >> --no-open
             else
