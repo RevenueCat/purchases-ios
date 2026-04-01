@@ -29,9 +29,6 @@ struct PackageComponentView: View {
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
-    @Environment(\.componentViewState)
-    private var componentViewState
-
     @Environment(\.screenCondition)
     private var screenCondition
 

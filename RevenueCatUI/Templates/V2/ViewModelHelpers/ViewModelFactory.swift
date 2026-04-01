@@ -203,7 +203,7 @@ struct ViewModelFactory {
                 let packageInfo = PackageValidator.PackageInfo(
                     package: package,
                     isSelectedByDefault: viewModel.isSelectedByDefault,
-                    isStaticallyVisible: component.visible != false,
+                    isStaticallyVisible: component.visible ?? true,
                     promotionalOfferProductCode: viewModel.promotionalOfferProductCode
                 )
                 packageValidator.add(packageInfo)
