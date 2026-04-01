@@ -46,4 +46,19 @@ extension IntroOfferEligibilityContext {
 
 }
 
+#if DEBUG
+extension IntroOfferEligibilityContext {
+
+    static func forPreview(
+        packages: [Package],
+        eligibility: IntroEligibilityStatus
+    ) -> IntroOfferEligibilityContext {
+        let context = IntroOfferEligibilityContext(introEligibilityChecker: .default())
+        context.all = Dictionary(uniqueKeysWithValues: packages.map { ($0, eligibility) })
+        return context
+    }
+
+}
+#endif
+
 #endif

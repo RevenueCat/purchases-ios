@@ -134,7 +134,8 @@ struct PaywallsV2View: View {
         fallbackContent: FallbackContent,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
-        promoOfferCache: PaywallPromoOfferCache? = nil
+        promoOfferCache: PaywallPromoOfferCache? = nil,
+        introEligibilityContext: IntroOfferEligibilityContext? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -151,7 +152,7 @@ struct PaywallsV2View: View {
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
         self._introOfferEligibilityContext = .init(
-            wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
+            wrappedValue: introEligibilityContext ?? .init(introEligibilityChecker: introEligibilityChecker)
         )
 
         // Step 0: Decide which ComponentsConfig to use (base is default)

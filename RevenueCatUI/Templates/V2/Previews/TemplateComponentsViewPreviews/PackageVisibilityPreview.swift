@@ -20,6 +20,7 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
+@MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private enum PackageVisibilityPreview {
 
@@ -151,7 +152,7 @@ private enum PackageVisibilityPreview {
 
     static func paywallView(
         paywallComponents: Offering.PaywallComponents,
-        introEligibilityChecker: TrialOrIntroEligibilityChecker
+        eligibility: IntroEligibilityStatus
     ) -> some View {
         PaywallsV2View(
             paywallComponents: paywallComponents,
@@ -162,17 +163,19 @@ private enum PackageVisibilityPreview {
                 webCheckoutUrl: nil
             ),
             purchaseHandler: PurchaseHandler.default(),
-            introEligibilityChecker: introEligibilityChecker,
+            introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in },
-            colorScheme: .light
+            colorScheme: .light,
+            introEligibilityContext: .forPreview(packages: availablePackages, eligibility: eligibility)
         )
     }
 
 }
 
+@MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PackageVisibilityPreview_Previews: PreviewProvider {
 
@@ -199,7 +202,7 @@ struct PackageVisibilityPreview_Previews: PreviewProvider {
                     )
                 ]
             ),
-            introEligibilityChecker: .default()
+            eligibility: .ineligible
         )
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
@@ -229,7 +232,7 @@ struct PackageVisibilityPreview_Previews: PreviewProvider {
                     )
                 ]
             ),
-            introEligibilityChecker: .producing(eligibility: .eligible)
+            eligibility: .eligible
         )
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
@@ -259,7 +262,7 @@ struct PackageVisibilityPreview_Previews: PreviewProvider {
                     )
                 ]
             ),
-            introEligibilityChecker: .producing(eligibility: .ineligible)
+            eligibility: .ineligible
         )
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
