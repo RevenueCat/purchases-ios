@@ -104,7 +104,8 @@ private extension PackageComponentVisibilityTests {
                     label: "Annual",
                     visible: nil
                 )
-            ]
+            ],
+            labels: ["Weekly", "Monthly", "Annual"]
         )
     }
 
@@ -116,7 +117,8 @@ private extension PackageComponentVisibilityTests {
                 makePackageComponent(packageID: PackageType.weekly.identifier, label: "Weekly", visible: nil),
                 makePackageComponent(packageID: PackageType.monthly.identifier, label: "Monthly", visible: nil),
                 makePackageComponent(packageID: PackageType.annual.identifier, label: "Annual", visible: nil)
-            ]
+            ],
+            labels: ["Weekly", "Monthly", "Annual"]
         )
     }
 
@@ -138,7 +140,8 @@ private extension PackageComponentVisibilityTests {
                     ]
                 ),
                 makePackageComponent(packageID: PackageType.annual.identifier, label: "Annual", visible: nil)
-            ]
+            ],
+            labels: ["Weekly", "Monthly (Trial)", "Annual"]
         )
     }
 
@@ -169,7 +172,8 @@ private extension PackageComponentVisibilityTests {
                     visible: nil,
                     showsSelectedStyle: true
                 )
-            ]
+            ],
+            labels: ["Monthly", "Annual", "Weekly"]
         )
     }
 
@@ -214,7 +218,8 @@ private extension PackageComponentVisibilityTests {
                     visible: nil,
                     showsSelectedStyle: true
                 )
-            ]
+            ],
+            labels: ["Annual", "Monthly (Trial)", "Weekly", "Unsupported condition elsewhere"]
         )
     }
 
@@ -223,7 +228,8 @@ private extension PackageComponentVisibilityTests {
     static func makeOffering(
         identifier: String,
         leadingComponents: [PaywallComponent] = [],
-        packages: [PaywallComponent.PackageComponent]
+        packages: [PaywallComponent.PackageComponent],
+        labels: [String] = []
     ) -> Offering {
         let packageComponents: [PaywallComponent] = leadingComponents + packages.map { .package($0) }
 
@@ -233,6 +239,10 @@ private extension PackageComponentVisibilityTests {
             spacing: 8,
             backgroundColor: nil,
             padding: .init(top: 16, bottom: 16, leading: 16, trailing: 16)
+        )
+
+        let localizationDict: [String: PaywallComponentsData.LocalizationData] = Dictionary(
+            uniqueKeysWithValues: labels.map { ($0, .string($0)) }
         )
 
         let data = PaywallComponentsData(
@@ -245,7 +255,7 @@ private extension PackageComponentVisibilityTests {
                     background: .color(.init(light: .hex("#FFFFFF")))
                 )
             ),
-            componentsLocalizations: ["en_US": [:]],
+            componentsLocalizations: ["en_US": localizationDict],
             revision: 1,
             defaultLocaleIdentifier: "en_US"
         )
