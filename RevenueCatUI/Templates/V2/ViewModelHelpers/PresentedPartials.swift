@@ -373,6 +373,8 @@ extension PaywallComponent {
             return component.stack.containsUnsupportedConditions()
         case .stickyFooter(let component):
             return component.stack.containsUnsupportedConditions()
+        case .header(let component):
+            return component.stack.containsUnsupportedConditions()
         case .timeline(let component):
             return component.containsUnsupportedConditions()
         case .tabs(let component):

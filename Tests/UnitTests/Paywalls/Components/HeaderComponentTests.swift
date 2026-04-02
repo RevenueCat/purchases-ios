@@ -138,6 +138,26 @@ class HeaderComponentTests: TestCase {
         expect(decoded.stack.components).to(beEmpty())
     }
 
+    func testDecodesHeaderAsPaywallComponent() throws {
+        let json = """
+        {
+            "type": "header",
+            "stack": \(self.defaultStackJSON)
+        }
+        """
+
+        let decoded = try JSONDecoder.default.decode(
+            PaywallComponent.self,
+            from: json.data(using: .utf8)!
+        )
+
+        if case .header(let header) = decoded {
+            expect(header.stack.components).to(beEmpty())
+        } else {
+            fail("Expected .header case, got \(decoded)")
+        }
+    }
+
     func testEncodesHeaderComponentType() throws {
         let component = PaywallComponent.HeaderComponent(
             stack: .init(

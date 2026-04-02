@@ -578,6 +578,94 @@ class ViewModelFactoryBadgeTests: TestCase {
         expect(factory.discardRules).to(beTrue())
     }
 
+    // MARK: - Layout Tests (spec task 4.3)
+
+    @MainActor
+    func testLayout_HeaderAndStickyFooter_BothViewModelsPresent() throws {
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: []),
+            header: .init(stack: .init(components: [])),
+            stickyFooter: .init(stack: .init(components: [])),
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.headerViewModel).toNot(beNil())
+        expect(root.stickyFooterViewModel).toNot(beNil())
+    }
+
+    @MainActor
+    func testLayout_HeaderOnly_StickyFooterViewModelNil() throws {
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: []),
+            header: .init(stack: .init(components: [])),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.headerViewModel).toNot(beNil())
+        expect(root.stickyFooterViewModel).to(beNil())
+    }
+
+    @MainActor
+    func testLayout_StickyFooterOnly_HeaderViewModelNil() throws {
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: []),
+            stickyFooter: .init(stack: .init(components: [])),
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.headerViewModel).to(beNil())
+        expect(root.stickyFooterViewModel).toNot(beNil())
+    }
+
+    @MainActor
+    func testLayout_BodyOnly_BothViewModelsNil() throws {
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: []),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.headerViewModel).to(beNil())
+        expect(root.stickyFooterViewModel).to(beNil())
+    }
+
     // MARK: - Helpers
 
     private static let black = PaywallComponent.ColorScheme(

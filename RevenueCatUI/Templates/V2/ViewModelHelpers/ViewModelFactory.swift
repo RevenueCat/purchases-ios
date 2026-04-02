@@ -272,6 +272,24 @@ struct ViewModelFactory {
                     stackViewModel: stackViewModel
                 )
             )
+        case .header(let component):
+            let stackViewModel = try toStackViewModel(
+                component: component.stack,
+                packageValidator: packageValidator,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering,
+                colorScheme: colorScheme
+            )
+
+            return .header(
+                HeaderComponentViewModel(
+                    component: component,
+                    stackViewModel: stackViewModel
+                )
+            )
         case .timeline(let component):
             let models = try component.items.map { item in
                 var description: TextComponentViewModel?
@@ -624,6 +642,8 @@ struct ViewModelFactory {
         case .purchaseButton:
             return nil
         case .stickyFooter:
+            return nil
+        case .header:
             return nil
         case .timeline:
             return nil
