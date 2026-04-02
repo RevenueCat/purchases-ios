@@ -9,7 +9,7 @@
 //
 //  HeaderComponentViewModel.swift
 //
-//  Created by OpenAI on 02/04/2026.
+//  Created by Facundo Menzella on 02/04/2026.
 
 @_spi(Internal) import RevenueCat
 import SwiftUI

@@ -9,7 +9,7 @@
 //
 //  HeaderComponentView.swift
 //
-//  Created by OpenAI on 02/04/2026.
+//  Created by Facundo Menzella on 02/04/2026.
 
 import SwiftUI
 
