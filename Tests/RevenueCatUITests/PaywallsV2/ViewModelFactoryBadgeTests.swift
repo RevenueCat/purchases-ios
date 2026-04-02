@@ -358,6 +358,73 @@ class ViewModelFactoryBadgeTests: TestCase {
     }
 
     @MainActor
+    func testGlobalUnsupported_InHeader_DiscardsRulesFromMainStack() throws {
+        let textWithRule = PaywallComponent.TextComponent(
+            text: "badge_text_lid",
+            color: Self.black,
+            overrides: [
+                .init(extendedConditions: [
+                    .variable(operator: .equals, variable: "plan", value: .string("pro"))
+                ], properties: .init(fontWeight: .bold))
+            ]
+        )
+
+        let headerText = PaywallComponent.TextComponent(
+            text: "badge_text_lid",
+            color: Self.black,
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ]
+        )
+
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: [.text(textWithRule)]),
+            header: .init(stack: .init(components: [.text(headerText)])),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        _ = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(factory.discardRules).to(beTrue())
+    }
+
+    @MainActor
+    func testRootViewModelCreatesHeaderViewModelWhenHeaderPresent() throws {
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: []),
+            header: .init(stack: .init(components: [
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ])),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.headerViewModel).toNot(beNil())
+        expect(root.headerViewModel?.stackViewModel.viewModels).to(haveCount(1))
+    }
+
+    @MainActor
     func testNoUnsupported_DiscardRulesIsFalse() throws {
         let textWithRule = PaywallComponent.TextComponent(
             text: "badge_text_lid",

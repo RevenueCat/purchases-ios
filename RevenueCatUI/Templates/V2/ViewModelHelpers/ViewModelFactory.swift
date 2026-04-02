@@ -43,14 +43,37 @@ struct ViewModelFactory {
     ) throws -> RootViewModel {
         // Compute global flag: if ANY component has unsupported conditions, discard all rule overrides
         self.discardRules = componentsConfig.stack.containsUnsupportedConditions() ||
+            componentsConfig.header?.stack.containsUnsupportedConditions() == true ||
             componentsConfig.stickyFooter?.stack.containsUnsupportedConditions() == true
 
-        let firstItemIgnoresSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
+        let firstItemSafeAreaInfo = self.findFirstItemIgnoresSafeAreaInfo(in: componentsConfig)
+
+        let headerViewModel = try componentsConfig.header.flatMap {
+            let stackViewModel = try toStackViewModel(
+                component: $0.stack,
+                packageValidator: self.packageValidator,
+                firstItemIgnoresSafeAreaInfo: firstItemSafeAreaInfo.appliesToHeader
+                ? firstItemSafeAreaInfo.info
+                : nil,
+                purchaseButtonCollector: nil,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering,
+                colorScheme: colorScheme
+            )
+
+            return HeaderComponentViewModel(
+                component: $0,
+                stackViewModel: stackViewModel
+            )
+        }
 
         let rootStackViewModel = try toStackViewModel(
             component: componentsConfig.stack,
             packageValidator: self.packageValidator,
-            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+            firstItemIgnoresSafeAreaInfo: firstItemSafeAreaInfo.appliesToHeader
+            ? nil
+            : firstItemSafeAreaInfo.info,
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
@@ -77,9 +100,10 @@ struct ViewModelFactory {
         }
 
         return RootViewModel(
+            headerViewModel: headerViewModel,
             stackViewModel: rootStackViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
-            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+            firstItemIgnoresSafeAreaInfo: firstItemSafeAreaInfo.info,
             localizationProvider: localizationProvider
         )
     }
@@ -632,6 +656,26 @@ struct ViewModelFactory {
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)
         }
+    }
+
+    private func findFirstItemIgnoresSafeAreaInfo(
+        in componentsConfig: PaywallComponentsData.PaywallComponentsConfig
+    ) -> (
+        info: RootViewModel.FirstItemShouldIgnoreSafeAreaInfo?,
+        appliesToHeader: Bool
+    ) {
+        if let header = componentsConfig.header,
+           !header.stack.components.isEmpty {
+            return (
+                info: self.findFullWidthImageViewIfItsTheFirst(.stack(header.stack)),
+                appliesToHeader: true
+            )
+        }
+
+        return (
+            info: self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack)),
+            appliesToHeader: false
+        )
     }
 
 }
