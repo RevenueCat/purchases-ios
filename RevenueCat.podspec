@@ -13,7 +13,6 @@ Pod::Spec.new do |s|
   s.source           = { :git => "https://github.com/revenuecat/purchases-ios.git", :tag => s.version.to_s }
   s.documentation_url = "https://docs.revenuecat.com/"
 
-  s.framework      = 'StoreKit'
   s.swift_version  = '5.8'
 
   s.ios.deployment_target = '13.0'
@@ -21,16 +20,6 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = '13.0'
   s.osx.deployment_target = '10.15'
   s.visionos.deployment_target = '1.0'
-  
-  s.pod_target_xcconfig = {
-    'DEFINES_MODULE' => 'YES',
-    'SWIFT_ACTIVE_COMPILATION_CONDITIONS' => '$(inherited) COCOAPODS',
-    'SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*]' => '$(inherited) COCOAPODS VISION_OS',
-    'SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*]' => '$(inherited) COCOAPODS VISION_OS',
-  }
 
-  s.source_files = 'Sources/**/*.swift'
-  s.exclude_files = 'Sources/LocalReceiptParsing/ReceiptParser-only-files/**'
-  
-  s.resource_bundles = {'RevenueCat' => ['Sources/PrivacyInfo.xcprivacy']}
+  s.vendored_frameworks = 'RevenueCat.xcframework'
 end
