@@ -132,11 +132,22 @@ platform :ios do
     changelog_path = File.join(Dir.tmpdir, 'CHANGELOG.admob.latest.md')
     File.write(changelog_path, changelog.empty? ? "Release #{version}" : changelog)
 
+    # Resolve the commit SHA for the tag on purchases-ios-admob, since the current
+    # repo HEAD belongs to purchases-ios and would be invalid for that repo.
+    tag_ref_resp = github_api(
+      server_url: 'https://api.github.com',
+      api_token: ENV["GITHUB_TOKEN"],
+      http_method: 'GET',
+      path: "/repos/RevenueCat/purchases-ios-admob/git/ref/tags/#{version}"
+    )
+    admob_commitish = JSON.parse(tag_ref_resp[:body])['object']['sha']
+
     create_github_release(
       version: version,
       repo_name: 'purchases-ios-admob',
       github_api_token: ENV["GITHUB_TOKEN"],
-      changelog_latest_path: changelog_path
+      changelog_latest_path: changelog_path,
+      commitish: admob_commitish
     )
   end
 
