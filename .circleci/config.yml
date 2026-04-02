@@ -1968,12 +1968,15 @@ jobs:
           command: ci_scripts/deploy-admob-spm.sh "${CIRCLE_TAG}"
 
   make-admob-release:
-    executor:
-      name: macos-executor
+    docker:
+      - image: cimg/ruby:3.2.0
+    resource_class: small
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
     steps:
       - checkout
       - revenuecat/trust-github-key
-      - install-dependencies
+      - install-rubydocker-dependencies
       - run:
           name: Create GitHub release for purchases-ios-admob
           command: bundle exec fastlane admob_github_release version:"${CIRCLE_TAG}"
