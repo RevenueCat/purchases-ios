@@ -106,11 +106,11 @@ struct CarouselComponentView: View {
         }
     }
 
-    private func trackCarouselControlInteraction(originalPageIndex: Int) {
+    private func trackCarouselControlInteraction(targetPageIndex: Int) {
         self.purchaseHandler.trackControlInteraction(
             componentType: .carousel,
             componentName: self.viewModel.componentName,
-            componentValue: String(originalPageIndex)
+            componentValue: String(targetPageIndex)
         )
     }
 
