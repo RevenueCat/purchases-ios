@@ -1,5 +1,14 @@
 // swift-tools-version: 6.0
 @preconcurrency import PackageDescription
+import Foundation
+
+// When set to "false", skips downloading external test/dev dependencies
+// to speed up `tuist install` in CI jobs that only build app targets.
+let includeTestDependencies = ProcessInfo.processInfo.environment["TUIST_INCLUDE_TEST_DEPENDENCIES"]?.lowercased() != "false"
+
+if !includeTestDependencies {
+    print("⚠️ TUIST_INCLUDE_TEST_DEPENDENCIES=false: skipping external dependencies. Set to true or unset to include them.")
+}
 
 #if TUIST
     import ProjectDescription
@@ -30,7 +39,7 @@
 
 let package = Package(
     name: "Dependencies",
-    dependencies: [
+    dependencies: includeTestDependencies ? [
         .package(
             url: "https://github.com/quick/nimble",
             exact: "13.7.1"
@@ -52,5 +61,5 @@ let package = Package(
             url: "https://github.com/AliSoftware/OHHTTPStubs",
             revision: "9.1.0"
         )
-    ]
+    ] : []
 )

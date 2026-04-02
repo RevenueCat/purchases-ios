@@ -75,8 +75,8 @@ struct IconComponentView: View {
                        uiConfigProvider: self.viewModel.uiConfigProvider)
                 .shadow(shadow: style.iconBackgroundShadow,
                         shape: style.iconBackgroundShape?.toInsettableShape())
-                .padding(style.margin)
                 .size(style.size)
+                .padding(style.margin)
             }
         }
     }

@@ -90,16 +90,18 @@ class PurchaseHandlerTests: TestCase {
     func testCancelEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
 
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: true)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { event in
+            trackedEvents.modify { $0.append(event) }
+        } customerInfo: {
+            return TestData.customerInfo
+        }
         let handler = PurchaseHandler(
-            purchases: MockPurchases { _, _, _ in
-                return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: true)
-            } restorePurchases: {
-                return TestData.customerInfo
-            } trackEvent: { event in
-                trackedEvents.modify { $0.append(event) }
-            } customerInfo: {
-                return TestData.customerInfo
-            }
+            purchases: purchases,
+            eventDispatcher: PurchaseHandler.testEventDispatcher
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -114,8 +116,10 @@ class PurchaseHandlerTests: TestCase {
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
-        // Events are tracked asynchronously via Task.detached
-        try await Task.sleep(nanoseconds: 100_000_000)
+        await expect(trackedEvents.value.contains(where: {
+            if case .cancel = $0 { return true }
+            return false
+        })).toEventually(beTrue(), timeout: .seconds(2))
 
         let cancelEvent = try XCTUnwrap(trackedEvents.value.first(where: {
             if case .cancel = $0 { return true }
@@ -127,18 +131,20 @@ class PurchaseHandlerTests: TestCase {
     func testCancelEventContainsProductIdentifierWhenCompletedByMyApp() async throws {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
 
+        let purchases = MockPurchases(
+            purchasesAreCompletedBy: .myApp
+        ) { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { event in
+            trackedEvents.modify { $0.append(event) }
+        } customerInfo: {
+            return TestData.customerInfo
+        }
         let handler = PurchaseHandler(
-            purchases: MockPurchases(
-                purchasesAreCompletedBy: .myApp
-            ) { _, _, _ in
-                return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
-            } restorePurchases: {
-                return TestData.customerInfo
-            } trackEvent: { event in
-                trackedEvents.modify { $0.append(event) }
-            } customerInfo: {
-                return TestData.customerInfo
-            },
+            purchases: purchases,
+            eventDispatcher: PurchaseHandler.testEventDispatcher,
             performPurchase: { _ in (userCancelled: true, error: nil) },
             performRestore: { (success: true, error: nil) }
         )
@@ -155,7 +161,6 @@ class PurchaseHandlerTests: TestCase {
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
-        // Events are tracked asynchronously via Task.detached
         await expect(trackedEvents.value.contains(where: {
             if case .cancel = $0 { return true }
             return false
@@ -172,16 +177,18 @@ class PurchaseHandlerTests: TestCase {
         let error: ErrorCode = .storeProblemError
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
 
+        let purchases = MockPurchases { _, _, _ in
+            throw error
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { event in
+            trackedEvents.modify { $0.append(event) }
+        } customerInfo: {
+            return TestData.customerInfo
+        }
         let handler = PurchaseHandler(
-            purchases: MockPurchases { _, _, _ in
-                throw error
-            } restorePurchases: {
-                return TestData.customerInfo
-            } trackEvent: { event in
-                trackedEvents.modify { $0.append(event) }
-            } customerInfo: {
-                return TestData.customerInfo
-            }
+            purchases: purchases,
+            eventDispatcher: PurchaseHandler.testEventDispatcher
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -199,7 +206,6 @@ class PurchaseHandlerTests: TestCase {
             fail("Expected error")
         } catch {}
 
-        // Events are tracked asynchronously via Task.detached
         await expect(trackedEvents.value.contains(where: {
             if case .purchaseError = $0 { return true }
             return false
@@ -216,18 +222,20 @@ class PurchaseHandlerTests: TestCase {
         let purchaseError = NSError(domain: "test", code: 1)
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
 
+        let purchases = MockPurchases(
+            purchasesAreCompletedBy: .myApp
+        ) { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { event in
+            trackedEvents.modify { $0.append(event) }
+        } customerInfo: {
+            return TestData.customerInfo
+        }
         let handler = PurchaseHandler(
-            purchases: MockPurchases(
-                purchasesAreCompletedBy: .myApp
-            ) { _, _, _ in
-                return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
-            } restorePurchases: {
-                return TestData.customerInfo
-            } trackEvent: { event in
-                trackedEvents.modify { $0.append(event) }
-            } customerInfo: {
-                return TestData.customerInfo
-            },
+            purchases: purchases,
+            eventDispatcher: PurchaseHandler.testEventDispatcher,
             performPurchase: { _ in (userCancelled: false, error: purchaseError) },
             performRestore: { (success: true, error: nil) }
         )
@@ -247,7 +255,6 @@ class PurchaseHandlerTests: TestCase {
             fail("Expected error")
         } catch {}
 
-        // Events are tracked asynchronously via Task.detached
         await expect(trackedEvents.value.contains(where: {
             if case .purchaseError = $0 { return true }
             return false
@@ -477,7 +484,8 @@ class PurchaseHandlerTests: TestCase {
                     trackedEvents.modify { $0.append(event) }
                 },
                 customerInfo: { TestData.customerInfo }
-            )
+            ),
+            eventDispatcher: PurchaseHandler.testEventDispatcher
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -526,7 +534,8 @@ class PurchaseHandlerTests: TestCase {
                     trackedEvents.modify { $0.append(event) }
                 },
                 customerInfo: { TestData.customerInfo }
-            )
+            ),
+            eventDispatcher: PurchaseHandler.testEventDispatcher
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -567,41 +576,29 @@ class PurchaseHandlerTests: TestCase {
     }
 
     func testPaywallSourceIsPropagatedToTrackedEvents() async throws {
-        let impressionExpectation = expectation(description: "Impression tracked")
-        let closeExpectation = expectation(description: "Close tracked")
-
         let source = PaywallSource.customerCenter
-        var trackedEvents: [PaywallEvent] = []
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
 
+        let purchases = MockPurchases(
+            purchase: { _, _, _ in
+            return (
+                transaction: nil,
+                customerInfo: TestData.customerInfo,
+                userCancelled: false
+            )
+        },
+            restorePurchases: {
+            return TestData.customerInfo
+        },
+            trackEvent: { event in
+            trackedEvents.modify { $0.append(event) }
+        },
+            customerInfo: {
+            return TestData.customerInfo
+        })
         let handler = PurchaseHandler(
-            purchases: MockPurchases(
-                purchase: { _, _, _ in
-                return (
-                    transaction: nil,
-                    customerInfo: TestData.customerInfo,
-                    userCancelled: false
-                )
-            },
-                restorePurchases: {
-                return TestData.customerInfo
-            },
-                trackEvent: { event in
-                await MainActor.run {
-                    trackedEvents.append(event)
-
-                    switch event {
-                    case .impression:
-                        impressionExpectation.fulfill()
-                    case .close:
-                        closeExpectation.fulfill()
-                    case .cancel, .exitOffer, .purchaseInitiated, .purchaseError, .controlInteraction:
-                        break
-                    }
-                }
-            },
-                customerInfo: {
-                return TestData.customerInfo
-            })
+            purchases: purchases,
+            eventDispatcher: PurchaseHandler.testEventDispatcher
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -616,15 +613,11 @@ class PurchaseHandlerTests: TestCase {
 
         handler.trackPaywallImpression(eventData)
 
-        await fulfillment(of: [impressionExpectation], timeout: 1.0)
-
         let result = handler.trackPaywallClose()
         expect(result) == true
 
-        await fulfillment(of: [closeExpectation], timeout: 1.0)
-
-        expect(trackedEvents).to(haveCount(2))
-        trackedEvents.forEach { event in
+        await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
+        trackedEvents.value.forEach { event in
             expect(event.data.source) == source
         }
     }
