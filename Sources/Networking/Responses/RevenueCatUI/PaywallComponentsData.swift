@@ -29,7 +29,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public struct PaywallComponentsConfig: Codable, Equatable, Sendable {
 
         public var stack: PaywallComponent.StackComponent
-        @_spi(Internal) public let header: PaywallComponent.HeaderComponent?
+        public let header: PaywallComponent.HeaderComponent?
         public let stickyFooter: PaywallComponent.StickyFooterComponent?
         public var background: PaywallComponent.Background
 
@@ -44,7 +44,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
             self.background = background
         }
 
-        @_spi(Internal) public init(
+        public init(
             stack: PaywallComponent.StackComponent,
             header: PaywallComponent.HeaderComponent?,
             stickyFooter: PaywallComponent.StickyFooterComponent?,
