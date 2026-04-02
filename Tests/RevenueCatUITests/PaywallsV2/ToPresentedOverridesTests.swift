@@ -445,6 +445,49 @@ class ToPresentedOverridesTests: TestCase {
         expect(outerStack.containsUnsupportedConditions()).to(beFalse())
     }
 
+    // MARK: - HeaderComponent containsUnsupportedConditions
+
+    func testHeaderWithUnsupportedConditionInStack_ReturnsTrue() throws {
+        let header = PaywallComponent.HeaderComponent(
+            stack: .init(components: [
+                .text(.init(
+                    text: "text_1",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [.init(extendedConditions: [.unsupported], properties: .init())]
+                ))
+            ])
+        )
+
+        expect(PaywallComponent.header(header).containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testStackContainingHeader_WithUnsupportedConditionInHeader_ReturnsTrue() throws {
+        let header = PaywallComponent.HeaderComponent(
+            stack: .init(components: [
+                .text(.init(
+                    text: "text_1",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [.init(extendedConditions: [.unsupported], properties: .init())]
+                ))
+            ])
+        )
+        let stack = PaywallComponent.StackComponent(
+            components: [.header(header)]
+        )
+
+        expect(stack.containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testHeaderWithNoUnsupportedConditions_ReturnsFalse() throws {
+        let header = PaywallComponent.HeaderComponent(
+            stack: .init(components: [
+                .text(.init(text: "text_1", color: .init(light: .hex("#000000"))))
+            ])
+        )
+
+        expect(PaywallComponent.header(header).containsUnsupportedConditions()).to(beFalse())
+    }
+
     // MARK: - toPresentedOverrides Behavior Without discardRules
 
     func testToPresentedOverrides_WithoutDiscardRules_KeepsAllOverridesIncludingUnsupported() throws {
