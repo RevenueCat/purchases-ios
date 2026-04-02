@@ -1976,7 +1976,7 @@ jobs:
       - install-dependencies
       - run:
           name: Create GitHub release for purchases-ios-admob
-          command: bundle exec fastlane admob_github_release version:"5.67.1"
+          command: bundle exec fastlane admob_github_release version:"${CIRCLE_TAG}"
 
   bump-sdk-in-rc-mobile-app:
     docker:
@@ -2590,11 +2590,4 @@ workflows:
           requires:
             - revenuecat/tag-current-branch
           <<: *release-branches
-
-  test-admob-release:
-    jobs:
-      - make-admob-release:
-          filters:
-            branches:
-              only: admob-github-releases
 
