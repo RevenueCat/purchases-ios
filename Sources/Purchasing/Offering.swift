@@ -203,7 +203,7 @@ import Foundation
         identifier: String,
         serverDescription: String,
         metadata: [String: Any] = [:],
-        paywall: PaywallData? = nil,
+        paywall: PaywallData?,
         availablePackages: [Package],
         webCheckoutUrl: URL?
     ) {
@@ -219,7 +219,7 @@ import Foundation
         serverDescription: String,
         metadata: [String: Any] = [:],
         paywall: PaywallData? = nil,
-        paywallComponents: PaywallComponents? = nil,
+        paywallComponents: PaywallComponents?,
         availablePackages: [Package],
         webCheckoutUrl: URL?
     ) {
