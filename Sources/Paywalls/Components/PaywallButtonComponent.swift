@@ -15,7 +15,7 @@
 
 import Foundation
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     final class ButtonComponent: PaywallComponentBase {
 

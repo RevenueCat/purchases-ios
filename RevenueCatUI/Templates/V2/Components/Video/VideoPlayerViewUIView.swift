@@ -12,7 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/18/25.
 
 import AVKit
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if canImport(UIKit) && !os(watchOS)

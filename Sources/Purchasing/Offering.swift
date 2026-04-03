@@ -29,7 +29,7 @@ import Foundation
 @objc(RCOffering) public final class Offering: NSObject {
 
     /// Initialize a ``PaywallComponents``
-    public struct PaywallComponents {
+    @_spi(Internal) public struct PaywallComponents {
 
         /**
          Paywall components configuration defined in RevenueCat dashboard.
@@ -78,7 +78,7 @@ import Foundation
 
      Use ``hasPaywall`` to check if the offering has a paywall.
      */
-    public let paywallComponents: PaywallComponents?
+    @_spi(Internal) public let paywallComponents: PaywallComponents?
 
     /**
      Whether the offering contains a paywall.
@@ -199,6 +199,28 @@ import Foundation
     }
 
     /// Initialize an ``Offering`` given a list of ``Package``s.
+    public convenience init(
+        identifier: String,
+        serverDescription: String,
+        metadata: [String: Any] = [:],
+        paywall: PaywallData? = nil,
+        availablePackages: [Package],
+        webCheckoutUrl: URL?
+    ) {
+        self.init(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: paywall,
+            paywallComponents: nil,
+            draftPaywallComponents: nil,
+            availablePackages: availablePackages,
+            webCheckoutUrl: webCheckoutUrl
+        )
+    }
+
+    /// Initialize an ``Offering`` given a list of ``Package``s.
+    @_spi(Internal)
     public convenience init(
         identifier: String,
         serverDescription: String,

@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 var off: Offering!
 func checkOfferingAPI() {
