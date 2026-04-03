@@ -207,19 +207,11 @@ import Foundation
         availablePackages: [Package],
         webCheckoutUrl: URL?
     ) {
-        self.init(
-            identifier: identifier,
-            serverDescription: serverDescription,
-            metadata: metadata,
-            paywall: paywall,
-            paywallComponents: nil,
-            draftPaywallComponents: nil,
-            availablePackages: availablePackages,
-            webCheckoutUrl: webCheckoutUrl
-        )
+        self.init(identifier: identifier, serverDescription: serverDescription, metadata: metadata,
+                  paywall: paywall, paywallComponents: nil, draftPaywallComponents: nil,
+                  availablePackages: availablePackages, webCheckoutUrl: webCheckoutUrl)
     }
 
-    /// Initialize an ``Offering`` given a list of ``Package``s.
     @_spi(Internal)
     public convenience init(
         identifier: String,
@@ -230,16 +222,10 @@ import Foundation
         availablePackages: [Package],
         webCheckoutUrl: URL?
     ) {
-        self.init(
-            identifier: identifier,
-            serverDescription: serverDescription,
-            metadata: metadata,
-            paywall: paywall,
-            paywallComponents: paywallComponents,
-            draftPaywallComponents: nil,
-            availablePackages: availablePackages,
-            webCheckoutUrl: webCheckoutUrl
-        )
+        self.init(identifier: identifier, serverDescription: serverDescription, metadata: metadata,
+                  paywall: paywall, paywallComponents: paywallComponents,
+                  draftPaywallComponents: nil, availablePackages: availablePackages,
+                  webCheckoutUrl: webCheckoutUrl)
     }
 
     init(
