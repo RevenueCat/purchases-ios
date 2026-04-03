@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-@_spi(Internal) import RevenueCat
+import RevenueCat
 
 var off: Offering!
 func checkOfferingAPI() {
@@ -37,7 +37,6 @@ func checkOfferingAPI() {
     let metadataOptionalInt: Int? = off.getMetadataValue(for: "", default: nil)
     let metadataDecodable: Data? = off.getMetadataValue(for: "")
     let _: PaywallData? = off.paywall
-    let _: Offering.PaywallComponents? = off.paywallComponents
     let bool: Bool = off.hasPaywall
 
     print(off!, ident, sDesc, aPacks, lPack!, annPack!, smPack!, thmPack!, twmPack!,
