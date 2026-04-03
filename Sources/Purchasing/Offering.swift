@@ -212,6 +212,7 @@ import Foundation
                   availablePackages: availablePackages, webCheckoutUrl: webCheckoutUrl)
     }
 
+    /// Initialize an ``Offering`` given a list of ``Package``s, including paywall components.
     @_spi(Internal)
     public convenience init(
         identifier: String,
