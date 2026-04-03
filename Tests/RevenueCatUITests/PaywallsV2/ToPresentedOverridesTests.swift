@@ -13,7 +13,7 @@
 //
 
 import Nimble
-@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
