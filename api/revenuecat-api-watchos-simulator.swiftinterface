@@ -2354,6 +2354,7 @@ extension RevenueCat.PaywallComponent {
     public init(from decoder: any Swift.Decoder) throws
   }
   final public class PartialStackComponent : RevenueCat.PaywallPartialComponent {
+    final public let name: Swift.String?
     final public let visible: Swift.Bool?
     final public let size: RevenueCat.PaywallComponent.Size?
     final public let spacing: CoreFoundation.CGFloat?
@@ -2368,7 +2369,7 @@ extension RevenueCat.PaywallComponent {
     final public let overflow: RevenueCat.PaywallComponent.StackComponent.Overflow?
     final public let badge: RevenueCat.PaywallComponent.Badge?
     #if compiler(>=5.3) && $NonescapableTypes
-    public init(visible: Swift.Bool? = true, dimension: RevenueCat.PaywallComponent.Dimension? = nil, size: RevenueCat.PaywallComponent.Size? = nil, spacing: CoreFoundation.CGFloat? = nil, backgroundColor: RevenueCat.PaywallComponent.ColorScheme? = nil, background: RevenueCat.PaywallComponent.Background? = nil, padding: RevenueCat.PaywallComponent.Padding? = nil, margin: RevenueCat.PaywallComponent.Padding? = nil, shape: RevenueCat.PaywallComponent.Shape? = nil, border: RevenueCat.PaywallComponent.Border? = nil, shadow: RevenueCat.PaywallComponent.Shadow? = nil, overflow: RevenueCat.PaywallComponent.StackComponent.Overflow? = nil, badge: RevenueCat.PaywallComponent.Badge? = nil)
+    public init(name: Swift.String? = nil, visible: Swift.Bool? = true, dimension: RevenueCat.PaywallComponent.Dimension? = nil, size: RevenueCat.PaywallComponent.Size? = nil, spacing: CoreFoundation.CGFloat? = nil, backgroundColor: RevenueCat.PaywallComponent.ColorScheme? = nil, background: RevenueCat.PaywallComponent.Background? = nil, padding: RevenueCat.PaywallComponent.Padding? = nil, margin: RevenueCat.PaywallComponent.Padding? = nil, shape: RevenueCat.PaywallComponent.Shape? = nil, border: RevenueCat.PaywallComponent.Border? = nil, shadow: RevenueCat.PaywallComponent.Shadow? = nil, overflow: RevenueCat.PaywallComponent.StackComponent.Overflow? = nil, badge: RevenueCat.PaywallComponent.Badge? = nil)
     #endif
     final public func hash(into hasher: inout Swift.Hasher)
     public static func == (lhs: RevenueCat.PaywallComponent.PartialStackComponent, rhs: RevenueCat.PaywallComponent.PartialStackComponent) -> Swift.Bool
@@ -4934,7 +4935,9 @@ extension RevenueCat.PaywallComponent {
       final public let id: Swift.String
       final public let name: Swift.String?
       final public let stack: RevenueCat.PaywallComponent.StackComponent
+      #if compiler(>=5.3) && $NonescapableTypes
       public init(id: Swift.String, name: Swift.String? = nil, stack: RevenueCat.PaywallComponent.StackComponent)
+      #endif
       final public func hash(into hasher: inout Swift.Hasher)
       public static func == (lhs: RevenueCat.PaywallComponent.TabsComponent.Tab, rhs: RevenueCat.PaywallComponent.TabsComponent.Tab) -> Swift.Bool
       @objc deinit
