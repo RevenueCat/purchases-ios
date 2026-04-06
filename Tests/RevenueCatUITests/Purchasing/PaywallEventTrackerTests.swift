@@ -79,12 +79,15 @@ class PaywallEventTrackerTests: TestCase {
     func testTrackComponentInteractionSendsExpectedPaywallEvent() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
 
-        expect(tracker.trackComponentInteraction(componentType: .tab, componentName: nil, componentValue: "a")) == false
+        expect(tracker.trackComponentInteraction(
+            .init(componentType: .tab, componentName: nil, componentValue: "a"))
+        ) == false
 
         tracker.trackPaywallImpression(Self.eventData)
 
-        // swiftlint:disable:next line_length
-        expect(tracker.trackComponentInteraction(componentType: .tab, componentName: "n", componentValue: "id1")) == true
+        expect(tracker.trackComponentInteraction(
+            .init(componentType: .tab, componentName: "n", componentValue: "id1"))
+        ) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -110,12 +113,12 @@ class PaywallEventTrackerTests: TestCase {
         let linkURL = try XCTUnwrap(URL(string: "https://example.com/doc"))
         tracker.trackPaywallImpression(Self.eventData)
 
-        expect(tracker.trackComponentInteraction(
+        expect(tracker.trackComponentInteraction(.init(
             componentType: .text,
             componentName: nil,
             componentValue: "navigate_to_url",
             componentURL: linkURL
-        )) == true
+        ))) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -140,7 +143,7 @@ class PaywallEventTrackerTests: TestCase {
 
         tracker.trackPaywallImpression(Self.eventData)
 
-        expect(tracker.trackComponentInteraction(
+        expect(tracker.trackComponentInteraction(.init(
             componentType: .tab,
             componentName: "plans_tabs",
             componentValue: "annual",
@@ -149,7 +152,7 @@ class PaywallEventTrackerTests: TestCase {
             originContextName: "monthly",
             destinationContextName: "annual",
             defaultIndex: 0
-        )) == true
+        ))) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 

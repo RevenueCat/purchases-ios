@@ -150,45 +150,6 @@ final class PaywallEventTracker {
         return true
     }
 
-    /// Tracks a paywall control interaction.
-    /// - Parameters:
-    ///   - componentType: Category of the control
-    ///   - componentName: Optional builder `name` from the paywall JSON; `nil` when the control has no usable name
-    ///   - componentValue: Type-specific payload, e.g. `"on"` / `"off"` for a switch,
-    ///     a compatibility value for navigable controls, or a button action discriminator (e.g. `"restore_purchases"`)
-    ///   - componentURL: Optional destination URL for URL-based controls (terms, privacy, generic links).
-    ///   - originIndex: Optional 0-based source index for navigable controls.
-    ///   - destinationIndex: Optional 0-based destination index for navigable controls.
-    ///   - originContextName: Optional source context name for navigable controls.
-    ///   - destinationContextName: Optional destination context name for navigable controls.
-    ///   - defaultIndex: Optional 0-based default index for navigable controls.
-    /// - Returns: whether the event was tracked
-    @discardableResult
-    func trackComponentInteraction(
-        componentType: ControlType,
-        componentName: String?,
-        componentValue: String,
-        componentURL: URL? = nil,
-        originIndex: Int? = nil,
-        destinationIndex: Int? = nil,
-        originContextName: String? = nil,
-        destinationContextName: String? = nil,
-        defaultIndex: Int? = nil
-    ) -> Bool {
-        let interactionData = PaywallEvent.ComponentInteractionData(
-            componentType: componentType,
-            componentName: componentName,
-            componentValue: componentValue,
-            componentURL: componentURL,
-            originIndex: originIndex,
-            destinationIndex: destinationIndex,
-            originContextName: originContextName,
-            destinationContextName: destinationContextName,
-            defaultIndex: defaultIndex
-        )
-        return self.trackComponentInteraction(interactionData)
-    }
-
     @discardableResult
     func trackComponentInteraction(_ interactionData: PaywallEvent.ComponentInteractionData) -> Bool {
         guard let data = self.eventData else {
