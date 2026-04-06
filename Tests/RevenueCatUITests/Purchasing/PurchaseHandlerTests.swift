@@ -101,7 +101,8 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher
+            eventDispatcher: PurchaseHandler.testEventDispatcher,
+            eventTracker: .init(purchases: purchases)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -146,7 +147,8 @@ class PurchaseHandlerTests: TestCase {
             purchases: purchases,
             eventDispatcher: PurchaseHandler.testEventDispatcher,
             performPurchase: { _ in (userCancelled: true, error: nil) },
-            performRestore: { (success: true, error: nil) }
+            performRestore: { (success: true, error: nil) },
+            eventTracker: .init(purchases: purchases)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -188,7 +190,8 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher
+            eventDispatcher: PurchaseHandler.testEventDispatcher,
+            eventTracker: .init(purchases: purchases)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -237,7 +240,8 @@ class PurchaseHandlerTests: TestCase {
             purchases: purchases,
             eventDispatcher: PurchaseHandler.testEventDispatcher,
             performPurchase: { _ in (userCancelled: false, error: purchaseError) },
-            performRestore: { (success: true, error: nil) }
+            performRestore: { (success: true, error: nil) },
+            eventTracker: .init(purchases: purchases)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -277,7 +281,7 @@ class PurchaseHandlerTests: TestCase {
             return TestData.customerInfo
         }
 
-        let handler = PurchaseHandler(purchases: mockPurchases)
+        let handler = PurchaseHandler(purchases: mockPurchases, eventTracker: .init(purchases: mockPurchases))
 
         let eventData: PaywallEvent.Data = .init(
             offering: TestData.offeringWithIntroOffer,
@@ -311,7 +315,8 @@ class PurchaseHandlerTests: TestCase {
         let handler = PurchaseHandler(
             purchases: mockPurchases,
             performPurchase: { _ in (userCancelled: false, error: nil) },
-            performRestore: { (success: true, error: nil) }
+            performRestore: { (success: true, error: nil) },
+            eventTracker: .init(purchases: mockPurchases)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -494,7 +499,8 @@ class PurchaseHandlerTests: TestCase {
         })
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher
+            eventDispatcher: PurchaseHandler.testEventDispatcher,
+            eventTracker: .init(purchases: purchases)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -560,30 +566,32 @@ private final class AsyncPurchaseHandler {
     private(set) var purchaseHandler: PurchaseHandler!
 
     init() {
+        let purchases = MockPurchases { [weak instance = self] _, _, _ in
+            let instance = try XCTUnwrap(instance)
+
+            await instance.createAndWaitForContinuation()
+
+            return (
+                transaction: nil,
+                customerInfo: TestData.customerInfo,
+                userCancelled: false
+            )
+        } restorePurchases: { [weak instance = self] in
+            let instance = try XCTUnwrap(instance)
+            await instance.createAndWaitForContinuation()
+
+            return TestData.customerInfo
+        } trackEvent: { event in
+            Logger.debug("Tracking event: \(event)")
+        } customerInfo: { [weak instance = self] in
+            let instance = try XCTUnwrap(instance)
+            await instance.createAndWaitForContinuation()
+
+            return TestData.customerInfo
+        }
         self.purchaseHandler = .init(
-            purchases: MockPurchases { [weak instance = self] _, _, _ in
-                let instance = try XCTUnwrap(instance)
-
-                await instance.createAndWaitForContinuation()
-
-                return (
-                    transaction: nil,
-                    customerInfo: TestData.customerInfo,
-                    userCancelled: false
-                )
-            } restorePurchases: { [weak instance = self] in
-                let instance = try XCTUnwrap(instance)
-                await instance.createAndWaitForContinuation()
-
-                return TestData.customerInfo
-            } trackEvent: { event in
-                Logger.debug("Tracking event: \(event)")
-            } customerInfo: { [weak instance = self] in
-                let instance = try XCTUnwrap(instance)
-                await instance.createAndWaitForContinuation()
-
-                return TestData.customerInfo
-            }
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases)
         )
     }
 

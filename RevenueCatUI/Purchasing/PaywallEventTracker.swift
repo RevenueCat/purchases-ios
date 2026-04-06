@@ -20,6 +20,8 @@ import SwiftUI
 final class PaywallEventTracker {
     typealias EventDispatcher = @Sendable (@Sendable @escaping () async -> Void) -> Void
 
+    static let shared = PaywallEventTracker()
+
     @Sendable static func dispatcher() -> EventDispatcher {
         return { function in
             Task.detached(priority: .background, operation: function)

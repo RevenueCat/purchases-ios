@@ -489,8 +489,6 @@ struct LoadedOfferingPaywallView: View {
     private let showZeroDecimalPlacePrices: Bool
     private let error: Offering.PaywallValidationError?
 
-    private let eventTracker = PaywallEventTracker()
-
     @StateObject
     private var introEligibility: IntroEligibilityViewModel
     @ObservedObject
@@ -588,7 +586,7 @@ struct LoadedOfferingPaywallView: View {
         )
         let view = paywallView(withConfig: configuration)
             .environmentObject(self.introEligibility)
-            .environment(\.componentInteractionLogger, self.eventTracker.componentInteractionLogger)
+            .environment(\.componentInteractionLogger, PaywallEventTracker.shared.componentInteractionLogger)
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }

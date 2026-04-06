@@ -85,6 +85,7 @@ class ComponentInteractionLoggerTests: TestCase {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension ComponentInteractionLoggerTests {
 
     static let testEventDispatcher: PaywallEventTracker.EventDispatcher = { work in

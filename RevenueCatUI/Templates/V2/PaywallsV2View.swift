@@ -114,8 +114,6 @@ struct PaywallsV2View: View {
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
 
-    private let eventTracker = PaywallEventTracker()
-
     @State private var didFinishEligibilityCheck: Bool = false
 
     @StateObject
@@ -207,7 +205,7 @@ struct PaywallsV2View: View {
                         onDismiss: self.onDismiss
                     )
                     .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-                    .environment(\.componentInteractionLogger, self.eventTracker.componentInteractionLogger)
+                    .environment(\.componentInteractionLogger, PaywallEventTracker.shared.componentInteractionLogger)
                     .environmentObject(self.purchaseHandler)
                     .environmentObject(self.introOfferEligibilityContext)
                     .environmentObject(self.paywallPromoOfferCache)

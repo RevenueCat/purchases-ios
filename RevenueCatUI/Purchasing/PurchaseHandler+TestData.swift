@@ -58,7 +58,8 @@ extension PurchaseHandler {
             eventDispatcher: Self.testEventDispatcher,
             performPurchase: performPurchase,
             performRestore: performRestore,
-            purchaseResultPublisher: purchaseResultPublisher
+            purchaseResultPublisher: purchaseResultPublisher,
+            eventTracker: .init(purchases: purchases)
         )
     }
 
@@ -76,17 +77,19 @@ extension PurchaseHandler {
 
     /// - Returns: `PurchaseHandler` that throws `error` for purchases and restores.
     static func failing(_ error: Error) -> Self {
+        let purchases = MockPurchases { _, _, _ in
+            throw error
+        } restorePurchases: {
+            throw error
+        } trackEvent: { event in
+            Logger.debug("Tracking event: \(event)")
+        } customerInfo: {
+            throw error
+        }
         return self.init(
-            purchases: MockPurchases { _, _, _ in
-                throw error
-            } restorePurchases: {
-                throw error
-            } trackEvent: { event in
-                Logger.debug("Tracking event: \(event)")
-            } customerInfo: {
-                throw error
-            },
-            eventDispatcher: Self.testEventDispatcher
+            purchases: purchases,
+            eventDispatcher: Self.testEventDispatcher,
+            eventTracker: .init(purchases: purchases)
         )
     }
 

@@ -120,13 +120,15 @@ final class PurchaseHandler: ObservableObject {
                      performRestore: PerformRestore? = nil,
                      purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
                          .default
-                         .purchaseCompletedPublisher()
+                         .purchaseCompletedPublisher(),
+                     eventTracker: PaywallEventTracker = .shared
     ) {
         self.init(isConfigured: true,
                   purchases: purchases,
                   performPurchase: performPurchase,
                   performRestore: performRestore,
-                  purchaseResultPublisher: purchaseResultPublisher
+                  purchaseResultPublisher: purchaseResultPublisher,
+                  eventTracker: eventTracker
         )
     }
 
@@ -138,17 +140,15 @@ final class PurchaseHandler: ObservableObject {
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
             .default
-            .purchaseCompletedPublisher()
+            .purchaseCompletedPublisher(),
+        eventTracker: PaywallEventTracker
     ) {
         let eventDispatcher = eventDispatcher ?? Self.backgroundEventDispatcher
 
         self.isConfigured = isConfigured
         self.purchases = purchases
         self.eventDispatcher = eventDispatcher
-        self.paywallEventTracker = .init(
-            purchases: purchases,
-            eventDispatcher: eventDispatcher
-        )
+        self.paywallEventTracker = eventTracker
         self.performPurchase = performPurchase
         self.performRestore = performRestore
 
@@ -187,11 +187,18 @@ final class PurchaseHandler: ObservableObject {
                                       performRestore: PerformRestore?,
                                       customerInfo: CustomerInfo? = nil,
                                       purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat) -> Self {
-        return .init(isConfigured: false,
-                     purchases: NotConfiguredPurchases(customerInfo: customerInfo,
-                                                       purchasesAreCompletedBy: purchasesAreCompletedBy),
-                                                       performPurchase: performPurchase,
-                                                       performRestore: performRestore)
+        let purchases = NotConfiguredPurchases(
+            customerInfo: customerInfo,
+            purchasesAreCompletedBy: purchasesAreCompletedBy
+        )
+
+        return .init(
+            isConfigured: false,
+            purchases: purchases,
+            performPurchase: performPurchase,
+            performRestore: performRestore,
+            eventTracker: .init(purchases: purchases)
+        )
     }
 
     private func setResult(_ result: PurchaseResultData) {
@@ -516,7 +523,8 @@ extension PurchaseHandler {
         return .init(
             isConfigured: self.isConfigured,
             purchases: self.purchases.map(purchase: purchase, restore: restore),
-            eventDispatcher: self.eventDispatcher
+            eventDispatcher: self.eventDispatcher,
+            eventTracker: self.paywallEventTracker
         )
     }
 
@@ -526,7 +534,8 @@ extension PurchaseHandler {
         return .init(
             isConfigured: self.isConfigured,
             purchases: self.purchases.map(trackEvent: trackEvent),
-            eventDispatcher: self.eventDispatcher
+            eventDispatcher: self.eventDispatcher,
+            eventTracker: self.paywallEventTracker
         )
     }
 
