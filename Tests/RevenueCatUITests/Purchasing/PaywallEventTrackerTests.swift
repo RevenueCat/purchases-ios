@@ -288,10 +288,11 @@ private extension PaywallEventTrackerTests {
                 },
                 customerInfo: { TestData.customerInfo }
             ),
-            eventDispatcher: PurchaseHandler.testEventDispatcher
+            eventDispatcher: { work in
+                Task { await work() }
+            }
         )
 
         return (tracker, trackedEvents)
     }
-
 }

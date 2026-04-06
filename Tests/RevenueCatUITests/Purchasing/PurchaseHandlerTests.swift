@@ -101,7 +101,6 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher,
             eventTracker: .init(purchases: purchases)
         )
 
@@ -145,7 +144,6 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher,
             performPurchase: { _ in (userCancelled: true, error: nil) },
             performRestore: { (success: true, error: nil) },
             eventTracker: .init(purchases: purchases)
@@ -190,7 +188,6 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher,
             eventTracker: .init(purchases: purchases)
         )
 
@@ -238,7 +235,6 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher,
             performPurchase: { _ in (userCancelled: false, error: purchaseError) },
             performRestore: { (success: true, error: nil) },
             eventTracker: .init(purchases: purchases)
@@ -499,7 +495,6 @@ class PurchaseHandlerTests: TestCase {
         })
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher,
             eventTracker: .init(purchases: purchases)
         )
 

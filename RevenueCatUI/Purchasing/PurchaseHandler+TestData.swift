@@ -55,7 +55,6 @@ extension PurchaseHandler {
             }
         return self.init(
             purchases: purchases,
-            eventDispatcher: Self.testEventDispatcher,
             performPurchase: performPurchase,
             performRestore: performRestore,
             purchaseResultPublisher: purchaseResultPublisher,
@@ -88,7 +87,6 @@ extension PurchaseHandler {
         }
         return self.init(
             purchases: purchases,
-            eventDispatcher: Self.testEventDispatcher,
             eventTracker: .init(purchases: purchases)
         )
     }
@@ -114,19 +112,6 @@ extension Task where Success == Never, Failure == Never {
 
     static func sleep(seconds: TimeInterval) async {
         try? await Self.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension PurchaseHandler {
-
-    /// Test event dispatcher that uses `Task { }` instead of `Task.detached(priority: .background)`.
-    /// Non-detached tasks inherit the caller's actor context and priority, so events are delivered
-    /// promptly without the aggressive deprioritization that `Task.detached(priority: .background)`
-    /// causes on iOS 26+ CI environments.
-    static let testEventDispatcher: EventDispatcher = { work in
-        Task { await work() }
     }
 
 }
