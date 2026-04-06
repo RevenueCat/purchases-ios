@@ -231,7 +231,7 @@ func checkPaywallEvent(_ event: PaywallEvent) {
     let _: PaywallEvent.CreationData = event.creationData
     let _: PaywallEvent.Data = event.data
     let _: PaywallEvent.ExitOfferData? = event.exitOfferData
-    let _: PaywallEvent.ComponentInteractionData? = event.ComponentInteractionData
+    let _: PaywallEvent.ComponentInteractionData? = event.componentInteractionData
 }
 
 func checkPaywallEventCreationData(_ creationData: PaywallEvent.CreationData) {
