@@ -101,7 +101,7 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventTracker: .init(purchases: purchases)
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -146,7 +146,7 @@ class PurchaseHandlerTests: TestCase {
             purchases: purchases,
             performPurchase: { _ in (userCancelled: true, error: nil) },
             performRestore: { (success: true, error: nil) },
-            eventTracker: .init(purchases: purchases)
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -188,7 +188,7 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventTracker: .init(purchases: purchases)
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -237,7 +237,7 @@ class PurchaseHandlerTests: TestCase {
             purchases: purchases,
             performPurchase: { _ in (userCancelled: false, error: purchaseError) },
             performRestore: { (success: true, error: nil) },
-            eventTracker: .init(purchases: purchases)
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -277,7 +277,10 @@ class PurchaseHandlerTests: TestCase {
             return TestData.customerInfo
         }
 
-        let handler = PurchaseHandler(purchases: mockPurchases, eventTracker: .init(purchases: mockPurchases))
+        let handler = PurchaseHandler(
+            purchases: mockPurchases,
+            eventTracker: .init(purchases: mockPurchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
+        )
 
         let eventData: PaywallEvent.Data = .init(
             offering: TestData.offeringWithIntroOffer,
@@ -312,7 +315,7 @@ class PurchaseHandlerTests: TestCase {
             purchases: mockPurchases,
             performPurchase: { _ in (userCancelled: false, error: nil) },
             performRestore: { (success: true, error: nil) },
-            eventTracker: .init(purchases: mockPurchases)
+            eventTracker: .init(purchases: mockPurchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -495,7 +498,7 @@ class PurchaseHandlerTests: TestCase {
         })
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventTracker: .init(purchases: purchases)
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -586,7 +589,7 @@ private final class AsyncPurchaseHandler {
         }
         self.purchaseHandler = .init(
             purchases: purchases,
-            eventTracker: .init(purchases: purchases)
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
     }
 
