@@ -60,7 +60,7 @@ extension FeatureEventsRequest.PaywallEvent {
         case exitOffer = "paywall_exit_offer"
         case purchaseInitiated = "paywall_purchase_initiated"
         case purchaseError = "paywall_purchase_error"
-        case controlInteraction = "paywall_component_interacted"
+        case componentInteraction = "paywall_component_interacted"
 
     }
 
@@ -76,7 +76,7 @@ extension FeatureEventsRequest.PaywallEvent {
             let creationData = paywallEvent.creationData
             let data = paywallEvent.data
             let exitOfferData = paywallEvent.exitOfferData
-            let controlInteractionData = paywallEvent.controlInteractionData
+            let componentInteractionData = paywallEvent.componentInteractionData
 
             self.init(
                 id: creationData.id.uuidString,
@@ -98,15 +98,15 @@ extension FeatureEventsRequest.PaywallEvent {
                 productId: data.productId,
                 errorCode: data.errorCode,
                 errorMessage: data.errorMessage,
-                componentType: controlInteractionData?.componentType,
-                componentName: controlInteractionData?.componentName,
-                componentValue: controlInteractionData?.componentValue,
-                componentURL: controlInteractionData?.componentURL,
-                originIndex: controlInteractionData?.originIndex,
-                destinationIndex: controlInteractionData?.destinationIndex,
-                originContextName: controlInteractionData?.originContextName,
-                destinationContextName: controlInteractionData?.destinationContextName,
-                defaultIndex: controlInteractionData?.defaultIndex
+                componentType: componentInteractionData?.componentType,
+                componentName: componentInteractionData?.componentName,
+                componentValue: componentInteractionData?.componentValue,
+                componentURL: componentInteractionData?.componentURL,
+                originIndex: componentInteractionData?.originIndex,
+                destinationIndex: componentInteractionData?.destinationIndex,
+                originContextName: componentInteractionData?.originContextName,
+                destinationContextName: componentInteractionData?.destinationContextName,
+                defaultIndex: componentInteractionData?.defaultIndex
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -129,7 +129,7 @@ private extension PaywallEvent {
         case .exitOffer: return .exitOffer
         case .purchaseInitiated: return .purchaseInitiated
         case .purchaseError: return .purchaseError
-        case .controlInteraction: return .controlInteraction
+        case .componentInteraction: return .componentInteraction
         }
 
     }

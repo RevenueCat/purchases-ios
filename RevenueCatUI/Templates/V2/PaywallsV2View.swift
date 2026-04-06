@@ -204,7 +204,7 @@ struct PaywallsV2View: View {
                         onDismiss: self.onDismiss
                     )
                     .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-                    .environment(\.controlInteractionLogger, PaywallEventTracker().controlInteractionLogger)
+                    .environment(\.componentInteractionLogger, PaywallEventTracker().componentInteractionLogger)
                     .environmentObject(self.purchaseHandler)
                     .environmentObject(self.introOfferEligibilityContext)
                     .environmentObject(self.paywallPromoOfferCache)

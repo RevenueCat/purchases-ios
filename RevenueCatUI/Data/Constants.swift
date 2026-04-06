@@ -104,7 +104,7 @@ extension TemplateViewType {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum PaywallControlInteraction {
+enum PaywallComponentInteraction {
 
     static let allPlansButtonName = "all_plans_button"
     static let restoreButtonName = "restore_button"

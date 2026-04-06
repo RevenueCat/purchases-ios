@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ControlInteractionLoggerTests.swift
+//  ComponentInteractionLoggerTests.swift
 //
 //  Created by RevenueCat on 4/6/26.
 //
@@ -20,7 +20,7 @@ import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 @MainActor
-class ControlInteractionLoggerTests: TestCase {
+class ComponentInteractionLoggerTests: TestCase {
 
     func testTracking() async throws {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
@@ -49,30 +49,30 @@ class ControlInteractionLoggerTests: TestCase {
             source: nil
         )
 
-        let interactionData = PaywallEvent.ControlInteractionData(
+        let interactionData = PaywallEvent.ComponentInteractionData(
             componentType: .text,
             componentName: "link_copy",
             componentValue: "navigate_to_url",
             componentURL: URL(string: "https://example.com/docs")
         )
 
-        expect(tracker.controlInteractionLogger(interactionData)) == false
+        expect(tracker.componentInteractionLogger(interactionData)) == false
 
         tracker.trackPaywallImpression(eventData)
 
-        expect(tracker.controlInteractionLogger(interactionData)) == true
+        expect(tracker.componentInteractionLogger(interactionData)) == true
 
         await Task(priority: .low) {
             await Task.yield()
         }.value
 
         let interactionEvent = try XCTUnwrap(trackedEvents.value.first(where: {
-            if case .controlInteraction = $0 { return true }
+            if case .componentInteraction = $0 { return true }
             return false
         }))
 
-        guard case let .controlInteraction(_, data, interaction) = interactionEvent else {
-            fail("Expected controlInteraction event")
+        guard case let .componentInteraction(_, data, interaction) = interactionEvent else {
+            fail("Expected componentInteraction event")
             return
         }
 
@@ -85,7 +85,7 @@ class ControlInteractionLoggerTests: TestCase {
 
 }
 
-private extension ControlInteractionLoggerTests {
+private extension ComponentInteractionLoggerTests {
 
     static let testEventDispatcher: PaywallEventTracker.EventDispatcher = { work in
         Task { await work() }

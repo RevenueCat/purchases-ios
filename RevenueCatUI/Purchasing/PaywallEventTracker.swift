@@ -162,7 +162,7 @@ final class PaywallEventTracker {
     ///   - defaultIndex: Optional 0-based default index for navigable controls.
     /// - Returns: whether the event was tracked
     @discardableResult
-    func trackControlInteraction(
+    func trackComponentInteraction(
         componentType: ControlType,
         componentName: String?,
         componentValue: String,
@@ -173,7 +173,7 @@ final class PaywallEventTracker {
         destinationContextName: String? = nil,
         defaultIndex: Int? = nil
     ) -> Bool {
-        let interactionData = PaywallEvent.ControlInteractionData(
+        let interactionData = PaywallEvent.ComponentInteractionData(
             componentType: componentType,
             componentName: componentName,
             componentValue: componentValue,
@@ -184,17 +184,17 @@ final class PaywallEventTracker {
             destinationContextName: destinationContextName,
             defaultIndex: defaultIndex
         )
-        return self.trackControlInteraction(interactionData)
+        return self.trackComponentInteraction(interactionData)
     }
 
     @discardableResult
-    func trackControlInteraction(_ interactionData: PaywallEvent.ControlInteractionData) -> Bool {
+    func trackComponentInteraction(_ interactionData: PaywallEvent.ComponentInteractionData) -> Bool {
         guard let data = self.eventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
 
-        self.track(.controlInteraction(.init(), data, interactionData))
+        self.track(.componentInteraction(.init(), data, interactionData))
         return true
     }
 
@@ -204,9 +204,9 @@ final class PaywallEventTracker {
         }
     }
 
-    var controlInteractionLogger: ControlInteractionLogger {
+    var componentInteractionLogger: ComponentInteractionLogger {
         return .init { [weak self] interactionData in
-            return self?.trackControlInteraction(interactionData) ?? false
+            return self?.trackComponentInteraction(interactionData) ?? false
         }
     }
 
@@ -214,16 +214,16 @@ final class PaywallEventTracker {
 
 /// Lightweight wrapper so views can emit control interaction events without depending on the full `PurchaseHandler`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct ControlInteractionLogger {
+struct ComponentInteractionLogger {
 
-    private let action: (PaywallEvent.ControlInteractionData) -> Bool
+    private let action: (PaywallEvent.ComponentInteractionData) -> Bool
 
-    init(action: @escaping (PaywallEvent.ControlInteractionData) -> Bool = { _ in false }) {
+    init(action: @escaping (PaywallEvent.ComponentInteractionData) -> Bool = { _ in false }) {
         self.action = action
     }
 
     @discardableResult
-    func callAsFunction(_ interactionData: PaywallEvent.ControlInteractionData) -> Bool {
+    func callAsFunction(_ interactionData: PaywallEvent.ComponentInteractionData) -> Bool {
         return self.action(interactionData)
     }
 
@@ -231,14 +231,14 @@ struct ControlInteractionLogger {
 
 /// `EnvironmentKey` for storing the paywall control interaction logger.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct ControlInteractionLoggerKey: EnvironmentKey {
-    static let defaultValue: ControlInteractionLogger = .init()
+struct ComponentInteractionLoggerKey: EnvironmentKey {
+    static let defaultValue: ComponentInteractionLogger = .init()
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
-    var controlInteractionLogger: ControlInteractionLogger {
-        get { self[ControlInteractionLoggerKey.self] }
-        set { self[ControlInteractionLoggerKey.self] = newValue }
+    var componentInteractionLogger: ComponentInteractionLogger {
+        get { self[ComponentInteractionLoggerKey.self] }
+        set { self[ComponentInteractionLoggerKey.self] = newValue }
     }
 }

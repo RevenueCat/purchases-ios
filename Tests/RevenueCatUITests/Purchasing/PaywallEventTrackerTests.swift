@@ -76,24 +76,25 @@ class PaywallEventTrackerTests: TestCase {
         }
     }
 
-    func testTrackControlInteractionSendsExpectedPaywallEvent() async throws {
+    func testTrackComponentInteractionSendsExpectedPaywallEvent() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
 
-        expect(tracker.trackControlInteraction(componentType: .tab, componentName: nil, componentValue: "a")) == false
+        expect(tracker.trackComponentInteraction(componentType: .tab, componentName: nil, componentValue: "a")) == false
 
         tracker.trackPaywallImpression(Self.eventData)
 
-        expect(tracker.trackControlInteraction(componentType: .tab, componentName: "n", componentValue: "id1")) == true
+        // swiftlint:disable:next line_length
+        expect(tracker.trackComponentInteraction(componentType: .tab, componentName: "n", componentValue: "id1")) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
         let interactionEvent = try XCTUnwrap(trackedEvents.value.first(where: {
-            if case .controlInteraction = $0 { return true }
+            if case .componentInteraction = $0 { return true }
             return false
         }))
 
-        guard case let .controlInteraction(_, data, interaction) = interactionEvent else {
-            fail("Expected controlInteraction event")
+        guard case let .componentInteraction(_, data, interaction) = interactionEvent else {
+            fail("Expected componentInteraction event")
             return
         }
 
@@ -103,13 +104,13 @@ class PaywallEventTrackerTests: TestCase {
         expect(interaction.componentValue) == "id1"
     }
 
-    func testTrackControlInteraction_TextTypeIncludesComponentURLForMarkdownLinkStyle() async throws {
+    func testTrackComponentInteraction_TextTypeIncludesComponentURLForMarkdownLinkStyle() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
 
         let linkURL = try XCTUnwrap(URL(string: "https://example.com/doc"))
         tracker.trackPaywallImpression(Self.eventData)
 
-        expect(tracker.trackControlInteraction(
+        expect(tracker.trackComponentInteraction(
             componentType: .text,
             componentName: nil,
             componentValue: "navigate_to_url",
@@ -119,12 +120,12 @@ class PaywallEventTrackerTests: TestCase {
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
         let interactionEvent = try XCTUnwrap(trackedEvents.value.first(where: {
-            if case .controlInteraction = $0 { return true }
+            if case .componentInteraction = $0 { return true }
             return false
         }))
 
-        guard case let .controlInteraction(_, _, interaction) = interactionEvent else {
-            fail("Expected controlInteraction event")
+        guard case let .componentInteraction(_, _, interaction) = interactionEvent else {
+            fail("Expected componentInteraction event")
             return
         }
 
@@ -134,12 +135,12 @@ class PaywallEventTrackerTests: TestCase {
         expect(interaction.componentName).to(beNil())
     }
 
-    func testTrackControlInteraction_StoresNavigationMetadataWhenProvided() async throws {
+    func testTrackComponentInteraction_StoresNavigationMetadataWhenProvided() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
 
         tracker.trackPaywallImpression(Self.eventData)
 
-        expect(tracker.trackControlInteraction(
+        expect(tracker.trackComponentInteraction(
             componentType: .tab,
             componentName: "plans_tabs",
             componentValue: "annual",
@@ -153,12 +154,12 @@ class PaywallEventTrackerTests: TestCase {
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
         let interactionEvent = try XCTUnwrap(trackedEvents.value.first(where: {
-            if case .controlInteraction = $0 { return true }
+            if case .componentInteraction = $0 { return true }
             return false
         }))
 
-        guard case let .controlInteraction(_, _, interaction) = interactionEvent else {
-            fail("Expected controlInteraction event")
+        guard case let .componentInteraction(_, _, interaction) = interactionEvent else {
+            fail("Expected componentInteraction event")
             return
         }
 

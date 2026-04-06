@@ -68,7 +68,7 @@ public enum PaywallEvent: FeatureEvent {
         switch self {
         case .purchaseInitiated, .purchaseError:
             return false
-        case .impression, .cancel, .close, .exitOffer, .controlInteraction:
+        case .impression, .cancel, .close, .exitOffer, .componentInteraction:
             return true
         }
     }
@@ -77,7 +77,7 @@ public enum PaywallEvent: FeatureEvent {
         switch self {
         case .impression:
             return true
-        case .cancel, .close, .exitOffer, .controlInteraction, .purchaseInitiated, .purchaseError:
+        case .cancel, .close, .exitOffer, .componentInteraction, .purchaseInitiated, .purchaseError:
             return false
         }
     }
@@ -101,7 +101,7 @@ public enum PaywallEvent: FeatureEvent {
     case purchaseError(CreationData, Data)
 
     /// User interacted with a paywall control (tabs, carousel, non-purchase button, etc.).
-    case controlInteraction(CreationData, Data, ControlInteractionData)
+    case componentInteraction(CreationData, Data, ComponentInteractionData)
 
 }
 
@@ -294,10 +294,10 @@ extension PaywallEvent {
 
 extension PaywallEvent {
 
-    /// Data for a ``PaywallEvent/controlInteraction(_:_:_:)`` event.
+    /// Data for a ``PaywallEvent/componentInteraction(_:_:_:)`` event.
     /// For navigable controls like tab buttons and carousel page changes, prefer the explicit
     /// origin / destination fields over `componentValue` when they are available.
-    public struct ControlInteractionData {
+    public struct ComponentInteractionData {
 
         // swiftlint:disable missing_docs
         public var componentType: ControlType
@@ -356,7 +356,7 @@ extension PaywallEvent {
         case let .exitOffer(creationData, _, _): return creationData
         case let .purchaseInitiated(creationData, _): return creationData
         case let .purchaseError(creationData, _): return creationData
-        case let .controlInteraction(creationData, _, _): return creationData
+        case let .componentInteraction(creationData, _, _): return creationData
         }
     }
 
@@ -369,23 +369,23 @@ extension PaywallEvent {
         case let .exitOffer(_, data, _): return data
         case let .purchaseInitiated(_, data): return data
         case let .purchaseError(_, data): return data
-        case let .controlInteraction(_, data, _): return data
+        case let .componentInteraction(_, data, _): return data
         }
     }
 
     /// - Returns: the underlying ``PaywallEvent/ExitOfferData-swift.struct`` for exit offer events, nil otherwise.
     public var exitOfferData: ExitOfferData? {
         switch self {
-        case .impression, .cancel, .close, .purchaseInitiated, .purchaseError, .controlInteraction: return nil
+        case .impression, .cancel, .close, .purchaseInitiated, .purchaseError, .componentInteraction: return nil
         case let .exitOffer(_, _, exitOfferData): return exitOfferData
         }
     }
 
-    /// - Returns: control interaction payload for ``PaywallEvent/controlInteraction(_:_:_:)``, nil for other events.
-    public var controlInteractionData: ControlInteractionData? {
+    /// - Returns: control interaction payload for ``PaywallEvent/componentInteraction(_:_:_:)``, nil for other events.
+    public var componentInteractionData: ComponentInteractionData? {
         switch self {
         case .impression, .cancel, .close, .exitOffer, .purchaseInitiated, .purchaseError: return nil
-        case let .controlInteraction(_, _, interactionData): return interactionData
+        case let .componentInteraction(_, _, interactionData): return interactionData
         }
     }
 
@@ -424,5 +424,5 @@ extension PaywallEvent.Data {
 extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
 extension PaywallEvent.Data: Equatable, Codable, Sendable {}
 extension PaywallEvent.ExitOfferData: Equatable, Codable, Sendable {}
-extension PaywallEvent.ControlInteractionData: Equatable, Codable, Sendable {}
+extension PaywallEvent.ComponentInteractionData: Equatable, Codable, Sendable {}
 extension PaywallEvent: Equatable, Codable, Sendable {}

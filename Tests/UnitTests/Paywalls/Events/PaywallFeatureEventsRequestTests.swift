@@ -50,8 +50,8 @@ class PaywallFeatureEventsRequestTests: TestCase {
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
-    func testControlInteractionEvent() throws {
-        let interaction = PaywallEvent.ControlInteractionData(
+    func testcomponentInteractionEvent() throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
             componentType: .button,
             componentName: "named",
             componentValue: "restore_purchases",
@@ -61,11 +61,11 @@ class PaywallFeatureEventsRequestTests: TestCase {
             destinationContextName: "annual",
             defaultIndex: 0
         )
-        let event = PaywallEvent.controlInteraction(Self.eventCreationData, Self.eventData, interaction)
+        let event = PaywallEvent.componentInteraction(Self.eventCreationData, Self.eventData, interaction)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
         let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        expect(requestEvent.type) == .controlInteraction
+        expect(requestEvent.type) == .componentInteraction
         expect(requestEvent.componentType) == .button
         expect(requestEvent.componentName) == "named"
         expect(requestEvent.componentValue) == "restore_purchases"
@@ -78,8 +78,8 @@ class PaywallFeatureEventsRequestTests: TestCase {
         expect(requestEvent.sessionID) == Self.eventData.sessionIdentifier.uuidString
     }
 
-    func testControlInteractionEventCodableRoundTrip() throws {
-        let interaction = PaywallEvent.ControlInteractionData(
+    func testcomponentInteractionEventCodableRoundTrip() throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
             componentType: .tab,
             componentName: "analytics_name",
             componentValue: "tab-a",
@@ -89,7 +89,7 @@ class PaywallFeatureEventsRequestTests: TestCase {
             destinationContextName: "annual",
             defaultIndex: 0
         )
-        let event = PaywallEvent.controlInteraction(Self.eventCreationData, Self.eventData, interaction)
+        let event = PaywallEvent.componentInteraction(Self.eventCreationData, Self.eventData, interaction)
         let data = try JSONEncoder.default.encode(event)
         let decoded = try JSONDecoder.default.decode(PaywallEvent.self, from: data)
         expect(decoded) == event

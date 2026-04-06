@@ -43,8 +43,8 @@ struct CarouselComponentView: View {
     private var customVariables
     @Environment(\.selectedPackageId)
     private var selectedPackageId
-    @Environment(\.controlInteractionLogger)
-    private var controlInteractionLogger
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
 
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
@@ -85,7 +85,7 @@ struct CarouselComponentView: View {
                         msTransitionTime: style.autoAdvance?.msTransitionTime,
                         autoAdvanceTransitionType: style.autoAdvance?.transitionType,
                         onUserInitiatedPageIndexChange: { originPageIndex, destinationPageIndex in
-                            self.trackCarouselControlInteraction(
+                            self.trackCarouselComponentInteraction(
                                 originPageIndex: originPageIndex,
                                 destinationPageIndex: destinationPageIndex,
                                 defaultPageIndex: style.initialPageIndex
@@ -111,14 +111,14 @@ struct CarouselComponentView: View {
         }
     }
 
-    private func trackCarouselControlInteraction(
+    private func trackCarouselComponentInteraction(
         originPageIndex: Int,
         destinationPageIndex: Int,
         defaultPageIndex: Int
     ) {
         let destinationContextName = self.viewModel.pageContextName(at: destinationPageIndex)
 
-        _ = self.controlInteractionLogger(.init(
+        _ = self.componentInteractionLogger(.init(
             componentType: .carousel,
             componentName: self.viewModel.componentName,
             componentValue: String(destinationPageIndex),

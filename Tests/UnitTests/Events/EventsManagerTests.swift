@@ -190,11 +190,11 @@ class EventsManagerTests: TestCase {
         expect(map["type"] as? String) == "paywall_purchase_error"
     }
 
-    func testPaywallControlInteractionToMap() {
+    func testPaywallComponentInteractionToMap() {
         let creationData = PaywallEvent.CreationData.random()
         let data = PaywallEvent.Data.random()
-        let interaction = PaywallEvent.ControlInteractionData(componentType: .carousel, componentValue: "1")
-        let event: PaywallEvent = .controlInteraction(creationData, data, interaction)
+        let interaction = PaywallEvent.ComponentInteractionData(componentType: .carousel, componentValue: "1")
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
         let map = event.toMap()
 
         expect(map["discriminator"] as? String) == "paywalls"
@@ -204,26 +204,26 @@ class EventsManagerTests: TestCase {
         expect(map["component_url"]).to(beNil())
     }
 
-    func testPaywallControlInteractionToMap_IncludesComponentURLWhenSet() {
+    func testPaywallComponentInteractionToMap_IncludesComponentURLWhenSet() {
         let creationData = PaywallEvent.CreationData.random()
         let data = PaywallEvent.Data.random()
         let url = URL(string: "https://example.com/terms")!
-        let interaction = PaywallEvent.ControlInteractionData(
+        let interaction = PaywallEvent.ComponentInteractionData(
             componentType: .button,
             componentName: "terms",
             componentValue: "navigate_to_terms",
             componentURL: url
         )
-        let event: PaywallEvent = .controlInteraction(creationData, data, interaction)
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
         let map = event.toMap()
 
         expect(map["component_url"] as? String) == url.absoluteString
     }
 
-    func testPaywallControlInteractionToMap_IncludesNavigationFieldsWhenSet() {
+    func testPaywallComponentInteractionToMap_IncludesNavigationFieldsWhenSet() {
         let creationData = PaywallEvent.CreationData.random()
         let data = PaywallEvent.Data.random()
-        let interaction = PaywallEvent.ControlInteractionData(
+        let interaction = PaywallEvent.ComponentInteractionData(
             componentType: .tab,
             componentName: "plans_tabs",
             componentValue: "annual",
@@ -233,7 +233,7 @@ class EventsManagerTests: TestCase {
             destinationContextName: "annual",
             defaultIndex: 0
         )
-        let event: PaywallEvent = .controlInteraction(creationData, data, interaction)
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
         let map = event.toMap()
 
         expect(map["origin_index"] as? Int) == 0
@@ -243,17 +243,17 @@ class EventsManagerTests: TestCase {
         expect(map["default_index"] as? Int) == 0
     }
 
-    func testPaywallControlInteractionToMap_TextMarkdownLinkUsesTextComponentType() {
+    func testPaywallComponentInteractionToMap_TextMarkdownLinkUsesTextComponentType() {
         let creationData = PaywallEvent.CreationData.random()
         let data = PaywallEvent.Data.random()
         let url = URL(string: "https://example.com/help")!
-        let interaction = PaywallEvent.ControlInteractionData(
+        let interaction = PaywallEvent.ComponentInteractionData(
             componentType: .text,
             componentName: nil,
             componentValue: "navigate_to_url",
             componentURL: url
         )
-        let event: PaywallEvent = .controlInteraction(creationData, data, interaction)
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
         let map = event.toMap()
 
         expect(map["component_type"] as? String) == "text"
@@ -261,25 +261,25 @@ class EventsManagerTests: TestCase {
         expect(map["component_url"] as? String) == url.absoluteString
     }
 
-    func testPaywallControlInteractionToMap_TextMarkdownLinkIncludesComponentNameWhenSet() {
+    func testPaywallComponentInteractionToMap_TextMarkdownLinkIncludesComponentNameWhenSet() {
         let creationData = PaywallEvent.CreationData.random()
         let data = PaywallEvent.Data.random()
         let url = URL(string: "https://example.com/help")!
-        let interaction = PaywallEvent.ControlInteractionData(
+        let interaction = PaywallEvent.ComponentInteractionData(
             componentType: .text,
             componentName: "legal_footer",
             componentValue: "navigate_to_url",
             componentURL: url
         )
-        let event: PaywallEvent = .controlInteraction(creationData, data, interaction)
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
         let map = event.toMap()
 
         expect(map["component_type"] as? String) == "text"
         expect(map["component_name"] as? String) == "legal_footer"
     }
 
-    func testTrackControlInteractionEventStores() async throws {
-        let event: PaywallEvent = .controlInteraction(
+    func testTrackComponentInteractionEventStores() async throws {
+        let event: PaywallEvent = .componentInteraction(
             .random(),
             .random(),
             .init(componentType: .button, componentValue: "navigate_back")

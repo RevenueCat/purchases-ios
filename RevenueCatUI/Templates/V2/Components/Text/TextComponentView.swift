@@ -95,8 +95,8 @@ struct TextComponentView: View {
 /// Parses markdown using AttributedString and does not use bundle assets for localization
 private struct NonLocalizedMarkdownText: View {
 
-    @Environment(\.controlInteractionLogger)
-    private var controlInteractionLogger
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
 
     @Environment(\.openURL)
     private var parentOpenURL
@@ -148,7 +148,7 @@ private struct NonLocalizedMarkdownText: View {
                 // Use markdown if we can successfully parse it
                 Text(markdownText)
                     .environment(\.openURL, OpenURLAction { url in
-                        _ = self.controlInteractionLogger(.init(
+                        _ = self.componentInteractionLogger(.init(
                             componentType: .text,
                             componentName: self.componentName,
                             componentValue: "navigate_to_url",

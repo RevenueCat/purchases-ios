@@ -586,7 +586,7 @@ struct LoadedOfferingPaywallView: View {
         )
         let view = paywallView(withConfig: configuration)
             .environmentObject(self.introEligibility)
-            .environment(\.controlInteractionLogger, PaywallEventTracker().controlInteractionLogger)
+            .environment(\.componentInteractionLogger, PaywallEventTracker().componentInteractionLogger)
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }

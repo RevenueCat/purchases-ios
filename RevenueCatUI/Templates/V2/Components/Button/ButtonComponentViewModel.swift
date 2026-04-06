@@ -139,7 +139,7 @@ class ButtonComponentViewModel {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension ButtonComponentViewModel.Action {
 
-    var paywallControlInteractionValue: String {
+    var paywallComponentInteractionValue: String {
         switch self {
         case .restorePurchases:
             return "restore_purchases"
@@ -150,14 +150,14 @@ extension ButtonComponentViewModel.Action {
         case .sheet:
             return "navigate_to_sheet"
         case .navigateTo(let destination):
-            return destination.paywallControlInteractionValue
+            return destination.paywallComponentInteractionValue
         }
     }
 
-    var paywallControlInteractionURL: URL? {
+    var paywallComponentInteractionURL: URL? {
         switch self {
         case .navigateTo(let destination):
-            return destination.paywallControlInteractionURL
+            return destination.paywallComponentInteractionURL
         case .restorePurchases, .navigateBack, .unknown, .sheet:
             return nil
         }
@@ -168,7 +168,7 @@ extension ButtonComponentViewModel.Action {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension ButtonComponentViewModel.Destination {
 
-    fileprivate var paywallControlInteractionValue: String {
+    fileprivate var paywallComponentInteractionValue: String {
         switch self {
         case .customerCenter:
             return "navigate_to_customer_center"
@@ -187,7 +187,7 @@ extension ButtonComponentViewModel.Destination {
         }
     }
 
-    fileprivate var paywallControlInteractionURL: URL? {
+    fileprivate var paywallComponentInteractionURL: URL? {
         switch self {
         case .url(let url, _), .privacyPolicy(let url, _), .terms(let url, _), .webPaywallLink(let url, _):
             return url

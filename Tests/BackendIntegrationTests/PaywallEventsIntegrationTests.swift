@@ -191,14 +191,14 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
         expect(result) == 0
     }
 
-    func testFlushingPaywallControlInteractionEvents() async throws {
-        let interaction = PaywallEvent.ControlInteractionData(
+    func testFlushingPaywallComponentInteractionEvents() async throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
             componentType: .button,
             componentName: nil,
             componentValue: "restore_purchases"
         )
         try await self.purchases.track(
-            paywallEvent: .controlInteraction(.init(), self.eventData, interaction)
+            paywallEvent: .componentInteraction(.init(), self.eventData, interaction)
         )
 
         let result = try await self.purchases.flushPaywallEvents(count: 1)

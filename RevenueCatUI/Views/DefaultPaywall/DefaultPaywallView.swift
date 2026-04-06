@@ -57,7 +57,7 @@ struct DefaultPaywallView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.locale) var locale
 
-    @Environment(\.controlInteractionLogger) var controlInteractionLogger
+    @Environment(\.componentInteractionLogger) var componentInteractionLogger
 
     @StateObject var appIconDetailProvider: AppIconDetailProvider
 
@@ -199,10 +199,10 @@ struct DefaultPaywallView: View {
                     }
 
                     let restoreButton = Button {
-                        self.controlInteractionLogger(.init(
+                        self.componentInteractionLogger(.init(
                             componentType: .button,
-                            componentName: PaywallControlInteraction.restoreButtonName,
-                            componentValue: PaywallControlInteraction.ComponentValue.restorePurchases.rawValue
+                            componentName: PaywallComponentInteraction.restoreButtonName,
+                            componentValue: PaywallComponentInteraction.ComponentValue.restorePurchases.rawValue
                         ))
                         Task(priority: .userInitiated) {
                             do {

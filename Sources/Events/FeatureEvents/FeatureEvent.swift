@@ -75,7 +75,7 @@ private extension PaywallEvent {
             case .exitOffer: return "paywall_exit_offer"
             case .purchaseInitiated: return "paywall_purchase_initiated"
             case .purchaseError: return "paywall_purchase_error"
-            case .controlInteraction: return "paywall_component_interacted"
+            case .componentInteraction: return "paywall_component_interacted"
             }
         }()
 
@@ -92,7 +92,7 @@ private extension PaywallEvent {
             "dark_mode": self.data.darkMode
         ]
 
-        if let interaction = self.controlInteractionData {
+        if let interaction = self.componentInteractionData {
             result["component_type"] = interaction.componentType.rawValue
             result["component_value"] = interaction.componentValue
             if let name = interaction.componentName {

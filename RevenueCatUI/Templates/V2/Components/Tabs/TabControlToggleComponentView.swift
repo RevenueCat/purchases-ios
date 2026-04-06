@@ -35,8 +35,8 @@ struct TabControlToggleComponentView: View {
     @EnvironmentObject
     private var tabControlContext: TabControlContext
 
-    @Environment(\.controlInteractionLogger)
-    private var controlInteractionLogger
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
 
     private let viewModel: TabControlToggleComponentViewModel
     private let onDismiss: () -> Void
@@ -78,7 +78,7 @@ struct TabControlToggleComponentView: View {
                 guard tabIds.count >= 2 else { return }
 
                 tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
-                _ = self.controlInteractionLogger(.init(
+                _ = self.componentInteractionLogger(.init(
                     componentType: .toggleSwitch,
                     componentName: self.tabControlContext.name,
                     componentValue: newValue ? "on" : "off"

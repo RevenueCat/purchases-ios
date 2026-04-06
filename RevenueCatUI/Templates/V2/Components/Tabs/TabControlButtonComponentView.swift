@@ -35,8 +35,8 @@ struct TabControlButtonComponentView: View {
     @EnvironmentObject
     private var tabControlContext: TabControlContext
 
-    @Environment(\.controlInteractionLogger)
-    private var controlInteractionLogger
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
 
     private let viewModel: TabControlButtonComponentViewModel
     private let onDismiss: () -> Void
@@ -56,7 +56,7 @@ struct TabControlButtonComponentView: View {
             let destinationTabId = self.viewModel.component.tabId
 
             self.tabControlContext.selectedTabId = destinationTabId
-            self.trackTabControlInteraction(originTabId: originTabId, destinationTabId: destinationTabId)
+            self.trackTabcomponentInteraction(originTabId: originTabId, destinationTabId: destinationTabId)
         } label: {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
@@ -67,10 +67,10 @@ struct TabControlButtonComponentView: View {
 
     }
 
-    private func trackTabControlInteraction(originTabId: String, destinationTabId: String) {
+    private func trackTabcomponentInteraction(originTabId: String, destinationTabId: String) {
         let destinationContextName = self.tabControlContext.contextName(for: destinationTabId)
 
-        _ = self.controlInteractionLogger(.init(
+        _ = self.componentInteractionLogger(.init(
             componentType: .tab,
             componentName: self.tabControlContext.name,
             componentValue: destinationTabId,
