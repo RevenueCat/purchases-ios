@@ -35,8 +35,8 @@ struct TabControlButtonComponentView: View {
     @EnvironmentObject
     private var tabControlContext: TabControlContext
 
-    @EnvironmentObject
-    private var purchaseHandler: PurchaseHandler
+    @Environment(\.controlInteractionLogger)
+    private var controlInteractionLogger
 
     private let viewModel: TabControlButtonComponentViewModel
     private let onDismiss: () -> Void
@@ -70,7 +70,7 @@ struct TabControlButtonComponentView: View {
     private func trackTabControlInteraction(originTabId: String, destinationTabId: String) {
         let destinationContextName = self.tabControlContext.contextName(for: destinationTabId)
 
-        self.purchaseHandler.trackControlInteraction(
+        _ = self.controlInteractionLogger(.init(
             componentType: .tab,
             componentName: self.tabControlContext.name,
             componentValue: destinationTabId,
@@ -79,7 +79,7 @@ struct TabControlButtonComponentView: View {
             originContextName: self.tabControlContext.contextName(for: originTabId),
             destinationContextName: destinationContextName,
             defaultIndex: self.tabControlContext.defaultTabIndex
-        )
+        ))
     }
 
 }

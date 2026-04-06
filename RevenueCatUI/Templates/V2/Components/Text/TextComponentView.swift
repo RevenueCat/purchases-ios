@@ -95,8 +95,8 @@ struct TextComponentView: View {
 /// Parses markdown using AttributedString and does not use bundle assets for localization
 private struct NonLocalizedMarkdownText: View {
 
-    @EnvironmentObject
-    private var purchaseHandler: PurchaseHandler
+    @Environment(\.controlInteractionLogger)
+    private var controlInteractionLogger
 
     @Environment(\.openURL)
     private var parentOpenURL
@@ -148,12 +148,12 @@ private struct NonLocalizedMarkdownText: View {
                 // Use markdown if we can successfully parse it
                 Text(markdownText)
                     .environment(\.openURL, OpenURLAction { url in
-                        _ = self.purchaseHandler.trackControlInteraction(
+                        _ = self.controlInteractionLogger(.init(
                             componentType: .text,
                             componentName: self.componentName,
                             componentValue: "navigate_to_url",
                             componentURL: url
-                        )
+                        ))
 #if os(watchOS)
                         self.parentOpenURL(url)
 #else

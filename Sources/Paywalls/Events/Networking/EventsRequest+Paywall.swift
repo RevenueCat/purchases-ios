@@ -60,7 +60,7 @@ extension FeatureEventsRequest.PaywallEvent {
         case exitOffer = "paywall_exit_offer"
         case purchaseInitiated = "paywall_purchase_initiated"
         case purchaseError = "paywall_purchase_error"
-        case controlInteraction = "paywall_control_interaction"
+        case controlInteraction = "paywall_component_interacted"
 
     }
 

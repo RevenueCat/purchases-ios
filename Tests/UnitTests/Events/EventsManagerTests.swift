@@ -198,7 +198,7 @@ class EventsManagerTests: TestCase {
         let map = event.toMap()
 
         expect(map["discriminator"] as? String) == "paywalls"
-        expect(map["type"] as? String) == "paywall_control_interaction"
+        expect(map["type"] as? String) == "paywall_component_interacted"
         expect(map["component_type"] as? String) == "carousel"
         expect(map["component_value"] as? String) == "1"
         expect(map["component_url"]).to(beNil())

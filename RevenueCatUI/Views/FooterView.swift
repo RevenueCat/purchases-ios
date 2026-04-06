@@ -36,6 +36,8 @@ struct FooterView: View {
 
     let localizedBundle: Bundle
 
+    @Environment(\.controlInteractionLogger) var controlInteractionLogger
+
     init(
         configuration: TemplateViewConfiguration,
         locale: Locale,
@@ -101,12 +103,12 @@ struct FooterView: View {
                     url: url,
                     titles: "Terms and conditions", "Terms",
                     onTap: {
-                        self.purchaseHandler.trackControlInteraction(
+                        self.controlInteractionLogger(.init(
                             componentType: .button,
                             componentName: PaywallControlInteraction.termsLinkName,
                             componentValue: PaywallControlInteraction.ComponentValue.navigateToTerms.rawValue,
                             componentURL: url
-                        )
+                        ))
                     }
                 )
 
@@ -121,12 +123,12 @@ struct FooterView: View {
                     url: url,
                     titles: "Privacy policy", "Privacy",
                     onTap: {
-                        self.purchaseHandler.trackControlInteraction(
+                        self.controlInteractionLogger(.init(
                             componentType: .button,
                             componentName: PaywallControlInteraction.privacyLinkName,
                             componentValue: PaywallControlInteraction.ComponentValue.navigateToPrivacyPolicy.rawValue,
                             componentURL: url
-                        )
+                        ))
                     }
                 )
             }
@@ -143,11 +145,11 @@ struct FooterView: View {
 
     private func allPlansButton(_ binding: Binding<Bool>) -> some View {
         Button {
-            self.purchaseHandler.trackControlInteraction(
+            self.controlInteractionLogger(.init(
                 componentType: .button,
                 componentName: PaywallControlInteraction.allPlansButtonName,
                 componentValue: PaywallControlInteraction.ComponentValue.toggleAllPlans.rawValue
-            )
+            ))
             withAnimation(Constants.toggleAllPlansAnimation) {
                 binding.wrappedValue.toggle()
             }
@@ -217,6 +219,8 @@ private struct RestorePurchasesButton: View {
     @Environment(\.restoreInitiatedAction)
     private var restoreInitiatedAction: RestoreInitiatedAction?
 
+    @Environment(\.controlInteractionLogger) var controlInteractionLogger
+
     @State
     private var restoredCustomerInfo: CustomerInfo?
 
@@ -227,11 +231,11 @@ private struct RestorePurchasesButton: View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
 
-            self.purchaseHandler.trackControlInteraction(
+            self.controlInteractionLogger(.init(
                 componentType: .button,
                 componentName: PaywallControlInteraction.restoreButtonName,
                 componentValue: PaywallControlInteraction.ComponentValue.restorePurchases.rawValue
-            )
+            ))
 
             if let interceptor = self.restoreInitiatedAction {
                 Logger.debug(Strings.restore_purchases_gate_start)

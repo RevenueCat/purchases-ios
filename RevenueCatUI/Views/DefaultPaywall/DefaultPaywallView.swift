@@ -57,6 +57,8 @@ struct DefaultPaywallView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.locale) var locale
 
+    @Environment(\.controlInteractionLogger) var controlInteractionLogger
+
     @StateObject var appIconDetailProvider: AppIconDetailProvider
 
     // MARK: - Colors
@@ -197,11 +199,11 @@ struct DefaultPaywallView: View {
                     }
 
                     let restoreButton = Button {
-                        self.handler.trackControlInteraction(
+                        self.controlInteractionLogger(.init(
                             componentType: .button,
                             componentName: PaywallControlInteraction.restoreButtonName,
                             componentValue: PaywallControlInteraction.ComponentValue.restorePurchases.rawValue
-                        )
+                        ))
                         Task(priority: .userInitiated) {
                             do {
                                 _ = try await handler.restorePurchases()

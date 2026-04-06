@@ -49,6 +49,8 @@ struct Template7View: TemplateViewType {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @Environment(\.controlInteractionLogger) var controlInteractionLogger
+
     private var showTierSelector: Bool {
         return self.tiers.count > 1
     }
@@ -215,11 +217,11 @@ struct Template7View: TemplateViewType {
                     selectedBackgroundColor: self.currentColors.tierControlSelectedBackground,
                     selectedTextColor: self.currentColors.tierControlSelectedForeground,
                     onSelectTier: { tier in
-                        self.purchaseHandler.trackControlInteraction(
+                        self.controlInteractionLogger(.init(
                             componentType: .tab,
                             componentName: PaywallControlInteraction.tierSelectorName,
                             componentValue: self.tierNames[tier] ?? ""
-                        )
+                        ))
                     }
                 )
             }

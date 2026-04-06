@@ -43,9 +43,8 @@ struct CarouselComponentView: View {
     private var customVariables
     @Environment(\.selectedPackageId)
     private var selectedPackageId
-
-    @EnvironmentObject
-    private var purchaseHandler: PurchaseHandler
+    @Environment(\.controlInteractionLogger)
+    private var controlInteractionLogger
 
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
@@ -119,7 +118,7 @@ struct CarouselComponentView: View {
     ) {
         let destinationContextName = self.viewModel.pageContextName(at: destinationPageIndex)
 
-        self.purchaseHandler.trackControlInteraction(
+        _ = self.controlInteractionLogger(.init(
             componentType: .carousel,
             componentName: self.viewModel.componentName,
             componentValue: String(destinationPageIndex),
@@ -128,7 +127,7 @@ struct CarouselComponentView: View {
             originContextName: self.viewModel.pageContextName(at: originPageIndex),
             destinationContextName: destinationContextName,
             defaultIndex: defaultPageIndex
-        )
+        ))
     }
 
 }
@@ -496,7 +495,7 @@ private struct CarouselView<Content: View>: View {
         pauseAutoPlay(for: 10)
 
         // `onUserInitiatedPageIndexChange` is only invoked from here so timer-driven auto-advance does not emit
-        // paywall_control_interaction events (see `startAutoPlayIfNeeded`).
+        // paywall_component_interacted events (see `startAutoPlayIfNeeded`).
         guard self.isInitialized,
               let originalPageIndexBefore,
               self.originalCount > 0 else { return }

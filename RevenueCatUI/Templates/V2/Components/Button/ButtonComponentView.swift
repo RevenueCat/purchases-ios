@@ -33,6 +33,8 @@ struct ButtonComponentView: View {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @Environment(\.controlInteractionLogger) var controlInteractionLogger
+
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -113,12 +115,12 @@ struct ButtonComponentView: View {
     }
 
     private func trackButtonControlInteraction() {
-        self.purchaseHandler.trackControlInteraction(
+        self.controlInteractionLogger(.init(
             componentType: .button,
             componentName: self.viewModel.component.name,
             componentValue: self.viewModel.action.paywallControlInteractionValue,
             componentURL: self.viewModel.action.paywallControlInteractionURL
-        )
+        ))
     }
 
     private func restorePurchases() async throws {
