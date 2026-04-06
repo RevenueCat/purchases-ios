@@ -161,7 +161,7 @@ public enum PaywallEvent {
   case exitOffer(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data, RevenueCat.PaywallEvent.ExitOfferData)
   case purchaseInitiated(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data)
   case purchaseError(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data)
-  case controlInteraction(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data, RevenueCat.PaywallEvent.ControlInteractionData)
+  case componentInteraction(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data, RevenueCat.PaywallEvent.ComponentInteractionData)
 }
 extension RevenueCat.PaywallEvent {
   public struct CreationData {
@@ -192,7 +192,7 @@ extension RevenueCat.PaywallEvent {
   }
 }
 extension RevenueCat.PaywallEvent {
-  public struct ControlInteractionData {
+  public struct ComponentInteractionData {
     public var componentType: RevenueCat.ControlType
     public var componentName: Swift.String?
     public var componentValue: Swift.String
@@ -220,7 +220,7 @@ extension RevenueCat.PaywallEvent {
   }
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
-  public var controlInteractionData: RevenueCat.PaywallEvent.ControlInteractionData? {
+  public var componentInteractionData: RevenueCat.PaywallEvent.ComponentInteractionData? {
     get
   }
   #endif
@@ -240,8 +240,8 @@ extension RevenueCat.PaywallEvent.ExitOfferData : Swift.Equatable, Swift.Codable
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
-extension RevenueCat.PaywallEvent.ControlInteractionData : Swift.Equatable, Swift.Codable, Swift.Sendable {
-  public static func == (a: RevenueCat.PaywallEvent.ControlInteractionData, b: RevenueCat.PaywallEvent.ControlInteractionData) -> Swift.Bool
+extension RevenueCat.PaywallEvent.ComponentInteractionData : Swift.Equatable, Swift.Codable, Swift.Sendable {
+  public static func == (a: RevenueCat.PaywallEvent.ComponentInteractionData, b: RevenueCat.PaywallEvent.ComponentInteractionData) -> Swift.Bool
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
