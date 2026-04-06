@@ -27,18 +27,35 @@ class TabControlContext: ObservableObject {
     let controlStackViewModel: StackComponentViewModel
     let tabIds: [String]
     let name: String?
+    let initialTabId: String
+    let tabContextNamesById: [String: String]
 
     init(controlStackViewModel: StackComponentViewModel,
          tabIds: [String],
          defaultTabId: String?,
-         name: String?) {
+         name: String?,
+         tabContextNamesById: [String: String] = [:]) {
         self.controlStackViewModel = controlStackViewModel
         self.tabIds = tabIds
         self.name = name
+        self.tabContextNamesById = tabContextNamesById
 
         let calculatedDefaultTabId = defaultTabId ?? tabIds.first ?? ""
+        self.initialTabId = calculatedDefaultTabId
 
         self._selectedTabId = .init(initialValue: calculatedDefaultTabId)
+    }
+
+    var defaultTabIndex: Int? {
+        return self.index(for: self.initialTabId)
+    }
+
+    func index(for tabId: String) -> Int? {
+        return self.tabIds.firstIndex(of: tabId)
+    }
+
+    func contextName(for tabId: String) -> String? {
+        return self.tabContextNamesById[tabId]
     }
 
 }
@@ -153,7 +170,8 @@ struct LoadedTabsComponentView: View {
             controlStackViewModel: viewModel.controlStackViewModel,
             tabIds: viewModel.tabIds,
             defaultTabId: viewModel.defaultTabId,
-            name: viewModel.name
+            name: viewModel.name,
+            tabContextNamesById: viewModel.tabContextNamesById
         ))
 
         // Store the parent's initial selection for restoration when switching to package-less tabs

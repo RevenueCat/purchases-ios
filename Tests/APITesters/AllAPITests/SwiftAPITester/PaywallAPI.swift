@@ -339,11 +339,21 @@ func checkControlInteractionData(_ data: PaywallEvent.ControlInteractionData) {
     let componentName: String? = data.componentName
     let componentValue: String = data.componentValue
     let componentURL: URL? = data.componentURL
+    let originIndex: Int? = data.originIndex
+    let destinationIndex: Int? = data.destinationIndex
+    let originContextName: String? = data.originContextName
+    let destinationContextName: String? = data.destinationContextName
+    let defaultIndex: Int? = data.defaultIndex
 
     let _: PaywallEvent.ControlInteractionData = PaywallEvent.ControlInteractionData(
         componentType: componentType,
         componentName: componentName,
         componentValue: componentValue,
-        componentURL: componentURL
+        componentURL: componentURL,
+        originIndex: originIndex,
+        destinationIndex: destinationIndex,
+        originContextName: originContextName,
+        destinationContextName: destinationContextName,
+        defaultIndex: defaultIndex
     )
 }

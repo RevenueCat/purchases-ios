@@ -109,20 +109,25 @@ public extension PaywallComponent {
         final public class Tab: Codable, Sendable, Hashable, Equatable {
 
             public let id: String
+            public let name: String?
             public let stack: StackComponent
 
-            public init(id: String, stack: PaywallComponent.StackComponent) {
+            public init(id: String, name: String? = nil, stack: PaywallComponent.StackComponent) {
                 self.id = id
+                self.name = name
                 self.stack = stack
             }
 
             public func hash(into hasher: inout Hasher) {
                 hasher.combine(id)
+                hasher.combine(name)
                 hasher.combine(stack)
             }
 
             public static func == (lhs: Tab, rhs: Tab) -> Bool {
-                return lhs.id == rhs.id && lhs.stack == rhs.stack
+                return lhs.id == rhs.id &&
+                    lhs.name == rhs.name &&
+                    lhs.stack == rhs.stack
             }
         }
 

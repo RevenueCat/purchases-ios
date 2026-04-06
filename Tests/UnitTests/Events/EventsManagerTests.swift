@@ -220,6 +220,29 @@ class EventsManagerTests: TestCase {
         expect(map["component_url"] as? String) == url.absoluteString
     }
 
+    func testPaywallControlInteractionToMap_IncludesNavigationFieldsWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ControlInteractionData(
+            componentType: .tab,
+            componentName: "plans_tabs",
+            componentValue: "annual",
+            originIndex: 0,
+            destinationIndex: 1,
+            originContextName: "monthly",
+            destinationContextName: "annual",
+            defaultIndex: 0
+        )
+        let event: PaywallEvent = .controlInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["origin_index"] as? Int) == 0
+        expect(map["destination_index"] as? Int) == 1
+        expect(map["origin_context_name"] as? String) == "monthly"
+        expect(map["destination_context_name"] as? String) == "annual"
+        expect(map["default_index"] as? Int) == 0
+    }
+
     func testPaywallControlInteractionToMap_TextMarkdownLinkUsesTextComponentType() {
         let creationData = PaywallEvent.CreationData.random()
         let data = PaywallEvent.Data.random()

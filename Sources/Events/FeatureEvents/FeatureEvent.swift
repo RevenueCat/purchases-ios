@@ -65,6 +65,7 @@ extension FeatureEvent {
 
 private extension PaywallEvent {
 
+    // swiftlint:disable:next cyclomatic_complexity
     func paywallMap() -> [String: Any] {
         let typeName: String = {
             switch self {
@@ -99,6 +100,21 @@ private extension PaywallEvent {
             }
             if let url = interaction.componentURL {
                 result["component_url"] = url.absoluteString
+            }
+            if let originIndex = interaction.originIndex {
+                result["origin_index"] = originIndex
+            }
+            if let destinationIndex = interaction.destinationIndex {
+                result["destination_index"] = destinationIndex
+            }
+            if let originContextName = interaction.originContextName {
+                result["origin_context_name"] = originContextName
+            }
+            if let destinationContextName = interaction.destinationContextName {
+                result["destination_context_name"] = destinationContextName
+            }
+            if let defaultIndex = interaction.defaultIndex {
+                result["default_index"] = defaultIndex
             }
         }
 

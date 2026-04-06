@@ -52,12 +52,11 @@ struct TabControlButtonComponentView: View {
 
     var body: some View {
         Button {
-            self.tabControlContext.selectedTabId = self.viewModel.component.tabId
-            self.purchaseHandler.trackControlInteraction(
-                componentType: .tab,
-                componentName: self.tabControlContext.name,
-                componentValue: self.viewModel.component.name ?? ""
-            )
+            let originTabId = self.tabControlContext.selectedTabId
+            let destinationTabId = self.viewModel.component.tabId
+
+            self.tabControlContext.selectedTabId = destinationTabId
+            self.trackTabControlInteraction(originTabId: originTabId, destinationTabId: destinationTabId)
         } label: {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
@@ -66,6 +65,21 @@ struct TabControlButtonComponentView: View {
             .environment(\.componentViewState, self.selectedState)
         }
 
+    }
+
+    private func trackTabControlInteraction(originTabId: String, destinationTabId: String) {
+        let destinationContextName = self.tabControlContext.contextName(for: destinationTabId)
+
+        self.purchaseHandler.trackControlInteraction(
+            componentType: .tab,
+            componentName: self.tabControlContext.name,
+            componentValue: destinationTabId,
+            originIndex: self.tabControlContext.index(for: originTabId),
+            destinationIndex: self.tabControlContext.index(for: destinationTabId),
+            originContextName: self.tabControlContext.contextName(for: originTabId),
+            destinationContextName: destinationContextName,
+            defaultIndex: self.tabControlContext.defaultTabIndex
+        )
     }
 
 }

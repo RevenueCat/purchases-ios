@@ -30,6 +30,7 @@ public extension PaywallComponent {
         }
 
         let type: ComponentType
+        public let name: String?
         public let visible: Bool?
         public let components: [PaywallComponent]
         public let size: Size
@@ -48,6 +49,7 @@ public extension PaywallComponent {
         public let overrides: ComponentOverrides<PartialStackComponent>?
 
         public init(
+            name: String? = nil,
             visible: Bool? = nil,
             components: [PaywallComponent],
             dimension: Dimension = .vertical(.center, .start),
@@ -64,6 +66,7 @@ public extension PaywallComponent {
             overflow: Overflow? = nil,
             overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
+            self.name = name
             self.visible = visible
             self.components = components
             self.size = size
@@ -83,6 +86,7 @@ public extension PaywallComponent {
         }
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(components)
             hasher.combine(size)
@@ -102,6 +106,7 @@ public extension PaywallComponent {
 
         public static func == (lhs: StackComponent, rhs: StackComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.name == rhs.name &&
                    lhs.visible == rhs.visible &&
                    lhs.components == rhs.components &&
                    lhs.size == rhs.size &&

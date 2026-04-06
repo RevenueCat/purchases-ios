@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 9/5/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 /// The type of exit offer shown.
@@ -24,11 +26,13 @@ public enum ExitOfferType: String, Codable, Sendable {
 /// The type for the paywall control interactions.
 public enum ControlType: String, Codable, Sendable, Hashable {
 
-    /// Tab control button selection (`component_value` is the tab builder name).
+    /// Tab control button selection.
+    /// For precise navigation analytics, prefer the explicit origin / destination fields when present.
     case tab
     /// Tab control toggle (`component_value` is `"on"` or `"off"`); wire value is `"switch"`.
     case toggleSwitch = "switch"
-    /// Carousel page change (`component_value` is the 0-based page index as a string).
+    /// Carousel page change.
+    /// For precise navigation analytics, prefer the explicit origin / destination fields when present.
     case carousel
     /// Non-purchase button (`component_value` is the action discriminator).
     case button
@@ -291,25 +295,49 @@ extension PaywallEvent {
 extension PaywallEvent {
 
     /// Data for a ``PaywallEvent/controlInteraction(_:_:_:)`` event.
+    /// For navigable controls like tab buttons and carousel page changes, prefer the explicit
+    /// origin / destination fields over `componentValue` when they are available.
     public struct ControlInteractionData {
 
         // swiftlint:disable missing_docs
         public var componentType: ControlType
         public var componentName: String?
+        /// Compatibility field describing the interaction.
+        /// For navigable controls, prefer the explicit origin / destination fields when they are present.
         public var componentValue: String
         /// Destination URL for URL-based controls (e.g. terms, privacy, generic links), when applicable.
         public var componentURL: URL?
+        /// 0-based index for the source context before a user-initiated navigation interaction.
+        public var originIndex: Int?
+        /// 0-based index for the destination context after a user-initiated navigation interaction.
+        public var destinationIndex: Int?
+        /// Optional source context name from the paywall JSON (for example, the previous tab or carousel page).
+        public var originContextName: String?
+        /// Optional destination context name from the paywall JSON (for example, the selected tab or carousel page).
+        public var destinationContextName: String?
+        /// 0-based default index configured for the navigable component, when applicable.
+        public var defaultIndex: Int?
 
         public init(
             componentType: ControlType,
             componentName: String? = nil,
             componentValue: String,
-            componentURL: URL? = nil
+            componentURL: URL? = nil,
+            originIndex: Int? = nil,
+            destinationIndex: Int? = nil,
+            originContextName: String? = nil,
+            destinationContextName: String? = nil,
+            defaultIndex: Int? = nil
         ) {
             self.componentType = componentType
             self.componentName = componentName
             self.componentValue = componentValue
             self.componentURL = componentURL
+            self.originIndex = originIndex
+            self.destinationIndex = destinationIndex
+            self.originContextName = originContextName
+            self.destinationContextName = destinationContextName
+            self.defaultIndex = defaultIndex
         }
         // swiftlint:enable missing_docs
 

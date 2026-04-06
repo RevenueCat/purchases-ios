@@ -54,7 +54,12 @@ class PaywallFeatureEventsRequestTests: TestCase {
         let interaction = PaywallEvent.ControlInteractionData(
             componentType: .button,
             componentName: "named",
-            componentValue: "restore_purchases"
+            componentValue: "restore_purchases",
+            originIndex: 0,
+            destinationIndex: 1,
+            originContextName: "monthly",
+            destinationContextName: "annual",
+            defaultIndex: 0
         )
         let event = PaywallEvent.controlInteraction(Self.eventCreationData, Self.eventData, interaction)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
@@ -64,6 +69,11 @@ class PaywallFeatureEventsRequestTests: TestCase {
         expect(requestEvent.componentType) == .button
         expect(requestEvent.componentName) == "named"
         expect(requestEvent.componentValue) == "restore_purchases"
+        expect(requestEvent.originIndex) == 0
+        expect(requestEvent.destinationIndex) == 1
+        expect(requestEvent.originContextName) == "monthly"
+        expect(requestEvent.destinationContextName) == "annual"
+        expect(requestEvent.defaultIndex) == 0
         expect(requestEvent.offeringID) == Self.eventData.offeringIdentifier
         expect(requestEvent.sessionID) == Self.eventData.sessionIdentifier.uuidString
     }
@@ -72,7 +82,12 @@ class PaywallFeatureEventsRequestTests: TestCase {
         let interaction = PaywallEvent.ControlInteractionData(
             componentType: .tab,
             componentName: "analytics_name",
-            componentValue: "tab-a"
+            componentValue: "tab-a",
+            originIndex: 0,
+            destinationIndex: 1,
+            originContextName: "monthly",
+            destinationContextName: "annual",
+            defaultIndex: 0
         )
         let event = PaywallEvent.controlInteraction(Self.eventCreationData, Self.eventData, interaction)
         let data = try JSONEncoder.default.encode(event)

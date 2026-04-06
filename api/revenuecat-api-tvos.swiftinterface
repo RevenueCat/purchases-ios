@@ -197,8 +197,13 @@ extension RevenueCat.PaywallEvent {
     public var componentName: Swift.String?
     public var componentValue: Swift.String
     public var componentURL: Foundation.URL?
+    public var originIndex: Swift.Int?
+    public var destinationIndex: Swift.Int?
+    public var originContextName: Swift.String?
+    public var destinationContextName: Swift.String?
+    public var defaultIndex: Swift.Int?
     #if compiler(>=5.3) && $NonescapableTypes
-    public init(componentType: RevenueCat.ControlType, componentName: Swift.String? = nil, componentValue: Swift.String, componentURL: Foundation.URL? = nil)
+    public init(componentType: RevenueCat.ControlType, componentName: Swift.String? = nil, componentValue: Swift.String, componentURL: Foundation.URL? = nil, originIndex: Swift.Int? = nil, destinationIndex: Swift.Int? = nil, originContextName: Swift.String? = nil, destinationContextName: Swift.String? = nil, defaultIndex: Swift.Int? = nil)
     #endif
   }
 }
@@ -2316,6 +2321,7 @@ extension RevenueCat.PaywallComponent {
         get
       }
     }
+    final public let name: Swift.String?
     final public let visible: Swift.Bool?
     final public let components: [RevenueCat.PaywallComponent]
     final public let size: RevenueCat.PaywallComponent.Size
@@ -2332,7 +2338,7 @@ extension RevenueCat.PaywallComponent {
     final public let overflow: RevenueCat.PaywallComponent.StackComponent.Overflow?
     final public let overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialStackComponent>?
     #if compiler(>=5.3) && $NonescapableTypes
-    public init(visible: Swift.Bool? = nil, components: [RevenueCat.PaywallComponent], dimension: RevenueCat.PaywallComponent.Dimension = .vertical(.center, .start), size: RevenueCat.PaywallComponent.Size = .init(width: .fill, height: .fit), spacing: CoreFoundation.CGFloat? = nil, backgroundColor: RevenueCat.PaywallComponent.ColorScheme? = nil, background: RevenueCat.PaywallComponent.Background? = nil, padding: RevenueCat.PaywallComponent.Padding = .zero, margin: RevenueCat.PaywallComponent.Padding = .zero, shape: RevenueCat.PaywallComponent.Shape? = nil, border: RevenueCat.PaywallComponent.Border? = nil, shadow: RevenueCat.PaywallComponent.Shadow? = nil, badge: RevenueCat.PaywallComponent.Badge? = nil, overflow: RevenueCat.PaywallComponent.StackComponent.Overflow? = nil, overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialStackComponent>? = nil)
+    public init(name: Swift.String? = nil, visible: Swift.Bool? = nil, components: [RevenueCat.PaywallComponent], dimension: RevenueCat.PaywallComponent.Dimension = .vertical(.center, .start), size: RevenueCat.PaywallComponent.Size = .init(width: .fill, height: .fit), spacing: CoreFoundation.CGFloat? = nil, backgroundColor: RevenueCat.PaywallComponent.ColorScheme? = nil, background: RevenueCat.PaywallComponent.Background? = nil, padding: RevenueCat.PaywallComponent.Padding = .zero, margin: RevenueCat.PaywallComponent.Padding = .zero, shape: RevenueCat.PaywallComponent.Shape? = nil, border: RevenueCat.PaywallComponent.Border? = nil, shadow: RevenueCat.PaywallComponent.Shadow? = nil, badge: RevenueCat.PaywallComponent.Badge? = nil, overflow: RevenueCat.PaywallComponent.StackComponent.Overflow? = nil, overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialStackComponent>? = nil)
     #endif
     final public func hash(into hasher: inout Swift.Hasher)
     public static func == (lhs: RevenueCat.PaywallComponent.StackComponent, rhs: RevenueCat.PaywallComponent.StackComponent) -> Swift.Bool
@@ -4888,8 +4894,9 @@ extension RevenueCat.PaywallComponent {
   final public class TabsComponent : RevenueCat.PaywallComponentBase {
     final public class Tab : Swift.Codable, Swift.Sendable, Swift.Hashable, Swift.Equatable {
       final public let id: Swift.String
+      final public let name: Swift.String?
       final public let stack: RevenueCat.PaywallComponent.StackComponent
-      public init(id: Swift.String, stack: RevenueCat.PaywallComponent.StackComponent)
+      public init(id: Swift.String, name: Swift.String? = nil, stack: RevenueCat.PaywallComponent.StackComponent)
       final public func hash(into hasher: inout Swift.Hasher)
       public static func == (lhs: RevenueCat.PaywallComponent.TabsComponent.Tab, rhs: RevenueCat.PaywallComponent.TabsComponent.Tab) -> Swift.Bool
       @objc deinit

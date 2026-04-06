@@ -40,6 +40,11 @@ extension FeatureEventsRequest {
         var componentName: String?
         var componentValue: String?
         var componentURL: URL?
+        var originIndex: Int?
+        var destinationIndex: Int?
+        var originContextName: String?
+        var destinationContextName: String?
+        var defaultIndex: Int?
 
     }
 
@@ -96,7 +101,12 @@ extension FeatureEventsRequest.PaywallEvent {
                 componentType: controlInteractionData?.componentType,
                 componentName: controlInteractionData?.componentName,
                 componentValue: controlInteractionData?.componentValue,
-                componentURL: controlInteractionData?.componentURL
+                componentURL: controlInteractionData?.componentURL,
+                originIndex: controlInteractionData?.originIndex,
+                destinationIndex: controlInteractionData?.destinationIndex,
+                originContextName: controlInteractionData?.originContextName,
+                destinationContextName: controlInteractionData?.destinationContextName,
+                defaultIndex: controlInteractionData?.defaultIndex
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -157,6 +167,11 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case componentName
         case componentValue
         case componentURL = "componentUrl"
+        case originIndex
+        case destinationIndex
+        case originContextName
+        case destinationContextName
+        case defaultIndex
 
     }
 

@@ -552,16 +552,26 @@ extension PurchaseHandler {
     /// - Parameters:
     ///   - componentType: Category of the control
     ///   - componentName: Optional builder `name` from the paywall JSON; `nil` when the control has no usable name
-    ///   - componentValue: Type-specific payload, e.g. selected tab id, `"on"` / `"off"` for a switch,
-    ///     0-based carousel page index as a string, or a button action discriminator (e.g. `"restore_purchases"`)
+    ///   - componentValue: Type-specific payload, e.g. `"on"` / `"off"` for a switch,
+    ///     a compatibility value for navigable controls, or a button action discriminator (e.g. `"restore_purchases"`)
     ///   - componentURL: Optional destination URL for URL-based controls (terms, privacy, generic links).
+    ///   - originIndex: Optional 0-based source index for navigable controls.
+    ///   - destinationIndex: Optional 0-based destination index for navigable controls.
+    ///   - originContextName: Optional source context name for navigable controls.
+    ///   - destinationContextName: Optional destination context name for navigable controls.
+    ///   - defaultIndex: Optional 0-based default index for navigable controls.
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackControlInteraction(
         componentType: ControlType,
         componentName: String?,
         componentValue: String,
-        componentURL: URL? = nil
+        componentURL: URL? = nil,
+        originIndex: Int? = nil,
+        destinationIndex: Int? = nil,
+        originContextName: String? = nil,
+        destinationContextName: String? = nil,
+        defaultIndex: Int? = nil
     ) -> Bool {
         guard let data = self.eventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
@@ -572,7 +582,12 @@ extension PurchaseHandler {
             componentType: componentType,
             componentName: componentName,
             componentValue: componentValue,
-            componentURL: componentURL
+            componentURL: componentURL,
+            originIndex: originIndex,
+            destinationIndex: destinationIndex,
+            originContextName: originContextName,
+            destinationContextName: destinationContextName,
+            defaultIndex: defaultIndex
         )
         self.track(.controlInteraction(.init(), data, interactionData))
         return true

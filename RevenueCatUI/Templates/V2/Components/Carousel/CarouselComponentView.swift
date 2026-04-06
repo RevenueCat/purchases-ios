@@ -85,7 +85,13 @@ struct CarouselComponentView: View {
                         msTimePerSlide: style.autoAdvance?.msTimePerPage,
                         msTransitionTime: style.autoAdvance?.msTransitionTime,
                         autoAdvanceTransitionType: style.autoAdvance?.transitionType,
-                        onUserInitiatedOriginalPageIndexChange: self.trackCarouselControlInteraction
+                        onUserInitiatedPageIndexChange: { originPageIndex, destinationPageIndex in
+                            self.trackCarouselControlInteraction(
+                                originPageIndex: originPageIndex,
+                                destinationPageIndex: destinationPageIndex,
+                                defaultPageIndex: style.initialPageIndex
+                            )
+                        }
                     ).clipped()
                 }
                 // Need to set height since geometry reader has no intrinsic height
@@ -106,11 +112,22 @@ struct CarouselComponentView: View {
         }
     }
 
-    private func trackCarouselControlInteraction(targetPageIndex: Int) {
+    private func trackCarouselControlInteraction(
+        originPageIndex: Int,
+        destinationPageIndex: Int,
+        defaultPageIndex: Int
+    ) {
+        let destinationContextName = self.viewModel.pageContextName(at: destinationPageIndex)
+
         self.purchaseHandler.trackControlInteraction(
             componentType: .carousel,
             componentName: self.viewModel.componentName,
-            componentValue: String(targetPageIndex)
+            componentValue: String(destinationPageIndex),
+            originIndex: originPageIndex,
+            destinationIndex: destinationPageIndex,
+            originContextName: self.viewModel.pageContextName(at: originPageIndex),
+            destinationContextName: destinationContextName,
+            defaultIndex: defaultPageIndex
         )
     }
 
@@ -143,7 +160,7 @@ private struct CarouselView<Content: View>: View {
 
     private let pageControl: DisplayablePageControl?
 
-    private let onUserInitiatedOriginalPageIndexChange: ((Int) -> Void)?
+    private let onUserInitiatedPageIndexChange: ((Int, Int) -> Void)?
 
     /// Optional auto-play timings (in milliseconds).
     private let msTimePerSlide: Int?
@@ -195,7 +212,7 @@ private struct CarouselView<Content: View>: View {
         msTimePerSlide: Int?,
         msTransitionTime: Int?,
         autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType?,
-        onUserInitiatedOriginalPageIndexChange: ((Int) -> Void)? = nil
+        onUserInitiatedPageIndexChange: ((Int, Int) -> Void)? = nil
     ) {
         self.width = width
         self.pageAlignment = pageAlignment
@@ -205,7 +222,7 @@ private struct CarouselView<Content: View>: View {
         self.spacing = spacing
         self.cardWidth = cardWidth
         self.pageControl = pageControl
-        self.onUserInitiatedOriginalPageIndexChange = onUserInitiatedOriginalPageIndexChange
+        self.onUserInitiatedPageIndexChange = onUserInitiatedPageIndexChange
         self.msTimePerSlide = msTimePerSlide
         self.msTransitionTime = msTransitionTime
         self.autoAdvanceTransitionType = autoAdvanceTransitionType
@@ -478,7 +495,7 @@ private struct CarouselView<Content: View>: View {
         // Pause auto-play for 10 seconds
         pauseAutoPlay(for: 10)
 
-        // `onUserInitiatedOriginalPageIndexChange` is only invoked from here so timer-driven auto-advance does not emit
+        // `onUserInitiatedPageIndexChange` is only invoked from here so timer-driven auto-advance does not emit
         // paywall_control_interaction events (see `startAutoPlayIfNeeded`).
         guard self.isInitialized,
               let originalPageIndexBefore,
@@ -489,7 +506,7 @@ private struct CarouselView<Content: View>: View {
             : self.index
         guard originalPageIndexAfter != originalPageIndexBefore else { return }
 
-        self.onUserInitiatedOriginalPageIndexChange?(originalPageIndexAfter)
+        self.onUserInitiatedPageIndexChange?(originalPageIndexBefore, originalPageIndexAfter)
     }
 
     private var autoPlayEnabled: Bool {
