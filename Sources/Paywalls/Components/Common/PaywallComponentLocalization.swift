@@ -14,7 +14,7 @@
 
 import Foundation
 
-extension PaywallComponent.LocalizationDictionary {
+@_spi(Internal) extension PaywallComponent.LocalizationDictionary {
 
     public func string(key: String) throws -> String {
         guard case let .string(value) = self[key] else {
