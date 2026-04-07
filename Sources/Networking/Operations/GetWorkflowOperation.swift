@@ -93,6 +93,10 @@ private extension GetWorkflowOperation {
                             workflow: workflow,
                             enrolledVariants: processed.enrolledVariants
                         ))
+                    } catch WorkflowDetailProcessingError.cdnFetchFailed(let underlyingError) {
+                        return .failure(BackendError.networkError(
+                            NetworkError.networkError(underlyingError)
+                        ))
                     } catch {
                         return .failure(BackendError.networkError(
                             NetworkError.decoding(error, verifiedResponse.body)

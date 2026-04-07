@@ -85,7 +85,7 @@ class WorkflowDetailProcessorTests: TestCase {
         expect(try self.processor.process(data)).to(throwError())
     }
 
-    func testUseCdnPropagatesIOError() throws {
+    func testUseCdnPropagatesIOErrorAsCdnFetchFailed() throws {
         let failingFetcher = MockWorkflowCdnFetcher { _ in
             throw URLError(.notConnectedToInternet)
         }
@@ -97,7 +97,13 @@ class WorkflowDetailProcessorTests: TestCase {
         ]
         let data = try JSONSerialization.data(withJSONObject: envelope)
 
-        expect(try failingProcessor.process(data)).to(throwError())
+        expect(try failingProcessor.process(data)).to(throwError { error in
+            guard case WorkflowDetailProcessingError.cdnFetchFailed(let underlying) = error else {
+                fail("Expected WorkflowDetailProcessingError.cdnFetchFailed, got \(error)")
+                return
+            }
+            expect((underlying as? URLError)?.code) == .notConnectedToInternet
+        })
     }
 
     func testMissingDataInInlineThrows() throws {

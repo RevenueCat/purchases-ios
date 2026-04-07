@@ -13,6 +13,14 @@
 
 import Foundation
 
+/// Typed errors thrown by `WorkflowDetailProcessor` so callers can distinguish
+/// CDN network failures from envelope parsing failures.
+enum WorkflowDetailProcessingError: Error {
+
+    case cdnFetchFailed(Error)
+
+}
+
 struct WorkflowDetailProcessingResult {
 
     let workflowData: Data
@@ -56,7 +64,11 @@ final class WorkflowDetailProcessor: Sendable {
             guard let cdnUrl = json["url"] as? String else {
                 throw Self.processingError("Missing 'url' in use_cdn workflow response")
             }
-            workflowData = try self.cdnFetcher.fetchCompiledWorkflowData(cdnUrl: cdnUrl)
+            do {
+                workflowData = try self.cdnFetcher.fetchCompiledWorkflowData(cdnUrl: cdnUrl)
+            } catch {
+                throw WorkflowDetailProcessingError.cdnFetchFailed(error)
+            }
         }
 
         return WorkflowDetailProcessingResult(

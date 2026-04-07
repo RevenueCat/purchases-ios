@@ -20,14 +20,34 @@ protocol WorkflowCdnFetcher: Sendable {
 
 }
 
-/// Direct URL fetcher — downloads from the CDN URL synchronously.
+/// Direct URL fetcher — downloads from the CDN URL using URLSession.
 final class DirectWorkflowCdnFetcher: WorkflowCdnFetcher {
 
     func fetchCompiledWorkflowData(cdnUrl: String) throws -> Data {
         guard let url = URL(string: cdnUrl) else {
             throw URLError(.badURL)
         }
-        return try Data(contentsOf: url)
+
+        var fetchResult: Result<Data, Error> = .failure(URLError(.unknown))
+        let semaphore = DispatchSemaphore(value: 0)
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            defer { semaphore.signal() }
+
+            if let error = error {
+                fetchResult = .failure(error)
+            } else if let httpResponse = response as? HTTPURLResponse,
+                      !(200..<300).contains(httpResponse.statusCode) {
+                fetchResult = .failure(URLError(.badServerResponse))
+            } else if let data = data {
+                fetchResult = .success(data)
+            } else {
+                fetchResult = .failure(URLError(.unknown))
+            }
+        }.resume()
+
+        semaphore.wait()
+        return try fetchResult.get()
     }
 
 }
