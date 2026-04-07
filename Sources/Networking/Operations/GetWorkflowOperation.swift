@@ -83,25 +83,26 @@ private extension GetWorkflowOperation {
                 completion()
             }
 
+            let result: Result<WorkflowFetchResult, BackendError> = response
+                .mapError(BackendError.networkError)
+                .flatMap { verifiedResponse in
+                    do {
+                        let processed = try self.detailProcessor.process(verifiedResponse.body)
+                        let workflow = try PublishedWorkflow.create(with: processed.workflowData)
+                        return .success(WorkflowFetchResult(
+                            workflow: workflow,
+                            enrolledVariants: processed.enrolledVariants
+                        ))
+                    } catch {
+                        return .failure(BackendError.networkError(
+                            NetworkError.decoding(error, verifiedResponse.body)
+                        ))
+                    }
+                }
+
             self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(
                 withCacheable: self
             ) { callbackObject in
-                let result: Result<WorkflowFetchResult, BackendError> = response
-                    .mapError(BackendError.networkError)
-                    .flatMap { verifiedResponse in
-                        do {
-                            let processed = try self.detailProcessor.process(verifiedResponse.body)
-                            let workflow = try PublishedWorkflow.create(with: processed.workflowData)
-                            return .success(WorkflowFetchResult(
-                                workflow: workflow,
-                                enrolledVariants: processed.enrolledVariants
-                            ))
-                        } catch {
-                            return .failure(BackendError.networkError(
-                                NetworkError.decoding(error, verifiedResponse.body)
-                            ))
-                        }
-                    }
                 callbackObject.completion(result)
             }
         }
