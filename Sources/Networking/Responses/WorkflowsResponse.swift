@@ -31,15 +31,19 @@ struct WorkflowsListResponse {
 
 // MARK: - Detail models
 
+struct WorkflowTrigger {
+
+    let name: String?
+    let type: String
+    let actionId: String?
+    let componentId: String?
+
+}
+
 struct WorkflowTriggerAction {
 
     let type: String
-    let value: String?
     let stepId: String?
-
-    var resolvedTargetStepId: String? {
-        return value ?? stepId
-    }
 
 }
 
@@ -50,8 +54,13 @@ struct WorkflowStep {
     let screenId: String?
     @DefaultDecodable.EmptyDictionary
     var paramValues: [String: AnyDecodable]
+    @DefaultDecodable.EmptyArray
+    var triggers: [WorkflowTrigger]
+    @DefaultDecodable.EmptyDictionary
+    var outputs: [String: AnyDecodable]
     @DefaultDecodable.EmptyDictionary
     var triggerActions: [String: WorkflowTriggerAction]
+    let metadata: [String: AnyDecodable]?
 
 }
 
@@ -80,6 +89,7 @@ struct PublishedWorkflow {
     let screens: [String: WorkflowScreen]
     let uiConfig: UIConfig
     let contentMaxWidth: Int?
+    let metadata: [String: AnyDecodable]?
 
 }
 
@@ -95,6 +105,7 @@ struct WorkflowFetchResult {
 extension WorkflowSummary: Codable, Equatable, Sendable {}
 extension WorkflowsListResponse: Codable, Equatable, Sendable {}
 
+extension WorkflowTrigger: Codable, Equatable, Sendable {}
 extension WorkflowTriggerAction: Codable, Equatable, Sendable {}
 extension WorkflowStep: Codable, Equatable, Sendable {}
 
