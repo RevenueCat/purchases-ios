@@ -52,9 +52,7 @@ struct RootView: View {
                     additionalPadding: EdgeInsets(
                         top: 0,
                         leading: 0,
-                        bottom: viewModel.headerViewModel != nil && viewModel.stickyFooterViewModel == nil
-                        ? safeAreaInsets.bottom
-                        : 0,
+                        bottom: viewModel.stickyFooterViewModel == nil ? safeAreaInsets.bottom : 0,
                         trailing: 0
                     )
                 )
