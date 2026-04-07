@@ -274,29 +274,6 @@ func checkPaywallEventData(_ data: PaywallEvent.Data) {
     }
 }
 
-func checkPaywallComponentsData(_ data: PaywallComponentsData) {
-    let id: String? = data.id
-    let templateName: String = data.templateName
-    let assetBaseURL: URL = data.assetBaseURL
-    let revision: Int = data.revision
-    let zeroDecimalPlaceCountries: [String] = data.zeroDecimalPlaceCountries
-    let defaultLocale: String = data.defaultLocale
-    let componentsConfig: PaywallComponentsData.ComponentsConfig = data.componentsConfig
-    let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] =
-        data.componentsLocalizations
-
-    let _: PaywallComponentsData = .init(
-        id: id,
-        templateName: templateName,
-        assetBaseURL: assetBaseURL,
-        componentsConfig: componentsConfig,
-        componentsLocalizations: componentsLocalizations,
-        revision: revision,
-        defaultLocaleIdentifier: defaultLocale,
-        zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
-    )
-}
-
 func checkExitOffer(_ exitOffer: ExitOffer) {
     let offeringId: String = exitOffer.offeringId
 

@@ -14,7 +14,7 @@
 
 import Foundation
 
-public struct PaywallComponentsData: Codable, Equatable, Sendable {
+@_spi(Internal) public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
     public struct ComponentsConfig: Codable, Equatable, Sendable {
 
@@ -151,7 +151,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
 }
 
-extension PaywallComponentsData {
+@_spi(Internal) extension PaywallComponentsData {
 
     // swiftlint:disable:next function_body_length
     public init(from decoder: Decoder) throws {
@@ -247,7 +247,7 @@ extension PaywallComponentsData {
 
 }
 
-extension PaywallComponentsData {
+@_spi(Internal) extension PaywallComponentsData {
 
     public struct EquatableError: Equatable, Sendable {
         let description: String
