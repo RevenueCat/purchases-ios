@@ -5,7 +5,7 @@
 //  Created by Nacho Soto on 7/27/23.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 #if DEBUG
 @testable import RevenueCatUI
 #else

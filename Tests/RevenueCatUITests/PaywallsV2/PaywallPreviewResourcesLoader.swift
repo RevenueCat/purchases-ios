@@ -12,7 +12,7 @@
 //  Created by Chris Vasselli on 2025/07/09.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 
 enum PaywallPreviewResourcesError: Error {
