@@ -38,6 +38,8 @@ public enum ControlType: String, Codable, Sendable, Hashable {
     case button
     /// Tappable link in paywall text / markdown (`component_url` is set).
     case text
+    /// User selected a subscription package / plan (for example, a package row tap).
+    case package
 
 }
 
@@ -317,6 +319,18 @@ extension PaywallEvent {
         public var destinationContextName: String?
         /// 0-based default index configured for the navigable component, when applicable.
         public var defaultIndex: Int?
+        /// RevenueCat package identifier before a plan-selection interaction, when applicable.
+        public var originPackageIdentifier: String?
+        /// RevenueCat package identifier after a plan-selection interaction, when applicable.
+        public var destinationPackageIdentifier: String?
+        /// RevenueCat package identifier for the configured default plan in the current scope (offering or tab), when applicable.
+        public var defaultPackageIdentifier: String?
+        /// Store product identifier before a plan-selection interaction, when applicable.
+        public var originProductIdentifier: String?
+        /// Store product identifier after a plan-selection interaction, when applicable.
+        public var destinationProductIdentifier: String?
+        /// Store product identifier for the configured default plan in the current scope, when applicable.
+        public var defaultProductIdentifier: String?
 
         public init(
             componentType: ControlType,
@@ -327,7 +341,13 @@ extension PaywallEvent {
             destinationIndex: Int? = nil,
             originContextName: String? = nil,
             destinationContextName: String? = nil,
-            defaultIndex: Int? = nil
+            defaultIndex: Int? = nil,
+            originPackageIdentifier: String? = nil,
+            destinationPackageIdentifier: String? = nil,
+            defaultPackageIdentifier: String? = nil,
+            originProductIdentifier: String? = nil,
+            destinationProductIdentifier: String? = nil,
+            defaultProductIdentifier: String? = nil
         ) {
             self.componentType = componentType
             self.componentName = componentName
@@ -338,6 +358,12 @@ extension PaywallEvent {
             self.originContextName = originContextName
             self.destinationContextName = destinationContextName
             self.defaultIndex = defaultIndex
+            self.originPackageIdentifier = originPackageIdentifier
+            self.destinationPackageIdentifier = destinationPackageIdentifier
+            self.defaultPackageIdentifier = defaultPackageIdentifier
+            self.originProductIdentifier = originProductIdentifier
+            self.destinationProductIdentifier = destinationProductIdentifier
+            self.defaultProductIdentifier = defaultProductIdentifier
         }
         // swiftlint:enable missing_docs
 

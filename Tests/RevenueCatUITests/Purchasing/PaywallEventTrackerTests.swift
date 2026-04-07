@@ -176,6 +176,44 @@ class PaywallEventTrackerTests: TestCase {
         expect(interaction.defaultIndex) == 0
     }
 
+    func testTrackComponentInteraction_IncludesPlanSelectionMetadataWhenProvided() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+
+        tracker.trackPaywallImpression(Self.eventData)
+
+        expect(tracker.trackComponentInteraction(.init(
+            componentType: .package,
+            componentName: PaywallComponentInteraction.packageSelectorName,
+            componentValue: "annual",
+            originPackageIdentifier: "monthly",
+            destinationPackageIdentifier: "annual",
+            defaultPackageIdentifier: "annual",
+            originProductIdentifier: "com.monthly",
+            destinationProductIdentifier: "com.annual",
+            defaultProductIdentifier: "com.annual"
+        ))) == true
+
+        await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
+
+        let interactionEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .componentInteraction = $0 { return true }
+            return false
+        }))
+
+        guard case let .componentInteraction(_, _, interaction) = interactionEvent else {
+            fail("Expected componentInteraction event")
+            return
+        }
+
+        expect(interaction.componentType) == .package
+        expect(interaction.originPackageIdentifier) == "monthly"
+        expect(interaction.destinationPackageIdentifier) == "annual"
+        expect(interaction.defaultPackageIdentifier) == "annual"
+        expect(interaction.originProductIdentifier) == "com.monthly"
+        expect(interaction.destinationProductIdentifier) == "com.annual"
+        expect(interaction.defaultProductIdentifier) == "com.annual"
+    }
+
     func testCreatePurchaseInitiatedEventAddsPurchaseInfoFromSession() throws {
         let (tracker, _) = Self.makeTracker()
 

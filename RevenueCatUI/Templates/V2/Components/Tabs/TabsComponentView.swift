@@ -246,6 +246,7 @@ struct LoadedTabsComponentView: View {
             )
             .environmentObject(self.tabControlContext)
             .environmentObject(tierPackageContext)
+            .environment(\.planSelectionDefaultPackage, activeTabViewModel.defaultSelectedPackage)
             .onAppear {
                 if !wasConfigured {
                     self.wasConfigured = true

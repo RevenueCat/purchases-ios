@@ -74,8 +74,39 @@ class PaywallFeatureEventsRequestTests: TestCase {
         expect(requestEvent.originContextName) == "monthly"
         expect(requestEvent.destinationContextName) == "annual"
         expect(requestEvent.defaultIndex) == 0
+        expect(requestEvent.originPackageIdentifier).to(beNil())
+        expect(requestEvent.destinationPackageIdentifier).to(beNil())
+        expect(requestEvent.defaultPackageIdentifier).to(beNil())
+        expect(requestEvent.originProductIdentifier).to(beNil())
+        expect(requestEvent.destinationProductIdentifier).to(beNil())
+        expect(requestEvent.defaultProductIdentifier).to(beNil())
         expect(requestEvent.offeringID) == Self.eventData.offeringIdentifier
         expect(requestEvent.sessionID) == Self.eventData.sessionIdentifier.uuidString
+    }
+
+    func testcomponentInteractionEvent_IncludesPlanSelectionIdentifiers() throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .package,
+            componentName: "package_selector",
+            componentValue: "annual",
+            originPackageIdentifier: "monthly",
+            destinationPackageIdentifier: "annual",
+            defaultPackageIdentifier: "annual",
+            originProductIdentifier: "com.app.monthly",
+            destinationProductIdentifier: "com.app.annual",
+            defaultProductIdentifier: "com.app.annual"
+        )
+        let event = PaywallEvent.componentInteraction(Self.eventCreationData, Self.eventData, interaction)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        expect(requestEvent.componentType) == .package
+        expect(requestEvent.originPackageIdentifier) == "monthly"
+        expect(requestEvent.destinationPackageIdentifier) == "annual"
+        expect(requestEvent.defaultPackageIdentifier) == "annual"
+        expect(requestEvent.originProductIdentifier) == "com.app.monthly"
+        expect(requestEvent.destinationProductIdentifier) == "com.app.annual"
+        expect(requestEvent.defaultProductIdentifier) == "com.app.annual"
     }
 
     func testcomponentInteractionEventCodableRoundTrip() throws {
@@ -88,6 +119,24 @@ class PaywallFeatureEventsRequestTests: TestCase {
             originContextName: "monthly",
             destinationContextName: "annual",
             defaultIndex: 0
+        )
+        let event = PaywallEvent.componentInteraction(Self.eventCreationData, Self.eventData, interaction)
+        let data = try JSONEncoder.default.encode(event)
+        let decoded = try JSONDecoder.default.decode(PaywallEvent.self, from: data)
+        expect(decoded) == event
+    }
+
+    func testcomponentInteractionEventCodableRoundTrip_IncludesPlanSelectionFields() throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .package,
+            componentName: "package_selector",
+            componentValue: "annual",
+            originPackageIdentifier: "monthly",
+            destinationPackageIdentifier: "annual",
+            defaultPackageIdentifier: "annual",
+            originProductIdentifier: "p1",
+            destinationProductIdentifier: "p2",
+            defaultProductIdentifier: "p2"
         )
         let event = PaywallEvent.componentInteraction(Self.eventCreationData, Self.eventData, interaction)
         let data = try JSONEncoder.default.encode(event)

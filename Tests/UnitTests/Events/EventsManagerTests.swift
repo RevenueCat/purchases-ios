@@ -243,6 +243,32 @@ class EventsManagerTests: TestCase {
         expect(map["default_index"] as? Int) == 0
     }
 
+    func testPaywallComponentInteractionToMap_IncludesPlanSelectionIdentifiersWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .package,
+            componentName: "package_selector",
+            componentValue: "annual",
+            originPackageIdentifier: "monthly",
+            destinationPackageIdentifier: "annual",
+            defaultPackageIdentifier: "annual",
+            originProductIdentifier: "com.monthly",
+            destinationProductIdentifier: "com.annual",
+            defaultProductIdentifier: "com.annual"
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "package"
+        expect(map["origin_package_id"] as? String) == "monthly"
+        expect(map["destination_package_id"] as? String) == "annual"
+        expect(map["default_package_id"] as? String) == "annual"
+        expect(map["origin_product_id"] as? String) == "com.monthly"
+        expect(map["destination_product_id"] as? String) == "com.annual"
+        expect(map["default_product_id"] as? String) == "com.annual"
+    }
+
     func testPaywallComponentInteractionToMap_TextMarkdownLinkUsesTextComponentType() {
         let creationData = PaywallEvent.CreationData.random()
         let data = PaywallEvent.Data.random()

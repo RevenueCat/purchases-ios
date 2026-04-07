@@ -84,6 +84,11 @@ private extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct PackageSelectorIfNeeded: ViewModifier {
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+    @Environment(\.planSelectionDefaultPackage)
+    private var planSelectionDefaultPackage
+
     let packageContext: PackageContext
     let package: Package
     let hasPurchaseButton: Bool
@@ -96,6 +101,16 @@ private struct PackageSelectorIfNeeded: ViewModifier {
                 // Updating package with same variable context
                 // This will be needed when different sets of packages
                 // in different tiers
+                let origin = self.packageContext.package
+                if origin?.identifier != self.package.identifier {
+                    self.componentInteractionLogger(
+                        .paywallPackageRowSelection(
+                            destination: self.package,
+                            origin: origin,
+                            defaultPackage: self.planSelectionDefaultPackage
+                        )
+                    )
+                }
                 self.packageContext.update(
                     package: self.package,
                     variableContext: self.packageContext.variableContext

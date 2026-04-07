@@ -45,6 +45,12 @@ extension FeatureEventsRequest {
         var originContextName: String?
         var destinationContextName: String?
         var defaultIndex: Int?
+        var originPackageIdentifier: String?
+        var destinationPackageIdentifier: String?
+        var defaultPackageIdentifier: String?
+        var originProductIdentifier: String?
+        var destinationProductIdentifier: String?
+        var defaultProductIdentifier: String?
 
     }
 
@@ -106,7 +112,13 @@ extension FeatureEventsRequest.PaywallEvent {
                 destinationIndex: componentInteractionData?.destinationIndex,
                 originContextName: componentInteractionData?.originContextName,
                 destinationContextName: componentInteractionData?.destinationContextName,
-                defaultIndex: componentInteractionData?.defaultIndex
+                defaultIndex: componentInteractionData?.defaultIndex,
+                originPackageIdentifier: componentInteractionData?.originPackageIdentifier,
+                destinationPackageIdentifier: componentInteractionData?.destinationPackageIdentifier,
+                defaultPackageIdentifier: componentInteractionData?.defaultPackageIdentifier,
+                originProductIdentifier: componentInteractionData?.originProductIdentifier,
+                destinationProductIdentifier: componentInteractionData?.destinationProductIdentifier,
+                defaultProductIdentifier: componentInteractionData?.defaultProductIdentifier
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -172,6 +184,12 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case originContextName
         case destinationContextName
         case defaultIndex
+        case originPackageIdentifier = "originPackageId"
+        case destinationPackageIdentifier = "destinationPackageId"
+        case defaultPackageIdentifier = "defaultPackageId"
+        case originProductIdentifier = "originProductId"
+        case destinationProductIdentifier = "destinationProductId"
+        case defaultProductIdentifier = "defaultProductId"
 
     }
 

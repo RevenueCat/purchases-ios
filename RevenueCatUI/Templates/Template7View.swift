@@ -217,11 +217,18 @@ struct Template7View: TemplateViewType {
                     selectedBackgroundColor: self.currentColors.tierControlSelectedBackground,
                     selectedTextColor: self.currentColors.tierControlSelectedForeground,
                     onSelectTier: { tier in
-                        self.componentInteractionLogger(.init(
-                            componentType: .tab,
-                            componentName: PaywallComponentInteraction.tierSelectorName,
-                            componentValue: self.tierNames[tier] ?? ""
-                        ))
+                        let originPackage = self.selectedPackage.content
+                        let destinationPackage = self.tiers[tier]!.default.content
+                        if originPackage.identifier != destinationPackage.identifier {
+                            self.componentInteractionLogger(
+                                .paywallTierSelection(
+                                    tierDisplayName: self.tierNames[tier] ?? "",
+                                    originPackage: originPackage,
+                                    destinationPackage: destinationPackage,
+                                    defaultPackage: destinationPackage
+                                )
+                            )
+                        }
                     }
                 )
             }
@@ -336,6 +343,17 @@ struct Template7View: TemplateViewType {
                 let isSelected = self.selectedPackage.content === package.content
 
                 Button {
+                    let origin = self.selectedPackage.content
+                    let destination = package.content
+                    if origin.identifier != destination.identifier {
+                        self.componentInteractionLogger(
+                            .paywallPackageRowSelection(
+                                destination: destination,
+                                origin: origin,
+                                defaultPackage: self.tiers[tier]!.default.content
+                            )
+                        )
+                    }
                     self.selectedPackage = package
                 } label: {
                     self.packageButton(package, selected: isSelected)

@@ -344,6 +344,12 @@ func checkComponentInteractionData(_ data: PaywallEvent.ComponentInteractionData
     let originContextName: String? = data.originContextName
     let destinationContextName: String? = data.destinationContextName
     let defaultIndex: Int? = data.defaultIndex
+    let originPackageIdentifier: String? = data.originPackageIdentifier
+    let destinationPackageIdentifier: String? = data.destinationPackageIdentifier
+    let defaultPackageIdentifier: String? = data.defaultPackageIdentifier
+    let originProductIdentifier: String? = data.originProductIdentifier
+    let destinationProductIdentifier: String? = data.destinationProductIdentifier
+    let defaultProductIdentifier: String? = data.defaultProductIdentifier
 
     let _: PaywallEvent.ComponentInteractionData = PaywallEvent.ComponentInteractionData(
         componentType: componentType,
@@ -354,6 +360,12 @@ func checkComponentInteractionData(_ data: PaywallEvent.ComponentInteractionData
         destinationIndex: destinationIndex,
         originContextName: originContextName,
         destinationContextName: destinationContextName,
-        defaultIndex: defaultIndex
+        defaultIndex: defaultIndex,
+        originPackageIdentifier: originPackageIdentifier,
+        destinationPackageIdentifier: destinationPackageIdentifier,
+        defaultPackageIdentifier: defaultPackageIdentifier,
+        originProductIdentifier: originProductIdentifier,
+        destinationProductIdentifier: destinationProductIdentifier,
+        defaultProductIdentifier: defaultProductIdentifier
     )
 }
