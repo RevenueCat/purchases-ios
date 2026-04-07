@@ -15,7 +15,7 @@
 
 import Foundation
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     private enum HeaderCodingKeys: String, CodingKey {
         case type
@@ -28,9 +28,9 @@ public extension PaywallComponent {
 
     final class HeaderComponent: PaywallComponentBase {
 
-        public let stack: PaywallComponent.StackComponent
+        @_spi(Internal) public let stack: PaywallComponent.StackComponent
 
-        public init(
+        @_spi(Internal) public init(
             stack: PaywallComponent.StackComponent
         ) {
             self.stack = stack
@@ -44,14 +44,14 @@ public extension PaywallComponent {
             return lhs.stack == rhs.stack
         }
 
-        public convenience init(from decoder: Decoder) throws {
+        @_spi(Internal) public convenience init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: HeaderCodingKeys.self)
             let stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
 
             self.init(stack: stack)
         }
 
-        public func encode(to encoder: Encoder) throws {
+        @_spi(Internal) public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: HeaderCodingKeys.self)
 
             try container.encode(HeaderType.header, forKey: .type)

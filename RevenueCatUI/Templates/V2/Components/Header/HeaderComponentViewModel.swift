@@ -11,7 +11,7 @@
 //
 //  Created by Facundo Menzella on 02/04/2026.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2

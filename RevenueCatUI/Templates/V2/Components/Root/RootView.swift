@@ -30,6 +30,7 @@ struct RootView: View {
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
 
+    @State private var headerHeight: CGFloat = 0
     @State private var sheetViewModel: SheetViewModel?
 
     internal init(
@@ -44,27 +45,32 @@ struct RootView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
-            if let headerViewModel = viewModel.headerViewModel {
-                HeaderComponentView(
-                    viewModel: headerViewModel,
-                    onDismiss: onDismiss
+            ZStack(alignment: .top) {
+                StackComponentView(
+                    viewModel: viewModel.stackViewModel,
+                    isScrollableByDefault: true,
+                    onDismiss: onDismiss,
+                    additionalPadding: EdgeInsets(
+                        top: viewModel.headerViewModel == nil ? 0 : self.headerHeight,
+                        leading: 0,
+                        bottom: viewModel.headerViewModel != nil && viewModel.stickyFooterViewModel == nil
+                        ? safeAreaInsets.bottom
+                        : 0,
+                        trailing: 0
+                    )
                 )
-                .fixedSize(horizontal: false, vertical: true)
-            }
 
-            StackComponentView(
-                viewModel: viewModel.stackViewModel,
-                isScrollableByDefault: true,
-                onDismiss: onDismiss,
-                additionalPadding: EdgeInsets(
-                    top: 0,
-                    leading: 0,
-                    bottom: viewModel.headerViewModel != nil && viewModel.stickyFooterViewModel == nil
-                    ? safeAreaInsets.bottom
-                    : 0,
-                    trailing: 0
-                )
-            )
+                if let headerViewModel = viewModel.headerViewModel {
+                    HeaderComponentView(
+                        viewModel: headerViewModel,
+                        onDismiss: onDismiss
+                    )
+                    .fixedSize(horizontal: false, vertical: true)
+                    .onSizeChange { size in
+                        self.headerHeight = size.height
+                    }
+                }
+            }
 
             if let stickyFooterViewModel = viewModel.stickyFooterViewModel {
                 StackComponentView(

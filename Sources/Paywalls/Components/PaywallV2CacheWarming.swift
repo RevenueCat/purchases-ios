@@ -138,11 +138,6 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     in: stickyFooter.stack,
                     includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
                 )
-            case .header(let header):
-                urls += self.collectAllImageURLs(
-                    in: header.stack,
-                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
-                )
             case .timeline(let component):
                 for item in component.items {
                     urls += item.icon.imageUrls
@@ -200,7 +195,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
         return urls
     }
 
-    // swiftlint:disable:next cyclomatic_complexity function_body_length
+    // swiftlint:disable:next cyclomatic_complexity
     private func collectAllVideoURLs(in stack: PaywallComponent.StackComponent) -> [URLWithValidation] {
 
         var urls: [URLWithValidation] = []
@@ -223,8 +218,6 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 urls += self.collectAllVideoURLs(in: purchaseButton.stack)
             case .stickyFooter(let stickyFooter):
                 urls += self.collectAllVideoURLs(in: stickyFooter.stack)
-            case .header(let header):
-                urls += self.collectAllVideoURLs(in: header.stack)
             case .timeline:
                 break
             case .tabs(let tabs):
