@@ -16,38 +16,32 @@ import Foundation
 /// Fetches compiled workflow JSON from a CDN URL.
 protocol WorkflowCdnFetcher: Sendable {
 
-    func fetchCompiledWorkflowData(cdnUrl: String) throws -> Data
+    func fetchCompiledWorkflowData(cdnUrl: String) async throws -> Data
 
 }
 
-/// Direct URL fetcher — downloads from the CDN URL using URLSession.
+/// Direct URL fetcher — downloads from the CDN URL via URLSession.
 final class DirectWorkflowCdnFetcher: WorkflowCdnFetcher {
 
-    func fetchCompiledWorkflowData(cdnUrl: String) throws -> Data {
+    func fetchCompiledWorkflowData(cdnUrl: String) async throws -> Data {
         guard let url = URL(string: cdnUrl) else {
             throw URLError(.badURL)
         }
 
-        var fetchResult: Result<Data, Error> = .failure(URLError(.unknown))
-        let semaphore = DispatchSemaphore(value: 0)
-
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            defer { semaphore.signal() }
-
-            if let error = error {
-                fetchResult = .failure(error)
-            } else if let httpResponse = response as? HTTPURLResponse,
-                      !(200..<300).contains(httpResponse.statusCode) {
-                fetchResult = .failure(URLError(.badServerResponse))
-            } else if let data = data {
-                fetchResult = .success(data)
-            } else {
-                fetchResult = .failure(URLError(.unknown))
-            }
-        }.resume()
-
-        semaphore.wait()
-        return try fetchResult.get()
+        return try await withCheckedThrowingContinuation { continuation in
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else if let httpResponse = response as? HTTPURLResponse,
+                          !(200..<300).contains(httpResponse.statusCode) {
+                    continuation.resume(throwing: URLError(.badServerResponse))
+                } else if let data = data {
+                    continuation.resume(returning: data)
+                } else {
+                    continuation.resume(throwing: URLError(.unknown))
+                }
+            }.resume()
+        }
     }
 
 }

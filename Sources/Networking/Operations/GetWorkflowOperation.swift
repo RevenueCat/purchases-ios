@@ -79,35 +79,42 @@ private extension GetWorkflowOperation {
         )
 
         httpClient.perform(request) { (response: VerifiedHTTPResponse<Data>.Result) in
-            defer {
+            switch response {
+            case .failure(let networkError):
+                self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(
+                    withCacheable: self
+                ) { callbackObject in
+                    callbackObject.completion(.failure(BackendError.networkError(networkError)))
+                }
                 completion()
-            }
 
-            let result: Result<WorkflowFetchResult, BackendError> = response
-                .mapError(BackendError.networkError)
-                .flatMap { verifiedResponse in
+            case .success(let verifiedResponse):
+                Task {
+                    let result: Result<WorkflowFetchResult, BackendError>
                     do {
-                        let processed = try self.detailProcessor.process(verifiedResponse.body)
+                        let processed = try await self.detailProcessor.process(verifiedResponse.body)
                         let workflow = try PublishedWorkflow.create(with: processed.workflowData)
-                        return .success(WorkflowFetchResult(
+                        result = .success(WorkflowFetchResult(
                             workflow: workflow,
                             enrolledVariants: processed.enrolledVariants
                         ))
                     } catch WorkflowDetailProcessingError.cdnFetchFailed(let underlyingError) {
-                        return .failure(BackendError.networkError(
+                        result = .failure(BackendError.networkError(
                             NetworkError.networkError(underlyingError)
                         ))
                     } catch {
-                        return .failure(BackendError.networkError(
+                        result = .failure(BackendError.networkError(
                             NetworkError.decoding(error, verifiedResponse.body)
                         ))
                     }
-                }
 
-            self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(
-                withCacheable: self
-            ) { callbackObject in
-                callbackObject.completion(result)
+                    self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(
+                        withCacheable: self
+                    ) { callbackObject in
+                        callbackObject.completion(result)
+                    }
+                    completion()
+                }
             }
         }
     }

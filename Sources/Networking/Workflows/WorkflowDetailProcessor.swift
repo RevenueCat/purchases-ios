@@ -38,7 +38,7 @@ final class WorkflowDetailProcessor: Sendable {
         self.cdnFetcher = cdnFetcher
     }
 
-    func process(_ data: Data) throws -> WorkflowDetailProcessingResult {
+    func process(_ data: Data) async throws -> WorkflowDetailProcessingResult {
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         guard let json else {
             throw Self.processingError("Failed to parse workflow detail envelope as JSON dictionary")
@@ -65,7 +65,7 @@ final class WorkflowDetailProcessor: Sendable {
                 throw Self.processingError("Missing 'url' in use_cdn workflow response")
             }
             do {
-                workflowData = try self.cdnFetcher.fetchCompiledWorkflowData(cdnUrl: cdnUrl)
+                workflowData = try await self.cdnFetcher.fetchCompiledWorkflowData(cdnUrl: cdnUrl)
             } catch {
                 throw WorkflowDetailProcessingError.cdnFetchFailed(error)
             }
