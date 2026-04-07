@@ -30,7 +30,6 @@ struct RootView: View {
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
 
-    @State private var headerHeight: CGFloat = 0
     @State private var sheetViewModel: SheetViewModel?
 
     internal init(
@@ -51,7 +50,7 @@ struct RootView: View {
                     isScrollableByDefault: true,
                     onDismiss: onDismiss,
                     additionalPadding: EdgeInsets(
-                        top: viewModel.headerViewModel == nil ? 0 : self.headerHeight,
+                        top: 0,
                         leading: 0,
                         bottom: viewModel.headerViewModel != nil && viewModel.stickyFooterViewModel == nil
                         ? safeAreaInsets.bottom
@@ -66,9 +65,6 @@ struct RootView: View {
                         onDismiss: onDismiss
                     )
                     .fixedSize(horizontal: false, vertical: true)
-                    .onSizeChange { size in
-                        self.headerHeight = size.height
-                    }
                 }
             }
 
