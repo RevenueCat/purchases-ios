@@ -1159,6 +1159,7 @@ jobs:
       - run:
           name: Wait for iOS 14.5 runtime installation
           command: scripts/wait-for-ios-runtime.sh
+          no_output_timeout: 30m
       - run:
           name: Run iOS 14 tests
           command: bundle exec fastlane test_ios skip_sk_tests:true
