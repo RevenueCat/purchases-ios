@@ -6,7 +6,7 @@ GIT
 
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: 5d6e93f4b0684ddc1ee65c993f747bc2adc82307
+  revision: ceecf91456afaa3c761b1b3a02f72a3b4b2a58ca
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
       nokogiri
@@ -29,7 +29,7 @@ GEM
       minitest (>= 5.1, < 6)
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
-    addressable (2.8.8)
+    addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
     algoliasearch (1.27.5)
       httpclient (~> 2.8, >= 2.8.3)
