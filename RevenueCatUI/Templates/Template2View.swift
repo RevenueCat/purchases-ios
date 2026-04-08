@@ -376,14 +376,192 @@ private extension Bundle {
 struct Template2View_Previews: PreviewProvider {
 
     static var previews: some View {
-        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-            PreviewableTemplate(
-                offering: TestData.offeringWithMultiPackagePaywall,
-                mode: mode
-            ) {
-                Template2View($0)
-            }
+        PreviewableTemplate(offering: TestData.offeringWithMultiPackagePaywall) {
+            Template2View($0)
         }
+        .previewDisplayName("Default – Eligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithMultiPackagePaywall,
+            introEligibility: .ineligible
+        ) {
+            Template2View($0)
+        }
+        .previewDisplayName("Default – Ineligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithMultiPackagePaywall,
+            fonts: PreviewHelpers.customFonts
+        ) {
+            Template2View($0)
+        }
+        .previewDisplayName("Custom Font")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithMultiPackagePaywall,
+            introEligibility: .ineligible
+        ) {
+            Template2View($0)
+        }
+        .preferredColorScheme(.dark)
+        .previewDisplayName("Dark Mode")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template2ViewFooter_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(
+            offering: TestData.offeringWithMultiPackagePaywall,
+            mode: .footer
+        ) {
+            Template2View($0)
+        }
+        .previewDisplayName("Footer")
+        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                              height: PreviewHelpers.footerSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithMultiPackagePaywall,
+            mode: .condensedFooter
+        ) {
+            Template2View($0)
+        }
+        .previewDisplayName("Condensed Footer")
+        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                              height: PreviewHelpers.footerSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template2ViewTablet_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithMultiPackagePaywall) {
+            Template2View($0)
+        }
+        .environment(\.userInterfaceIdiom, .pad)
+        .previewDisplayName("Tablet")
+        .previewLayout(.fixed(width: PreviewHelpers.iPadSize.width,
+                              height: PreviewHelpers.iPadSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template2ViewLandscape_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithMultiPackagePaywall) {
+            Template2View($0)
+        }
+        .environment(\.verticalSizeClass, .compact)
+        .previewDisplayName("Landscape")
+        .previewLayout(.fixed(width: PreviewHelpers.landscapeSize.width,
+                              height: PreviewHelpers.landscapeSize.height))
+        .previewInterfaceOrientation(.landscapeLeft)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template2ViewPurchasing_Previews: PreviewProvider {
+
+    private static let handler: PurchaseHandler = {
+        let handler = PurchaseHandler.mock()
+        handler.actionTypeInProgress = .purchase
+        return handler
+    }()
+
+    static var previews: some View {
+        PreviewableTemplate(
+            offering: TestData.offeringWithMultiPackagePaywall,
+            purchaseHandler: handler
+        ) {
+            Template2View($0)
+        }
+        .previewDisplayName("Purchasing State")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template2ViewLocalization_Previews: PreviewProvider {
+
+    private static let spanishOffering = Offering(
+        identifier: "offering",
+        serverDescription: "Offering",
+        metadata: [:],
+        paywall: .init(
+            templateName: PaywallTemplate.template2.rawValue,
+            config: .init(
+                packages: [PackageType.weekly.identifier,
+                           PackageType.annual.identifier,
+                           PackageType.monthly.identifier],
+                images: TestData.images,
+                colors: .init(
+                    light: TestData.lightColors,
+                    dark: TestData.lightColors
+                ),
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
+                privacyURL: URL(string: "https://revenuecat.com/tos")!
+            ),
+            localization: .init(
+                title: "Despierta la curiosidad de tu hijo",
+                subtitle: "Accede a todo nuestro contenido educativo, confiado por miles de padres.",
+                callToAction: "Comprar",
+                offerDetails: "{{ total_price_and_per_month }}",
+                offerDetailsWithIntroOffer: "Comienza tu prueba de {{ sub_offer_duration }}, " +
+                    "después {{ sub_price_per_month }} cada mes",
+                features: []
+            ),
+            assetBaseURL: TestData.paywallAssetBaseURL,
+            locale: Locale(identifier: "es_ES")
+        ),
+        availablePackages: [TestData.weeklyPackage,
+                            TestData.monthlyPackage,
+                            TestData.annualPackage],
+        webCheckoutUrl: nil
+    )
+
+    static var previews: some View {
+        PreviewableTemplate(
+            offering: spanishOffering,
+            locale: Locale(identifier: "es_ES")
+        ) {
+            Template2View($0)
+        }
+        .previewDisplayName("Spanish Localization")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
     }
 
 }

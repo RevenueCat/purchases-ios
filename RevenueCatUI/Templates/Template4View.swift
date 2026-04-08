@@ -426,6 +426,122 @@ struct Template4View_Previews: PreviewProvider {
         PreviewableTemplate(offering: TestData.offeringWithMultiPackageHorizontalPaywall) {
             Template4View($0)
         }
+        .previewDisplayName("Default – Eligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithMultiPackageHorizontalPaywall,
+            introEligibility: .ineligible
+        ) {
+            Template4View($0)
+        }
+        .previewDisplayName("Default – Ineligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithMultiPackageHorizontalPaywall,
+            fonts: PreviewHelpers.customFonts
+        ) {
+            Template4View($0)
+        }
+        .previewDisplayName("Custom Font")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template4ViewFooter_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(
+            offering: TestData.offeringWithMultiPackageHorizontalPaywall,
+            mode: .footer
+        ) {
+            Template4View($0)
+        }
+        .previewDisplayName("Footer")
+        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                              height: PreviewHelpers.footerSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithMultiPackageHorizontalPaywall,
+            mode: .condensedFooter
+        ) {
+            Template4View($0)
+        }
+        .previewDisplayName("Condensed Footer")
+        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                              height: PreviewHelpers.footerSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template4ViewTablet_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithMultiPackageHorizontalPaywall) {
+            Template4View($0)
+        }
+        .environment(\.userInterfaceIdiom, .pad)
+        .previewDisplayName("Tablet")
+        .previewLayout(.fixed(width: PreviewHelpers.iPadSize.width,
+                              height: PreviewHelpers.iPadSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template4ViewLandscape_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithMultiPackageHorizontalPaywall) {
+            Template4View($0)
+        }
+        .environment(\.verticalSizeClass, .compact)
+        .previewDisplayName("Landscape")
+        .previewLayout(.fixed(width: PreviewHelpers.landscapeSize.width,
+                              height: PreviewHelpers.landscapeSize.height))
+        .previewInterfaceOrientation(.landscapeLeft)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template4ViewDynamicType_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithMultiPackageHorizontalPaywall) {
+            Template4View($0)
+        }
+        .dynamicTypeSize(.xxLarge)
+        .previewDisplayName("Dynamic Type – xxLarge")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(offering: TestData.offeringWithMultiPackageHorizontalPaywall) {
+            Template4View($0)
+        }
+        .dynamicTypeSize(.accessibility2)
+        .previewDisplayName("Dynamic Type – accessibility2")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
     }
 
 }

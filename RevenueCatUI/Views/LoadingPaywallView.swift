@@ -283,10 +283,20 @@ private extension View {
 struct LoadingPaywallView_Previews: PreviewProvider {
 
     static var previews: some View {
-        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-            LoadingPaywallView(mode: mode, displayCloseButton: true)
-                .previewDisplayName("\(mode)")
-        }
+        LoadingPaywallView(mode: .fullScreen, displayCloseButton: false, shimmer: false)
+            .previewDisplayName("Full Screen")
+            .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                                  height: PreviewHelpers.fullScreenSize.height))
+
+        LoadingPaywallView(mode: .footer, displayCloseButton: false, shimmer: false)
+            .previewDisplayName("Footer")
+            .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                                  height: PreviewHelpers.footerSize.height))
+
+        LoadingPaywallView(mode: .condensedFooter, displayCloseButton: false, shimmer: false)
+            .previewDisplayName("Condensed Footer")
+            .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                                  height: PreviewHelpers.footerSize.height))
     }
 
 }

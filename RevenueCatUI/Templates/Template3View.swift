@@ -277,6 +277,104 @@ struct Template3View_Previews: PreviewProvider {
         PreviewableTemplate(offering: TestData.offeringWithSinglePackageFeaturesPaywall) {
             Template3View($0)
         }
+        .previewDisplayName("Default – Eligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithSinglePackageFeaturesPaywall,
+            introEligibility: .ineligible
+        ) {
+            Template3View($0)
+        }
+        .previewDisplayName("Default – Ineligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithSinglePackageFeaturesPaywall,
+            fonts: PreviewHelpers.customFonts
+        ) {
+            Template3View($0)
+        }
+        .previewDisplayName("Custom Font")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(offering: TestData.offeringWithSinglePackageFeaturesPaywall) {
+            Template3View($0)
+        }
+        .preferredColorScheme(.dark)
+        .previewDisplayName("Dark Mode")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template3ViewFooter_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(
+            offering: TestData.offeringWithSinglePackageFeaturesPaywall,
+            mode: .footer
+        ) {
+            Template3View($0)
+        }
+        .previewDisplayName("Footer")
+        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                              height: PreviewHelpers.footerSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithSinglePackageFeaturesPaywall,
+            mode: .condensedFooter
+        ) {
+            Template3View($0)
+        }
+        .previewDisplayName("Condensed Footer")
+        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                              height: PreviewHelpers.footerSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template3ViewTablet_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithSinglePackageFeaturesPaywall) {
+            Template3View($0)
+        }
+        .environment(\.userInterfaceIdiom, .pad)
+        .previewDisplayName("Tablet")
+        .previewLayout(.fixed(width: PreviewHelpers.iPadSize.width,
+                              height: PreviewHelpers.iPadSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template3ViewLandscape_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithSinglePackageFeaturesPaywall) {
+            Template3View($0)
+        }
+        .environment(\.verticalSizeClass, .compact)
+        .previewDisplayName("Landscape")
+        .previewLayout(.fixed(width: PreviewHelpers.landscapeSize.width,
+                              height: PreviewHelpers.landscapeSize.height))
+        .previewInterfaceOrientation(.landscapeLeft)
     }
 
 }

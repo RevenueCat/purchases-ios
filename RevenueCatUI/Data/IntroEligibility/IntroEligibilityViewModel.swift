@@ -29,9 +29,9 @@ final class IntroEligibilityViewModel: ObservableObject {
     }
 
     @Published
-    private(set) var allEligibility: [Package: IntroEligibilityStatus] = [:]
+    var allEligibility: [Package: IntroEligibilityStatus] = [:]
     @Published
-    private(set) var singleEligibility: IntroEligibilityStatus?
+    var singleEligibility: IntroEligibilityStatus?
 
 }
 

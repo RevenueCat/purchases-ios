@@ -402,14 +402,80 @@ private extension Template5View {
 struct Template5View_Previews: PreviewProvider {
 
     static var previews: some View {
-        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-            PreviewableTemplate(
-                offering: TestData.offeringWithTemplate5Paywall,
-                mode: mode
-            ) {
-                Template5View($0)
-            }
+        PreviewableTemplate(offering: TestData.offeringWithTemplate5Paywall) {
+            Template5View($0)
         }
+        .previewDisplayName("Default – Eligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithTemplate5Paywall,
+            introEligibility: .ineligible
+        ) {
+            Template5View($0)
+        }
+        .previewDisplayName("Default – Ineligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithTemplate5Paywall,
+            fonts: PreviewHelpers.customFonts
+        ) {
+            Template5View($0)
+        }
+        .previewDisplayName("Custom Font")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template5ViewFooter_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(
+            offering: TestData.offeringWithTemplate5Paywall,
+            mode: .footer
+        ) {
+            Template5View($0)
+        }
+        .previewDisplayName("Footer")
+        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                              height: PreviewHelpers.footerSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithTemplate5Paywall,
+            mode: .condensedFooter
+        ) {
+            Template5View($0)
+        }
+        .previewDisplayName("Condensed Footer")
+        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                              height: PreviewHelpers.footerSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template5ViewTablet_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithTemplate5Paywall) {
+            Template5View($0)
+        }
+        .environment(\.userInterfaceIdiom, .pad)
+        .previewDisplayName("Tablet")
+        .previewLayout(.fixed(width: PreviewHelpers.iPadSize.width,
+                              height: PreviewHelpers.iPadSize.height))
     }
 
 }
@@ -420,21 +486,88 @@ struct Template5View_Previews: PreviewProvider {
 @available(tvOS, unavailable)
 struct Template5ViewLandscape_Previews: PreviewProvider {
 
-    // Matches `BaseSnapshotTest.landscapeSize` (950x460) used in `Template5ViewTests.testLandscapePaywall`
-    private static let landscapeSize: CGSize = .init(width: 1900, height: 920)
-
     static var previews: some View {
-        PreviewableTemplate(
-            offering: TestData.offeringWithTemplate5Paywall,
-            mode: .default
-        ) {
+        PreviewableTemplate(offering: TestData.offeringWithTemplate5Paywall) {
             Template5View($0)
         }
-        .previewDisplayName("Template 5 – Landscape")
-        .previewLayout(.fixed(width: self.landscapeSize.width,
-                              height: self.landscapeSize.height))
         .environment(\.verticalSizeClass, .compact)
+        .previewDisplayName("Landscape")
+        .previewLayout(.fixed(width: PreviewHelpers.landscapeSize.width,
+                              height: PreviewHelpers.landscapeSize.height))
         .previewInterfaceOrientation(.landscapeLeft)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template5ViewDynamicType_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithTemplate5Paywall) {
+            Template5View($0)
+        }
+        .dynamicTypeSize(.xxLarge)
+        .previewDisplayName("Dynamic Type – xxLarge")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(offering: TestData.offeringWithTemplate5Paywall) {
+            Template5View($0)
+        }
+        .dynamicTypeSize(.accessibility2)
+        .previewDisplayName("Dynamic Type – accessibility2")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template5ViewLargeProductNames_Previews: PreviewProvider {
+
+    private static let offering = Offering(
+        identifier: "offering",
+        serverDescription: "Offering",
+        metadata: [:],
+        paywall: .init(
+            templateName: PaywallTemplate.template5.rawValue,
+            config: TestData.offeringWithTemplate5Paywall.paywall!.config,
+            localization: .init(
+                title: "Spice Up Your Kitchen - Go Pro for Exclusive Benefits!",
+                callToAction: "Continue",
+                callToActionWithIntroOffer: "Start your Free Trial",
+                offerDetails: "{{ total_price_and_per_month }}",
+                offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, " +
+                    "then {{ total_price_and_per_month }}",
+                offerName: "Very long product name: {{ product_name }} ({{ sub_period }})",
+                features: [
+                    .init(title: "Unique gourmet recipes", iconID: "tick"),
+                    .init(title: "Advanced nutritional recipes", iconID: "apple"),
+                    .init(title: "Personalized support from our Chef", iconID: "warning"),
+                    .init(title: "Unlimited receipt collections", iconID: "bookmark")
+                ]
+            ),
+            assetBaseURL: TestData.paywallAssetBaseURL
+        ),
+        availablePackages: [TestData.monthlyPackage,
+                            TestData.sixMonthPackage,
+                            TestData.annualPackage],
+        webCheckoutUrl: nil
+    )
+
+    static var previews: some View {
+        PreviewableTemplate(offering: offering) {
+            Template5View($0)
+        }
+        .previewDisplayName("Large Product Names")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
     }
 
 }

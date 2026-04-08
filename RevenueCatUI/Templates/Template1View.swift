@@ -201,8 +201,150 @@ private struct CircleMaskModifier: ViewModifier {
 struct Template1View_Previews: PreviewProvider {
 
     static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithNoIntroOffer) {
+            Template1View($0)
+        }
+        .previewDisplayName("Default – Eligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithNoIntroOffer,
+            introEligibility: .ineligible
+        ) {
+            Template1View($0)
+        }
+        .previewDisplayName("Default – Ineligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
         PreviewableTemplate(offering: TestData.offeringWithIntroOffer) {
             Template1View($0)
+        }
+        .previewDisplayName("Intro Offer – Eligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithIntroOffer,
+            introEligibility: .ineligible
+        ) {
+            Template1View($0)
+        }
+        .previewDisplayName("Intro Offer – Ineligible")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithNoIntroOffer,
+            fonts: PreviewHelpers.customFonts
+        ) {
+            Template1View($0)
+        }
+        .previewDisplayName("Custom Font")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithIntroOffer,
+            introEligibility: .ineligible
+        ) {
+            Template1View($0)
+        }
+        .preferredColorScheme(.dark)
+        .previewDisplayName("Dark Mode")
+        .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                              height: PreviewHelpers.fullScreenSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template1ViewFooter_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(
+            offering: TestData.offeringWithNoIntroOffer,
+            mode: .footer
+        ) {
+            Template1View($0)
+        }
+        .previewDisplayName("Footer")
+        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                              height: PreviewHelpers.footerSize.height))
+
+        PreviewableTemplate(
+            offering: TestData.offeringWithNoIntroOffer,
+            mode: .condensedFooter
+        ) {
+            Template1View($0)
+        }
+        .previewDisplayName("Condensed Footer")
+        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
+                              height: PreviewHelpers.footerSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template1ViewTablet_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithNoIntroOffer) {
+            Template1View($0)
+        }
+        .environment(\.userInterfaceIdiom, .pad)
+        .previewDisplayName("Tablet")
+        .previewLayout(.fixed(width: PreviewHelpers.iPadSize.width,
+                              height: PreviewHelpers.iPadSize.height))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template1ViewLandscape_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithNoIntroOffer) {
+            Template1View($0)
+        }
+        .environment(\.verticalSizeClass, .compact)
+        .previewDisplayName("Landscape")
+        .previewLayout(.fixed(width: PreviewHelpers.landscapeSize.width,
+                              height: PreviewHelpers.landscapeSize.height))
+        .previewInterfaceOrientation(.landscapeLeft)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct Template1ViewDynamicType_Previews: PreviewProvider {
+
+    static var previews: some View {
+        ForEach(
+            [DynamicTypeSize.xSmall, .small, .medium, .xLarge, .xxLarge,
+             .xxxLarge, .accessibility1, .accessibility3, .accessibility5],
+            id: \.self
+        ) { size in
+            PreviewableTemplate(offering: TestData.offeringWithIntroOffer) {
+                Template1View($0)
+            }
+            .dynamicTypeSize(size)
+            .previewDisplayName("Dynamic Type – \(size)")
+            .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
+                                  height: PreviewHelpers.fullScreenSize.height))
         }
     }
 
