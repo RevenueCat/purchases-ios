@@ -188,7 +188,7 @@ struct IconComponentStyle {
         colorScheme: ColorScheme
     ) {
         self.visible = visible
-        self.url = URL(string: "\(baseUrl)/\(formats.heic)")!
+        self.url = URL(string: "\(baseUrl)/\(formats.png)")!
         self.size = size
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets

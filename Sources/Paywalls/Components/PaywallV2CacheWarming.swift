@@ -268,7 +268,7 @@ extension PaywallComponent.IconComponent.Formats {
 
     func imageUrls(base: URL) -> [URL] {
         return [
-            base.appendingPathComponent(heic)
+            base.appendingPathComponent(png)
         ]
     }
 
