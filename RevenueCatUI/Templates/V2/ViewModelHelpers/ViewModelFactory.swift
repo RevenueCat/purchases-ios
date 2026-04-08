@@ -666,10 +666,10 @@ struct ViewModelFactory {
     ) {
         if let header = componentsConfig.header,
            !header.stack.components.isEmpty {
-            let headerInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(header.stack))
-            if headerInfo != nil {
-                return (info: headerInfo, appliesToHeader: true)
-            }
+            return (
+                info: self.findFullWidthImageViewIfItsTheFirst(.stack(header.stack)),
+                appliesToHeader: true
+            )
         }
 
         return (

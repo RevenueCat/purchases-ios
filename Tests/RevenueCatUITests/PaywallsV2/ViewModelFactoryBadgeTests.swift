@@ -425,6 +425,43 @@ class ViewModelFactoryBadgeTests: TestCase {
     }
 
     @MainActor
+    func testNonImageHeaderBlocksRootSafeAreaIgnoreInfo() throws {
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: [
+                .image(
+                    .init(
+                        source: .init(light: .init(
+                            width: 1,
+                            height: 1,
+                            original: Self.sampleURL,
+                            heic: Self.sampleURL,
+                            heicLowRes: Self.sampleURL
+                        ))
+                    )
+                )
+            ]),
+            header: .init(stack: .init(components: [
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ])),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.firstItemIgnoresSafeAreaInfo).to(beNil())
+    }
+
+    @MainActor
     func testNoUnsupported_DiscardRulesIsFalse() throws {
         let textWithRule = PaywallComponent.TextComponent(
             text: "badge_text_lid",
@@ -671,6 +708,9 @@ class ViewModelFactoryBadgeTests: TestCase {
     private static let black = PaywallComponent.ColorScheme(
         light: .hex("#000000")
     )
+
+    // swiftlint:disable:next force_unwrapping
+    private static let sampleURL = URL(string: "https://revenuecat.com/image.heic")!
 
     @MainActor
     private func makeStackViewModel(
