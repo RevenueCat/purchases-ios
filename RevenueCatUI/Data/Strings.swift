@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-// swiftlint:disable identifier_name
+// swiftlint:disable identifier_name file_length
 
 enum Strings {
 
@@ -118,6 +118,14 @@ enum Strings {
 
     // Conditional Configurability
     case paywall_contains_unsupported_condition
+
+    // Dynamic Paywall
+    case dynamicPaywall_noActiveSubscriptions
+    case dynamicPaywall_purchasesNotConfigured
+    case dynamicPaywall_couldNotFetchActiveProducts
+    case dynamicPaywall_noSubscriptionGroupFound
+    case dynamicPaywall_noUpgradeCandidates
+    case dynamicPaywall_foundUpgradeCandidates(Int)
 
 }
 
@@ -378,6 +386,21 @@ extension Strings: CustomStringConvertible {
         case .paywall_contains_unsupported_condition:
             return "Unsupported paywall rule encountered. " +
             "Rendering paywall without conditional configurability rules."
+
+        case .dynamicPaywall_noActiveSubscriptions:
+            return "Dynamic paywall (upgrade): user has no active subscriptions. Paywall will not be presented."
+        case .dynamicPaywall_purchasesNotConfigured:
+            return "Dynamic paywall: Purchases SDK is not configured."
+        case .dynamicPaywall_couldNotFetchActiveProducts:
+            return "Dynamic paywall (upgrade): could not fetch StoreProducts for active subscriptions."
+        case .dynamicPaywall_noSubscriptionGroupFound:
+            return "Dynamic paywall (upgrade): active subscriptions have no subscription group. " +
+            "Only auto-renewable subscriptions support upgrades."
+        case .dynamicPaywall_noUpgradeCandidates:
+            return "Dynamic paywall (upgrade): no packages with a higher price found in the offering. " +
+            "Paywall will not be presented."
+        case let .dynamicPaywall_foundUpgradeCandidates(count):
+            return "Dynamic paywall (upgrade): found \(count) upgrade candidate(s)."
         }
     }
 
