@@ -12,7 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/11/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
