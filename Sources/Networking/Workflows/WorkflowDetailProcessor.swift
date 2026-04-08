@@ -38,43 +38,56 @@ final class WorkflowDetailProcessor: Sendable {
         self.cdnFetcher = cdnFetcher
     }
 
-    func process(_ data: Data) async throws -> WorkflowDetailProcessingResult {
-        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        guard let json else {
-            throw Self.processingError("Failed to parse workflow detail envelope as JSON dictionary")
+    func process(_ data: Data, completion: @escaping (Result<WorkflowDetailProcessingResult, Error>) -> Void) {
+        let json: [String: Any]?
+        do {
+            json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        } catch {
+            completion(.failure(error))
+            return
         }
 
-        let enrolledVariants = (json["enrolled_variants"] as? [String: String])
+        guard let json else {
+            completion(.failure(Self.processingError("Failed to parse workflow detail envelope as JSON dictionary")))
+            return
+        }
+
+        let enrolledVariants = json["enrolled_variants"] as? [String: String]
 
         guard let actionString = json["action"] as? String,
               let action = WorkflowResponseAction(rawValue: actionString) else {
             let actionValue = json["action"] as? String ?? "nil"
-            throw Self.processingError("Unknown workflow response action: \(actionValue)")
+            completion(.failure(Self.processingError("Unknown workflow response action: \(actionValue)")))
+            return
         }
 
-        let workflowData: Data
         switch action {
         case .inline:
             guard let inlineData = json["data"] else {
-                throw Self.processingError("Missing 'data' in inline workflow response")
+                completion(.failure(Self.processingError("Missing 'data' in inline workflow response")))
+                return
             }
-            workflowData = try JSONSerialization.data(withJSONObject: inlineData)
+            do {
+                let workflowData = try JSONSerialization.data(withJSONObject: inlineData)
+                completion(.success(.init(workflowData: workflowData, enrolledVariants: enrolledVariants)))
+            } catch {
+                completion(.failure(error))
+            }
 
         case .useCdn:
             guard let cdnUrl = json["url"] as? String else {
-                throw Self.processingError("Missing 'url' in use_cdn workflow response")
+                completion(.failure(Self.processingError("Missing 'url' in use_cdn workflow response")))
+                return
             }
-            do {
-                workflowData = try await self.cdnFetcher.fetchCompiledWorkflowData(cdnUrl: cdnUrl)
-            } catch {
-                throw WorkflowDetailProcessingError.cdnFetchFailed(error)
+            self.cdnFetcher.fetchCompiledWorkflowData(cdnUrl: cdnUrl) { result in
+                switch result {
+                case .success(let workflowData):
+                    completion(.success(.init(workflowData: workflowData, enrolledVariants: enrolledVariants)))
+                case .failure(let error):
+                    completion(.failure(WorkflowDetailProcessingError.cdnFetchFailed(error)))
+                }
             }
         }
-
-        return WorkflowDetailProcessingResult(
-            workflowData: workflowData,
-            enrolledVariants: enrolledVariants
-        )
     }
 
     private static func processingError(_ message: String) -> Error {

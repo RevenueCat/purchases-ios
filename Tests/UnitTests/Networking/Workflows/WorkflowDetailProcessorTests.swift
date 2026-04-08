@@ -26,28 +26,32 @@ class WorkflowDetailProcessorTests: TestCase {
         try super.setUpWithError()
 
         self.fetchedUrls = []
-        let fetcher = MockWorkflowCdnFetcher { [weak self] url in
+        let fetcher = MockWorkflowCdnFetcher { [weak self] url, completion in
             self?.fetchedUrls.append(url)
-            return try JSONSerialization.data(withJSONObject: ["id": "from_cdn"])
+            completion(.success((try? JSONSerialization.data(withJSONObject: ["id": "from_cdn"])) ?? Data()))
         }
         self.processor = WorkflowDetailProcessor(cdnFetcher: fetcher)
     }
 
-    func testInlineUnwrapsData() async throws {
+    func testInlineUnwrapsData() throws {
         let envelope: [String: Any] = [
             "action": "inline",
             "data": ["id": "wf_inline"]
         ]
         let data = try JSONSerialization.data(withJSONObject: envelope)
 
-        let result = try await processor.process(data)
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
 
-        let parsed = try JSONSerialization.jsonObject(with: result.workflowData) as? [String: Any]
-        expect(parsed?["id"] as? String) == "wf_inline"
-        expect(result.enrolledVariants).to(beNil())
+        expect(result).to(beSuccess { value in
+            let parsed = try? JSONSerialization.jsonObject(with: value.workflowData) as? [String: Any]
+            expect(parsed?["id"] as? String) == "wf_inline"
+            expect(value.enrolledVariants).to(beNil())
+        })
     }
 
-    func testInlineExtractsEnrolledVariants() async throws {
+    func testInlineExtractsEnrolledVariants() throws {
         let envelope: [String: Any] = [
             "action": "inline",
             "data": ["id": "wf1"],
@@ -55,12 +59,16 @@ class WorkflowDetailProcessorTests: TestCase {
         ]
         let data = try JSONSerialization.data(withJSONObject: envelope)
 
-        let result = try await processor.process(data)
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
 
-        expect(result.enrolledVariants) == ["a": "b"]
+        expect(result).to(beSuccess { value in
+            expect(value.enrolledVariants) == ["a": "b"]
+        })
     }
 
-    func testUseCdnFetchesFromUrl() async throws {
+    func testUseCdnFetchesFromUrl() throws {
         let envelope: [String: Any] = [
             "action": "use_cdn",
             "url": "https://cdn.example/w.json",
@@ -68,31 +76,43 @@ class WorkflowDetailProcessorTests: TestCase {
         ]
         let data = try JSONSerialization.data(withJSONObject: envelope)
 
-        let result = try await processor.process(data)
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
 
         expect(self.fetchedUrls) == ["https://cdn.example/w.json"]
-        let parsed = try JSONSerialization.jsonObject(with: result.workflowData) as? [String: Any]
-        expect(parsed?["id"] as? String) == "from_cdn"
-        expect(result.enrolledVariants) == ["x": "y"]
+        expect(result).to(beSuccess { value in
+            let parsed = try? JSONSerialization.jsonObject(with: value.workflowData) as? [String: Any]
+            expect(parsed?["id"] as? String) == "from_cdn"
+            expect(value.enrolledVariants) == ["x": "y"]
+        })
     }
 
-    func testUnknownActionThrows() async throws {
+    func testUnknownActionThrows() throws {
         let envelope: [String: Any] = ["action": "other"]
         let data = try JSONSerialization.data(withJSONObject: envelope)
 
-        await expect { try await self.processor.process(data) }.to(throwError())
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beFailure())
     }
 
-    func testUseCdnPropagatesIOErrorAsCdnFetchFailed() async throws {
-        let failingFetcher = MockWorkflowCdnFetcher { _ in
-            throw URLError(.notConnectedToInternet)
+    func testUseCdnPropagatesIOErrorAsCdnFetchFailed() throws {
+        let failingFetcher = MockWorkflowCdnFetcher { _, completion in
+            completion(.failure(URLError(.notConnectedToInternet)))
         }
         let failingProcessor = WorkflowDetailProcessor(cdnFetcher: failingFetcher)
 
         let envelope: [String: Any] = ["action": "use_cdn", "url": "https://x"]
         let data = try JSONSerialization.data(withJSONObject: envelope)
 
-        await expect { try await failingProcessor.process(data) }.to(throwError { error in
+        let result = waitUntilValue { completed in
+            failingProcessor.process(data, completion: completed)
+        }
+
+        expect(result).to(beFailure { error in
             guard case WorkflowDetailProcessingError.cdnFetchFailed(let underlying) = error else {
                 fail("Expected WorkflowDetailProcessingError.cdnFetchFailed, got \(error)")
                 return
@@ -101,32 +121,40 @@ class WorkflowDetailProcessorTests: TestCase {
         })
     }
 
-    func testMissingDataInInlineThrows() async throws {
+    func testMissingDataInInlineThrows() throws {
         let envelope: [String: Any] = ["action": "inline"]
         let data = try JSONSerialization.data(withJSONObject: envelope)
 
-        await expect { try await self.processor.process(data) }.to(throwError())
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beFailure())
     }
 
-    func testMissingUrlInUseCdnThrows() async throws {
+    func testMissingUrlInUseCdnThrows() throws {
         let envelope: [String: Any] = ["action": "use_cdn"]
         let data = try JSONSerialization.data(withJSONObject: envelope)
 
-        await expect { try await self.processor.process(data) }.to(throwError())
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beFailure())
     }
 
 }
 
 private final class MockWorkflowCdnFetcher: WorkflowCdnFetcher {
 
-    private let handler: (String) async throws -> Data
+    private let handler: (String, @escaping (Result<Data, Error>) -> Void) -> Void
 
-    init(_ handler: @escaping (String) async throws -> Data) {
+    init(_ handler: @escaping (String, @escaping (Result<Data, Error>) -> Void) -> Void) {
         self.handler = handler
     }
 
-    func fetchCompiledWorkflowData(cdnUrl: String) async throws -> Data {
-        return try await handler(cdnUrl)
+    func fetchCompiledWorkflowData(cdnUrl: String, completion: @escaping (Result<Data, Error>) -> Void) {
+        self.handler(cdnUrl, completion)
     }
 
 }

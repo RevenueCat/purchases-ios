@@ -79,43 +79,52 @@ private extension GetWorkflowOperation {
         )
 
         httpClient.perform(request) { (response: VerifiedHTTPResponse<Data>.Result) in
-            switch response {
-            case .failure(let networkError):
-                self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(
-                    withCacheable: self
-                ) { callbackObject in
-                    callbackObject.completion(.failure(BackendError.networkError(networkError)))
-                }
-                completion()
+            self.handleResponse(response, completion: completion)
+        }
+    }
 
-            case .success(let verifiedResponse):
-                Task {
-                    let result: Result<WorkflowFetchResult, BackendError>
-                    do {
-                        let processed = try await self.detailProcessor.process(verifiedResponse.body)
-                        let workflow = try PublishedWorkflow.create(with: processed.workflowData)
-                        result = .success(WorkflowFetchResult(
-                            workflow: workflow,
-                            enrolledVariants: processed.enrolledVariants
-                        ))
-                    } catch WorkflowDetailProcessingError.cdnFetchFailed(let underlyingError) {
-                        result = .failure(BackendError.networkError(
-                            NetworkError.networkError(underlyingError)
-                        ))
-                    } catch {
-                        result = .failure(BackendError.networkError(
-                            NetworkError.decoding(error, verifiedResponse.body)
-                        ))
-                    }
-
-                    self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(
-                        withCacheable: self
-                    ) { callbackObject in
-                        callbackObject.completion(result)
-                    }
-                    completion()
-                }
+    func handleResponse(_ response: VerifiedHTTPResponse<Data>.Result, completion: @escaping () -> Void) {
+        switch response {
+        case .failure(let networkError):
+            self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(
+                withCacheable: self
+            ) { callbackObject in
+                callbackObject.completion(.failure(BackendError.networkError(networkError)))
             }
+            completion()
+
+        case .success(let verifiedResponse):
+            self.detailProcessor.process(verifiedResponse.body) { processingResult in
+                self.distribute(self.backendResult(from: processingResult, envelopeData: verifiedResponse.body))
+                completion()
+            }
+        }
+    }
+
+    func backendResult(
+        from processingResult: Result<WorkflowDetailProcessingResult, Error>,
+        envelopeData: Data
+    ) -> Result<WorkflowFetchResult, BackendError> {
+        switch processingResult {
+        case .success(let processed):
+            do {
+                let workflow = try PublishedWorkflow.create(with: processed.workflowData)
+                return .success(WorkflowFetchResult(workflow: workflow, enrolledVariants: processed.enrolledVariants))
+            } catch {
+                return .failure(BackendError.networkError(NetworkError.decoding(error, envelopeData)))
+            }
+        case .failure(WorkflowDetailProcessingError.cdnFetchFailed(let underlyingError)):
+            return .failure(BackendError.networkError(NetworkError.networkError(underlyingError)))
+        case .failure(let error):
+            return .failure(BackendError.networkError(NetworkError.decoding(error, envelopeData)))
+        }
+    }
+
+    func distribute(_ result: Result<WorkflowFetchResult, BackendError>) {
+        self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(
+            withCacheable: self
+        ) { callbackObject in
+            callbackObject.completion(result)
         }
     }
 
