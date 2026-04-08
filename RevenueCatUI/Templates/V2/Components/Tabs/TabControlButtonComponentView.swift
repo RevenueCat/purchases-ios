@@ -70,10 +70,9 @@ struct TabControlButtonComponentView: View {
     private func trackTabcomponentInteraction(originTabId: String, destinationTabId: String) {
         let destinationContextName = self.tabControlContext.contextName(for: destinationTabId)
 
-        _ = self.componentInteractionLogger(.init(
-            componentType: .tab,
+        _ = self.componentInteractionLogger(.paywallTabControlButtonSelection(
             componentName: self.tabControlContext.name,
-            componentValue: destinationTabId,
+            destinationTabId: destinationTabId,
             originIndex: self.tabControlContext.index(for: originTabId),
             destinationIndex: self.tabControlContext.index(for: destinationTabId),
             originContextName: self.tabControlContext.contextName(for: originTabId),

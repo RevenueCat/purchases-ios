@@ -115,8 +115,7 @@ struct ButtonComponentView: View {
     }
 
     private func trackButtonComponentInteraction() {
-        self.componentInteractionLogger(.init(
-            componentType: .button,
+        self.componentInteractionLogger(.paywallNonPurchaseButtonAction(
             componentName: self.viewModel.component.name,
             componentValue: self.viewModel.action.paywallComponentInteractionValue,
             componentURL: self.viewModel.action.paywallComponentInteractionURL

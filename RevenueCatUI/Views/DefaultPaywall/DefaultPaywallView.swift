@@ -199,11 +199,7 @@ struct DefaultPaywallView: View {
                     }
 
                     let restoreButton = Button {
-                        self.componentInteractionLogger(.init(
-                            componentType: .button,
-                            componentName: PaywallComponentInteraction.restoreButtonName,
-                            componentValue: PaywallComponentInteraction.ComponentValue.restorePurchases.rawValue
-                        ))
+                        self.componentInteractionLogger(.paywallFooterRestorePurchases())
                         Task(priority: .userInitiated) {
                             do {
                                 _ = try await handler.restorePurchases()

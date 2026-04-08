@@ -118,15 +118,13 @@ struct CarouselComponentView: View {
     ) {
         let destinationContextName = self.viewModel.pageContextName(at: destinationPageIndex)
 
-        _ = self.componentInteractionLogger(.init(
-            componentType: .carousel,
+        _ = self.componentInteractionLogger(.paywallCarouselPageChange(
             componentName: self.viewModel.componentName,
-            componentValue: String(destinationPageIndex),
-            originIndex: originPageIndex,
-            destinationIndex: destinationPageIndex,
+            destinationPageIndex: destinationPageIndex,
+            originPageIndex: originPageIndex,
+            defaultPageIndex: defaultPageIndex,
             originContextName: self.viewModel.pageContextName(at: originPageIndex),
-            destinationContextName: destinationContextName,
-            defaultIndex: defaultPageIndex
+            destinationContextName: destinationContextName
         ))
     }
 

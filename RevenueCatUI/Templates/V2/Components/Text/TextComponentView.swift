@@ -148,11 +148,9 @@ private struct NonLocalizedMarkdownText: View {
                 // Use markdown if we can successfully parse it
                 Text(markdownText)
                     .environment(\.openURL, OpenURLAction { url in
-                        _ = self.componentInteractionLogger(.init(
-                            componentType: .text,
+                        _ = self.componentInteractionLogger(.paywallTextMarkdownLinkTap(
                             componentName: self.componentName,
-                            componentValue: "navigate_to_url",
-                            componentURL: url
+                            url: url
                         ))
 #if os(watchOS)
                         self.parentOpenURL(url)

@@ -103,12 +103,7 @@ struct FooterView: View {
                     url: url,
                     titles: "Terms and conditions", "Terms",
                     onTap: {
-                        self.componentInteractionLogger(.init(
-                            componentType: .button,
-                            componentName: PaywallComponentInteraction.termsLinkName,
-                            componentValue: PaywallComponentInteraction.ComponentValue.navigateToTerms.rawValue,
-                            componentURL: url
-                        ))
+                        self.componentInteractionLogger(.paywallFooterTermsLink(url: url))
                     }
                 )
 
@@ -123,12 +118,7 @@ struct FooterView: View {
                     url: url,
                     titles: "Privacy policy", "Privacy",
                     onTap: {
-                        self.componentInteractionLogger(.init(
-                            componentType: .button,
-                            componentName: PaywallComponentInteraction.privacyLinkName,
-                            componentValue: PaywallComponentInteraction.ComponentValue.navigateToPrivacyPolicy.rawValue,
-                            componentURL: url
-                        ))
+                        self.componentInteractionLogger(.paywallFooterPrivacyLink(url: url))
                     }
                 )
             }
@@ -145,11 +135,7 @@ struct FooterView: View {
 
     private func allPlansButton(_ binding: Binding<Bool>) -> some View {
         Button {
-            self.componentInteractionLogger(.init(
-                componentType: .button,
-                componentName: PaywallComponentInteraction.allPlansButtonName,
-                componentValue: PaywallComponentInteraction.ComponentValue.toggleAllPlans.rawValue
-            ))
+            self.componentInteractionLogger(.paywallFooterToggleAllPlans())
             withAnimation(Constants.toggleAllPlansAnimation) {
                 binding.wrappedValue.toggle()
             }
@@ -231,11 +217,7 @@ private struct RestorePurchasesButton: View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
 
-            self.componentInteractionLogger(.init(
-                componentType: .button,
-                componentName: PaywallComponentInteraction.restoreButtonName,
-                componentValue: PaywallComponentInteraction.ComponentValue.restorePurchases.rawValue
-            ))
+            self.componentInteractionLogger(.paywallFooterRestorePurchases())
 
             if let interceptor = self.restoreInitiatedAction {
                 Logger.debug(Strings.restore_purchases_gate_start)
