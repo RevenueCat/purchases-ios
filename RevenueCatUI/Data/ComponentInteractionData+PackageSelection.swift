@@ -16,16 +16,47 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallEvent.ComponentInteractionData {
 
-    /// `component_value` is the destination package identifier.
-    /// - Parameter defaultPackage: Configured default package for the current scope (offering or tab).
+    /// Package-selection sheet became visible: `component_value` is `open`. `current*` reflects the root paywall selection.
+    static func paywallPackageSelectionSheetOpen(
+        sheetComponentName: String?,
+        rootSelectedPackage: Package?
+    ) -> Self {
+        return .init(
+            componentType: .packageSelectionSheet,
+            componentName: sheetComponentName,
+            componentValue: "open",
+            currentPackageIdentifier: rootSelectedPackage?.identifier,
+            currentProductIdentifier: rootSelectedPackage?.storeProduct.productIdentifier
+        )
+    }
+
+    /// Package-selection sheet dismissed: `component_value` is `close`. `current*` reflects the sheet selection before dismiss;
+    /// `resulting*` reflects the root paywall after dismiss (e.g. revert to default).
+    static func paywallPackageSelectionSheetClose(
+        sheetComponentName: String?,
+        sheetSelectedPackage: Package?,
+        resultingRootPackage: Package?
+    ) -> Self {
+        return .init(
+            componentType: .packageSelectionSheet,
+            componentName: sheetComponentName,
+            componentValue: "close",
+            currentPackageIdentifier: sheetSelectedPackage?.identifier,
+            resultingPackageIdentifier: resultingRootPackage?.identifier,
+            currentProductIdentifier: sheetSelectedPackage?.storeProduct.productIdentifier,
+            resultingProductIdentifier: resultingRootPackage?.storeProduct.productIdentifier
+        )
+    }
+
     static func paywallPackageRowSelection(
+        componentName: String? = nil,
         destination: Package,
         origin: Package?,
         defaultPackage: Package? = nil
     ) -> Self {
         return .init(
             componentType: .package,
-            componentName: PaywallComponentInteraction.packageSelectorName,
+            componentName: componentName,
             componentValue: destination.identifier,
             originPackageIdentifier: origin?.identifier,
             destinationPackageIdentifier: destination.identifier,
@@ -36,24 +67,20 @@ extension PaywallEvent.ComponentInteractionData {
         )
     }
 
-    /// `component_value` is the tier display name (same as today); includes plan identifiers when available.
-    /// - Parameter defaultPackage: Default package for the destination tier (same as the tier’s default selection).
     static func paywallTierSelection(
         tierDisplayName: String,
+        componentName: String? = nil,
         originPackage: Package?,
-        destinationPackage: Package?,
-        defaultPackage: Package? = nil
+        destinationPackage: Package?
     ) -> Self {
         return .init(
             componentType: .tab,
-            componentName: PaywallComponentInteraction.tierSelectorName,
+            componentName: componentName,
             componentValue: tierDisplayName,
             originPackageIdentifier: originPackage?.identifier,
             destinationPackageIdentifier: destinationPackage?.identifier,
-            defaultPackageIdentifier: defaultPackage?.identifier,
             originProductIdentifier: originPackage?.storeProduct.productIdentifier,
-            destinationProductIdentifier: destinationPackage?.storeProduct.productIdentifier,
-            defaultProductIdentifier: defaultPackage?.storeProduct.productIdentifier
+            destinationProductIdentifier: destinationPackage?.storeProduct.productIdentifier
         )
     }
 

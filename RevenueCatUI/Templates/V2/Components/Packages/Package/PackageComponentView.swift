@@ -54,6 +54,7 @@ struct PackageComponentView: View {
             .packageSelectorIfNeeded(
                 packageContext: self.packageContext,
                 package: package,
+                componentName: self.viewModel.componentName,
                 hasPurchaseButton: self.viewModel.hasPurchaseButton
             )
 
@@ -70,11 +71,13 @@ private extension View {
     func packageSelectorIfNeeded(
         packageContext: PackageContext,
         package: Package,
+        componentName: String?,
         hasPurchaseButton: Bool
     ) -> some View {
         modifier(PackageSelectorIfNeeded(
             packageContext: packageContext,
             package: package,
+            componentName: componentName,
             hasPurchaseButton: hasPurchaseButton
         ))
     }
@@ -91,6 +94,7 @@ private struct PackageSelectorIfNeeded: ViewModifier {
 
     let packageContext: PackageContext
     let package: Package
+    let componentName: String?
     let hasPurchaseButton: Bool
 
     func body(content: Content) -> some View {
@@ -105,6 +109,7 @@ private struct PackageSelectorIfNeeded: ViewModifier {
                 if origin?.identifier != self.package.identifier {
                     self.componentInteractionLogger(
                         .paywallPackageRowSelection(
+                            componentName: self.componentName,
                             destination: self.package,
                             origin: origin,
                             defaultPackage: self.planSelectionDefaultPackage

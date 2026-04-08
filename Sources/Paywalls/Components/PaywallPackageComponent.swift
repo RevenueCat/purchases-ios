@@ -24,18 +24,21 @@ public extension PaywallComponent {
         public let isSelectedByDefault: Bool
         @_spi(Internal) public let applePromoOfferProductCode: String?
         public let stack: PaywallComponent.StackComponent
+        public let name: String?
 
         public init(
             packageID: String,
             isSelectedByDefault: Bool,
             applePromoOfferProductCode: String?,
-            stack: PaywallComponent.StackComponent
+            stack: PaywallComponent.StackComponent,
+            name: String? = nil
         ) {
             self.type = .package
             self.packageID = packageID
             self.isSelectedByDefault = isSelectedByDefault
             self.applePromoOfferProductCode = applePromoOfferProductCode
             self.stack = stack
+            self.name = name
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -44,6 +47,7 @@ public extension PaywallComponent {
             hasher.combine(isSelectedByDefault)
             hasher.combine(applePromoOfferProductCode)
             hasher.combine(stack)
+            hasher.combine(name)
         }
 
         public static func == (lhs: PackageComponent, rhs: PackageComponent) -> Bool {
@@ -51,7 +55,8 @@ public extension PaywallComponent {
                    lhs.packageID == rhs.packageID &&
                    lhs.isSelectedByDefault == rhs.isSelectedByDefault &&
                    lhs.applePromoOfferProductCode == rhs.applePromoOfferProductCode &&
-                   lhs.stack == rhs.stack
+                   lhs.stack == rhs.stack &&
+                   lhs.name == rhs.name
         }
     }
 
@@ -65,6 +70,7 @@ extension PaywallComponent.PackageComponent {
         case isSelectedByDefault
         case applePromoOfferProductCode
         case stack
+        case name
     }
 
 }

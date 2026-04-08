@@ -335,7 +335,7 @@ func checkExitOfferData(_ data: PaywallEvent.ExitOfferData) {
 }
 
 func checkComponentInteractionData(_ data: PaywallEvent.ComponentInteractionData) {
-    let componentType: ControlType = data.componentType
+    let componentType: ComponentInteractionType = data.componentType
     let componentName: String? = data.componentName
     let componentValue: String = data.componentValue
     let componentURL: URL? = data.componentURL
@@ -350,6 +350,10 @@ func checkComponentInteractionData(_ data: PaywallEvent.ComponentInteractionData
     let originProductIdentifier: String? = data.originProductIdentifier
     let destinationProductIdentifier: String? = data.destinationProductIdentifier
     let defaultProductIdentifier: String? = data.defaultProductIdentifier
+    let currentPackageIdentifier: String? = data.currentPackageIdentifier
+    let resultingPackageIdentifier: String? = data.resultingPackageIdentifier
+    let currentProductIdentifier: String? = data.currentProductIdentifier
+    let resultingProductIdentifier: String? = data.resultingProductIdentifier
 
     let _: PaywallEvent.ComponentInteractionData = PaywallEvent.ComponentInteractionData(
         componentType: componentType,
@@ -366,6 +370,10 @@ func checkComponentInteractionData(_ data: PaywallEvent.ComponentInteractionData
         defaultPackageIdentifier: defaultPackageIdentifier,
         originProductIdentifier: originProductIdentifier,
         destinationProductIdentifier: destinationProductIdentifier,
-        defaultProductIdentifier: defaultProductIdentifier
+        defaultProductIdentifier: defaultProductIdentifier,
+        currentPackageIdentifier: currentPackageIdentifier,
+        resultingPackageIdentifier: resultingPackageIdentifier,
+        currentProductIdentifier: currentProductIdentifier,
+        resultingProductIdentifier: resultingProductIdentifier
     )
 }

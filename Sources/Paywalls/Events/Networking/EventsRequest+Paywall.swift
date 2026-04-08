@@ -36,7 +36,7 @@ extension FeatureEventsRequest {
         var productId: String?
         var errorCode: Int?
         var errorMessage: String?
-        var componentType: ControlType?
+        var componentType: ComponentInteractionType?
         var componentName: String?
         var componentValue: String?
         var componentURL: URL?
@@ -51,6 +51,10 @@ extension FeatureEventsRequest {
         var originProductIdentifier: String?
         var destinationProductIdentifier: String?
         var defaultProductIdentifier: String?
+        var currentPackageIdentifier: String?
+        var resultingPackageIdentifier: String?
+        var currentProductIdentifier: String?
+        var resultingProductIdentifier: String?
 
     }
 
@@ -118,7 +122,11 @@ extension FeatureEventsRequest.PaywallEvent {
                 defaultPackageIdentifier: componentInteractionData?.defaultPackageIdentifier,
                 originProductIdentifier: componentInteractionData?.originProductIdentifier,
                 destinationProductIdentifier: componentInteractionData?.destinationProductIdentifier,
-                defaultProductIdentifier: componentInteractionData?.defaultProductIdentifier
+                defaultProductIdentifier: componentInteractionData?.defaultProductIdentifier,
+                currentPackageIdentifier: componentInteractionData?.currentPackageIdentifier,
+                resultingPackageIdentifier: componentInteractionData?.resultingPackageIdentifier,
+                currentProductIdentifier: componentInteractionData?.currentProductIdentifier,
+                resultingProductIdentifier: componentInteractionData?.resultingProductIdentifier
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -190,6 +198,10 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case originProductIdentifier = "originProductId"
         case destinationProductIdentifier = "destinationProductId"
         case defaultProductIdentifier = "defaultProductId"
+        case currentPackageIdentifier = "currentPackageId"
+        case resultingPackageIdentifier = "resultingPackageId"
+        case currentProductIdentifier = "currentProductId"
+        case resultingProductIdentifier = "resultingProductId"
 
     }
 

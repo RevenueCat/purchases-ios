@@ -23,8 +23,8 @@ public enum ExitOfferType: String, Codable, Sendable {
 
 }
 
-/// The type for the paywall control interactions.
-public enum ControlType: String, Codable, Sendable, Hashable {
+/// The type for the paywall component interactions.
+public enum ComponentInteractionType: String, Codable, Sendable, Hashable {
 
     /// Tab control button selection.
     /// For precise navigation analytics, prefer the explicit origin / destination fields when present.
@@ -40,6 +40,8 @@ public enum ControlType: String, Codable, Sendable, Hashable {
     case text
     /// User selected a subscription package / plan (for example, a package row tap).
     case package
+    /// Package-selection bottom sheet lifecycle (`component_value` is `open` / `close`), not a package row tap.
+    case packageSelectionSheet = "package_selection_sheet"
 
 }
 
@@ -302,7 +304,7 @@ extension PaywallEvent {
     public struct ComponentInteractionData {
 
         // swiftlint:disable missing_docs
-        public var componentType: ControlType
+        public var componentType: ComponentInteractionType
         public var componentName: String?
         /// Compatibility field describing the interaction.
         /// For navigable controls, prefer the explicit origin / destination fields when they are present.
@@ -331,9 +333,17 @@ extension PaywallEvent {
         public var destinationProductIdentifier: String?
         /// Store product identifier for the configured default plan in the current scope, when applicable.
         public var defaultProductIdentifier: String?
+        /// Package identifier for the paywall package-selection sheet lifecycle (`component_value` is `open` / `close`).
+        public var currentPackageIdentifier: String?
+        /// Root paywall package identifier after the package-selection sheet dismisses (e.g. after revert to default).
+        public var resultingPackageIdentifier: String?
+        /// Store product identifier paired with ``currentPackageIdentifier`` for sheet lifecycle events.
+        public var currentProductIdentifier: String?
+        /// Store product identifier paired with ``resultingPackageIdentifier`` for sheet lifecycle events.
+        public var resultingProductIdentifier: String?
 
         public init(
-            componentType: ControlType,
+            componentType: ComponentInteractionType,
             componentName: String? = nil,
             componentValue: String,
             componentURL: URL? = nil,
@@ -347,7 +357,11 @@ extension PaywallEvent {
             defaultPackageIdentifier: String? = nil,
             originProductIdentifier: String? = nil,
             destinationProductIdentifier: String? = nil,
-            defaultProductIdentifier: String? = nil
+            defaultProductIdentifier: String? = nil,
+            currentPackageIdentifier: String? = nil,
+            resultingPackageIdentifier: String? = nil,
+            currentProductIdentifier: String? = nil,
+            resultingProductIdentifier: String? = nil
         ) {
             self.componentType = componentType
             self.componentName = componentName
@@ -364,6 +378,10 @@ extension PaywallEvent {
             self.originProductIdentifier = originProductIdentifier
             self.destinationProductIdentifier = destinationProductIdentifier
             self.defaultProductIdentifier = defaultProductIdentifier
+            self.currentPackageIdentifier = currentPackageIdentifier
+            self.resultingPackageIdentifier = resultingPackageIdentifier
+            self.currentProductIdentifier = currentProductIdentifier
+            self.resultingProductIdentifier = resultingProductIdentifier
         }
         // swiftlint:enable missing_docs
 

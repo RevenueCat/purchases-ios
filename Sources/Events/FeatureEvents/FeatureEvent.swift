@@ -134,6 +134,18 @@ private extension PaywallEvent {
             if let defaultProductIdentifier = interaction.defaultProductIdentifier {
                 result["default_product_id"] = defaultProductIdentifier
             }
+            if let currentPackageIdentifier = interaction.currentPackageIdentifier {
+                result["current_package_id"] = currentPackageIdentifier
+            }
+            if let resultingPackageIdentifier = interaction.resultingPackageIdentifier {
+                result["resulting_package_id"] = resultingPackageIdentifier
+            }
+            if let currentProductIdentifier = interaction.currentProductIdentifier {
+                result["current_product_id"] = currentProductIdentifier
+            }
+            if let resultingProductIdentifier = interaction.resultingProductIdentifier {
+                result["resulting_product_id"] = resultingProductIdentifier
+            }
         }
 
         return result

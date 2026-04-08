@@ -183,7 +183,7 @@ class PaywallEventTrackerTests: TestCase {
 
         expect(tracker.trackComponentInteraction(.init(
             componentType: .package,
-            componentName: PaywallComponentInteraction.packageSelectorName,
+            componentName: "annual_package",
             componentValue: "annual",
             originPackageIdentifier: "monthly",
             destinationPackageIdentifier: "annual",
@@ -212,6 +212,52 @@ class PaywallEventTrackerTests: TestCase {
         expect(interaction.originProductIdentifier) == "com.monthly"
         expect(interaction.destinationProductIdentifier) == "com.annual"
         expect(interaction.defaultProductIdentifier) == "com.annual"
+    }
+
+    func testTrackComponentInteraction_IncludesPackageSelectionSheetLifecycleMetadataWhenProvided() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+
+        tracker.trackPaywallImpression(Self.eventData)
+
+        let sheetAnalyticsName = "all_plans_sheet"
+
+        expect(tracker.trackComponentInteraction(
+            .paywallPackageSelectionSheetOpen(
+                sheetComponentName: sheetAnalyticsName,
+                rootSelectedPackage: TestData.weeklyPackage
+            )
+        )) == true
+
+        expect(tracker.trackComponentInteraction(
+            .paywallPackageSelectionSheetClose(
+                sheetComponentName: sheetAnalyticsName,
+                sheetSelectedPackage: TestData.monthlyPackage,
+                resultingRootPackage: TestData.weeklyPackage
+            )
+        )) == true
+
+        await expect(trackedEvents.value).toEventually(haveCount(3), timeout: .seconds(2))
+
+        let sheetEvents = trackedEvents.value.compactMap { event -> PaywallEvent.ComponentInteractionData? in
+            guard case let .componentInteraction(_, _, interaction) = event else { return nil }
+            guard interaction.componentType == .packageSelectionSheet else { return nil }
+            return interaction
+        }
+        expect(sheetEvents).to(haveCount(2))
+
+        let openInteraction = try XCTUnwrap(sheetEvents.first { $0.componentValue == "open" })
+        expect(openInteraction.componentName) == sheetAnalyticsName
+        expect(openInteraction.currentPackageIdentifier) == TestData.weeklyPackage.identifier
+        expect(openInteraction.currentProductIdentifier) == TestData.weeklyPackage.storeProduct.productIdentifier
+        expect(openInteraction.resultingPackageIdentifier).to(beNil())
+        expect(openInteraction.resultingProductIdentifier).to(beNil())
+
+        let closeInteraction = try XCTUnwrap(sheetEvents.first { $0.componentValue == "close" })
+        expect(closeInteraction.componentName) == sheetAnalyticsName
+        expect(closeInteraction.currentPackageIdentifier) == TestData.monthlyPackage.identifier
+        expect(closeInteraction.currentProductIdentifier) == TestData.monthlyPackage.storeProduct.productIdentifier
+        expect(closeInteraction.resultingPackageIdentifier) == TestData.weeklyPackage.identifier
+        expect(closeInteraction.resultingProductIdentifier) == TestData.weeklyPackage.storeProduct.productIdentifier
     }
 
     func testCreatePurchaseInitiatedEventAddsPurchaseInfoFromSession() throws {

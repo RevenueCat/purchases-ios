@@ -248,7 +248,7 @@ class EventsManagerTests: TestCase {
         let data = PaywallEvent.Data.random()
         let interaction = PaywallEvent.ComponentInteractionData(
             componentType: .package,
-            componentName: "package_selector",
+            componentName: "annual_package",
             componentValue: "annual",
             originPackageIdentifier: "monthly",
             destinationPackageIdentifier: "annual",
@@ -267,6 +267,30 @@ class EventsManagerTests: TestCase {
         expect(map["origin_product_id"] as? String) == "com.monthly"
         expect(map["destination_product_id"] as? String) == "com.annual"
         expect(map["default_product_id"] as? String) == "com.annual"
+    }
+
+    func testPaywallComponentInteractionToMap_IncludesPackageSelectionSheetLifecycleFieldsWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .packageSelectionSheet,
+            componentName: "all_plans_sheet",
+            componentValue: "close",
+            currentPackageIdentifier: "monthly_standard",
+            resultingPackageIdentifier: "annual_premium",
+            currentProductIdentifier: "com.example.sub.monthly",
+            resultingProductIdentifier: "com.example.sub.annual"
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "package_selection_sheet"
+        expect(map["component_name"] as? String) == "all_plans_sheet"
+        expect(map["component_value"] as? String) == "close"
+        expect(map["current_package_id"] as? String) == "monthly_standard"
+        expect(map["current_product_id"] as? String) == "com.example.sub.monthly"
+        expect(map["resulting_package_id"] as? String) == "annual_premium"
+        expect(map["resulting_product_id"] as? String) == "com.example.sub.annual"
     }
 
     func testPaywallComponentInteractionToMap_TextMarkdownLinkUsesTextComponentType() {

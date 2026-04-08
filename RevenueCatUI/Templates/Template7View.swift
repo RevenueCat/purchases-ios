@@ -224,8 +224,7 @@ struct Template7View: TemplateViewType {
                                 .paywallTierSelection(
                                     tierDisplayName: self.tierNames[tier] ?? "",
                                     originPackage: originPackage,
-                                    destinationPackage: destinationPackage,
-                                    defaultPackage: destinationPackage
+                                    destinationPackage: destinationPackage
                                 )
                             )
                         }
