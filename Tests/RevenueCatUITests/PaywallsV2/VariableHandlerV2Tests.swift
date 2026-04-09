@@ -125,6 +125,49 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("$"))
     }
 
+    func testProductCurrencySymbolUsesDisplayedPriceWhenFormatterLocaleDoesNotMatchCurrency() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 6.99,
+                currencyCode: "USD",
+                localizedPriceString: "$6.99",
+                productIdentifier: "com.revenuecat.product.currency_symbol_regression",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "ro_RO")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$"))
+    }
+
+    func testProductCurrencySymbolSupportsMultiCharacterDisplayedSymbols() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: TestData.annualPackage60Taiwan,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("US$"))
+    }
+
     func testProductPeriodly() {
         let result = variableHandler.processVariables(
             in: "{{ product.periodly }}",

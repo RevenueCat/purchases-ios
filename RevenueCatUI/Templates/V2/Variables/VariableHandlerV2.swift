@@ -557,11 +557,13 @@ extension VariablesV2 {
     }
 
     func productCurrencySymbol(package: Package) -> String {
-        // Use the product's priceFormatter to get the currency symbol.
-        // Returns empty string if unavailable - we intentionally don't fallback to
-        // locale.currencySymbol because that returns the user's locale currency symbol
-        // (e.g., "¤" for Romanian) instead of the product's currency symbol (e.g., "$" for USD).
-        return package.storeProduct.priceFormatter?.currencySymbol ?? ""
+        // Derive the currency token from the displayed price string rather than
+        // `NumberFormatter.currencySymbol`, because formatter metadata can reflect
+        // the formatter locale instead of the product's displayed currency token.
+        return package.storeProduct.localizedPriceString.currencySymbolFromPriceString
+            ?? package.storeProduct.priceFormatter?.currencySymbol
+            ?? package.storeProduct.currencyCode
+            ?? ""
     }
 
     func productPrice(package: Package, showZeroDecimalPlacePrices: Bool) -> String {
@@ -1087,6 +1089,22 @@ private extension VariablesV2 {
             price,
             showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         ) ?? fallback
+    }
+
+}
+
+private extension String {
+
+    var currencySymbolFromPriceString: String? {
+        let ignoredScalars = CharacterSet.decimalDigits
+            .union(.whitespacesAndNewlines)
+            .union(CharacterSet(charactersIn: ".,'’٬٫-−+()[]"))
+
+        let symbolScalars = self.unicodeScalars.filter { !ignoredScalars.contains($0) }
+        let symbol = String(String.UnicodeScalarView(symbolScalars))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return symbol.isEmpty ? nil : symbol
     }
 
 }
