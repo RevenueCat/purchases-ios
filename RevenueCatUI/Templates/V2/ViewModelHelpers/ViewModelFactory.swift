@@ -43,14 +43,41 @@ struct ViewModelFactory {
     ) throws -> RootViewModel {
         // Compute global flag: if ANY component has unsupported conditions, discard all rule overrides
         self.discardRules = componentsConfig.stack.containsUnsupportedConditions() ||
+            componentsConfig.header?.stack.containsUnsupportedConditions() == true ||
             componentsConfig.stickyFooter?.stack.containsUnsupportedConditions() == true
 
-        let firstItemIgnoresSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
+        let headerFirstItemSafeAreaInfo: RootViewModel.FirstItemShouldIgnoreSafeAreaInfo?
+        if let header = componentsConfig.header,
+           !header.stack.components.isEmpty {
+            headerFirstItemSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(header.stack))
+        } else {
+            headerFirstItemSafeAreaInfo = nil
+        }
+        let rootFirstItemSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
+
+        let headerViewModel = try componentsConfig.header.flatMap {
+            let stackViewModel = try toStackViewModel(
+                component: $0.stack,
+                packageValidator: self.packageValidator,
+                firstItemIgnoresSafeAreaInfo: headerFirstItemSafeAreaInfo,
+                purchaseButtonCollector: nil,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering,
+                colorScheme: colorScheme
+            )
+
+            return HeaderComponentViewModel(
+                component: $0,
+                stackViewModel: stackViewModel,
+                firstItemIgnoresSafeArea: headerFirstItemSafeAreaInfo != nil
+            )
+        }
 
         let rootStackViewModel = try toStackViewModel(
             component: componentsConfig.stack,
             packageValidator: self.packageValidator,
-            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+            firstItemIgnoresSafeAreaInfo: rootFirstItemSafeAreaInfo,
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
@@ -77,9 +104,10 @@ struct ViewModelFactory {
         }
 
         return RootViewModel(
+            headerViewModel: headerViewModel,
             stackViewModel: rootStackViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
-            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+            firstItemIgnoresSafeAreaInfo: rootFirstItemSafeAreaInfo,
             localizationProvider: localizationProvider
         )
     }
