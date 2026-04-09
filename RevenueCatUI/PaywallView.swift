@@ -508,6 +508,9 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.paywallSource)
     private var paywallSource
 
+    @State
+    private var paywallSessionID: PaywallEvent.SessionID = .init()
+
     init(
         offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,
@@ -586,7 +589,10 @@ struct LoadedOfferingPaywallView: View {
         )
         let view = paywallView(withConfig: configuration)
             .environmentObject(self.introEligibility)
-            .environment(\.componentInteractionLogger, PaywallEventTracker.shared.componentInteractionLogger)
+            .environment(
+                \.componentInteractionLogger,
+                PaywallEventTracker.shared.componentInteractionLogger(sessionID: self.paywallSessionID)
+            )
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
@@ -638,7 +644,7 @@ struct LoadedOfferingPaywallView: View {
         return .init(
             offering: self.offering,
             paywall: self.paywall,
-            sessionID: .init(),
+            sessionID: self.paywallSessionID,
             displayMode: self.mode,
             locale: .current,
             darkMode: self.colorScheme == .dark,

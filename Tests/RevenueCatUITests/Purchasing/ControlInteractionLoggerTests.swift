@@ -56,11 +56,13 @@ class ComponentInteractionLoggerTests: TestCase {
             componentURL: URL(string: "https://example.com/docs")
         )
 
-        expect(tracker.componentInteractionLogger(interactionData)) == false
+        let logger = tracker.componentInteractionLogger(sessionID: eventData.sessionIdentifier)
+
+        expect(logger(interactionData)) == false
 
         tracker.trackPaywallImpression(eventData)
 
-        expect(tracker.componentInteractionLogger(interactionData)) == true
+        expect(logger(interactionData)) == true
 
         await Task(priority: .low) {
             await Task.yield()

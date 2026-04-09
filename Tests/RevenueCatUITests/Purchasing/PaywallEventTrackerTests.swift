@@ -24,28 +24,66 @@ class PaywallEventTrackerTests: TestCase {
 
     func testTrackPaywallCloseDeduplicatesWithinSession() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
 
-        expect(tracker.trackPaywallClose()) == false
+        expect(tracker.trackPaywallClose(sessionID: PaywallEvent.SessionID())) == false
 
         tracker.trackPaywallImpression(Self.eventData)
 
-        expect(tracker.trackPaywallClose()) == true
-        expect(tracker.trackPaywallClose()) == false
+        expect(tracker.trackPaywallClose(sessionID: sessionID)) == true
+        expect(tracker.trackPaywallClose(sessionID: sessionID)) == false
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
         let closeEvent = try XCTUnwrap(trackedEvents.value.last)
         if case .close = closeEvent {
-            expect(closeEvent.data.sessionIdentifier) == Self.eventData.sessionIdentifier
+            expect(closeEvent.data.sessionIdentifier) == sessionID
         } else {
             fail("Expected close event")
         }
     }
 
-    func testTrackPaywallImpressionAutoTracksCloseForPreviousSession() async throws {
+    func testTrackPaywallImpressionDoesNotAutoCloseAcrossDifferentSessions() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
         let firstEventData = Self.makeEventData()
         let secondEventData = Self.makeEventData()
+
+        tracker.trackPaywallImpression(firstEventData)
+        tracker.trackPaywallImpression(secondEventData)
+
+        await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
+
+        let closeCount = trackedEvents.value.filter { if case .close = $0 { return true }; return false }.count
+        expect(closeCount) == 0
+
+        let impressionSessions = Set(trackedEvents.value.compactMap { event -> PaywallEvent.SessionID? in
+            if case .impression = event { return event.data.sessionIdentifier }
+            return nil
+        })
+        expect(impressionSessions) == Set([firstEventData.sessionIdentifier, secondEventData.sessionIdentifier])
+    }
+
+    func testTrackPaywallImpressionAutoClosesWhenSameSessionReceivesSecondImpression() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let sharedSessionID = PaywallEvent.SessionID()
+        let firstEventData = PaywallEvent.Data(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: sharedSessionID,
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false,
+            source: nil
+        )
+        let secondEventData = PaywallEvent.Data(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: sharedSessionID,
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false,
+            source: nil
+        )
 
         tracker.trackPaywallImpression(firstEventData)
         tracker.trackPaywallImpression(secondEventData)
@@ -56,38 +94,28 @@ class PaywallEventTrackerTests: TestCase {
             if case .close = $0 { return true }
             return false
         }))
-        let secondImpression = try XCTUnwrap(trackedEvents.value.first(where: {
-            if case .impression = $0 {
-                return $0.data.sessionIdentifier == secondEventData.sessionIdentifier
-            }
-            return false
-        }))
-
         if case .close = closeEvent {
-            expect(closeEvent.data.sessionIdentifier) == firstEventData.sessionIdentifier
+            expect(closeEvent.data.sessionIdentifier) == sharedSessionID
         } else {
-            fail("Expected a close event for the previous session")
-        }
-
-        if case .impression = secondImpression {
-            expect(secondImpression.data.sessionIdentifier) == secondEventData.sessionIdentifier
-        } else {
-            fail("Expected an impression event for the next session")
+            fail("Expected a close event before the second impression")
         }
     }
 
     func testTrackComponentInteractionSendsExpectedPaywallEvent() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
 
         expect(tracker.trackComponentInteraction(
-            .init(componentType: .tab, componentName: nil, componentValue: "a"))
-        ) == false
+            .init(componentType: .tab, componentName: nil, componentValue: "a"),
+            sessionID: sessionID
+        )) == false
 
         tracker.trackPaywallImpression(Self.eventData)
 
         expect(tracker.trackComponentInteraction(
-            .init(componentType: .tab, componentName: "n", componentValue: "id1"))
-        ) == true
+            .init(componentType: .tab, componentName: "n", componentValue: "id1"),
+            sessionID: sessionID
+        )) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -111,6 +139,7 @@ class PaywallEventTrackerTests: TestCase {
         let (tracker, trackedEvents) = Self.makeTracker()
 
         let linkURL = try XCTUnwrap(URL(string: "https://example.com/doc"))
+        let sessionID = Self.eventData.sessionIdentifier
         tracker.trackPaywallImpression(Self.eventData)
 
         expect(tracker.trackComponentInteraction(.init(
@@ -118,7 +147,7 @@ class PaywallEventTrackerTests: TestCase {
             componentName: nil,
             componentValue: "navigate_to_url",
             componentURL: linkURL
-        ))) == true
+        ), sessionID: sessionID)) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -140,6 +169,7 @@ class PaywallEventTrackerTests: TestCase {
 
     func testTrackComponentInteraction_StoresNavigationMetadataWhenProvided() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
 
         tracker.trackPaywallImpression(Self.eventData)
 
@@ -152,7 +182,7 @@ class PaywallEventTrackerTests: TestCase {
             originContextName: "monthly",
             destinationContextName: "annual",
             defaultIndex: 0
-        ))) == true
+        ), sessionID: sessionID)) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -178,6 +208,7 @@ class PaywallEventTrackerTests: TestCase {
 
     func testTrackComponentInteraction_IncludesPlanSelectionMetadataWhenProvided() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
 
         tracker.trackPaywallImpression(Self.eventData)
 
@@ -191,7 +222,7 @@ class PaywallEventTrackerTests: TestCase {
             originProductIdentifier: "com.monthly",
             destinationProductIdentifier: "com.annual",
             defaultProductIdentifier: "com.annual"
-        ))) == true
+        ), sessionID: sessionID)) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -216,6 +247,7 @@ class PaywallEventTrackerTests: TestCase {
 
     func testTrackComponentInteraction_IncludesPackageSelectionSheetLifecycleMetadataWhenProvided() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
 
         tracker.trackPaywallImpression(Self.eventData)
 
@@ -225,7 +257,8 @@ class PaywallEventTrackerTests: TestCase {
             .paywallPackageSelectionSheetOpen(
                 sheetComponentName: sheetAnalyticsName,
                 rootSelectedPackage: TestData.weeklyPackage
-            )
+            ),
+            sessionID: sessionID
         )) == true
 
         expect(tracker.trackComponentInteraction(
@@ -233,7 +266,8 @@ class PaywallEventTrackerTests: TestCase {
                 sheetComponentName: sheetAnalyticsName,
                 sheetSelectedPackage: TestData.monthlyPackage,
                 resultingRootPackage: TestData.weeklyPackage
-            )
+            ),
+            sessionID: sessionID
         )) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(3), timeout: .seconds(2))
@@ -262,12 +296,16 @@ class PaywallEventTrackerTests: TestCase {
 
     func testCreatePurchaseInitiatedEventAddsPurchaseInfoFromSession() throws {
         let (tracker, _) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
 
-        expect(tracker.createPurchaseInitiatedEvent(package: TestData.packageWithIntroOffer)).to(beNil())
+        expect(tracker.createPurchaseInitiatedEvent(package: TestData.packageWithIntroOffer, sessionID: sessionID))
+            .to(beNil())
 
         tracker.trackPaywallImpression(Self.eventData)
 
-        let event = try XCTUnwrap(tracker.createPurchaseInitiatedEvent(package: TestData.packageWithIntroOffer))
+        let event = try XCTUnwrap(
+            tracker.createPurchaseInitiatedEvent(package: TestData.packageWithIntroOffer, sessionID: sessionID)
+        )
 
         if case .purchaseInitiated = event {
             expect(event.data.packageId) == TestData.packageWithIntroOffer.identifier
@@ -280,13 +318,22 @@ class PaywallEventTrackerTests: TestCase {
 
     func testTrackPurchaseErrorAddsPurchaseInfoFromSession() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
         let error = NSError(domain: "test", code: 7, userInfo: [NSLocalizedDescriptionKey: "broken"])
 
-        expect(tracker.trackPurchaseError(package: TestData.packageWithIntroOffer, error: error)) == false
+        expect(tracker.trackPurchaseError(
+            package: TestData.packageWithIntroOffer,
+            error: error,
+            sessionID: sessionID
+        )) == false
 
         tracker.trackPaywallImpression(Self.eventData)
 
-        expect(tracker.trackPurchaseError(package: TestData.packageWithIntroOffer, error: error)) == true
+        expect(tracker.trackPurchaseError(
+            package: TestData.packageWithIntroOffer,
+            error: error,
+            sessionID: sessionID
+        )) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -307,12 +354,13 @@ class PaywallEventTrackerTests: TestCase {
 
     func testTrackCancelledPurchaseAddsPurchaseInfoFromSession() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
 
-        expect(tracker.trackCancelledPurchase(package: TestData.packageWithIntroOffer)) == false
+        expect(tracker.trackCancelledPurchase(package: TestData.packageWithIntroOffer, sessionID: sessionID)) == false
 
         tracker.trackPaywallImpression(Self.eventData)
 
-        expect(tracker.trackCancelledPurchase(package: TestData.packageWithIntroOffer)) == true
+        expect(tracker.trackCancelledPurchase(package: TestData.packageWithIntroOffer, sessionID: sessionID)) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -333,28 +381,22 @@ class PaywallEventTrackerTests: TestCase {
 
     func testConcurrentCloseAndComponentInteractionAreThreadSafe() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
         tracker.trackPaywallImpression(Self.eventData)
 
-        let closeSuccessCount = Atomic<Int>(0)
         let interactionSuccessCount = Atomic<Int>(0)
         let concurrentCalls = 40
 
         await withTaskGroup(of: Void.self) { group in
             for index in 0..<concurrentCalls {
                 group.addTask {
-                    let closeTracked = tracker.trackPaywallClose()
-                    if closeTracked {
-                        closeSuccessCount.modify { $0 += 1 }
-                    }
-                }
-
-                group.addTask {
                     let interactionTracked = tracker.trackComponentInteraction(
                         .init(
                             componentType: .tab,
                             componentName: "concurrent_tab",
                             componentValue: "index_\(index)"
-                        )
+                        ),
+                        sessionID: sessionID
                     )
                     if interactionTracked {
                         interactionSuccessCount.modify { $0 += 1 }
@@ -363,16 +405,45 @@ class PaywallEventTrackerTests: TestCase {
             }
         }
 
-        expect(closeSuccessCount.value) == 1
         expect(interactionSuccessCount.value) == concurrentCalls
+        expect(tracker.trackPaywallClose(sessionID: sessionID)) == true
 
-        await expect(trackedEvents.value).toEventually(haveCount(1 + 1 + concurrentCalls), timeout: .seconds(2))
+        await expect(trackedEvents.value).toEventually(haveCount(1 + concurrentCalls + 1), timeout: .seconds(2))
 
         let closeEvents = trackedEvents.value.filter { event in
             if case .close = event { return true }
             return false
         }
         expect(closeEvents).to(haveCount(1))
+    }
+
+    func testConcurrentSessionsDoNotCrossContaminate() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let dataA = Self.makeEventData()
+        let dataB = Self.makeEventData()
+        tracker.trackPaywallImpression(dataA)
+        tracker.trackPaywallImpression(dataB)
+
+        expect(tracker.trackComponentInteraction(
+            .init(componentType: .tab, componentName: "n", componentValue: "for_a"),
+            sessionID: dataA.sessionIdentifier
+        )) == true
+        expect(tracker.trackComponentInteraction(
+            .init(componentType: .tab, componentName: "n", componentValue: "for_b"),
+            sessionID: dataB.sessionIdentifier
+        )) == true
+
+        _ = tracker.trackPaywallClose(sessionID: dataA.sessionIdentifier)
+        expect(tracker.trackComponentInteraction(
+            .init(componentType: .tab, componentName: "n", componentValue: "after_close_a"),
+            sessionID: dataA.sessionIdentifier
+        )) == false
+        expect(tracker.trackComponentInteraction(
+            .init(componentType: .tab, componentName: "n", componentValue: "still_b"),
+            sessionID: dataB.sessionIdentifier
+        )) == true
+
+        await expect(trackedEvents.value).toEventually(haveCount(6), timeout: .seconds(2))
     }
 
 }
