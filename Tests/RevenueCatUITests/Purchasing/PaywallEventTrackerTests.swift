@@ -331,6 +331,50 @@ class PaywallEventTrackerTests: TestCase {
         }
     }
 
+    func testConcurrentCloseAndComponentInteractionAreThreadSafe() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        tracker.trackPaywallImpression(Self.eventData)
+
+        let closeSuccessCount = Atomic<Int>(0)
+        let interactionSuccessCount = Atomic<Int>(0)
+        let concurrentCalls = 40
+
+        await withTaskGroup(of: Void.self) { group in
+            for index in 0..<concurrentCalls {
+                group.addTask {
+                    let closeTracked = tracker.trackPaywallClose()
+                    if closeTracked {
+                        closeSuccessCount.modify { $0 += 1 }
+                    }
+                }
+
+                group.addTask {
+                    let interactionTracked = tracker.trackComponentInteraction(
+                        .init(
+                            componentType: .tab,
+                            componentName: "concurrent_tab",
+                            componentValue: "index_\(index)"
+                        )
+                    )
+                    if interactionTracked {
+                        interactionSuccessCount.modify { $0 += 1 }
+                    }
+                }
+            }
+        }
+
+        expect(closeSuccessCount.value) == 1
+        expect(interactionSuccessCount.value) == concurrentCalls
+
+        await expect(trackedEvents.value).toEventually(haveCount(1 + 1 + concurrentCalls), timeout: .seconds(2))
+
+        let closeEvents = trackedEvents.value.filter { event in
+            if case .close = event { return true }
+            return false
+        }
+        expect(closeEvents).to(haveCount(1))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

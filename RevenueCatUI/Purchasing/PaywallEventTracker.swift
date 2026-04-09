@@ -17,7 +17,7 @@ import Foundation
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class PaywallEventTracker {
+final class PaywallEventTracker: @unchecked Sendable {
     typealias EventDispatcher = @Sendable (@Sendable @escaping () async -> Void) -> Void
 
     static let shared = PaywallEventTracker()
@@ -31,8 +31,8 @@ final class PaywallEventTracker {
     private let purchases: PaywallPurchasesType
     private let eventDispatcher: EventDispatcher
 
-    private var eventData: PaywallEvent.Data?
-    private var hasTrackedClose: Bool = false
+    private let stateLock = NSLock()
+    private var state = State()
 
     init(
         purchases: PaywallPurchasesType = Purchases.shared,
@@ -46,36 +46,29 @@ final class PaywallEventTracker {
         // Auto-track close for previous session if it wasn't tracked yet (within same app session).
         // This handles edge cases where onDisappear or deinit didn't fire (SwiftUI bugs, lifecycle issues).
         // Note: Does not recover close events across app restarts - those are permanently lost.
-        if self.eventData != nil && !self.hasTrackedClose {
-            self.trackPaywallClose()
-        }
+        self.stateLock.perform {
+            if self.state.eventData != nil && !self.state.hasTrackedClose {
+                _ = self.trackPaywallCloseWhileLocked()
+            }
 
-        self.eventData = eventData
-        self.hasTrackedClose = false
-        self.track(.impression(.init(), eventData))
+            self.state.eventData = eventData
+            self.state.hasTrackedClose = false
+            self.track(.impression(.init(), eventData))
+        }
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallClose() -> Bool {
-        guard let data = self.eventData, !self.hasTrackedClose else {
-            if self.eventData == nil {
-                Logger.debug("Attempted to track paywall close but eventData is nil")
-            } else if self.hasTrackedClose {
-                Logger.debug("Attempted to track paywall close but close was already tracked")
-            }
-            return false
+        return self.stateLock.perform {
+            return self.trackPaywallCloseWhileLocked()
         }
-
-        self.track(.close(.init(), data))
-        self.hasTrackedClose = true
-        return true
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackCancelledPurchase(package: Package) -> Bool {
-        guard let data = self.eventData else {
+        guard let data = self.stateLock.perform({ self.state.eventData }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
@@ -93,7 +86,7 @@ final class PaywallEventTracker {
     /// Creates a purchase-initiated paywall event for the given package.
     /// - Returns: the event, or `nil` if event data is unavailable.
     func createPurchaseInitiatedEvent(package: Package) -> PaywallEvent? {
-        guard let data = self.eventData else {
+        guard let data = self.stateLock.perform({ self.state.eventData }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return nil
         }
@@ -114,7 +107,7 @@ final class PaywallEventTracker {
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPurchaseError(package: Package, error: Error) -> Bool {
-        guard let data = self.eventData else {
+        guard let data = self.stateLock.perform({ self.state.eventData }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
@@ -137,7 +130,7 @@ final class PaywallEventTracker {
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackExitOffer(exitOfferType: ExitOfferType, exitOfferingIdentifier: String) -> Bool {
-        guard let data = self.eventData else {
+        guard let data = self.stateLock.perform({ self.state.eventData }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
@@ -152,7 +145,7 @@ final class PaywallEventTracker {
 
     @discardableResult
     func trackComponentInteraction(_ interactionData: PaywallEvent.ComponentInteractionData) -> Bool {
-        guard let data = self.eventData else {
+        guard let data = self.stateLock.perform({ self.state.eventData }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
@@ -171,6 +164,26 @@ final class PaywallEventTracker {
         return .init { [weak self] interactionData in
             return self?.trackComponentInteraction(interactionData) ?? false
         }
+    }
+
+    private func trackPaywallCloseWhileLocked() -> Bool {
+        guard let data = self.state.eventData, !self.state.hasTrackedClose else {
+            if self.state.eventData == nil {
+                Logger.debug("Attempted to track paywall close but eventData is nil")
+            } else if self.state.hasTrackedClose {
+                Logger.debug("Attempted to track paywall close but close was already tracked")
+            }
+            return false
+        }
+
+        self.track(.close(.init(), data))
+        self.state.hasTrackedClose = true
+        return true
+    }
+
+    private struct State {
+        var eventData: PaywallEvent.Data?
+        var hasTrackedClose: Bool = false
     }
 
 }
@@ -204,4 +217,16 @@ extension EnvironmentValues {
         get { self[ComponentInteractionLoggerKey.self] }
         set { self[ComponentInteractionLoggerKey.self] = newValue }
     }
+}
+
+private extension NSLock {
+
+    @discardableResult
+    func perform<T>(_ block: () throws -> T) rethrows -> T {
+        self.lock()
+        defer { self.unlock() }
+
+        return try block()
+    }
+
 }
