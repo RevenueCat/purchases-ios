@@ -189,10 +189,13 @@ struct PaywallsV2View: View {
     public var body: some View {
         VStack(spacing: 0) {
             if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
-                // Show fallback paywall and debug error message that
-                // occurred while decoding the paywall
-                self.fallbackViewWithErrorMessage(
-                    "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
+                DefaultPaywallView(
+                    handler: purchaseHandler,
+                    warning: .from(error: PaywallFallbackError(
+                        // Trim up the error value to not flood the screen with too much content
+                        reason: String("\(errorInfo)".prefix(130))
+                    )),
+                    offering: offering
                 )
             } else {
                 switch self.paywallStateManager.state {
@@ -248,11 +251,7 @@ struct PaywallsV2View: View {
                     .preference(key: RestoreErrorPreferenceKey.self,
                                 value: self.purchaseHandler.restoreError as NSError?)
                 case .failure(let error):
-                    // Show fallback paywall and debug error message that
-                    // occurred while validating data and view models
-                    self.fallbackViewWithErrorMessage(
-                        "Error validating paywall: \(error.localizedDescription)"
-                    )
+                    DefaultPaywallView(handler: purchaseHandler, warning: .from(error: error), offering: offering)
                 }
             }
         }
@@ -539,3 +538,7 @@ fileprivate extension PaywallsV2View {
 }
 
 #endif
+
+private struct PaywallFallbackError: Error {
+    let reason: String
+}

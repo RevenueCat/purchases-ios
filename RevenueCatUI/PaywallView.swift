@@ -566,10 +566,13 @@ struct LoadedOfferingPaywallView: View {
             )
         } else {
             self.paywall
-                .createView(for: self.offering,
-                            template: self.template,
-                            configuration: configuration,
-                            introEligibility: self.introEligibility)
+                .createView(
+                    for: self.offering,
+                    template: self.template,
+                    configuration: configuration,
+                    introEligibility: self.introEligibility,
+                    purchaseHandler: purchaseHandler
+                )
         }
     }
 
