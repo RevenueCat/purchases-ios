@@ -354,7 +354,6 @@ public struct PaywallView: View {
                         }
                         onRequestedDismissal()
                     },
-                    fallbackContent: .paywallV1View(dataForV1DefaultPaywall),
                     failedToLoadFont: { fontConfig in
                         if Purchases.isConfigured {
                             Purchases.shared.failedToLoadFontWithConfig(fontConfig)
@@ -571,6 +570,7 @@ struct LoadedOfferingPaywallView: View {
                     template: self.template,
                     configuration: configuration,
                     introEligibility: self.introEligibility,
+                    mode: self.mode,
                     purchaseHandler: purchaseHandler
                 )
         }

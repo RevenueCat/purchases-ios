@@ -112,7 +112,6 @@ struct PaywallsV2View: View {
     private let offering: Offering
     private let purchaseHandler: PurchaseHandler
     private let onDismiss: () -> Void
-    private let fallbackContent: FallbackContent
     @State private var didFinishEligibilityCheck: Bool = false
 
     @StateObject
@@ -125,7 +124,6 @@ struct PaywallsV2View: View {
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void,
-        fallbackContent: FallbackContent,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
@@ -141,7 +139,6 @@ struct PaywallsV2View: View {
         self.offering = offering
         self.purchaseHandler = purchaseHandler
         self.onDismiss = onDismiss
-        self.fallbackContent = fallbackContent
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
@@ -255,23 +252,6 @@ struct PaywallsV2View: View {
                 }
             }
         }
-    }
-
-    @ViewBuilder
-    func fallbackViewWithErrorMessage(_ errorMessage: String) -> some View {
-        let fullMessage = """
-        \(errorMessage)
-        Validate your paywall is correct in the RevenueCat dashboard,
-        update your SDK, or contact RevenueCat support.
-        View console logs for full detail.
-        The displayed paywall contains default configuration.
-        This error will be hidden in production.
-        """
-
-        DebugErrorView(
-            fullMessage,
-            replacement: self.fallbackContent.view()
-        )
     }
 
     private func createEventData() -> PaywallEvent.Data {

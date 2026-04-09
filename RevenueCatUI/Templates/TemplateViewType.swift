@@ -63,12 +63,13 @@ extension TemplateViewType {
 @available(tvOS, unavailable)
 extension PaywallData {
 
-    @ViewBuilder
+    @ViewBuilder // swiftlint:disable:next function_parameter_count
     func createView(
         for offering: Offering,
         template: PaywallTemplate,
         configuration: Result<TemplateViewConfiguration, Error>,
         introEligibility: IntroEligibilityViewModel,
+        mode: PaywallViewMode,
         purchaseHandler: PurchaseHandler
     ) -> some View {
         switch configuration {
@@ -80,7 +81,12 @@ extension PaywallData {
                 }
 
         case let .failure(error):
-            DefaultPaywallView(handler: purchaseHandler, warning: .from(error: error), offering: offering)
+            DefaultPaywallView(
+                handler: purchaseHandler,
+                warning: .from(error: error),
+                offering: offering,
+                isFooterPaywall: mode != .fullScreen
+            )
         }
     }
 
