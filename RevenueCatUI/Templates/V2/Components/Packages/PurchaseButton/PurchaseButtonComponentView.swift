@@ -35,6 +35,9 @@ struct PurchaseButtonComponentView: View {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
     @State private var inAppBrowserURL: URL?
 
     private let viewModel: PurchaseButtonComponentViewModel
@@ -66,6 +69,13 @@ struct PurchaseButtonComponentView: View {
 
     var body: some View {
         AsyncButton {
+            componentInteractionLogger(.paywallPurchaseButtonAction(
+                componentName: viewModel.componentName,
+                componentValue: viewModel.method?.description ?? "",
+                componentURL: viewModel.customWebCheckoutUrl,
+                currentPackageIdentifier: packageContext.package?.identifier,
+                currentProductIdentifier: packageContext.package?.storeProduct.productIdentifier
+            ))
             try await self.purchase()
         } label: {
             // Not passing an onDismiss - nothing in this stack should be able to dismiss
@@ -216,7 +226,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         ))
                     ]),
                     action: .inAppCheckout,
-                    method: .inAppCheckout
+                    method: .inAppCheckout,
+                    name: nil
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -265,7 +276,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                                 bottomTrailing: 8))
                     ),
                     action: .inAppCheckout,
-                    method: .inAppCheckout
+                    method: .inAppCheckout,
+                    name: nil
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,

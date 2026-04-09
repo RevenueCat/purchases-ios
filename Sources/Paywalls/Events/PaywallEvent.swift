@@ -42,6 +42,8 @@ public enum ComponentInteractionType: String, Codable, Sendable, Hashable {
     case package
     /// Package-selection bottom sheet lifecycle (`component_value` is `open` / `close`), not a package row tap.
     case packageSelectionSheet = "package_selection_sheet"
+    /// Purchase button of any type was tapped
+    case purchaseButton = "purchase_button"
 
 }
 

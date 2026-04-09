@@ -12,6 +12,7 @@ import Foundation
 
     final class PurchaseButtonComponent: PaywallComponentBase {
 
+        public let name: String?
         let type: ComponentType
         public let stack: PaywallComponent.StackComponent
 
@@ -25,7 +26,22 @@ import Foundation
             case webProductSelection = "web_product_selection"
         }
 
-        public enum Method: Codable, Sendable, Hashable, Equatable {
+        public enum Method: Codable, Sendable, Hashable, Equatable, CustomStringConvertible {
+            public var description: String {
+                switch self {
+                case .inAppCheckout:
+                    "in_app_checkout"
+                case .webCheckout:
+                    "web_checkout"
+                case .webProductSelection:
+                    "web_product_selection"
+                case .customWebCheckout:
+                    "custom_web_checkout"
+                case .unknown:
+                    "unknown"
+                }
+            }
+
             case inAppCheckout
             case webCheckout(WebCheckout)
             case webProductSelection(WebCheckout)
@@ -133,12 +149,14 @@ import Foundation
         public init(
             stack: PaywallComponent.StackComponent,
             action: Action?,
-            method: Method?
+            method: Method?,
+            name: String?
         ) {
             self.type = .purchaseButton
             self.stack = stack
             self.action = action
             self.method = method
+            self.name = name
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -155,5 +173,4 @@ import Foundation
                 lhs.method == rhs.method
         }
     }
-
 }
