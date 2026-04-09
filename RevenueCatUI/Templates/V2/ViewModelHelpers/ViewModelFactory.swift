@@ -194,13 +194,20 @@ struct ViewModelFactory {
                 component: component,
                 offering: offering,
                 stackViewModel: stackViewModel,
-                hasPurchaseButton: hasPurchaseButton
+                hasPurchaseButton: hasPurchaseButton,
+                uiConfigProvider: uiConfigProvider,
+                discardRules: discardRules
             )
 
             if let package = viewModel.package {
                 let packageInfo = PackageValidator.PackageInfo(
                     package: package,
                     isSelectedByDefault: viewModel.isSelectedByDefault,
+                    // Only the static `visible` flag is considered here; override-based visibility
+                    // is evaluated at render time and is not used for default package selection.
+                    // The paywall builder enforces that the default-selected package cannot be
+                    // statically hidden (`visible: false`), so this is safe.
+                    isStaticallyVisible: component.visible ?? true,
                     promotionalOfferProductCode: viewModel.promotionalOfferProductCode
                 )
                 packageValidator.add(packageInfo)
