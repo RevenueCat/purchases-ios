@@ -216,6 +216,9 @@ final class PurchaseHandler: ObservableObject {
     /// We reset both `sessionPurchaseResult` (used for exit offer logic) and `purchaseResult`
     /// (used for `onPurchaseCompleted` preference) to avoid stale values triggering handlers.
     func resetForNewSession() {
+        if let sessionID = self.activePaywallSessionID {
+            self.paywallEventTracker.discardSession(sessionID: sessionID)
+        }
         self.sessionPurchaseResult = nil
         self.purchaseResult = nil
         self.activePaywallSessionID = nil

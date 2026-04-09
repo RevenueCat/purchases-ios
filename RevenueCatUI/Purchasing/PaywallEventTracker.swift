@@ -46,6 +46,8 @@ final class PaywallEventTracker: @unchecked Sendable {
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         let sessionID = eventData.sessionIdentifier
         self.stateLock.perform {
+            self.removeSessionsWhere { $0.hasTrackedClose }
+
             if let existing = self.sessions[sessionID],
                existing.eventData != nil,
                !existing.hasTrackedClose {
@@ -144,7 +146,17 @@ final class PaywallEventTracker: @unchecked Sendable {
             exitOfferingIdentifier: exitOfferingIdentifier
         )
         self.track(.exitOffer(.init(), data, exitOfferData))
+        self.stateLock.perform {
+            self.sessions.removeValue(forKey: sessionID)
+        }
         return true
+    }
+
+    /// Drops stored paywall state for `sessionID` (e.g. when the host resets purchase session state).
+    func discardSession(sessionID: SessionID) {
+        self.stateLock.perform {
+            self.sessions.removeValue(forKey: sessionID)
+        }
     }
 
     @discardableResult
@@ -173,6 +185,10 @@ final class PaywallEventTracker: @unchecked Sendable {
         return .init { [weak self] interactionData in
             return self?.trackComponentInteraction(interactionData, sessionID: sessionID) ?? false
         }
+    }
+
+    private func removeSessionsWhere(_ shouldRemove: (SessionState) -> Bool) {
+        self.sessions = self.sessions.filter { !shouldRemove($0.value) }
     }
 
     private func trackPaywallCloseWhileLocked(sessionID: SessionID) -> Bool {
