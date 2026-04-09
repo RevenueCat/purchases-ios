@@ -36,7 +36,7 @@ class ComponentInteractionLoggerTests: TestCase {
                 },
                 customerInfo: { TestData.customerInfo }
             ),
-            eventDispatcher: Self.testEventDispatcher
+            eventDispatcher: PaywallEventTrackerTestDispatcher.value
         )
 
         let eventData: PaywallEvent.Data = .init(
@@ -83,15 +83,6 @@ class ComponentInteractionLoggerTests: TestCase {
         expect(interaction.componentName) == "link_copy"
         expect(interaction.componentValue) == "navigate_to_url"
         expect(interaction.componentURL) == URL(string: "https://example.com/docs")
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension ComponentInteractionLoggerTests {
-
-    static let testEventDispatcher: PaywallEventTracker.EventDispatcher = { work in
-        Task { await work() }
     }
 
 }

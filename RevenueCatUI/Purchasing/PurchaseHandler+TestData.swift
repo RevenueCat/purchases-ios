@@ -58,7 +58,7 @@ extension PurchaseHandler {
             performPurchase: performPurchase,
             performRestore: performRestore,
             purchaseResultPublisher: purchaseResultPublisher,
-            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.dispatcher())
         )
     }
 
@@ -87,7 +87,7 @@ extension PurchaseHandler {
         }
         return self.init(
             purchases: purchases,
-            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.dispatcher())
         )
     }
 
@@ -112,19 +112,6 @@ extension Task where Success == Never, Failure == Never {
 
     static func sleep(seconds: TimeInterval) async {
         try? await Self.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension PaywallEventTracker {
-
-    /// Test event dispatcher that uses `Task { }` instead of `Task.detached(priority: .background)`.
-    /// Non-detached tasks inherit the caller's actor context and priority, so events are delivered
-    /// promptly without the aggressive deprioritization that `Task.detached(priority: .background)`
-    /// causes on iOS 26+ CI environments.
-    static let testEventDispatcher: PaywallEventTracker.EventDispatcher = { work in
-        Task { await work() }
     }
 
 }

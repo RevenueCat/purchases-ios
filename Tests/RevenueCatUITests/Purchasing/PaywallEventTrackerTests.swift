@@ -487,9 +487,7 @@ private extension PaywallEventTrackerTests {
                 },
                 customerInfo: { TestData.customerInfo }
             ),
-            eventDispatcher: { work in
-                Task { await work() }
-            }
+            eventDispatcher: PaywallEventTrackerTestDispatcher.value
         )
 
         return (tracker, trackedEvents)
