@@ -148,7 +148,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
     }
 
     var body: some View {
-        if self.presentInSheet || self.interfaceIdiom == .pad {
+        if self.presentInSheet {
             Rectangle()
                 .hidden()
                 .sheet(isPresented: .constant(true)) {
