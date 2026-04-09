@@ -457,10 +457,9 @@ struct Template2ViewTablet_Previews: PreviewProvider {
         PreviewableTemplate(offering: TestData.offeringWithMultiPackagePaywall) {
             Template2View($0)
         }
+        .previewDevice("iPad Air (5th generation)")
         .environment(\.userInterfaceIdiom, .pad)
         .previewDisplayName("Tablet")
-        .previewLayout(.fixed(width: PreviewHelpers.iPadSize.width,
-                              height: PreviewHelpers.iPadSize.height))
     }
 
 }
