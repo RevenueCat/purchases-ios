@@ -186,72 +186,98 @@ struct PaywallsV2View: View {
     public var body: some View {
         VStack(spacing: 0) {
             if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
-                DefaultPaywallView(
-                    handler: purchaseHandler,
+                self.fallbackPaywallView(
                     warning: .from(error: PaywallFallbackError(
                         // Trim up the error value to not flood the screen with too much content
                         reason: String("\(errorInfo)".prefix(130))
-                    )),
-                    offering: offering
+                    ))
                 )
             } else {
                 switch self.paywallStateManager.state {
                 case .success(let paywallState):
-                    LoadedPaywallsV2View(
-                        introOfferEligibilityContext: introOfferEligibilityContext,
-                        paywallState: paywallState,
-                        uiConfigProvider: self.uiConfigProvider,
-                        selectedPackageContext: self.selectedPackageContext,
-                        onDismiss: self.onDismiss
-                    )
-                    .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-                    .environmentObject(self.purchaseHandler)
-                    .environmentObject(self.introOfferEligibilityContext)
-                    .environmentObject(self.paywallPromoOfferCache)
-                    .disabled(self.purchaseHandler.actionInProgress)
-                    .onAppear {
-                        self.purchaseHandler.trackPaywallImpression(
-                            self.createEventData()
+                    self.addPurchaseStatePreferences(
+                        to: LoadedPaywallsV2View(
+                            introOfferEligibilityContext: introOfferEligibilityContext,
+                            paywallState: paywallState,
+                            uiConfigProvider: self.uiConfigProvider,
+                            selectedPackageContext: self.selectedPackageContext,
+                            onDismiss: self.onDismiss
                         )
-                    }
-                    .onDisappear { self.purchaseHandler.trackPaywallClose() }
-                    .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
-                        if hasPurchased {
-                            self.onDismiss()
+                        .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+                        .environmentObject(self.purchaseHandler)
+                        .environmentObject(self.introOfferEligibilityContext)
+                        .environmentObject(self.paywallPromoOfferCache)
+                        .disabled(self.purchaseHandler.actionInProgress)
+                        .onAppear {
+                            self.purchaseHandler.trackPaywallImpression(
+                                self.createEventData()
+                            )
                         }
-                    }
-                    .task {
-                        guard !didFinishEligibilityCheck else {
-                            return
+                        .onDisappear { self.purchaseHandler.trackPaywallClose() }
+                        .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
+                            if hasPurchased {
+                                self.onDismiss()
+                            }
                         }
+                        .task {
+                            guard !didFinishEligibilityCheck else {
+                                return
+                            }
 
-                        async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
-                            for: paywallState.packages
-                        )
-                        async let promoCheck: Void = paywallPromoOfferCache.computeEligibility(
-                            for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
-                        )
-                        _ = await (introCheck, promoCheck)
-                        didFinishEligibilityCheck = true
-                    }
-                    // Note: preferences need to be applied after `.toolbar` call
-                    .preference(key: PurchaseInProgressPreferenceKey.self,
-                                value: self.purchaseHandler.packageBeingPurchased)
-                    .preference(key: PurchasedResultPreferenceKey.self,
-                                value: .init(data: self.purchaseHandler.sessionPurchaseResult))
-                    .preference(key: RestoredCustomerInfoPreferenceKey.self,
-                                value: self.purchaseHandler.restoredCustomerInfo)
-                    .preference(key: RestoreInProgressPreferenceKey.self,
-                                value: self.purchaseHandler.restoreInProgress)
-                    .preference(key: PurchaseErrorPreferenceKey.self,
-                                value: self.purchaseHandler.purchaseError as NSError?)
-                    .preference(key: RestoreErrorPreferenceKey.self,
-                                value: self.purchaseHandler.restoreError as NSError?)
+                            async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
+                                for: paywallState.packages
+                            )
+                            async let promoCheck: Void = paywallPromoOfferCache.computeEligibility(
+                                for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                            )
+                            _ = await (introCheck, promoCheck)
+                            didFinishEligibilityCheck = true
+                        }
+                    )
                 case .failure(let error):
-                    DefaultPaywallView(handler: purchaseHandler, warning: .from(error: error), offering: offering)
+                    self.fallbackPaywallView(warning: .from(error: error))
                 }
             }
         }
+    }
+
+    private func fallbackPaywallView(warning: PaywallWarning) -> some View {
+        self.addPurchaseStatePreferences(
+            to: DefaultPaywallView(
+                handler: self.purchaseHandler,
+                warning: warning,
+                offering: self.offering
+            )
+            .disabled(self.purchaseHandler.actionInProgress)
+            .onAppear {
+                self.purchaseHandler.trackPaywallImpression(
+                    self.createEventData()
+                )
+            }
+            .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
+                if hasPurchased {
+                    self.onDismiss()
+                }
+            }
+        )
+    }
+
+    private func addPurchaseStatePreferences<Content: View>(to content: Content) -> some View {
+        content
+            // Note: preferences need to be applied after `.toolbar` call
+            .preference(key: PurchaseInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.packageBeingPurchased)
+            .preference(key: PurchasedResultPreferenceKey.self,
+                        value: .init(data: self.purchaseHandler.sessionPurchaseResult))
+            .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                        value: self.purchaseHandler.restoredCustomerInfo)
+            .preference(key: RestoreInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.restoreInProgress)
+            .preference(key: PurchaseErrorPreferenceKey.self,
+                        value: self.purchaseHandler.purchaseError as NSError?)
+            .preference(key: RestoreErrorPreferenceKey.self,
+                        value: self.purchaseHandler.restoreError as NSError?)
     }
 
     private func createEventData() -> PaywallEvent.Data {
