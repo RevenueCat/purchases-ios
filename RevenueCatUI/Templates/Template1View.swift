@@ -224,7 +224,7 @@ struct Template1View_Previews: PreviewProvider {
         .previewDisplayName("Intro Offer – Eligible")
         .previewLayout(.fixed(width: PreviewHelpers.fullScreenSize.width,
                               height: PreviewHelpers.fullScreenSize.height))
-
+ 
         PreviewableTemplate(
             offering: TestData.offeringWithIntroOffer,
             introEligibility: .ineligible
@@ -283,8 +283,8 @@ struct Template1ViewFooter_Previews: PreviewProvider {
             Template1View($0)
         }
         .previewDisplayName("Condensed Footer")
-        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
-                              height: PreviewHelpers.footerSize.height))
+        .previewLayout(.fixed(width: PreviewHelpers.condensedFooterSize.width,
+                              height: PreviewHelpers.condensedFooterSize.height))
     }
 
 }
@@ -334,7 +334,7 @@ struct Template1ViewDynamicType_Previews: PreviewProvider {
 
     static var previews: some View {
         ForEach(
-            [DynamicTypeSize.xSmall, .small, .medium, .xLarge, .xxLarge,
+            [DynamicTypeSize.xSmall, .small, .medium, .large, .xLarge, .xxLarge,
              .xxxLarge, .accessibility1, .accessibility3, .accessibility5],
             id: \.self
         ) { size in

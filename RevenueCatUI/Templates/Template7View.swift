@@ -568,8 +568,8 @@ struct Template7ViewFooter_Previews: PreviewProvider {
             Template7View($0)
         }
         .previewDisplayName("Condensed Footer")
-        .previewLayout(.fixed(width: PreviewHelpers.footerSize.width,
-                              height: PreviewHelpers.footerSize.height))
+        .previewLayout(.fixed(width: PreviewHelpers.condensedFooterSize.width,
+                              height: PreviewHelpers.condensedFooterSize.height))
     }
 
 }

@@ -304,6 +304,29 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
 
     @ViewBuilder
     private func emptyView(error: Error?) -> some View {
+        #if DEBUG
+        if ProcessInfo.isRunningForPreviews {
+            let placeholder = PreviewImagePlaceholder()
+
+            Group {
+                if let aspectRatio {
+                    placeholder
+                        .aspectRatio(aspectRatio, contentMode: .fit)
+                } else {
+                    placeholder
+                }
+            }
+            .frame(maxWidth: self.maxWidth)
+        } else {
+            self.defaultEmptyView(error: error)
+        }
+        #else
+        self.defaultEmptyView(error: error)
+        #endif
+    }
+
+    @ViewBuilder
+    private func defaultEmptyView(error: Error?) -> some View {
         let placeholderView = Rectangle()
             .hidden()
 
@@ -328,6 +351,41 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
     }
 
 }
+
+#if DEBUG
+/// A diagonal stripe pattern placeholder for images that can't load in previews.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PreviewImagePlaceholder: View {
+
+    var body: some View {
+        GeometryReader { geometry in
+            let stripeWidth: CGFloat = 10
+            let spacing: CGFloat = 20
+            let size = max(geometry.size.width, geometry.size.height) * 2
+
+            ZStack {
+                Color(red: 0.55, green: 0.22, blue: 0.22)
+
+                Canvas { context, _ in
+                    var x: CGFloat = -size
+                    while x < size {
+                        var path = Path()
+                        path.move(to: CGPoint(x: x, y: 0))
+                        path.addLine(to: CGPoint(x: x + size, y: size))
+                        path.addLine(to: CGPoint(x: x + size + stripeWidth, y: size))
+                        path.addLine(to: CGPoint(x: x + stripeWidth, y: 0))
+                        path.closeSubpath()
+                        context.fill(path, with: .color(Color(red: 0.85, green: 0.38, blue: 0.38)))
+                        x += spacing + stripeWidth
+                    }
+                }
+            }
+        }
+        .clipped()
+    }
+
+}
+#endif
 
 private extension Image {
     /// Returns a fully transparent SwiftUI Image of the given size.

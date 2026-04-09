@@ -34,19 +34,23 @@ enum PreviewHelpers {
     static let landscapeSize: CGSize = .init(width: 950, height: 460)
     static let iPadSize: CGSize = .init(width: 744, height: 1130)
     static let footerSize: CGSize = .init(width: 460, height: 460)
+    static let condensedFooterSize: CGSize = .init(width: 460, height: 280)
 
     private static let localBaseURL = Bundle.revenueCatUI.resourceURL ?? Bundle.revenueCatUI.bundleURL
-    private static let localImageName = "9a17e0a7_1689854430.jpeg"
+    private static let localHeaderImageName = "9a17e0a7_1689854430.jpeg"
+    private static let localBackgroundImageName = "background.jpg"
+    private static let localIconImageName = "rc-blueprint.png"
 
-    /// Returns a copy of the offering with images pointing to a bundled image
+    /// Returns a copy of the offering with images pointing to bundled images
     /// in RevenueCatUI's resources, so previews render without network access.
     static func withLocalImages(_ offering: Offering) -> Offering {
         guard var paywall = offering.paywall else { return offering }
 
         paywall.assetBaseURL = localBaseURL
         paywall.config.images = .init(
-            header: localImageName,
-            background: localImageName
+            header: localHeaderImageName,
+            background: localBackgroundImageName,
+            icon: localIconImageName
         )
 
         return .init(
