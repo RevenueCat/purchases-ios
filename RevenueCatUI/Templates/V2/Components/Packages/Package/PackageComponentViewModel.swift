@@ -16,6 +16,8 @@ import Foundation
 
 #if !os(tvOS) // For Paywalls V2
 
+typealias PresentedPackagePartial = PaywallComponent.PartialPackageComponent
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageComponentViewModel {
 
@@ -26,12 +28,20 @@ class PackageComponentViewModel {
     let stackViewModel: StackComponentViewModel
     let hasPurchaseButton: Bool
 
+    private let componentVisible: Bool?
+    private let uiConfigProvider: UIConfigProvider
+    private let presentedOverrides: PresentedOverrides<PresentedPackagePartial>?
+
     init(
         component: PaywallComponent.PackageComponent,
         offering: Offering,
         stackViewModel: StackComponentViewModel,
-        hasPurchaseButton: Bool
+        hasPurchaseButton: Bool,
+        uiConfigProvider: UIConfigProvider,
+        discardRules: Bool = false
     ) {
+        self.componentVisible = component.visible
+        self.uiConfigProvider = uiConfigProvider
         self.isSelectedByDefault = component.isSelectedByDefault
         self.promotionalOfferProductCode = component.applePromoOfferProductCode
         self.componentName = component.name
@@ -43,6 +53,44 @@ class PackageComponentViewModel {
 
         self.stackViewModel = stackViewModel
         self.hasPurchaseButton = hasPurchaseButton
+        self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue]
+    ) -> Bool {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
+        )
+
+        let partial = PresentedPackagePartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+
+        return partial?.visible ?? self.componentVisible ?? true
+    }
+
+}
+
+extension PresentedPackagePartial: PresentedPartial {
+
+    static func combine(
+        _ base: PaywallComponent.PartialPackageComponent?,
+        with other: PaywallComponent.PartialPackageComponent?
+    ) -> Self {
+        return .init(visible: other?.visible ?? base?.visible)
     }
 
 }
