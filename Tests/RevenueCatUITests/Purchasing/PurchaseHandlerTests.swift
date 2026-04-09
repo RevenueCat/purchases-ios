@@ -104,13 +104,15 @@ class PurchaseHandlerTests: TestCase {
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -149,13 +151,15 @@ class PurchaseHandlerTests: TestCase {
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -191,13 +195,15 @@ class PurchaseHandlerTests: TestCase {
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -240,13 +246,15 @@ class PurchaseHandlerTests: TestCase {
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -282,13 +290,15 @@ class PurchaseHandlerTests: TestCase {
             eventTracker: .init(purchases: mockPurchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -318,13 +328,15 @@ class PurchaseHandlerTests: TestCase {
             eventTracker: .init(purchases: mockPurchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -454,13 +466,15 @@ class PurchaseHandlerTests: TestCase {
     func testCloseEventIsTrackedOnlyAfterImpressionAndOnlyOnce() async throws {
         let handler: PurchaseHandler = .mock()
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
 
         let result1 = handler.trackPaywallClose()
@@ -501,12 +515,13 @@ class PurchaseHandlerTests: TestCase {
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.testEventDispatcher)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
+            localeIdentifier: "en_US",
             darkMode: false,
             source: source
         )

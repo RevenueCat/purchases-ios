@@ -239,7 +239,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
         await MainActor.run {
             let testView = Text("test")
                 .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterPromotionalOfferSuccess {
+                .onCustomerCenterPromotionalOfferSucceeded {
                     expectation.fulfill()
                 }
 
@@ -312,7 +312,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                 .onCustomerCenterPromotionalOfferSucceeded { _, _, _ in
                     newExpectation.fulfill()
                 }
-                .onCustomerCenterPromotionalOfferSuccess {
+                .onCustomerCenterPromotionalOfferSucceeded {
                     deprecatedExpectation.fulfill()
                 }
 

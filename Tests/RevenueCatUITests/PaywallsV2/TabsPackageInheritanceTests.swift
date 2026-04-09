@@ -589,7 +589,6 @@ final class TabsPackageInheritanceTests: TestCase {
 
         // Given: Tab 2 has packages including B
         let tab2Packages = [self.parentPackageA, self.parentPackageB, self.tabPackageC]
-        let tab2PackageIdentifiers = Set(tab2Packages.map(\.identifier))
 
         let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: parentOwnedPackage,
@@ -790,23 +789,15 @@ final class TabsPackageInheritanceTests: TestCase {
         let tab2Packages = [self.parentPackageA, self.parentPackageB]
         let tab2Default = self.parentPackageB
 
-        // Given: didUserSelectPackage starts as false (no user selection yet)
-        var didUserSelectPackage = false
-
-        // Given: parentOwnedPackage initialized from parent (could be A)
-        var parentOwnedPackage: Package? = self.parentPackageA
+        // Given: No user selection yet — resolver should use each tab's default, not parentOwnedPackage.
+        let didUserSelectPackage = false
+        let parentOwnedPackage: Package? = self.parentPackageA
 
         // Step 1: Start on Tab 1 - shows A (tab's default)
         // (This is initialization, no switching needed)
 
         // Step 2: Toggle to Tab 2 (no user selection)
-        // Determine effectiveParentOwnedPackage based on didUserSelectPackage
-        let effectiveParentOwnedPackageForTab2: Package?
-        if didUserSelectPackage {
-            effectiveParentOwnedPackageForTab2 = parentOwnedPackage
-        } else {
-            effectiveParentOwnedPackageForTab2 = nil  // Use tab's default
-        }
+        let effectiveParentOwnedPackageForTab2: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab2UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: effectiveParentOwnedPackageForTab2,
@@ -820,12 +811,7 @@ final class TabsPackageInheritanceTests: TestCase {
         expect(tab2UpdatePlan.tabUpdate?.package?.identifier) == self.parentPackageB.identifier
 
         // Step 3: Toggle back to Tab 1 (still no user selection)
-        let effectiveParentOwnedPackageForTab1: Package?
-        if didUserSelectPackage {
-            effectiveParentOwnedPackageForTab1 = parentOwnedPackage
-        } else {
-            effectiveParentOwnedPackageForTab1 = nil  // Use tab's default
-        }
+        let effectiveParentOwnedPackageForTab1: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab1UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: effectiveParentOwnedPackageForTab1,
@@ -861,16 +847,11 @@ final class TabsPackageInheritanceTests: TestCase {
         let tab2Default = self.parentPackageB
 
         // Given: User selected B (sets didUserSelectPackage = true)
-        var didUserSelectPackage = true
-        var parentOwnedPackage: Package? = self.parentPackageB
+        let didUserSelectPackage = true
+        let parentOwnedPackage: Package? = self.parentPackageB
 
         // Step 1: Toggle to Tab 2 (user has selected B)
-        let effectiveParentOwnedPackageForTab2: Package?
-        if didUserSelectPackage {
-            effectiveParentOwnedPackageForTab2 = parentOwnedPackage
-        } else {
-            effectiveParentOwnedPackageForTab2 = nil
-        }
+        let effectiveParentOwnedPackageForTab2: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab2UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: effectiveParentOwnedPackageForTab2,
@@ -884,12 +865,7 @@ final class TabsPackageInheritanceTests: TestCase {
         expect(tab2UpdatePlan.tabUpdate?.package?.identifier) == self.parentPackageB.identifier
 
         // Step 2: Toggle back to Tab 1 (user still has B selected)
-        let effectiveParentOwnedPackageForTab1: Package?
-        if didUserSelectPackage {
-            effectiveParentOwnedPackageForTab1 = parentOwnedPackage
-        } else {
-            effectiveParentOwnedPackageForTab1 = nil
-        }
+        let effectiveParentOwnedPackageForTab1: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab1UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: effectiveParentOwnedPackageForTab1,
@@ -970,8 +946,7 @@ final class TabsPackageInheritanceTests: TestCase {
         //   2. Switch to Tab 1 → shows C (tab's default)
         //   3. Switch to Tab 2 (no packages) → should show A (parent's initial selection)
 
-        // Given: No user selection yet
-        let didUserSelectPackage = false
+        // Given: No user selection yet (package-less tab still inherits parentOwnedPackage)
         let parentOwnedPackage: Package? = self.parentPackageA
         let parentOwnedVariableContext = PackageContext.VariableContext(
             packages: [self.parentPackageA, self.parentPackageB]
@@ -979,17 +954,8 @@ final class TabsPackageInheritanceTests: TestCase {
 
         // When: Switch to Tab 2 (no packages)
         // For package-less tabs, we always use parentOwnedPackage regardless of didUserSelectPackage
-        let effectiveParentOwnedPackage: Package?
         let tab2Packages: [Package] = []  // Package-less tab
-
-        if tab2Packages.isEmpty {
-            // Package-less tab: always use parentOwnedPackage
-            effectiveParentOwnedPackage = parentOwnedPackage
-        } else if didUserSelectPackage {
-            effectiveParentOwnedPackage = parentOwnedPackage
-        } else {
-            effectiveParentOwnedPackage = nil
-        }
+        let effectiveParentOwnedPackage: Package? = parentOwnedPackage
 
         let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: effectiveParentOwnedPackage,
