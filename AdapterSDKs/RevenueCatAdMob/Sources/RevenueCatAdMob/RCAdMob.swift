@@ -165,6 +165,10 @@ internal final class RCAdMob {
         return Int(micros.int64Value)
     }
 
+    func retrieveFullScreenDelegate(for object: AnyObject) -> RCAdMobFullScreenContentDelegate? {
+        objc_getAssociatedObject(object, &Self.fullScreenDelegateKey) as? RCAdMobFullScreenContentDelegate
+    }
+
     func retainFullScreenDelegate(_ delegate: AnyObject, for object: AnyObject) {
         objc_setAssociatedObject(
             object,
@@ -232,9 +236,9 @@ internal final class RCAdMob {
         )
         self.retainFullScreenDelegate(trackingDelegate, for: loadedAd)
         loadedAd.fullScreenContentDelegate = trackingDelegate
-        loadedAd.paidEventHandler = { [weak self] adValue in
+        loadedAd.paidEventHandler = { [weak self, weak trackingDelegate] adValue in
             self?.trackRevenue(
-                placement: placement,
+                placement: trackingDelegate?.placement,
                 adUnitID: adUnitID,
                 adFormat: adFormat,
                 responseInfo: responseInfo,

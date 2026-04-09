@@ -59,7 +59,7 @@ internal extension GoogleMobileAds.InterstitialAd {
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
-        placement: String?,
+        placement: String? = nil,
         fullScreenContentDelegate: (any GoogleMobileAds.FullScreenContentDelegate)? = nil,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
         completion: @escaping (GoogleMobileAds.InterstitialAd?, Error?) -> Void
@@ -73,6 +73,15 @@ internal extension GoogleMobileAds.InterstitialAd {
             rcAdMob: .shared,
             completion: completion
         )
+    }
+
+    /// Presents the interstitial ad and overrides the placement used for RevenueCat analytics.
+    ///
+    /// Call this instead of `present(from:)` when you want to specify or override the placement at show time.
+    /// The placement passed here takes precedence over any placement provided at load time.
+    func present(from viewController: UIViewController, placement: String?) {
+        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        self.present(from: viewController)
     }
 }
 
@@ -125,7 +134,7 @@ internal extension GoogleMobileAds.AppOpenAd {
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
-        placement: String?,
+        placement: String? = nil,
         fullScreenContentDelegate: (any GoogleMobileAds.FullScreenContentDelegate)? = nil,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
         completion: @escaping (GoogleMobileAds.AppOpenAd?, Error?) -> Void
@@ -139,6 +148,15 @@ internal extension GoogleMobileAds.AppOpenAd {
             rcAdMob: .shared,
             completion: completion
         )
+    }
+
+    /// Presents the app open ad and overrides the placement used for RevenueCat analytics.
+    ///
+    /// Call this instead of `present(from:)` when you want to specify or override the placement at show time.
+    /// The placement passed here takes precedence over any placement provided at load time.
+    func present(from viewController: UIViewController, placement: String?) {
+        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        self.present(from: viewController)
     }
 }
 
@@ -191,7 +209,7 @@ internal extension GoogleMobileAds.RewardedAd {
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
-        placement: String?,
+        placement: String? = nil,
         fullScreenContentDelegate: (any GoogleMobileAds.FullScreenContentDelegate)? = nil,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
         completion: @escaping (GoogleMobileAds.RewardedAd?, Error?) -> Void
@@ -205,6 +223,19 @@ internal extension GoogleMobileAds.RewardedAd {
             rcAdMob: .shared,
             completion: completion
         )
+    }
+
+    /// Presents the rewarded ad and overrides the placement used for RevenueCat analytics.
+    ///
+    /// Call this instead of `present(from:userDidEarnRewardHandler:)` when you want to specify or override
+    /// the placement at show time. The placement passed here takes precedence over any placement provided at load time.
+    func present(
+        from viewController: UIViewController,
+        placement: String?,
+        userDidEarnRewardHandler: @escaping () -> Void
+    ) {
+        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        self.present(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
     }
 }
 
@@ -257,7 +288,7 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
-        placement: String?,
+        placement: String? = nil,
         fullScreenContentDelegate: (any GoogleMobileAds.FullScreenContentDelegate)? = nil,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
         completion: @escaping (GoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
@@ -271,6 +302,19 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
             rcAdMob: .shared,
             completion: completion
         )
+    }
+
+    /// Presents the rewarded interstitial ad and overrides the placement used for RevenueCat analytics.
+    ///
+    /// Call this instead of `present(from:userDidEarnRewardHandler:)` when you want to specify or override
+    /// the placement at show time. The placement passed here takes precedence over any placement provided at load time.
+    func present(
+        from viewController: UIViewController,
+        placement: String?,
+        userDidEarnRewardHandler: @escaping () -> Void
+    ) {
+        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        self.present(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
     }
 }
 
