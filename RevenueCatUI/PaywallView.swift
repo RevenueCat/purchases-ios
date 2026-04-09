@@ -327,19 +327,6 @@ public struct PaywallView: View {
             #endif
             // Show the actually V2 paywall for full screen
             case .fullScreen:
-                let dataForV1DefaultPaywall = DataForV1DefaultPaywall(
-                    offering: offering,
-                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
-                    paywall: paywall,
-                    template: PaywallData.defaultTemplate,
-                    mode: self.mode,
-                    fonts: fonts,
-                    displayCloseButton: self.displayCloseButton,
-                    introEligibility: checker,
-                    purchaseHandler: purchaseHandler,
-                    locale: purchaseHandler.preferredLocaleOverride ?? .current,
-                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-                )
 
                 PaywallsV2View(
                     paywallComponents: paywallComponents,

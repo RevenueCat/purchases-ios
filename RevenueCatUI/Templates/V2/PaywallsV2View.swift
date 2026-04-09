@@ -34,56 +34,6 @@ struct PaywallState {
     var packages: [Package] {
         self.packageInfos.map(\.package)
     }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct DataForV1DefaultPaywall {
-
-    let offering: Offering
-    let activelySubscribedProductIdentifiers: Set<String>
-    let paywall: PaywallData
-    let template: PaywallTemplate
-    let mode: PaywallViewMode
-    let fonts: PaywallFontProvider
-    let displayCloseButton: Bool
-    let introEligibility: TrialOrIntroEligibilityChecker
-    let purchaseHandler: PurchaseHandler
-    let locale: Locale
-    let showZeroDecimalPlacePrices: Bool
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum FallbackContent {
-    case paywallV1View(DataForV1DefaultPaywall)
-    case customView(AnyView)
-
-    @ViewBuilder
-    func view() -> some View {
-        switch self {
-        case .paywallV1View(let data):
-            #if os(macOS)
-            DebugErrorView("Fallback paywalls are unsupported on macOS.", releaseBehavior: .errorView)
-            #else
-            LoadedOfferingPaywallView(
-                offering: data.offering,
-                activelySubscribedProductIdentifiers: data.activelySubscribedProductIdentifiers,
-                paywall: data.paywall,
-                template: data.template,
-                mode: data.mode,
-                fonts: data.fonts,
-                displayCloseButton: data.displayCloseButton,
-                introEligibility: data.introEligibility,
-                purchaseHandler: data.purchaseHandler,
-                locale: data.locale,
-                showZeroDecimalPlacePrices: data.showZeroDecimalPlacePrices
-            )
-            #endif
-        case .customView(let view):
-            view
-        }
-    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
