@@ -585,7 +585,6 @@ struct Template7ViewTablet_Previews: PreviewProvider {
             Template7View($0)
         }
         .previewDevice("iPad Air (5th generation)")
-        .environment(\.userInterfaceIdiom, .pad)
         .previewDisplayName("Tablet")
     }
 

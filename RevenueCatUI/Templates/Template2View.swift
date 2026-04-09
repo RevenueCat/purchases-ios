@@ -458,7 +458,6 @@ struct Template2ViewTablet_Previews: PreviewProvider {
             Template2View($0)
         }
         .previewDevice("iPad Air (5th generation)")
-        .environment(\.userInterfaceIdiom, .pad)
         .previewDisplayName("Tablet")
     }
 
