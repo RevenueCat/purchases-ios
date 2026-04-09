@@ -164,13 +164,15 @@ import Foundation
             hasher.combine(stack)
             hasher.combine(action)
             hasher.combine(method)
+            hasher.combine(name)
         }
 
         public static func == (lhs: PurchaseButtonComponent, rhs: PurchaseButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
                 lhs.stack == rhs.stack &&
                 lhs.action == rhs.action &&
-                lhs.method == rhs.method
+                lhs.method == rhs.method &&
+                lhs.name == rhs.name
         }
     }
 }
