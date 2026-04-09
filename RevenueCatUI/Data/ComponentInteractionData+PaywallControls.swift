@@ -19,24 +19,28 @@ extension PaywallEvent.ComponentInteractionData {
 
     // MARK: - Tabs
 
+    struct TabControlButtonSelectionMetadata: Sendable {
+        let originIndex: Int?
+        let destinationIndex: Int?
+        let originContextName: String?
+        let destinationContextName: String?
+        let defaultIndex: Int?
+    }
+
     static func paywallTabControlButtonSelection(
         componentName: String?,
         destinationTabId: String,
-        originIndex: Int?,
-        destinationIndex: Int?,
-        originContextName: String?,
-        destinationContextName: String?,
-        defaultIndex: Int?
+        metadata: TabControlButtonSelectionMetadata
     ) -> Self {
         return .init(
             componentType: .tab,
             componentName: componentName,
             componentValue: destinationTabId,
-            originIndex: originIndex,
-            destinationIndex: destinationIndex,
-            originContextName: originContextName,
-            destinationContextName: destinationContextName,
-            defaultIndex: defaultIndex
+            originIndex: metadata.originIndex,
+            destinationIndex: metadata.destinationIndex,
+            originContextName: metadata.originContextName,
+            destinationContextName: metadata.destinationContextName,
+            defaultIndex: metadata.defaultIndex
         )
     }
 
@@ -53,23 +57,27 @@ extension PaywallEvent.ComponentInteractionData {
 
     // MARK: - Carousel
 
+    struct CarouselPageChangeContext: Sendable {
+        let originPageIndex: Int
+        let defaultPageIndex: Int
+        let originContextName: String?
+        let destinationContextName: String?
+    }
+
     static func paywallCarouselPageChange(
         componentName: String?,
         destinationPageIndex: Int,
-        originPageIndex: Int,
-        defaultPageIndex: Int,
-        originContextName: String?,
-        destinationContextName: String?
+        context: CarouselPageChangeContext
     ) -> Self {
         return .init(
             componentType: .carousel,
             componentName: componentName,
             componentValue: String(destinationPageIndex),
-            originIndex: originPageIndex,
+            originIndex: context.originPageIndex,
             destinationIndex: destinationPageIndex,
-            originContextName: originContextName,
-            destinationContextName: destinationContextName,
-            defaultIndex: defaultPageIndex
+            originContextName: context.originContextName,
+            destinationContextName: context.destinationContextName,
+            defaultIndex: context.defaultPageIndex
         )
     }
 

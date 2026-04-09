@@ -110,7 +110,6 @@ struct ButtonComponentView: View {
                     actionValue: self.viewModel.action.paywallComponentInteractionValue
                 )
             )
-            break
         case .sheet(let sheet):
             if let sheetStackViewModel = self.viewModel.sheetStackViewModel {
                 let sheetViewModel = SheetViewModel(

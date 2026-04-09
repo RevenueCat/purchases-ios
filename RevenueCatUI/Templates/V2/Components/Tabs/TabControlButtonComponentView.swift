@@ -73,11 +73,13 @@ struct TabControlButtonComponentView: View {
         _ = self.componentInteractionLogger(.paywallTabControlButtonSelection(
             componentName: self.tabControlContext.name,
             destinationTabId: destinationTabId,
-            originIndex: self.tabControlContext.index(for: originTabId),
-            destinationIndex: self.tabControlContext.index(for: destinationTabId),
-            originContextName: self.tabControlContext.contextName(for: originTabId),
-            destinationContextName: destinationContextName,
-            defaultIndex: self.tabControlContext.defaultTabIndex
+            metadata: .init(
+                originIndex: self.tabControlContext.index(for: originTabId),
+                destinationIndex: self.tabControlContext.index(for: destinationTabId),
+                originContextName: self.tabControlContext.contextName(for: originTabId),
+                destinationContextName: destinationContextName,
+                defaultIndex: self.tabControlContext.defaultTabIndex
+            )
         ))
     }
 

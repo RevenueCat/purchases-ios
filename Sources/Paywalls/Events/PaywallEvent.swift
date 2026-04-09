@@ -325,7 +325,8 @@ extension PaywallEvent {
         public var originPackageIdentifier: String?
         /// RevenueCat package identifier after a plan-selection interaction, when applicable.
         public var destinationPackageIdentifier: String?
-        /// RevenueCat package identifier for the configured default plan in the current scope (offering or tab), when applicable.
+        /// RevenueCat package identifier for the configured default plan in the current scope (offering or tab),
+        /// when applicable.
         public var defaultPackageIdentifier: String?
         /// Store product identifier before a plan-selection interaction, when applicable.
         public var originProductIdentifier: String?
@@ -333,7 +334,8 @@ extension PaywallEvent {
         public var destinationProductIdentifier: String?
         /// Store product identifier for the configured default plan in the current scope, when applicable.
         public var defaultProductIdentifier: String?
-        /// Package identifier for the paywall package-selection sheet lifecycle (`component_value` is `open` / `close`).
+        /// Package identifier for the paywall package-selection sheet lifecycle
+        /// (`component_value` is `open` / `close`).
         public var currentPackageIdentifier: String?
         /// Root paywall package identifier after the package-selection sheet dismisses (e.g. after revert to default).
         public var resultingPackageIdentifier: String?

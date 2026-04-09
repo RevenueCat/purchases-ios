@@ -16,7 +16,8 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallEvent.ComponentInteractionData {
 
-    /// Package-selection sheet became visible: `component_value` is `open`. `current*` reflects the root paywall selection.
+    /// Package-selection sheet became visible: `component_value` is `open`.
+    /// `current*` reflects the root paywall selection.
     static func paywallPackageSelectionSheetOpen(
         sheetComponentName: String?,
         rootSelectedPackage: Package?
@@ -30,8 +31,9 @@ extension PaywallEvent.ComponentInteractionData {
         )
     }
 
-    /// Package-selection sheet dismissed: `component_value` is `close`. `current*` reflects the sheet selection before dismiss;
-    /// `resulting*` reflects the root paywall after dismiss (e.g. revert to default).
+    /// Package-selection sheet dismissed: `component_value` is `close`.
+    /// `current*` reflects the sheet selection before dismiss; `resulting*` reflects the root paywall after dismiss
+    /// (e.g. revert to default).
     static func paywallPackageSelectionSheetClose(
         sheetComponentName: String?,
         sheetSelectedPackage: Package?,

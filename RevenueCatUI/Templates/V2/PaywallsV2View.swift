@@ -356,7 +356,10 @@ private struct LoadedPaywallsV2View: View {
                 alignment: .top
             )
             .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
-            .environment(\.planSelectionDefaultPackage, paywallState.viewModelFactory.packageValidator.defaultSelectedPackage)
+            .environment(
+                \.planSelectionDefaultPackage,
+                paywallState.viewModelFactory.packageValidator.defaultSelectedPackage
+            )
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
         }
