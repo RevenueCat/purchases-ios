@@ -36,9 +36,9 @@ enum PreviewHelpers {
     static let footerSize: CGSize = .init(width: 460, height: 460)
 
     private static let localBaseURL = Bundle.revenueCatUI.resourceURL ?? Bundle.revenueCatUI.bundleURL
-    private static let localImageName = "background.jpg"
+    private static let localImageName = "9a17e0a7_1689854430.jpeg"
 
-    /// Returns a copy of the offering with images pointing to the bundled `background.jpg`
+    /// Returns a copy of the offering with images pointing to a bundled image
     /// in RevenueCatUI's resources, so previews render without network access.
     static func withLocalImages(_ offering: Offering) -> Offering {
         guard var paywall = offering.paywall else { return offering }
@@ -124,7 +124,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
         // without waiting for an async .task to complete.
         if case let .success((_, config)) = self.configuration {
             let packages = config.packages.all.map(\.content)
-            viewModel.allEligibility = Dictionary(
+            let eligibilityDict = Dictionary(
                 uniqueKeysWithValues: packages.map { package in
                     let status: IntroEligibilityStatus = package.storeProduct.hasIntroDiscount
                         ? introEligibility
@@ -132,6 +132,12 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
                     return (package, status)
                 }
             )
+            viewModel.allEligibility = eligibilityDict
+
+            // Also populate singleEligibility for single-package templates (e.g. Template1View)
+            if case .single(let package) = config.packages {
+                viewModel.singleEligibility = eligibilityDict[package.content]
+            }
         }
 
         self._introEligibilityViewModel = StateObject(wrappedValue: viewModel)

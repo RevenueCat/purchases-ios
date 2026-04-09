@@ -120,6 +120,7 @@ let package = Package(
                 resources: [
                     // Note: these have to match the values in RevenueCatUI.podspec
                     .copy("Resources/background.jpg"),
+                    .copy("Resources/9a17e0a7_1689854430.jpeg"),
                     .process("Resources/icons.xcassets"),
                     .process("Resources/Media.xcassets")
                 ],
