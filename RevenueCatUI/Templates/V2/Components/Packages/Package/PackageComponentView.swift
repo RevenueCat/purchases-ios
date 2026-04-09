@@ -23,10 +23,25 @@ struct PackageComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
     let viewModel: PackageComponentViewModel
     let onDismiss: () -> Void
 
-    private var componentViewState: ComponentViewState {
+    private var packageViewState: ComponentViewState {
         // Gets selected package context from parent heirarchy
         guard let selectedPackage = packageContext.package,
                 let package = viewModel.package else {
@@ -37,12 +52,24 @@ struct PackageComponentView: View {
     }
 
     var body: some View {
-        if let package = self.viewModel.package {
+        if let package = self.viewModel.package,
+           viewModel.visible(
+               state: packageViewState,
+               condition: screenCondition,
+               isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(
+                   package: package
+               ),
+               isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(
+                   for: package
+               ),
+               selectedPackageId: selectedPackageId,
+               customVariables: customVariables
+           ) {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
                 onDismiss: self.onDismiss
             )
-            .environment(\.componentViewState, componentViewState)
+            .environment(\.componentViewState, packageViewState)
             // Overrides the existing PackageContext
             .environmentObject(PackageContext(
                 // This is needed so text component children use this
@@ -56,9 +83,6 @@ struct PackageComponentView: View {
                 package: package,
                 hasPurchaseButton: self.viewModel.hasPurchaseButton
             )
-
-        } else {
-            EmptyView()
         }
     }
 
@@ -268,7 +292,8 @@ fileprivate extension PackageComponentViewModel {
             component: component,
             offering: offering,
             stackViewModel: stackViewModel,
-            hasPurchaseButton: hasPurchaseButton
+            hasPurchaseButton: hasPurchaseButton,
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }
 
