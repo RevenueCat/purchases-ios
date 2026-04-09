@@ -72,7 +72,7 @@ struct PurchaseButtonComponentView: View {
             componentInteractionLogger(.paywallPurchaseButtonAction(
                 componentName: viewModel.componentName,
                 componentValue: viewModel.method?.description ?? "",
-                componentURL: viewModel.customWebCheckoutUrl,
+                componentURL: viewModel.urlForWebCheckout(packageContext: packageContext)?.url,
                 currentPackageIdentifier: packageContext.package?.identifier,
                 currentProductIdentifier: packageContext.package?.storeProduct.productIdentifier
             ))
