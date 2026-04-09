@@ -21,13 +21,16 @@ class HeaderComponentViewModel {
 
     let component: PaywallComponent.HeaderComponent
     let stackViewModel: StackComponentViewModel
+    let firstItemIgnoresSafeArea: Bool
 
     init(
         component: PaywallComponent.HeaderComponent,
-        stackViewModel: StackComponentViewModel
+        stackViewModel: StackComponentViewModel,
+        firstItemIgnoresSafeArea: Bool
     ) {
         self.component = component
         self.stackViewModel = stackViewModel
+        self.firstItemIgnoresSafeArea = firstItemIgnoresSafeArea
     }
 
 }

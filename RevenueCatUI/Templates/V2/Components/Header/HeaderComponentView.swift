@@ -18,6 +18,9 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct HeaderComponentView: View {
 
+    @Environment(\.safeAreaInsets)
+    private var safeAreaInsets
+
     private let viewModel: HeaderComponentViewModel
     private let onDismiss: () -> Void
 
@@ -32,7 +35,13 @@ struct HeaderComponentView: View {
     var body: some View {
         StackComponentView(
             viewModel: self.viewModel.stackViewModel,
-            onDismiss: self.onDismiss
+            onDismiss: self.onDismiss,
+            additionalPadding: .init(
+                top: self.viewModel.firstItemIgnoresSafeArea ? 0 : self.safeAreaInsets.top,
+                leading: 0,
+                bottom: 0,
+                trailing: 0
+            )
         )
     }
 
