@@ -1,7 +1,7 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 6.2.4 effective-5.10 (swiftlang-6.2.4.1.4 clang-1700.6.4.2)
+// swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.0.19.9 clang-1700.3.19.1)
 // swift-module-flags: -target arm64-apple-tvos13.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name RevenueCat
-// swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2.4
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2
 import Combine
 import CommonCrypto
 import CoreText
@@ -2150,108 +2150,6 @@ extension RevenueCat.StoreTransaction : Swift.Identifiable {
     get
   }
   public typealias ID = Swift.String
-}
-extension RevenueCat.PaywallComponent {
-  final public class StackComponent : RevenueCat.PaywallComponentBase {
-    public enum Overflow : Swift.String, RevenueCat.PaywallComponentBase {
-      case `default`
-      case scroll
-      public init(from decoder: any Swift.Decoder) throws
-      #if compiler(>=5.3) && $NonescapableTypes
-      public init?(rawValue: Swift.String)
-      #endif
-      public typealias RawValue = Swift.String
-      public var rawValue: Swift.String {
-        get
-      }
-    }
-    final public let visible: Swift.Bool?
-    final public let components: [RevenueCat.PaywallComponent]
-    final public let size: RevenueCat.PaywallComponent.Size
-    final public let spacing: CoreFoundation.CGFloat?
-    final public let backgroundColor: RevenueCat.PaywallComponent.ColorScheme?
-    final public let background: RevenueCat.PaywallComponent.Background?
-    final public let dimension: RevenueCat.PaywallComponent.Dimension
-    final public let padding: RevenueCat.PaywallComponent.Padding
-    final public let margin: RevenueCat.PaywallComponent.Padding
-    final public let shape: RevenueCat.PaywallComponent.Shape?
-    final public let border: RevenueCat.PaywallComponent.Border?
-    final public let shadow: RevenueCat.PaywallComponent.Shadow?
-    final public let badge: RevenueCat.PaywallComponent.Badge?
-    final public let overflow: RevenueCat.PaywallComponent.StackComponent.Overflow?
-    final public let overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialStackComponent>?
-    #if compiler(>=5.3) && $NonescapableTypes
-    public init(visible: Swift.Bool? = nil, components: [RevenueCat.PaywallComponent], dimension: RevenueCat.PaywallComponent.Dimension = .vertical(.center, .start), size: RevenueCat.PaywallComponent.Size = .init(width: .fill, height: .fit), spacing: CoreFoundation.CGFloat? = nil, backgroundColor: RevenueCat.PaywallComponent.ColorScheme? = nil, background: RevenueCat.PaywallComponent.Background? = nil, padding: RevenueCat.PaywallComponent.Padding = .zero, margin: RevenueCat.PaywallComponent.Padding = .zero, shape: RevenueCat.PaywallComponent.Shape? = nil, border: RevenueCat.PaywallComponent.Border? = nil, shadow: RevenueCat.PaywallComponent.Shadow? = nil, badge: RevenueCat.PaywallComponent.Badge? = nil, overflow: RevenueCat.PaywallComponent.StackComponent.Overflow? = nil, overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialStackComponent>? = nil)
-    #endif
-    final public func hash(into hasher: inout Swift.Hasher)
-    public static func == (lhs: RevenueCat.PaywallComponent.StackComponent, rhs: RevenueCat.PaywallComponent.StackComponent) -> Swift.Bool
-    @objc deinit
-    final public func encode(to encoder: any Swift.Encoder) throws
-    final public var hashValue: Swift.Int {
-      get
-    }
-    public init(from decoder: any Swift.Decoder) throws
-  }
-  final public class PartialStackComponent : RevenueCat.PaywallPartialComponent {
-    final public let visible: Swift.Bool?
-    final public let size: RevenueCat.PaywallComponent.Size?
-    final public let spacing: CoreFoundation.CGFloat?
-    final public let backgroundColor: RevenueCat.PaywallComponent.ColorScheme?
-    final public let background: RevenueCat.PaywallComponent.Background?
-    final public let dimension: RevenueCat.PaywallComponent.Dimension?
-    final public let padding: RevenueCat.PaywallComponent.Padding?
-    final public let margin: RevenueCat.PaywallComponent.Padding?
-    final public let shape: RevenueCat.PaywallComponent.Shape?
-    final public let border: RevenueCat.PaywallComponent.Border?
-    final public let shadow: RevenueCat.PaywallComponent.Shadow?
-    final public let overflow: RevenueCat.PaywallComponent.StackComponent.Overflow?
-    final public let badge: RevenueCat.PaywallComponent.Badge?
-    #if compiler(>=5.3) && $NonescapableTypes
-    public init(visible: Swift.Bool? = true, dimension: RevenueCat.PaywallComponent.Dimension? = nil, size: RevenueCat.PaywallComponent.Size? = nil, spacing: CoreFoundation.CGFloat? = nil, backgroundColor: RevenueCat.PaywallComponent.ColorScheme? = nil, background: RevenueCat.PaywallComponent.Background? = nil, padding: RevenueCat.PaywallComponent.Padding? = nil, margin: RevenueCat.PaywallComponent.Padding? = nil, shape: RevenueCat.PaywallComponent.Shape? = nil, border: RevenueCat.PaywallComponent.Border? = nil, shadow: RevenueCat.PaywallComponent.Shadow? = nil, overflow: RevenueCat.PaywallComponent.StackComponent.Overflow? = nil, badge: RevenueCat.PaywallComponent.Badge? = nil)
-    #endif
-    final public func hash(into hasher: inout Swift.Hasher)
-    public static func == (lhs: RevenueCat.PaywallComponent.PartialStackComponent, rhs: RevenueCat.PaywallComponent.PartialStackComponent) -> Swift.Bool
-    @objc deinit
-    final public func encode(to encoder: any Swift.Encoder) throws
-    final public var hashValue: Swift.Int {
-      get
-    }
-    public init(from decoder: any Swift.Decoder) throws
-  }
-}
-extension RevenueCat.PaywallComponent {
-  final public class PackageComponent : RevenueCat.PaywallComponentBase {
-    final public let packageID: Swift.String
-    final public let isSelectedByDefault: Swift.Bool
-    final public let visible: Swift.Bool?
-    final public let stack: RevenueCat.PaywallComponent.StackComponent
-    final public let overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialPackageComponent>?
-    #if compiler(>=5.3) && $NonescapableTypes
-    public init(packageID: Swift.String, isSelectedByDefault: Swift.Bool, visible: Swift.Bool? = nil, applePromoOfferProductCode: Swift.String?, stack: RevenueCat.PaywallComponent.StackComponent, overrides: RevenueCat.PaywallComponent.ComponentOverrides<RevenueCat.PaywallComponent.PartialPackageComponent>? = nil)
-    #endif
-    final public func hash(into hasher: inout Swift.Hasher)
-    public static func == (lhs: RevenueCat.PaywallComponent.PackageComponent, rhs: RevenueCat.PaywallComponent.PackageComponent) -> Swift.Bool
-    @objc deinit
-    final public func encode(to encoder: any Swift.Encoder) throws
-    final public var hashValue: Swift.Int {
-      get
-    }
-    public init(from decoder: any Swift.Decoder) throws
-  }
-  final public class PartialPackageComponent : RevenueCat.PaywallPartialComponent {
-    final public let visible: Swift.Bool?
-    #if compiler(>=5.3) && $NonescapableTypes
-    public init(visible: Swift.Bool? = nil)
-    #endif
-    final public func hash(into hasher: inout Swift.Hasher)
-    public static func == (lhs: RevenueCat.PaywallComponent.PartialPackageComponent, rhs: RevenueCat.PaywallComponent.PartialPackageComponent) -> Swift.Bool
-    @objc deinit
-    final public func encode(to encoder: any Swift.Encoder) throws
-    final public var hashValue: Swift.Int {
-      get
-    }
-    public init(from decoder: any Swift.Decoder) throws
-  }
 }
 public protocol RawDataContainer {
   associatedtype Content
