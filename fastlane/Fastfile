@@ -413,13 +413,6 @@ platform :ios do
     destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
 
-    # Replace broken symlink with a real directory so snapshots can be recorded
-    snapshots_path = File.expand_path("../Tests/RevenueCatUITests/Templates/__Snapshots__")
-    if File.symlink?(snapshots_path)
-      FileUtils.rm(snapshots_path)
-      FileUtils.mkdir_p(snapshots_path)
-    end
-
     begin
       xcodebuild(
         workspace: '.',
