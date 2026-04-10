@@ -130,6 +130,25 @@ extension PaywallEvent.ComponentInteractionData {
         )
     }
 
+    // MARK: - Button (purchase)
+
+    static func paywallPurchaseButtonAction(
+        componentName: String?,
+        componentValue: String,
+        componentURL: URL? = nil,
+        currentPackageIdentifier: String? = nil,
+        currentProductIdentifier: String? = nil
+    ) -> Self {
+        return .init(
+            componentType: .purchaseButton,
+            componentName: componentName,
+            componentValue: componentValue,
+            componentURL: componentURL,
+            currentPackageIdentifier: currentPackageIdentifier,
+            currentProductIdentifier: currentProductIdentifier
+        )
+    }
+
     // MARK: - Text
 
     static func paywallTextMarkdownLinkTap(
@@ -143,5 +162,4 @@ extension PaywallEvent.ComponentInteractionData {
             componentURL: url
         )
     }
-
 }

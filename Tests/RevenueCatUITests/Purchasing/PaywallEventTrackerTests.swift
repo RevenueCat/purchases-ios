@@ -379,6 +379,74 @@ class PaywallEventTrackerTests: TestCase {
         }
     }
 
+    func testTrackComponentInteraction_IncludesPurchaseButtonMetadataWhenProvided() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
+
+        tracker.trackPaywallImpression(Self.eventData)
+
+        expect(tracker.trackComponentInteraction(
+            .paywallPurchaseButtonAction(
+                componentName: "subscribe_button",
+                componentValue: "in_app_checkout",
+                currentPackageIdentifier: "annual",
+                currentProductIdentifier: "com.app.annual"
+            ),
+            sessionID: sessionID
+        )) == true
+
+        await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
+
+        let interactionEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .componentInteraction = $0 { return true }
+            return false
+        }))
+
+        guard case let .componentInteraction(_, _, interaction) = interactionEvent else {
+            fail("Expected componentInteraction event")
+            return
+        }
+
+        expect(interaction.componentType) == .purchaseButton
+        expect(interaction.componentName) == "subscribe_button"
+        expect(interaction.componentValue) == "in_app_checkout"
+        expect(interaction.currentPackageIdentifier) == "annual"
+        expect(interaction.currentProductIdentifier) == "com.app.annual"
+    }
+
+    func testTrackComponentInteraction_PurchaseButtonWithNilNameAndNoPackage() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
+
+        tracker.trackPaywallImpression(Self.eventData)
+
+        expect(tracker.trackComponentInteraction(
+            .paywallPurchaseButtonAction(
+                componentName: nil,
+                componentValue: "web_checkout"
+            ),
+            sessionID: sessionID
+        )) == true
+
+        await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
+
+        let interactionEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .componentInteraction = $0 { return true }
+            return false
+        }))
+
+        guard case let .componentInteraction(_, _, interaction) = interactionEvent else {
+            fail("Expected componentInteraction event")
+            return
+        }
+
+        expect(interaction.componentType) == .purchaseButton
+        expect(interaction.componentName).to(beNil())
+        expect(interaction.componentValue) == "web_checkout"
+        expect(interaction.currentPackageIdentifier).to(beNil())
+        expect(interaction.currentProductIdentifier).to(beNil())
+    }
+
     func testConcurrentCloseAndComponentInteractionAreThreadSafe() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
         let sessionID = Self.eventData.sessionIdentifier
