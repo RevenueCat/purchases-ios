@@ -213,7 +213,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             ),
             size: estimatedImageComponentSize(
-                previewWidth: previewDimension - 20,
+                previewWidth: previewDimension,
                 width: width,
                 height: height,
                 size: size,
@@ -385,7 +385,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                     )
                 ),
                 size: estimatedImageComponentSize(
-                    previewWidth: previewDimension - 20,
+                    previewWidth: previewDimension,
                     width: 750,
                     height: 530,
                     size: .init(width: .fixed(200), height: .fixed(200)),
@@ -432,7 +432,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                     )
                 ),
                 size: estimatedImageComponentSize(
-                    previewWidth: previewDimension - 20,
+                    previewWidth: previewDimension,
                     width: 750,
                     height: 530,
                     size: .init(width: .fixed(200), height: .fixed(200)),
@@ -483,7 +483,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                     )
                 ),
                 size: estimatedImageComponentSize(
-                    previewWidth: previewDimension - 20,
+                    previewWidth: previewDimension,
                     width: 750,
                     height: 530,
                     size: .init(width: .fixed(200), height: .fixed(200)),
@@ -534,7 +534,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                     )
                 ),
                 size: estimatedImageComponentSize(
-                    previewWidth: previewDimension - 20,
+                    previewWidth: previewDimension,
                     width: 750,
                     height: 530,
                     size: .init(width: .fixed(200), height: .fixed(200)),
@@ -582,7 +582,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                     )
                 ),
                 size: estimatedImageComponentSize(
-                    previewWidth: previewDimension - 20,
+                    previewWidth: previewDimension,
                     width: 750,
                     height: 530,
                     size: .init(width: .fixed(200), height: .fixed(200)),
@@ -630,7 +630,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                     )
                 ),
                 size: estimatedImageComponentSize(
-                    previewWidth: previewDimension - 20,
+                    previewWidth: previewDimension,
                     width: 750,
                     height: 530,
                     size: .init(width: .fixed(200), height: .fixed(200)),
@@ -678,7 +678,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                     )
                 ),
                 size: estimatedImageComponentSize(
-                    previewWidth: previewDimension - 20,
+                    previewWidth: previewDimension,
                     width: 750,
                     height: 530,
                     size: .init(width: .fixed(200), height: .fixed(200)),
