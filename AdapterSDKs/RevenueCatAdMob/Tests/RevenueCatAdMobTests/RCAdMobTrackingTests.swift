@@ -459,6 +459,29 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         XCTAssertEqual(self.mockTracker.loadedData[0].adUnitId, "")
     }
 
+    // MARK: - Show-time placement override
+
+    func testShowTimePlacementOverrideIsUsedInRevenueEvent() {
+        // Verifies that the paidEventHandler closure (set up at load time) reads placement
+        // from the delegate at fire time, so a show-time override is reflected in revenue tracking.
+        let fakeAd = FakeFullScreenAd()
+        let context = FullScreenLoadContext(
+            placement: "load_time_placement",
+            adUnitID: "ca-app-pub-test",
+            adFormat: .rewarded,
+            fullScreenContentDelegate: nil,
+            paidEventHandler: nil,
+            responseInfo: nil
+        )
+
+        self.rcAdMob.handleLoadOutcome(loadedAd: fakeAd, error: nil, context: context) { _, _ in }
+        (fakeAd.fullScreenContentDelegate as? RCAdMobFullScreenContentDelegate)?.placement = "show_time_placement"
+        fakeAd.paidEventHandler?(Self.makeAdValuePlaceholder())
+
+        XCTAssertEqual(self.mockTracker.revenueData.count, 1)
+        XCTAssertEqual(self.mockTracker.revenueData[0].placement, "show_time_placement")
+    }
+
     // MARK: - Helpers
 
     private static func makeAdValuePlaceholder() -> GoogleMobileAds.AdValue {
