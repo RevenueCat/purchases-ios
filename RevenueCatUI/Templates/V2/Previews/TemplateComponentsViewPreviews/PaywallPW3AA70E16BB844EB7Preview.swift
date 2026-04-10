@@ -19,20 +19,36 @@ import SwiftUI
 
 #if DEBUG
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private enum PaywallPW3AA70E16BB844EB7Preview {
 
+    static let locale = Locale(identifier: "en_US")
     static let safeAreaInsets = EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
 
     static let annualPackage = Package(
         identifier: "$rc_annual",
         packageType: .annual,
-        storeProduct: .init(
-            sk1Product: PreviewMock.Product(
-                price: 7.99,
-                unit: .year,
-                localizedTitle: "Pro Annual"
-            )
-        ),
+        storeProduct: TestStoreProduct(
+            localizedTitle: "Pro Annual",
+            price: 7.99,
+            currencyCode: "USD",
+            localizedPriceString: "$7.99",
+            productIdentifier: "com.revenuecat.preview.pw3aa70e16bb844eb7.annual",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Pro Annual",
+            subscriptionGroupIdentifier: "preview_group",
+            subscriptionPeriod: .init(value: 1, unit: .year),
+            introductoryDiscount: .init(
+                identifier: "intro",
+                price: 0,
+                localizedPriceString: "$0.00",
+                paymentMode: .freeTrial,
+                subscriptionPeriod: .init(value: 7, unit: .day),
+                numberOfPeriods: 1,
+                type: .introductory
+            ),
+            locale: Self.locale
+        ).toStoreProduct(),
         offeringIdentifier: "perplexity_cesar_2",
         webCheckoutUrl: nil
     )
@@ -44,25 +60,43 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
         webCheckoutUrl: nil
     )
 
-    static let paywallComponents = Offering.PaywallComponents(
-        uiConfig: PreviewUIConfig.make(),
-        data: .init(
-            id: "pw3aa70e16bb844eb7",
-            templateName: "components",
-            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
-            componentsConfig: .init(base: .init(
-                stack: Self.decodeBase64(Self.stackBase64),
-                header: Self.decodeBase64(Self.headerBase64),
-                stickyFooter: Self.decodeBase64(Self.stickyFooterBase64),
-                background: Self.decodeBase64(Self.backgroundBase64)
-            )),
-            componentsLocalizations: [
-                "en_US": Self.decodeBase64(Self.localizationsBase64)
-            ],
-            revision: 89,
-            defaultLocaleIdentifier: "en_US"
+    static let packageContext = PackageContext(
+        package: Self.annualPackage,
+        variableContext: .init(
+            packages: [Self.annualPackage],
+            showZeroDecimalPlacePrices: false
         )
     )
+
+    static let localizationProvider = LocalizationProvider(
+        locale: Self.locale,
+        localizedStrings: Self.decodeBase64(Self.localizationsBase64)
+    )
+
+    static let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
+
+    static let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+        stack: Self.decodeBase64(Self.stackBase64),
+        header: Self.decodeBase64(Self.headerBase64),
+        stickyFooter: Self.decodeBase64(Self.stickyFooterBase64),
+        background: Self.decodeBase64(Self.backgroundBase64)
+    )
+
+    static let rootViewModel: RootViewModel = {
+        var factory = ViewModelFactory()
+
+        do {
+            return try factory.toRootViewModel(
+                componentsConfig: Self.componentsConfig,
+                offering: Self.offering,
+                localizationProvider: Self.localizationProvider,
+                uiConfigProvider: Self.uiConfigProvider,
+                colorScheme: .light
+            )
+        } catch {
+            fatalError("Invalid preview configuration for pw3aa70e16bb844eb7: \(error)")
+        }
+    }()
 
     static func decodeBase64<T: Decodable>(_ base64: String) -> T {
         guard let data = Data(base64Encoded: base64) else {
@@ -103,7 +137,7 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
         "bmRfY29sb3IiOm51bGwsImNvbG9yIjp7ImxpZ2h0Ijp7InR5cGUiOiJoZXgiLCJ2YWx1ZSI6IiNGRjAxMDFGRiJ9fSwiZm9udF9u",
         "YW1lIjpudWxsLCJmb250X3NpemUiOjE0LCJmb250X3dlaWdodCI6InJlZ3VsYXIiLCJmb250X3dlaWdodF9pbnQiOjQwMCwiaG9y",
         "aXpvbnRhbF9hbGlnbm1lbnQiOiJsZWFkaW5nIiwiaWQiOiI4VkdEM2gzVkNiIiwibWFyZ2luIjp7ImJvdHRvbSI6MCwibGVhZGlu",
-        "ZyI6MCwidG9wIjowLCJ0cmFpbGluZyI6MH0sIm5hbWUiOiIiLCJwYWRkaW5nIjp7ImJvdHRvbSI6MCwibGVhZGluZyI6MCwidG9w",
+        "ZyI6MCwidG9wIjowLCJ0cmFpbGluZyI6MH0sIm5hbWUiOiIiLCJwYWRkaW5nIjp7ImJvdHRvbSI6MCwidG9wIjowLCJsZWFkaW5n",
         "IjowLCJ0cmFpbGluZyI6MH0sInNpemUiOnsiaGVpZ2h0Ijp7InR5cGUiOiJmaXQiLCJ2YWx1ZSI6bnVsbH0sIndpZHRoIjp7InR5",
         "cGUiOiJmaXQiLCJ2YWx1ZSI6bnVsbH19LCJ0ZXh0X2xpZCI6IlFlbjRHU2YybFciLCJ0eXBlIjoidGV4dCJ9XSwiZGltZW5zaW9u",
         "Ijp7ImFsaWdubWVudCI6ImxlYWRpbmciLCJkaXN0cmlidXRpb24iOiJzdGFydCIsInR5cGUiOiJ2ZXJ0aWNhbCJ9LCJpZCI6Ikps",
@@ -236,28 +270,32 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
         "aW9kIH19In0K"
     ].joined()
 
+    static func preview() -> some View {
+        ZStack(alignment: .top) {
+            Color.black
+
+            RootView(
+                viewModel: Self.rootViewModel,
+                onDismiss: {},
+                defaultPackage: Self.annualPackage
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .frame(width: 393, height: 852)
+        .previewRequiredPaywallsV2Properties(packageContext: Self.packageContext)
+        .environment(\.safeAreaInsets, Self.safeAreaInsets)
+        .emergeExpansion(false)
+        .previewLayout(.fixed(width: 393, height: 852))
+        .previewDisplayName("pw3aa70e16bb844eb7")
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PaywallPW3AA70E16BB844EB7Preview_Previews: PreviewProvider {
 
     static var previews: some View {
-        PaywallsV2View(
-            paywallComponents: PaywallPW3AA70E16BB844EB7Preview.paywallComponents,
-            offering: PaywallPW3AA70E16BB844EB7Preview.offering,
-            purchaseHandler: PurchaseHandler.default(),
-            introEligibilityChecker: .default(),
-            showZeroDecimalPlacePrices: false,
-            onDismiss: {},
-            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
-            failedToLoadFont: { _ in },
-            colorScheme: .light
-        )
-        .previewRequiredPaywallsV2Properties()
-        .environment(\.safeAreaInsets, PaywallPW3AA70E16BB844EB7Preview.safeAreaInsets)
-        .emergeExpansion(false)
-        .previewLayout(.fixed(width: 393, height: 852))
-        .previewDisplayName("pw3aa70e16bb844eb7")
+        PaywallPW3AA70E16BB844EB7Preview.preview()
     }
 
 }
