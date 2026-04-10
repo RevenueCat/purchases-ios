@@ -1,7 +1,7 @@
 # CODEOWNERS for purchases-ios
 
 # Default owners
-* @RevenueCat/coresdk
+* @RevenueCat/sdk
 
 # Customer Center code and related UI tests
 /RevenueCatUI/CustomerCenter/ @RevenueCat/customer-center
