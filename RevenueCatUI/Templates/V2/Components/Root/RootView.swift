@@ -114,14 +114,17 @@ private enum RootViewPreviewData {
         locale: .current,
         localizedStrings: [
             "paywall_title": .string("Unlock your smartest study routine"),
-            "paywall_subtitle": .string("The header image should extend through the top safe area."),
-            "header_title": .string("This header should start below the safe area")
+            "paywall_subtitle": .string("The first root image should extend through the top safe area."),
+            "header_title": .string("This text header should start below the safe area")
         ]
     )
 
     static let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
 
-    static let bodyStack = PaywallComponent.StackComponent(
+    static func contentStack(
+        topMargin: CGFloat = 0
+    ) -> PaywallComponent.StackComponent {
+        .init(
         components: [
             .stack(.init(
                 components: [
@@ -148,33 +151,39 @@ private enum RootViewPreviewData {
                 spacing: 12,
                 backgroundColor: .init(light: .hex("#FFFFFF")),
                 padding: .init(top: 28, bottom: 28, leading: 24, trailing: 24),
-                margin: .init(top: 280, bottom: 0, leading: 0, trailing: 0)
+                margin: .init(top: topMargin, bottom: 0, leading: 0, trailing: 0)
             ))
         ],
         dimension: .vertical(.center, .start),
         size: .init(width: .fill, height: .fill),
-        spacing: 0
+        spacing: 0,
+        backgroundColor: .init(light: .hex("#FFFFFF"))
     )
+    }
 
-    static let heroHeaderStack = PaywallComponent.StackComponent(
+    static let heroRootStack = PaywallComponent.StackComponent(
         components: [
-            .image(.init(
-                source: .init(
-                    light: .init(
-                        width: 750,
-                        height: 530,
-                        original: heroImageURL,
-                        heic: heroImageURL,
-                        heicLowRes: heroImageURL
-                    )
-                ),
-                size: .init(width: .fill, height: .fixed(300)),
-                fitMode: .fill
-            ))
+            .image(
+                .init(
+                    source: .init(
+                        light: .init(
+                            width: 750,
+                            height: 530,
+                            original: heroImageURL,
+                            heic: heroImageURL,
+                            heicLowRes: heroImageURL
+                        )
+                    ),
+                    size: .init(width: .fill, height: .fixed(300)),
+                    fitMode: .fill
+                )
+            ),
+            .stack(Self.contentStack())
         ],
-        dimension: .zlayer(.top),
-        size: .init(width: .fill, height: .fit),
-        spacing: 0
+        dimension: .vertical(.center, .start),
+        size: .init(width: .fill, height: .fill),
+        spacing: 0,
+        backgroundColor: .init(light: .hex("#FFFFFF"))
     )
 
     static let textHeaderStack = PaywallComponent.StackComponent(
@@ -195,18 +204,28 @@ private enum RootViewPreviewData {
         spacing: 0
     )
 
+    static let headerBodyStack = Self.contentStack(topMargin: 76)
+
     static func rootViewModel(
+        stack: PaywallComponent.StackComponent,
         headerStack: PaywallComponent.StackComponent
+    ) -> RootViewModel {
+        self.rootViewModel(stack: stack, headerStack: .some(headerStack))
+    }
+
+    static func rootViewModel(
+        stack: PaywallComponent.StackComponent,
+        headerStack: PaywallComponent.StackComponent?
     ) -> RootViewModel {
         var factory = ViewModelFactory()
 
         do {
             return try factory.toRootViewModel(
                 componentsConfig: .init(
-                    stack: self.bodyStack,
-                    header: .init(stack: headerStack),
+                    stack: stack,
+                    header: headerStack.map { .init(stack: $0) },
                     stickyFooter: nil,
-                    background: .color(.init(light: .hex("#101321")))
+                    background: .color(.init(light: .hex("#FFFFFF")))
                 ),
                 offering: self.offering,
                 localizationProvider: self.localizationProvider,
@@ -219,14 +238,23 @@ private enum RootViewPreviewData {
     }
 
     static func preview(
+        stack: PaywallComponent.StackComponent,
         headerStack: PaywallComponent.StackComponent,
         name: String
     ) -> some View {
+        self.preview(stack: stack, headerStack: .some(headerStack), name: name)
+    }
+
+    static func preview(
+        stack: PaywallComponent.StackComponent,
+        headerStack: PaywallComponent.StackComponent?,
+        name: String
+    ) -> some View {
         ZStack(alignment: .top) {
-            Color.black
+            Color.white
 
             RootView(
-                viewModel: self.rootViewModel(headerStack: headerStack),
+                viewModel: self.rootViewModel(stack: stack, headerStack: headerStack),
                 onDismiss: {},
                 defaultPackage: nil
             )
@@ -248,11 +276,13 @@ struct RootView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             RootViewPreviewData.preview(
-                headerStack: RootViewPreviewData.heroHeaderStack,
-                name: "Header hero extends safe area"
+                stack: RootViewPreviewData.heroRootStack,
+                headerStack: nil,
+                name: "Root hero extends safe area"
             )
 
             RootViewPreviewData.preview(
+                stack: RootViewPreviewData.headerBodyStack,
                 headerStack: RootViewPreviewData.textHeaderStack,
                 name: "Header text respects safe area"
             )
