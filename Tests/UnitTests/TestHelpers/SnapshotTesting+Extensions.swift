@@ -55,6 +55,7 @@ extension SwiftUI.View {
 
     func snapshot(
         size: CGSize,
+        record: Bool = SnapshotTesting.isRecording,
         file: FileString = #filePath,
         filename: StaticString = #file, // Used to generate the snapshot file name
         line: UInt = #line
@@ -75,7 +76,7 @@ extension SwiftUI.View {
                 as: .image(perceptualPrecision: perceptualPrecision, size: size, traits: traits),
                 named: "1", // Force each retry to end in `.1.png`
                 separateOSVersions: false,
-                record: true, // Always record so snapshots are saved to disk for Emerge BYOS upload
+                record: record,
                 file: filename,
                 line: line
             ),
