@@ -10,6 +10,20 @@ import Foundation
 import GoogleMobileAds
 @_spi(Experimental) import RevenueCat
 
+/// Bridges an `async throws` call to an Obj-C-style `(T?, Error?)` completion handler.
+internal func asyncToCompletion<T>(
+    _ method: @escaping () async throws -> T,
+    completion: @escaping (T?, Error?) -> Void
+) {
+    Task {
+        do {
+            completion(try await method(), nil)
+        } catch {
+            completion(nil, error)
+        }
+    }
+}
+
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.InterstitialAd {
 
@@ -31,20 +45,15 @@ import GoogleMobileAds
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
         completion: @escaping (GoogleMobileAds.InterstitialAd?, Error?) -> Void
     ) {
-        Task {
-            do {
-                let loadedAd = try await self.loadAndTrack(
-                    withAdUnitID: adUnitID,
-                    request: request,
-                    placement: placement,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler
-                )
-                completion(loadedAd, nil)
-            } catch {
-                completion(nil, error)
-            }
-        }
+        asyncToCompletion({
+            try await self.loadAndTrack(
+                withAdUnitID: adUnitID,
+                request: request,
+                placement: placement,
+                fullScreenContentDelegate: fullScreenContentDelegate,
+                paidEventHandler: paidEventHandler
+            )
+        }, completion: completion)
     }
 }
 
@@ -69,20 +78,15 @@ import GoogleMobileAds
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
         completion: @escaping (GoogleMobileAds.AppOpenAd?, Error?) -> Void
     ) {
-        Task {
-            do {
-                let loadedAd = try await self.loadAndTrack(
-                    withAdUnitID: adUnitID,
-                    request: request,
-                    placement: placement,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler
-                )
-                completion(loadedAd, nil)
-            } catch {
-                completion(nil, error)
-            }
-        }
+        asyncToCompletion({
+            try await self.loadAndTrack(
+                withAdUnitID: adUnitID,
+                request: request,
+                placement: placement,
+                fullScreenContentDelegate: fullScreenContentDelegate,
+                paidEventHandler: paidEventHandler
+            )
+        }, completion: completion)
     }
 }
 
@@ -107,20 +111,15 @@ import GoogleMobileAds
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
         completion: @escaping (GoogleMobileAds.RewardedAd?, Error?) -> Void
     ) {
-        Task {
-            do {
-                let loadedAd = try await self.loadAndTrack(
-                    withAdUnitID: adUnitID,
-                    request: request,
-                    placement: placement,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler
-                )
-                completion(loadedAd, nil)
-            } catch {
-                completion(nil, error)
-            }
-        }
+        asyncToCompletion({
+            try await self.loadAndTrack(
+                withAdUnitID: adUnitID,
+                request: request,
+                placement: placement,
+                fullScreenContentDelegate: fullScreenContentDelegate,
+                paidEventHandler: paidEventHandler
+            )
+        }, completion: completion)
     }
 }
 
@@ -145,20 +144,15 @@ import GoogleMobileAds
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
         completion: @escaping (GoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
     ) {
-        Task {
-            do {
-                let loadedAd = try await self.loadAndTrack(
-                    withAdUnitID: adUnitID,
-                    request: request,
-                    placement: placement,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler
-                )
-                completion(loadedAd, nil)
-            } catch {
-                completion(nil, error)
-            }
-        }
+        asyncToCompletion({
+            try await self.loadAndTrack(
+                withAdUnitID: adUnitID,
+                request: request,
+                placement: placement,
+                fullScreenContentDelegate: fullScreenContentDelegate,
+                paidEventHandler: paidEventHandler
+            )
+        }, completion: completion)
     }
 }
 
