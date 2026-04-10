@@ -10,20 +10,6 @@ import Foundation
 import GoogleMobileAds
 @_spi(Experimental) import RevenueCat
 
-/// Bridges an `async throws` call to an Obj-C-style `(T?, Error?)` completion handler.
-internal func asyncToCompletion<T>(
-    _ method: @escaping () async throws -> T,
-    completion: @escaping (T?, Error?) -> Void
-) {
-    Task {
-        do {
-            completion(try await method(), nil)
-        } catch {
-            completion(nil, error)
-        }
-    }
-}
-
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.InterstitialAd {
 
@@ -153,6 +139,20 @@ internal func asyncToCompletion<T>(
                 paidEventHandler: paidEventHandler
             )
         }, completion: completion)
+    }
+}
+
+/// Bridges an `async throws` call to an Obj-C-style `(T?, Error?)` completion handler.
+internal func asyncToCompletion<T>(
+    _ method: @escaping () async throws -> T,
+    completion: @escaping (T?, Error?) -> Void
+) {
+    Task {
+        do {
+            completion(try await method(), nil)
+        } catch {
+            completion(nil, error)
+        }
     }
 }
 
