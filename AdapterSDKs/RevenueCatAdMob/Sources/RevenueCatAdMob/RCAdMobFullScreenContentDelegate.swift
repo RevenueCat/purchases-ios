@@ -15,7 +15,7 @@ internal final class RCAdMobFullScreenContentDelegate: NSObject, GoogleMobileAds
 
     weak var delegate: GoogleMobileAds.FullScreenContentDelegate?
     private let rcAdMob: RCAdMob
-    private let placement: String?
+    var placement: String?
     private let adUnitID: String
     private let adFormat: RevenueCat.AdFormat
     private let responseInfoProvider: () -> GoogleMobileAds.ResponseInfo?
