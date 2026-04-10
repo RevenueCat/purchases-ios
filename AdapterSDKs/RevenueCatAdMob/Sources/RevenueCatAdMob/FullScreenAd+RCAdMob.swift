@@ -333,7 +333,7 @@ extension GoogleMobileAds.RewardedAd: RCFullScreenAdTracking {}
 @available(iOS 15.0, *)
 extension GoogleMobileAds.RewardedInterstitialAd: RCFullScreenAdTracking {}
 
-// MARK: - Safe delegate reassignment
+// MARK: - Delegate reassignment
 
 @available(iOS 15.0, *)
 internal extension RCFullScreenAdTracking {
