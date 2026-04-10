@@ -442,14 +442,12 @@ platform :ios do
 
   desc "Upload V1 template snapshots to Emerge using BYOS"
   lane :upload_v1_snapshots_to_emerge do
-    pr_url = ENV["CIRCLE_PULL_REQUEST"]
-    branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
-    pr_number = nil
-    if pr_url && pr_url.include?("/")
-      pr_number = pr_url.split("/").last
-    elsif branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
-      pr_number = $1
-    end
+    snapshots_path = File.expand_path("../Tests/RevenueCatUITests/Templates/__Snapshots__")
+    pngs = Dir.glob("#{snapshots_path}/**/*.png")
+    UI.user_error!("No snapshot PNGs found in #{snapshots_path}. Recording may have failed.") if pngs.empty?
+    UI.message("Found #{pngs.count} snapshot images to upload")
+
+    pr_number = detect_pr_number
 
     args = [
       "bundle", "exec", "emerge", "upload", "snapshots",
@@ -621,7 +619,7 @@ platform :ios do
     )
   end
 
-  private_lane :send_to_emerge do |options|
+  private_lane :detect_pr_number do
     pr_url = ENV["CIRCLE_PULL_REQUEST"]
     branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
     pr_number = nil
@@ -633,6 +631,11 @@ platform :ios do
     elsif branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
       pr_number = $1
     end
+    pr_number
+  end
+
+  private_lane :send_to_emerge do |options|
+    pr_number = detect_pr_number
 
     emerge_args = {repo_name: "RevenueCat/purchases-ios"}
     emerge_args[:pr_number] = pr_number if pr_number
