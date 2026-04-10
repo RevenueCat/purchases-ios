@@ -187,6 +187,8 @@ struct ImageComponentView_Previews: PreviewProvider {
         width: Int,
         height: Int
     ) -> some View {
+        let borderWidth: UInt = 4
+
         ImageComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
@@ -207,8 +209,17 @@ struct ImageComponentView_Previews: PreviewProvider {
                     ),
                     size: size,
                     fitMode: fitMode,
-                    border: .init(color: .init(light: .hex("#ff0000")), width: 4)
+                    border: .init(color: .init(light: .hex("#ff0000")), width: Double(borderWidth))
                 )
+            ),
+            size: estimatedImageComponentSize(
+                previewWidth: previewDimension,
+                width: width,
+                height: height,
+                size: size,
+                fitMode: fitMode,
+                horizontalInsets: CGFloat(borderWidth) * 2,
+                verticalInsets: CGFloat(borderWidth) * 2
             )
         )
         Text(.init("width: **\(size.width)** height: **\(size.height)**\n" +
@@ -216,7 +227,63 @@ struct ImageComponentView_Previews: PreviewProvider {
                    "width: **\(width)** height: **\(height)**"))
     }
 
+    // For the Emerge snapshot pipeline, we have to have the image available on first pass
+    // This is for prepopulating the size of the view so the snapshot test can be taken
+    // locally, the estimated size will be overwritten and the preview will render the
+    // actual computed size.
+    static func estimatedImageComponentSize(
+        previewWidth: CGFloat,
+        width: Int,
+        height: Int,
+        size: PaywallComponent.Size,
+        fitMode: PaywallComponent.FitMode,
+        horizontalInsets: CGFloat = 0,
+        verticalInsets: CGFloat = 0
+    ) -> CGSize {
+        _ = fitMode
+
+        let intrinsicWidth = max(CGFloat(width), 1)
+        let intrinsicHeight = max(CGFloat(height), 1)
+        let aspectRatio = intrinsicWidth / intrinsicHeight
+        let availableContentWidth = max(0, previewWidth - horizontalInsets)
+
+        let estimatedContentWidth: CGFloat
+        switch size.width {
+        case .fixed(let value):
+            estimatedContentWidth = CGFloat(value)
+        case .fill:
+            estimatedContentWidth = availableContentWidth
+        case .fit:
+            switch size.height {
+            case .fixed(let value):
+                estimatedContentWidth = min(availableContentWidth, CGFloat(value) * aspectRatio)
+            case .fit, .fill:
+                estimatedContentWidth = min(availableContentWidth, intrinsicWidth)
+            case .relative:
+                estimatedContentWidth = min(availableContentWidth, intrinsicWidth)
+            }
+        case .relative(let value):
+            estimatedContentWidth = max(0, availableContentWidth * CGFloat(value))
+        }
+
+        let estimatedContentHeight: CGFloat
+        switch size.height {
+        case .fixed(let value):
+            estimatedContentHeight = CGFloat(value)
+        case .fit, .fill:
+            estimatedContentHeight = estimatedContentWidth / aspectRatio
+        case .relative:
+            estimatedContentHeight = estimatedContentWidth / aspectRatio
+        }
+
+        return CGSize(
+            width: estimatedContentWidth + horizontalInsets,
+            height: estimatedContentHeight + verticalInsets
+        )
+    }
+
     static var fixedHeight: UInt = 360
+    static var previewDimension: CGFloat = 400
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
@@ -251,7 +318,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             }.background(.blue)
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Image stretching horizontally beyond bounds")
 
         ScrollView {
@@ -282,7 +349,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             }.background(.blue)
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Image streching vertically when height=fit")
 
         // Light - Fit
@@ -319,7 +386,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Light - Fit")
 
         // Light - Fill
@@ -356,7 +423,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Light - Fill")
 
         // Light - Gradient
@@ -397,7 +464,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Light - Gradient")
 
         // Light - Fit with Rounded Corner
@@ -438,7 +505,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Light - Rounded Corner")
 
         // Light - Fit with Circle
@@ -476,7 +543,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Light - Circle")
 
         // Light - Fit with Convex
@@ -514,7 +581,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Light - Fit with Convex")
 
         // Light - Fit with Concave
@@ -552,7 +619,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Light - Fit with Concave")
     }
 }
