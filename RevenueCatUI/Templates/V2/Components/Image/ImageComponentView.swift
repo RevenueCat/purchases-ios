@@ -213,7 +213,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             ),
             size: estimatedImageComponentSize(
-                previewWidth: previewDimension,
+                previewWidth: previewDimension - 20,
                 width: width,
                 height: height,
                 size: size,
@@ -372,6 +372,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                                 heicLowRes: catUrl
                             )
                         ),
+                        size: .init(width: .fixed(200), height: .fixed(141)),
                         fitMode: .fit,
                         border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
                         shadow: .init(
@@ -382,6 +383,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                             radius: 5, x: 5, y: 5
                         )
                     )
+                ),
+                size: estimatedImageComponentSize(
+                    previewWidth: previewDimension - 20,
+                    width: 750,
+                    height: 530,
+                    size: .init(width: .fixed(200), height: .fixed(200)),
+                    fitMode: .fit,
+                    horizontalInsets: CGFloat(8),
+                    verticalInsets: CGFloat(8)
                 )
             )
         }
@@ -409,6 +419,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                                 heicLowRes: catUrl
                             )
                         ),
+                        size: .init(width: .fixed(200), height: .fixed(141)),
                         fitMode: .fill,
                         border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
                         shadow: .init(
@@ -419,6 +430,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                             radius: 5, x: 5, y: 5
                         )
                     )
+                ),
+                size: estimatedImageComponentSize(
+                    previewWidth: previewDimension - 20,
+                    width: 750,
+                    height: 530,
+                    size: .init(width: .fixed(200), height: .fixed(200)),
+                    fitMode: .fill,
+                    horizontalInsets: CGFloat(8),
+                    verticalInsets: CGFloat(8)
                 )
             )
         }
@@ -446,6 +466,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                                 heicLowRes: catUrl
                             )
                         ),
+                        size: .init(width: .fixed(200), height: .fixed(141)),
                         fitMode: .fill,
                         colorOverlay: .init(light: .linear(0, [
                             .init(color: "#ffffff", percent: 0),
@@ -460,6 +481,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                             radius: 5, x: 5, y: 5
                         )
                     )
+                ),
+                size: estimatedImageComponentSize(
+                    previewWidth: previewDimension - 20,
+                    width: 750,
+                    height: 530,
+                    size: .init(width: .fixed(200), height: .fixed(200)),
+                    fitMode: .fill,
+                    horizontalInsets: CGFloat(8),
+                    verticalInsets: CGFloat(8)
                 )
             )
         }
@@ -487,6 +517,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                                 heicLowRes: catUrl
                             )
                         ),
+                        size: .init(width: .fixed(200), height: .fixed(141)),
                         fitMode: .fit,
                         maskShape: .rectangle(.init(topLeading: 40,
                                                     topTrailing: 40,
@@ -501,6 +532,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                             radius: 5, x: 5, y: 5
                         )
                     )
+                ),
+                size: estimatedImageComponentSize(
+                    previewWidth: previewDimension - 20,
+                    width: 750,
+                    height: 530,
+                    size: .init(width: .fixed(200), height: .fixed(200)),
+                    fitMode: .fit,
+                    horizontalInsets: CGFloat(8),
+                    verticalInsets: CGFloat(8)
                 )
             )
         }
@@ -528,6 +568,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                                 heicLowRes: catUrl
                             )
                         ),
+                        size: .init(width: .fixed(200), height: .fixed(141)),
                         fitMode: .fit,
                         maskShape: .circle,
                         border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
@@ -539,6 +580,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                             radius: 5, x: 5, y: 5
                         )
                     )
+                ),
+                size: estimatedImageComponentSize(
+                    previewWidth: previewDimension - 20,
+                    width: 750,
+                    height: 530,
+                    size: .init(width: .fixed(200), height: .fixed(200)),
+                    fitMode: .fit,
+                    horizontalInsets: CGFloat(8),
+                    verticalInsets: CGFloat(8)
                 )
             )
         }
@@ -566,6 +616,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                                 heicLowRes: catUrl
                             )
                         ),
+                        size: .init(width: .fixed(200), height: .fixed(141)),
                         fitMode: .fit,
                         maskShape: .convex,
                         border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
@@ -577,6 +628,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                             radius: 5, x: 5, y: 5
                         )
                     )
+                ),
+                size: estimatedImageComponentSize(
+                    previewWidth: previewDimension - 20,
+                    width: 750,
+                    height: 530,
+                    size: .init(width: .fixed(200), height: .fixed(200)),
+                    fitMode: .fit,
+                    horizontalInsets: CGFloat(8),
+                    verticalInsets: CGFloat(8)
                 )
             )
         }
@@ -604,6 +664,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                                 heicLowRes: catUrl
                             )
                         ),
+                        size: .init(width: .fixed(200), height: .fixed(141)),
                         fitMode: .fit,
                         maskShape: .concave,
                         border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
@@ -615,6 +676,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                             radius: 5, x: 5, y: 5
                         )
                     )
+                ),
+                size: estimatedImageComponentSize(
+                    previewWidth: previewDimension - 20,
+                    width: 750,
+                    height: 530,
+                    size: .init(width: .fixed(200), height: .fixed(200)),
+                    fitMode: .fit,
+                    horizontalInsets: CGFloat(8),
+                    verticalInsets: CGFloat(8)
                 )
             )
         }
