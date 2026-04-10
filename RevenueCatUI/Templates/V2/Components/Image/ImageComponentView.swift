@@ -67,7 +67,7 @@ struct ImageComponentView: View {
                     height: self.imageSize(style: style).height
                 )
                 ZStack {
-                    if style.size.width == .fill && self.size == nil {
+                    if self.size == nil {
                         // We cannot correctly render the image until we know the space the image can fill
                         // this will fill the space so we can get the correct measurements and render the image
                         self.decorate(Color.clear, with: style)
