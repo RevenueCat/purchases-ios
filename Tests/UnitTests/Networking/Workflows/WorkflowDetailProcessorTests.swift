@@ -26,11 +26,10 @@ class WorkflowDetailProcessorTests: TestCase {
         try super.setUpWithError()
 
         self.fetchedUrls = []
-        let fetcher = MockWorkflowCdnFetcher { [weak self] url, completion in
+        self.processor = WorkflowDetailProcessor(cdnFetch: { [weak self] url, completion in
             self?.fetchedUrls.append(url)
             completion(.success((try? JSONSerialization.data(withJSONObject: ["id": "from_cdn"])) ?? Data()))
-        }
-        self.processor = WorkflowDetailProcessor(cdnFetcher: fetcher)
+        })
     }
 
     func testInlineUnwrapsData() throws {
@@ -100,10 +99,9 @@ class WorkflowDetailProcessorTests: TestCase {
     }
 
     func testUseCdnPropagatesIOErrorAsCdnFetchFailed() throws {
-        let failingFetcher = MockWorkflowCdnFetcher { _, completion in
+        let failingProcessor = WorkflowDetailProcessor(cdnFetch: { _, completion in
             completion(.failure(URLError(.notConnectedToInternet)))
-        }
-        let failingProcessor = WorkflowDetailProcessor(cdnFetcher: failingFetcher)
+        })
 
         let envelope: [String: Any] = ["action": "use_cdn", "url": "https://x"]
         let data = try JSONSerialization.data(withJSONObject: envelope)
@@ -141,20 +139,6 @@ class WorkflowDetailProcessorTests: TestCase {
         }
 
         expect(result).to(beFailure())
-    }
-
-}
-
-private final class MockWorkflowCdnFetcher: WorkflowCdnFetcher {
-
-    private let handler: (String, @escaping (Result<Data, Error>) -> Void) -> Void
-
-    init(_ handler: @escaping (String, @escaping (Result<Data, Error>) -> Void) -> Void) {
-        self.handler = handler
-    }
-
-    func fetchCompiledWorkflowData(cdnUrl: String, completion: @escaping (Result<Data, Error>) -> Void) {
-        self.handler(cdnUrl, completion)
     }
 
 }

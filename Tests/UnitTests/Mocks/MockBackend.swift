@@ -47,7 +47,7 @@ class MockBackend: Backend {
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = MockRedeemWebPurchaseAPI()
         let virtualCurrenciesAPI = MockVirtualCurrenciesAPI()
-        let workflowsAPI = WorkflowsAPI(backendConfig: backendConfig)
+        let workflowsAPI = MockWorkflowsAPI()
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,

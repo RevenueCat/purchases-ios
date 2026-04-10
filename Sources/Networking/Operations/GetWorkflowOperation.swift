@@ -86,17 +86,13 @@ private extension GetWorkflowOperation {
     func handleResponse(_ response: VerifiedHTTPResponse<Data>.Result, completion: @escaping () -> Void) {
         switch response {
         case .failure(let networkError):
-            self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(
-                withCacheable: self
-            ) { callbackObject in
-                callbackObject.completion(.failure(BackendError.networkError(networkError)))
-            }
-            completion()
+            defer { completion() }
+            self.distribute(.failure(BackendError.networkError(networkError)))
 
         case .success(let verifiedResponse):
             self.detailProcessor.process(verifiedResponse.body) { processingResult in
+                defer { completion() }
                 self.distribute(self.backendResult(from: processingResult, envelopeData: verifiedResponse.body))
-                completion()
             }
         }
     }
@@ -113,10 +109,15 @@ private extension GetWorkflowOperation {
             } catch {
                 return .failure(BackendError.networkError(NetworkError.decoding(error, envelopeData)))
             }
-        case .failure(WorkflowDetailProcessingError.cdnFetchFailed(let underlyingError)):
-            return .failure(BackendError.networkError(NetworkError.networkError(underlyingError)))
+        case .failure(let processingError as WorkflowDetailProcessingError):
+            switch processingError {
+            case .cdnFetchFailed(let underlyingError):
+                return .failure(.networkError(NetworkError.networkError(underlyingError)))
+            case .invalidEnvelopeJson, .unknownAction, .missingInlineData, .missingCdnUrl:
+                return .failure(.networkError(NetworkError.decoding(processingError, envelopeData)))
+            }
         case .failure(let error):
-            return .failure(BackendError.networkError(NetworkError.decoding(error, envelopeData)))
+            return .failure(.networkError(NetworkError.decoding(error, envelopeData)))
         }
     }
 

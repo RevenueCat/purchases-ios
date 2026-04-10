@@ -37,6 +37,7 @@ class BaseBackendTests: TestCase {
     private(set) var redeemWebPurchaseAPI: RedeemWebPurchaseAPI!
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
     private(set) var workflowsAPI: WorkflowsAPI!
+    private(set) var mockCdnFetch: WorkflowCdnFetch!
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -93,7 +94,8 @@ class BaseBackendTests: TestCase {
         self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         self.redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         self.virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-        self.workflowsAPI = WorkflowsAPI(backendConfig: backendConfig)
+        self.mockCdnFetch = { _, completion in completion(.success(Data())) }
+        self.workflowsAPI = WorkflowsAPI(backendConfig: backendConfig, cdnFetch: self.mockCdnFetch)
 
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,

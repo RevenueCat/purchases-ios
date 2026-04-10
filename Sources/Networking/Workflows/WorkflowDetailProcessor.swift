@@ -13,11 +13,14 @@
 
 import Foundation
 
-/// Typed errors thrown by `WorkflowDetailProcessor` so callers can distinguish
-/// CDN network failures from envelope parsing failures.
+/// Typed errors thrown by `WorkflowDetailProcessor` so callers can distinguish failure modes.
 enum WorkflowDetailProcessingError: Error {
 
     case cdnFetchFailed(Error)
+    case invalidEnvelopeJson
+    case unknownAction(String)
+    case missingInlineData
+    case missingCdnUrl
 
 }
 
@@ -32,10 +35,10 @@ struct WorkflowDetailProcessingResult {
 /// `inline` (unwraps `data`) or `use_cdn` (fetches JSON from CDN).
 final class WorkflowDetailProcessor: Sendable {
 
-    private let cdnFetcher: WorkflowCdnFetcher
+    private let cdnFetch: WorkflowCdnFetch
 
-    init(cdnFetcher: WorkflowCdnFetcher) {
-        self.cdnFetcher = cdnFetcher
+    init(cdnFetch: @escaping WorkflowCdnFetch) {
+        self.cdnFetch = cdnFetch
     }
 
     func process(_ data: Data, completion: @escaping (Result<WorkflowDetailProcessingResult, Error>) -> Void) {
@@ -43,12 +46,12 @@ final class WorkflowDetailProcessor: Sendable {
         do {
             json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         } catch {
-            completion(.failure(error))
+            completion(.failure(WorkflowDetailProcessingError.invalidEnvelopeJson))
             return
         }
 
         guard let json else {
-            completion(.failure(Self.processingError("Failed to parse workflow detail envelope as JSON dictionary")))
+            completion(.failure(WorkflowDetailProcessingError.invalidEnvelopeJson))
             return
         }
 
@@ -57,14 +60,14 @@ final class WorkflowDetailProcessor: Sendable {
         guard let actionString = json["action"] as? String,
               let action = WorkflowResponseAction(rawValue: actionString) else {
             let actionValue = json["action"] as? String ?? "nil"
-            completion(.failure(Self.processingError("Unknown workflow response action: \(actionValue)")))
+            completion(.failure(WorkflowDetailProcessingError.unknownAction(actionValue)))
             return
         }
 
         switch action {
         case .inline:
             guard let inlineData = json["data"] else {
-                completion(.failure(Self.processingError("Missing 'data' in inline workflow response")))
+                completion(.failure(WorkflowDetailProcessingError.missingInlineData))
                 return
             }
             do {
@@ -76,10 +79,10 @@ final class WorkflowDetailProcessor: Sendable {
 
         case .useCdn:
             guard let cdnUrl = json["url"] as? String else {
-                completion(.failure(Self.processingError("Missing 'url' in use_cdn workflow response")))
+                completion(.failure(WorkflowDetailProcessingError.missingCdnUrl))
                 return
             }
-            self.cdnFetcher.fetchCompiledWorkflowData(cdnUrl: cdnUrl) { result in
+            self.cdnFetch(cdnUrl) { result in
                 switch result {
                 case .success(let workflowData):
                     completion(.success(.init(workflowData: workflowData, enrolledVariants: enrolledVariants)))
@@ -88,12 +91,6 @@ final class WorkflowDetailProcessor: Sendable {
                 }
             }
         }
-    }
-
-    private static func processingError(_ message: String) -> Error {
-        NSError(domain: "RevenueCat.WorkflowDetailProcessor",
-                code: -1,
-                userInfo: [NSLocalizedDescriptionKey: message])
     }
 
 }

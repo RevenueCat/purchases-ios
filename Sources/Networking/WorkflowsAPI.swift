@@ -24,11 +24,23 @@ class WorkflowsAPI {
     private let detailProcessor: WorkflowDetailProcessor
 
     init(backendConfig: BackendConfiguration,
-         cdnFetcher: WorkflowCdnFetcher = DirectWorkflowCdnFetcher()) {
+         cdnFetch: WorkflowCdnFetch? = nil) {
         self.backendConfig = backendConfig
         self.workflowsListCallbackCache = .init()
         self.workflowDetailCallbackCache = .init()
-        self.detailProcessor = WorkflowDetailProcessor(cdnFetcher: cdnFetcher)
+        self.detailProcessor = WorkflowDetailProcessor(
+            cdnFetch: cdnFetch ?? Self.defaultCdnFetch(httpClient: backendConfig.httpClient)
+        )
+    }
+
+    private static func defaultCdnFetch(httpClient: HTTPClient) -> WorkflowCdnFetch {
+        return { cdnUrl, completion in
+            guard let url = URL(string: cdnUrl) else {
+                completion(.failure(URLError(.badURL)))
+                return
+            }
+            httpClient.fetchRawData(from: url, completion: completion)
+        }
     }
 
     func getWorkflows(appUserID: String,
