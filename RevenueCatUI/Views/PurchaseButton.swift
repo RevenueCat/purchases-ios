@@ -11,7 +11,7 @@
 //  
 //  Created by Nacho Soto on 7/18/23.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -31,6 +31,8 @@ struct PurchaseButton: View {
     private var isEnabled
     @Environment(\.purchaseInitiatedAction)
     private var purchaseInitiatedAction: PurchaseInitiatedAction?
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
 
     init(
         packages: TemplateViewConfiguration.PackageConfiguration,
@@ -89,6 +91,13 @@ struct PurchaseButton: View {
                 return
             }
 
+            let selectedContent = self.selectedPackage.content
+            self.componentInteractionLogger(.paywallPurchaseButtonAction(
+                componentValue: PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout.description,
+                currentPackageIdentifier: selectedContent.identifier,
+                currentProductIdentifier: selectedContent.storeProduct.productIdentifier
+            ))
+
             // Check if there's a purchase interceptor
             if let interceptor = self.purchaseInitiatedAction {
                 // Wait for the interceptor to call resume before proceeding
@@ -102,7 +111,7 @@ struct PurchaseButton: View {
                 guard result else { return }
             }
 
-            _ = try await self.purchaseHandler.purchase(package: self.selectedPackage.content)
+            _ = try await self.purchaseHandler.purchase(package: selectedContent)
         } label: {
             ConsistentPackageContentView(
                 packages: self.packages.all,

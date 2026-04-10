@@ -133,7 +133,7 @@ extension PaywallEvent.ComponentInteractionData {
     // MARK: - Button (purchase)
 
     static func paywallPurchaseButtonAction(
-        componentName: String?,
+        componentName: String? = nil,
         componentValue: String,
         componentURL: URL? = nil,
         currentPackageIdentifier: String? = nil,

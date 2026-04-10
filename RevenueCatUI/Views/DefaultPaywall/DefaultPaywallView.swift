@@ -15,7 +15,7 @@
 #if canImport(AppKit)
 import AppKit
 #endif
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
@@ -171,6 +171,13 @@ struct DefaultPaywallView: View {
                 VStack {
                     let purchaseButton = Button {
                         if let selected {
+                            self.componentInteractionLogger(.paywallPurchaseButtonAction(
+                                componentName: nil,
+                                componentValue: PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout.description,
+                                componentURL: nil,
+                                currentPackageIdentifier: selected.identifier,
+                                currentProductIdentifier: selected.storeProduct.productIdentifier
+                            ))
                             Task(priority: .userInitiated) {
                                 do {
                                     _ = try await handler.purchase(package: selected)
