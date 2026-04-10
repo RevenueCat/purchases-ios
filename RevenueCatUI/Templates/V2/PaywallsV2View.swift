@@ -212,7 +212,7 @@ struct PaywallsV2View: View {
                     .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
                     .environment(
                         \.componentInteractionLogger,
-                        PaywallEventTracker.shared.componentInteractionLogger(sessionID: self.paywallSessionID)
+                        self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
                     )
                     .environmentObject(self.purchaseHandler)
                     .environmentObject(self.introOfferEligibilityContext)

@@ -455,6 +455,10 @@ extension PurchaseHandler {
         self.paywallEventTracker.trackPaywallImpression(eventData)
     }
 
+    func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {
+        return self.paywallEventTracker.componentInteractionLogger(sessionID: sessionID)
+    }
+
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallClose() -> Bool {

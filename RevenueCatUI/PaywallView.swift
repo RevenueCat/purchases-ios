@@ -591,7 +591,7 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.introEligibility)
             .environment(
                 \.componentInteractionLogger,
-                PaywallEventTracker.shared.componentInteractionLogger(sessionID: self.paywallSessionID)
+                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
             )
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
