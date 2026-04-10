@@ -45,6 +45,14 @@ struct ImageComponentView: View {
 
     let viewModel: ImageComponentViewModel
 
+    var renderForPreview: Bool {
+        #if DEBUG
+        return ProcessInfo.isRunningForPreviews
+        #else
+        false
+        #endif
+    }
+
     @State var size: CGSize?
 
     var body: some View {
@@ -71,7 +79,7 @@ struct ImageComponentView: View {
                         // We cannot correctly render the image until we know the space the image can fill
                         // this will fill the space so we can get the correct measurements and render the image
                         self.decorate(Color.clear, with: style)
-                    } else if ProcessInfo.isRunningForPreviews {
+                    } else if renderForPreview {
                         #if DEBUG
                         self.decorate(
                             self.renderImage(
