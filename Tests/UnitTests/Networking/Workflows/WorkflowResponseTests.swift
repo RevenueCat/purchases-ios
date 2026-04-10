@@ -28,7 +28,7 @@ class WorkflowResponseTests: TestCase {
           "ui_config": {
             "app": { "colors": {}, "fonts": {} },
             "localizations": {},
-            "variable_config": {}
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
           }
         }
         """.data(using: .utf8)!
@@ -61,7 +61,7 @@ class WorkflowResponseTests: TestCase {
           "ui_config": {
             "app": { "colors": {}, "fonts": {} },
             "localizations": {},
-            "variable_config": {}
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
           },
           "content_max_width": 100
         }
@@ -89,7 +89,7 @@ class WorkflowResponseTests: TestCase {
           "ui_config": {
             "app": { "colors": {}, "fonts": {} },
             "localizations": {},
-            "variable_config": {}
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
           }
         }
         """.data(using: .utf8)!
@@ -113,7 +113,7 @@ class WorkflowResponseTests: TestCase {
           "ui_config": {
             "app": { "colors": {}, "fonts": {} },
             "localizations": {},
-            "variable_config": {}
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
           },
           "metadata": { "some_key": "some_value" }
         }
