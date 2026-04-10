@@ -145,9 +145,10 @@ private enum RootViewPreviewData {
     static let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
     static let rootHeroPreviewName = "RootView: first root image ignores top safe area"
     static let textHeaderPreviewName = "RootView: text header respects top safe area"
-    static let rootHeroPreviewComment =
-        "Expected: the first root image starts at the very top and fills the top safe area."
-    static let textHeaderPreviewComment = "Expected: the text header starts below the top safe area inset."
+    static let rootHeroPreviewTitle = "Root image fills the top safe area"
+    static let rootHeroPreviewSubtitle = "Verifies that the first root image extends through the top inset."
+    static let textHeaderPreviewTitle = "Text header starts below the top inset"
+    static let textHeaderPreviewSubtitle = "Verifies that a non-image header behaves as the safe-area extension."
 
     static func makeLocalPreviewImageURL(
         filename: String,
@@ -289,25 +290,41 @@ private enum RootViewPreviewData {
     static func preview(
         stack: PaywallComponent.StackComponent,
         headerStack: PaywallComponent.StackComponent,
-        comment: String,
+        title: String,
+        subtitle: String,
         name: String
     ) -> some View {
-        self.preview(stack: stack, headerStack: .some(headerStack), comment: comment, name: name)
+        self.preview(
+            stack: stack,
+            headerStack: .some(headerStack),
+            title: title,
+            subtitle: subtitle,
+            name: name
+        )
     }
 
     static func preview(
         stack: PaywallComponent.StackComponent,
         headerStack: PaywallComponent.StackComponent?,
-        comment: String,
+        title: String,
+        subtitle: String,
         name: String
     ) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(comment)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.black.opacity(0.75))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
+        VStack(spacing: 12) {
+            VStack(spacing: 4) {
+                Text(title)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(Color.black)
+                    .multilineTextAlignment(.center)
+
+                Text(subtitle)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(Color.black.opacity(0.65))
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
 
             ZStack(alignment: .top) {
                 Color.white
@@ -326,12 +343,12 @@ private enum RootViewPreviewData {
                     .stroke(Color.black.opacity(0.08), lineWidth: 1)
             )
         }
-        .frame(width: 393, height: 912)
+        .frame(width: 425, height: 936)
         .background(Color.white)
         .previewRequiredPaywallsV2Properties()
         .environment(\.safeAreaInsets, self.safeAreaInsets)
         .emergeExpansion(false)
-        .previewLayout(.fixed(width: 393, height: 912))
+        .previewLayout(.fixed(width: 425, height: 936))
         .previewDisplayName(name)
     }
 
@@ -345,14 +362,16 @@ struct RootView_Previews: PreviewProvider {
             RootViewPreviewData.preview(
                 stack: RootViewPreviewData.heroRootStack,
                 headerStack: nil,
-                comment: RootViewPreviewData.rootHeroPreviewComment,
+                title: RootViewPreviewData.rootHeroPreviewTitle,
+                subtitle: RootViewPreviewData.rootHeroPreviewSubtitle,
                 name: RootViewPreviewData.rootHeroPreviewName
             )
 
             RootViewPreviewData.preview(
                 stack: RootViewPreviewData.headerBodyStack,
                 headerStack: RootViewPreviewData.textHeaderStack,
-                comment: RootViewPreviewData.textHeaderPreviewComment,
+                title: RootViewPreviewData.textHeaderPreviewTitle,
+                subtitle: RootViewPreviewData.textHeaderPreviewSubtitle,
                 name: RootViewPreviewData.textHeaderPreviewName
             )
         }

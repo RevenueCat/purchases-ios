@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallPW3AA70E16BB844EB7Preview.swift
+//  PaywallPW6328703E14874CA2Preview.swift
 //
 //  Created by Codex on 4/10/26.
 
@@ -20,15 +20,25 @@ import SwiftUI
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum PaywallPW3AA70E16BB844EB7Preview {
+private enum PaywallPW6328703E14874CA2Preview {
 
     static let safeAreaInsets = EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
-    static let previewDisplayName = "Paywall pw3aa70e16bb844eb7: header text + body hero safe area"
-    static let previewTitle = "Header text starts below the top inset"
-    static let previewSubtitle = "Verifies a text-only header with a body hero placed immediately beneath it."
+    static let previewDisplayName =
+        "Paywall pw6328703e14874ca2: header stays above nested hero text"
+    static let previewTitle = "Header stays above nested hero text"
+    static let previewSubtitle =
+        "Verifies safe-area propagation through a root vertical stack with a nested hero zlayer."
+
+    static let heroImageURL = Self.makeLocalPreviewImageURL(
+        filename: "paywall-pw6328703e14874ca2-hero.png",
+        base64: [
+            "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNgYPjP",
+            "wMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
+        ].joined()
+    )
 
     static let offering = Offering(
-        identifier: "perplexity_cesar_2",
+        identifier: "preview",
         serverDescription: "",
         availablePackages: [],
         webCheckoutUrl: nil
@@ -37,11 +47,12 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
     static let localizationProvider: LocalizationProvider = .init(
         locale: Locale(identifier: "en_US"),
         localizedStrings: [
-            "header_label": .string("Text"),
-            "hero_label": .string("Hero image area"),
+            "header_label_primary": .string("Text 2"),
+            "header_label_secondary": .string("Header marker"),
+            "hero_overlay_label": .string("Text"),
             "paywall_title": .string("Unlock Your Smartest Study Routine"),
-            "paywall_subtitle": .string("Header + hero image paywall used to verify top safe-area rendering."),
-            "footer_copy": .string("Subscribe to Pro for just $7.99/yr"),
+            "paywall_subtitle": .string("Nested hero zlayer preview used to verify header safe-area propagation."),
+            "footer_copy": .string("Subscribe to Pro for just $79.99/yr"),
             "footer_cta": .string("Continue"),
             "footer_restore": .string("Restore Purchases")
         ]
@@ -49,10 +60,39 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
 
     static let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
 
+    static func makeLocalPreviewImageURL(
+        filename: String,
+        base64: String
+    ) -> URL {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+
+        if !FileManager.default.fileExists(atPath: url.path) {
+            guard let data = Data(base64Encoded: base64) else {
+                fatalError("Invalid base64 preview image for pw6328703e14874ca2")
+            }
+
+            do {
+                try data.write(to: url, options: .atomic)
+            } catch {
+                fatalError("Failed to write pw6328703e14874ca2 preview image: \(error)")
+            }
+        }
+
+        return url
+    }
+
     static let headerStack = PaywallComponent.StackComponent(
         components: [
             .text(.init(
-                text: "header_label",
+                text: "header_label_primary",
+                color: .init(light: .hex("#FF3B30")),
+                padding: .zero,
+                margin: .zero,
+                fontSize: 14,
+                horizontalAlignment: .leading
+            )),
+            .text(.init(
+                text: "header_label_secondary",
                 color: .init(light: .hex("#FF3B30")),
                 padding: .zero,
                 margin: .zero,
@@ -62,26 +102,35 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
         ],
         dimension: .vertical(.leading, .start),
         size: .init(width: .fill, height: .fit),
-        spacing: 0,
+        spacing: 4,
         padding: .init(top: 0, bottom: 8, leading: 12, trailing: 12)
     )
 
-    static let heroBlock = PaywallComponent.StackComponent(
+    static let heroZLayerStack = PaywallComponent.StackComponent(
         components: [
+            .image(.init(
+                source: .init(light: .init(
+                    width: 1024,
+                    height: 1024,
+                    original: Self.heroImageURL,
+                    heic: Self.heroImageURL,
+                    heicLowRes: Self.heroImageURL
+                )),
+                size: .init(width: .fill, height: .fixed(300)),
+                fitMode: .fill
+            )),
             .text(.init(
-                text: "hero_label",
-                fontWeight: .semibold,
-                color: .init(light: .hex("#FFFFFF")),
+                text: "hero_overlay_label",
+                color: .init(light: .hex("#62FC03")),
                 padding: .zero,
-                margin: .zero,
-                fontSize: 16,
-                horizontalAlignment: .center
+                margin: .init(top: 8, bottom: 0, leading: 12, trailing: 0),
+                fontSize: 14,
+                horizontalAlignment: .leading
             ))
         ],
-        dimension: .vertical(.center, .center),
-        size: .init(width: .fill, height: .fixed(300)),
-        spacing: 0,
-        backgroundColor: .init(light: .hex("#1F2A44"))
+        dimension: .zlayer(.topLeading),
+        size: .init(width: .fill, height: .fit),
+        spacing: 0
     )
 
     static let contentBlock = PaywallComponent.StackComponent(
@@ -113,7 +162,7 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
 
     static let bodyStack = PaywallComponent.StackComponent(
         components: [
-            .stack(Self.heroBlock),
+            .stack(Self.heroZLayerStack),
             .stack(Self.contentBlock)
         ],
         dimension: .vertical(.center, .start),
@@ -184,7 +233,7 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
                 colorScheme: .light
             )
         } catch {
-            fatalError("Invalid preview configuration for pw3aa70e16bb844eb7: \(error)")
+            fatalError("Invalid preview configuration for pw6328703e14874ca2: \(error)")
         }
     }()
 
@@ -229,10 +278,10 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PaywallPW3AA70E16BB844EB7Preview_Previews: PreviewProvider {
+struct PaywallPW6328703E14874CA2Preview_Previews: PreviewProvider {
 
     static var previews: some View {
-        PaywallPW3AA70E16BB844EB7Preview.preview()
+        PaywallPW6328703E14874CA2Preview.preview()
     }
 
 }
