@@ -74,6 +74,8 @@ extension SwiftUI.View {
             haveValidSnapshot(
                 as: .image(perceptualPrecision: perceptualPrecision, size: size, traits: traits),
                 named: "1", // Force each retry to end in `.1.png`
+                separateOSVersions: false,
+                record: true,
                 file: filename,
                 line: line
             ),

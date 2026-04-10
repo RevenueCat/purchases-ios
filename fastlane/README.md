@@ -152,7 +152,7 @@ Runs all the watchOS tests
 [bundle exec] fastlane ios test_revenuecat_admob
 ```
 
-Runs all RevenueCat_AdMob tests (SPM package, workspace '.' like test_revenuecatui)
+Runs all RevenueCatAdMob tests (standalone SPM package under AdapterSDKs/RevenueCatAdMob)
 
 ### ios test_revenuecatui
 
@@ -254,14 +254,6 @@ Release to CocoaPods
 
 ```sh
 [bundle exec] fastlane ios push_revenuecatui_pod
-```
-
-Release to CocoaPods
-
-### ios push_revenuecat_admob_pod
-
-```sh
-[bundle exec] fastlane ios push_revenuecat_admob_pod
 ```
 
 Release to CocoaPods

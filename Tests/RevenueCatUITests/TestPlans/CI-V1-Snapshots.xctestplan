@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "9A1CEA19-F9E9-4C9C-9FC8-6F9A5B29F2AE",
+      "id" : "9A1CEA19-F9E9-4C9C-9FC8-6F9A5B29F2AF",
       "name" : "Test Scheme Action",
       "options" : {
 
@@ -10,24 +10,15 @@
   ],
   "defaultOptions" : {
     "codeCoverage" : false,
-    "environmentVariableEntries" : [
-      {
-        "key" : "CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS",
-        "value" : "1"
-      }
-    ],
     "maximumTestExecutionTimeAllowance" : 180,
-    "testExecutionOrdering" : "random",
     "testTimeoutsEnabled" : true
   },
   "testTargets" : [
     {
-      "skippedTests" : [
+      "selectedTests" : [
         "OtherPaywallViewTests",
         "PaywallViewDynamicTypeTests",
         "PaywallViewLocalizationTests",
-        "TakeScreenshotTests",
-        "TakeScreenshotTests\/testPaywallValidationScreenshots()",
         "Template1ViewTests",
         "Template2ViewTests",
         "Template3ViewTests",

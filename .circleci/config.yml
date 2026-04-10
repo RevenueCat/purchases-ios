@@ -813,6 +813,29 @@ jobs:
           destination: scan-test-output-revenuecatui-17
       - slack-notify-on-fail
 
+  record-and-upload-paywalls-v1-snapshots:
+    executor:
+      name: macos-executor
+      xcode_version: "26.3"
+
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: Record V1 snapshots and upload to Emerge
+          command: bundle exec fastlane record_and_upload_v1_snapshots
+          no_output_timeout: 15m
+          environment:
+            DEVICE: iPhone 17,OS=26.2
+      - store_test_results:
+          path: fastlane/test_output/v1-snapshots/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: v1-snapshots
+      - slack-notify-on-fail
+
   run-revenuecat-ui-ios-26:
     executor:
       name: macos-executor
@@ -2052,202 +2075,14 @@ workflows:
           - equal: [run-manual-tests, << pipeline.parameters.action >>]
     jobs:
       # =============================================================
-      # Reduced Test Suite: Auto-run on every push
+      # TEMPORARY: Only run V1 snapshot recording + Emerge upload
       # =============================================================
-      - lint
-      - check-api-changes:
-          context:
-            - slack-secrets-ios
-      - run-test-ios-26:
-          context:
-            - slack-secrets
-      - pod-lib-lint:
-          context:
-            - slack-secrets
-      - run-revenuecat-ui-ios-26:
-          context:
-            - slack-secrets
-      - emerge_purchases_ui_snapshot_tests:
-          context:
-            - slack-secrets
-      - emerge_binary_size_analysis:
-          context:
-            - slack-secrets
-      - build-tv-watch-mac-and-visionos:
+      - record-and-upload-paywalls-v1-snapshots:
           context:
             - slack-secrets
 
-      # =============================================================
-      # Hold gate for the Full Test Suite
-      # =============================================================
-      - approve-full-tests:
-          type: approval
-
-      # =============================================================
-      # Full Test Suite: Gated behind approve-full-tests
-      # =============================================================
-
-      # Backend Integration Tests
-      - backend-integration-tests-SK1:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - backend-integration-tests-SK2:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - backend-integration-tests-custom-entitlements:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - backend-integration-tests-other:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - backend-integration-tests-offline:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-
-      # Older iOS Version Tests
-      - run-test-ios-16:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - run-test-ios-15-and-14:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - run-test-ios-18-and-17:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-
-      # Platform Runtime Tests
-      - run-test-tvos-and-macos:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - run-test-watchos:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-
-      # RevenueCatUI Tests
-      - run-revenuecat-ui-ios-18-and-17:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - spm-revenuecat-ui-ios-15:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - spm-revenuecat-ui-ios-16:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - spm-revenuecat-ui-watchos:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-
-      # Installation Tests
-      - installation-tests-all-but-carthage:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - installation-tests-carthage:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-
-      # SPM / Other Build Tests
-      - api-tests:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - spm-receipt-parser:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - revenuecat-admob-tests:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - deploy-purchase-tester:
-          dry_run: true
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - run-all-maestro-e2e-tests:
-          requires:
-            - approve-full-tests
-          context:
-            - e2e-tests
-            - slack-secrets
-      - docs-build:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-
-      # =============================================================
-      # Summary gate: blocks merge until all jobs pass
-      # =============================================================
-      - all-tasks-passed:
-          requires:
-            # Reduced Test Suite
-            - lint
-            - check-api-changes
-            - run-test-ios-26
-            - pod-lib-lint
-            - run-revenuecat-ui-ios-26
-            - emerge_purchases_ui_snapshot_tests
-            - emerge_binary_size_analysis
-            - build-tv-watch-mac-and-visionos
-            # Full Test Suite
-            - backend-integration-tests-SK1
-            - backend-integration-tests-SK2
-            - backend-integration-tests-custom-entitlements
-            - backend-integration-tests-other
-            - backend-integration-tests-offline
-            - run-test-ios-16
-            - run-test-ios-15-and-14
-            - run-test-ios-18-and-17
-            - run-test-tvos-and-macos
-            - run-test-watchos
-            - spm-revenuecat-ui-ios-15
-            - spm-revenuecat-ui-ios-16
-            - run-revenuecat-ui-ios-18-and-17
-            - spm-revenuecat-ui-watchos
-            - installation-tests-all-but-carthage
-            - installation-tests-carthage
-            - api-tests
-            - spm-receipt-parser
-            - revenuecat-admob-tests
-            - deploy-purchase-tester
-            - run-all-maestro-e2e-tests
-            - docs-build
+      # TEMPORARILY REMOVED: Full test suite and gates
+      # Restore after BYOS testing is complete
 
   deploy-tag:
     when:

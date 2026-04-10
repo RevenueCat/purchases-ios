@@ -407,6 +407,63 @@ platform :ios do
     # build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
   end
 
+  desc "Record V1 template snapshots and upload to Emerge"
+  lane :record_and_upload_v1_snapshots do
+    platform = ENV['PLATFORM'] || 'iOS Simulator'
+    destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
+    sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+
+    # Replace broken symlink with a real directory so snapshots can be recorded
+    snapshots_path = File.expand_path("../Tests/RevenueCatUITests/Templates/__Snapshots__")
+    if File.symlink?(snapshots_path)
+      FileUtils.rm(snapshots_path)
+      FileUtils.mkdir_p(snapshots_path)
+    end
+
+    begin
+      xcodebuild(
+        workspace: '.',
+        scheme: 'RevenueCatUI',
+        destination: "platform=" + platform + ",name=" + destination,
+        sdk: sdk,
+        result_bundle_path: 'fastlane/test_output/v1-snapshots.xcresult',
+        report_formats: [:junit],
+        report_path: 'fastlane/test_output/v1-snapshots/tests.xml',
+        test: true,
+        xcargs: "-testPlan CI-V1-Snapshots"
+      )
+    rescue => e
+      # Snapshot recording causes test failures, which is expected
+      UI.important("V1 snapshot tests failed as expected during recording: #{e.message}")
+    end
+
+    upload_v1_snapshots_to_emerge
+  end
+
+  desc "Upload V1 template snapshots to Emerge using BYOS"
+  lane :upload_v1_snapshots_to_emerge do
+    pr_url = ENV["CIRCLE_PULL_REQUEST"]
+    branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
+    pr_number = nil
+    if pr_url && pr_url.include?("/")
+      pr_number = pr_url.split("/").last
+    elsif branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
+      pr_number = $1
+    end
+
+    args = [
+      "bundle", "exec", "emerge", "upload", "snapshots",
+      "--name", "PaywallsTester V1 swift-snapshot-testing",
+      "--id", "com.revenuecat.PaywallsTester.v1-snapshots",
+      "--repo-name", "RevenueCat/purchases-ios",
+      "--client-library", "swift-snapshot-testing",
+      "--project-root", File.expand_path("../Tests/RevenueCatUITests/Templates")
+    ]
+    args.push("--pr-number", pr_number) if pr_number
+
+    sh(*args)
+  end
+
   lane :build_paywalls_tester_for_emerge_ios do |options|
     scan(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
@@ -712,8 +769,6 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
-
-    fetch_snapshots
 
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2

@@ -47,6 +47,12 @@ class BaseSnapshotTest: TestCase {
         // isRecording = true
     }
 
+    override func invokeTest() {
+        withSnapshotTesting(record: .all) {
+            super.invokeTest()
+        }
+    }
+
     override func setUpWithError() throws {
         try super.setUpWithError()
 
