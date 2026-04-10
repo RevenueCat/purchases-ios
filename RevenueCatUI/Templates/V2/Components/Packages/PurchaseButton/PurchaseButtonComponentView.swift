@@ -69,13 +69,6 @@ struct PurchaseButtonComponentView: View {
 
     var body: some View {
         AsyncButton {
-            componentInteractionLogger(.paywallPurchaseButtonAction(
-                componentName: viewModel.componentName,
-                componentValue: viewModel.method?.description ?? "",
-                componentURL: viewModel.urlForWebCheckout(packageContext: packageContext)?.url,
-                currentPackageIdentifier: packageContext.package?.identifier,
-                currentProductIdentifier: packageContext.package?.storeProduct.productIdentifier
-            ))
             try await self.purchase()
         } label: {
             // Not passing an onDismiss - nothing in this stack should be able to dismiss
@@ -132,6 +125,8 @@ struct PurchaseButtonComponentView: View {
             guard result else { return }
         }
 
+        self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
+
         let promoOffer = self.paywallPromoOfferCache.get(for: selectedPackage)
 
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
@@ -151,7 +146,38 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        self.logPurchaseButtonInteractionForWeb(launchWebCheckout: launchWebCheckout)
+
         self.openWebPaywallLink(launchWebCheckout: launchWebCheckout)
+    }
+
+    private func logPurchaseButtonInteractionForInApp(selectedPackage: Package) {
+        let componentValue: String
+        if let method = self.viewModel.method {
+            componentValue = method.description
+        } else {
+            componentValue = PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout.description
+        }
+
+        self.componentInteractionLogger(.paywallPurchaseButtonAction(
+            componentName: self.viewModel.componentName,
+            componentValue: componentValue,
+            componentURL: nil,
+            currentPackageIdentifier: selectedPackage.identifier,
+            currentProductIdentifier: selectedPackage.storeProduct.productIdentifier
+        ))
+    }
+
+    private func logPurchaseButtonInteractionForWeb(
+        launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout
+    ) {
+        self.componentInteractionLogger(.paywallPurchaseButtonAction(
+            componentName: self.viewModel.componentName,
+            componentValue: self.viewModel.method?.description ?? "",
+            componentURL: launchWebCheckout.url,
+            currentPackageIdentifier: self.packageContext.package?.identifier,
+            currentProductIdentifier: self.packageContext.package?.storeProduct.productIdentifier
+        ))
     }
 
     private func openWebPaywallLink(launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout) {
