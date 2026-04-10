@@ -2190,12 +2190,6 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
-      - record-and-upload-paywalls-v1-snapshots:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-
       # Installation Tests
       - installation-tests-all-but-carthage:
           requires:
