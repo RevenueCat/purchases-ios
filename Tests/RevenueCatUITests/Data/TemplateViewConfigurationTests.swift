@@ -1125,7 +1125,8 @@ private extension BaseTemplateViewConfigurationTests {
         localizedPriceString: "$199.99",
         productIdentifier: "com.revenuecat.coins",
         productType: .consumable,
-        localizedDescription: "Coins"
+        localizedDescription: "Coins",
+        locale: .current
     )
 
     private static let offeringIdentifier = "offering"
