@@ -1318,7 +1318,6 @@
 		DB3395D32F840A400079250C /* GetWorkflowOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D02F840A400079250C /* GetWorkflowOperation.swift */; };
 		DB3395D52F840A570079250C /* WorkflowsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D42F840A570079250C /* WorkflowsResponse.swift */; };
 		DB3395DB2F840A790079250C /* WorkflowDetailProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D82F840A790079250C /* WorkflowDetailProcessor.swift */; };
-		DB3395DC2F840A790079250C /* WorkflowCdnFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D72F840A790079250C /* WorkflowCdnFetcher.swift */; };
 		DB3395DD2F840A790079250C /* WorkflowResponseAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D92F840A790079250C /* WorkflowResponseAction.swift */; };
 		DB3395E12F840AA60079250C /* WorkflowsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395E02F840AA60079250C /* WorkflowsAPI.swift */; };
 		DB3395E32F840ACD0079250C /* BackendGetWorkflowsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395E22F840ACD0079250C /* BackendGetWorkflowsTests.swift */; };
@@ -1326,6 +1325,8 @@
 		DB3395E82F840ADA0079250C /* WorkflowDetailProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395E42F840ADA0079250C /* WorkflowDetailProcessorTests.swift */; };
 		DB36994E2F435CDC00B1F049 /* PriceFormatterExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB36994D2F435CDC00B1F049 /* PriceFormatterExtensions.swift */; };
 		DB55E6262ECE012600636909 /* FlexSpacer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB55E6252ECE012600636909 /* FlexSpacer.swift */; };
+		DBAA1FA82F88EAEB000E8C81 /* MockWorkflowsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBAA1FA72F88EAEB000E8C81 /* MockWorkflowsAPI.swift */; };
+		DBAA1FA92F88EAEB000E8C81 /* MockWorkflowsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBAA1FA72F88EAEB000E8C81 /* MockWorkflowsAPI.swift */; };
 		DBD2432F2EBDF4BC0066AC6F /* PromotionalOfferViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBD243292EBDF4B80066AC6F /* PromotionalOfferViewTests.swift */; };
 		DBE7C6552F02D48900A28663 /* StoreProductDiscount+CustomerCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE7C6542F02D48900A28663 /* StoreProductDiscount+CustomerCenter.swift */; };
 		DDD45A15A641C0FF0BEF6178 /* PaywallCountdownComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A05E9E1B04B32B832DB194 /* PaywallCountdownComponent.swift */; };
@@ -2857,7 +2858,6 @@
 		DB3395D02F840A400079250C /* GetWorkflowOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetWorkflowOperation.swift; sourceTree = "<group>"; };
 		DB3395D12F840A400079250C /* GetWorkflowsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetWorkflowsOperation.swift; sourceTree = "<group>"; };
 		DB3395D42F840A570079250C /* WorkflowsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsResponse.swift; sourceTree = "<group>"; };
-		DB3395D72F840A790079250C /* WorkflowCdnFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowCdnFetcher.swift; sourceTree = "<group>"; };
 		DB3395D82F840A790079250C /* WorkflowDetailProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowDetailProcessor.swift; sourceTree = "<group>"; };
 		DB3395D92F840A790079250C /* WorkflowResponseAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowResponseAction.swift; sourceTree = "<group>"; };
 		DB3395E02F840AA60079250C /* WorkflowsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsAPI.swift; sourceTree = "<group>"; };
@@ -2866,6 +2866,7 @@
 		DB3395E52F840ADA0079250C /* WorkflowResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowResponseTests.swift; sourceTree = "<group>"; };
 		DB36994D2F435CDC00B1F049 /* PriceFormatterExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatterExtensions.swift; sourceTree = "<group>"; };
 		DB55E6252ECE012600636909 /* FlexSpacer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlexSpacer.swift; sourceTree = "<group>"; };
+		DBAA1FA72F88EAEB000E8C81 /* MockWorkflowsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWorkflowsAPI.swift; sourceTree = "<group>"; };
 		DBD243292EBDF4B80066AC6F /* PromotionalOfferViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOfferViewTests.swift; sourceTree = "<group>"; };
 		DBE7C6542F02D48900A28663 /* StoreProductDiscount+CustomerCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreProductDiscount+CustomerCenter.swift"; sourceTree = "<group>"; };
 		EF970D13102945639A882002 /* ATTConsentStatusIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATTConsentStatusIntegrationTests.swift; sourceTree = "<group>"; };
@@ -4132,6 +4133,7 @@
 				FD18BF4A2DF0DA5400140FD6 /* MockVirtualCurrencyManager.swift */,
 				FDE57AA62DF892C900101CE2 /* MockVirtualCurrenciesAPI.swift */,
 				75A0E7912E3D205C00A60BD5 /* MockTestStorePurchaseUI.swift */,
+				DBAA1FA72F88EAEB000E8C81 /* MockWorkflowsAPI.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -6074,7 +6076,6 @@
 		DB3395DA2F840A790079250C /* Workflows */ = {
 			isa = PBXGroup;
 			children = (
-				DB3395D72F840A790079250C /* WorkflowCdnFetcher.swift */,
 				DB3395D82F840A790079250C /* WorkflowDetailProcessor.swift */,
 				DB3395D92F840A790079250C /* WorkflowResponseAction.swift */,
 			);
@@ -6820,6 +6821,7 @@
 				3543913826F90FE100E669DF /* MockIntroEligibilityCalculator.swift in Sources */,
 				FD2046842CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift in Sources */,
 				3543914126F911CC00E669DF /* MockDeviceCache.swift in Sources */,
+				DBAA1FA82F88EAEB000E8C81 /* MockWorkflowsAPI.swift in Sources */,
 				3543913C26F9101600E669DF /* MockOperationDispatcher.swift in Sources */,
 				4FA4C9752A16D49E007D2803 /* MockOfflineEntitlementsManager.swift in Sources */,
 				F5E5E2EE28479BD000216ECD /* ProductsFetcherSK2Tests.swift in Sources */,
@@ -7015,7 +7017,6 @@
 				2D11F5E1250FF886005A70E8 /* AttributionStrings.swift in Sources */,
 				DB3395DB2F840A790079250C /* WorkflowDetailProcessor.swift in Sources */,
 				DB3395E12F840AA60079250C /* WorkflowsAPI.swift in Sources */,
-				DB3395DC2F840A790079250C /* WorkflowCdnFetcher.swift in Sources */,
 				DB3395DD2F840A790079250C /* WorkflowResponseAction.swift in Sources */,
 				2CD72944268A826F00BFC976 /* Date+Extensions.swift in Sources */,
 				57069A5428E3918400B86355 /* AsyncExtensions.swift in Sources */,
@@ -7488,6 +7489,7 @@
 				B31C8BEC285BD58F001017B7 /* MockIdentityAPI.swift in Sources */,
 				351B513D26D4491E00BD2BD7 /* MockDeviceCache.swift in Sources */,
 				57910CB329C3889B006209D5 /* DispatchTimeIntervalExtensionsTests.swift in Sources */,
+				DBAA1FA92F88EAEB000E8C81 /* MockWorkflowsAPI.swift in Sources */,
 				351B515C26D44B7900BD2BD7 /* MockIntroEligibilityCalculator.swift in Sources */,
 				5733D01128D00354008638D8 /* PromotionalOfferTests.swift in Sources */,
 				57544C28285FA94B004E54D5 /* MockAttributeSyncing.swift in Sources */,

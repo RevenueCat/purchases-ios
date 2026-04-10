@@ -13,6 +13,13 @@
 
 import Foundation
 
+/// A closure that fetches compiled workflow JSON from a CDN URL.
+///
+/// - Parameters:
+///   - cdnUrl: The CDN URL string to fetch from.
+///   - completion: Called with the raw `Data` on success, or an `Error` on failure.
+typealias WorkflowCdnFetch = @Sendable (String, @escaping (Result<Data, Error>) -> Void) -> Void
+
 /// Typed errors thrown by `WorkflowDetailProcessor` so callers can distinguish failure modes.
 enum WorkflowDetailProcessingError: Error {
 
