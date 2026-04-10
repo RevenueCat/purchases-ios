@@ -100,8 +100,14 @@ struct RootView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private enum RootViewPreviewData {
 
-    static let heroImageURL = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
     static let safeAreaInsets = EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
+    static let heroImageURL = Self.makeLocalPreviewImageURL(
+        filename: "root-view-preview-hero.png",
+        base64: [
+            "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNgYPjP",
+            "wMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
+        ].joined()
+    )
 
     static let offering = Offering(
         identifier: "preview",
@@ -120,6 +126,27 @@ private enum RootViewPreviewData {
     )
 
     static let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
+
+    static func makeLocalPreviewImageURL(
+        filename: String,
+        base64: String
+    ) -> URL {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+
+        if !FileManager.default.fileExists(atPath: url.path) {
+            guard let data = Data(base64Encoded: base64) else {
+                fatalError("Invalid base64 preview image for RootView preview")
+            }
+
+            do {
+                try data.write(to: url, options: .atomic)
+            } catch {
+                fatalError("Failed to write RootView preview image: \(error)")
+            }
+        }
+
+        return url
+    }
 
     static func contentStack(
         topMargin: CGFloat = 0
