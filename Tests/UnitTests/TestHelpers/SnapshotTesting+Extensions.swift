@@ -56,6 +56,7 @@ extension SwiftUI.View {
     func snapshot(
         size: CGSize,
         record: Bool = false,
+        separateOSVersions: Bool = true,
         file: FileString = #filePath,
         filename: StaticString = #file, // Used to generate the snapshot file name
         line: UInt = #line
@@ -75,7 +76,7 @@ extension SwiftUI.View {
             haveValidSnapshot(
                 as: .image(perceptualPrecision: perceptualPrecision, size: size, traits: traits),
                 named: "1", // Force each retry to end in `.1.png`
-                separateOSVersions: false,
+                separateOSVersions: separateOSVersions,
                 record: record,
                 file: filename,
                 line: line

@@ -125,7 +125,7 @@ extension View {
         filename: StaticString = #file,
         line: UInt = #line
     ) {
-        self.snapshot(size: size, record: true, file: file, filename: filename, line: line)
+        self.snapshot(size: size, record: true, separateOSVersions: false, file: file, filename: filename, line: line)
     }
 
     @MainActor
