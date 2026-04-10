@@ -47,12 +47,6 @@ class BaseSnapshotTest: TestCase {
         // isRecording = true
     }
 
-    override func invokeTest() {
-        withSnapshotTesting(record: .all) {
-            super.invokeTest()
-        }
-    }
-
     override func setUpWithError() throws {
         try super.setUpWithError()
 
@@ -123,11 +117,22 @@ extension BaseSnapshotTest {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
+    /// Record snapshot for Emerge BYOS upload.
+    @MainActor
+    func recordSnapshot(
+        size: CGSize,
+        file: FileString = #filePath,
+        filename: StaticString = #file,
+        line: UInt = #line
+    ) {
+        self.snapshot(size: size, record: true, file: file, filename: filename, line: line)
+    }
+
     @MainActor
     func snapshotTablet(file: StaticString = #file, line: UInt = #line) {
         self
             .environment(\.userInterfaceIdiom, .pad)
-            .snapshot(
+            .recordSnapshot(
                 size: BaseSnapshotTest.iPadSize,
                 filename: file,
                 line: line
@@ -138,7 +143,7 @@ extension View {
     func snapshotLandscape(file: StaticString = #file, line: UInt = #line) {
         self
             .environment(\.verticalSizeClass, .compact)
-            .snapshot(
+            .recordSnapshot(
                 size: BaseSnapshotTest.landscapeSize,
                 filename: file,
                 line: line
