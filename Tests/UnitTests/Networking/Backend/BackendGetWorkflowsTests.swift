@@ -254,7 +254,10 @@ private extension BackendGetWorkflowsTests {
             "fonts": [:] as [String: Any]
         ] as [String: Any],
         "localizations": [:] as [String: Any],
-        "variable_config": [:] as [String: Any]
+        "variable_config": [
+            "variable_compatibility_map": [:] as [String: String],
+            "function_compatibility_map": [:] as [String: String]
+        ] as [String: Any]
     ]
 
     static let emptyWorkflowsResponse: [String: Any] = [
@@ -282,7 +285,10 @@ private extension BackendGetWorkflowTests {
             "fonts": [:] as [String: Any]
         ] as [String: Any],
         "localizations": [:] as [String: Any],
-        "variable_config": [:] as [String: Any]
+        "variable_config": [
+            "variable_compatibility_map": [:] as [String: String],
+            "function_compatibility_map": [:] as [String: String]
+        ] as [String: Any]
     ]
 
     static let minimalWorkflowData: [String: Any] = [
