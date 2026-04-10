@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ComponentInteractionData+PaywallControls.swift
+//  ComponentInteractionData+Factories.swift
 //
 //  Created by Monika Mateska on 08/04/2026.
 
@@ -162,4 +162,77 @@ extension PaywallEvent.ComponentInteractionData {
             componentURL: url
         )
     }
+
+    // MARK: - Package selection
+
+    /// Package-selection sheet became visible: `component_value` is `open`.
+    /// `current*` reflects the root paywall selection.
+    static func paywallPackageSelectionSheetOpen(
+        sheetComponentName: String?,
+        rootSelectedPackage: Package?
+    ) -> Self {
+        return .init(
+            componentType: .packageSelectionSheet,
+            componentName: sheetComponentName,
+            componentValue: "open",
+            currentPackageIdentifier: rootSelectedPackage?.identifier,
+            currentProductIdentifier: rootSelectedPackage?.storeProduct.productIdentifier
+        )
+    }
+
+    /// Package-selection sheet dismissed: `component_value` is `close`.
+    /// `current*` reflects the sheet selection before dismiss; `resulting*` reflects the root paywall after dismiss
+    /// (e.g. revert to default).
+    static func paywallPackageSelectionSheetClose(
+        sheetComponentName: String?,
+        sheetSelectedPackage: Package?,
+        resultingRootPackage: Package?
+    ) -> Self {
+        return .init(
+            componentType: .packageSelectionSheet,
+            componentName: sheetComponentName,
+            componentValue: "close",
+            currentPackageIdentifier: sheetSelectedPackage?.identifier,
+            resultingPackageIdentifier: resultingRootPackage?.identifier,
+            currentProductIdentifier: sheetSelectedPackage?.storeProduct.productIdentifier,
+            resultingProductIdentifier: resultingRootPackage?.storeProduct.productIdentifier
+        )
+    }
+
+    static func paywallPackageRowSelection(
+        componentName: String? = nil,
+        destination: Package,
+        origin: Package?,
+        defaultPackage: Package? = nil
+    ) -> Self {
+        return .init(
+            componentType: .package,
+            componentName: componentName,
+            componentValue: destination.identifier,
+            originPackageIdentifier: origin?.identifier,
+            destinationPackageIdentifier: destination.identifier,
+            defaultPackageIdentifier: defaultPackage?.identifier,
+            originProductIdentifier: origin?.storeProduct.productIdentifier,
+            destinationProductIdentifier: destination.storeProduct.productIdentifier,
+            defaultProductIdentifier: defaultPackage?.storeProduct.productIdentifier
+        )
+    }
+
+    static func paywallTierSelection(
+        tierDisplayName: String,
+        componentName: String? = nil,
+        originPackage: Package?,
+        destinationPackage: Package?
+    ) -> Self {
+        return .init(
+            componentType: .tab,
+            componentName: componentName,
+            componentValue: tierDisplayName,
+            originPackageIdentifier: originPackage?.identifier,
+            destinationPackageIdentifier: destinationPackage?.identifier,
+            originProductIdentifier: originPackage?.storeProduct.productIdentifier,
+            destinationProductIdentifier: destinationPackage?.storeProduct.productIdentifier
+        )
+    }
+
 }
