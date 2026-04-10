@@ -37,7 +37,9 @@ class BaseBackendTests: TestCase {
     private(set) var redeemWebPurchaseAPI: RedeemWebPurchaseAPI!
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
     private(set) var workflowsAPI: WorkflowsAPI!
-    private(set) var mockCdnFetch: WorkflowCdnFetch!
+    /// Controls what the CDN fetch returns. Tests can reassign this before triggering a `use_cdn` response
+    /// because the closure registered with `WorkflowsAPI` captures `self` and reads this property at call time.
+    var stubbedCdnFetch: WorkflowCdnFetch = { _, completion in completion(.success(Data())) }
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -94,8 +96,9 @@ class BaseBackendTests: TestCase {
         self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         self.redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         self.virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-        self.mockCdnFetch = { _, completion in completion(.success(Data())) }
-        self.workflowsAPI = WorkflowsAPI(backendConfig: backendConfig, cdnFetch: self.mockCdnFetch)
+        self.workflowsAPI = WorkflowsAPI(backendConfig: backendConfig, cdnFetch: { [weak self] cdnUrl, completion in
+            self?.stubbedCdnFetch(cdnUrl, completion) ?? completion(.success(Data()))
+        })
 
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,

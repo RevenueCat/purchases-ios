@@ -228,6 +228,30 @@ class BackendGetWorkflowTests: BaseBackendTests {
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
 
+    func testGetWorkflowUseCdnFetchesWorkflowFromCdnUrl() throws {
+        let cdnWorkflowData = try JSONSerialization.data(withJSONObject: Self.minimalWorkflowData)
+        self.stubbedCdnFetch = { _, completion in completion(.success(cdnWorkflowData)) }
+
+        self.httpClient.mock(
+            requestPath: .getWorkflow(appUserID: Self.userID, workflowId: "wf_1"),
+            response: .init(statusCode: .success, response: Self.cdnEnvelopeResponse)
+        )
+
+        let result = waitUntilValue { completed in
+            self.workflowsAPI.getWorkflow(
+                appUserID: Self.userID,
+                workflowId: "wf_1",
+                isAppBackgrounded: false,
+                completion: completed
+            )
+        }
+
+        expect(result).to(beSuccess { fetchResult in
+            expect(fetchResult.workflow.id) == "wf_1"
+            expect(fetchResult.workflow.displayName) == "Test Workflow"
+        })
+    }
+
     func testGetWorkflowSkipsBackendCallIfAppUserIDIsEmpty() {
         waitUntil { completed in
             self.workflowsAPI.getWorkflow(
@@ -316,6 +340,11 @@ private extension BackendGetWorkflowTests {
         "enrolled_variants": [
             "experiment_1": "variant_a"
         ] as [String: String]
+    ]
+
+    static let cdnEnvelopeResponse: [String: Any] = [
+        "action": "use_cdn",
+        "url": "https://cdn.example/wf.json"
     ]
 
 }
