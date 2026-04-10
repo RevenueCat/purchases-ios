@@ -24,17 +24,23 @@ struct ComponentsView: View {
 
     let componentViewModels: [PaywallComponentViewModel]
     let applySafeAreaInsetForZStackChildren: Bool
+    let safeAreaInsetExemptChildIndex: Int?
+    let safeAreaTopInsetOverride: CGFloat?
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
 
     init(
         componentViewModels: [PaywallComponentViewModel],
         ignoreSafeArea: Bool = false,
+        safeAreaInsetExemptChildIndex: Int? = nil,
+        safeAreaTopInsetOverride: CGFloat? = nil,
         onDismiss: @escaping () -> Void,
         defaultPackage: Package? = nil
     ) {
         self.componentViewModels = componentViewModels
         self.applySafeAreaInsetForZStackChildren = ignoreSafeArea
+        self.safeAreaInsetExemptChildIndex = safeAreaInsetExemptChildIndex
+        self.safeAreaTopInsetOverride = safeAreaTopInsetOverride
         self.onDismiss = onDismiss
         self.defaultPackage = defaultPackage
     }
@@ -52,8 +58,18 @@ struct ComponentsView: View {
             // they have a full width header image and are the first
             // component in the paywall. This will keep the other
             // components from going into the safe area.
-            .padding(.top, (self.applySafeAreaInsetForZStackChildren && index > 0) ? self.safeAreaInsets.top : 0)
+            .padding(.top, self.safeAreaInset(forChildAt: index))
         }
+    }
+
+    private func safeAreaInset(forChildAt index: Int) -> CGFloat {
+        guard self.applySafeAreaInsetForZStackChildren else {
+            return 0
+        }
+
+        return index == self.safeAreaInsetExemptChildIndex
+            ? 0
+            : (self.safeAreaTopInsetOverride ?? self.safeAreaInsets.top)
     }
 
     @ViewBuilder
@@ -69,7 +85,11 @@ struct ComponentsView: View {
         case .icon(let viewModel):
             IconComponentView(viewModel: viewModel)
         case .stack(let viewModel):
-            StackComponentView(viewModel: viewModel, onDismiss: onDismiss)
+            StackComponentView(
+                viewModel: viewModel,
+                onDismiss: onDismiss,
+                safeAreaTopInsetOverride: self.safeAreaTopInsetOverride
+            )
         case .button(let viewModel):
             ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
         case .package(let viewModel):

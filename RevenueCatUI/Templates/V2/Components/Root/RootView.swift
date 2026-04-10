@@ -31,6 +31,7 @@ struct RootView: View {
     private let defaultPackage: Package?
 
     @State private var sheetViewModel: SheetViewModel?
+    @State private var overlayHeaderHeight: CGFloat = 0
 
     internal init(
         viewModel: RootViewModel,
@@ -43,7 +44,20 @@ struct RootView: View {
     }
 
     var body: some View {
+        let heroOverlayTopInset = self.viewModel.shouldOverlayHeader && self.viewModel.rootStartsWithHeroImage
+            ? max(self.overlayHeaderHeight, self.safeAreaInsets.top)
+            : nil
+
         VStack(alignment: .center, spacing: 0) {
+            if let headerViewModel = viewModel.headerViewModel,
+               !viewModel.shouldOverlayHeader {
+                HeaderComponentView(
+                    viewModel: headerViewModel,
+                    onDismiss: onDismiss
+                )
+                .fixedSize(horizontal: false, vertical: true)
+            }
+
             ZStack(alignment: .top) {
                 StackComponentView(
                     viewModel: viewModel.stackViewModel,
@@ -54,15 +68,18 @@ struct RootView: View {
                         leading: 0,
                         bottom: viewModel.stickyFooterViewModel == nil ? safeAreaInsets.bottom : 0,
                         trailing: 0
-                    )
+                    ),
+                    safeAreaTopInsetOverride: heroOverlayTopInset
                 )
 
-                if let headerViewModel = viewModel.headerViewModel {
+                if let headerViewModel = viewModel.headerViewModel,
+                   viewModel.shouldOverlayHeader {
                     HeaderComponentView(
                         viewModel: headerViewModel,
                         onDismiss: onDismiss
                     )
                     .fixedSize(horizontal: false, vertical: true)
+                    .onSizeChange { self.overlayHeaderHeight = $0.height }
                 }
             }
 
@@ -126,6 +143,11 @@ private enum RootViewPreviewData {
     )
 
     static let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
+    static let rootHeroPreviewName = "RootView: first root image ignores top safe area"
+    static let textHeaderPreviewName = "RootView: text header respects top safe area"
+    static let rootHeroPreviewComment =
+        "Expected: the first root image starts at the very top and fills the top safe area."
+    static let textHeaderPreviewComment = "Expected: the text header starts below the top safe area inset."
 
     static func makeLocalPreviewImageURL(
         filename: String,
@@ -231,7 +253,7 @@ private enum RootViewPreviewData {
         spacing: 0
     )
 
-    static let headerBodyStack = Self.contentStack(topMargin: 76)
+    static let headerBodyStack = Self.contentStack()
 
     static func rootViewModel(
         stack: PaywallComponent.StackComponent,
@@ -267,31 +289,49 @@ private enum RootViewPreviewData {
     static func preview(
         stack: PaywallComponent.StackComponent,
         headerStack: PaywallComponent.StackComponent,
+        comment: String,
         name: String
     ) -> some View {
-        self.preview(stack: stack, headerStack: .some(headerStack), name: name)
+        self.preview(stack: stack, headerStack: .some(headerStack), comment: comment, name: name)
     }
 
     static func preview(
         stack: PaywallComponent.StackComponent,
         headerStack: PaywallComponent.StackComponent?,
+        comment: String,
         name: String
     ) -> some View {
-        ZStack(alignment: .top) {
-            Color.white
+        VStack(alignment: .leading, spacing: 12) {
+            Text(comment)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.black.opacity(0.75))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
 
-            RootView(
-                viewModel: self.rootViewModel(stack: stack, headerStack: headerStack),
-                onDismiss: {},
-                defaultPackage: nil
+            ZStack(alignment: .top) {
+                Color.white
+
+                RootView(
+                    viewModel: self.rootViewModel(stack: stack, headerStack: headerStack),
+                    onDismiss: {},
+                    defaultPackage: nil
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            }
+            .frame(width: 393, height: 852)
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
             )
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .frame(width: 393, height: 852)
+        .frame(width: 393, height: 912)
+        .background(Color.white)
         .previewRequiredPaywallsV2Properties()
         .environment(\.safeAreaInsets, self.safeAreaInsets)
         .emergeExpansion(false)
-        .previewLayout(.fixed(width: 393, height: 852))
+        .previewLayout(.fixed(width: 393, height: 912))
         .previewDisplayName(name)
     }
 
@@ -305,13 +345,15 @@ struct RootView_Previews: PreviewProvider {
             RootViewPreviewData.preview(
                 stack: RootViewPreviewData.heroRootStack,
                 headerStack: nil,
-                name: "Root hero extends safe area"
+                comment: RootViewPreviewData.rootHeroPreviewComment,
+                name: RootViewPreviewData.rootHeroPreviewName
             )
 
             RootViewPreviewData.preview(
                 stack: RootViewPreviewData.headerBodyStack,
                 headerStack: RootViewPreviewData.textHeaderStack,
-                name: "Header text respects safe area"
+                comment: RootViewPreviewData.textHeaderPreviewComment,
+                name: RootViewPreviewData.textHeaderPreviewName
             )
         }
     }

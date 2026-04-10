@@ -23,6 +23,9 @@ class RootViewModel {
         let imageComponent: PaywallComponent.ImageComponent?
         let videoComponent: PaywallComponent.VideoComponent?
         let parentZStack: PaywallComponent.StackComponent?
+        let parentZStackBackgroundIndex: Int?
+        let parentBackgroundStack: PaywallComponent.StackComponent?
+        let parentBackgroundIsImage: Bool
     }
 
     let headerViewModel: HeaderComponentViewModel?
@@ -60,6 +63,19 @@ class RootViewModel {
         case .zlayer(let alignment):
             return alignment.stackAlignment
         }
+    }
+
+    var rootStartsWithHeroImage: Bool {
+        self.firstItemIgnoresSafeAreaInfo?.imageComponent != nil
+        || self.firstItemIgnoresSafeAreaInfo?.parentBackgroundIsImage == true
+    }
+
+    var shouldOverlayHeader: Bool {
+        guard let headerViewModel else {
+            return false
+        }
+
+        return headerViewModel.firstItemIgnoresSafeArea || self.rootStartsWithHeroImage
     }
 
 }

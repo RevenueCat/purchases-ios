@@ -28,6 +28,8 @@ class StackComponentViewModel {
     let viewModels: [PaywallComponentViewModel]
     let badgeViewModels: [PaywallComponentViewModel]
     let shouldApplySafeAreaInset: Bool
+    let shouldApplySafeAreaInsetToEntireStack: Bool
+    let safeAreaInsetExemptChildIndex: Int?
 
     private let discardRules: Bool
 
@@ -36,6 +38,8 @@ class StackComponentViewModel {
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [PaywallComponentViewModel],
         shouldApplySafeAreaInset: Bool = false,
+        shouldApplySafeAreaInsetToEntireStack: Bool = false,
+        safeAreaInsetExemptChildIndex: Int? = nil,
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
     ) {
@@ -44,6 +48,8 @@ class StackComponentViewModel {
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
         self.shouldApplySafeAreaInset = shouldApplySafeAreaInset
+        self.shouldApplySafeAreaInsetToEntireStack = shouldApplySafeAreaInsetToEntireStack
+        self.safeAreaInsetExemptChildIndex = safeAreaInsetExemptChildIndex
         self.discardRules = discardRules
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
@@ -54,6 +60,8 @@ class StackComponentViewModel {
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
             shouldApplySafeAreaInset: self.shouldApplySafeAreaInset,
+            shouldApplySafeAreaInsetToEntireStack: self.shouldApplySafeAreaInsetToEntireStack,
+            safeAreaInsetExemptChildIndex: self.safeAreaInsetExemptChildIndex,
             uiConfigProvider: self.uiConfigProvider,
             discardRules: self.discardRules
         )

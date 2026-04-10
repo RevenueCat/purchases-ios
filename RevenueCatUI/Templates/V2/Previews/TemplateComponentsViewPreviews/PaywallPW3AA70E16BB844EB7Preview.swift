@@ -23,6 +23,9 @@ import SwiftUI
 private enum PaywallPW3AA70E16BB844EB7Preview {
 
     static let safeAreaInsets = EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
+    static let previewDisplayName = "Paywall pw3aa70e16bb844eb7: header text + body hero safe area"
+    static let previewComment =
+        "Expected: the red text header starts below the top inset, and the body hero sits immediately below it."
 
     static let offering = Offering(
         identifier: "perplexity_cesar_2",
@@ -186,17 +189,33 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
     }()
 
     static func preview() -> some View {
-        RootView(
-            viewModel: Self.rootViewModel,
-            onDismiss: {},
-            defaultPackage: nil
-        )
-        .frame(width: 393, height: 852)
+        VStack(alignment: .leading, spacing: 12) {
+            Text(Self.previewComment)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.black.opacity(0.75))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+
+            RootView(
+                viewModel: Self.rootViewModel,
+                onDismiss: {},
+                defaultPackage: nil
+            )
+            .frame(width: 393, height: 852)
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+            )
+        }
+        .frame(width: 393, height: 912)
+        .background(Color.white)
         .previewRequiredPaywallsV2Properties()
         .environment(\.safeAreaInsets, Self.safeAreaInsets)
         .emergeExpansion(false)
-        .previewLayout(.fixed(width: 393, height: 852))
-        .previewDisplayName("pw3aa70e16bb844eb7")
+        .previewLayout(.fixed(width: 393, height: 912))
+        .previewDisplayName(Self.previewDisplayName)
     }
 
 }

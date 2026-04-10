@@ -70,7 +70,7 @@ struct ViewModelFactory {
             return HeaderComponentViewModel(
                 component: $0,
                 stackViewModel: stackViewModel,
-                firstItemIgnoresSafeArea: headerFirstItemSafeAreaInfo != nil
+                firstItemIgnoresSafeArea: headerFirstItemSafeAreaInfo?.imageComponent != nil
             )
         }
 
@@ -577,12 +577,17 @@ struct ViewModelFactory {
         // Stores in view model that we need to apply the safe area inset
         // This is only used with ZStack children that aren't the background
         let shouldApplySafeAreaInset = component == firstItemIgnoresSafeAreaInfo?.parentZStack
+        let shouldApplySafeAreaInsetToEntireStack = component == firstItemIgnoresSafeAreaInfo?.parentBackgroundStack
 
         return StackComponentViewModel(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,
             shouldApplySafeAreaInset: shouldApplySafeAreaInset,
+            shouldApplySafeAreaInsetToEntireStack: shouldApplySafeAreaInsetToEntireStack,
+            safeAreaInsetExemptChildIndex: shouldApplySafeAreaInset
+                ? firstItemIgnoresSafeAreaInfo?.parentZStackBackgroundIndex
+                : nil,
             uiConfigProvider: uiConfigProvider,
             discardRules: discardRules
         )
@@ -598,32 +603,52 @@ struct ViewModelFactory {
         case .image(let image):
             switch image.size.width {
             case .fill:
-                return .init(imageComponent: image, videoComponent: nil, parentZStack: nil)
+                return .init(
+                    imageComponent: image,
+                    videoComponent: nil,
+                    parentZStack: nil,
+                    parentZStackBackgroundIndex: nil,
+                    parentBackgroundStack: nil,
+                    parentBackgroundIsImage: false
+                )
             case .fit, .fixed, .relative:
                 return nil
             }
         case .icon:
             return nil
         case .stack(let stack):
-            guard let first = stack.components.first else {
-                return nil
-            }
-
-            let imageInfo = self.findFullWidthImageViewIfItsTheFirst(first)
+            let backgroundInfo = self.findSafeAreaBackgroundInFirstStack(stack)
 
             switch stack.dimension {
             case .vertical, .horizontal:
-                return imageInfo
-            case .zlayer:
-                // Return the ZStack info paired with the image
-                // This is needed to we know what element to apply safe area too
-                return imageInfo.flatMap { info in
-                    return .init(
-                        imageComponent: info.imageComponent,
-                        videoComponent: info.videoComponent,
-                        parentZStack: stack
-                    )
+                if let backgroundInfo {
+                    return backgroundInfo
                 }
+
+                guard let first = stack.components.first else {
+                    return nil
+                }
+
+                return self.findFullWidthImageViewIfItsTheFirst(first)
+            case .zlayer:
+                if let backgroundInfo {
+                    return backgroundInfo
+                }
+
+                // Return the ZStack info paired with the media that should
+                // extend into the top safe area, regardless of its layer order.
+                return stack.components.enumerated().compactMap { index, component in
+                    self.findFullWidthImageViewIfItsTheFirst(component).flatMap { info in
+                        .init(
+                            imageComponent: info.imageComponent,
+                            videoComponent: info.videoComponent,
+                            parentZStack: stack,
+                            parentZStackBackgroundIndex: index,
+                            parentBackgroundStack: nil,
+                            parentBackgroundIsImage: false
+                        )
+                    }
+                }.first
             }
         case .button:
             return nil
@@ -657,7 +682,14 @@ struct ViewModelFactory {
         case .video(let video):
             switch video.size.width {
             case .fill:
-                return .init(imageComponent: nil, videoComponent: video, parentZStack: nil)
+                return .init(
+                    imageComponent: nil,
+                    videoComponent: video,
+                    parentZStack: nil,
+                    parentZStackBackgroundIndex: nil,
+                    parentBackgroundStack: nil,
+                    parentBackgroundIsImage: false
+                )
             case .fit, .fixed, .relative:
                 return nil
             }
@@ -666,6 +698,37 @@ struct ViewModelFactory {
                 return nil
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)
+        }
+    }
+
+    private func findSafeAreaBackgroundInFirstStack(
+        _ stack: PaywallComponent.StackComponent
+    ) -> RootViewModel.FirstItemShouldIgnoreSafeAreaInfo? {
+        guard stack.size.width == .fill else {
+            return nil
+        }
+
+        switch stack.background {
+        case .image:
+            return .init(
+                imageComponent: nil,
+                videoComponent: nil,
+                parentZStack: nil,
+                parentZStackBackgroundIndex: nil,
+                parentBackgroundStack: stack,
+                parentBackgroundIsImage: true
+            )
+        case .video:
+            return .init(
+                imageComponent: nil,
+                videoComponent: nil,
+                parentZStack: nil,
+                parentZStackBackgroundIndex: nil,
+                parentBackgroundStack: stack,
+                parentBackgroundIsImage: false
+            )
+        case .color, nil:
+            return nil
         }
     }
 
