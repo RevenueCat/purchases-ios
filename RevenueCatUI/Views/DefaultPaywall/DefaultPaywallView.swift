@@ -171,9 +171,10 @@ struct DefaultPaywallView: View {
                 VStack {
                     let purchaseButton = Button {
                         if let selected {
+                            let componentValue = PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout.description
                             self.componentInteractionLogger(.paywallPurchaseButtonAction(
                                 componentName: nil,
-                                componentValue: PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout.description,
+                                componentValue: componentValue,
                                 componentURL: nil,
                                 currentPackageIdentifier: selected.identifier,
                                 currentProductIdentifier: selected.storeProduct.productIdentifier
