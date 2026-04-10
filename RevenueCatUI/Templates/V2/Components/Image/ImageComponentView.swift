@@ -71,6 +71,12 @@ struct ImageComponentView: View {
                         // We cannot correctly render the image until we know the space the image can fill
                         // this will fill the space so we can get the correct measurements and render the image
                         self.decorate(Color.clear, with: style)
+                    } else if ProcessInfo.isRunningForPreviews {
+                        #if DEBUG
+                        self.decorate(DualColorImageGenerator.purpleOrange.image.resizable(), with: style)
+                        #else
+                        EmptyView()
+                        #endif
                     } else {
                         self.decorate(
                             RemoteImage(
@@ -120,6 +126,7 @@ struct ImageComponentView: View {
             .padding(style.padding.extend(by: style.border?.width ?? 0))
             .shape(border: style.border,
                    shape: style.shape)
+            .compositingGroup() // ensure borders and images are a single layer that gets shaded.
             .applyIfLet(style.shadow, apply: { view, shadow in
                 // We need to use the normal shadow modifier and not our custom one for png images
                 view.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
