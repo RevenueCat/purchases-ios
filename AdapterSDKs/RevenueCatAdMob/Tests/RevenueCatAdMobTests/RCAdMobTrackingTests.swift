@@ -397,11 +397,11 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         )
 
         let presentingAd = FakeFullScreenPresentingAd()
-        fakeAd.fullScreenContentDelegate?.adDidRecordImpression?(presentingAd)
-        fakeAd.fullScreenContentDelegate?.adDidRecordClick?(presentingAd)
-        fakeAd.fullScreenContentDelegate?.adWillPresentFullScreenContent?(presentingAd)
-        fakeAd.fullScreenContentDelegate?.adWillDismissFullScreenContent?(presentingAd)
-        fakeAd.fullScreenContentDelegate?.adDidDismissFullScreenContent?(presentingAd)
+        await fakeAd.fullScreenContentDelegate?.adDidRecordImpression?(presentingAd)
+        await fakeAd.fullScreenContentDelegate?.adDidRecordClick?(presentingAd)
+        await fakeAd.fullScreenContentDelegate?.adWillPresentFullScreenContent?(presentingAd)
+        await fakeAd.fullScreenContentDelegate?.adWillDismissFullScreenContent?(presentingAd)
+        await fakeAd.fullScreenContentDelegate?.adDidDismissFullScreenContent?(presentingAd)
 
         XCTAssertTrue(spy.didRecordImpression)
         XCTAssertTrue(spy.didRecordClick)
