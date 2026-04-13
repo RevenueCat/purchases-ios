@@ -61,6 +61,9 @@ struct PaywallsV2View: View {
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
     private let purchaseHandler: PurchaseHandler
+    /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
+    /// default paywall is shown. This is not used in the success path
+    private let displayCloseButton: Bool
     private let onDismiss: () -> Void
     @State private var didFinishEligibilityCheck: Bool = false
 
@@ -73,6 +76,7 @@ struct PaywallsV2View: View {
         purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
+        displayCloseButton: Bool = false,
         onDismiss: @escaping () -> Void,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
@@ -88,6 +92,7 @@ struct PaywallsV2View: View {
         self.uiConfigProvider = uiConfigProvider
         self.offering = offering
         self.purchaseHandler = purchaseHandler
+        self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
@@ -134,83 +139,125 @@ struct PaywallsV2View: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
-                self.defaultPaywallView(
-                    warning: .from(error: PaywallFallbackError(
-                        // Trim up the error value to not flood the screen with too much content
-                        reason: String("\(errorInfo)".prefix(130))
-                    ))
-                )
-            } else {
-                switch self.paywallStateManager.state {
-                case .success(let paywallState):
-                    self.addPurchaseStatePreferences(
-                        to: LoadedPaywallsV2View(
-                            introOfferEligibilityContext: introOfferEligibilityContext,
-                            paywallState: paywallState,
-                            uiConfigProvider: self.uiConfigProvider,
-                            selectedPackageContext: self.selectedPackageContext,
-                            onDismiss: self.onDismiss
-                        )
-                        .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-                        .environmentObject(self.purchaseHandler)
-                        .environmentObject(self.introOfferEligibilityContext)
-                        .environmentObject(self.paywallPromoOfferCache)
-                        .disabled(self.purchaseHandler.actionInProgress)
-                        .onAppear {
-                            self.purchaseHandler.trackPaywallImpression(
-                                self.createEventData()
-                            )
-                        }
-                        .onDisappear { self.purchaseHandler.trackPaywallClose() }
-                        .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
-                            if hasPurchased {
-                                self.onDismiss()
-                            }
-                        }
-                        .task {
-                            guard !didFinishEligibilityCheck else {
-                                return
-                            }
-
-                            async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
-                                for: paywallState.packages
-                            )
-                            async let promoCheck: Void = paywallPromoOfferCache.computeEligibility(
-                                for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
-                            )
-                            _ = await (introCheck, promoCheck)
-                            didFinishEligibilityCheck = true
-                        }
+        self.addPurchaseStatePreferences(to:
+            VStack(spacing: 0) {
+                if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+                    self.defaultPaywallView(
+                        warning: .from(error: PaywallFallbackError(
+                            // Trim up the error value to not flood the screen with too much content
+                            reason: String("\(errorInfo)".prefix(130))
+                        ))
                     )
-                case .failure(let error):
-                    self.defaultPaywallView(warning: .from(error: error))
+                } else {
+                    switch self.paywallStateManager.state {
+                    case .success(let paywallState):
+                        self.loadedPaywallView(paywallState: paywallState)
+                    case .failure(let error):
+                        self.defaultPaywallView(warning: .from(error: error))
+                    }
                 }
             }
+        )
+    }
+
+    private func loadedPaywallView(paywallState: PaywallState) -> some View {
+        LoadedPaywallsV2View(
+            introOfferEligibilityContext: introOfferEligibilityContext,
+            paywallState: paywallState,
+            uiConfigProvider: self.uiConfigProvider,
+            selectedPackageContext: self.selectedPackageContext,
+            onDismiss: self.onDismiss
+        )
+        .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        .environmentObject(self.purchaseHandler)
+        .environmentObject(self.introOfferEligibilityContext)
+        .environmentObject(self.paywallPromoOfferCache)
+        .disabled(self.purchaseHandler.actionInProgress)
+        .onAppear {
+            self.purchaseHandler.trackPaywallImpression(
+                self.createEventData()
+            )
+        }
+        .onDisappear { self.purchaseHandler.trackPaywallClose() }
+        .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
+            if hasPurchased {
+                self.onDismiss()
+            }
+        }
+        .task {
+            guard !didFinishEligibilityCheck else {
+                return
+            }
+
+            async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
+                for: paywallState.packages
+            )
+            async let promoCheck: Void = paywallPromoOfferCache.computeEligibility(
+                for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+            )
+            _ = await (introCheck, promoCheck)
+            didFinishEligibilityCheck = true
         }
     }
 
+    @ViewBuilder
+    private func addCloseButtonIfNeeded<Content: View>(to content: Content) -> some View {
+        if self.displayCloseButton {
+            content
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    HStack {
+                        Spacer()
+                        self.makeCloseButton()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 8)
+                }
+        } else {
+            content
+        }
+    }
+
+    private func makeCloseButton() -> some View {
+        Button {
+            self.onDismiss()
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(.primary)
+                .frame(width: 32, height: 32)
+                .background(.ultraThinMaterial, in: Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(self.purchaseHandler.actionInProgress)
+        .opacity(
+            self.purchaseHandler.actionInProgress
+            ? Constants.purchaseInProgressButtonOpacity
+            : 1
+        )
+        .accessibilityLabel("Dismiss")
+    }
+
     private func defaultPaywallView(warning: PaywallWarning) -> some View {
-        self.addPurchaseStatePreferences(
-            to: DefaultPaywallView(
+        addCloseButtonIfNeeded(to:
+            DefaultPaywallView(
                 handler: self.purchaseHandler,
                 warning: warning,
                 offering: self.offering
             )
-            .disabled(self.purchaseHandler.actionInProgress)
-            .onAppear {
-                self.purchaseHandler.trackPaywallImpression(
-                    self.createEventData()
-                )
-            }
-            .onDisappear { self.purchaseHandler.trackPaywallClose() }
-            .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
-                if hasPurchased {
-                    self.onDismiss()
-                }
-            }
         )
+        .disabled(self.purchaseHandler.actionInProgress)
+        .onAppear {
+            self.purchaseHandler.trackPaywallImpression(
+                self.createEventData()
+            )
+        }
+        .onDisappear { self.purchaseHandler.trackPaywallClose() }
+        .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
+            if hasPurchased {
+                self.onDismiss()
+            }
+        }
     }
 
     private func addPurchaseStatePreferences<Content: View>(to content: Content) -> some View {
