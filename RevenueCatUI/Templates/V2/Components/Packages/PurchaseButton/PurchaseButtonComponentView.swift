@@ -113,6 +113,8 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
+
         // Check if there's a purchase interceptor
         if let interceptor = self.purchaseInitiatedAction {
             let result = await self.purchaseHandler.withPendingPurchaseContinuation {
@@ -124,8 +126,6 @@ struct PurchaseButtonComponentView: View {
             }
             guard result else { return }
         }
-
-        self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
 
         let promoOffer = self.paywallPromoOfferCache.get(for: selectedPackage)
 
@@ -140,13 +140,13 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        self.logPurchaseButtonInteractionForWeb(launchWebCheckout: launchWebCheckout)
+
         self.logIfInPreview("Web Product: \(launchWebCheckout)")
 
         guard !self.isInPreview else {
             return
         }
-
-        self.logPurchaseButtonInteractionForWeb(launchWebCheckout: launchWebCheckout)
 
         self.openWebPaywallLink(launchWebCheckout: launchWebCheckout)
     }
