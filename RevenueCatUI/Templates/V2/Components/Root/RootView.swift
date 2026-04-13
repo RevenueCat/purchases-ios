@@ -118,7 +118,7 @@ struct RootView: View {
 private enum RootViewPreviewData {
 
     static let safeAreaInsets = EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
-    static let heroImageURL = Self.makeLocalPreviewImageURL(
+    static let heroImageURL = makeLocalPreviewImageURL(
         filename: "root-view-preview-hero.png",
         base64: [
             "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNgYPjP",
@@ -149,27 +149,6 @@ private enum RootViewPreviewData {
     static let rootHeroPreviewSubtitle = "Verifies that the first root image extends through the top inset."
     static let textHeaderPreviewTitle = "Text header starts below the top inset"
     static let textHeaderPreviewSubtitle = "Verifies that a non-image header behaves as the safe-area extension."
-
-    static func makeLocalPreviewImageURL(
-        filename: String,
-        base64: String
-    ) -> URL {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-
-        if !FileManager.default.fileExists(atPath: url.path) {
-            guard let data = Data(base64Encoded: base64) else {
-                fatalError("Invalid base64 preview image for RootView preview")
-            }
-
-            do {
-                try data.write(to: url, options: .atomic)
-            } catch {
-                fatalError("Failed to write RootView preview image: \(error)")
-            }
-        }
-
-        return url
-    }
 
     static func contentStack(
         topMargin: CGFloat = 0

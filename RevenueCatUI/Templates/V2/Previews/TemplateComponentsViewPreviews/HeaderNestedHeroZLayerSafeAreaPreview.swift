@@ -29,7 +29,7 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
     static let previewSubtitle =
         "Verifies safe-area propagation through a root vertical stack with a nested hero zlayer."
 
-    static let heroImageURL = Self.makeLocalPreviewImageURL(
+    static let heroImageURL = makeLocalPreviewImageURL(
         filename: "paywall-pw6328703e14874ca2-hero.png",
         base64: [
             "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNgYPjP",
@@ -59,27 +59,6 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
     )
 
     static let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
-
-    static func makeLocalPreviewImageURL(
-        filename: String,
-        base64: String
-    ) -> URL {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-
-        if !FileManager.default.fileExists(atPath: url.path) {
-            guard let data = Data(base64Encoded: base64) else {
-                fatalError("Invalid base64 preview image for pw6328703e14874ca2")
-            }
-
-            do {
-                try data.write(to: url, options: .atomic)
-            } catch {
-                fatalError("Failed to write pw6328703e14874ca2 preview image: \(error)")
-            }
-        }
-
-        return url
-    }
 
     static let headerStack = PaywallComponent.StackComponent(
         components: [
