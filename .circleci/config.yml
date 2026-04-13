@@ -5,45 +5,10 @@ setup: true
 orbs:
   continuation: circleci/continuation@1.1.0
 
-# These parameters mirror the ones in continue_config.yml so that
-# externally-triggered pipelines (API, scheduled, GitHub Actions) can
-# pass values through to the continuation config.
+# Only parameters used by the setup config itself are declared here.
+# All other pipeline parameters (action, generate_snapshots, GHA_*, etc.)
+# are declared in continue_config.yml and flow through automatically.
 parameters:
-  action:
-    type: enum
-    enum:
-      [
-        default,
-        bump,
-        run-manual-tests,
-        run-manual-docs-deploy,
-        update_paywall_templates,
-        record_paywall_screenshots,
-        tuist,
-        deploy_rct_tester
-      ]
-    default: default
-  generate_snapshots:
-    default: false
-    type: boolean
-  generate_revenuecatui_snapshots:
-    default: false
-    type: boolean
-  generate_swiftinterface:
-    default: false
-    type: boolean
-  GHA_Event:
-    type: string
-    default: ""
-  GHA_Actor:
-    type: string
-    default: ""
-  GHA_Action:
-    type: string
-    default: ""
-  GHA_Meta:
-    type: string
-    default: ""
   # Set via CircleCI API by the GitHub Action when a PR comment like
   # "@RCGitBot please test <job1> <job2>, <job3>" is posted.
   requested_jobs:
@@ -99,25 +64,11 @@ jobs:
                 done
               } >> /tmp/on-demand-config.yml
 
-              echo '{}' > /tmp/pipeline-parameters.json
             else
-              echo "Normal pipeline — forwarding parameters to continuation config"
-
-              cat > /tmp/pipeline-parameters.json \<< PARAMS_EOF
-            {
-              "action": "<< pipeline.parameters.action >>",
-              "generate_snapshots": << pipeline.parameters.generate_snapshots >>,
-              "generate_revenuecatui_snapshots": << pipeline.parameters.generate_revenuecatui_snapshots >>,
-              "generate_swiftinterface": << pipeline.parameters.generate_swiftinterface >>,
-              "GHA_Event": "<< pipeline.parameters.GHA_Event >>",
-              "GHA_Actor": "<< pipeline.parameters.GHA_Actor >>",
-              "GHA_Action": "<< pipeline.parameters.GHA_Action >>",
-              "GHA_Meta": "<< pipeline.parameters.GHA_Meta >>"
-            }
-            PARAMS_EOF
-              echo "Generated parameters:"
-              cat /tmp/pipeline-parameters.json
+              echo "Normal pipeline — continuing with standard config"
             fi
+
+            echo '{}' > /tmp/pipeline-parameters.json
       - when:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
