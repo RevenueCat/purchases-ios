@@ -307,6 +307,7 @@ extension GoogleMobileAds.RewardedInterstitialAd: RCFullScreenAdTracking {}
 @available(iOS 15.0, *)
 internal extension RCFullScreenAdTracking {
 
+    @MainActor
     func rcSetTrackingFullScreenContentDelegate(
         _ delegate: GoogleMobileAds.FullScreenContentDelegate?
     ) {
