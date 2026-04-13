@@ -399,6 +399,7 @@ class ViewModelFactoryTests: TestCase {
 
         expect(root.firstItemIgnoresSafeAreaInfo).toNot(beNil())
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
+        expect(root.shouldOverlayHeader).to(beTrue())
     }
 
     @MainActor
@@ -440,6 +441,229 @@ class ViewModelFactoryTests: TestCase {
         expect(root.firstItemIgnoresSafeAreaInfo).to(beNil())
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beTrue())
         expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
+        expect(root.shouldOverlayHeader).to(beTrue())
+    }
+
+    @MainActor
+    func testRootHeroImageInZStackAtNonZeroIndexStillInsetsOverlayContent() throws {
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(
+                components: [
+                    .text(.init(text: "badge_text_lid", color: Self.black)),
+                    .image(.init(
+                        source: .init(light: .init(
+                            width: 1,
+                            height: 1,
+                            original: Self.sampleURL,
+                            heic: Self.sampleURL,
+                            heicLowRes: Self.sampleURL
+                        )),
+                        size: .init(width: .fill, height: .fit)
+                    ))
+                ],
+                dimension: .zlayer(.top)
+            ),
+            header: .init(stack: .init(components: [
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ])),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.firstItemIgnoresSafeAreaInfo?.imageComponent).toNot(beNil())
+        expect(root.firstItemIgnoresSafeAreaInfo?.parentZStackBackgroundIndex).to(equal(1))
+        expect(root.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
+        expect(root.stackViewModel.safeAreaInsetExemptChildIndex).to(equal(1))
+        expect(root.shouldOverlayHeader).to(beTrue())
+    }
+
+    @MainActor
+    func testRootHeroImageBackgroundStackInsetsContentAndOverlaysHeader() throws {
+        let heroStack = PaywallComponent.StackComponent(
+            components: [
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ],
+            dimension: .vertical(.leading, .start),
+            size: .init(width: .fill, height: .fit),
+            background: .image(
+                .init(light: .init(
+                    width: 1,
+                    height: 1,
+                    original: Self.sampleURL,
+                    heic: Self.sampleURL,
+                    heicLowRes: Self.sampleURL
+                )),
+                .fill,
+                nil
+            )
+        )
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: [
+                .stack(heroStack),
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ]),
+            header: .init(stack: .init(components: [
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ])),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        guard case let .stack(heroViewModel)? = root.stackViewModel.viewModels.first else {
+            fail("Expected first root component to be a stack view model")
+            return
+        }
+
+        expect(root.firstItemIgnoresSafeAreaInfo?.parentBackgroundStack).toNot(beNil())
+        expect(root.rootStartsWithHeroImage).to(beTrue())
+        expect(heroViewModel.shouldApplySafeAreaInsetToEntireStack).to(beTrue())
+        expect(root.shouldOverlayHeader).to(beTrue())
+    }
+
+    @MainActor
+    func testHeaderHeroImageInZStackAtNonZeroIndexStillInsetsOverlayContent() throws {
+        let headerStack = PaywallComponent.StackComponent(
+            components: [
+                .text(.init(text: "badge_text_lid", color: Self.black)),
+                .image(.init(
+                    source: .init(light: .init(
+                        width: 1,
+                        height: 1,
+                        original: Self.sampleURL,
+                        heic: Self.sampleURL,
+                        heicLowRes: Self.sampleURL
+                    )),
+                    size: .init(width: .fill, height: .fit)
+                ))
+            ],
+            dimension: .zlayer(.top)
+        )
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: []),
+            header: .init(stack: headerStack),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beTrue())
+        expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
+        expect(root.headerViewModel?.stackViewModel.safeAreaInsetExemptChildIndex).to(equal(1))
+        expect(root.shouldOverlayHeader).to(beTrue())
+    }
+
+    @MainActor
+    func testRootVideoDoesNotOverlayHeader() throws {
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: [
+                .video(.init(
+                    source: .init(light: .init(
+                        width: 1,
+                        height: 1,
+                        url: Self.sampleURL,
+                        checksum: nil,
+                        urlLowRes: nil,
+                        checksumLowRes: nil
+                    )),
+                    size: .init(width: .fill, height: .fit)
+                ))
+            ]),
+            header: .init(stack: .init(components: [
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ])),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.firstItemIgnoresSafeAreaInfo?.videoComponent).toNot(beNil())
+        expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
+        expect(root.rootStartsWithHeroImage).to(beFalse())
+        expect(root.shouldOverlayHeader).to(beFalse())
+    }
+
+    @MainActor
+    func testHeaderVideoDoesNotIgnoreSafeAreaOrOverlay() throws {
+        let headerStack = PaywallComponent.StackComponent(
+            components: [
+                .video(.init(
+                    source: .init(light: .init(
+                        width: 1,
+                        height: 1,
+                        url: Self.sampleURL,
+                        checksum: nil,
+                        urlLowRes: nil,
+                        checksumLowRes: nil
+                    )),
+                    size: .init(width: .fill, height: .fit)
+                )),
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ],
+            dimension: .zlayer(.top)
+        )
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: []),
+            header: .init(stack: headerStack),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
+        expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
+        expect(root.shouldOverlayHeader).to(beFalse())
     }
 
     // MARK: - Layout Tests
@@ -486,6 +710,7 @@ class ViewModelFactoryTests: TestCase {
 
         expect(root.headerViewModel).toNot(beNil())
         expect(root.stickyFooterViewModel).to(beNil())
+        expect(root.shouldOverlayHeader).to(beFalse())
     }
 
     @MainActor
