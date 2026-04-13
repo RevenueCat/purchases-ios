@@ -178,6 +178,7 @@ internal final class RCAdMob {
         )
     }
 
+    @MainActor
     func updateFullScreenContentDelegate(
         on ad: some RCFullScreenAdTracking,
         newDelegate: GoogleMobileAds.FullScreenContentDelegate?

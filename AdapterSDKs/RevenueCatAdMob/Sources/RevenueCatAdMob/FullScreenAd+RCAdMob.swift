@@ -322,6 +322,7 @@ internal extension RCFullScreenAdTracking {
     /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
     /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
     /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
     func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
         self.rcSetTrackingFullScreenContentDelegate(delegate)
     }
@@ -335,6 +336,7 @@ internal extension RCFullScreenAdTracking {
     /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
     /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
     /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
     func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
         self.rcSetTrackingFullScreenContentDelegate(delegate)
     }
@@ -348,6 +350,7 @@ internal extension RCFullScreenAdTracking {
     /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
     /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
     /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
     func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
         self.rcSetTrackingFullScreenContentDelegate(delegate)
     }
@@ -361,6 +364,7 @@ internal extension RCFullScreenAdTracking {
     /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
     /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
     /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
     func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
         self.rcSetTrackingFullScreenContentDelegate(delegate)
     }
