@@ -78,6 +78,7 @@ final class MockAdTracker: AdTracking {
 
 // MARK: - Core RCAdMob tracking tests
 
+@MainActor
 @available(iOS 15.0, *)
 // swiftlint:disable:next type_body_length
 final class RCAdMobTrackingTests: RCAdMobTestCase {
@@ -436,7 +437,9 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         _ = try await self.rcAdMob.handleLoadOutcome(
             loadAd: { fakeAd }, context: context
         )
-        (fakeAd.fullScreenContentDelegate as? RCAdMobFullScreenContentDelegate)?.placement = "show_time_placement"
+        await MainActor.run {
+            (fakeAd.fullScreenContentDelegate as? RCAdMobFullScreenContentDelegate)?.placement = "show_time_placement"
+        }
         fakeAd.paidEventHandler?(Self.makeAdValuePlaceholder())
 
         XCTAssertEqual(self.mockTracker.revenueData.count, 1)
@@ -462,6 +465,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
 // MARK: - Delegate tracking tests
 
+@MainActor
 @available(iOS 15.0, *)
 final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
 

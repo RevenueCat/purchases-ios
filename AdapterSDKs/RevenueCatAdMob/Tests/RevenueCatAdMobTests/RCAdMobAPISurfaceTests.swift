@@ -122,6 +122,7 @@ final class RCAdMobAPISurfaceTests: RCAdMobTestCase {
         XCTAssertNotNil(rewardedInterstitialLoadAndTrack)
     }
 
+    @MainActor
     func testFullScreenPresentWithPlacementRemainAvailableInSwift() {
         let interstitialPresent: (
             GoogleMobileAds.InterstitialAd

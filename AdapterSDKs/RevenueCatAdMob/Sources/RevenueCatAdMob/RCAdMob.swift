@@ -221,27 +221,29 @@ internal final class RCAdMob {
         let fullScreenContentDelegate = context.fullScreenContentDelegate
         let paidEventHandler = context.paidEventHandler
 
-        let trackingDelegate = RCAdMobFullScreenContentDelegate(
-            rcAdMob: self,
-            delegate: fullScreenContentDelegate,
-            placement: placement,
-            adUnitID: adUnitID,
-            adFormat: adFormat,
-            responseInfoProvider: { responseInfo }
-        )
-        self.retainFullScreenDelegate(trackingDelegate, for: loadedAd)
-        loadedAd.fullScreenContentDelegate = trackingDelegate
-        loadedAd.paidEventHandler = { [weak self, weak trackingDelegate] adValue in
-            self?.trackRevenue(
-                placement: trackingDelegate?.placement,
+        return await MainActor.run {
+            let trackingDelegate = RCAdMobFullScreenContentDelegate(
+                rcAdMob: self,
+                delegate: fullScreenContentDelegate,
+                placement: placement,
                 adUnitID: adUnitID,
                 adFormat: adFormat,
-                responseInfo: responseInfo,
-                adValue: adValue
+                responseInfoProvider: { responseInfo }
             )
-            paidEventHandler?(adValue)
+            self.retainFullScreenDelegate(trackingDelegate, for: loadedAd)
+            loadedAd.fullScreenContentDelegate = trackingDelegate
+            loadedAd.paidEventHandler = { [weak self, weak trackingDelegate] adValue in
+                self?.trackRevenue(
+                    placement: trackingDelegate?.placement,
+                    adUnitID: adUnitID,
+                    adFormat: adFormat,
+                    responseInfo: responseInfo,
+                    adValue: adValue
+                )
+                paidEventHandler?(adValue)
+            }
+            return loadedAd
         }
-        return loadedAd
     }
 
     // MARK: - Private helpers

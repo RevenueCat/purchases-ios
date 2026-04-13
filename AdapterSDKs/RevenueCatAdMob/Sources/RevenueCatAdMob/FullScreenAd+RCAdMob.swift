@@ -70,6 +70,7 @@ internal extension GoogleMobileAds.InterstitialAd {
     ///
     /// Call this instead of `present(from:)` when you want to specify or override the placement at show time.
     /// The placement passed here takes precedence over any placement provided at load time.
+    @MainActor
     func present(from viewController: UIViewController, placement: String?) {
         RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
         self.present(from: viewController)
@@ -136,6 +137,7 @@ internal extension GoogleMobileAds.AppOpenAd {
     ///
     /// Call this instead of `present(from:)` when you want to specify or override the placement at show time.
     /// The placement passed here takes precedence over any placement provided at load time.
+    @MainActor
     func present(from viewController: UIViewController, placement: String?) {
         RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
         self.present(from: viewController)
@@ -202,6 +204,7 @@ internal extension GoogleMobileAds.RewardedAd {
     ///
     /// Call this instead of `present(from:userDidEarnRewardHandler:)` when you want to specify or override
     /// the placement at show time. The placement passed here takes precedence over any placement provided at load time.
+    @MainActor
     func present(
         from viewController: UIViewController,
         placement: String?,
@@ -272,6 +275,7 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
     ///
     /// Call this instead of `present(from:userDidEarnRewardHandler:)` when you want to specify or override
     /// the placement at show time. The placement passed here takes precedence over any placement provided at load time.
+    @MainActor
     func present(
         from viewController: UIViewController,
         placement: String?,
