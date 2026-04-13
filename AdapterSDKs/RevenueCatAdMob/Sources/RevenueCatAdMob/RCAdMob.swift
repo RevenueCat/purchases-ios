@@ -208,30 +208,26 @@ internal final class RCAdMob {
     // MARK: - handleLoadOutcome
 
     func handleLoadOutcome<Ad: AnyObject & RCFullScreenAdTracking>(
-        loadedAd: Ad?,
-        error: Error?,
-        context: FullScreenLoadContext,
-        completion: (Ad?, Error?) -> Void
-    ) {
-        if let error {
+        loadAd: () async throws -> Ad,
+        context: FullScreenLoadContext
+    ) async throws -> Ad {
+        let loadedAd: Ad
+        do {
+            loadedAd = try await loadAd()
+        } catch {
             self.trackFailedToLoad(
                 placement: context.placement,
                 adUnitID: context.adUnitID,
                 adFormat: context.adFormat,
                 error: error
             )
-            completion(nil, error)
-            return
+            throw error
         }
 
-        guard let loadedAd else {
-            // SDK contract is success (ad, nil) or failure (nil, error). (nil, nil) is not documented; forward as-is.
-            completion(nil, nil)
-            return
-        }
+        let responseInfo = loadedAd.responseInfo
 
         self.trackLoaded(
-            responseInfo: context.responseInfo,
+            responseInfo: responseInfo,
             placement: context.placement,
             adUnitID: context.adUnitID,
             adFormat: context.adFormat
@@ -242,29 +238,30 @@ internal final class RCAdMob {
         let adFormat = context.adFormat
         let fullScreenContentDelegate = context.fullScreenContentDelegate
         let paidEventHandler = context.paidEventHandler
-        let responseInfo = context.responseInfo
 
-        let trackingDelegate = RCAdMobFullScreenContentDelegate(
-            rcAdMob: self,
-            delegate: fullScreenContentDelegate,
-            placement: placement,
-            adUnitID: adUnitID,
-            adFormat: adFormat,
-            responseInfoProvider: { responseInfo }
-        )
-        self.retainFullScreenDelegate(trackingDelegate, for: loadedAd)
-        loadedAd.fullScreenContentDelegate = trackingDelegate
-        loadedAd.paidEventHandler = { [weak self, weak trackingDelegate] adValue in
-            self?.trackRevenue(
-                placement: trackingDelegate?.placement,
+        return await MainActor.run {
+            let trackingDelegate = RCAdMobFullScreenContentDelegate(
+                rcAdMob: self,
+                delegate: fullScreenContentDelegate,
+                placement: placement,
                 adUnitID: adUnitID,
                 adFormat: adFormat,
-                responseInfo: responseInfo,
-                adValue: adValue
+                responseInfoProvider: { responseInfo }
             )
-            paidEventHandler?(adValue)
+            self.retainFullScreenDelegate(trackingDelegate, for: loadedAd)
+            loadedAd.fullScreenContentDelegate = trackingDelegate
+            loadedAd.paidEventHandler = { [weak self, weak trackingDelegate] adValue in
+                self?.trackRevenue(
+                    placement: trackingDelegate?.placement,
+                    adUnitID: adUnitID,
+                    adFormat: adFormat,
+                    responseInfo: responseInfo,
+                    adValue: adValue
+                )
+                paidEventHandler?(adValue)
+            }
+            return loadedAd
         }
-        completion(loadedAd, nil)
     }
 
     // MARK: - Private helpers

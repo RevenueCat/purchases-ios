@@ -42,22 +42,18 @@ extension PaywallComponentsData.PaywallComponentsConfig {
 
     var allImageURLs: [URL] {
         let rootStackImageURLs = self.collectAllImageURLs(in: self.stack)
-        let headerImageURLs = self.header.flatMap {
-            self.collectAllImageURLs(in: $0.stack)
-        } ?? []
         let stickFooterImageURLs = self.stickyFooter.flatMap {
             self.collectAllImageURLs(in: $0.stack)
         } ?? []
 
-        return rootStackImageURLs + headerImageURLs + stickFooterImageURLs + self.background.allImageURLS
+        return rootStackImageURLs + stickFooterImageURLs + self.background.allImageURLS
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
         let rootStackVideoURLs = self.collectAllVideoURLs(in: self.stack)
-        let headerVideoURLs = self.header.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
         let stickFooterVideoURLs = self.stickyFooter.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
 
-        return rootStackVideoURLs + headerVideoURLs + stickFooterVideoURLs + self.background.lowResVideoUrls
+        return rootStackVideoURLs + stickFooterVideoURLs + self.background.lowResVideoUrls
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
