@@ -46,7 +46,7 @@ parameters:
     default: ""
   # Declared here so CircleCI accepts the parameter when triggered via API.
   # The actual on-demand logic lives in the setup config (config.yml).
-  requested_job:
+  requested_jobs:
     type: string
     default: ""
 

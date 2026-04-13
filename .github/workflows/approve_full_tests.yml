@@ -126,10 +126,10 @@ jobs:
           gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions \
             -f content="$REACTION"
 
-  # Trigger a specific CircleCI job on-demand via "@RCGitBot please test <job-name>".
-  # This triggers a NEW CircleCI pipeline with the requested_job parameter, and the
-  # setup config generates a minimal continuation config that runs only that job.
-  run-specific-job:
+  # Trigger CircleCI job(s) on-demand via "@RCGitBot please test <job1> <job2>, <job3>".
+  # Triggers a new CircleCI pipeline; the setup config generates a continuation
+  # config containing only a workflow with the requested job(s).
+  run-specific-jobs:
     runs-on: ubuntu-latest
     if: |
       github.event.issue.pull_request &&
@@ -153,25 +153,25 @@ jobs:
           fi
           echo "User is a member of the organization"
 
-      - name: Parse job name
+      - name: Parse job names
         id: parse
         run: |
           COMMENT="${{ github.event.comment.body }}"
-          # Extract the job name after "@RCGitBot please test "
-          JOB_NAME="${COMMENT#@RCGitBot please test }"
+          # Extract everything after "@RCGitBot please test "
+          JOBS_RAW="${COMMENT#@RCGitBot please test }"
           # Trim whitespace
-          JOB_NAME=$(echo "$JOB_NAME" | xargs)
-          if [[ -z "$JOB_NAME" ]]; then
-            echo "::error::No job name provided"
+          JOBS_RAW=$(echo "$JOBS_RAW" | xargs)
+          if [[ -z "$JOBS_RAW" ]]; then
+            echo "::error::No job name(s) provided"
             exit 1
           fi
-          # Validate job name contains only safe characters
-          if [[ ! "$JOB_NAME" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-            echo "::error::Invalid job name: $JOB_NAME (only alphanumeric, hyphens, and underscores allowed)"
+          # Validate: only alphanumeric, hyphens, underscores, spaces, and commas
+          if [[ ! "$JOBS_RAW" =~ ^[a-zA-Z0-9_[:space:],-]+$ ]]; then
+            echo "::error::Invalid input: $JOBS_RAW (only alphanumeric, hyphens, underscores, spaces, and commas allowed)"
             exit 1
           fi
-          echo "job_name=$JOB_NAME" >> "$GITHUB_OUTPUT"
-          echo "Parsed job name: $JOB_NAME"
+          echo "job_names=$JOBS_RAW" >> "$GITHUB_OUTPUT"
+          echo "Parsed job(s): $JOBS_RAW"
 
       - name: Get PR branch
         id: get-branch
@@ -186,14 +186,14 @@ jobs:
         env:
           CCI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
           BRANCH: ${{ steps.get-branch.outputs.branch }}
-          JOB_NAME: ${{ steps.parse.outputs.job_name }}
+          JOB_NAMES: ${{ steps.parse.outputs.job_names }}
         run: |
           PROJECT_SLUG="gh/RevenueCat/purchases-ios"
 
           RESPONSE=$(curl -s --max-time 15 -w "\n%{http_code}" -X POST \
             -H "Circle-Token: $CCI_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"branch\": \"$BRANCH\", \"parameters\": {\"requested_job\": \"$JOB_NAME\"}}" \
+            -d "{\"branch\": \"$BRANCH\", \"parameters\": {\"requested_jobs\": \"$JOB_NAMES\"}}" \
             "https://circleci.com/api/v2/project/$PROJECT_SLUG/pipeline")
 
           HTTP_STATUS=$(echo "$RESPONSE" | tail -1)
@@ -208,17 +208,17 @@ jobs:
           PIPELINE_ID=$(echo "$BODY" | jq -r '.id')
           PIPELINE_NUMBER=$(echo "$BODY" | jq -r '.number')
           echo "pipeline_number=$PIPELINE_NUMBER" >> "$GITHUB_OUTPUT"
-          echo "Triggered pipeline #$PIPELINE_NUMBER (id: $PIPELINE_ID) for job '$JOB_NAME' on branch '$BRANCH'"
+          echo "Triggered pipeline #$PIPELINE_NUMBER (id: $PIPELINE_ID) for job(s) '$JOB_NAMES' on branch '$BRANCH'"
 
       - name: Post pipeline link
         if: success()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PIPELINE_NUMBER: ${{ steps.trigger.outputs.pipeline_number }}
-          JOB_NAME: ${{ steps.parse.outputs.job_name }}
+          JOB_NAMES: ${{ steps.parse.outputs.job_names }}
         run: |
           gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
-            -f body="🚀 Triggered **$JOB_NAME** → [Pipeline #$PIPELINE_NUMBER](https://app.circleci.com/pipelines/gh/RevenueCat/purchases-ios/$PIPELINE_NUMBER)"
+            -f body="🚀 Triggered **$JOB_NAMES** → [Pipeline #$PIPELINE_NUMBER](https://app.circleci.com/pipelines/gh/RevenueCat/purchases-ios/$PIPELINE_NUMBER)"
 
       - name: React to comment
         if: always()
