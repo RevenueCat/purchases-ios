@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  HeaderAboveNestedHeroZLayerSafeAreaPreview.swift
+//  HeaderNestedHeroZLayerSafeAreaPreview.swift
 //
 //  Created by RevenueCat on 4/10/26.
 
@@ -20,7 +20,7 @@ import SwiftUI
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum HeaderAboveNestedHeroZLayerSafeAreaPreview {
+private enum HeaderNestedHeroZLayerSafeAreaPreview {
 
     static let safeAreaInsets = EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
     static let previewDisplayName =
@@ -278,10 +278,10 @@ private enum HeaderAboveNestedHeroZLayerSafeAreaPreview {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct HeaderAboveNestedHeroZLayerSafeAreaPreview_Previews: PreviewProvider {
+struct HeaderNestedHeroZLayerSafeAreaPreview_Previews: PreviewProvider {
 
     static var previews: some View {
-        HeaderAboveNestedHeroZLayerSafeAreaPreview.preview()
+        HeaderNestedHeroZLayerSafeAreaPreview.preview()
     }
 
 }
