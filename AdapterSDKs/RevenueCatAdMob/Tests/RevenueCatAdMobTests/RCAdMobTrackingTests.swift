@@ -448,14 +448,14 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     // MARK: - updateFullScreenContentDelegate
 
-    func testUpdateDelegateAfterLoadUpdatesWrapper() {
+    func testUpdateDelegateAfterLoadUpdatesWrapper() async throws {
         let fakeAd = FakeFullScreenAd()
         let context = FullScreenLoadContext(
             placement: "test", adUnitID: "ca-app-pub-test", adFormat: .interstitial,
-            fullScreenContentDelegate: nil, paidEventHandler: nil, responseInfo: nil
+            fullScreenContentDelegate: nil, paidEventHandler: nil
         )
 
-        self.rcAdMob.handleLoadOutcome(loadedAd: fakeAd, error: nil, context: context) { _, _ in }
+        _ = try await self.rcAdMob.handleLoadOutcome(loadAd: { fakeAd }, context: context)
 
         let spy = FullScreenContentDelegateSpy()
         self.rcAdMob.updateFullScreenContentDelegate(on: fakeAd, newDelegate: spy)
@@ -467,14 +467,14 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         XCTAssertEqual(self.mockTracker.displayedData.count, 1)
     }
 
-    func testUpdateDelegateAfterDirectOverwriteRestoresWrapper() {
+    func testUpdateDelegateAfterDirectOverwriteRestoresWrapper() async throws {
         let fakeAd = FakeFullScreenAd()
         let context = FullScreenLoadContext(
             placement: "test", adUnitID: "ca-app-pub-test", adFormat: .interstitial,
-            fullScreenContentDelegate: nil, paidEventHandler: nil, responseInfo: nil
+            fullScreenContentDelegate: nil, paidEventHandler: nil
         )
 
-        self.rcAdMob.handleLoadOutcome(loadedAd: fakeAd, error: nil, context: context) { _, _ in }
+        _ = try await self.rcAdMob.handleLoadOutcome(loadAd: { fakeAd }, context: context)
 
         // Simulate developer overwriting the delegate directly
         fakeAd.fullScreenContentDelegate = FullScreenContentDelegateSpy()
@@ -490,15 +490,15 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         XCTAssertEqual(self.mockTracker.displayedData.count, 1)
     }
 
-    func testUpdateDelegateWithNilClearsUserDelegate() {
+    func testUpdateDelegateWithNilClearsUserDelegate() async throws {
         let fakeAd = FakeFullScreenAd()
         let initialSpy = FullScreenContentDelegateSpy()
         let context = FullScreenLoadContext(
             placement: "test", adUnitID: "ca-app-pub-test", adFormat: .interstitial,
-            fullScreenContentDelegate: initialSpy, paidEventHandler: nil, responseInfo: nil
+            fullScreenContentDelegate: initialSpy, paidEventHandler: nil
         )
 
-        self.rcAdMob.handleLoadOutcome(loadedAd: fakeAd, error: nil, context: context) { _, _ in }
+        _ = try await self.rcAdMob.handleLoadOutcome(loadAd: { fakeAd }, context: context)
 
         self.rcAdMob.updateFullScreenContentDelegate(on: fakeAd, newDelegate: nil)
 
@@ -518,14 +518,14 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         XCTAssertTrue(fakeAd.fullScreenContentDelegate === spy)
     }
 
-    func testPaidEventHandlerStillWorksAfterDelegateUpdate() {
+    func testPaidEventHandlerStillWorksAfterDelegateUpdate() async throws {
         let fakeAd = FakeFullScreenAd()
         let context = FullScreenLoadContext(
             placement: "original_placement", adUnitID: "ca-app-pub-test", adFormat: .rewarded,
-            fullScreenContentDelegate: nil, paidEventHandler: nil, responseInfo: nil
+            fullScreenContentDelegate: nil, paidEventHandler: nil
         )
 
-        self.rcAdMob.handleLoadOutcome(loadedAd: fakeAd, error: nil, context: context) { _, _ in }
+        _ = try await self.rcAdMob.handleLoadOutcome(loadAd: { fakeAd }, context: context)
 
         let spy = FullScreenContentDelegateSpy()
         self.rcAdMob.updateFullScreenContentDelegate(on: fakeAd, newDelegate: spy)
