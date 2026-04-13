@@ -36,7 +36,7 @@ final class RCAdMobAPISurfaceTests: RCAdMobTestCase {
             String?,
             GoogleMobileAds.FullScreenContentDelegate?,
             ((GoogleMobileAds.AdValue) -> Void)?,
-            @escaping (GoogleMobileAds.InterstitialAd?, Error?) -> Void
+            @escaping @MainActor (GoogleMobileAds.InterstitialAd?, Error?) -> Void
         ) -> Void = GoogleMobileAds.InterstitialAd.loadAndTrack(
             withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:
         )
@@ -46,7 +46,7 @@ final class RCAdMobAPISurfaceTests: RCAdMobTestCase {
             String?,
             GoogleMobileAds.FullScreenContentDelegate?,
             ((GoogleMobileAds.AdValue) -> Void)?,
-            @escaping (GoogleMobileAds.AppOpenAd?, Error?) -> Void
+            @escaping @MainActor (GoogleMobileAds.AppOpenAd?, Error?) -> Void
         ) -> Void = GoogleMobileAds.AppOpenAd.loadAndTrack(
             withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:
         )
@@ -56,7 +56,7 @@ final class RCAdMobAPISurfaceTests: RCAdMobTestCase {
             String?,
             GoogleMobileAds.FullScreenContentDelegate?,
             ((GoogleMobileAds.AdValue) -> Void)?,
-            @escaping (GoogleMobileAds.RewardedAd?, Error?) -> Void
+            @escaping @MainActor (GoogleMobileAds.RewardedAd?, Error?) -> Void
         ) -> Void = GoogleMobileAds.RewardedAd.loadAndTrack(
             withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:
         )
@@ -66,7 +66,7 @@ final class RCAdMobAPISurfaceTests: RCAdMobTestCase {
             String?,
             GoogleMobileAds.FullScreenContentDelegate?,
             ((GoogleMobileAds.AdValue) -> Void)?,
-            @escaping (GoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
+            @escaping @MainActor (GoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
         ) -> Void = GoogleMobileAds.RewardedInterstitialAd.loadAndTrack(
             withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:
         )
