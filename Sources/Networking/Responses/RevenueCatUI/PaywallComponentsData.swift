@@ -29,7 +29,6 @@ import Foundation
     public struct PaywallComponentsConfig: Codable, Equatable, Sendable {
 
         public var stack: PaywallComponent.StackComponent
-        @_spi(Internal) public let header: PaywallComponent.HeaderComponent?
         public let stickyFooter: PaywallComponent.StickyFooterComponent?
         public var background: PaywallComponent.Background
 
@@ -38,20 +37,7 @@ import Foundation
             stickyFooter: PaywallComponent.StickyFooterComponent?,
             background: PaywallComponent.Background
         ) {
-            self.header = nil
             self.stack = stack
-            self.stickyFooter = stickyFooter
-            self.background = background
-        }
-
-        @_spi(Internal) public init(
-            stack: PaywallComponent.StackComponent,
-            header: PaywallComponent.HeaderComponent?,
-            stickyFooter: PaywallComponent.StickyFooterComponent?,
-            background: PaywallComponent.Background
-        ) {
-            self.stack = stack
-            self.header = header
             self.stickyFooter = stickyFooter
             self.background = background
         }
