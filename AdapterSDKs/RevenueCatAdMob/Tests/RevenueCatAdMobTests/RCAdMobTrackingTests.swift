@@ -78,6 +78,7 @@ final class MockAdTracker: AdTracking {
 
 // MARK: - Core RCAdMob tracking tests
 
+@MainActor
 @available(iOS 15.0, *)
 // swiftlint:disable:next type_body_length
 final class RCAdMobTrackingTests: RCAdMobTestCase {
@@ -172,29 +173,26 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         XCTAssertTrue(self.mockTracker.calls.isEmpty)
     }
 
-    func testHandleLoadOutcomeOnErrorTracksFailedToLoad() {
+    func testHandleLoadOutcomeOnErrorTracksFailedToLoad() async {
         let error = NSError(domain: "com.google.ads", code: 2, userInfo: nil)
         let context = FullScreenLoadContext(
             placement: "test_placement",
             adUnitID: "ca-app-pub-test",
             adFormat: .interstitial,
             fullScreenContentDelegate: nil,
-            paidEventHandler: nil,
-            responseInfo: nil
+            paidEventHandler: nil
         )
 
-        var completionCalled = false
-        self.rcAdMob.handleLoadOutcome(
-            loadedAd: nil as FakeFullScreenAd?,
-            error: error,
-            context: context
-        ) { loadedAd, completionError in
-            XCTAssertNil(loadedAd)
-            XCTAssertNotNil(completionError)
-            completionCalled = true
+        do {
+            let _: FakeFullScreenAd = try await self.rcAdMob.handleLoadOutcome(
+                loadAd: { throw error },
+                context: context
+            )
+            XCTFail("Expected error to be thrown")
+        } catch let caughtError as NSError {
+            XCTAssertEqual(caughtError.code, 2)
         }
 
-        XCTAssertTrue(completionCalled)
         XCTAssertEqual(self.mockTracker.calls.count, 1)
         XCTAssertEqual(self.mockTracker.calls.first, MockAdTracker.Call(
             method: "trackAdFailedToLoad",
@@ -204,54 +202,22 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         ))
     }
 
-    func testHandleLoadOutcomeNilAdNilErrorForwardsBothNils() {
-        let context = FullScreenLoadContext(
-            placement: nil,
-            adUnitID: "unit",
-            adFormat: .appOpen,
-            fullScreenContentDelegate: nil,
-            paidEventHandler: nil,
-            responseInfo: nil
-        )
-
-        var completionCalled = false
-        self.rcAdMob.handleLoadOutcome(
-            loadedAd: nil as FakeFullScreenAd?,
-            error: nil,
-            context: context
-        ) { loadedAd, completionError in
-            XCTAssertNil(loadedAd)
-            XCTAssertNil(completionError)
-            completionCalled = true
-        }
-
-        XCTAssertTrue(completionCalled)
-        XCTAssertTrue(self.mockTracker.calls.isEmpty)
-    }
-
-    func testHandleLoadOutcomeOnSuccessTracksLoaded() {
+    func testHandleLoadOutcomeOnSuccessTracksLoaded() async throws {
         let fakeAd = FakeFullScreenAd()
         let context = FullScreenLoadContext(
             placement: "reward_screen",
             adUnitID: "ca-app-pub-reward",
             adFormat: .rewarded,
             fullScreenContentDelegate: nil,
-            paidEventHandler: nil,
-            responseInfo: nil
+            paidEventHandler: nil
         )
 
-        var completionCalled = false
-        self.rcAdMob.handleLoadOutcome(
-            loadedAd: fakeAd,
-            error: nil,
+        let result = try await self.rcAdMob.handleLoadOutcome(
+            loadAd: { fakeAd },
             context: context
-        ) { loadedAd, completionError in
-            XCTAssertNotNil(loadedAd)
-            XCTAssertNil(completionError)
-            completionCalled = true
-        }
+        )
 
-        XCTAssertTrue(completionCalled)
+        XCTAssertTrue(result === fakeAd)
         XCTAssertEqual(self.mockTracker.calls.count, 1)
         XCTAssertEqual(self.mockTracker.calls.first, MockAdTracker.Call(
             method: "trackAdLoaded",
@@ -261,31 +227,31 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         ))
     }
 
-    func testHandleLoadOutcomeOnSuccessInstallsFullScreenDelegate() {
+    func testHandleLoadOutcomeOnSuccessInstallsFullScreenDelegate() async throws {
         let fakeAd = FakeFullScreenAd()
         let context = FullScreenLoadContext(
             placement: nil, adUnitID: "unit", adFormat: .interstitial,
-            fullScreenContentDelegate: nil, paidEventHandler: nil, responseInfo: nil
+            fullScreenContentDelegate: nil, paidEventHandler: nil
         )
 
-        self.rcAdMob.handleLoadOutcome(
-            loadedAd: fakeAd, error: nil, context: context
-        ) { _, _ in }
+        _ = try await self.rcAdMob.handleLoadOutcome(
+            loadAd: { fakeAd }, context: context
+        )
 
         XCTAssertNotNil(fakeAd.fullScreenContentDelegate)
         XCTAssertTrue(fakeAd.fullScreenContentDelegate is RCAdMobFullScreenContentDelegate)
     }
 
-    func testHandleLoadOutcomeOnSuccessInstallsPaidEventHandler() {
+    func testHandleLoadOutcomeOnSuccessInstallsPaidEventHandler() async throws {
         let fakeAd = FakeFullScreenAd()
         let context = FullScreenLoadContext(
             placement: nil, adUnitID: "unit", adFormat: .interstitial,
-            fullScreenContentDelegate: nil, paidEventHandler: nil, responseInfo: nil
+            fullScreenContentDelegate: nil, paidEventHandler: nil
         )
 
-        self.rcAdMob.handleLoadOutcome(
-            loadedAd: fakeAd, error: nil, context: context
-        ) { _, _ in }
+        _ = try await self.rcAdMob.handleLoadOutcome(
+            loadAd: { fakeAd }, context: context
+        )
 
         XCTAssertNotNil(fakeAd.paidEventHandler)
     }
@@ -326,20 +292,19 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         XCTAssertTrue(self.mockTracker.revenueData.isEmpty)
     }
 
-    func testHandleLoadOutcomeOnSuccessPaidHandlerTracksRevenue() {
+    func testHandleLoadOutcomeOnSuccessPaidHandlerTracksRevenue() async throws {
         let fakeAd = FakeFullScreenAd()
         let context = FullScreenLoadContext(
             placement: "reward_screen",
             adUnitID: "ca-app-pub-reward",
             adFormat: .rewarded,
             fullScreenContentDelegate: nil,
-            paidEventHandler: nil,
-            responseInfo: nil
+            paidEventHandler: nil
         )
 
-        self.rcAdMob.handleLoadOutcome(
-            loadedAd: fakeAd, error: nil, context: context
-        ) { _, _ in }
+        _ = try await self.rcAdMob.handleLoadOutcome(
+            loadAd: { fakeAd }, context: context
+        )
 
         fakeAd.paidEventHandler?(Self.makeAdValuePlaceholder())
 
@@ -353,7 +318,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         XCTAssertEqual(revenue.adUnitId, "ca-app-pub-reward")
     }
 
-    func testHandleLoadOutcomeOnSuccessPaidHandlerForwardsToUserHandler() {
+    func testHandleLoadOutcomeOnSuccessPaidHandlerForwardsToUserHandler() async throws {
         let fakeAd = FakeFullScreenAd()
         var userHandlerCalled = false
         let context = FullScreenLoadContext(
@@ -361,13 +326,12 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
             adUnitID: "ca-app-pub-reward",
             adFormat: .rewarded,
             fullScreenContentDelegate: nil,
-            paidEventHandler: { _ in userHandlerCalled = true },
-            responseInfo: nil
+            paidEventHandler: { _ in userHandlerCalled = true }
         )
 
-        self.rcAdMob.handleLoadOutcome(
-            loadedAd: fakeAd, error: nil, context: context
-        ) { _, _ in }
+        _ = try await self.rcAdMob.handleLoadOutcome(
+            loadAd: { fakeAd }, context: context
+        )
 
         fakeAd.paidEventHandler?(Self.makeAdValuePlaceholder())
 
@@ -417,7 +381,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         XCTAssertEqual(revenue.impressionId, "resp-id-abc")
     }
 
-    func testHandleLoadOutcomeForwardsCallbacksToUserDelegate() {
+    func testHandleLoadOutcomeForwardsCallbacksToUserDelegate() async throws {
         let fakeAd = FakeFullScreenAd()
         let spy = FullScreenContentDelegateSpy()
         let context = FullScreenLoadContext(
@@ -425,20 +389,19 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
             adUnitID: "unit",
             adFormat: .interstitial,
             fullScreenContentDelegate: spy,
-            paidEventHandler: nil,
-            responseInfo: nil
+            paidEventHandler: nil
         )
 
-        self.rcAdMob.handleLoadOutcome(
-            loadedAd: fakeAd, error: nil, context: context
-        ) { _, _ in }
+        _ = try await self.rcAdMob.handleLoadOutcome(
+            loadAd: { fakeAd }, context: context
+        )
 
         let presentingAd = FakeFullScreenPresentingAd()
-        fakeAd.fullScreenContentDelegate?.adDidRecordImpression?(presentingAd)
-        fakeAd.fullScreenContentDelegate?.adDidRecordClick?(presentingAd)
-        fakeAd.fullScreenContentDelegate?.adWillPresentFullScreenContent?(presentingAd)
-        fakeAd.fullScreenContentDelegate?.adWillDismissFullScreenContent?(presentingAd)
-        fakeAd.fullScreenContentDelegate?.adDidDismissFullScreenContent?(presentingAd)
+        await fakeAd.fullScreenContentDelegate?.adDidRecordImpression?(presentingAd)
+        await fakeAd.fullScreenContentDelegate?.adDidRecordClick?(presentingAd)
+        await fakeAd.fullScreenContentDelegate?.adWillPresentFullScreenContent?(presentingAd)
+        await fakeAd.fullScreenContentDelegate?.adWillDismissFullScreenContent?(presentingAd)
+        await fakeAd.fullScreenContentDelegate?.adDidDismissFullScreenContent?(presentingAd)
 
         XCTAssertTrue(spy.didRecordImpression)
         XCTAssertTrue(spy.didRecordClick)
@@ -461,21 +424,22 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     // MARK: - Show-time placement override
 
-    func testShowTimePlacementOverrideIsUsedInRevenueEvent() {
-        // Verifies that the paidEventHandler closure (set up at load time) reads placement
-        // from the delegate at fire time, so a show-time override is reflected in revenue tracking.
+    func testShowTimePlacementOverrideIsUsedInRevenueEvent() async throws {
         let fakeAd = FakeFullScreenAd()
         let context = FullScreenLoadContext(
             placement: "load_time_placement",
             adUnitID: "ca-app-pub-test",
             adFormat: .rewarded,
             fullScreenContentDelegate: nil,
-            paidEventHandler: nil,
-            responseInfo: nil
+            paidEventHandler: nil
         )
 
-        self.rcAdMob.handleLoadOutcome(loadedAd: fakeAd, error: nil, context: context) { _, _ in }
-        (fakeAd.fullScreenContentDelegate as? RCAdMobFullScreenContentDelegate)?.placement = "show_time_placement"
+        _ = try await self.rcAdMob.handleLoadOutcome(
+            loadAd: { fakeAd }, context: context
+        )
+        await MainActor.run {
+            (fakeAd.fullScreenContentDelegate as? RCAdMobFullScreenContentDelegate)?.placement = "show_time_placement"
+        }
         fakeAd.paidEventHandler?(Self.makeAdValuePlaceholder())
 
         XCTAssertEqual(self.mockTracker.revenueData.count, 1)
@@ -501,6 +465,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
 // MARK: - Delegate tracking tests
 
+@MainActor
 @available(iOS 15.0, *)
 final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
 
@@ -635,6 +600,16 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
 private final class FakeFullScreenAd: NSObject, RCFullScreenAdTracking {
     var fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?
     var paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?
+    let responseInfo: GoogleMobileAds.ResponseInfo = unsafeBitCast(
+        FakeResponseInfo(),
+        to: GoogleMobileAds.ResponseInfo.self
+    )
+}
+
+@available(iOS 15.0, *)
+private final class FakeResponseInfo: NSObject {
+    @objc var responseIdentifier: String? { nil }
+    @objc var loadedAdNetworkResponseInfo: AnyObject? { nil }
 }
 
 @available(iOS 15.0, *)
