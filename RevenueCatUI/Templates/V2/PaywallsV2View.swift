@@ -249,7 +249,7 @@ struct PaywallsV2View: View {
         .disabled(self.purchaseHandler.actionInProgress)
         .onAppear {
             self.purchaseHandler.trackPaywallImpression(
-                self.createEventData()
+                self.createEventData(forDefaultPaywall: true)
             )
         }
         .onDisappear { self.purchaseHandler.trackPaywallClose() }
@@ -277,10 +277,27 @@ struct PaywallsV2View: View {
                         value: self.purchaseHandler.restoreError as NSError?)
     }
 
-    private func createEventData() -> PaywallEvent.Data {
+    private func createEventData(forDefaultPaywall: Bool = false) -> PaywallEvent.Data {
+        let compontentsData: PaywallComponentsData
+        if forDefaultPaywall {
+            // The old default paywall was logged as a default template like this.
+            // Until we have a new log event for the new default paywall we need to contiunue
+            // logging the events like they used to be for data integrity.
+            compontentsData = .init(
+                templateName: PaywallData.defaultTemplate.rawValue,
+                assetBaseURL: PaywallData.defaultTemplateBaseURL,
+                componentsConfig: self.paywallComponentsData.componentsConfig,
+                componentsLocalizations: self.paywallComponentsData.componentsLocalizations,
+                revision: PaywallData.revisionID,
+                defaultLocaleIdentifier: self.paywallComponentsData.defaultLocale
+            )
+        } else {
+            compontentsData = self.paywallComponentsData
+        }
+
         return .init(
             offering: self.offering,
-            paywallComponentsData: self.paywallComponentsData,
+            paywallComponentsData: compontentsData,
             sessionID: .init(),
             displayMode: .fullScreen,
             locale: .current,
