@@ -44,6 +44,10 @@ parameters:
   GHA_Meta:
     type: string
     default: ""
+  # Set by the setup config's path-filtering logic
+  run-deploy-paywalls-tester:
+    type: boolean
+    default: false
 
 executors:
   macos-executor:
@@ -1756,6 +1760,25 @@ jobs:
           command: bundle exec fastlane deploy_purchase_tester dry_run:<< parameters.dry_run >>
       - slack-notify-on-fail
 
+  deploy-paywalls-tester:
+    executor:
+      name: macos-executor
+      xcode_version: "26.3"
+    parameters:
+      dry_run:
+        type: boolean
+        default: false
+    steps:
+      - checkout
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
+      - install-dependencies
+      - update-spm-installation-commit
+      - run:
+          name: Submit Paywalls Tester
+          command: bundle exec fastlane deploy_paywalls_tester dry_run:<< parameters.dry_run >>
+      - slack-notify-on-fail
+
   deploy-rct-tester:
     executor:
       name: macos-executor
@@ -2400,6 +2423,22 @@ workflows:
     jobs:
       - deploy-rct-tester:
           dry_run: false
+
+  # Deploy Paywalls Tester to TestFlight when relevant files change on main.
+  # The run-deploy-paywalls-tester parameter is set by the setup config's
+  # path-filtering logic (checks RevenueCatUI/ and Tests/TestingApps/PaywallsTester/).
+  deploy-paywalls-tester:
+    when:
+      and:
+        - << pipeline.parameters.run-deploy-paywalls-tester >>
+        - not:
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["main", << pipeline.git.branch >>]
+    jobs:
+      - deploy-paywalls-tester:
+          dry_run: false
+          context:
+            - slack-secrets
 
   release-or-main:
     when:

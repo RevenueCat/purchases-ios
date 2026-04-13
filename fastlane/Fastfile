@@ -2022,6 +2022,122 @@ platform :ios do
 
   end
 
+  desc "Build and deploy PaywallsTester to TestFlight (iOS + macOS)"
+  lane :deploy_paywalls_tester do |options|
+    dry_run = options[:dry_run] || false
+
+    project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+    bundle_id = "com.revenuecat.PaywallsTester"
+    provisioning_profile_name = "match AppStore #{bundle_id}"
+
+    sdk_version = current_version_number
+    if sdk_version.include?("SNAPSHOT")
+      commit_hash = `git rev-parse --short HEAD`.strip
+      changelog = "SDK version: #{sdk_version} (commit: #{commit_hash})"
+    else
+      changelog = "SDK version: #{sdk_version}"
+    end
+
+    UI.message("Paywalls Tester release notes: #{changelog}")
+
+    paywalls_tester_root = "#{project_root}/Tests/TestingApps/PaywallsTester"
+    xcodeproj_path = "#{paywalls_tester_root}/PaywallsTester.xcodeproj"
+    workspace_path = "#{paywalls_tester_root}/PaywallsTester.xcworkspace"
+
+    api_key = ENV['PAYWALLS_TESTER_REVENUECAT_API_KEY'] || ""
+    if api_key.empty?
+      UI.user_error!("PAYWALLS_TESTER_REVENUECAT_API_KEY environment variable is required")
+    end
+
+    xcconfig_path = "#{project_root}/CI.xcconfig"
+    File.write(xcconfig_path, [
+      "// Auto-generated for Paywalls Tester deployment. Do not commit to VCS.",
+      "REVENUECAT_API_KEY = #{api_key}"
+    ].join("\n"))
+    UI.success("Created CI.xcconfig with REVENUECAT_API_KEY")
+
+    # --- iOS ---
+    Dir.chdir("#{paywalls_tester_root}/fastlane") do
+      match(readonly: true, platform: "ios")
+      increment_build_number(
+        build_number: latest_testflight_build_number(app_identifier: bundle_id, platform: 'ios') + 1,
+        xcodeproj: xcodeproj_path,
+      )
+    end
+
+    build_ios_app(
+      workspace: workspace_path,
+      scheme: "PaywallsTester - Live Config",
+      destination: "generic/platform=ios",
+      xcodebuild_formatter: '',
+      export_method: 'app-store',
+      xcargs: "CODE_SIGN_STYLE=Manual " \
+              "DEVELOPMENT_TEAM=8SXR2327BM " \
+              "CODE_SIGN_IDENTITY='Apple Distribution'",
+      export_options: {
+        signingStyle: "manual",
+        manageAppVersionAndBuildNumber: true,
+        provisioningProfiles: {
+          bundle_id => provisioning_profile_name,
+        }
+      }
+    )
+
+    wait_processing_timeout_duration_in_seconds = 60 * 20
+
+    if not dry_run
+      upload_to_testflight(
+        changelog: changelog,
+        app_identifier: bundle_id,
+        wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
+      )
+    else
+      UI.message("Dry run mode enabled. Skipping upload to TestFlight (iOS)")
+    end
+
+    # --- macOS ---
+    Dir.chdir("#{paywalls_tester_root}/fastlane") do
+      match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
+      increment_build_number(
+        build_number: latest_testflight_build_number(app_identifier: bundle_id, platform: 'osx') + 1,
+        xcodeproj: xcodeproj_path,
+      )
+    end
+
+    build_mac_app(
+      workspace: workspace_path,
+      scheme: "PaywallsTester - Live Config",
+      destination: 'generic/platform=macOS',
+      xcodebuild_formatter: '',
+      export_method: 'app-store',
+      xcargs: "CODE_SIGN_STYLE=Manual " \
+              "DEVELOPMENT_TEAM=8SXR2327BM " \
+              "CODE_SIGN_IDENTITY='Apple Distribution'",
+      export_options: {
+        signingStyle: "manual",
+        manageAppVersionAndBuildNumber: true,
+        provisioningProfiles: {
+          bundle_id => "#{provisioning_profile_name} macos",
+        }
+      }
+    )
+
+    if not dry_run
+      upload_to_testflight(
+        changelog: changelog,
+        app_platform: 'osx',
+        app_identifier: bundle_id,
+        wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
+      )
+    else
+      UI.message("Dry run mode enabled. Skipping upload to TestFlight (macOS)")
+    end
+
+  ensure
+    xcconfig_path = "#{File.expand_path("#{File.dirname(__FILE__)}/..")}/CI.xcconfig"
+    File.delete(xcconfig_path) if File.exist?(xcconfig_path)
+  end
+
   desc "Deploy RCT Tester to TestFlight"
   lane :deploy_rct_tester do
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")

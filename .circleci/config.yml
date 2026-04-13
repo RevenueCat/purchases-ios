@@ -53,11 +53,26 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Forward pipeline parameters to continuation config
+          name: Determine path-based pipeline parameters
           command: |
+            # Determine path-based parameters
+            DEPLOY_PAYWALLS_TESTER=false
+            if git rev-parse HEAD~1 >/dev/null 2>&1; then
+              CHANGED=$(git diff HEAD~1 --name-only -- RevenueCatUI/ Tests/TestingApps/PaywallsTester/)
+              if [ -n "$CHANGED" ]; then
+                DEPLOY_PAYWALLS_TESTER=true
+                echo "PaywallsTester-relevant changes detected:"
+                echo "$CHANGED"
+              else
+                echo "No changes in RevenueCatUI/ or Tests/TestingApps/PaywallsTester/"
+              fi
+            else
+              echo "No parent commit found (initial commit?), skipping path check"
+            fi
+            echo "run-deploy-paywalls-tester=${DEPLOY_PAYWALLS_TESTER}"
+
             # Build the parameter JSON forwarding all original pipeline
-            # parameters to the continuation config.
-            # Add new path-based parameters here as needed.
+            # parameters plus path-based ones to the continuation config.
             python3 -c "
             import json, sys
             params = {
@@ -69,6 +84,7 @@ jobs:
                 'GHA_Actor': sys.argv[6],
                 'GHA_Action': sys.argv[7],
                 'GHA_Meta': sys.argv[8],
+                'run-deploy-paywalls-tester': sys.argv[9] == 'true',
             }
             with open('/tmp/pipeline-parameters.json', 'w') as f:
                 json.dump(params, f, indent=2)
@@ -82,7 +98,8 @@ jobs:
               "<< pipeline.parameters.GHA_Event >>" \
               "<< pipeline.parameters.GHA_Actor >>" \
               "<< pipeline.parameters.GHA_Action >>" \
-              "<< pipeline.parameters.GHA_Meta >>"
+              "<< pipeline.parameters.GHA_Meta >>" \
+              "${DEPLOY_PAYWALLS_TESTER}"
       - continuation/continue:
           parameters: /tmp/pipeline-parameters.json
           configuration_path: .circleci/continue_config.yml
