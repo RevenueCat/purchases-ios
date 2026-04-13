@@ -63,11 +63,12 @@ struct ComponentsView: View {
     }
 
     private func safeAreaInset(forChildAt index: Int) -> CGFloat {
-        guard self.applySafeAreaInsetForZStackChildren else {
+        guard self.applySafeAreaInsetForZStackChildren,
+              let exemptIndex = self.safeAreaInsetExemptChildIndex else {
             return 0
         }
 
-        return index == self.safeAreaInsetExemptChildIndex
+        return index == exemptIndex
             ? 0
             : (self.safeAreaTopInsetOverride ?? self.safeAreaInsets.top)
     }
