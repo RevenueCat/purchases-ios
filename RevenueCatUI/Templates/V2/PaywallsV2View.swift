@@ -136,7 +136,7 @@ struct PaywallsV2View: View {
     public var body: some View {
         VStack(spacing: 0) {
             if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
-                self.fallbackPaywallView(
+                self.defaultPaywallView(
                     warning: .from(error: PaywallFallbackError(
                         // Trim up the error value to not flood the screen with too much content
                         reason: String("\(errorInfo)".prefix(130))
@@ -185,13 +185,13 @@ struct PaywallsV2View: View {
                         }
                     )
                 case .failure(let error):
-                    self.fallbackPaywallView(warning: .from(error: error))
+                    self.defaultPaywallView(warning: .from(error: error))
                 }
             }
         }
     }
 
-    private func fallbackPaywallView(warning: PaywallWarning) -> some View {
+    private func defaultPaywallView(warning: PaywallWarning) -> some View {
         self.addPurchaseStatePreferences(
             to: DefaultPaywallView(
                 handler: self.purchaseHandler,
