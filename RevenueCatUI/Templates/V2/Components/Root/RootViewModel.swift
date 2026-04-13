@@ -19,32 +19,32 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class RootViewModel {
 
-    struct FirstItemShouldIgnoreSafeAreaInfo {
+    struct HeroSafeAreaInfo {
         let imageComponent: PaywallComponent.ImageComponent?
         let videoComponent: PaywallComponent.VideoComponent?
         let parentZStack: PaywallComponent.StackComponent?
         let parentZStackBackgroundIndex: Int?
         let parentBackgroundStack: PaywallComponent.StackComponent?
-        let parentBackgroundIsImage: Bool
+        let parentBackgroundIsHeroImage: Bool
     }
 
     let headerViewModel: HeaderComponentViewModel?
     let stackViewModel: StackComponentViewModel
     let stickyFooterViewModel: StickyFooterComponentViewModel?
-    let firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?
+    let heroSafeAreaInfo: HeroSafeAreaInfo?
     let localizationProvider: LocalizationProvider
 
     init(
         headerViewModel: HeaderComponentViewModel?,
         stackViewModel: StackComponentViewModel,
         stickyFooterViewModel: StickyFooterComponentViewModel?,
-        firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?,
+        heroSafeAreaInfo: HeroSafeAreaInfo?,
         localizationProvider: LocalizationProvider
     ) {
         self.headerViewModel = headerViewModel
         self.stackViewModel = stackViewModel
         self.stickyFooterViewModel = stickyFooterViewModel
-        self.firstItemIgnoresSafeAreaInfo = firstItemIgnoresSafeAreaInfo
+        self.heroSafeAreaInfo = heroSafeAreaInfo
         self.localizationProvider = localizationProvider
     }
 
@@ -66,8 +66,8 @@ class RootViewModel {
     }
 
     var rootStartsWithHeroImage: Bool {
-        self.firstItemIgnoresSafeAreaInfo?.imageComponent != nil
-        || self.firstItemIgnoresSafeAreaInfo?.parentBackgroundIsImage == true
+        self.heroSafeAreaInfo?.imageComponent != nil
+        || self.heroSafeAreaInfo?.parentBackgroundIsHeroImage == true
     }
 
     var shouldOverlayHeader: Bool {

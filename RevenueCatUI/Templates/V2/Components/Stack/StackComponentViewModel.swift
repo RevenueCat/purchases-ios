@@ -27,8 +27,8 @@ class StackComponentViewModel {
 
     let viewModels: [PaywallComponentViewModel]
     let badgeViewModels: [PaywallComponentViewModel]
-    let shouldApplySafeAreaInset: Bool
-    let shouldApplySafeAreaInsetToEntireStack: Bool
+    let shouldApplySafeAreaInsetToZStackChildren: Bool
+    let shouldApplySafeAreaInsetToSelf: Bool
     let safeAreaInsetExemptChildIndex: Int?
 
     private let discardRules: Bool
@@ -37,8 +37,8 @@ class StackComponentViewModel {
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [PaywallComponentViewModel],
-        shouldApplySafeAreaInset: Bool = false,
-        shouldApplySafeAreaInsetToEntireStack: Bool = false,
+        shouldApplySafeAreaInsetToZStackChildren: Bool = false,
+        shouldApplySafeAreaInsetToSelf: Bool = false,
         safeAreaInsetExemptChildIndex: Int? = nil,
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
@@ -47,8 +47,8 @@ class StackComponentViewModel {
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
-        self.shouldApplySafeAreaInset = shouldApplySafeAreaInset
-        self.shouldApplySafeAreaInsetToEntireStack = shouldApplySafeAreaInsetToEntireStack
+        self.shouldApplySafeAreaInsetToZStackChildren = shouldApplySafeAreaInsetToZStackChildren
+        self.shouldApplySafeAreaInsetToSelf = shouldApplySafeAreaInsetToSelf
         self.safeAreaInsetExemptChildIndex = safeAreaInsetExemptChildIndex
         self.discardRules = discardRules
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
@@ -59,8 +59,8 @@ class StackComponentViewModel {
             component: self.component,
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
-            shouldApplySafeAreaInset: self.shouldApplySafeAreaInset,
-            shouldApplySafeAreaInsetToEntireStack: self.shouldApplySafeAreaInsetToEntireStack,
+            shouldApplySafeAreaInsetToZStackChildren: self.shouldApplySafeAreaInsetToZStackChildren,
+            shouldApplySafeAreaInsetToSelf: self.shouldApplySafeAreaInsetToSelf,
             safeAreaInsetExemptChildIndex: self.safeAreaInsetExemptChildIndex,
             uiConfigProvider: self.uiConfigProvider,
             discardRules: self.discardRules

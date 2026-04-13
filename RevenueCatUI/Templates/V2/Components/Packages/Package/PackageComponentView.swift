@@ -280,7 +280,7 @@ fileprivate extension PackageComponentViewModel {
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
-            firstItemIgnoresSafeAreaInfo: nil,
+            heroSafeAreaInfo: nil,
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),

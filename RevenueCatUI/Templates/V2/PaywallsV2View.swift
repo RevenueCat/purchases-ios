@@ -333,7 +333,7 @@ private struct LoadedPaywallsV2View: View {
             // down with the inset
             .applyIf(
                 paywallState.rootViewModel.headerViewModel != nil
-                || paywallState.rootViewModel.firstItemIgnoresSafeAreaInfo != nil,
+                || paywallState.rootViewModel.heroSafeAreaInfo != nil,
                 apply: { view in
                 view
                     .edgesIgnoringSafeArea(.top)

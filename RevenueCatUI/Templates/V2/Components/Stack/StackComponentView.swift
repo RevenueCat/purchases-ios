@@ -128,7 +128,7 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        ignoreSafeArea: self.viewModel.shouldApplySafeAreaInset,
+                        ignoreSafeArea: self.viewModel.shouldApplySafeAreaInsetToZStackChildren,
                         safeAreaInsetExemptChildIndex: self.viewModel.safeAreaInsetExemptChildIndex,
                         safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                         onDismiss: self.onDismiss
@@ -145,7 +145,7 @@ struct StackComponentView: View {
         .padding(additionalPadding)
         .padding(
             .top,
-            self.viewModel.shouldApplySafeAreaInsetToEntireStack
+            self.viewModel.shouldApplySafeAreaInsetToSelf
                 ? (self.safeAreaTopInsetOverride ?? self.safeAreaInsets.top)
                 : 0
         )
@@ -816,7 +816,7 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
+                heroSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -828,7 +828,7 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
+                heroSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,

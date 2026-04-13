@@ -60,7 +60,7 @@ class ViewModelFactoryTests: TestCase {
             _ = try factory.toViewModel(
                 component: .tabs(tabs),
                 packageValidator: packageValidator,
-                firstItemIgnoresSafeAreaInfo: nil,
+                heroSafeAreaInfo: nil,
                 purchaseButtonCollector: nil,
                 offering: Self.mockOffering,
                 localizationProvider: .init(locale: .current, localizedStrings: [:]),
@@ -397,7 +397,7 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(root.firstItemIgnoresSafeAreaInfo).toNot(beNil())
+        expect(root.heroSafeAreaInfo).toNot(beNil())
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
         expect(root.shouldOverlayHeader).to(beTrue())
     }
@@ -438,9 +438,9 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(root.firstItemIgnoresSafeAreaInfo).to(beNil())
+        expect(root.heroSafeAreaInfo).to(beNil())
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beTrue())
-        expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
+        expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInsetToZStackChildren).to(beTrue())
         expect(root.shouldOverlayHeader).to(beTrue())
     }
 
@@ -481,9 +481,9 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(root.firstItemIgnoresSafeAreaInfo?.imageComponent).toNot(beNil())
-        expect(root.firstItemIgnoresSafeAreaInfo?.parentZStackBackgroundIndex).to(equal(1))
-        expect(root.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
+        expect(root.heroSafeAreaInfo?.imageComponent).toNot(beNil())
+        expect(root.heroSafeAreaInfo?.parentZStackBackgroundIndex).to(equal(1))
+        expect(root.stackViewModel.shouldApplySafeAreaInsetToZStackChildren).to(beTrue())
         expect(root.stackViewModel.safeAreaInsetExemptChildIndex).to(equal(1))
         expect(root.shouldOverlayHeader).to(beTrue())
     }
@@ -536,9 +536,9 @@ class ViewModelFactoryTests: TestCase {
             return
         }
 
-        expect(root.firstItemIgnoresSafeAreaInfo?.parentBackgroundStack).toNot(beNil())
+        expect(root.heroSafeAreaInfo?.parentBackgroundStack).toNot(beNil())
         expect(root.rootStartsWithHeroImage).to(beTrue())
-        expect(heroViewModel.shouldApplySafeAreaInsetToEntireStack).to(beTrue())
+        expect(heroViewModel.shouldApplySafeAreaInsetToSelf).to(beTrue())
         expect(root.shouldOverlayHeader).to(beTrue())
     }
 
@@ -579,7 +579,7 @@ class ViewModelFactoryTests: TestCase {
         )
 
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beTrue())
-        expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
+        expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInsetToZStackChildren).to(beTrue())
         expect(root.headerViewModel?.stackViewModel.safeAreaInsetExemptChildIndex).to(equal(1))
         expect(root.shouldOverlayHeader).to(beTrue())
     }
@@ -618,7 +618,7 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(root.firstItemIgnoresSafeAreaInfo?.videoComponent).toNot(beNil())
+        expect(root.heroSafeAreaInfo?.videoComponent).toNot(beNil())
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
         expect(root.rootStartsWithHeroImage).to(beFalse())
         expect(root.shouldOverlayHeader).to(beFalse())
@@ -662,7 +662,7 @@ class ViewModelFactoryTests: TestCase {
         )
 
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
-        expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
+        expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInsetToZStackChildren).to(beTrue())
         expect(root.shouldOverlayHeader).to(beFalse())
     }
 
