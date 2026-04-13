@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallPW3AA70E16BB844EB7Preview.swift
+//  HeaderTextBodyHeroSafeAreaPreview.swift
 //
-//  Created by Codex on 4/10/26.
+//  Created by RevenueCat on 4/10/26.
 
 import Foundation
 @_spi(Internal) import RevenueCat
@@ -20,7 +20,7 @@ import SwiftUI
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum PaywallPW3AA70E16BB844EB7Preview {
+private enum HeaderTextBodyHeroSafeAreaPreview {
 
     static let safeAreaInsets = EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
     static let previewDisplayName = "Paywall pw3aa70e16bb844eb7: header text + body hero safe area"
@@ -28,7 +28,7 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
     static let previewSubtitle = "Verifies a text-only header with a body hero placed immediately beneath it."
 
     static let offering = Offering(
-        identifier: "perplexity_cesar_2",
+        identifier: "preview",
         serverDescription: "",
         availablePackages: [],
         webCheckoutUrl: nil
@@ -229,10 +229,10 @@ private enum PaywallPW3AA70E16BB844EB7Preview {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PaywallPW3AA70E16BB844EB7Preview_Previews: PreviewProvider {
+struct HeaderTextBodyHeroSafeAreaPreview_Previews: PreviewProvider {
 
     static var previews: some View {
-        PaywallPW3AA70E16BB844EB7Preview.preview()
+        HeaderTextBodyHeroSafeAreaPreview.preview()
     }
 
 }

@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallPW6328703E14874CA2Preview.swift
+//  HeaderAboveNestedHeroZLayerSafeAreaPreview.swift
 //
-//  Created by Codex on 4/10/26.
+//  Created by RevenueCat on 4/10/26.
 
 import Foundation
 @_spi(Internal) import RevenueCat
@@ -20,7 +20,7 @@ import SwiftUI
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum PaywallPW6328703E14874CA2Preview {
+private enum HeaderAboveNestedHeroZLayerSafeAreaPreview {
 
     static let safeAreaInsets = EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
     static let previewDisplayName =
@@ -278,10 +278,10 @@ private enum PaywallPW6328703E14874CA2Preview {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PaywallPW6328703E14874CA2Preview_Previews: PreviewProvider {
+struct HeaderAboveNestedHeroZLayerSafeAreaPreview_Previews: PreviewProvider {
 
     static var previews: some View {
-        PaywallPW6328703E14874CA2Preview.preview()
+        HeaderAboveNestedHeroZLayerSafeAreaPreview.preview()
     }
 
 }
