@@ -11,7 +11,7 @@
 //
 //  Created by Jay Shortway on 24/10/2024.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -25,17 +25,20 @@ class RootViewModel {
         let parentZStack: PaywallComponent.StackComponent?
     }
 
+    let headerViewModel: HeaderComponentViewModel?
     let stackViewModel: StackComponentViewModel
     let stickyFooterViewModel: StickyFooterComponentViewModel?
     let firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?
     let localizationProvider: LocalizationProvider
 
     init(
+        headerViewModel: HeaderComponentViewModel?,
         stackViewModel: StackComponentViewModel,
         stickyFooterViewModel: StickyFooterComponentViewModel?,
         firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?,
         localizationProvider: LocalizationProvider
     ) {
+        self.headerViewModel = headerViewModel
         self.stackViewModel = stackViewModel
         self.stickyFooterViewModel = stickyFooterViewModel
         self.firstItemIgnoresSafeAreaInfo = firstItemIgnoresSafeAreaInfo

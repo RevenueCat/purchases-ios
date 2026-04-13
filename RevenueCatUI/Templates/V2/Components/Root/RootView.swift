@@ -12,7 +12,7 @@
 //  Created by Jay Shortway on 24/10/2024.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -44,11 +44,27 @@ struct RootView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
-            StackComponentView(
-                viewModel: viewModel.stackViewModel,
-                isScrollableByDefault: true,
-                onDismiss: onDismiss
-            )
+            ZStack(alignment: .top) {
+                StackComponentView(
+                    viewModel: viewModel.stackViewModel,
+                    isScrollableByDefault: true,
+                    onDismiss: onDismiss,
+                    additionalPadding: EdgeInsets(
+                        top: 0,
+                        leading: 0,
+                        bottom: viewModel.stickyFooterViewModel == nil ? safeAreaInsets.bottom : 0,
+                        trailing: 0
+                    )
+                )
+
+                if let headerViewModel = viewModel.headerViewModel {
+                    HeaderComponentView(
+                        viewModel: headerViewModel,
+                        onDismiss: onDismiss
+                    )
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+            }
 
             if let stickyFooterViewModel = viewModel.stickyFooterViewModel {
                 StackComponentView(

@@ -29,7 +29,7 @@ import Foundation
 @objc(RCOffering) public final class Offering: NSObject {
 
     /// Initialize a ``PaywallComponents``
-    public struct PaywallComponents {
+    @_spi(Internal) public struct PaywallComponents {
 
         /**
          Paywall components configuration defined in RevenueCat dashboard.
@@ -78,7 +78,7 @@ import Foundation
 
      Use ``hasPaywall`` to check if the offering has a paywall.
      */
-    public let paywallComponents: PaywallComponents?
+    @_spi(Internal) public let paywallComponents: PaywallComponents?
 
     /**
      Whether the offering contains a paywall.
@@ -203,21 +203,30 @@ import Foundation
         identifier: String,
         serverDescription: String,
         metadata: [String: Any] = [:],
-        paywall: PaywallData? = nil,
-        paywallComponents: PaywallComponents? = nil,
+        paywall: PaywallData?,
         availablePackages: [Package],
         webCheckoutUrl: URL?
     ) {
-        self.init(
-            identifier: identifier,
-            serverDescription: serverDescription,
-            metadata: metadata,
-            paywall: paywall,
-            paywallComponents: paywallComponents,
-            draftPaywallComponents: nil,
-            availablePackages: availablePackages,
-            webCheckoutUrl: webCheckoutUrl
-        )
+        self.init(identifier: identifier, serverDescription: serverDescription, metadata: metadata,
+                  paywall: paywall, paywallComponents: nil, draftPaywallComponents: nil,
+                  availablePackages: availablePackages, webCheckoutUrl: webCheckoutUrl)
+    }
+
+    /// Initialize an ``Offering`` given a list of ``Package``s, including paywall components.
+    @_spi(Internal)
+    public convenience init(
+        identifier: String,
+        serverDescription: String,
+        metadata: [String: Any] = [:],
+        paywall: PaywallData? = nil,
+        paywallComponents: PaywallComponents?,
+        availablePackages: [Package],
+        webCheckoutUrl: URL?
+    ) {
+        self.init(identifier: identifier, serverDescription: serverDescription, metadata: metadata,
+                  paywall: paywall, paywallComponents: paywallComponents,
+                  draftPaywallComponents: nil, availablePackages: availablePackages,
+                  webCheckoutUrl: webCheckoutUrl)
     }
 
     init(

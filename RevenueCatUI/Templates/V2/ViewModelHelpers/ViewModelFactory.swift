@@ -43,14 +43,41 @@ struct ViewModelFactory {
     ) throws -> RootViewModel {
         // Compute global flag: if ANY component has unsupported conditions, discard all rule overrides
         self.discardRules = componentsConfig.stack.containsUnsupportedConditions() ||
+            componentsConfig.header?.stack.containsUnsupportedConditions() == true ||
             componentsConfig.stickyFooter?.stack.containsUnsupportedConditions() == true
 
-        let firstItemIgnoresSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
+        let headerFirstItemSafeAreaInfo: RootViewModel.FirstItemShouldIgnoreSafeAreaInfo?
+        if let header = componentsConfig.header,
+           !header.stack.components.isEmpty {
+            headerFirstItemSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(header.stack))
+        } else {
+            headerFirstItemSafeAreaInfo = nil
+        }
+        let rootFirstItemSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
+
+        let headerViewModel = try componentsConfig.header.flatMap {
+            let stackViewModel = try toStackViewModel(
+                component: $0.stack,
+                packageValidator: self.packageValidator,
+                firstItemIgnoresSafeAreaInfo: headerFirstItemSafeAreaInfo,
+                purchaseButtonCollector: nil,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering,
+                colorScheme: colorScheme
+            )
+
+            return HeaderComponentViewModel(
+                component: $0,
+                stackViewModel: stackViewModel,
+                firstItemIgnoresSafeArea: headerFirstItemSafeAreaInfo != nil
+            )
+        }
 
         let rootStackViewModel = try toStackViewModel(
             component: componentsConfig.stack,
             packageValidator: self.packageValidator,
-            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+            firstItemIgnoresSafeAreaInfo: rootFirstItemSafeAreaInfo,
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
@@ -77,9 +104,10 @@ struct ViewModelFactory {
         }
 
         return RootViewModel(
+            headerViewModel: headerViewModel,
             stackViewModel: rootStackViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
-            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+            firstItemIgnoresSafeAreaInfo: rootFirstItemSafeAreaInfo,
             localizationProvider: localizationProvider
         )
     }
@@ -194,13 +222,20 @@ struct ViewModelFactory {
                 component: component,
                 offering: offering,
                 stackViewModel: stackViewModel,
-                hasPurchaseButton: hasPurchaseButton
+                hasPurchaseButton: hasPurchaseButton,
+                uiConfigProvider: uiConfigProvider,
+                discardRules: discardRules
             )
 
             if let package = viewModel.package {
                 let packageInfo = PackageValidator.PackageInfo(
                     package: package,
                     isSelectedByDefault: viewModel.isSelectedByDefault,
+                    // Only the static `visible` flag is considered here; override-based visibility
+                    // is evaluated at render time and is not used for default package selection.
+                    // The paywall builder enforces that the default-selected package cannot be
+                    // statically hidden (`visible: false`), so this is safe.
+                    isStaticallyVisible: component.visible ?? true,
                     promotionalOfferProductCode: viewModel.promotionalOfferProductCode
                 )
                 packageValidator.add(packageInfo)

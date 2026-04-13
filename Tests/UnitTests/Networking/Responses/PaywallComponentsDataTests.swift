@@ -12,7 +12,7 @@
 //  Created by Antonio Pallares on 13/2/25.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
