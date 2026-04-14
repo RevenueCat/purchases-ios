@@ -28,42 +28,7 @@ jobs:
             REQUESTED_JOBS="<< pipeline.parameters.requested_jobs >>"
 
             if [ -n "$REQUESTED_JOBS" ]; then
-              echo "On-demand job(s) requested: $REQUESTED_JOBS"
-
-              # Normalize: replace commas with spaces, collapse whitespace
-              JOBS=$(echo "$REQUESTED_JOBS" | tr ',' ' ' | xargs)
-
-              # Release/deployment jobs that must not be triggered on-demand
-              BLOCKED="release-checks make-release push-revenuecat-pod push-revenuecatui-pod
-                prepare-next-version release-train deploy-purchase-tester deploy-rct-tester
-                deploy-paywalls-tester deploy-to-spm deploy-to-purchases-ios-admob
-                bump-sdk-in-rc-mobile-app docs-deploy cocoapods-token-keepalive"
-
-              for JOB in $JOBS; do
-                for B in $BLOCKED; do
-                  if [ "$JOB" = "$B" ]; then
-                    echo "ERROR: '$JOB' is a release/deployment job and cannot be triggered on-demand."
-                    exit 1
-                  fi
-                done
-              done
-
-              # Copy continue_config.yml up to "workflows:" and append
-              # a generated workflow containing only the requested job(s).
-              CONFIG=".circleci/continue_config.yml"
-              WF_LINE=$(grep -n '^workflows:' "$CONFIG" | head -1 | cut -d: -f1)
-              head -n "$WF_LINE" "$CONFIG" > /tmp/on-demand-config.yml
-
-              {
-                echo "  on-demand-jobs:"
-                echo "    jobs:"
-                for JOB in $JOBS; do
-                  echo "      - ${JOB}:"
-                  echo "          context:"
-                  echo "            - slack-secrets"
-                done
-              } >> /tmp/on-demand-config.yml
-
+              bash .circleci/generate-on-demand-config.sh "$REQUESTED_JOBS"
             else
               echo "Normal pipeline — continuing with standard config"
             fi
