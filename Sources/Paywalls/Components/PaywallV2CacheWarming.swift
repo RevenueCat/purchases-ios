@@ -189,13 +189,15 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                         includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
                     )
                 }
+            case .fallbackHeader:
+                break
             }
         }
 
         return urls
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func collectAllVideoURLs(in stack: PaywallComponent.StackComponent) -> [URLWithValidation] {
 
         var urls: [URLWithValidation] = []
@@ -244,6 +246,8 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 if let fallback = countdown.fallback {
                     urls += self.collectAllVideoURLs(in: fallback)
                 }
+            case .fallbackHeader:
+                break
             }
         }
 

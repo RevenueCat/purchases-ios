@@ -755,6 +755,82 @@ class ViewModelFactoryTests: TestCase {
         expect(root.stickyFooterViewModel).to(beNil())
     }
 
+    // MARK: - Fallback Header Tests
+
+    @MainActor
+    func testFallbackHeaderIsFilteredOutFromStackViewModels() throws {
+        let stackComponent = PaywallComponent.StackComponent(
+            components: [
+                .fallbackHeader,
+                .text(.init(text: "text_lid", color: Self.black))
+            ],
+            dimension: .vertical(.leading, .start),
+            size: .init(width: .fill, height: .fit)
+        )
+
+        let factory = ViewModelFactory()
+        let viewModel = try factory.toStackViewModel(
+            component: stackComponent,
+            packageValidator: factory.packageValidator,
+            firstItemIgnoresSafeAreaInfo: nil,
+            purchaseButtonCollector: nil,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "text_lid": .string("Hello")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            offering: Self.mockOffering,
+            colorScheme: .light
+        )
+
+        // Only the text component should remain; fallbackHeader should be filtered out
+        expect(viewModel.viewModels.count) == 1
+        guard case .text = viewModel.viewModels.first else {
+            fail("Expected a text view model but got \(String(describing: viewModel.viewModels.first))")
+            return
+        }
+    }
+
+    @MainActor
+    func testFallbackHeaderIsSkippedWhenDetectingFirstFullWidthImage() throws {
+        let imageComponent = PaywallComponent.ImageComponent(
+            source: .init(light: .init(
+                width: 800, height: 600,
+                original: Self.sampleURL,
+                heic: Self.sampleURL,
+                heicLowRes: Self.sampleURL
+            )),
+            size: .init(width: .fill, height: .fit)
+        )
+
+        let rootStack = PaywallComponent.StackComponent(
+            components: [
+                .fallbackHeader,
+                .image(imageComponent)
+            ],
+            dimension: .vertical(.leading, .start),
+            size: .init(width: .fill, height: .fit)
+        )
+
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: rootStack,
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        // fallbackHeader should be skipped; the full-width image should be detected
+        expect(root.firstItemIgnoresSafeAreaInfo).toNot(beNil())
+        expect(root.firstItemIgnoresSafeAreaInfo?.imageComponent).toNot(beNil())
+    }
+
     // MARK: - Helpers
 
     private static let black = PaywallComponent.ColorScheme(
