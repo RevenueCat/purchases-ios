@@ -340,7 +340,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
         case let .getWorkflows(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/workflows"
+            return "subscribers/\(Self.escape(appUserID))/workflows?type=paywall"
 
         case let .getWorkflow(appUserID, workflowId):
             return "subscribers/\(Self.escape(appUserID))/workflows/\(Self.escape(workflowId))"
