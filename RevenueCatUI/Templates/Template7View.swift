@@ -264,17 +264,6 @@ struct Template7View: TemplateViewType {
         .defaultHorizontalPadding()
     }
 
-    private func tierSelectorComponentInteractionValue(
-        tierName: String?,
-        tierId: String
-    ) -> String {
-        guard let tierName else { return tierId }
-
-        return tierName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        ? tierId
-        : tierName
-    }
-
     private func title(package: TemplateViewConfiguration.Package) -> some View {
         Text(.init(self.selectedPackage.localization.title))
             .font(self.font(for: .title).weight(.semibold))
@@ -523,6 +512,17 @@ struct Template7View: TemplateViewType {
         }
     }
 
+}
+
+internal func tierSelectorComponentInteractionValue(
+    tierName: String?,
+    tierId: String
+) -> String {
+    guard let tierName else { return tierId }
+
+    return tierName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        ? tierId
+        : tierName
 }
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
