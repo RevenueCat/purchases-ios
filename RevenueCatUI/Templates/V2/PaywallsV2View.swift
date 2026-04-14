@@ -226,7 +226,9 @@ struct PaywallsV2View: View {
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(.primary)
                 .frame(width: 32, height: 32)
+                #if !os(watchOS)
                 .background(.ultraThinMaterial, in: Circle())
+                #endif
         }
         .buttonStyle(.plain)
         .disabled(self.purchaseHandler.actionInProgress)
