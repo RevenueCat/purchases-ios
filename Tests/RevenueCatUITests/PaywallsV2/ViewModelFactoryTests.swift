@@ -790,6 +790,47 @@ class ViewModelFactoryTests: TestCase {
         }
     }
 
+    @MainActor
+    func testFallbackHeaderIsSkippedWhenDetectingFirstFullWidthImage() throws {
+        let imageComponent = PaywallComponent.ImageComponent(
+            source: .init(light: .init(
+                original: Self.sampleURL,
+                heic: Self.sampleURL,
+                heicLowRes: Self.sampleURL,
+                width: 800, height: 600
+            )),
+            size: .init(width: .fill, height: .fit)
+        )
+
+        let rootStack = PaywallComponent.StackComponent(
+            components: [
+                .fallbackHeader,
+                .image(imageComponent)
+            ],
+            dimension: .vertical(.leading, .start),
+            size: .init(width: .fill, height: .fit)
+        )
+
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: rootStack,
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        // fallbackHeader should be skipped; the full-width image should be detected
+        expect(root.firstItemIgnoresSafeAreaInfo).toNot(beNil())
+        expect(root.firstItemIgnoresSafeAreaInfo?.imageComponent).toNot(beNil())
+    }
+
     // MARK: - Helpers
 
     private static let black = PaywallComponent.ColorScheme(

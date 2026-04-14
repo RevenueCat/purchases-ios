@@ -633,7 +633,10 @@ struct ViewModelFactory {
                     return backgroundInfo
                 }
 
-                guard let first = stack.components.first else {
+                guard let first = stack.components.first(where: {
+                    if case .fallbackHeader = $0 { return false }
+                    return true
+                }) else {
                     return nil
                 }
 
