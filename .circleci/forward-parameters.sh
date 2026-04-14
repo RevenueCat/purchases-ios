@@ -25,9 +25,9 @@ esac
 
 cat > "$OUTPUT" << EOF
 {
-  "_action": "$ACTION",
-  "_generate_snapshots": $GEN_SNAP,
-  "_generate_revenuecatui_snapshots": $GEN_RCUI_SNAP,
-  "_generate_swiftinterface": $GEN_SWIFT
+  "internal_action": "$ACTION",
+  "internal_generate_snapshots": $GEN_SNAP,
+  "internal_generate_revenuecatui_snapshots": $GEN_RCUI_SNAP,
+  "internal_generate_swiftinterface": $GEN_SWIFT
 }
 EOF
