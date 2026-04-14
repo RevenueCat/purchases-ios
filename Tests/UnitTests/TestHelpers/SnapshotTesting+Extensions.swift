@@ -69,21 +69,24 @@ extension SwiftUI.View {
                 .frame(width: size.width, height: size.height)
         )
 
-        expect(
-            file: file, line: line,
-            controller
-        ).toEventually(
-            haveValidSnapshot(
-                as: .image(perceptualPrecision: perceptualPrecision, size: size, traits: traits),
-                named: "1", // Force each retry to end in `.1.png`
-                separateOSVersions: separateOSVersions,
-                record: record,
-                file: filename,
-                line: line
-            ),
-            timeout: timeout,
-            pollInterval: pollInterval
+        let matcher = haveValidSnapshot(
+            as: .image(perceptualPrecision: perceptualPrecision, size: size, traits: traits),
+            named: "1", // Force each retry to end in `.1.png`
+            separateOSVersions: separateOSVersions,
+            record: record,
+            file: filename,
+            line: line
         )
+
+        if record == true {
+            // Recording always "fails" (returns a message), so skip toEventually
+            // to avoid retrying for the full timeout duration
+            expect(file: file, line: line, controller).to(matcher)
+        } else {
+            // Comparison mode: view may need time to render, so retry until it matches
+            expect(file: file, line: line, controller)
+                .toEventually(matcher, timeout: timeout, pollInterval: pollInterval)
+        }
     }
 
 }
