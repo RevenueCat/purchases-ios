@@ -18,7 +18,6 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist,
         deploy_rct_tester,
         generate_snapshots,
         generate_revenuecatui_snapshots,
