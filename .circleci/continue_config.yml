@@ -7,10 +7,11 @@ orbs:
 
 version: 2.1
 
-# Internal parameters — forwarded by the setup config (config.yml).
-# Public/API-facing parameters are declared in config.yml.
+# Parameters received from the setup config (config.yml).
+# "action" and other public parameters are forwarded implicitly by CircleCI.
+# The internal_generate_* booleans are derived by forward-parameters.sh.
 parameters:
-  internal_action:
+  action:
     type: string
     default: default
   internal_generate_snapshots:
@@ -22,12 +23,6 @@ parameters:
   internal_generate_swiftinterface:
     default: false
     type: boolean
-  # Public parameters mirrored from config.yml. CircleCI forwards all
-  # API-triggered parameters to the continuation config, so they must be
-  # declared here even though the workflows only reference internal_* versions.
-  action:
-    type: string
-    default: default
   requested_jobs:
     type: string
     default: ""
@@ -2039,7 +2034,7 @@ workflows:
         - not:
             equal: ["release-train", << pipeline.schedule.name >>]
         - not:
-            equal: [bump, << pipeline.parameters.internal_action >>]
+            equal: [bump, << pipeline.parameters.action >>]
         - not: << pipeline.parameters.internal_generate_snapshots >>
         - not: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
         - not: << pipeline.parameters.internal_generate_swiftinterface >>
@@ -2048,7 +2043,7 @@ workflows:
               matches:
                 pattern: "^(main|release/.*)$"
                 value: << pipeline.git.branch >>
-          - equal: [run-manual-tests, << pipeline.parameters.internal_action >>]
+          - equal: [run-manual-tests, << pipeline.parameters.action >>]
     jobs:
       # =============================================================
       # Reduced Test Suite: Auto-run on every push
@@ -2301,7 +2296,7 @@ workflows:
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
-            equal: [bump, << pipeline.parameters.internal_action >>]
+            equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - prepare-next-version:
           <<: *only-main-branch
@@ -2360,7 +2355,7 @@ workflows:
 
   manual-trigger-bump:
     when:
-      equal: [bump, << pipeline.parameters.internal_action >>]
+      equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - release-train
 
@@ -2368,12 +2363,12 @@ workflows:
     when:
       or:
         - equal:
-            ["record_paywall_screenshots", << pipeline.parameters.internal_action >>]
+            ["record_paywall_screenshots", << pipeline.parameters.action >>]
         - and:
             - not:
                 equal: [scheduled_pipeline, << pipeline.trigger_source >>]
             - equal: ["main", << pipeline.git.branch >>]
-            - equal: ["default", << pipeline.parameters.internal_action >>]
+            - equal: ["default", << pipeline.parameters.action >>]
     jobs:
       - record-and-push-paywall-template-screenshots:
           context:
@@ -2381,13 +2376,13 @@ workflows:
 
   update-paywall-templates:
     when:
-      equal: [update_paywall_templates, << pipeline.parameters.internal_action >>]
+      equal: [update_paywall_templates, << pipeline.parameters.action >>]
     jobs:
       - update-paywall-preview-resources-commit
 
   manual-trigger-docs-deploy:
     when:
-      equal: [run-manual-docs-deploy, << pipeline.parameters.internal_action >>]
+      equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
     jobs:
       - docs-deploy
 
@@ -2395,7 +2390,7 @@ workflows:
   # by triggering the pipeline with the "deploy_rct_tester" action
   manual-deploy-rct-tester:
     when:
-      equal: [deploy_rct_tester, << pipeline.parameters.internal_action >>]
+      equal: [deploy_rct_tester, << pipeline.parameters.action >>]
     jobs:
       - deploy-rct-tester:
           dry_run: false
@@ -2406,9 +2401,9 @@ workflows:
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
-            equal: [bump, << pipeline.parameters.internal_action >>]
+            equal: [bump, << pipeline.parameters.action >>]
         - not:
-            equal: [run-manual-tests, << pipeline.parameters.internal_action >>]
+            equal: [run-manual-tests, << pipeline.parameters.action >>]
         - matches:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
