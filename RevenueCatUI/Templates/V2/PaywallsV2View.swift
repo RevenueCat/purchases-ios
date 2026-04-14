@@ -152,20 +152,6 @@ struct PaywallsV2View: View {
                             reason: String("\(errorInfo)".prefix(130))
                         ))
                     )
-                    .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-                    .environment(
-                        \.componentInteractionLogger,
-                        self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
-                    )
-                    .environmentObject(self.purchaseHandler)
-                    .environmentObject(self.introOfferEligibilityContext)
-                    .environmentObject(self.paywallPromoOfferCache)
-                    .disabled(self.purchaseHandler.actionInProgress)
-                    .onAppear {
-                        self.purchaseHandler.trackPaywallImpression(
-                            self.createEventData()
-                        )
-                    }
                 } else {
                     switch self.paywallStateManager.state {
                     case .success(let paywallState):
@@ -283,6 +269,10 @@ struct PaywallsV2View: View {
                         value: self.purchaseHandler.restoreError as NSError?)
             .disabled(self.purchaseHandler.actionInProgress)
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .environment(
+                \.componentInteractionLogger,
+                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+            )
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
                 if hasPurchased {
                     self.onDismiss()
