@@ -55,7 +55,7 @@ extension SwiftUI.View {
 
     func snapshot(
         size: CGSize,
-        record: Bool = false,
+        record: Bool? = nil,
         separateOSVersions: Bool = true,
         file: FileString = #filePath,
         filename: StaticString = #file, // Used to generate the snapshot file name
