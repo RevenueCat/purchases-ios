@@ -409,7 +409,7 @@ platform :ios do
   desc "Record V1 template snapshots and upload to Emerge"
   lane :record_and_upload_v1_snapshots do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
-    destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
+    destination = ENV['DEVICE'] || "iPhone 17,OS=26.2"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
 
     begin
@@ -425,8 +425,12 @@ platform :ios do
         xcargs: "-testPlan CI-V1-Snapshots"
       )
     rescue => e
-      # Snapshot recording causes test failures, which is expected
-      UI.important("V1 snapshot tests failed as expected during recording: #{e.message}")
+      snapshots_path = File.expand_path("../Tests/RevenueCatUITests/Templates/__Snapshots__")
+      pngs = Dir.glob("#{snapshots_path}/**/*.png")
+      if pngs.empty?
+        UI.user_error!("Tests failed and no snapshots were recorded — this is likely a build or runtime error, not a snapshot recording failure: #{e.message}")
+      end
+      UI.important("V1 snapshot tests failed but #{pngs.count} snapshots were recorded — this is probably expected because recording mode causes assertion failures, please verify the diff in Emerge")
     end
 
     upload_v1_snapshots_to_emerge
