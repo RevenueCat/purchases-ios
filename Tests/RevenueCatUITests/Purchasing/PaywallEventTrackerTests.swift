@@ -43,6 +43,34 @@ class PaywallEventTrackerTests: TestCase {
         }
     }
 
+    func testTrackExitOfferDoesNotPreventTrackPaywallClose() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
+
+        tracker.trackPaywallImpression(Self.eventData)
+
+        expect(tracker.trackExitOffer(
+            exitOfferType: .dismiss,
+            exitOfferingIdentifier: "exit_offering",
+            sessionID: sessionID
+        )) == true
+
+        expect(tracker.trackPaywallClose(sessionID: sessionID)) == true
+        expect(tracker.trackPaywallClose(sessionID: sessionID)) == false
+
+        await expect(trackedEvents.value).toEventually(haveCount(3), timeout: .seconds(2))
+
+        let orderedTypes = trackedEvents.value.compactMap { event -> String? in
+            switch event {
+            case .impression: return "impression"
+            case .exitOffer: return "exitOffer"
+            case .close: return "close"
+            default: return nil
+            }
+        }
+        expect(orderedTypes) == ["impression", "exitOffer", "close"]
+    }
+
     func testTrackPaywallImpressionDoesNotAutoCloseAcrossDifferentSessions() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
         let firstEventData = Self.makeEventData()

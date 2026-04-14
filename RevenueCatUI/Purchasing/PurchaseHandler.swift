@@ -500,7 +500,7 @@ extension PurchaseHandler {
         return self.paywallEventTracker.trackPurchaseError(package: package, error: error, sessionID: sessionID)
     }
 
-    /// Tracks an exit offer event and clears the pending exit offer flag.
+    /// Tracks an exit offer event.
     /// - Parameters:
     ///   - exitOfferType: The type of exit offer
     ///   - exitOfferingIdentifier: The offering identifier of the exit offer
@@ -544,20 +544,22 @@ extension PurchaseHandler {
         purchase: @escaping (@escaping MockPurchases.PurchaseBlock) -> MockPurchases.PurchaseBlock,
         restore: @escaping (@escaping MockPurchases.RestoreBlock) -> MockPurchases.RestoreBlock
     ) -> Self {
+        let purchases = self.purchases.map(purchase: purchase, restore: restore)
         return .init(
             isConfigured: self.isConfigured,
-            purchases: self.purchases.map(purchase: purchase, restore: restore),
-            eventTracker: self.paywallEventTracker
+            purchases: purchases,
+            eventTracker: self.paywallEventTracker.withPurchases(purchases)
         )
     }
 
     func map(
         trackEvent: @escaping (@escaping MockPurchases.TrackEventBlock) -> MockPurchases.TrackEventBlock
     ) -> Self {
+        let purchases = self.purchases.map(trackEvent: trackEvent)
         return .init(
             isConfigured: self.isConfigured,
-            purchases: self.purchases.map(trackEvent: trackEvent),
-            eventTracker: self.paywallEventTracker
+            purchases: purchases,
+            eventTracker: self.paywallEventTracker.withPurchases(purchases)
         )
     }
 

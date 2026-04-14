@@ -43,6 +43,13 @@ final class PaywallEventTracker: @unchecked Sendable {
         self.eventDispatcher = eventDispatcher
     }
 
+    /// Returns a new tracker that forwards to `purchases` using the same event dispatcher.
+    /// Session state is not copied; used when `PurchaseHandler` replaces its `PaywallPurchasesType`
+    /// (e.g. DEBUG `PurchaseHandler.map` wrappers) so events reach the outer mock.
+    func withPurchases(_ purchases: PaywallPurchasesType) -> PaywallEventTracker {
+        return PaywallEventTracker(purchases: purchases, eventDispatcher: self.eventDispatcher)
+    }
+
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         let sessionID = eventData.sessionIdentifier
         self.stateLock.withLock {
@@ -125,7 +132,8 @@ final class PaywallEventTracker: @unchecked Sendable {
         return true
     }
 
-    /// Tracks an exit offer event and clears the pending exit offer flag.
+    /// Tracks an exit offer event. Session state is kept until `trackPaywallClose` runs so the paywall
+    /// can still emit a close event when dismissed.
     /// - Parameters:
     ///   - exitOfferType: The type of exit offer
     ///   - exitOfferingIdentifier: The offering identifier of the exit offer
@@ -146,15 +154,12 @@ final class PaywallEventTracker: @unchecked Sendable {
             exitOfferingIdentifier: exitOfferingIdentifier
         )
         self.track(.exitOffer(.init(), data, exitOfferData))
-        self.stateLock.withLock {
-            self.sessions.removeValue(forKey: sessionID)
-        }
         return true
     }
 
     /// Drops stored paywall state for `sessionID` (e.g. when the host resets purchase session state).
     func discardSession(sessionID: SessionID) {
-        self.stateLock.withLock {
+        _ = self.stateLock.withLock {
             self.sessions.removeValue(forKey: sessionID)
         }
     }

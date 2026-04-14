@@ -17,6 +17,14 @@ import Foundation
 
 #if DEBUG
 
+/// Uses `Task { }` so paywall events reach `MockPurchases.track` promptly. The production
+/// ``PaywallEventTracker/dispatcher()`` uses `Task.detached(priority: .background)`, which can delay
+/// delivery enough that XCTest expectations time out.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private let paywallEventMockDispatcher: PaywallEventTracker.EventDispatcher = { work in
+    Task { await work() }
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
@@ -58,7 +66,7 @@ extension PurchaseHandler {
             performPurchase: performPurchase,
             performRestore: performRestore,
             purchaseResultPublisher: purchaseResultPublisher,
-            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.dispatcher())
+            eventTracker: .init(purchases: purchases, eventDispatcher: paywallEventMockDispatcher)
         )
     }
 
@@ -95,7 +103,7 @@ extension PurchaseHandler {
         }
         return self.init(
             purchases: purchases,
-            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTracker.dispatcher())
+            eventTracker: .init(purchases: purchases, eventDispatcher: paywallEventMockDispatcher)
         )
     }
 
