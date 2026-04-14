@@ -5,13 +5,42 @@ setup: true
 orbs:
   continuation: circleci/continuation@1.1.0
 
-# Only parameters used by the setup config itself are declared here.
-# All other pipeline parameters (action, generate_snapshots, GHA_*, etc.)
-# are declared in continue_config.yml and flow through automatically.
+# Public API/UI-facing parameters. Internal parameters with different
+# names are declared in continue_config.yml to avoid conflicts.
 parameters:
+  action:
+    type: enum
+    enum:
+      [
+        default,
+        bump,
+        run-manual-tests,
+        run-manual-docs-deploy,
+        update_paywall_templates,
+        record_paywall_screenshots,
+        tuist,
+        deploy_rct_tester,
+        generate_snapshots,
+        generate_revenuecatui_snapshots,
+        generate_swiftinterface
+      ]
+    default: default
   # Set via CircleCI API by the GitHub Action when a PR comment like
   # "@RCGitBot please test <job1> <job2>, <job3>" is posted.
   requested_jobs:
+    type: string
+    default: ""
+  # Accepted for the GitHub Action trigger; not forwarded to continue_config.
+  GHA_Event:
+    type: string
+    default: ""
+  GHA_Actor:
+    type: string
+    default: ""
+  GHA_Action:
+    type: string
+    default: ""
+  GHA_Meta:
     type: string
     default: ""
 
@@ -29,11 +58,12 @@ jobs:
 
             if [ -n "$REQUESTED_JOBS" ]; then
               bash .circleci/generate-on-demand-config.sh "$REQUESTED_JOBS"
+              echo '{}' > /tmp/pipeline-parameters.json
             else
-              echo "Normal pipeline — continuing with standard config"
+              bash .circleci/forward-parameters.sh \
+                "<< pipeline.parameters.action >>" \
+                /tmp/pipeline-parameters.json
             fi
-
-            echo '{}' > /tmp/pipeline-parameters.json
       - when:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
