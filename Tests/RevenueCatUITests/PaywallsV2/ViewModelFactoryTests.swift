@@ -794,10 +794,10 @@ class ViewModelFactoryTests: TestCase {
     func testFallbackHeaderIsSkippedWhenDetectingFirstFullWidthImage() throws {
         let imageComponent = PaywallComponent.ImageComponent(
             source: .init(light: .init(
+                width: 800, height: 600,
                 original: Self.sampleURL,
                 heic: Self.sampleURL,
-                heicLowRes: Self.sampleURL,
-                width: 800, height: 600
+                heicLowRes: Self.sampleURL
             )),
             size: .init(width: .fill, height: .fit)
         )
