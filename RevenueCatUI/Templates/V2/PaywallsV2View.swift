@@ -139,7 +139,7 @@ struct PaywallsV2View: View {
     }
 
     public var body: some View {
-        self.addPurchaseStatePreferences(to:
+        self.addPaywallModifiers(to:
             VStack(spacing: 0) {
                 if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
                     self.defaultPaywallView(
@@ -260,7 +260,7 @@ struct PaywallsV2View: View {
         }
     }
 
-    private func addPurchaseStatePreferences<Content: View>(to content: Content) -> some View {
+    private func addPaywallModifiers<Content: View>(to content: Content) -> some View {
         content
             // Note: preferences need to be applied after `.toolbar` call
             .preference(key: PurchaseInProgressPreferenceKey.self,
@@ -557,8 +557,8 @@ fileprivate extension PaywallsV2View {
     }
 }
 
-#endif
-
 private struct PaywallFallbackError: Error {
     let reason: String
 }
+
+#endif
