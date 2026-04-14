@@ -176,25 +176,6 @@ struct PaywallsV2View: View {
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
-        .onAppear {
-            self.purchaseHandler.trackPaywallImpression(
-                self.createEventData()
-            )
-        }
-        .task {
-            guard !didFinishEligibilityCheck else {
-                return
-            }
-
-            async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
-                for: paywallState.packages
-            )
-            async let promoCheck: Void = paywallPromoOfferCache.computeEligibility(
-                for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
-            )
-            _ = await (introCheck, promoCheck)
-            didFinishEligibilityCheck = true
-        }
     }
 
     @ViewBuilder
@@ -245,15 +226,46 @@ struct PaywallsV2View: View {
                 offering: self.offering
             )
         )
-        .onAppear {
-            self.purchaseHandler.trackPaywallImpression(
-                self.createEventData(forDefaultPaywall: true)
-            )
-        }
     }
 
     private func addPaywallModifiers<Content: View>(to content: Content) -> some View {
         content
+            .onAppear {
+                let forDefaultPaywall: Bool
+                if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+                    forDefaultPaywall = true
+                } else {
+                    switch self.paywallStateManager.state {
+                    case .success:
+                        forDefaultPaywall = false
+                    case .failure:
+                        forDefaultPaywall = true
+                    }
+                }
+                self.purchaseHandler.trackPaywallImpression(
+                    self.createEventData(forDefaultPaywall: forDefaultPaywall)
+                )
+            }
+            .task {
+                guard !self.didFinishEligibilityCheck else {
+                    return
+                }
+                if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+                    return
+                }
+                guard case let .success(paywallState) = self.paywallStateManager.state else {
+                    return
+                }
+
+                async let introCheck: Void = self.introOfferEligibilityContext.computeEligibility(
+                    for: paywallState.packages
+                )
+                async let promoCheck: Void = self.paywallPromoOfferCache.computeEligibility(
+                    for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                )
+                _ = await (introCheck, promoCheck)
+                self.didFinishEligibilityCheck = true
+            }
             // Note: preferences need to be applied after `.toolbar` call
             .preference(key: PurchaseInProgressPreferenceKey.self,
                         value: self.purchaseHandler.packageBeingPurchased)
