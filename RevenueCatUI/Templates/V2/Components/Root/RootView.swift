@@ -48,27 +48,11 @@ struct RootView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
-            ZStack(alignment: .top) {
-                StackComponentView(
-                    viewModel: viewModel.stackViewModel,
-                    isScrollableByDefault: true,
-                    onDismiss: onDismiss,
-                    additionalPadding: EdgeInsets(
-                        top: 0,
-                        leading: 0,
-                        bottom: viewModel.stickyFooterViewModel == nil ? safeAreaInsets.bottom : 0,
-                        trailing: 0
-                    )
-                )
-
-                if let headerViewModel = viewModel.headerViewModel {
-                    HeaderComponentView(
-                        viewModel: headerViewModel,
-                        onDismiss: onDismiss
-                    )
-                    .fixedSize(horizontal: false, vertical: true)
-                }
-            }
+            StackComponentView(
+                viewModel: viewModel.stackViewModel,
+                isScrollableByDefault: true,
+                onDismiss: onDismiss
+            )
 
             if let stickyFooterViewModel = viewModel.stickyFooterViewModel {
                 StackComponentView(

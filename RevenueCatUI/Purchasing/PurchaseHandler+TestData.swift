@@ -62,6 +62,14 @@ extension PurchaseHandler {
         )
     }
 
+    /// Creates a mock `PurchaseHandler` that is already in the purchasing state.
+    static func purchasing(package: Package = TestData.annualPackage) -> Self {
+        let handler = Self.mock()
+        handler.actionTypeInProgress = .purchase
+        handler.packageBeingPurchased = package
+        return handler
+    }
+
     static func cancelling(
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
     ) -> Self {

@@ -10,6 +10,7 @@ import Foundation
 import GoogleMobileAds
 @_spi(Experimental) import RevenueCat
 
+@MainActor
 @available(iOS 15.0, *)
 internal final class RCAdMobFullScreenContentDelegate: NSObject, GoogleMobileAds.FullScreenContentDelegate {
 
