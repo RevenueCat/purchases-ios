@@ -672,10 +672,6 @@ jobs:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-15"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
-          version: "revenuecatui-15"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -713,10 +709,6 @@ jobs:
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
-          version: "revenuecatui-16"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
           version: "revenuecatui-16"
       - compress_result_bundle:
           directory: fastlane/test_output
@@ -767,10 +759,6 @@ jobs:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-18"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
-          version: "revenuecatui-18"
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
       - store_artifacts:
@@ -801,10 +789,6 @@ jobs:
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
-          version: "revenuecatui-17"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
           version: "revenuecatui-17"
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
@@ -861,10 +845,6 @@ jobs:
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
-          version: "revenuecatui-26"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
           version: "revenuecatui-26"
       - compress_result_bundle:
           directory: fastlane/test_output

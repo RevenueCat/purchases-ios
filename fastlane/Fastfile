@@ -67,7 +67,6 @@ files_to_update_on_latest_stable_releases = {
 }
 
 REPO_NAME = 'purchases-ios'
-SNAPSHOTS_REPO_NAME = 'purchases-ios-snapshots'
 PAYWALL_PREVIEW_RESOURCES_REPO_NAME = 'paywall-preview-resources'
 CHANGELOG_LATEST_PATH = './CHANGELOG.latest.md'
 CHANGELOG_PATH = './CHANGELOG.md'
@@ -1408,17 +1407,6 @@ platform :ios do
     end
   end
 
-  desc "Creates a new PR on purchases-ios-snapshots after new snapshot files were generated"
-  lane :create_snapshots_repo_pr do |options|
-    Dir.chdir("../Tests/#{SNAPSHOTS_REPO_NAME}") { |dir|
-     push_snapshot_pr(
-      version: options[:version],
-      repo: "revenuecat/#{SNAPSHOTS_REPO_NAME}",
-      base_branch: "main",
-      files_to_add: "."
-     )
-    }
-  end
 
   private_lane :push_snapshot_pr do |options|
     version = options[:version]
@@ -1712,7 +1700,6 @@ platform :ios do
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
     test_configuration = generate_snapshots ? "GenerateSnapshots" : "Default"
 
-    fetch_snapshots
     replace_api_key_integration_tests
 
     success = false
@@ -2160,23 +2147,6 @@ platform :ios do
     )
   end
 
-  desc "Clones or updates snapshots repo"
-  lane :fetch_snapshots do
-    Dir.chdir("../Tests") do
-      if !File.directory?(SNAPSHOTS_REPO_NAME)
-        UI.important("Cloning snapshots repo")
-
-        sh "git", "clone", "https://github.com/RevenueCat/#{SNAPSHOTS_REPO_NAME}.git"
-      end
-
-      commit = current_snapshots_commit
-      UI.message("Updating snapshots repo to #{commit}")
-      Dir.chdir(SNAPSHOTS_REPO_NAME) do
-        sh "git", "fetch", "origin"
-        sh "git", "checkout", commit
-      end
-    end
-  end
 
   desc "Clones or updates paywall-preview-resources repo"
   lane :fetch_paywall_preview_resources do
@@ -2307,19 +2277,6 @@ platform :ios do
     end
   end
 
-  desc "Updates purchases-ios-snapshots-commit to point to latest commit on main"
-  lane :update_snapshots_repo do
-    new_hash = ""
-
-    Dir.chdir("../Tests/#{SNAPSHOTS_REPO_NAME}") do
-      sh "git", "checkout", "main"
-      sh "git", "pull", "--rebase", "origin"
-      new_hash = sh("git", "rev-parse", "HEAD")
-    end
-
-    UI.important("Updating snapshot commit to #{new_hash}")
-    update_snapshots_commit(new_hash)
-  end
 
   lane :deploy_to_spm do
     source_repo = ENV["CIRCLE_REPOSITORY_URL"] || "https://github.com/revenuecat/#{REPO_NAME}"
@@ -2503,19 +2460,6 @@ lane :load_spm_dependencies do
   Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("xcodebuild", "-list")
   end
-end
-
-# Snapshots
-
-def snapshots_commit_file
-  "#{File.dirname(__FILE__)}/../Tests/#{SNAPSHOTS_REPO_NAME}-commit"
-end
-
-def current_snapshots_commit
-  File.read(snapshots_commit_file).strip
-end
-def update_snapshots_commit(hash)
-  File.write(snapshots_commit_file, hash)
 end
 
 def paywall_preview_resources_commit_file
