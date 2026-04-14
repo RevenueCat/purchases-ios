@@ -62,13 +62,13 @@ jobs:
             REQUESTED_JOBS="<< pipeline.parameters.requested_jobs >>"
 
             if [ -n "$REQUESTED_JOBS" ]; then
-              bash .circleci/generate-on-demand-config.sh "$REQUESTED_JOBS"
+              bash .circleci/generate-requested-jobs-config.sh "$REQUESTED_JOBS"
             fi
       - when:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
             - continuation/continue:
-                configuration_path: /tmp/on-demand-config.yml
+                configuration_path: /tmp/requested-jobs-config.yml
       - unless:
           condition: << pipeline.parameters.requested_jobs >>
           steps:

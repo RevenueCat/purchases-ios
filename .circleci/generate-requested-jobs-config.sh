@@ -35,7 +35,7 @@ for JOB in $JOBS; do
 done
 
 WF_LINE=$(grep -n '^workflows:' "$CONFIG" | head -1 | cut -d: -f1)
-head -n "$WF_LINE" "$CONFIG" > /tmp/on-demand-config.yml
+head -n "$WF_LINE" "$CONFIG" > /tmp/requested-jobs-config.yml
 
 {
   echo "  on-demand-jobs:"
@@ -45,4 +45,4 @@ head -n "$WF_LINE" "$CONFIG" > /tmp/on-demand-config.yml
     echo "          context:"
     echo "            - slack-secrets"
   done
-} >> /tmp/on-demand-config.yml
+} >> /tmp/requested-jobs-config.yml
