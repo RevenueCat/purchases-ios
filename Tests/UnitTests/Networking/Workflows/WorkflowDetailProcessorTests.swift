@@ -29,7 +29,7 @@ class WorkflowDetailProcessorTests: TestCase {
         self.processor = WorkflowDetailProcessor(cdnFetch: { [weak self] url, completion in
             self?.fetchedUrls.append(url)
             completion(.success((try? JSONSerialization.data(withJSONObject: ["id": "from_cdn"])) ?? Data()))
-        })
+        }, responseVerificationMode: .disabled)
     }
 
     func testInlineUnwrapsData() throws {
@@ -101,7 +101,7 @@ class WorkflowDetailProcessorTests: TestCase {
     func testUseCdnPropagatesIOErrorAsCdnFetchFailed() throws {
         let failingProcessor = WorkflowDetailProcessor(cdnFetch: { _, completion in
             completion(.failure(URLError(.notConnectedToInternet)))
-        })
+        }, responseVerificationMode: .disabled)
 
         let envelope: [String: Any] = ["action": "use_cdn", "url": "https://x"]
         let data = try JSONSerialization.data(withJSONObject: envelope)
@@ -139,6 +139,238 @@ class WorkflowDetailProcessorTests: TestCase {
         }
 
         expect(result).to(beFailure())
+    }
+
+    // MARK: - CDN hash verification (disabled mode)
+
+    func testUseCdnSkipsHashCheckWhenVerificationDisabled() throws {
+        // Verification disabled: hash mismatch should be ignored
+        let envelope: [String: Any] = [
+            "action": "use_cdn",
+            "url": "https://cdn.example/w.json",
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        ]
+        let data = try JSONSerialization.data(withJSONObject: envelope)
+
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+    }
+
+    // MARK: - CDN hash verification (informational mode)
+
+    func testUseCdnSucceedsWithValidHashInInformationalMode() throws {
+        let processor = self.processorWithVerification(mode: .informational(Signing.loadPublicKey()))
+
+        // SHA-256 of '{"id":"from_cdn"}' (sorted keys, compact separators)
+        let expectedHash = "b9c022b65b0163693e3a4feb85299a46a31d46b5c408c15a70537190af8652a8"
+
+        let envelope: [String: Any] = [
+            "action": "use_cdn",
+            "url": "https://cdn.example/w.json",
+            "hash": expectedHash
+        ]
+        let data = try JSONSerialization.data(withJSONObject: envelope)
+
+        let result = waitUntilValue { completed in
+            processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beSuccess { value in
+            let parsed = try? JSONSerialization.jsonObject(with: value.workflowData) as? [String: Any]
+            expect(parsed?["id"] as? String) == "from_cdn"
+        })
+    }
+
+    func testUseCdnSucceedsWithInvalidHashInInformationalMode() throws {
+        // Informational mode: hash mismatch logs a warning but does not fail
+        let processor = self.processorWithVerification(mode: .informational(Signing.loadPublicKey()))
+
+        let envelope: [String: Any] = [
+            "action": "use_cdn",
+            "url": "https://cdn.example/w.json",
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        ]
+        let data = try JSONSerialization.data(withJSONObject: envelope)
+
+        let result = waitUntilValue { completed in
+            processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+    }
+
+    func testUseCdnSucceedsWithMissingHashInInformationalMode() throws {
+        // Informational mode: missing hash logs a warning but does not fail
+        let processor = self.processorWithVerification(mode: .informational(Signing.loadPublicKey()))
+
+        let envelope: [String: Any] = [
+            "action": "use_cdn",
+            "url": "https://cdn.example/w.json"
+        ]
+        let data = try JSONSerialization.data(withJSONObject: envelope)
+
+        let result = waitUntilValue { completed in
+            processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+    }
+
+    // MARK: - CDN hash verification (enforced mode)
+
+    func testUseCdnSucceedsWithValidHashInEnforcedMode() throws {
+        let processor = self.processorWithVerification(mode: .enforced(Signing.loadPublicKey()))
+
+        let expectedHash = "b9c022b65b0163693e3a4feb85299a46a31d46b5c408c15a70537190af8652a8"
+
+        let envelope: [String: Any] = [
+            "action": "use_cdn",
+            "url": "https://cdn.example/w.json",
+            "hash": expectedHash
+        ]
+        let data = try JSONSerialization.data(withJSONObject: envelope)
+
+        let result = waitUntilValue { completed in
+            processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+    }
+
+    func testUseCdnFailsWithInvalidHashInEnforcedMode() throws {
+        let processor = self.processorWithVerification(mode: .enforced(Signing.loadPublicKey()))
+
+        let envelope: [String: Any] = [
+            "action": "use_cdn",
+            "url": "https://cdn.example/w.json",
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        ]
+        let data = try JSONSerialization.data(withJSONObject: envelope)
+
+        let result = waitUntilValue { completed in
+            processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beFailure { error in
+            guard case WorkflowDetailProcessingError.cdnHashMismatch = error else {
+                fail("Expected cdnHashMismatch, got \(error)")
+                return
+            }
+        })
+    }
+
+    func testUseCdnFailsWithMissingHashInEnforcedMode() throws {
+        let processor = self.processorWithVerification(mode: .enforced(Signing.loadPublicKey()))
+
+        let envelope: [String: Any] = [
+            "action": "use_cdn",
+            "url": "https://cdn.example/w.json"
+        ]
+        let data = try JSONSerialization.data(withJSONObject: envelope)
+
+        let result = waitUntilValue { completed in
+            processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beFailure { error in
+            guard case WorkflowDetailProcessingError.cdnHashMismatch = error else {
+                fail("Expected cdnHashMismatch, got \(error)")
+                return
+            }
+        })
+    }
+
+    func testUseCdnHashIgnoresHashFieldInCdnContent() throws {
+        // CDN content may include a "hash" field — it should be excluded from the preimage
+        let cdnContentWithHash: [String: Any] = ["id": "wf1", "hash": "embedded_hash"]
+        let cdnContentWithoutHash: [String: Any] = ["id": "wf1"]
+
+        let cdnData = try JSONSerialization.data(withJSONObject: cdnContentWithHash)
+        let processor = WorkflowDetailProcessor(cdnFetch: { _, completion in
+            completion(.success(cdnData))
+        }, responseVerificationMode: .enforced(Signing.loadPublicKey()))
+
+        // Compute expected hash from content without "hash" field
+        let preimageData = try JSONSerialization.data(
+            withJSONObject: cdnContentWithoutHash,
+            options: [.sortedKeys, .withoutEscapingSlashes]
+        )
+        let expectedHash = preimageData.sha256String
+
+        let envelope: [String: Any] = [
+            "action": "use_cdn",
+            "url": "https://cdn.example/w.json",
+            "hash": expectedHash
+        ]
+        let data = try JSONSerialization.data(withJSONObject: envelope)
+
+        let result = waitUntilValue { completed in
+            processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+    }
+
+    // MARK: - verifyCdnHash (unit tests for the static method)
+
+    func testVerifyCdnHashReturnsTrueForMatchingHash() throws {
+        let content: [String: Any] = ["id": "wf_abc", "steps": ["a": 1]]
+        let contentData = try JSONSerialization.data(withJSONObject: content)
+
+        let preimageData = try JSONSerialization.data(
+            withJSONObject: content,
+            options: [.sortedKeys, .withoutEscapingSlashes]
+        )
+        let hash = preimageData.sha256String
+
+        expect(WorkflowDetailProcessor.verifyCdnHash(contentData, expectedHash: hash)) == true
+    }
+
+    func testVerifyCdnHashReturnsFalseForMismatch() throws {
+        let content: [String: Any] = ["id": "wf_abc"]
+        let contentData = try JSONSerialization.data(withJSONObject: content)
+
+        expect(WorkflowDetailProcessor.verifyCdnHash(contentData, expectedHash: "wrong")) == false
+    }
+
+    func testVerifyCdnHashExcludesHashField() throws {
+        let contentWithHash: [String: Any] = ["id": "wf_abc", "hash": "some_value"]
+        let contentData = try JSONSerialization.data(withJSONObject: contentWithHash)
+
+        // Hash should be computed over {"id":"wf_abc"} only
+        let preimage: [String: Any] = ["id": "wf_abc"]
+        let preimageData = try JSONSerialization.data(
+            withJSONObject: preimage,
+            options: [.sortedKeys, .withoutEscapingSlashes]
+        )
+        let hash = preimageData.sha256String
+
+        expect(WorkflowDetailProcessor.verifyCdnHash(contentData, expectedHash: hash)) == true
+    }
+
+    func testVerifyCdnHashReturnsFalseForInvalidData() {
+        let invalidData = Data("not json".utf8)
+        expect(WorkflowDetailProcessor.verifyCdnHash(invalidData, expectedHash: "anything")) == false
+    }
+
+}
+
+// MARK: - Helpers
+
+private extension WorkflowDetailProcessorTests {
+
+    func processorWithVerification(
+        mode: Signing.ResponseVerificationMode
+    ) -> WorkflowDetailProcessor {
+        return WorkflowDetailProcessor(cdnFetch: { [weak self] url, completion in
+            self?.fetchedUrls.append(url)
+            completion(.success(
+                (try? JSONSerialization.data(withJSONObject: ["id": "from_cdn"])) ?? Data()
+            ))
+        }, responseVerificationMode: mode)
     }
 
 }

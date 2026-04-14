@@ -28,6 +28,7 @@ enum WorkflowDetailProcessingError: Error {
     case unknownAction(String)
     case missingInlineData
     case missingCdnUrl
+    case cdnHashMismatch
 
 }
 
@@ -43,21 +44,16 @@ struct WorkflowDetailProcessingResult {
 final class WorkflowDetailProcessor: Sendable {
 
     private let cdnFetch: WorkflowCdnFetch
+    private let responseVerificationMode: Signing.ResponseVerificationMode
 
-    init(cdnFetch: @escaping WorkflowCdnFetch) {
+    init(cdnFetch: @escaping WorkflowCdnFetch,
+         responseVerificationMode: Signing.ResponseVerificationMode) {
         self.cdnFetch = cdnFetch
+        self.responseVerificationMode = responseVerificationMode
     }
 
     func process(_ data: Data, completion: @escaping (Result<WorkflowDetailProcessingResult, Error>) -> Void) {
-        let json: [String: Any]?
-        do {
-            json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        } catch {
-            completion(.failure(WorkflowDetailProcessingError.invalidEnvelopeJson))
-            return
-        }
-
-        guard let json else {
+        guard let json = Self.parseEnvelope(data) else {
             completion(.failure(WorkflowDetailProcessingError.invalidEnvelopeJson))
             return
         }
@@ -73,31 +69,97 @@ final class WorkflowDetailProcessor: Sendable {
 
         switch action {
         case .inline:
-            guard let inlineData = json["data"] else {
-                completion(.failure(WorkflowDetailProcessingError.missingInlineData))
-                return
-            }
-            do {
-                let workflowData = try JSONSerialization.data(withJSONObject: inlineData)
-                completion(.success(.init(workflowData: workflowData, enrolledVariants: enrolledVariants)))
-            } catch {
-                completion(.failure(error))
-            }
+            self.processInline(json: json, enrolledVariants: enrolledVariants, completion: completion)
 
         case .useCdn:
-            guard let cdnUrl = json["url"] as? String else {
-                completion(.failure(WorkflowDetailProcessingError.missingCdnUrl))
-                return
-            }
-            self.cdnFetch(cdnUrl) { result in
-                switch result {
-                case .success(let workflowData):
-                    completion(.success(.init(workflowData: workflowData, enrolledVariants: enrolledVariants)))
-                case .failure(let error):
-                    completion(.failure(WorkflowDetailProcessingError.cdnFetchFailed(error)))
+            self.processCdn(json: json, enrolledVariants: enrolledVariants, completion: completion)
+        }
+    }
+
+    private static func parseEnvelope(_ data: Data) -> [String: Any]? {
+        return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+    }
+
+    private func processInline(
+        json: [String: Any],
+        enrolledVariants: [String: String]?,
+        completion: @escaping (Result<WorkflowDetailProcessingResult, Error>) -> Void
+    ) {
+        guard let inlineData = json["data"] else {
+            completion(.failure(WorkflowDetailProcessingError.missingInlineData))
+            return
+        }
+        do {
+            let workflowData = try JSONSerialization.data(withJSONObject: inlineData)
+            completion(.success(.init(workflowData: workflowData, enrolledVariants: enrolledVariants)))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    private func processCdn(
+        json: [String: Any],
+        enrolledVariants: [String: String]?,
+        completion: @escaping (Result<WorkflowDetailProcessingResult, Error>) -> Void
+    ) {
+        guard let cdnUrl = json["url"] as? String else {
+            completion(.failure(WorkflowDetailProcessingError.missingCdnUrl))
+            return
+        }
+        let expectedHash = json["hash"] as? String
+
+        self.cdnFetch(cdnUrl) { result in
+            switch result {
+            case .success(let workflowData):
+                if let error = self.verifyCdnHashIfNeeded(workflowData, expectedHash: expectedHash) {
+                    completion(.failure(error))
+                    return
                 }
+                completion(.success(.init(workflowData: workflowData, enrolledVariants: enrolledVariants)))
+            case .failure(let error):
+                completion(.failure(WorkflowDetailProcessingError.cdnFetchFailed(error)))
             }
         }
+    }
+
+    /// Returns an error if hash verification fails and enforcement requires it. Returns `nil` if verification
+    /// passes or is not enabled.
+    private func verifyCdnHashIfNeeded(_ data: Data, expectedHash: String?) -> Error? {
+        guard self.responseVerificationMode.isEnabled else { return nil }
+
+        guard let expectedHash, Self.verifyCdnHash(data, expectedHash: expectedHash) else {
+            Logger.warn(Strings.network.workflow_cdn_hash_mismatch)
+
+            if self.responseVerificationMode.isEnforced {
+                return WorkflowDetailProcessingError.cdnHashMismatch
+            }
+            return nil
+        }
+
+        return nil
+    }
+
+    /// Verifies that the SHA-256 hash of the CDN content (excluding the `hash` field)
+    /// matches the expected hash from the envelope.
+    ///
+    /// The canonical form matches the backend: sorted keys, compact separators (`","`/`":"`),
+    /// with the `hash` key excluded from the preimage.
+    static func verifyCdnHash(_ data: Data, expectedHash: String) -> Bool {
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return false
+        }
+
+        let preimage = json.filter { $0.key != "hash" }
+
+        guard let canonicalData = try? JSONSerialization.data(
+            withJSONObject: preimage,
+            options: [.sortedKeys, .withoutEscapingSlashes]
+        ) else {
+            return false
+        }
+
+        let computedHash = canonicalData.sha256String
+        return computedHash == expectedHash
     }
 
 }

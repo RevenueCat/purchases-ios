@@ -29,7 +29,8 @@ class WorkflowsAPI {
         self.workflowsListCallbackCache = .init()
         self.workflowDetailCallbackCache = .init()
         self.detailProcessor = WorkflowDetailProcessor(
-            cdnFetch: cdnFetch ?? Self.defaultCdnFetch(httpClient: backendConfig.httpClient)
+            cdnFetch: cdnFetch ?? Self.defaultCdnFetch(httpClient: backendConfig.httpClient),
+            responseVerificationMode: backendConfig.systemInfo.responseVerificationMode
         )
     }
 
