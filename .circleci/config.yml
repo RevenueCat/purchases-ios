@@ -5,9 +5,8 @@ setup: true
 orbs:
   continuation: circleci/continuation@1.1.0
 
-# These parameters mirror the ones in continue_config.yml so that
-# externally-triggered pipelines (API, scheduled, GitHub Actions) can
-# pass values through to the continuation config.
+# Public API/UI-facing parameters. Internal parameters with different
+# names are declared in continue_config.yml to avoid conflicts.
 parameters:
   action:
     type: enum
@@ -20,18 +19,13 @@ parameters:
         update_paywall_templates,
         record_paywall_screenshots,
         tuist,
-        deploy_rct_tester
+        deploy_rct_tester,
+        generate_snapshots,
+        generate_revenuecatui_snapshots,
+        generate_swiftinterface
       ]
     default: default
-  generate_snapshots:
-    default: false
-    type: boolean
-  generate_revenuecatui_snapshots:
-    default: false
-    type: boolean
-  generate_swiftinterface:
-    default: false
-    type: boolean
+  # Accepted for the GitHub Action trigger; not forwarded to continue_config.
   GHA_Event:
     type: string
     default: ""
@@ -55,34 +49,9 @@ jobs:
       - run:
           name: Forward pipeline parameters to continuation config
           command: |
-            # Build the parameter JSON forwarding all original pipeline
-            # parameters to the continuation config.
-            # Add new path-based parameters here as needed.
-            python3 -c "
-            import json, sys
-            params = {
-                'action': sys.argv[1],
-                'generate_snapshots': sys.argv[2] == 'true',
-                'generate_revenuecatui_snapshots': sys.argv[3] == 'true',
-                'generate_swiftinterface': sys.argv[4] == 'true',
-                'GHA_Event': sys.argv[5],
-                'GHA_Actor': sys.argv[6],
-                'GHA_Action': sys.argv[7],
-                'GHA_Meta': sys.argv[8],
-            }
-            with open('/tmp/pipeline-parameters.json', 'w') as f:
-                json.dump(params, f, indent=2)
-            print('Generated parameters:')
-            print(json.dumps(params, indent=2))
-            " \
+            bash .circleci/forward-parameters.sh \
               "<< pipeline.parameters.action >>" \
-              "<< pipeline.parameters.generate_snapshots >>" \
-              "<< pipeline.parameters.generate_revenuecatui_snapshots >>" \
-              "<< pipeline.parameters.generate_swiftinterface >>" \
-              "<< pipeline.parameters.GHA_Event >>" \
-              "<< pipeline.parameters.GHA_Actor >>" \
-              "<< pipeline.parameters.GHA_Action >>" \
-              "<< pipeline.parameters.GHA_Meta >>"
+              /tmp/pipeline-parameters.json
       - continuation/continue:
           parameters: /tmp/pipeline-parameters.json
           configuration_path: .circleci/continue_config.yml

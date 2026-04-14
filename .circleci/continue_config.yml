@@ -7,43 +7,21 @@ orbs:
 
 version: 2.1
 
+# Internal parameters — forwarded by the setup config (config.yml).
+# Public/API-facing parameters are declared in config.yml.
 parameters:
-  action:
-    type: enum
-    enum:
-      [
-        default,
-        bump,
-        run-manual-tests,
-        run-manual-docs-deploy,
-        update_paywall_templates,
-        record_paywall_screenshots,
-        tuist,
-        deploy_rct_tester
-      ]
+  _action:
+    type: string
     default: default
-  generate_snapshots:
+  _generate_snapshots:
     default: false
     type: boolean
-  generate_revenuecatui_snapshots:
+  _generate_revenuecatui_snapshots:
     default: false
     type: boolean
-  generate_swiftinterface:
+  _generate_swiftinterface:
     default: false
     type: boolean
-  # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
-  GHA_Event:
-    type: string
-    default: ""
-  GHA_Actor:
-    type: string
-    default: ""
-  GHA_Action:
-    type: string
-    default: ""
-  GHA_Meta:
-    type: string
-    default: ""
 
 executors:
   macos-executor:
@@ -56,8 +34,8 @@ executors:
       xcode: << parameters.xcode_version >>
     resource_class: m4pro.medium
     environment:
-      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
-      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters._generate_snapshots >>
+      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters._generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
   macos-executor-large:
@@ -70,8 +48,8 @@ executors:
       xcode: << parameters.xcode_version >>
     resource_class: m4pro.medium
     environment:
-      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
-      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters._generate_snapshots >>
+      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters._generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
 
@@ -557,7 +535,7 @@ commands:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
+          condition: << pipeline.parameters._generate_snapshots >>
           job: "create_snapshot_pr"
           version: "BackendIntegrationTests"
       - store_test_results:
@@ -669,11 +647,11 @@ jobs:
           environment:
             DEVICE: iPhone 13,OS=15.5
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters._generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-15"
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters._generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-15"
       - compress_result_bundle:
@@ -711,11 +689,11 @@ jobs:
           environment:
             DEVICE: iPhone 14,OS=16.4
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters._generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-16"
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters._generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-16"
       - compress_result_bundle:
@@ -764,11 +742,11 @@ jobs:
               mv revenuecatui.xcresult.tar.gz revenuecatui-iOS18.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters._generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-18"
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters._generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-18"
       - store_test_results:
@@ -799,11 +777,11 @@ jobs:
               mv revenuecatui.xcresult.tar.gz revenuecatui-iOS17.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters._generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-17"
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters._generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-17"
       - store_test_results:
@@ -836,11 +814,11 @@ jobs:
           environment:
             DEVICE: iPhone 17,OS=26.2
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters._generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-26"
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters._generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-26"
       - compress_result_bundle:
@@ -872,7 +850,7 @@ jobs:
             DEVICE: Apple Watch Series 10 (46mm),OS=11.5
             BUILD_SDK: watchsimulator
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters._generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-watchos"
       - compress_result_bundle:
@@ -900,7 +878,7 @@ jobs:
           directory: fastlane/test_output/xctest/tvos
           bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
+          condition: << pipeline.parameters._generate_snapshots >>
           job: "create_snapshot_pr"
           version: "tvos"
       - store_test_results:
@@ -921,7 +899,7 @@ jobs:
           directory: fastlane/test_output/xctest/macos
           bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
+          condition: << pipeline.parameters._generate_snapshots >>
           job: "create_snapshot_pr"
           version: "macos"
       - store_test_results:
@@ -960,7 +938,7 @@ jobs:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
+          condition: << pipeline.parameters._generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-26"
       - store_test_results:
@@ -1007,7 +985,7 @@ jobs:
               mv RevenueCat.xcresult.tar.gz RevenueCat-iOS18.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
+          condition: << pipeline.parameters._generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-18"
       - store_test_results:
@@ -1038,7 +1016,7 @@ jobs:
               mv RevenueCat.xcresult.tar.gz RevenueCat-iOS17.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
+          condition: << pipeline.parameters._generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-17"
       - store_test_results:
@@ -1081,7 +1059,7 @@ jobs:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
+          condition: << pipeline.parameters._generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-16"
       - store_test_results:
@@ -1143,7 +1121,7 @@ jobs:
               mv RevenueCat.xcresult.tar.gz RevenueCat-iOS15.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
+          condition: << pipeline.parameters._generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-15"
       - store_test_results:
@@ -1178,7 +1156,7 @@ jobs:
               mv RevenueCat.xcresult.tar.gz RevenueCat-iOS14.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
+          condition: << pipeline.parameters._generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-14"
       - store_test_results:
@@ -1206,7 +1184,7 @@ jobs:
           directory: fastlane/test_output/xctest/watchos
           bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
+          condition: << pipeline.parameters._generate_snapshots >>
           job: "create_snapshot_pr"
           version: "watchos"
       - store_test_results:
@@ -1999,14 +1977,14 @@ jobs:
 workflows:
 
   generate-swiftinterface:
-    when: << pipeline.parameters.generate_swiftinterface >>
+    when: << pipeline.parameters._generate_swiftinterface >>
     jobs:
       - generate-swiftinterface:
           context:
             - slack-secrets-ios
 
   generate-snapshot:
-    when: << pipeline.parameters.generate_snapshots >>
+    when: << pipeline.parameters._generate_snapshots >>
     jobs:
       - run-test-ios-26
       - run-test-ios-18-and-17
@@ -2018,7 +1996,7 @@ workflows:
 
 
   generate_revenuecatui_snapshots:
-    when: << pipeline.parameters.generate_revenuecatui_snapshots >>
+    when: << pipeline.parameters._generate_revenuecatui_snapshots >>
     jobs:
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
@@ -2040,16 +2018,16 @@ workflows:
         - not:
             equal: ["release-train", << pipeline.schedule.name >>]
         - not:
-            equal: [bump, << pipeline.parameters.action >>]
-        - not: << pipeline.parameters.generate_snapshots >>
-        - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
-        - not: << pipeline.parameters.generate_swiftinterface >>
+            equal: [bump, << pipeline.parameters._action >>]
+        - not: << pipeline.parameters._generate_snapshots >>
+        - not: << pipeline.parameters._generate_revenuecatui_snapshots >>
+        - not: << pipeline.parameters._generate_swiftinterface >>
         - or:
           - not:
               matches:
                 pattern: "^(main|release/.*)$"
                 value: << pipeline.git.branch >>
-          - equal: [run-manual-tests, << pipeline.parameters.action >>]
+          - equal: [run-manual-tests, << pipeline.parameters._action >>]
     jobs:
       # =============================================================
       # Reduced Test Suite: Auto-run on every push
@@ -2302,7 +2280,7 @@ workflows:
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
-            equal: [bump, << pipeline.parameters.action >>]
+            equal: [bump, << pipeline.parameters._action >>]
     jobs:
       - prepare-next-version:
           <<: *only-main-branch
@@ -2361,7 +2339,7 @@ workflows:
 
   manual-trigger-bump:
     when:
-      equal: [bump, << pipeline.parameters.action >>]
+      equal: [bump, << pipeline.parameters._action >>]
     jobs:
       - release-train
 
@@ -2369,12 +2347,12 @@ workflows:
     when:
       or:
         - equal:
-            ["record_paywall_screenshots", << pipeline.parameters.action >>]
+            ["record_paywall_screenshots", << pipeline.parameters._action >>]
         - and:
             - not:
                 equal: [scheduled_pipeline, << pipeline.trigger_source >>]
             - equal: ["main", << pipeline.git.branch >>]
-            - equal: ["default", << pipeline.parameters.action >>]
+            - equal: ["default", << pipeline.parameters._action >>]
     jobs:
       - record-and-push-paywall-template-screenshots:
           context:
@@ -2382,13 +2360,13 @@ workflows:
 
   update-paywall-templates:
     when:
-      equal: [update_paywall_templates, << pipeline.parameters.action >>]
+      equal: [update_paywall_templates, << pipeline.parameters._action >>]
     jobs:
       - update-paywall-preview-resources-commit
 
   manual-trigger-docs-deploy:
     when:
-      equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
+      equal: [run-manual-docs-deploy, << pipeline.parameters._action >>]
     jobs:
       - docs-deploy
 
@@ -2396,7 +2374,7 @@ workflows:
   # by triggering the pipeline with the "deploy_rct_tester" action
   manual-deploy-rct-tester:
     when:
-      equal: [deploy_rct_tester, << pipeline.parameters.action >>]
+      equal: [deploy_rct_tester, << pipeline.parameters._action >>]
     jobs:
       - deploy-rct-tester:
           dry_run: false
@@ -2407,9 +2385,9 @@ workflows:
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
-            equal: [bump, << pipeline.parameters.action >>]
+            equal: [bump, << pipeline.parameters._action >>]
         - not:
-            equal: [run-manual-tests, << pipeline.parameters.action >>]
+            equal: [run-manual-tests, << pipeline.parameters._action >>]
         - matches:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
