@@ -22,6 +22,27 @@ parameters:
   internal_generate_swiftinterface:
     default: false
     type: boolean
+  # Public parameters mirrored from config.yml. CircleCI forwards all
+  # API-triggered parameters to the continuation config, so they must be
+  # declared here even though the workflows only reference internal_* versions.
+  action:
+    type: string
+    default: default
+  requested_jobs:
+    type: string
+    default: ""
+  GHA_Event:
+    type: string
+    default: ""
+  GHA_Actor:
+    type: string
+    default: ""
+  GHA_Action:
+    type: string
+    default: ""
+  GHA_Meta:
+    type: string
+    default: ""
 
 executors:
   macos-executor:
