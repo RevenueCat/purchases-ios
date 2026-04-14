@@ -101,6 +101,68 @@ class PaywallEventTrackerTests: TestCase {
         }
     }
 
+    func testTrackExitOfferClearsSessionState() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
+
+        expect(tracker.trackExitOffer(
+            exitOfferType: .dismiss,
+            exitOfferingIdentifier: "exit_offering",
+            sessionID: sessionID
+        )) == false
+
+        tracker.trackPaywallImpression(Self.eventData)
+
+        expect(tracker.trackExitOffer(
+            exitOfferType: .dismiss,
+            exitOfferingIdentifier: "exit_offering",
+            sessionID: sessionID
+        )) == true
+        expect(tracker.trackPaywallClose(sessionID: sessionID)) == false
+        expect(tracker.createPurchaseInitiatedEvent(package: TestData.packageWithIntroOffer, sessionID: sessionID))
+            .to(beNil())
+        expect(tracker.trackComponentInteraction(
+            .init(componentType: .tab, componentName: "after_exit_offer", componentValue: "id1"),
+            sessionID: sessionID
+        )) == false
+
+        await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
+
+        let exitOfferEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .exitOffer = $0 { return true }
+            return false
+        }))
+
+        guard case let .exitOffer(_, data, exitOfferData) = exitOfferEvent else {
+            fail("Expected exitOffer event")
+            return
+        }
+
+        expect(data.sessionIdentifier) == sessionID
+        expect(exitOfferData.exitOfferType) == .dismiss
+        expect(exitOfferData.exitOfferingIdentifier) == "exit_offering"
+    }
+
+    func testDiscardSessionClearsSessionState() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
+
+        tracker.trackPaywallImpression(Self.eventData)
+        tracker.discardSession(sessionID: sessionID)
+
+        expect(tracker.trackPaywallClose(sessionID: sessionID)) == false
+        expect(tracker.createPurchaseInitiatedEvent(package: TestData.packageWithIntroOffer, sessionID: sessionID))
+            .to(beNil())
+        expect(tracker.trackCancelledPurchase(package: TestData.packageWithIntroOffer, sessionID: sessionID)) == false
+        expect(tracker.trackComponentInteraction(
+            .init(componentType: .tab, componentName: "after_discard", componentValue: "id1"),
+            sessionID: sessionID
+        )) == false
+
+        await expect(trackedEvents.value).toEventually(haveCount(1), timeout: .seconds(2))
+        expect(trackedEvents.value.first?.data.sessionIdentifier) == sessionID
+    }
+
     func testTrackComponentInteractionSendsExpectedPaywallEvent() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
         let sessionID = Self.eventData.sessionIdentifier

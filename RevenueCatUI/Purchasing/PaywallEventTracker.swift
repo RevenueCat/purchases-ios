@@ -32,8 +32,7 @@ final class PaywallEventTracker: @unchecked Sendable {
     private let purchases: PaywallPurchasesType
     private let eventDispatcher: EventDispatcher
 
-    private let stateLock = NSLock()
-    private var sessions: [SessionID: SessionState] = [:]
+    private let state = PaywallEventTrackerState()
 
     init(
         purchases: PaywallPurchasesType = Purchases.shared,
@@ -44,33 +43,41 @@ final class PaywallEventTracker: @unchecked Sendable {
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
-        let sessionID = eventData.sessionIdentifier
-        self.stateLock.withLock {
-            self.removeSessionsWhere { $0.hasTrackedClose }
-
-            if let existing = self.sessions[sessionID],
-               existing.eventData != nil,
-               !existing.hasTrackedClose {
-                _ = self.trackPaywallCloseWhileLocked(sessionID: sessionID)
-            }
-
-            self.sessions[sessionID] = SessionState(eventData: eventData, hasTrackedClose: false)
-            self.track(.impression(.init(), eventData))
+        if let closeData = self.withState({ state in
+            await state.prepareForPaywallImpression(eventData)
+        }) {
+            self.track(.close(.init(), closeData))
         }
+
+        self.track(.impression(.init(), eventData))
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallClose(sessionID: SessionID) -> Bool {
-        return self.stateLock.withLock {
-            return self.trackPaywallCloseWhileLocked(sessionID: sessionID)
+        switch self.withState({ state in
+            await state.trackPaywallClose(sessionID: sessionID)
+        }) {
+        case let .tracked(data):
+            self.track(.close(.init(), data))
+            return true
+
+        case .missingEventData:
+            Logger.debug("Attempted to track paywall close but eventData is nil for session \(sessionID)")
+            return false
+
+        case .alreadyTrackedClose:
+            Logger.debug("Attempted to track paywall close but close was already tracked for session \(sessionID)")
+            return false
         }
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackCancelledPurchase(package: Package, sessionID: SessionID) -> Bool {
-        guard let data = self.stateLock.withLock({ self.sessions[sessionID]?.eventData }) else {
+        guard let data = self.withState({ state in
+            await state.eventData(for: sessionID)
+        }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
@@ -88,7 +95,9 @@ final class PaywallEventTracker: @unchecked Sendable {
     /// Creates a purchase-initiated paywall event for the given package.
     /// - Returns: the event, or `nil` if event data is unavailable.
     func createPurchaseInitiatedEvent(package: Package, sessionID: SessionID) -> PaywallEvent? {
-        guard let data = self.stateLock.withLock({ self.sessions[sessionID]?.eventData }) else {
+        guard let data = self.withState({ state in
+            await state.eventData(for: sessionID)
+        }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return nil
         }
@@ -109,7 +118,9 @@ final class PaywallEventTracker: @unchecked Sendable {
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPurchaseError(package: Package, error: Error, sessionID: SessionID) -> Bool {
-        guard let data = self.stateLock.withLock({ self.sessions[sessionID]?.eventData }) else {
+        guard let data = self.withState({ state in
+            await state.eventData(for: sessionID)
+        }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
@@ -136,7 +147,9 @@ final class PaywallEventTracker: @unchecked Sendable {
         exitOfferingIdentifier: String,
         sessionID: SessionID
     ) -> Bool {
-        guard let data = self.stateLock.withLock({ self.sessions[sessionID]?.eventData }) else {
+        guard let data = self.withState({ state in
+            await state.eventData(for: sessionID)
+        }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
@@ -146,16 +159,16 @@ final class PaywallEventTracker: @unchecked Sendable {
             exitOfferingIdentifier: exitOfferingIdentifier
         )
         self.track(.exitOffer(.init(), data, exitOfferData))
-        self.stateLock.withLock {
-            self.sessions.removeValue(forKey: sessionID)
+        self.withState { state in
+            await state.removeSession(sessionID: sessionID)
         }
         return true
     }
 
     /// Drops stored paywall state for `sessionID` (e.g. when the host resets purchase session state).
     func discardSession(sessionID: SessionID) {
-        self.stateLock.withLock {
-            self.sessions.removeValue(forKey: sessionID)
+        self.withState { state in
+            await state.removeSession(sessionID: sessionID)
         }
     }
 
@@ -164,9 +177,9 @@ final class PaywallEventTracker: @unchecked Sendable {
         _ interactionData: PaywallEvent.ComponentInteractionData,
         sessionID: SessionID
     ) -> Bool {
-        guard let entry = self.stateLock.withLock({ self.sessions[sessionID] }),
-              let data = entry.eventData,
-              !entry.hasTrackedClose else {
+        guard let data = self.withState({ state in
+            await state.componentInteractionData(for: sessionID)
+        }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
@@ -187,26 +200,89 @@ final class PaywallEventTracker: @unchecked Sendable {
         }
     }
 
-    private func removeSessionsWhere(_ shouldRemove: (SessionState) -> Bool) {
-        self.sessions = self.sessions.filter { !shouldRemove($0.value) }
-    }
-
-    private func trackPaywallCloseWhileLocked(sessionID: SessionID) -> Bool {
-        guard var entry = self.sessions[sessionID],
-              let data = entry.eventData,
-              !entry.hasTrackedClose else {
-            if self.sessions[sessionID]?.eventData == nil {
-                Logger.debug("Attempted to track paywall close but eventData is nil for session \(sessionID)")
-            } else if self.sessions[sessionID]?.hasTrackedClose == true {
-                Logger.debug("Attempted to track paywall close but close was already tracked for session \(sessionID)")
-            }
-            return false
+    private func withState<T: Sendable>(
+        _ operation: @escaping @Sendable (PaywallEventTrackerState) async -> T
+    ) -> T {
+        let access = SynchronousStateAccess<T>()
+        Self.startStateAccessTask { [state = self.state] in
+            access.complete(with: await operation(state))
         }
 
-        self.track(.close(.init(), data))
+        return access.wait()
+    }
+
+    private static func startStateAccessTask(
+        operation: @escaping @Sendable () async -> Void
+    ) {
+        Task.detached(priority: Task.currentPriority) {
+            await operation()
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private actor PaywallEventTrackerState {
+
+    typealias SessionID = PaywallEvent.SessionID
+
+    private var sessions: [SessionID: SessionState] = [:]
+
+    func prepareForPaywallImpression(_ eventData: PaywallEvent.Data) -> PaywallEvent.Data? {
+        self.removeSessionsWhere { $0.hasTrackedClose }
+
+        let sessionID = eventData.sessionIdentifier
+        let closeData: PaywallEvent.Data?
+        if let existing = self.sessions[sessionID],
+           let data = existing.eventData,
+           !existing.hasTrackedClose {
+            closeData = data
+        } else {
+            closeData = nil
+        }
+
+        self.sessions[sessionID] = .init(eventData: eventData, hasTrackedClose: false)
+
+        return closeData
+    }
+
+    func trackPaywallClose(sessionID: SessionID) -> CloseTrackingResult {
+        guard var entry = self.sessions[sessionID] else {
+            return .missingEventData
+        }
+        guard let data = entry.eventData else {
+            return .missingEventData
+        }
+        guard !entry.hasTrackedClose else {
+            return .alreadyTrackedClose
+        }
+
         entry.hasTrackedClose = true
         self.sessions[sessionID] = entry
-        return true
+
+        return .tracked(data)
+    }
+
+    func eventData(for sessionID: SessionID) -> PaywallEvent.Data? {
+        return self.sessions[sessionID]?.eventData
+    }
+
+    func componentInteractionData(for sessionID: SessionID) -> PaywallEvent.Data? {
+        guard let entry = self.sessions[sessionID],
+              let data = entry.eventData,
+              !entry.hasTrackedClose else {
+            return nil
+        }
+
+        return data
+    }
+
+    func removeSession(sessionID: SessionID) {
+        self.sessions.removeValue(forKey: sessionID)
+    }
+
+    private func removeSessionsWhere(_ shouldRemove: (SessionState) -> Bool) {
+        self.sessions = self.sessions.filter { !shouldRemove($0.value) }
     }
 
     private struct SessionState {
@@ -214,6 +290,32 @@ final class PaywallEventTracker: @unchecked Sendable {
         var hasTrackedClose: Bool = false
     }
 
+    enum CloseTrackingResult: Sendable {
+        case tracked(PaywallEvent.Data)
+        case missingEventData
+        case alreadyTrackedClose
+    }
+
+}
+
+private final class SynchronousStateAccess<T>: @unchecked Sendable {
+    private let semaphore = DispatchSemaphore(value: 0)
+    var value: T?
+
+    func complete(with value: T) {
+        self.value = value
+        self.semaphore.signal()
+    }
+
+    func wait() -> T {
+        self.semaphore.wait()
+
+        guard let value = self.value else {
+            preconditionFailure("PaywallEventTracker state access did not produce a value.")
+        }
+
+        return value
+    }
 }
 
 /// Lightweight wrapper so views can emit control interaction events without depending on the full `PurchaseHandler`.
