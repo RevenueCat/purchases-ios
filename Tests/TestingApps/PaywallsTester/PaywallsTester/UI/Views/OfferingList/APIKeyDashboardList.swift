@@ -141,7 +141,13 @@ struct APIKeyDashboardList: View {
 
             self.offerings = .success(
                 .init(
-                    sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
+                    sections: Array(offeringsBySection.keys).sorted {
+                        switch ($0.name, $1.name) {
+                        case (nil, _): return false
+                        case (_, nil): return true
+                        default: return $0.description < $1.description
+                        }
+                    },
                     offeringsBySection: offeringsBySection
                 )
             )
