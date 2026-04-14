@@ -5,8 +5,8 @@ setup: true
 orbs:
   continuation: circleci/continuation@1.1.0
 
-# Public API/UI-facing parameters. Internal parameters with different
-# names are declared in continue_config.yml to avoid conflicts.
+# Pipeline parameters accepted via the API / CircleCI UI.
+# All parameters declared here are implicitly forwarded to continue_config.yml.
 parameters:
   action:
     type: enum
@@ -18,12 +18,18 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        deploy_rct_tester,
-        generate_snapshots,
-        generate_revenuecatui_snapshots,
-        generate_swiftinterface
+        deploy_rct_tester
       ]
     default: default
+  generate_snapshots:
+    type: boolean
+    default: false
+  generate_revenuecatui_snapshots:
+    type: boolean
+    default: false
+  generate_swiftinterface:
+    type: boolean
+    default: false
   # Set via CircleCI API by the GitHub Action when a PR comment like
   # "@RCGitBot please test <job1> <job2>, <job3>" is posted.
   requested_jobs:
@@ -57,23 +63,16 @@ jobs:
 
             if [ -n "$REQUESTED_JOBS" ]; then
               bash .circleci/generate-on-demand-config.sh "$REQUESTED_JOBS"
-              echo '{}' > /tmp/pipeline-parameters.json
-            else
-              bash .circleci/forward-parameters.sh \
-                "<< pipeline.parameters.action >>" \
-                /tmp/pipeline-parameters.json
             fi
       - when:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
             - continuation/continue:
-                parameters: /tmp/pipeline-parameters.json
                 configuration_path: /tmp/on-demand-config.yml
       - unless:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
             - continuation/continue:
-                parameters: /tmp/pipeline-parameters.json
                 configuration_path: .circleci/continue_config.yml
 
 workflows:
