@@ -22,7 +22,6 @@
         "PaywallViewDynamicTypeTests",
         "PaywallViewLocalizationTests",
         "TakeScreenshotTests",
-        "TakeScreenshotTests\/testPaywallValidationScreenshots()",
         "Template1ViewTests",
         "Template2ViewTests",
         "Template3ViewTests",

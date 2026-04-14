@@ -430,7 +430,7 @@ platform :ios do
       if pngs.empty?
         UI.user_error!("Tests failed and no snapshots were recorded — this is likely a build or runtime error, not a snapshot recording failure: #{e.message}")
       end
-      UI.important("V1 snapshot tests failed but #{pngs.count} snapshots were recorded — this is probably expected because recording mode causes assertion failures, please verify the diff in Emerge")
+      UI.important("V1 snapshot tests failed but #{pngs.count} snapshots were recorded — this is probably expected because recording mode causes assertion failures, please verify the diff in Emerge: #{e.message}")
     end
 
     upload_v1_snapshots_to_emerge
