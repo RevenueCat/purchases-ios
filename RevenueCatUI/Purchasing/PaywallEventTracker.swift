@@ -43,7 +43,7 @@ final class PaywallEventTracker: @unchecked Sendable {
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
-        if let closeData = self.withState({ state in
+        if let closeData = self.withState(or: nil, { state in
             await state.prepareForPaywallImpression(eventData)
         }) {
             self.track(.close(.init(), closeData))
@@ -55,7 +55,7 @@ final class PaywallEventTracker: @unchecked Sendable {
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallClose(sessionID: SessionID) -> Bool {
-        switch self.withState({ state in
+        switch self.withState(or: .missingEventData, { state in
             await state.trackPaywallClose(sessionID: sessionID)
         }) {
         case let .tracked(data):
@@ -75,7 +75,7 @@ final class PaywallEventTracker: @unchecked Sendable {
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackCancelledPurchase(package: Package, sessionID: SessionID) -> Bool {
-        guard let data = self.withState({ state in
+        guard let data = self.withState(or: nil, { state in
             await state.eventData(for: sessionID)
         }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
@@ -95,7 +95,7 @@ final class PaywallEventTracker: @unchecked Sendable {
     /// Creates a purchase-initiated paywall event for the given package.
     /// - Returns: the event, or `nil` if event data is unavailable.
     func createPurchaseInitiatedEvent(package: Package, sessionID: SessionID) -> PaywallEvent? {
-        guard let data = self.withState({ state in
+        guard let data = self.withState(or: nil, { state in
             await state.eventData(for: sessionID)
         }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
@@ -118,7 +118,7 @@ final class PaywallEventTracker: @unchecked Sendable {
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPurchaseError(package: Package, error: Error, sessionID: SessionID) -> Bool {
-        guard let data = self.withState({ state in
+        guard let data = self.withState(or: nil, { state in
             await state.eventData(for: sessionID)
         }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
@@ -147,7 +147,7 @@ final class PaywallEventTracker: @unchecked Sendable {
         exitOfferingIdentifier: String,
         sessionID: SessionID
     ) -> Bool {
-        guard let data = self.withState({ state in
+        guard let data = self.withState(or: nil, { state in
             await state.eventData(for: sessionID)
         }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
@@ -159,17 +159,17 @@ final class PaywallEventTracker: @unchecked Sendable {
             exitOfferingIdentifier: exitOfferingIdentifier
         )
         self.track(.exitOffer(.init(), data, exitOfferData))
-        self.withState { state in
+        self.withState(or: (), { state in
             await state.removeSession(sessionID: sessionID)
-        }
+        })
         return true
     }
 
     /// Drops stored paywall state for `sessionID` (e.g. when the host resets purchase session state).
     func discardSession(sessionID: SessionID) {
-        self.withState { state in
+        self.withState(or: (), { state in
             await state.removeSession(sessionID: sessionID)
-        }
+        })
     }
 
     @discardableResult
@@ -177,7 +177,7 @@ final class PaywallEventTracker: @unchecked Sendable {
         _ interactionData: PaywallEvent.ComponentInteractionData,
         sessionID: SessionID
     ) -> Bool {
-        guard let data = self.withState({ state in
+        guard let data = self.withState(or: nil, { state in
             await state.componentInteractionData(for: sessionID)
         }) else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
@@ -201,6 +201,7 @@ final class PaywallEventTracker: @unchecked Sendable {
     }
 
     private func withState<T: Sendable>(
+        or fallback: @autoclosure () -> T,
         _ operation: @escaping @Sendable (PaywallEventTrackerState) async -> T
     ) -> T {
         let access = SynchronousStateAccess<T>()
@@ -208,7 +209,7 @@ final class PaywallEventTracker: @unchecked Sendable {
             access.complete(with: await operation(state))
         }
 
-        return access.wait()
+        return access.wait(or: fallback())
     }
 
     private static func startStateAccessTask(
@@ -307,11 +308,12 @@ private final class SynchronousStateAccess<T>: @unchecked Sendable {
         self.semaphore.signal()
     }
 
-    func wait() -> T {
+    func wait(or fallback: @autoclosure () -> T) -> T {
         self.semaphore.wait()
 
         guard let value = self.value else {
-            preconditionFailure("PaywallEventTracker state access did not produce a value.")
+            Logger.warning(Strings.paywall_event_tracker_state_access_failed)
+            return fallback()
         }
 
         return value
