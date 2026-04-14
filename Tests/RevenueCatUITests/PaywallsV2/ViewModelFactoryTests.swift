@@ -755,6 +755,41 @@ class ViewModelFactoryTests: TestCase {
         expect(root.stickyFooterViewModel).to(beNil())
     }
 
+    // MARK: - Fallback Header Tests
+
+    @MainActor
+    func testFallbackHeaderIsFilteredOutFromStackViewModels() throws {
+        let stackComponent = PaywallComponent.StackComponent(
+            components: [
+                .fallbackHeader,
+                .text(.init(text: "text_lid", color: Self.black))
+            ],
+            dimension: .vertical(.leading, .start),
+            size: .init(width: .fill, height: .fit)
+        )
+
+        let factory = ViewModelFactory()
+        let viewModel = try factory.toStackViewModel(
+            component: stackComponent,
+            packageValidator: factory.packageValidator,
+            firstItemIgnoresSafeAreaInfo: nil,
+            purchaseButtonCollector: nil,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "text_lid": .string("Hello")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            offering: Self.mockOffering,
+            colorScheme: .light
+        )
+
+        // Only the text component should remain; fallbackHeader should be filtered out
+        expect(viewModel.viewModels.count) == 1
+        guard case .text = viewModel.viewModels.first else {
+            fail("Expected a text view model but got \(String(describing: viewModel.viewModels.first))")
+            return
+        }
+    }
+
     // MARK: - Helpers
 
     private static let black = PaywallComponent.ColorScheme(
