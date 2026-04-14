@@ -7,20 +7,18 @@ orbs:
 
 version: 2.1
 
-# Parameters received from the setup config (config.yml).
-# "action" and other public parameters are forwarded implicitly by CircleCI.
-# The internal_generate_* booleans are derived by forward-parameters.sh.
+# Pipeline parameters — all implicitly forwarded from config.yml by CircleCI.
 parameters:
   action:
     type: string
     default: default
-  internal_generate_snapshots:
+  generate_snapshots:
     default: false
     type: boolean
-  internal_generate_revenuecatui_snapshots:
+  generate_revenuecatui_snapshots:
     default: false
     type: boolean
-  internal_generate_swiftinterface:
+  generate_swiftinterface:
     default: false
     type: boolean
   requested_jobs:
@@ -50,8 +48,8 @@ executors:
       xcode: << parameters.xcode_version >>
     resource_class: m4pro.medium
     environment:
-      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.internal_generate_snapshots >>
-      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
+      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
   macos-executor-large:
@@ -64,8 +62,8 @@ executors:
       xcode: << parameters.xcode_version >>
     resource_class: m4pro.medium
     environment:
-      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.internal_generate_snapshots >>
-      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
+      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
 
@@ -551,7 +549,7 @@ commands:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_snapshots >>
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "BackendIntegrationTests"
       - store_test_results:
@@ -663,11 +661,11 @@ jobs:
           environment:
             DEVICE: iPhone 13,OS=15.5
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-15"
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-15"
       - compress_result_bundle:
@@ -705,11 +703,11 @@ jobs:
           environment:
             DEVICE: iPhone 14,OS=16.4
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-16"
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-16"
       - compress_result_bundle:
@@ -758,11 +756,11 @@ jobs:
               mv revenuecatui.xcresult.tar.gz revenuecatui-iOS18.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-18"
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-18"
       - store_test_results:
@@ -793,11 +791,11 @@ jobs:
               mv revenuecatui.xcresult.tar.gz revenuecatui-iOS17.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-17"
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-17"
       - store_test_results:
@@ -830,11 +828,11 @@ jobs:
           environment:
             DEVICE: iPhone 17,OS=26.2
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-26"
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
           version: "revenuecatui-26"
       - compress_result_bundle:
@@ -866,7 +864,7 @@ jobs:
             DEVICE: Apple Watch Series 10 (46mm),OS=11.5
             BUILD_SDK: watchsimulator
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-watchos"
       - compress_result_bundle:
@@ -894,7 +892,7 @@ jobs:
           directory: fastlane/test_output/xctest/tvos
           bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_snapshots >>
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "tvos"
       - store_test_results:
@@ -915,7 +913,7 @@ jobs:
           directory: fastlane/test_output/xctest/macos
           bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_snapshots >>
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "macos"
       - store_test_results:
@@ -954,7 +952,7 @@ jobs:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_snapshots >>
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-26"
       - store_test_results:
@@ -1001,7 +999,7 @@ jobs:
               mv RevenueCat.xcresult.tar.gz RevenueCat-iOS18.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_snapshots >>
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-18"
       - store_test_results:
@@ -1032,7 +1030,7 @@ jobs:
               mv RevenueCat.xcresult.tar.gz RevenueCat-iOS17.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_snapshots >>
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-17"
       - store_test_results:
@@ -1075,7 +1073,7 @@ jobs:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_snapshots >>
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-16"
       - store_test_results:
@@ -1137,7 +1135,7 @@ jobs:
               mv RevenueCat.xcresult.tar.gz RevenueCat-iOS15.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_snapshots >>
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-15"
       - store_test_results:
@@ -1172,7 +1170,7 @@ jobs:
               mv RevenueCat.xcresult.tar.gz RevenueCat-iOS14.xcresult.tar.gz
             fi
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_snapshots >>
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-14"
       - store_test_results:
@@ -1200,7 +1198,7 @@ jobs:
           directory: fastlane/test_output/xctest/watchos
           bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.internal_generate_snapshots >>
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "watchos"
       - store_test_results:
@@ -1993,14 +1991,14 @@ jobs:
 workflows:
 
   generate-swiftinterface:
-    when: << pipeline.parameters.internal_generate_swiftinterface >>
+    when: << pipeline.parameters.generate_swiftinterface >>
     jobs:
       - generate-swiftinterface:
           context:
             - slack-secrets-ios
 
   generate-snapshot:
-    when: << pipeline.parameters.internal_generate_snapshots >>
+    when: << pipeline.parameters.generate_snapshots >>
     jobs:
       - run-test-ios-26
       - run-test-ios-18-and-17
@@ -2012,7 +2010,7 @@ workflows:
 
 
   generate_revenuecatui_snapshots:
-    when: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
+    when: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
@@ -2035,9 +2033,9 @@ workflows:
             equal: ["release-train", << pipeline.schedule.name >>]
         - not:
             equal: [bump, << pipeline.parameters.action >>]
-        - not: << pipeline.parameters.internal_generate_snapshots >>
-        - not: << pipeline.parameters.internal_generate_revenuecatui_snapshots >>
-        - not: << pipeline.parameters.internal_generate_swiftinterface >>
+        - not: << pipeline.parameters.generate_snapshots >>
+        - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
+        - not: << pipeline.parameters.generate_swiftinterface >>
         - or:
           - not:
               matches:
