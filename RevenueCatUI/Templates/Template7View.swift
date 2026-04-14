@@ -222,7 +222,10 @@ struct Template7View: TemplateViewType {
                         if originPackage.identifier != destinationPackage.identifier {
                             self.componentInteractionLogger(
                                 .paywallTierSelection(
-                                    tierDisplayName: self.tierNames[tier] ?? "",
+                                    tierDisplayName: tierSelectorComponentInteractionValue(
+                                        tierName: self.tierNames[tier],
+                                        tierId: tier.id
+                                    ),
                                     originPackage: originPackage,
                                     destinationPackage: destinationPackage
                                 )
@@ -259,6 +262,17 @@ struct Template7View: TemplateViewType {
             self.title(package: package)
         }
         .defaultHorizontalPadding()
+    }
+    
+    private func tierSelectorComponentInteractionValue(
+        tierName: String?,
+        tierId: String
+    ) -> String {
+        guard let tierName else { return tierId }
+        
+        return tierName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        ? tierId
+        : tierName
     }
 
     private func title(package: TemplateViewConfiguration.Package) -> some View {
