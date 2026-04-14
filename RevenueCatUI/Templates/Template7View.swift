@@ -263,13 +263,13 @@ struct Template7View: TemplateViewType {
         }
         .defaultHorizontalPadding()
     }
-    
+
     private func tierSelectorComponentInteractionValue(
         tierName: String?,
         tierId: String
     ) -> String {
         guard let tierName else { return tierId }
-        
+
         return tierName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         ? tierId
         : tierName

@@ -12,7 +12,7 @@ import Nimble
 import RevenueCat
 @testable import RevenueCatUI
 
-class TierSelectorComponentInteractionValueTests: TestCase {
+class TierSelectorComponentInteractionTests: TestCase {
 
     func testUsesNonBlankTierName() {
         expect(
