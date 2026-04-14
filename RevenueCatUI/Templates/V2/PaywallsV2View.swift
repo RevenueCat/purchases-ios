@@ -172,17 +172,10 @@ struct PaywallsV2View: View {
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
-        .disabled(self.purchaseHandler.actionInProgress)
         .onAppear {
             self.purchaseHandler.trackPaywallImpression(
                 self.createEventData()
             )
-        }
-        .onDisappear { self.purchaseHandler.trackPaywallClose() }
-        .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
-            if hasPurchased {
-                self.onDismiss()
-            }
         }
         .task {
             guard !didFinishEligibilityCheck else {
@@ -248,17 +241,10 @@ struct PaywallsV2View: View {
                 offering: self.offering
             )
         )
-        .disabled(self.purchaseHandler.actionInProgress)
         .onAppear {
             self.purchaseHandler.trackPaywallImpression(
                 self.createEventData(forDefaultPaywall: true)
             )
-        }
-        .onDisappear { self.purchaseHandler.trackPaywallClose() }
-        .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
-            if hasPurchased {
-                self.onDismiss()
-            }
         }
     }
 
@@ -277,6 +263,14 @@ struct PaywallsV2View: View {
                         value: self.purchaseHandler.purchaseError as NSError?)
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
+            .disabled(self.purchaseHandler.actionInProgress)
+            .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
+                if hasPurchased {
+                    self.onDismiss()
+                }
+            }
+
     }
 
     private func createEventData(forDefaultPaywall: Bool = false) -> PaywallEvent.Data {
