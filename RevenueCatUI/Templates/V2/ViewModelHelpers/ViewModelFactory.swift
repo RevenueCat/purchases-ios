@@ -531,6 +531,9 @@ struct ViewModelFactory {
                     fallbackStackViewModel: fallbackStackViewModel
                 )
             )
+        case .fallbackHeader:
+            // fallbackHeader is filtered out in toStackViewModel and should never reach here.
+            fatalError("fallbackHeader should have been filtered before view model creation")
         }
     }
 
@@ -545,7 +548,12 @@ struct ViewModelFactory {
         offering: Offering,
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
-        let viewModels = try component.components.map { component in
+        let viewModels = try component.components.filter {
+            // fallback_header is injected by the dashboard for old SDK compatibility.
+            // New SDKs render the header from PaywallComponentsConfig.header instead.
+            if case .fallbackHeader = $0 { return false }
+            return true
+        }.map { component in
             try self.toViewModel(
                 component: component,
                 packageValidator: packageValidator,
@@ -698,6 +706,8 @@ struct ViewModelFactory {
                 return nil
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)
+        case .fallbackHeader:
+            return nil
         }
     }
 

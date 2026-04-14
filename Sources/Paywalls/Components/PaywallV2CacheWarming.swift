@@ -189,6 +189,8 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                         includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
                     )
                 }
+            case .fallbackHeader:
+                break
             }
         }
 
@@ -244,6 +246,8 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 if let fallback = countdown.fallback {
                     urls += self.collectAllVideoURLs(in: fallback)
                 }
+            case .fallbackHeader:
+                break
             }
         }
 
