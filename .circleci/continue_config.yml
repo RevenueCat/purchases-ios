@@ -2018,12 +2018,12 @@ workflows:
       - run-revenuecat-ui-ios-26
       - spm-revenuecat-ui-watchos
 
-  # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
-  # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields
-  # and click "Trigger Pipeline" to begin the pipeline:
-  #   - Parameter Type: string
-  #   - Name: action
-  #   - Value: run-manual-tests
+  # To trigger the full test suite manually, log into CircleCI, select the project
+  # and a branch, then click "Trigger Pipeline". Add these parameters:
+  #   - action (string): run-manual-tests
+  #
+  # Boolean parameters like generate_snapshots, generate_revenuecatui_snapshots,
+  # and generate_swiftinterface can also be set to true from the same UI.
   run-all-tests:
     when:
       and:

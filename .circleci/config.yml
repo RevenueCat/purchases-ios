@@ -30,7 +30,7 @@ parameters:
   generate_swiftinterface:
     type: boolean
     default: false
-  # Accepted for the GitHub Action trigger; not forwarded to continue_config.
+  # Accepted for the GitHub Action trigger.
   GHA_Event:
     type: string
     default: ""
