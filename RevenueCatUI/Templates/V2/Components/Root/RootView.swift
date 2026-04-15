@@ -164,6 +164,8 @@ private enum RootViewPreviewData {
     static let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
     static let rootHeroPreviewName = "RootView: first root image ignores top safe area"
     static let textHeaderPreviewName = "RootView: text header respects top safe area"
+    static let multiZLayoutTitle = "Multi-Z lays out first in safe area, and the rest outside of it"
+    static let multiZLayoutPreviewName = "Multi-Z layout"
     static let rootHeroPreviewTitle = "Root image fills the highlighted top guide"
     static let rootHeroPreviewSubtitle =
         "The tinted top band marks the safe area. The first root image should fill it."
@@ -434,9 +436,9 @@ struct RootView_Previews: PreviewProvider {
             RootViewPreviewData.preview(
                 stack: RootViewPreviewData.multiZStackRootStack,
                 headerStack: nil,
-                title: "Multi-Z lays out first in safe area, and the rest outside of it",
-                subtitle: "this is a test",
-                name: "Multi-Z layout"
+                title: RootViewPreviewData.multiZLayoutTitle,
+                subtitle: RootViewPreviewData.rootHeroPreviewSubtitle,
+                name: RootViewPreviewData.multiZLayoutPreviewName
             )
         }
     }
