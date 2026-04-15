@@ -303,7 +303,7 @@ struct Template7View: TemplateViewType {
     @ViewBuilder
     private func features(package: TemplateViewConfiguration.Package) -> some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            ForEach(package.localization.features, id: \.title) { feature in
+            ForEach(package.localization.features, id: \.self) { feature in
                 HStack {
                     Rectangle()
                         .foregroundStyle(.clear)

@@ -177,7 +177,7 @@ struct Template5View: TemplateViewType {
     @ViewBuilder
     private var features: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            ForEach(self.selectedLocalization.features, id: \.title) { feature in
+            ForEach(self.selectedLocalization.features, id: \.self) { feature in
                 HStack {
                     Rectangle()
                         .foregroundStyle(.clear)
