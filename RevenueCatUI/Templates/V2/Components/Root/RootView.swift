@@ -257,6 +257,69 @@ private enum RootViewPreviewData {
         backgroundColor: .init(light: .hex("#FFFFFF"))
     )
 
+    static let multiZStackRootStack = PaywallComponent.StackComponent(
+        components: [
+            .image(
+                .init(
+                    source: .init(
+                        light: .init(
+                            width: 750,
+                            height: 530,
+                            original: heroImageURL,
+                            heic: heroImageURL,
+                            heicLowRes: heroImageURL
+                        )
+                    ),
+                    size: .init(width: .fill, height: .fixed(300)),
+                    fitMode: .fill
+                )
+            ),
+            .stack(.init(components: [
+                .stack(.init(components: [
+                    .image(
+                    .init(
+                        source: .init(
+                            light: .init(
+                                width: 100,
+                                height: 100,
+                                original: heroImageURL,
+                                heic: heroImageURL,
+                                heicLowRes: heroImageURL
+                            )
+                        ),
+                        size: .init(width: .fill, height: .fixed(100)),
+                        fitMode: .fill,
+                        colorOverlay: .init(light: .hex("#00FF00")),
+                        border: .init(color: .init(light: .hex("#FF0000")), width: 2)
+                    ))
+                    ], dimension: .zlayer(.top)))
+                ], dimension: .zlayer(.top))
+            ),
+            .stack(.init(components: [
+                .image(
+                .init(
+                    source: .init(
+                        light: .init(
+                            width: 100,
+                            height: 100,
+                            original: heroImageURL,
+                            heic: heroImageURL,
+                            heicLowRes: heroImageURL
+                        )
+                    ),
+                    size: .init(width: .fill, height: .fixed(50)),
+                    fitMode: .fill,
+                    colorOverlay: .init(light: .hex("#0000FF")),
+                    border: .init(color: .init(light: .hex("#00F0F0")), width: 2)
+                ))
+                ], dimension: .zlayer(.top)))
+        ],
+        dimension: .zlayer(.top),
+        size: .init(width: .fill, height: .fill),
+        spacing: 0,
+        backgroundColor: .init(light: .hex("#FFFFFF"))
+    )
+
     static let textHeaderStack = PaywallComponent.StackComponent(
         components: [
             .text(.init(
@@ -366,6 +429,14 @@ struct RootView_Previews: PreviewProvider {
                 title: RootViewPreviewData.textHeaderPreviewTitle,
                 subtitle: RootViewPreviewData.textHeaderPreviewSubtitle,
                 name: RootViewPreviewData.textHeaderPreviewName
+            )
+
+            RootViewPreviewData.preview(
+                stack: RootViewPreviewData.multiZStackRootStack,
+                headerStack: nil,
+                title: "Multi-Z lays out first in safe area, and the rest outside of it",
+                subtitle: "this is a test",
+                name: "Multi-Z layout"
             )
         }
     }
