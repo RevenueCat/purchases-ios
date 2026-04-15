@@ -35,7 +35,7 @@ parameters:
   requested_jobs:
     type: string
     default: ""
-  # Accepted for the GitHub Action trigger; not forwarded to continue_config.
+  # Accepted for the GitHub Action trigger.
   GHA_Event:
     type: string
     default: ""
