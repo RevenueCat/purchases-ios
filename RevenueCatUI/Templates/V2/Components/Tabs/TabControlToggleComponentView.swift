@@ -78,12 +78,10 @@ struct TabControlToggleComponentView: View {
                 guard tabIds.count >= 2 else { return }
 
                 tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
-                Task {
-                    _ = await self.componentInteractionLogger(.paywallTabControlToggle(
-                        componentName: self.tabControlContext.name,
-                        isOn: newValue
-                    ))
-                }
+                self.componentInteractionLogger(.paywallTabControlToggle(
+                    componentName: self.tabControlContext.name,
+                    isOn: newValue
+                ))
             }
             .onChangeOf(tabControlContext.selectedTabId) { newSelectedTabId in
                 let newIsOn = computeIsOn(

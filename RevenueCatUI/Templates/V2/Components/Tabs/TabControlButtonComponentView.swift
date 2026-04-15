@@ -56,9 +56,7 @@ struct TabControlButtonComponentView: View {
             let destinationTabId = self.viewModel.component.tabId
 
             self.tabControlContext.selectedTabId = destinationTabId
-            Task {
-                await self.trackTabcomponentInteraction(originTabId: originTabId, destinationTabId: destinationTabId)
-            }
+            self.trackTabcomponentInteraction(originTabId: originTabId, destinationTabId: destinationTabId)
         } label: {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
@@ -69,10 +67,10 @@ struct TabControlButtonComponentView: View {
 
     }
 
-    private func trackTabcomponentInteraction(originTabId: String, destinationTabId: String) async {
+    private func trackTabcomponentInteraction(originTabId: String, destinationTabId: String) {
         let destinationContextName = self.tabControlContext.contextName(for: destinationTabId)
 
-        _ = await self.componentInteractionLogger(.paywallTabControlButtonSelection(
+        self.componentInteractionLogger(.paywallTabControlButtonSelection(
             componentName: self.tabControlContext.name,
             destinationTabId: destinationTabId,
             metadata: .init(

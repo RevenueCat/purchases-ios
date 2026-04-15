@@ -92,7 +92,7 @@ struct PurchaseButton: View {
             }
 
             let selectedContent = self.selectedPackage.content
-            _ = await self.componentInteractionLogger(.paywallPurchaseButtonAction(
+            self.componentInteractionLogger(.paywallPurchaseButtonAction(
                 componentValue: PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout.description,
                 currentPackageIdentifier: selectedContent.identifier,
                 currentProductIdentifier: selectedContent.storeProduct.productIdentifier

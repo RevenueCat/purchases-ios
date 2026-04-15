@@ -283,7 +283,9 @@ extension PurchaseHandler {
 
         self.startAction(.purchase)
         let paywallEvent = await self.createPurchaseInitiatedEvent(package: package)
-        if let paywallEvent { self.track(paywallEvent) }
+        if let paywallEvent {
+            Task { await self.track(paywallEvent) }
+        }
 
         do {
             let result: PurchaseResultData
@@ -293,7 +295,7 @@ extension PurchaseHandler {
                                                        paywallEvent: paywallEvent)
 
             if result.userCancelled {
-                await self.trackCancelledPurchase(package: package)
+                Task { await self.trackCancelledPurchase(package: package) }
             }
 
             // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
@@ -307,7 +309,7 @@ extension PurchaseHandler {
             self.setResult(result)
 
         } catch {
-            await self.trackPurchaseError(package: package, error: error)
+            Task { await self.trackPurchaseError(package: package, error: error) }
             self.purchaseError = error
             throw error
         }
@@ -333,7 +335,9 @@ extension PurchaseHandler {
 
         self.startAction(.purchase)
         let paywallEvent = await self.createPurchaseInitiatedEvent(package: package)
-        if let paywallEvent { self.track(paywallEvent) }
+        if let paywallEvent {
+            Task { await self.track(paywallEvent) }
+        }
         let productIdentifier = package.storeProduct.productIdentifier
         self.purchases.cachePurchaseData(
             presentedOfferingContext: package.presentedOfferingContext,
@@ -344,12 +348,12 @@ extension PurchaseHandler {
         let result = await externalPurchaseMethod(package)
 
         if result.userCancelled {
-            await self.trackCancelledPurchase(package: package)
+            Task { await self.trackCancelledPurchase(package: package) }
             self.purchases.clearCachedPurchaseData(productIdentifier: productIdentifier)
         }
 
         if let error = result.error {
-            await self.trackPurchaseError(package: package, error: error)
+            Task { await self.trackPurchaseError(package: package, error: error) }
             self.purchases.clearCachedPurchaseData(productIdentifier: productIdentifier)
             self.purchaseError = error
             throw error
@@ -570,8 +574,8 @@ extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PurchaseHandler {
 
-    func track(_ event: PaywallEvent) {
-        self.paywallEventTracker.track(event)
+    func track(_ event: PaywallEvent) async {
+        await self.paywallEventTracker.track(event)
     }
 
 }

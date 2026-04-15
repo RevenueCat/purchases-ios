@@ -173,7 +173,7 @@ struct DefaultPaywallView: View {
                         if let selected {
                             let method = PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout
                             Task(priority: .userInitiated) {
-                                _ = await self.componentInteractionLogger(.paywallPurchaseButtonAction(
+                                self.componentInteractionLogger(.paywallPurchaseButtonAction(
                                     componentName: nil,
                                     componentValue: method.description,
                                     componentURL: nil,
@@ -208,7 +208,7 @@ struct DefaultPaywallView: View {
 
                     let restoreButton = Button {
                         Task(priority: .userInitiated) {
-                            _ = await self.componentInteractionLogger(.paywallFooterRestorePurchases())
+                            self.componentInteractionLogger(.paywallFooterRestorePurchases())
                             do {
                                 _ = try await handler.restorePurchases()
                             } catch {

@@ -175,15 +175,13 @@ struct Template2View: TemplateViewType {
                     let origin = self.selectedPackage.content
                     let destination = package.content
                     if origin.identifier != destination.identifier {
-                        Task {
-                            _ = await self.componentInteractionLogger(
-                                .paywallPackageRowSelection(
-                                    destination: destination,
-                                    origin: origin,
-                                    defaultPackage: self.configuration.packages.default.content
-                                )
+                        self.componentInteractionLogger(
+                            .paywallPackageRowSelection(
+                                destination: destination,
+                                origin: origin,
+                                defaultPackage: self.configuration.packages.default.content
                             )
-                        }
+                        )
                     }
                     self.selectedPackage = package
                 } label: {

@@ -25,7 +25,7 @@ final class PaywallEventTracker: @unchecked Sendable {
 
     #if DEBUG
     /// Artificial delay at the start of each `PaywallEventTrackerState` actor call.
-    /// Set to e.g. `500_000_000` (0.5s) to stress-test main-thread / UI responsiveness. Default `0` = disabled. Release builds always skip this.
+    /// Set to e.g. `500_000_000` (0.5s) to stress-test UI. Default `0` = disabled. Release builds always skip this.
     static var simulatedActorAccessDelayNanoseconds: UInt64 = 5_000_000_000
     #endif
 
@@ -37,6 +37,7 @@ final class PaywallEventTracker: @unchecked Sendable {
 
     private let purchases: PaywallPurchasesType
     private let eventDispatcher: EventDispatcher
+    private let outboundFifo: PaywallOutboundFifo
 
     private let state = PaywallEventTrackerState()
 
@@ -46,17 +47,18 @@ final class PaywallEventTracker: @unchecked Sendable {
     ) {
         self.purchases = purchases
         self.eventDispatcher = eventDispatcher
+        self.outboundFifo = PaywallOutboundFifo(purchases: purchases, dispatcher: eventDispatcher)
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) async {
         Self.logAsyncStateAccess("trackPaywallImpression.prepare")
         if let closeData = await self.state.prepareForPaywallImpression(eventData) {
             Self.logAsyncStateAccess("trackPaywallImpression.autoClose")
-            self.track(.close(.init(), closeData))
+            await self.track(.close(.init(), closeData))
         }
 
         Self.logAsyncStateAccess("trackPaywallImpression.impression")
-        self.track(.impression(.init(), eventData))
+        await self.track(.impression(.init(), eventData))
     }
 
     /// - Returns: whether the event was tracked
@@ -65,7 +67,7 @@ final class PaywallEventTracker: @unchecked Sendable {
         Self.logAsyncStateAccess("trackPaywallClose")
         switch await self.state.trackPaywallClose(sessionID: sessionID) {
         case let .tracked(data):
-            self.track(.close(.init(), data))
+            await self.track(.close(.init(), data))
             return true
 
         case .missingEventData:
@@ -93,7 +95,7 @@ final class PaywallEventTracker: @unchecked Sendable {
             errorCode: nil,
             errorMessage: nil
         )
-        self.track(.cancel(.init(), cancelData))
+        await self.track(.cancel(.init(), cancelData))
         return true
     }
 
@@ -135,7 +137,7 @@ final class PaywallEventTracker: @unchecked Sendable {
             errorCode: nsError.code,
             errorMessage: error.localizedDescription
         )
-        self.track(.purchaseError(.init(), purchaseData))
+        await self.track(.purchaseError(.init(), purchaseData))
         return true
     }
 
@@ -160,7 +162,7 @@ final class PaywallEventTracker: @unchecked Sendable {
             exitOfferType: exitOfferType,
             exitOfferingIdentifier: exitOfferingIdentifier
         )
-        self.track(.exitOffer(.init(), data, exitOfferData))
+        await self.track(.exitOffer(.init(), data, exitOfferData))
         Self.logAsyncStateAccess("trackExitOffer.removeSession")
         await self.state.removeSession(sessionID: sessionID)
         return true
@@ -183,20 +185,20 @@ final class PaywallEventTracker: @unchecked Sendable {
             return false
         }
 
-        self.track(.componentInteraction(.init(), data, interactionData))
+        await self.track(.componentInteraction(.init(), data, interactionData))
         return true
     }
 
-    func track(_ event: PaywallEvent) {
-        self.eventDispatcher { [purchases = self.purchases] in
-            await purchases.track(paywallEvent: event)
-        }
+    func track(_ event: PaywallEvent) async {
+        await self.outboundFifo.enqueue(event)
     }
 
     func componentInteractionLogger(sessionID: SessionID) -> ComponentInteractionLogger {
         return .init { [weak self] interactionData in
-            guard let self else { return false }
-            return await self.trackComponentInteraction(interactionData, sessionID: sessionID)
+            guard let self else { return }
+            Task {
+                _ = await self.trackComponentInteraction(interactionData, sessionID: sessionID)
+            }
         }
     }
 
@@ -296,19 +298,56 @@ private actor PaywallEventTrackerState {
 
 }
 
+/// `FIFO outbound delivery`
+/// Serializes `purchases.track(paywallEvent:)` so events are delivered in strict enqueue order
+/// regardless of how many concurrent callers produce them.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private actor PaywallOutboundFifo {
+
+    private let purchases: PaywallPurchasesType
+    private let dispatcher: PaywallEventTracker.EventDispatcher
+    private var queue: [PaywallEvent] = []
+
+    init(purchases: PaywallPurchasesType, dispatcher: @escaping PaywallEventTracker.EventDispatcher) {
+        self.purchases = purchases
+        self.dispatcher = dispatcher
+    }
+
+    func enqueue(_ event: PaywallEvent) async {
+        self.queue.append(event)
+        while !self.queue.isEmpty {
+            let next = self.queue.removeFirst()
+            await self.deliver(next)
+        }
+    }
+
+    private func deliver(_ event: PaywallEvent) async {
+        let purchases = self.purchases
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            self.dispatcher {
+                Task {
+                    await purchases.track(paywallEvent: event)
+                    continuation.resume()
+                }
+            }
+        }
+    }
+}
+
 /// Lightweight wrapper so views can emit control interaction events without depending on the full `PurchaseHandler`.
+/// Logging is scheduled with `Task` from ``PaywallEventTracker/componentInteractionLogger(sessionID:)``; call sites may
+/// invoke this synchronously without blocking UI.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ComponentInteractionLogger {
 
-    private let action: @Sendable (PaywallEvent.ComponentInteractionData) async -> Bool
+    private let action: @Sendable (PaywallEvent.ComponentInteractionData) -> Void
 
-    init(action: @escaping @Sendable (PaywallEvent.ComponentInteractionData) async -> Bool = { _ in false }) {
+    init(action: @escaping @Sendable (PaywallEvent.ComponentInteractionData) -> Void = { _ in }) {
         self.action = action
     }
 
-    @discardableResult
-    func callAsFunction(_ interactionData: PaywallEvent.ComponentInteractionData) async -> Bool {
-        return await self.action(interactionData)
+    func callAsFunction(_ interactionData: PaywallEvent.ComponentInteractionData) {
+        self.action(interactionData)
     }
 
 }

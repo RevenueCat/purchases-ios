@@ -58,15 +58,13 @@ class ComponentInteractionLoggerTests: TestCase {
 
         let logger = tracker.componentInteractionLogger(sessionID: eventData.sessionIdentifier)
 
-        expect(await logger(interactionData)) == false
+        expect(await tracker.trackComponentInteraction(interactionData, sessionID: eventData.sessionIdentifier)) == false
 
         await tracker.trackPaywallImpression(eventData)
 
-        expect(await logger(interactionData)) == true
+        logger(interactionData)
 
-        await Task(priority: .low) {
-            await Task.yield()
-        }.value
+        await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
         let interactionEvent = try XCTUnwrap(trackedEvents.value.first(where: {
             if case .componentInteraction = $0 { return true }

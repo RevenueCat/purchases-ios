@@ -131,16 +131,14 @@ private struct PackageSelectorIfNeeded: ViewModifier {
                 // in different tiers
                 let origin = self.packageContext.package
                 if origin?.identifier != self.package.identifier {
-                    Task {
-                        _ = await self.componentInteractionLogger(
-                            .paywallPackageRowSelection(
-                                componentName: self.componentName,
-                                destination: self.package,
-                                origin: origin,
-                                defaultPackage: self.planSelectionDefaultPackage
-                            )
+                    self.componentInteractionLogger(
+                        .paywallPackageRowSelection(
+                            componentName: self.componentName,
+                            destination: self.package,
+                            origin: origin,
+                            defaultPackage: self.planSelectionDefaultPackage
                         )
-                    }
+                    )
                 }
                 self.packageContext.update(
                     package: self.package,

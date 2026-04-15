@@ -103,9 +103,7 @@ struct FooterView: View {
                     url: url,
                     titles: "Terms and conditions", "Terms",
                     onTap: {
-                        Task {
-                            _ = await self.componentInteractionLogger(.paywallFooterTermsLink(url: url))
-                        }
+                        self.componentInteractionLogger(.paywallFooterTermsLink(url: url))
                     }
                 )
 
@@ -120,9 +118,7 @@ struct FooterView: View {
                     url: url,
                     titles: "Privacy policy", "Privacy",
                     onTap: {
-                        Task {
-                            _ = await self.componentInteractionLogger(.paywallFooterPrivacyLink(url: url))
-                        }
+                        self.componentInteractionLogger(.paywallFooterPrivacyLink(url: url))
                     }
                 )
             }
@@ -139,9 +135,7 @@ struct FooterView: View {
 
     private func allPlansButton(_ binding: Binding<Bool>) -> some View {
         Button {
-            Task {
-                _ = await self.componentInteractionLogger(.paywallFooterToggleAllPlans())
-            }
+            self.componentInteractionLogger(.paywallFooterToggleAllPlans())
             withAnimation(Constants.toggleAllPlansAnimation) {
                 binding.wrappedValue.toggle()
             }
@@ -223,7 +217,7 @@ private struct RestorePurchasesButton: View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
 
-            _ = await self.componentInteractionLogger(.paywallFooterRestorePurchases())
+            self.componentInteractionLogger(.paywallFooterRestorePurchases())
 
             if let interceptor = self.restoreInitiatedAction {
                 Logger.debug(Strings.restore_purchases_gate_start)
