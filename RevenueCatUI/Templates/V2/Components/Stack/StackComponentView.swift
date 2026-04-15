@@ -21,9 +21,6 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
 
-    @Environment(\.safeAreaInsets)
-    private var safeAreaInsets
-
     @EnvironmentObject
     private var packageContext: PackageContext
 
