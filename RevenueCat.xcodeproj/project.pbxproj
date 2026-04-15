@@ -1315,6 +1315,7 @@
 		D0DA209A2F23BBEC00BA3B77 /* AdEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */; };
 		DB36994E2F435CDC00B1F049 /* PriceFormatterExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB36994D2F435CDC00B1F049 /* PriceFormatterExtensions.swift */; };
 		DB55E6262ECE012600636909 /* FlexSpacer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB55E6252ECE012600636909 /* FlexSpacer.swift */; };
+		DB8C95142F900E2A00FCEE6B /* SafeAreaPreviewShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB8C95132F900E2A00FCEE6B /* SafeAreaPreviewShell.swift */; };
 		DBAA1FBC2F8D45C2000E8C81 /* HeaderTextBodyHeroSafeAreaPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBAA1FBA2F8D45C2000E8C81 /* HeaderTextBodyHeroSafeAreaPreview.swift */; };
 		DBAA1FC22F8D4ED8000E8C81 /* HeaderNestedHeroZLayerSafeAreaPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBAA1FC12F8D4ED8000E8C81 /* HeaderNestedHeroZLayerSafeAreaPreview.swift */; };
 		DBD2432F2EBDF4BC0066AC6F /* PromotionalOfferViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBD243292EBDF4B80066AC6F /* PromotionalOfferViewTests.swift */; };
@@ -2855,6 +2856,7 @@
 		D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventTests.swift; sourceTree = "<group>"; };
 		DB36994D2F435CDC00B1F049 /* PriceFormatterExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatterExtensions.swift; sourceTree = "<group>"; };
 		DB55E6252ECE012600636909 /* FlexSpacer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlexSpacer.swift; sourceTree = "<group>"; };
+		DB8C95132F900E2A00FCEE6B /* SafeAreaPreviewShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeAreaPreviewShell.swift; sourceTree = "<group>"; };
 		DBAA1FBA2F8D45C2000E8C81 /* HeaderTextBodyHeroSafeAreaPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderTextBodyHeroSafeAreaPreview.swift; sourceTree = "<group>"; };
 		DBAA1FC12F8D4ED8000E8C81 /* HeaderNestedHeroZLayerSafeAreaPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderNestedHeroZLayerSafeAreaPreview.swift; sourceTree = "<group>"; };
 		DBD243292EBDF4B80066AC6F /* PromotionalOfferViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOfferViewTests.swift; sourceTree = "<group>"; };
@@ -3292,6 +3294,7 @@
 			children = (
 				2C7457232CE713E5004ACE52 /* PreviewMock.swift */,
 				2C2AEB0D2CA64DA900A50F38 /* TemplateComponentsViewPreviews */,
+				DB8C95132F900E2A00FCEE6B /* SafeAreaPreviewShell.swift */,
 			);
 			path = Previews;
 			sourceTree = "<group>";
@@ -7905,6 +7908,7 @@
 				2C2AEB0F2CA64E0E00A50F38 /* Template1Preview.swift in Sources */,
 				88A543E32C37A4970039C6A5 /* Template7View.swift in Sources */,
 				2C91068C2CE22D4F00189565 /* JustifyContent.swift in Sources */,
+				DB8C95142F900E2A00FCEE6B /* SafeAreaPreviewShell.swift in Sources */,
 				887A60CB2C1D037000E1A461 /* TemplateBackgroundImageView.swift in Sources */,
 				353FDC112CA4472B0055F328 /* StoreProduct+Extensions.swift in Sources */,
 				887A60BD2C1D037000E1A461 /* TemplateViewType.swift in Sources */,
