@@ -102,7 +102,6 @@ struct ViewModelFactory {
             headerViewModel: headerViewModel,
             stackViewModel: rootStackViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
-            firstItemIsFullWidthImage: rootFirstItemMedia == .image,
             firstItemIsFullWidthMedia: rootFirstItemMedia != nil,
             localizationProvider: localizationProvider
         )

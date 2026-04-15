@@ -22,7 +22,6 @@ class RootViewModel {
     let headerViewModel: HeaderComponentViewModel?
     let stackViewModel: StackComponentViewModel
     let stickyFooterViewModel: StickyFooterComponentViewModel?
-    let firstItemIsFullWidthImage: Bool
     let firstItemIsFullWidthMedia: Bool
     let localizationProvider: LocalizationProvider
 
@@ -30,14 +29,12 @@ class RootViewModel {
         headerViewModel: HeaderComponentViewModel?,
         stackViewModel: StackComponentViewModel,
         stickyFooterViewModel: StickyFooterComponentViewModel?,
-        firstItemIsFullWidthImage: Bool,
         firstItemIsFullWidthMedia: Bool,
         localizationProvider: LocalizationProvider
     ) {
         self.headerViewModel = headerViewModel
         self.stackViewModel = stackViewModel
         self.stickyFooterViewModel = stickyFooterViewModel
-        self.firstItemIsFullWidthImage = firstItemIsFullWidthImage
         self.firstItemIsFullWidthMedia = firstItemIsFullWidthMedia
         self.localizationProvider = localizationProvider
     }

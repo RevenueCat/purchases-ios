@@ -397,7 +397,7 @@ class ViewModelFactoryTests: TestCase {
         )
 
         expect(root.firstItemIsFullWidthMedia).to(beTrue())
-        expect(root.firstItemIsFullWidthImage).to(beTrue())
+
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
         expect(root.shouldOverlayHeader).to(beTrue())
     }
@@ -532,7 +532,7 @@ class ViewModelFactoryTests: TestCase {
         )
 
         expect(root.firstItemIsFullWidthMedia).to(beFalse())
-        expect(root.firstItemIsFullWidthImage).to(beFalse())
+
         expect(root.shouldOverlayHeader).to(beFalse())
     }
 
@@ -578,7 +578,7 @@ class ViewModelFactoryTests: TestCase {
     }
 
     @MainActor
-    func testRootVideoDoesNotOverlayHeader() throws {
+    func testRootVideoOverlaysHeader() throws {
         let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
             stack: .init(components: [
                 .video(.init(
@@ -612,9 +612,9 @@ class ViewModelFactoryTests: TestCase {
         )
 
         expect(root.firstItemIsFullWidthMedia).to(beTrue())
-        expect(root.firstItemIsFullWidthImage).to(beFalse())
+
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
-        expect(root.shouldOverlayHeader).to(beFalse())
+        expect(root.shouldOverlayHeader).to(beTrue())
     }
 
     @MainActor
@@ -819,7 +819,7 @@ class ViewModelFactoryTests: TestCase {
 
         // fallbackHeader should be skipped; the full-width image should be detected
         expect(root.firstItemIsFullWidthMedia).to(beTrue())
-        expect(root.firstItemIsFullWidthImage).to(beTrue())
+
     }
 
     // MARK: - Helpers
