@@ -220,16 +220,18 @@ struct Template7View: TemplateViewType {
                         let originPackage = self.selectedPackage.content
                         let destinationPackage = self.tiers[tier]!.default.content
                         if originPackage.identifier != destinationPackage.identifier {
-                            self.componentInteractionLogger(
-                                .paywallTierSelection(
-                                    tierDisplayName: tierSelectorComponentInteractionValue(
-                                        tierName: self.tierNames[tier],
-                                        tierId: tier.id
-                                    ),
-                                    originPackage: originPackage,
-                                    destinationPackage: destinationPackage
+                            Task {
+                                _ = await self.componentInteractionLogger(
+                                    .paywallTierSelection(
+                                        tierDisplayName: tierSelectorComponentInteractionValue(
+                                            tierName: self.tierNames[tier],
+                                            tierId: tier.id
+                                        ),
+                                        originPackage: originPackage,
+                                        destinationPackage: destinationPackage
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 )
@@ -348,13 +350,15 @@ struct Template7View: TemplateViewType {
                     let origin = self.selectedPackage.content
                     let destination = package.content
                     if origin.identifier != destination.identifier {
-                        self.componentInteractionLogger(
-                            .paywallPackageRowSelection(
-                                destination: destination,
-                                origin: origin,
-                                defaultPackage: self.tiers[tier]!.default.content
+                        Task {
+                            _ = await self.componentInteractionLogger(
+                                .paywallPackageRowSelection(
+                                    destination: destination,
+                                    origin: origin,
+                                    defaultPackage: self.tiers[tier]!.default.content
+                                )
                             )
-                        )
+                        }
                     }
                     self.selectedPackage = package
                 } label: {

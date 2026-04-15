@@ -94,7 +94,7 @@ struct ButtonComponentView: View {
     private func performAction() async throws {
         // Intentionally track before branching so unknown actions are surfaced as diagnostic telemetry.
         // These should be excluded from product funnel analytics by filtering componentValue == "unknown".
-        self.trackButtonComponentInteraction()
+        await self.trackButtonComponentInteraction()
 
         switch viewModel.action {
         case .restorePurchases:
@@ -121,8 +121,8 @@ struct ButtonComponentView: View {
         }
     }
 
-    private func trackButtonComponentInteraction() {
-        self.componentInteractionLogger(.paywallNonPurchaseButtonAction(
+    private func trackButtonComponentInteraction() async {
+        _ = await self.componentInteractionLogger(.paywallNonPurchaseButtonAction(
             componentName: self.viewModel.component.name,
             componentValue: self.viewModel.action.paywallComponentInteractionValue,
             componentURL: self.viewModel.action.paywallComponentInteractionURL

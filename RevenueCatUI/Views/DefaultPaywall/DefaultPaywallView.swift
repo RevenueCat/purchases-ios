@@ -172,14 +172,14 @@ struct DefaultPaywallView: View {
                     let purchaseButton = Button {
                         if let selected {
                             let method = PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout
-                            self.componentInteractionLogger(.paywallPurchaseButtonAction(
-                                componentName: nil,
-                                componentValue: method.description,
-                                componentURL: nil,
-                                currentPackageIdentifier: selected.identifier,
-                                currentProductIdentifier: selected.storeProduct.productIdentifier
-                            ))
                             Task(priority: .userInitiated) {
+                                _ = await self.componentInteractionLogger(.paywallPurchaseButtonAction(
+                                    componentName: nil,
+                                    componentValue: method.description,
+                                    componentURL: nil,
+                                    currentPackageIdentifier: selected.identifier,
+                                    currentProductIdentifier: selected.storeProduct.productIdentifier
+                                ))
                                 do {
                                     _ = try await handler.purchase(package: selected)
                                 } catch {
@@ -207,8 +207,8 @@ struct DefaultPaywallView: View {
                     }
 
                     let restoreButton = Button {
-                        self.componentInteractionLogger(.paywallFooterRestorePurchases())
                         Task(priority: .userInitiated) {
+                            _ = await self.componentInteractionLogger(.paywallFooterRestorePurchases())
                             do {
                                 _ = try await handler.restorePurchases()
                             } catch {

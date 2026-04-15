@@ -215,9 +215,9 @@ final class PurchaseHandler: ObservableObject {
     /// This is called when a paywall appears to ensure we track purchases for the current session only.
     /// We reset both `sessionPurchaseResult` (used for exit offer logic) and `purchaseResult`
     /// (used for `onPurchaseCompleted` preference) to avoid stale values triggering handlers.
-    func resetForNewSession() {
+    func resetForNewSession() async {
         if let sessionID = self.activePaywallSessionID {
-            self.paywallEventTracker.discardSession(sessionID: sessionID)
+            await self.paywallEventTracker.discardSession(sessionID: sessionID)
         }
         self.sessionPurchaseResult = nil
         self.purchaseResult = nil
@@ -282,7 +282,7 @@ extension PurchaseHandler {
         }
 
         self.startAction(.purchase)
-        let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        let paywallEvent = await self.createPurchaseInitiatedEvent(package: package)
         if let paywallEvent { self.track(paywallEvent) }
 
         do {
@@ -293,7 +293,7 @@ extension PurchaseHandler {
                                                        paywallEvent: paywallEvent)
 
             if result.userCancelled {
-                self.trackCancelledPurchase(package: package)
+                await self.trackCancelledPurchase(package: package)
             }
 
             // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
@@ -307,7 +307,7 @@ extension PurchaseHandler {
             self.setResult(result)
 
         } catch {
-            self.trackPurchaseError(package: package, error: error)
+            await self.trackPurchaseError(package: package, error: error)
             self.purchaseError = error
             throw error
         }
@@ -332,7 +332,7 @@ extension PurchaseHandler {
         }
 
         self.startAction(.purchase)
-        let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        let paywallEvent = await self.createPurchaseInitiatedEvent(package: package)
         if let paywallEvent { self.track(paywallEvent) }
         let productIdentifier = package.storeProduct.productIdentifier
         self.purchases.cachePurchaseData(
@@ -344,12 +344,12 @@ extension PurchaseHandler {
         let result = await externalPurchaseMethod(package)
 
         if result.userCancelled {
-            self.trackCancelledPurchase(package: package)
+            await self.trackCancelledPurchase(package: package)
             self.purchases.clearCachedPurchaseData(productIdentifier: productIdentifier)
         }
 
         if let error = result.error {
-            self.trackPurchaseError(package: package, error: error)
+            await self.trackPurchaseError(package: package, error: error)
             self.purchases.clearCachedPurchaseData(productIdentifier: productIdentifier)
             self.purchaseError = error
             throw error
@@ -450,9 +450,9 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = .init(customerInfo: customerInfo, success: success)
     }
 
-    func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
+    func trackPaywallImpression(_ eventData: PaywallEvent.Data) async {
         self.activePaywallSessionID = eventData.sessionIdentifier
-        self.paywallEventTracker.trackPaywallImpression(eventData)
+        await self.paywallEventTracker.trackPaywallImpression(eventData)
     }
 
     func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {
@@ -461,30 +461,30 @@ extension PurchaseHandler {
 
     /// - Returns: whether the event was tracked
     @discardableResult
-    func trackPaywallClose() -> Bool {
+    func trackPaywallClose() async -> Bool {
         guard let sessionID = self.activePaywallSessionID else {
             return false
         }
         // Keep `activePaywallSessionID` set after close so `trackExitOffer` can still resolve paywall data.
-        return self.paywallEventTracker.trackPaywallClose(sessionID: sessionID)
+        return await self.paywallEventTracker.trackPaywallClose(sessionID: sessionID)
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
-    fileprivate func trackCancelledPurchase(package: Package) -> Bool {
+    fileprivate func trackCancelledPurchase(package: Package) async -> Bool {
         guard let sessionID = self.activePaywallSessionID else {
             return false
         }
-        return self.paywallEventTracker.trackCancelledPurchase(package: package, sessionID: sessionID)
+        return await self.paywallEventTracker.trackCancelledPurchase(package: package, sessionID: sessionID)
     }
 
     /// Creates a purchase-initiated paywall event for the given package.
     /// - Returns: the event, or `nil` if event data is unavailable.
-    func createPurchaseInitiatedEvent(package: Package) -> PaywallEvent? {
+    func createPurchaseInitiatedEvent(package: Package) async -> PaywallEvent? {
         guard let sessionID = self.activePaywallSessionID else {
             return nil
         }
-        return self.paywallEventTracker.createPurchaseInitiatedEvent(package: package, sessionID: sessionID)
+        return await self.paywallEventTracker.createPurchaseInitiatedEvent(package: package, sessionID: sessionID)
     }
 
     /// Tracks a purchase error event.
@@ -493,11 +493,11 @@ extension PurchaseHandler {
     ///   - error: The error that occurred
     /// - Returns: whether the event was tracked
     @discardableResult
-    func trackPurchaseError(package: Package, error: Error) -> Bool {
+    func trackPurchaseError(package: Package, error: Error) async -> Bool {
         guard let sessionID = self.activePaywallSessionID else {
             return false
         }
-        return self.paywallEventTracker.trackPurchaseError(package: package, error: error, sessionID: sessionID)
+        return await self.paywallEventTracker.trackPurchaseError(package: package, error: error, sessionID: sessionID)
     }
 
     /// Tracks an exit offer event and clears the pending exit offer flag.
@@ -506,11 +506,11 @@ extension PurchaseHandler {
     ///   - exitOfferingIdentifier: The offering identifier of the exit offer
     /// - Returns: whether the event was tracked
     @discardableResult
-    func trackExitOffer(exitOfferType: ExitOfferType, exitOfferingIdentifier: String) -> Bool {
+    func trackExitOffer(exitOfferType: ExitOfferType, exitOfferingIdentifier: String) async -> Bool {
         guard let sessionID = self.activePaywallSessionID else {
             return false
         }
-        return self.paywallEventTracker.trackExitOffer(
+        return await self.paywallEventTracker.trackExitOffer(
             exitOfferType: exitOfferType,
             exitOfferingIdentifier: exitOfferingIdentifier,
             sessionID: sessionID

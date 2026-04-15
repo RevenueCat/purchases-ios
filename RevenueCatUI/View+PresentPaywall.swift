@@ -697,9 +697,11 @@ private struct PresentingPaywallModifier: ViewModifier {
         guard self.presentedExitOffer == nil else { return }
 
         guard !purchaseHandler.hasPurchasedInSession else {
-            self.purchaseHandler.trackPaywallClose()
-            self.purchaseHandler.resetForNewSession()
-            self.onDismiss?()
+            Task { @MainActor in
+                _ = await self.purchaseHandler.trackPaywallClose()
+                await self.purchaseHandler.resetForNewSession()
+                self.onDismiss?()
+            }
             return
         }
 
@@ -707,32 +709,38 @@ private struct PresentingPaywallModifier: ViewModifier {
         if let purchaseResult = self.purchaseHandler.sessionPurchaseResult,
            !purchaseResult.userCancelled,
            !self.shouldDisplay(purchaseResult.customerInfo) {
-            self.purchaseHandler.trackPaywallClose()
-            self.purchaseHandler.resetForNewSession()
-            self.onDismiss?()
+            Task { @MainActor in
+                _ = await self.purchaseHandler.trackPaywallClose()
+                await self.purchaseHandler.resetForNewSession()
+                self.onDismiss?()
+            }
             return
         }
 
-        self.purchaseHandler.trackPaywallClose()
+        Task { @MainActor in
+            _ = await self.purchaseHandler.trackPaywallClose()
 
-        if let exitOffering = self.exitOfferOffering {
-            Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
-            self.purchaseHandler.trackExitOffer(
-                exitOfferType: .dismiss,
-                exitOfferingIdentifier: exitOffering.identifier
-            )
-            self.presentedExitOffer = exitOffering
-        } else {
-            self.purchaseHandler.resetForNewSession()
-            self.onDismiss?()
+            if let exitOffering = self.exitOfferOffering {
+                Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
+                _ = await self.purchaseHandler.trackExitOffer(
+                    exitOfferType: .dismiss,
+                    exitOfferingIdentifier: exitOffering.identifier
+                )
+                self.presentedExitOffer = exitOffering
+            } else {
+                await self.purchaseHandler.resetForNewSession()
+                self.onDismiss?()
+            }
         }
     }
 
     private func handleExitOfferDismiss() {
         self.presentedExitOffer = nil
         self.exitOfferOffering = nil
-        self.purchaseHandler.resetForNewSession()
-        self.onDismiss?()
+        Task { @MainActor in
+            await self.purchaseHandler.resetForNewSession()
+            self.onDismiss?()
+        }
     }
 
     private func exitOfferPaywallView(for offering: Offering) -> some View {
@@ -997,9 +1005,11 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         guard self.presentedExitOffer == nil else { return }
 
         guard !self.purchaseHandler.hasPurchasedInSession else {
-            self.purchaseHandler.trackPaywallClose()
-            self.purchaseHandler.resetForNewSession()
-            self.onDismiss?()
+            Task { @MainActor in
+                _ = await self.purchaseHandler.trackPaywallClose()
+                await self.purchaseHandler.resetForNewSession()
+                self.onDismiss?()
+            }
             return
         }
 
@@ -1009,26 +1019,30 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             return
         }
 
-        self.purchaseHandler.trackPaywallClose()
+        Task { @MainActor in
+            _ = await self.purchaseHandler.trackPaywallClose()
 
-        if let exitOffering = self.exitOfferOffering {
-            Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
-            self.purchaseHandler.trackExitOffer(
-                exitOfferType: .dismiss,
-                exitOfferingIdentifier: exitOffering.identifier
-            )
-            self.presentedExitOffer = exitOffering
-        } else {
-            self.purchaseHandler.resetForNewSession()
-            self.onDismiss?()
+            if let exitOffering = self.exitOfferOffering {
+                Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
+                _ = await self.purchaseHandler.trackExitOffer(
+                    exitOfferType: .dismiss,
+                    exitOfferingIdentifier: exitOffering.identifier
+                )
+                self.presentedExitOffer = exitOffering
+            } else {
+                await self.purchaseHandler.resetForNewSession()
+                self.onDismiss?()
+            }
         }
     }
 
     private func handleExitOfferDismiss() {
         self.presentedExitOffer = nil
         self.exitOfferOffering = nil
-        self.purchaseHandler.resetForNewSession()
-        self.onDismiss?()
+        Task { @MainActor in
+            await self.purchaseHandler.resetForNewSession()
+            self.onDismiss?()
+        }
     }
 
 }

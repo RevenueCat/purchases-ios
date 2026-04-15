@@ -343,8 +343,10 @@ public class PaywallViewController: UIViewController {
     public override func viewDidDisappear(_ animated: Bool) {
         if self.isBeingDismissed && !self.isDismissingForExitOffer {
             self.delegate?.paywallViewControllerWasDismissed?(self)
-            _ = self.purchaseHandler.trackPaywallClose()
-            self.purchaseHandler.resetForNewSession()
+            Task { @MainActor in
+                _ = await self.purchaseHandler.trackPaywallClose()
+                await self.purchaseHandler.resetForNewSession()
+            }
         }
         super.viewDidDisappear(animated)
     }
@@ -428,9 +430,11 @@ public class PaywallViewController: UIViewController {
     private func handleDismissalRequest() {
         // If purchased, dismiss immediately without showing exit offer
         guard !self.purchaseHandler.hasPurchasedInSession else {
-            _ = self.purchaseHandler.trackPaywallClose()
-            self.purchaseHandler.resetForNewSession()
-            self.dismissPaywall()
+            Task { @MainActor in
+                _ = await self.purchaseHandler.trackPaywallClose()
+                await self.purchaseHandler.resetForNewSession()
+                self.dismissPaywall()
+            }
             return
         }
 
@@ -438,9 +442,11 @@ public class PaywallViewController: UIViewController {
         if let exitOffering = self.exitOfferOffering, !self.isShowingExitOffer {
             self.presentExitOffer(for: exitOffering)
         } else {
-            _ = self.purchaseHandler.trackPaywallClose()
-            self.purchaseHandler.resetForNewSession()
-            self.dismissPaywall()
+            Task { @MainActor in
+                _ = await self.purchaseHandler.trackPaywallClose()
+                await self.purchaseHandler.resetForNewSession()
+                self.dismissPaywall()
+            }
         }
     }
 
@@ -462,9 +468,11 @@ public class PaywallViewController: UIViewController {
         // Capture the presenting view controller and other needed state before dismissing
         guard let presenter = self.presentingViewController else {
             // No presenter, just dismiss normally
-            _ = self.purchaseHandler.trackPaywallClose()
-            self.purchaseHandler.resetForNewSession()
-            self.dismissPaywall()
+            Task { @MainActor in
+                _ = await self.purchaseHandler.trackPaywallClose()
+                await self.purchaseHandler.resetForNewSession()
+                self.dismissPaywall()
+            }
             return
         }
 
@@ -483,39 +491,41 @@ public class PaywallViewController: UIViewController {
         self.dismiss(animated: true) { [weak self, weak presenter] in
             guard let self = self, let presenter = presenter else { return }
 
-            // Track exit offer event. Note: This may be called before or after onDisappear
-            // tracks the close event due to UIKit timing. The order doesn't matter as events
-            // are correlated by IDs, not by sequence.
-            self.purchaseHandler.trackExitOffer(
-                exitOfferType: .dismiss,
-                exitOfferingIdentifier: offering.identifier
-            )
+            Task { @MainActor in
+                // Track exit offer event. Note: This may be called before or after onDisappear
+                // tracks the close event due to UIKit timing. The order doesn't matter as events
+                // are correlated by IDs, not by sequence.
+                _ = await self.purchaseHandler.trackExitOffer(
+                    exitOfferType: .dismiss,
+                    exitOfferingIdentifier: offering.identifier
+                )
 
-            let exitOfferVC = PaywallViewController(
-                content: .offering(offering),
-                fonts: fonts,
-                displayCloseButton: true,
-                shouldBlockTouchEvents: shouldBlock,
-                performPurchase: performPurchase,
-                performRestore: performRestore,
-                dismissRequestedHandler: { controller in
-                    // When exit offer is dismissed, call the original handler
-                    if let handler = originalDismissHandler {
-                        handler(controller)
-                    } else {
-                        controller.dismiss(animated: true)
-                    }
-                },
-                promoOfferCache: self.promoOfferCache
-            )
+                let exitOfferVC = PaywallViewController(
+                    content: .offering(offering),
+                    fonts: fonts,
+                    displayCloseButton: true,
+                    shouldBlockTouchEvents: shouldBlock,
+                    performPurchase: performPurchase,
+                    performRestore: performRestore,
+                    dismissRequestedHandler: { controller in
+                        // When exit offer is dismissed, call the original handler
+                        if let handler = originalDismissHandler {
+                            handler(controller)
+                        } else {
+                            controller.dismiss(animated: true)
+                        }
+                    },
+                    promoOfferCache: self.promoOfferCache
+                )
 
-            // Set delegate directly - exit offer is now standalone
-            exitOfferVC.delegate = originalDelegate
+                // Set delegate directly - exit offer is now standalone
+                exitOfferVC.delegate = originalDelegate
 
-            // Notify delegate about exit offer so it can associate result tracking
-            originalDelegate?.paywallViewController?(self, willPresentExitOfferController: exitOfferVC)
+                // Notify delegate about exit offer so it can associate result tracking
+                originalDelegate?.paywallViewController?(self, willPresentExitOfferController: exitOfferVC)
 
-            presenter.present(exitOfferVC, animated: true)
+                presenter.present(exitOfferVC, animated: true)
+            }
         }
     }
 
@@ -599,8 +609,10 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
     // swiftlint:disable:next missing_docs
     public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
         // Dismissal is happening (we allowed it) - clean up
-        _ = self.purchaseHandler.trackPaywallClose()
-        self.purchaseHandler.resetForNewSession()
+        Task { @MainActor in
+            _ = await self.purchaseHandler.trackPaywallClose()
+            await self.purchaseHandler.resetForNewSession()
+        }
 
         // Forward to original delegate (with safety check to prevent recursion)
         if let originalDelegate = self.originalPresentationControllerDelegate, originalDelegate !== self {

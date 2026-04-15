@@ -587,18 +587,28 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear {
-                if error != nil {
-                    self.purchaseHandler.trackPaywallImpression(self.createEventData(forDefaultPaywall: true))
-                } else {
-                    switch configuration {
-                    case .success:
-                        self.purchaseHandler.trackPaywallImpression(self.createEventData(forDefaultPaywall: false))
-                    case .failure:
-                        self.purchaseHandler.trackPaywallImpression(self.createEventData(forDefaultPaywall: true))
+                Task {
+                    if error != nil {
+                        await self.purchaseHandler.trackPaywallImpression(self.createEventData(forDefaultPaywall: true))
+                    } else {
+                        switch configuration {
+                        case .success:
+                            await self.purchaseHandler.trackPaywallImpression(
+                                self.createEventData(forDefaultPaywall: false)
+                            )
+                        case .failure:
+                            await self.purchaseHandler.trackPaywallImpression(
+                                self.createEventData(forDefaultPaywall: true)
+                            )
+                        }
                     }
                 }
             }
-            .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .onDisappear {
+                Task {
+                    _ = await self.purchaseHandler.trackPaywallClose()
+                }
+            }
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
                 if hasPurchased {
                     guard let onRequestedDismissal = self.onRequestedDismissal else {

@@ -148,7 +148,7 @@ class BasePaywallViewEventsTests: TestCase {
 
     func testExitOfferDismissEvent() async throws {
         try await self.runDuringViewLifetime {
-            self.handler.trackExitOffer(exitOfferType: .dismiss, exitOfferingIdentifier: "exit_offering")
+            _ = await self.handler.trackExitOffer(exitOfferType: .dismiss, exitOfferingIdentifier: "exit_offering")
         }
 
         await self.fulfillment(of: [exitOfferEventExpectation], timeout: 3)
@@ -166,7 +166,7 @@ class BasePaywallViewEventsTests: TestCase {
 
     func testExitOfferEventHasSameSessionID() async throws {
         try await self.runDuringViewLifetime {
-            self.handler.trackExitOffer(exitOfferType: .dismiss, exitOfferingIdentifier: "exit_offering")
+            _ = await self.handler.trackExitOffer(exitOfferType: .dismiss, exitOfferingIdentifier: "exit_offering")
         }
 
         await self.fulfillment(of: [exitOfferEventExpectation], timeout: 3)

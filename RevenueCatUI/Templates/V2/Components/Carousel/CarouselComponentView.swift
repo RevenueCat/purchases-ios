@@ -85,11 +85,13 @@ struct CarouselComponentView: View {
                         msTransitionTime: style.autoAdvance?.msTransitionTime,
                         autoAdvanceTransitionType: style.autoAdvance?.transitionType,
                         onUserInitiatedPageIndexChange: { originPageIndex, destinationPageIndex in
-                            self.trackCarouselComponentInteraction(
-                                originPageIndex: originPageIndex,
-                                destinationPageIndex: destinationPageIndex,
-                                defaultPageIndex: style.initialPageIndex
-                            )
+                            Task {
+                                await self.trackCarouselComponentInteraction(
+                                    originPageIndex: originPageIndex,
+                                    destinationPageIndex: destinationPageIndex,
+                                    defaultPageIndex: style.initialPageIndex
+                                )
+                            }
                         }
                     ).clipped()
                 }
@@ -115,10 +117,10 @@ struct CarouselComponentView: View {
         originPageIndex: Int,
         destinationPageIndex: Int,
         defaultPageIndex: Int
-    ) {
+    ) async {
         let destinationContextName = self.viewModel.pageContextName(at: destinationPageIndex)
 
-        _ = self.componentInteractionLogger(.paywallCarouselPageChange(
+        _ = await self.componentInteractionLogger(.paywallCarouselPageChange(
             componentName: self.viewModel.componentName,
             destinationPageIndex: destinationPageIndex,
             context: .init(

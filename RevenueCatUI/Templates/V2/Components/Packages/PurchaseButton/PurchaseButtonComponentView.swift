@@ -113,7 +113,7 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
+        await self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
 
         // Check if there's a purchase interceptor
         if let interceptor = self.purchaseInitiatedAction {
@@ -140,7 +140,7 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        self.logPurchaseButtonInteractionForWeb(launchWebCheckout: launchWebCheckout)
+        await self.logPurchaseButtonInteractionForWeb(launchWebCheckout: launchWebCheckout)
 
         self.logIfInPreview("Web Product: \(launchWebCheckout)")
 
@@ -151,7 +151,7 @@ struct PurchaseButtonComponentView: View {
         self.openWebPaywallLink(launchWebCheckout: launchWebCheckout)
     }
 
-    private func logPurchaseButtonInteractionForInApp(selectedPackage: Package) {
+    private func logPurchaseButtonInteractionForInApp(selectedPackage: Package) async {
         let componentValue: String
         if let method = self.viewModel.method {
             componentValue = method.description
@@ -159,7 +159,7 @@ struct PurchaseButtonComponentView: View {
             componentValue = PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout.description
         }
 
-        self.componentInteractionLogger(.paywallPurchaseButtonAction(
+        _ = await self.componentInteractionLogger(.paywallPurchaseButtonAction(
             componentName: self.viewModel.componentName,
             componentValue: componentValue,
             componentURL: nil,
@@ -170,8 +170,8 @@ struct PurchaseButtonComponentView: View {
 
     private func logPurchaseButtonInteractionForWeb(
         launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout
-    ) {
-        self.componentInteractionLogger(.paywallPurchaseButtonAction(
+    ) async {
+        _ = await self.componentInteractionLogger(.paywallPurchaseButtonAction(
             componentName: self.viewModel.componentName,
             componentValue: self.viewModel.method?.description ?? "",
             componentURL: launchWebCheckout.url,

@@ -76,12 +76,14 @@ struct RootView: View {
             safeAreaInsets: self.safeAreaInsets,
             onSheetContentAppear: {
                 guard let sheetViewModel else { return }
-                _ = self.componentInteractionLogger(
-                    .paywallPackageSelectionSheetOpen(
-                        sheetComponentName: sheetViewModel.sheet.name,
-                        rootSelectedPackage: self.packageContext.package
+                Task {
+                    _ = await self.componentInteractionLogger(
+                        .paywallPackageSelectionSheetOpen(
+                            sheetComponentName: sheetViewModel.sheet.name,
+                            rootSelectedPackage: self.packageContext.package
+                        )
                     )
-                )
+                }
             }
         )
         .onChangeOf(sheetViewModel) { newValue in
@@ -94,13 +96,15 @@ struct RootView: View {
                 let resultingRootPackage = self.packageContext.package
                 let sheetName = self.packageSelectionSheetComponentName
                 self.packageSelectionSheetComponentName = nil
-                _ = self.componentInteractionLogger(
-                    .paywallPackageSelectionSheetClose(
-                        sheetComponentName: sheetName,
-                        sheetSelectedPackage: selectionInSheetContext,
-                        resultingRootPackage: resultingRootPackage
+                Task {
+                    _ = await self.componentInteractionLogger(
+                        .paywallPackageSelectionSheetClose(
+                            sheetComponentName: sheetName,
+                            sheetSelectedPackage: selectionInSheetContext,
+                            resultingRootPackage: resultingRootPackage
+                        )
                     )
-                )
+                }
             }
         }
     }

@@ -58,11 +58,11 @@ class ComponentInteractionLoggerTests: TestCase {
 
         let logger = tracker.componentInteractionLogger(sessionID: eventData.sessionIdentifier)
 
-        expect(logger(interactionData)) == false
+        expect(await logger(interactionData)) == false
 
-        tracker.trackPaywallImpression(eventData)
+        await tracker.trackPaywallImpression(eventData)
 
-        expect(logger(interactionData)) == true
+        expect(await logger(interactionData)) == true
 
         await Task(priority: .low) {
             await Task.yield()

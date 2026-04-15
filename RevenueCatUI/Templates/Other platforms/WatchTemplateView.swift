@@ -149,13 +149,15 @@ struct WatchTemplateView: TemplateViewType {
             let origin = self.selectedPackage.content
             let destination = package.content
             if origin.identifier != destination.identifier {
-                self.componentInteractionLogger(
-                    .paywallPackageRowSelection(
-                        destination: destination,
-                        origin: origin,
-                        defaultPackage: defaultPackage
+                Task {
+                    _ = await self.componentInteractionLogger(
+                        .paywallPackageRowSelection(
+                            destination: destination,
+                            origin: origin,
+                            defaultPackage: defaultPackage
+                        )
                     )
-                )
+                }
             }
             self.selectedPackage = package
         } label: {

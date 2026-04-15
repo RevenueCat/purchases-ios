@@ -177,9 +177,11 @@ struct PaywallsV2View: View {
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
         .onAppear {
-            self.purchaseHandler.trackPaywallImpression(
-                self.createEventData()
-            )
+            Task {
+                await self.purchaseHandler.trackPaywallImpression(
+                    self.createEventData()
+                )
+            }
         }
         .task {
             guard !didFinishEligibilityCheck else {
@@ -246,9 +248,11 @@ struct PaywallsV2View: View {
             )
         )
         .onAppear {
-            self.purchaseHandler.trackPaywallImpression(
-                self.createEventData(forDefaultPaywall: true)
-            )
+            Task {
+                await self.purchaseHandler.trackPaywallImpression(
+                    self.createEventData(forDefaultPaywall: true)
+                )
+            }
         }
     }
 
@@ -268,7 +272,11 @@ struct PaywallsV2View: View {
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .onDisappear {
+                Task {
+                    _ = await self.purchaseHandler.trackPaywallClose()
+                }
+            }
             .environment(
                 \.componentInteractionLogger,
                 self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)

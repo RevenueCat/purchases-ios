@@ -114,7 +114,7 @@ class PurchaseHandlerTests: TestCase {
             darkMode: false,
             source: nil
         )
-        handler.trackPaywallImpression(eventData)
+        await handler.trackPaywallImpression(eventData)
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
@@ -161,7 +161,7 @@ class PurchaseHandlerTests: TestCase {
             darkMode: false,
             source: nil
         )
-        handler.trackPaywallImpression(eventData)
+        await handler.trackPaywallImpression(eventData)
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
@@ -205,7 +205,7 @@ class PurchaseHandlerTests: TestCase {
             darkMode: false,
             source: nil
         )
-        handler.trackPaywallImpression(eventData)
+        await handler.trackPaywallImpression(eventData)
 
         do {
             _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
@@ -256,7 +256,7 @@ class PurchaseHandlerTests: TestCase {
             darkMode: false,
             source: nil
         )
-        handler.trackPaywallImpression(eventData)
+        await handler.trackPaywallImpression(eventData)
 
         do {
             _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
@@ -300,7 +300,7 @@ class PurchaseHandlerTests: TestCase {
             darkMode: false,
             source: nil
         )
-        handler.trackPaywallImpression(eventData)
+        await handler.trackPaywallImpression(eventData)
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
@@ -338,7 +338,7 @@ class PurchaseHandlerTests: TestCase {
             darkMode: false,
             source: nil
         )
-        handler.trackPaywallImpression(eventData)
+        await handler.trackPaywallImpression(eventData)
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
@@ -477,14 +477,14 @@ class PurchaseHandlerTests: TestCase {
             source: nil
         )
 
-        let result1 = handler.trackPaywallClose()
+        let result1 = await handler.trackPaywallClose()
         expect(result1) == false
 
-        handler.trackPaywallImpression(eventData)
+        await handler.trackPaywallImpression(eventData)
 
-        let result2 = handler.trackPaywallClose()
+        let result2 = await handler.trackPaywallClose()
         expect(result2) == true
-        let result3 = handler.trackPaywallClose()
+        let result3 = await handler.trackPaywallClose()
         expect(result3) == false
 
     }
@@ -526,9 +526,9 @@ class PurchaseHandlerTests: TestCase {
             source: source
         )
 
-        handler.trackPaywallImpression(eventData)
+        await handler.trackPaywallImpression(eventData)
 
-        let result = handler.trackPaywallClose()
+        let result = await handler.trackPaywallClose()
         expect(result) == true
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
