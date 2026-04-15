@@ -25,9 +25,9 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
     static let safeAreaInsets = EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
     static let previewDisplayName =
         "Paywall pw6328703e14874ca2: header stays above nested hero text"
-    static let previewTitle = "Header stays above nested hero text"
+    static let previewTitle = "Header and hero text clear the highlighted top guide"
     static let previewSubtitle =
-        "Verifies safe-area propagation through a root vertical stack with a nested hero zlayer."
+        "The tinted top band marks the safe area. The nested hero image may fill it, but text should stay below it."
 
     static let heroImageURL = Self.makeLocalPreviewImageURL(
         filename: "paywall-pw6328703e14874ca2-hero.png",
@@ -85,7 +85,7 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
         components: [
             .text(.init(
                 text: "header_label_primary",
-                color: .init(light: .hex("#FF3B30")),
+                color: .init(light: .hex("#FFFFFF")),
                 padding: .zero,
                 margin: .zero,
                 fontSize: 14,
@@ -93,7 +93,7 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
             )),
             .text(.init(
                 text: "header_label_secondary",
-                color: .init(light: .hex("#FF3B30")),
+                color: .init(light: .hex("#FFFFFF")),
                 padding: .zero,
                 margin: .zero,
                 fontSize: 14,
@@ -238,41 +238,18 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
     }()
 
     static func preview() -> some View {
-        VStack(spacing: 12) {
-            VStack(spacing: 4) {
-                Text(Self.previewTitle)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(Color.black)
-                    .multilineTextAlignment(.center)
-
-                Text(Self.previewSubtitle)
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(Color.black.opacity(0.65))
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-
+        SafeAreaPreviewShell(
+            title: Self.previewTitle,
+            subtitle: Self.previewSubtitle,
+            previewDisplayName: Self.previewDisplayName,
+            safeAreaInsets: Self.safeAreaInsets
+        ) {
             RootView(
                 viewModel: Self.rootViewModel,
                 onDismiss: {},
                 defaultPackage: nil
             )
-            .frame(width: 393, height: 852)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-            )
         }
-        .frame(width: 425, height: 936)
-        .background(Color.white)
-        .previewRequiredPaywallsV2Properties()
-        .environment(\.safeAreaInsets, Self.safeAreaInsets)
-        .emergeExpansion(false)
-        .previewLayout(.fixed(width: 425, height: 936))
-        .previewDisplayName(Self.previewDisplayName)
     }
 
 }

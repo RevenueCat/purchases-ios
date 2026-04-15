@@ -164,10 +164,12 @@ private enum RootViewPreviewData {
     static let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
     static let rootHeroPreviewName = "RootView: first root image ignores top safe area"
     static let textHeaderPreviewName = "RootView: text header respects top safe area"
-    static let rootHeroPreviewTitle = "Root image fills the top safe area"
-    static let rootHeroPreviewSubtitle = "Verifies that the first root image extends through the top inset."
-    static let textHeaderPreviewTitle = "Text header starts below the top inset"
-    static let textHeaderPreviewSubtitle = "Verifies that a non-image header behaves as the safe-area extension."
+    static let rootHeroPreviewTitle = "Root image fills the highlighted top guide"
+    static let rootHeroPreviewSubtitle =
+        "The tinted top band marks the safe area. The first root image should fill it."
+    static let textHeaderPreviewTitle = "Text header clears the highlighted top guide"
+    static let textHeaderPreviewSubtitle =
+        "The tinted top band marks the safe area. A non-image header should begin below it."
 
     static func makeLocalPreviewImageURL(
         filename: String,
@@ -329,46 +331,18 @@ private enum RootViewPreviewData {
         subtitle: String,
         name: String
     ) -> some View {
-        VStack(spacing: 12) {
-            VStack(spacing: 4) {
-                Text(title)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(Color.black)
-                    .multilineTextAlignment(.center)
-
-                Text(subtitle)
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(Color.black.opacity(0.65))
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-
-            ZStack(alignment: .top) {
-                Color.white
-
-                RootView(
-                    viewModel: self.rootViewModel(stack: stack, headerStack: headerStack),
-                    onDismiss: {},
-                    defaultPackage: nil
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            }
-            .frame(width: 393, height: 852)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+        SafeAreaPreviewShell(
+            title: title,
+            subtitle: subtitle,
+            previewDisplayName: name,
+            safeAreaInsets: self.safeAreaInsets
+        ) {
+            RootView(
+                viewModel: self.rootViewModel(stack: stack, headerStack: headerStack),
+                onDismiss: {},
+                defaultPackage: nil
             )
         }
-        .frame(width: 425, height: 936)
-        .background(Color.white)
-        .previewRequiredPaywallsV2Properties()
-        .environment(\.safeAreaInsets, self.safeAreaInsets)
-        .emergeExpansion(false)
-        .previewLayout(.fixed(width: 425, height: 936))
-        .previewDisplayName(name)
     }
 
 }

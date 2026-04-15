@@ -24,8 +24,9 @@ private enum HeaderTextBodyHeroSafeAreaPreview {
 
     static let safeAreaInsets = EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
     static let previewDisplayName = "Paywall pw3aa70e16bb844eb7: header text + body hero safe area"
-    static let previewTitle = "Header text starts below the top inset"
-    static let previewSubtitle = "Verifies a text-only header with a body hero placed immediately beneath it."
+    static let previewTitle = "Header text clears the highlighted top guide"
+    static let previewSubtitle =
+        "The tinted top band marks the safe area. The text-only header should begin below it."
 
     static let offering = Offering(
         identifier: "preview",
@@ -189,41 +190,18 @@ private enum HeaderTextBodyHeroSafeAreaPreview {
     }()
 
     static func preview() -> some View {
-        VStack(spacing: 12) {
-            VStack(spacing: 4) {
-                Text(Self.previewTitle)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(Color.black)
-                    .multilineTextAlignment(.center)
-
-                Text(Self.previewSubtitle)
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(Color.black.opacity(0.65))
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-
+        SafeAreaPreviewShell(
+            title: Self.previewTitle,
+            subtitle: Self.previewSubtitle,
+            previewDisplayName: Self.previewDisplayName,
+            safeAreaInsets: Self.safeAreaInsets
+        ) {
             RootView(
                 viewModel: Self.rootViewModel,
                 onDismiss: {},
                 defaultPackage: nil
             )
-            .frame(width: 393, height: 852)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-            )
         }
-        .frame(width: 425, height: 936)
-        .background(Color.white)
-        .previewRequiredPaywallsV2Properties()
-        .environment(\.safeAreaInsets, Self.safeAreaInsets)
-        .emergeExpansion(false)
-        .previewLayout(.fixed(width: 425, height: 936))
-        .previewDisplayName(Self.previewDisplayName)
     }
 
 }
