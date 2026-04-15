@@ -1,3 +1,4 @@
+#if ENABLE_PROTOBUF
 import Foundation
 import SwiftProtobuf
 
@@ -32,3 +33,4 @@ enum ProtobufEventSerializer {
     }
 
 }
+#endif
