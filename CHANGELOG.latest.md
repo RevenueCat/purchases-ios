@@ -1,13 +1,26 @@
+## RevenueCat SDK
+### ✨ New Features
+* feat(ads): add possibility to update fullscreen content delegate (#6581) via Peter Porfy (@peterporfy)
+* Convert full-screen ad loading to async/throws (#6592) via Antonio Pallares (@ajpallares)
+* feat(ads): placement override at show time (#6570) via Peter Porfy (@peterporfy)
+### 🐞 Bugfixes
+* Fixes incorrect icon reuse in legacy Paywalls (#6611) via JayShortway (@JayShortway)
+* Fix macOS build in record_and_push_paywall_template_screenshots (#6612) via Rick (@rickvdl)
+* Revert "Add PaywallsV2 header component" (#6596) via Cesar de la Vega (@vegaro)
+
 ## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix: Use DefaultPaywallView in all the places (#6580) via Jacob Rakidzich (@JZDesign)
+* Fix image size/render flow  (#6593) via Jacob Rakidzich (@JZDesign)
 ### Paywallsv2
-#### 🐞 Bugfixes
-* PW-1178 | Add visible flag and overrides support to PackageComponent (#6520) via Facundo Menzella (@facumenzella)
+#### ✨ New Features
+* Add PaywallsV2 header component (#6548) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Bump addressable from 2.8.8 to 2.9.0 (#6563) via dependabot[bot] (@dependabot[bot])
-* Bump addressable from 2.8.7 to 2.9.0 in /Tests/InstallationTests/CocoapodsInstallation (#6561) via dependabot[bot] (@dependabot[bot])
-* Fix iOS 14.5 simulator runtime install retry logic (#6533) via Rick (@rickvdl)
-* Bump fastlane-plugin-revenuecat_internal from `6289be1` to `ceecf91` (#6560) via dependabot[bot] (@dependabot[bot])
-* Make PaywallComponents API @_spi(Internal) (#6551) via Antonio Pallares (@ajpallares)
-* Bump fastlane-plugin-revenuecat_internal from `5d6e93f` to `6289be1` (#6550) via dependabot[bot] (@dependabot[bot])
-* Bump fastlane-plugin-revenuecat_internal from `b5a7159` to `5d6e93f` (#6547) via dependabot[bot] (@dependabot[bot])
+* Add header component (#6604) via Cesar de la Vega (@vegaro)
+* Sort no-paywall offerings to bottom of list in PaywallsTester (#6610) via Cesar de la Vega (@vegaro)
+* Upload V1 template snapshots to Emerge via BYOS (#6574) via Rick (@rickvdl)
+* Bump fastlane-plugin-revenuecat_internal from `894bb1b` to `20911d1` (#6594) via dependabot[bot] (@dependabot[bot])
+* Make RCAdMobFullScreenContentDelegate @MainActor (#6591) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `ceecf91` to `894bb1b` (#6583) via dependabot[bot] (@dependabot[bot])
+* Update CODEOWNERS default owner to @RevenueCat/sdk (#6579) via Antonio Pallares (@ajpallares)
