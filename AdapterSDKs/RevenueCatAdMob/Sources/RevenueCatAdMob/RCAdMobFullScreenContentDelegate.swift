@@ -10,12 +10,13 @@ import Foundation
 import GoogleMobileAds
 @_spi(Experimental) import RevenueCat
 
+@MainActor
 @available(iOS 15.0, *)
 internal final class RCAdMobFullScreenContentDelegate: NSObject, GoogleMobileAds.FullScreenContentDelegate {
 
     weak var delegate: GoogleMobileAds.FullScreenContentDelegate?
     private let rcAdMob: RCAdMob
-    private let placement: String?
+    var placement: String?
     private let adUnitID: String
     private let adFormat: RevenueCat.AdFormat
     private let responseInfoProvider: () -> GoogleMobileAds.ResponseInfo?

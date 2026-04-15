@@ -6,19 +6,22 @@ var projects: [Path] = [
     "./Examples/rc-maestro/",
     "./Examples/MagicWeather/",
     "./Examples/MagicWeatherSwiftUI/",
-    "./AdapterSDKs/RevenueCatAdMob/Examples/AdMobIntegrationSample/",
     "./Examples/testCustomEntitlementsComputation/",
     "./Examples/PurchaseTester/",
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",
-    "./Projects/RevenueCatTests",
     "./Projects/BinarySizeTest",
     "./Projects/RCTTester"
 ]
 
-// RevenueCatAdMob is a standalone package (not in root SPM), so always include its Tuist project.
-projects.append("./Projects/RevenueCatAdMob")
+// These projects depend on external packages (Nimble, SnapshotTesting, OHHTTPStubs, GoogleMobileAds).
+// Exclude them when TUIST_INCLUDE_TEST_DEPENDENCIES=false to allow skipping those downloads on CI.
+if Environment.includeTestDependencies {
+    projects.append("./Projects/RevenueCatTests")
+    projects.append("./Projects/RevenueCatAdMob")
+    projects.append("./Projects/AdMobIntegrationSample")
+}
 
 // Include RevenueCat/RevenueCatUI Tuist projects only when using local Xcode project dependencies.
 // In all other modes (localSwiftPackage, remoteSwiftPackage, remoteXcodeProject), the SPM package

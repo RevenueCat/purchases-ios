@@ -15,11 +15,11 @@
 
 import Foundation
 
-public protocol PaywallPartialComponent: PaywallComponentBase {}
+@_spi(Internal) public protocol PaywallPartialComponent: PaywallComponentBase {}
 
 // MARK: - Public Types
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     typealias ComponentOverrides<T: PaywallPartialComponent> = [ComponentOverride<T>]
 

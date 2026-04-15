@@ -1,14 +1,13 @@
-## RevenueCat SDK
-### 🐞 Bugfixes
-* Pass presentedOfferingContext and paywallEvent through SK2 purchase path instead of caching (#6472) via Antonio Pallares (@ajpallares)
-
 ## RevenueCatUI SDK
-### Customer Center
-#### ✨ New Features
-* Add PromotionalOfferSucceededHandler with purchase data (#6420) via Cesar de la Vega (@vegaro)
+### Paywallsv2
+#### 🐞 Bugfixes
+* PW-1178 | Add visible flag and overrides support to PackageComponent (#6520) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix concurrency error in CustomerCenterActionWrapperTests on Xcode 15 (#6477) via Antonio Pallares (@ajpallares)
-* Improve conditional visibility previews (#6471) via Facundo Menzella (@facumenzella)
-* Replace enable-auto-merge-release-pr with merge-release-pr orb job (#6470) via Antonio Pallares (@ajpallares)
-* Bump fastlane-plugin-revenuecat_internal from `3e8c384` to `9a6911b` (#6469) via dependabot[bot] (@dependabot[bot])
+* Bump addressable from 2.8.8 to 2.9.0 (#6563) via dependabot[bot] (@dependabot[bot])
+* Bump addressable from 2.8.7 to 2.9.0 in /Tests/InstallationTests/CocoapodsInstallation (#6561) via dependabot[bot] (@dependabot[bot])
+* Fix iOS 14.5 simulator runtime install retry logic (#6533) via Rick (@rickvdl)
+* Bump fastlane-plugin-revenuecat_internal from `6289be1` to `ceecf91` (#6560) via dependabot[bot] (@dependabot[bot])
+* Make PaywallComponents API @_spi(Internal) (#6551) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `5d6e93f` to `6289be1` (#6550) via dependabot[bot] (@dependabot[bot])
+* Bump fastlane-plugin-revenuecat_internal from `b5a7159` to `5d6e93f` (#6547) via dependabot[bot] (@dependabot[bot])

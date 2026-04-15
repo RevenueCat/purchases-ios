@@ -29,7 +29,7 @@ private extension PaywallViewLocalizationTests {
 
     static func test(_ locale: String) {
         Self.createView(locale: locale)
-            .snapshot(size: Self.fullScreenSize)
+            .recordSnapshot(size: Self.fullScreenSize)
     }
 
     private static func createView(locale: String) -> some View {

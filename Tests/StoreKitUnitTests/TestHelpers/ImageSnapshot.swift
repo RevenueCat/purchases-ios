@@ -21,7 +21,7 @@ func haveValidSnapshot<Value>(
     as strategy: Snapshotting<Value, some Any>,
     named name: String? = nil,
     separateOSVersions: Bool = true,
-    record recording: Bool = false,
+    record recording: Bool? = nil,
     timeout: TimeInterval = 5,
     file: StaticString = #file,
     line: UInt = #line

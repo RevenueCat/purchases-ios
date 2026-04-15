@@ -5,6 +5,7 @@ import GoogleMobileAds
 @_spi(Experimental) import RevenueCat
 @_spi(Experimental) @testable import RevenueCatAdMob
 
+@MainActor
 @available(iOS 15.0, *)
 final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
 

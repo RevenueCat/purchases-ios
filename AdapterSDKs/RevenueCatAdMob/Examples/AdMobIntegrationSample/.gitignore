@@ -1,4 +1,4 @@
-*.xcodeproj
-*.xcworkspace
-Derived/
+xcuserdata/
 .DS_Store
+Derived/
+Package.resolved

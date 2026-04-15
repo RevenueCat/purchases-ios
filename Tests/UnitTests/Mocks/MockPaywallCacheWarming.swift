@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 8/7/23.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 

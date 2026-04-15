@@ -11,7 +11,7 @@
 //
 //  Created by Mark Villacampa on 24/1/25.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
