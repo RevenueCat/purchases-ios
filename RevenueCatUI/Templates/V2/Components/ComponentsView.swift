@@ -50,7 +50,7 @@ struct ComponentsView: View {
                 .padding(
                     .top,
                     index > 0 && pushNonFirstChildrenBelowSafeArea
-                        ? safeAreaInsets.top + overlaidHeaderHeight
+                        ? max(safeAreaInsets.top, overlaidHeaderHeight)
                         : 0
                 )
         }
