@@ -404,7 +404,6 @@ struct MultiTierPreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in },
             colorScheme: .light
         )

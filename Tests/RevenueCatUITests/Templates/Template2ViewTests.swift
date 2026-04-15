@@ -21,7 +21,7 @@ class Template2ViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
         Self.createPaywall(offering: Self.offering.withLocalImages)
-            .snapshot(size: Self.fullScreenSize)
+            .recordSnapshot(size: Self.fullScreenSize)
     }
 
     func testTabletPaywall() {
@@ -37,38 +37,33 @@ class Template2ViewTests: BaseSnapshotTest {
     func testCustomFont() {
         Self.createPaywall(offering: Self.offering.withLocalImages,
                            fonts: Self.fonts)
-        .snapshot(size: Self.fullScreenSize)
+        .recordSnapshot(size: Self.fullScreenSize)
     }
 
     func testFooterPaywall() {
         Self.createPaywall(offering: Self.offering.withLocalImages,
                            mode: .footer)
-        .snapshot(size: Self.footerSize)
+        .recordSnapshot(size: Self.footerSize)
     }
 
     func testCondensedFooterPaywall() {
         Self.createPaywall(offering: Self.offering.withLocalImages,
                            mode: .condensedFooter)
-        .snapshot(size: Self.footerSize)
+        .recordSnapshot(size: Self.footerSize)
     }
 
     func testPurchasingState() {
-        let handler = PurchaseHandler.mock().with(delay: 120)
-
         let view = Self.createPaywall(offering: Self.offering.withLocalImages,
-                                      purchaseHandler: handler)
-            .task {
-                _ = try? await handler.purchase(package: TestData.annualPackage)
-            }
+                                      purchaseHandler: .purchasing())
 
-        view.snapshot(size: Self.fullScreenSize)
+        view.recordSnapshot(size: Self.fullScreenSize)
     }
 
     func testDarkMode() {
         Self.createPaywall(offering: Self.offering.withLocalImages,
                            introEligibility: Self.ineligibleChecker)
             .environment(\.colorScheme, .dark)
-            .snapshot(size: Self.fullScreenSize)
+            .recordSnapshot(size: Self.fullScreenSize)
     }
 
     private static let offering = TestData.offeringWithMultiPackagePaywall

@@ -672,10 +672,6 @@ jobs:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-15"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
-          version: "revenuecatui-15"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -713,10 +709,6 @@ jobs:
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
-          version: "revenuecatui-16"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
           version: "revenuecatui-16"
       - compress_result_bundle:
           directory: fastlane/test_output
@@ -767,10 +759,6 @@ jobs:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-18"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
-          version: "revenuecatui-18"
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
       - store_artifacts:
@@ -802,15 +790,34 @@ jobs:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-17"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
-          version: "revenuecatui-17"
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output-revenuecatui-17
+      - slack-notify-on-fail
+
+  record-and-upload-paywalls-v1-snapshots:
+    executor:
+      name: macos-executor
+      xcode_version: "26.3"
+
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: Record V1 snapshots and upload to Emerge
+          command: bundle exec fastlane record_and_upload_v1_snapshots
+          no_output_timeout: 15m
+          environment:
+            DEVICE: iPhone 17,OS=26.2
+      - store_test_results:
+          path: fastlane/test_output/v1-snapshots/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: v1-snapshots
       - slack-notify-on-fail
 
   run-revenuecat-ui-ios-26:
@@ -838,10 +845,6 @@ jobs:
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
-          version: "revenuecatui-26"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
           version: "revenuecatui-26"
       - compress_result_bundle:
           directory: fastlane/test_output
@@ -2164,6 +2167,11 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - record-and-upload-paywalls-v1-snapshots:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
 
       # Installation Tests
       - installation-tests-all-but-carthage:
@@ -2240,6 +2248,7 @@ workflows:
             - spm-revenuecat-ui-ios-16
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
+            - record-and-upload-paywalls-v1-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
