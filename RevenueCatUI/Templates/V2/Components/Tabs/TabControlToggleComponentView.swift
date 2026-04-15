@@ -40,12 +40,28 @@ struct TabControlToggleComponentView: View {
 
     private let viewModel: TabControlToggleComponentViewModel
     private let onDismiss: () -> Void
+    
+    /// `selectedTabId` in ``TabControlContext`` is the source of truth; the toggle reads it and writes it only from user interaction.
+    private var isOn: Binding<Bool> {
+        Binding(
+            get: {
+                Self.computeIsOn(
+                    selectedTabId: self.tabControlContext.selectedTabId,
+                    tabIds: self.tabControlContext.tabIds
+                )
+            },
+            set: { newValue in
+                let tabIds = self.tabControlContext.tabIds
+                guard tabIds.count >= 2 else { return }
 
-    @State
-    private var isOn: Bool = false
-
-    @State
-    private var isSyncingIsOnFromContext = false
+                self.tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
+                _ = self.componentInteractionLogger(.paywallTabControlToggle(
+                    componentName: self.tabControlContext.name,
+                    isOn: newValue
+                ))
+            }
+        )
+    }
 
     init(viewModel: TabControlToggleComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -53,7 +69,7 @@ struct TabControlToggleComponentView: View {
     }
 
     var body: some View {
-        Toggle("", isOn: $isOn)
+        Toggle("", isOn: self.isOn)
             .toggleStyle(
                 CustomToggleStyle(
                     thumbColorOn: self.viewModel.thumbColorOn,
@@ -63,44 +79,11 @@ struct TabControlToggleComponentView: View {
                 )
             )
             .labelsHidden()
-            .onAppear {
-                self.isOn = computeIsOn(
-                    selectedTabId: tabControlContext.selectedTabId,
-                    tabIds: tabControlContext.tabIds
-                )
-            }
-            .onChangeOf(self.isOn) { newValue in
-                if self.isSyncingIsOnFromContext {
-                    return
-                }
-
-                let tabIds = tabControlContext.tabIds
-                guard tabIds.count >= 2 else { return }
-
-                tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
-                _ = self.componentInteractionLogger(.paywallTabControlToggle(
-                    componentName: self.tabControlContext.name,
-                    isOn: newValue
-                ))
-            }
-            .onChangeOf(tabControlContext.selectedTabId) { newSelectedTabId in
-                let newIsOn = computeIsOn(
-                    selectedTabId: newSelectedTabId,
-                    tabIds: tabControlContext.tabIds
-                )
-                if self.isOn != newIsOn {
-                    self.isSyncingIsOnFromContext = true
-                    self.isOn = newIsOn
-                    DispatchQueue.main.async {
-                        self.isSyncingIsOnFromContext = false
-                    }
-                }
-            }
     }
 
     /// Computes the toggle's ON state based on the selected tab.
     /// The toggle is ON when the second tab (index 1) is selected.
-    private func computeIsOn(selectedTabId: String, tabIds: [String]) -> Bool {
+    private static func computeIsOn(selectedTabId: String, tabIds: [String]) -> Bool {
         guard tabIds.count == 2 else { return false }
         return selectedTabId == tabIds[1]
     }
