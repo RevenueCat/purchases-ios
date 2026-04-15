@@ -40,8 +40,9 @@ struct TabControlToggleComponentView: View {
 
     private let viewModel: TabControlToggleComponentViewModel
     private let onDismiss: () -> Void
-    
-    /// `selectedTabId` in ``TabControlContext`` is the source of truth; the toggle reads it and writes it only from user interaction.
+
+    /// `selectedTabId` in `TabControlContext` is the source of truth.
+    /// The toggle reads it and writes it only from user interaction.
     private var isOn: Binding<Bool> {
         Binding(
             get: {
