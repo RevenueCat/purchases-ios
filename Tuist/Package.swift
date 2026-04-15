@@ -37,33 +37,38 @@ if !includeTestDependencies {
 
 #endif
 
+let coreDependencies: [PackageDescription.Package.Dependency] = [
+    .package(
+        url: "https://github.com/apple/swift-protobuf",
+        from: "1.28.1"
+    )
+]
+
+let testDependencies: [PackageDescription.Package.Dependency] = [
+    .package(
+        url: "https://github.com/quick/nimble",
+        exact: "13.7.1"
+    ),
+    .package(
+        url: "https://github.com/pointfreeco/swift-snapshot-testing",
+        exact: "1.18.9"
+    ),
+    .package(
+        url: "https://github.com/RevenueCat/purchases-ios",
+        branch: "main"
+    ),
+
+    .package(
+        url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
+        "12.0.0"..<"14.0.0"
+    ),
+    .package(
+        url: "https://github.com/AliSoftware/OHHTTPStubs",
+        revision: "9.1.0"
+    )
+]
+
 let package = Package(
     name: "Dependencies",
-    dependencies: includeTestDependencies ? [
-        .package(
-            url: "https://github.com/quick/nimble",
-            exact: "13.7.1"
-        ),
-        .package(
-            url: "https://github.com/pointfreeco/swift-snapshot-testing",
-            exact: "1.18.9"
-        ),
-        .package(
-            url: "https://github.com/RevenueCat/purchases-ios",
-            branch: "main"
-        ),
-
-        .package(
-            url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
-            "12.0.0"..<"14.0.0"
-        ),
-        .package(
-            url: "https://github.com/AliSoftware/OHHTTPStubs",
-            revision: "9.1.0"
-        ),
-        .package(
-            url: "https://github.com/apple/swift-protobuf",
-            from: "1.28.1"
-        )
-    ] : []
+    dependencies: coreDependencies + (includeTestDependencies ? testDependencies : [])
 )
