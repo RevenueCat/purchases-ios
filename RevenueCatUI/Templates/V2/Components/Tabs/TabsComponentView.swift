@@ -236,6 +236,8 @@ struct LoadedTabsComponentView: View {
             let tierPackageContext = self.tierPackageContexts[self.tabControlContext.selectedTabId] {
             LoadedTabComponentView(
                 stackViewModel: activeTabViewModel.stackViewModel,
+                parentPackageContext: self.packageContext,
+                tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
                     self.packageContext.update(
                         package: context.package,
@@ -339,9 +341,14 @@ struct LoadedTabsComponentView: View {
                         package: newPackage,
                         variableContext: self.packageContext.variableContext
                     )
+                } else if !tabHasNoPackages {
+                    // Root-only selection: clear tab highlight. Parent is not updated here;
+                    // `LoadedTabComponentView` suppresses propagating this nil to the parent.
+                    tierPackageContext.update(
+                        package: nil,
+                        variableContext: tierPackageContext.variableContext
+                    )
                 }
-                // If package is NOT in tab's packages, we still track it as parentOwnedPackage
-                // but we don't update the tab (it can't display this package)
             }
         }
     }
@@ -355,13 +362,21 @@ struct LoadedTabComponentView: View {
     private var tabPackageContext: PackageContext
 
     private let stackViewModel: StackComponentViewModel
+    private let parentPackageContext: PackageContext
+    private let tabPackageIdentifiers: Set<String>
     private let onChange: (PackageContext) -> Void
     private let onDismiss: () -> Void
 
-    init(stackViewModel: StackComponentViewModel,
-         onChange: @escaping (PackageContext) -> Void,
-         onDismiss: @escaping () -> Void) {
+    init(
+        stackViewModel: StackComponentViewModel,
+        parentPackageContext: PackageContext,
+        tabPackageIdentifiers: Set<String>,
+        onChange: @escaping (PackageContext) -> Void,
+        onDismiss: @escaping () -> Void
+    ) {
         self.stackViewModel = stackViewModel
+        self.parentPackageContext = parentPackageContext
+        self.tabPackageIdentifiers = tabPackageIdentifiers
         self.onChange = onChange
         self.onDismiss = onDismiss
     }
@@ -374,9 +389,35 @@ struct LoadedTabComponentView: View {
         .environmentObject(self.tabPackageContext)
         // Comparing on tabPackageContext.package but sending tabPackageContext to parent
         .onChangeOf(self.tabPackageContext.package) { _ in
+            if TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: self.tabPackageContext.package,
+                tabPackageIdentifiers: self.tabPackageIdentifiers,
+                parentPackage: self.parentPackageContext.package
+            ) {
+                return
+            }
             self.onChange(self.tabPackageContext)
         }
     }
+
+}
+
+/// Decides when a tab `PackageContext` change should not overwrite the paywall (parent) selection.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum TabPackageParentPropagation {
+
+	/// When the tab clears local selection to `nil` while the parent holds a root-only package,
+	/// do not notify the parent (avoids clearing the purchase selection).
+	static func shouldSuppressNotifyingParent(
+		tabPackage: Package?,
+		tabPackageIdentifiers: Set<String>,
+		parentPackage: Package?
+	) -> Bool {
+		guard tabPackage == nil else { return false }
+		guard !tabPackageIdentifiers.isEmpty else { return false }
+		guard let parentId = parentPackage?.identifier else { return false }
+		return !tabPackageIdentifiers.contains(parentId)
+	}
 
 }
 

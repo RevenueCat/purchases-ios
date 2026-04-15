@@ -37,6 +37,15 @@ import XCTest
 /// 3. **Parent Selection Tracking:**
 ///    - Tab propagation (newPackage == tab's current) → don't update `parentOwnedPackage`
 ///    - User selection (newPackage != tab's current) → update `parentOwnedPackage`
+///
+/// 4. **Root-only selection vs tab highlight (`LoadedTabsComponentView`):**
+///    - When the user selects a **root** package that is **not** in the active tab's package list,
+///      the tab's `PackageContext` selection is cleared (`package` becomes `nil`) so tab rows
+///      (including the tab default) no longer appear selected while the parent holds the root SKU.
+///    - Clearing the tab must **not** propagate `nil` to the parent: `TabPackageParentPropagation`
+///      suppresses tab→parent updates when the tab's package is `nil`, the tab has its own package
+///      ids, and the parent's package identifier is outside that set—so the purchase selection
+///      stays on the root package.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class TabsPackageInheritanceTests: TestCase {
 
@@ -724,6 +733,76 @@ final class TabsPackageInheritanceTests: TestCase {
         )
 
         // Then: Parent shows B
+        expect(parentContext.package?.identifier) == self.parentPackageB.identifier
+    }
+
+    // MARK: - Root-only selection vs tab highlight
+
+    func testTabPackageParentPropagationSuppressesWhenTabClearedAndParentOutsideTab() {
+        let tabIds = Set([self.tabPackageC.identifier])
+        expect(
+            TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: nil,
+                tabPackageIdentifiers: tabIds,
+                parentPackage: self.parentPackageB
+            )
+        ) == true
+    }
+
+    func testTabPackageParentPropagationDoesNotSuppressWhenTabIdentifiersEmpty() {
+        expect(
+            TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: nil,
+                tabPackageIdentifiers: [],
+                parentPackage: self.parentPackageB
+            )
+        ) == false
+    }
+
+    func testTabPackageParentPropagationDoesNotSuppressWhenTabStillSelected() {
+        expect(
+            TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: self.tabPackageC,
+                tabPackageIdentifiers: Set([self.tabPackageC.identifier]),
+                parentPackage: self.parentPackageB
+            )
+        ) == false
+    }
+
+    func testTabPackageParentPropagationDoesNotSuppressWhenParentNil() {
+        expect(
+            TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: nil,
+                tabPackageIdentifiers: Set([self.tabPackageC.identifier]),
+                parentPackage: nil
+            )
+        ) == false
+    }
+
+    @MainActor
+    func testUserRootSelectionOutsideTabClearsTabPackageWithoutRequiringParentUpdate() {
+        let tabContext = PackageContext(
+            package: self.tabPackageC,
+            variableContext: .init(packages: [self.tabPackageC])
+        )
+        let parentContext = PackageContext(
+            package: self.parentPackageB,
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        tabContext.update(
+            package: nil,
+            variableContext: tabContext.variableContext
+        )
+
+        expect(tabContext.package).to(beNil())
+        expect(
+            TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: tabContext.package,
+                tabPackageIdentifiers: Set([self.tabPackageC.identifier]),
+                parentPackage: parentContext.package
+            )
+        ) == true
         expect(parentContext.package?.identifier) == self.parentPackageB.identifier
     }
 
