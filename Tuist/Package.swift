@@ -60,6 +60,10 @@ let package = Package(
         .package(
             url: "https://github.com/AliSoftware/OHHTTPStubs",
             revision: "9.1.0"
+        ),
+        .package(
+            url: "https://github.com/apple/swift-protobuf",
+            from: "1.28.1"
         )
     ] : []
 )

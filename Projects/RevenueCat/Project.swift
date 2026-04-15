@@ -27,6 +27,9 @@ let project = Project(
             headers: .headers(
                 public: ["../../Sources/RevenueCat.h"]
             ),
+            dependencies: [
+                .external(name: "SwiftProtobuf")
+            ],
             settings: .settings(
                 base: [
                     "APPLICATION_EXTENSION_API_ONLY": "YES"
@@ -52,6 +55,9 @@ let project = Project(
             headers: .headers(
                 project: ["../../Sources/RevenueCat.h"]
             ),
+            dependencies: [
+                .external(name: "SwiftProtobuf")
+            ],
             settings: .settings(
                 base: [
                     "APPLICATION_EXTENSION_API_ONLY": "YES",

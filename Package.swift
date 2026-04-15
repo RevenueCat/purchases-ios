@@ -100,7 +100,7 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting, .define("ENABLE_PROTOBUF")] + ciCompilerFlags + additionalCompilerFlags),
+                swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 dependencies: [
                     .product(name: "SwiftProtobuf", package: "swift-protobuf")
@@ -112,7 +112,6 @@ let package = Package(
                 ],
                 swiftSettings: [
                     .define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
-                    .define("ENABLE_PROTOBUF"),
                     visionOSSetting
                 ] + ciCompilerFlags + additionalCompilerFlags),
         // Receipt Parser

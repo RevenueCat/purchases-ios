@@ -1,4 +1,3 @@
-#if ENABLE_PROTOBUF
 // DO NOT EDIT.
 // swift-format-ignore-file
 // swiftlint:disable all
@@ -188,4 +187,3 @@ extension RCEventResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     return true
   }
 }
-#endif

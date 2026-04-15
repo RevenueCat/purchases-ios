@@ -30,7 +30,9 @@ Pod::Spec.new do |s|
   }
 
   s.source_files = 'Sources/**/*.swift'
-  s.exclude_files = 'Sources/LocalReceiptParsing/ReceiptParser-only-files/**', 'Sources/Protobuf/**'
+  s.exclude_files = 'Sources/LocalReceiptParsing/ReceiptParser-only-files/**'
   
   s.resource_bundles = {'RevenueCat' => ['Sources/PrivacyInfo.xcprivacy']}
+
+  s.dependency 'SwiftProtobuf', '~> 1.28'
 end
