@@ -64,7 +64,7 @@ class RootViewModel {
             return false
         }
 
-        return headerViewModel.firstItemIgnoresSafeArea || self.firstItemIsFullWidthImage
+        return headerViewModel.firstItemIgnoresSafeArea || self.firstItemIsFullWidthMedia
     }
 
 }
