@@ -19,32 +19,26 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class RootViewModel {
 
-    struct FirstItemShouldIgnoreSafeAreaInfo {
-        let imageComponent: PaywallComponent.ImageComponent?
-        let videoComponent: PaywallComponent.VideoComponent?
-        let parentZStack: PaywallComponent.StackComponent?
-        let parentZStackBackgroundIndex: Int?
-        let parentBackgroundStack: PaywallComponent.StackComponent?
-        let parentBackgroundIsImage: Bool
-    }
-
     let headerViewModel: HeaderComponentViewModel?
     let stackViewModel: StackComponentViewModel
     let stickyFooterViewModel: StickyFooterComponentViewModel?
-    let firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?
+    let firstItemIsFullWidthImage: Bool
+    let firstItemIsFullWidthMedia: Bool
     let localizationProvider: LocalizationProvider
 
     init(
         headerViewModel: HeaderComponentViewModel?,
         stackViewModel: StackComponentViewModel,
         stickyFooterViewModel: StickyFooterComponentViewModel?,
-        firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?,
+        firstItemIsFullWidthImage: Bool,
+        firstItemIsFullWidthMedia: Bool,
         localizationProvider: LocalizationProvider
     ) {
         self.headerViewModel = headerViewModel
         self.stackViewModel = stackViewModel
         self.stickyFooterViewModel = stickyFooterViewModel
-        self.firstItemIgnoresSafeAreaInfo = firstItemIgnoresSafeAreaInfo
+        self.firstItemIsFullWidthImage = firstItemIsFullWidthImage
+        self.firstItemIsFullWidthMedia = firstItemIsFullWidthMedia
         self.localizationProvider = localizationProvider
     }
 
@@ -65,17 +59,12 @@ class RootViewModel {
         }
     }
 
-    var rootStartsWithHeroImage: Bool {
-        self.firstItemIgnoresSafeAreaInfo?.imageComponent != nil
-        || self.firstItemIgnoresSafeAreaInfo?.parentBackgroundIsImage == true
-    }
-
     var shouldOverlayHeader: Bool {
         guard let headerViewModel else {
             return false
         }
 
-        return headerViewModel.firstItemIgnoresSafeArea || self.rootStartsWithHeroImage
+        return headerViewModel.firstItemIgnoresSafeArea || self.firstItemIsFullWidthImage
     }
 
 }

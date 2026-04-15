@@ -224,7 +224,6 @@ class ViewModelFactoryBadgeTests: TestCase {
         return try factory.toStackViewModel(
             component: component,
             packageValidator: factory.packageValidator,
-            firstItemIgnoresSafeAreaInfo: nil,
             purchaseButtonCollector: nil,
             localizationProvider: LocalizationProvider(
                 locale: .current,

@@ -22,8 +22,6 @@ struct FlexHStack: View {
     let justifyContent: JustifyContent
     let spacing: CGFloat?
     let componentViewModels: [PaywallComponentViewModel]
-    let safeAreaTopInsetOverride: CGFloat?
-
     let onDismiss: () -> Void
 
     init(
@@ -31,14 +29,12 @@ struct FlexHStack: View {
         spacing: CGFloat?,
         justifyContent: JustifyContent,
         componentViewModels: [PaywallComponentViewModel],
-        safeAreaTopInsetOverride: CGFloat? = nil,
         onDismiss: @escaping () -> Void
     ) {
         self.alignment = alignment
         self.spacing = spacing
         self.justifyContent = justifyContent
         self.componentViewModels = componentViewModels
-        self.safeAreaTopInsetOverride = safeAreaTopInsetOverride
         self.onDismiss = onDismiss
     }
 
@@ -49,7 +45,6 @@ struct FlexHStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {
@@ -65,7 +60,6 @@ struct FlexHStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {
@@ -81,7 +75,6 @@ struct FlexHStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {
@@ -95,7 +88,6 @@ struct FlexHStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {
@@ -113,7 +105,6 @@ struct FlexHStack: View {
                     }
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {
@@ -131,7 +122,6 @@ struct FlexHStack: View {
                     FlexSpacer(weight: 1)
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {

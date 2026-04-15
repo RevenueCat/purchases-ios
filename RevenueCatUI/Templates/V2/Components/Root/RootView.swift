@@ -31,7 +31,7 @@ struct RootView: View {
     private let defaultPackage: Package?
 
     @State private var sheetViewModel: SheetViewModel?
-    @State private var overlayHeaderHeight: CGFloat = 0
+    @State private var overlaidHeaderHeight: CGFloat = 0
 
     internal init(
         viewModel: RootViewModel,
@@ -44,10 +44,6 @@ struct RootView: View {
     }
 
     var body: some View {
-        let heroOverlayTopInset = self.viewModel.shouldOverlayHeader && self.viewModel.rootStartsWithHeroImage
-            ? max(self.overlayHeaderHeight, self.safeAreaInsets.top)
-            : nil
-
         VStack(alignment: .center, spacing: 0) {
             if let headerViewModel = viewModel.headerViewModel,
                !viewModel.shouldOverlayHeader {
@@ -62,15 +58,9 @@ struct RootView: View {
                 StackComponentView(
                     viewModel: viewModel.stackViewModel,
                     isScrollableByDefault: true,
-                    onDismiss: onDismiss,
-                    additionalPadding: EdgeInsets(
-                        top: 0,
-                        leading: 0,
-                        bottom: viewModel.stickyFooterViewModel == nil ? safeAreaInsets.bottom : 0,
-                        trailing: 0
-                    ),
-                    safeAreaTopInsetOverride: heroOverlayTopInset
+                    onDismiss: onDismiss
                 )
+                .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
 
                 if let headerViewModel = viewModel.headerViewModel,
                    viewModel.shouldOverlayHeader {
@@ -79,8 +69,16 @@ struct RootView: View {
                         onDismiss: onDismiss
                     )
                     .fixedSize(horizontal: false, vertical: true)
-                    .onSizeChange { self.overlayHeaderHeight = $0.height }
+                    .overlay(GeometryReader { proxy in
+                        Color.clear.preference(
+                            key: OverlaidHeaderHeightKey.self,
+                            value: proxy.size.height
+                        )
+                    })
                 }
+            }
+            .onPreferenceChange(OverlaidHeaderHeightKey.self) { height in
+                overlaidHeaderHeight = height
             }
 
             if let stickyFooterViewModel = viewModel.stickyFooterViewModel {
@@ -110,6 +108,27 @@ struct RootView: View {
         }
     }
 
+}
+
+/// PreferenceKey that propagates the measured height of the overlaid header.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OverlaidHeaderHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+/// Environment key for the overlaid header height so child views can adjust their layout.
+private struct OverlaidHeaderHeightEnvironmentKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
+}
+
+extension EnvironmentValues {
+    var overlaidHeaderHeight: CGFloat {
+        get { self[OverlaidHeaderHeightEnvironmentKey.self] }
+        set { self[OverlaidHeaderHeightEnvironmentKey.self] = newValue }
+    }
 }
 
 #if DEBUG

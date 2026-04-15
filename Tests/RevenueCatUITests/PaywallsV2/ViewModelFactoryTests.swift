@@ -60,7 +60,6 @@ class ViewModelFactoryTests: TestCase {
             _ = try factory.toViewModel(
                 component: .tabs(tabs),
                 packageValidator: packageValidator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 purchaseButtonCollector: nil,
                 offering: Self.mockOffering,
                 localizationProvider: .init(locale: .current, localizedStrings: [:]),
@@ -397,7 +396,8 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(root.firstItemIgnoresSafeAreaInfo).toNot(beNil())
+        expect(root.firstItemIsFullWidthMedia).to(beTrue())
+        expect(root.firstItemIsFullWidthImage).to(beTrue())
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
         expect(root.shouldOverlayHeader).to(beTrue())
     }
@@ -438,14 +438,15 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(root.firstItemIgnoresSafeAreaInfo).to(beNil())
+        expect(root.firstItemIsFullWidthMedia).to(beFalse())
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beTrue())
-        expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
         expect(root.shouldOverlayHeader).to(beTrue())
     }
 
     @MainActor
-    func testRootHeroImageInZStackAtNonZeroIndexStillInsetsOverlayContent() throws {
+    func testRootImageInZStackAtNonZeroIndexDoesNotDetectHero() throws {
+        // With simplified detection (matching dashboard), only the first non-stack
+        // component is checked. A text at index 0 means no hero is detected.
         let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
             stack: .init(
                 components: [
@@ -481,15 +482,14 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(root.firstItemIgnoresSafeAreaInfo?.imageComponent).toNot(beNil())
-        expect(root.firstItemIgnoresSafeAreaInfo?.parentZStackBackgroundIndex).to(equal(1))
-        expect(root.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
-        expect(root.stackViewModel.safeAreaInsetExemptChildIndex).to(equal(1))
-        expect(root.shouldOverlayHeader).to(beTrue())
+        expect(root.firstItemIsFullWidthMedia).to(beFalse())
+        expect(root.shouldOverlayHeader).to(beFalse())
     }
 
     @MainActor
-    func testRootHeroImageBackgroundStackInsetsContentAndOverlaysHeader() throws {
+    func testStackBackgroundImageDoesNotDetectHero() throws {
+        // Background images on stacks are no longer detected as hero images
+        // (matching dashboard/Android behavior).
         let heroStack = PaywallComponent.StackComponent(
             components: [
                 .text(.init(text: "badge_text_lid", color: Self.black))
@@ -531,15 +531,9 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        guard case let .stack(heroViewModel)? = root.stackViewModel.viewModels.first else {
-            fail("Expected first root component to be a stack view model")
-            return
-        }
-
-        expect(root.firstItemIgnoresSafeAreaInfo?.parentBackgroundStack).toNot(beNil())
-        expect(root.rootStartsWithHeroImage).to(beTrue())
-        expect(heroViewModel.shouldApplySafeAreaInsetToEntireStack).to(beTrue())
-        expect(root.shouldOverlayHeader).to(beTrue())
+        expect(root.firstItemIsFullWidthMedia).to(beFalse())
+        expect(root.firstItemIsFullWidthImage).to(beFalse())
+        expect(root.shouldOverlayHeader).to(beFalse())
     }
 
     @MainActor
@@ -578,10 +572,9 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beTrue())
-        expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
-        expect(root.headerViewModel?.stackViewModel.safeAreaInsetExemptChildIndex).to(equal(1))
-        expect(root.shouldOverlayHeader).to(beTrue())
+        // With simplified detection, image at non-zero index in ZStack is not detected
+        expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
+        expect(root.shouldOverlayHeader).to(beFalse())
     }
 
     @MainActor
@@ -618,9 +611,9 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(root.firstItemIgnoresSafeAreaInfo?.videoComponent).toNot(beNil())
+        expect(root.firstItemIsFullWidthMedia).to(beTrue())
+        expect(root.firstItemIsFullWidthImage).to(beFalse())
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
-        expect(root.rootStartsWithHeroImage).to(beFalse())
         expect(root.shouldOverlayHeader).to(beFalse())
     }
 
@@ -662,7 +655,6 @@ class ViewModelFactoryTests: TestCase {
         )
 
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
-        expect(root.headerViewModel?.stackViewModel.shouldApplySafeAreaInset).to(beTrue())
         expect(root.shouldOverlayHeader).to(beFalse())
     }
 
@@ -772,7 +764,6 @@ class ViewModelFactoryTests: TestCase {
         let viewModel = try factory.toStackViewModel(
             component: stackComponent,
             packageValidator: factory.packageValidator,
-            firstItemIgnoresSafeAreaInfo: nil,
             purchaseButtonCollector: nil,
             localizationProvider: .init(locale: .current, localizedStrings: [
                 "text_lid": .string("Hello")
@@ -827,8 +818,8 @@ class ViewModelFactoryTests: TestCase {
         )
 
         // fallbackHeader should be skipped; the full-width image should be detected
-        expect(root.firstItemIgnoresSafeAreaInfo).toNot(beNil())
-        expect(root.firstItemIgnoresSafeAreaInfo?.imageComponent).toNot(beNil())
+        expect(root.firstItemIsFullWidthMedia).to(beTrue())
+        expect(root.firstItemIsFullWidthImage).to(beTrue())
     }
 
     // MARK: - Helpers

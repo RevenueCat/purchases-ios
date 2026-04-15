@@ -53,7 +53,6 @@ struct StackComponentView: View {
     /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
-    private let safeAreaTopInsetOverride: CGFloat?
     private let showActivityIndicatorOverContent: Bool
 
     init(
@@ -61,14 +60,12 @@ struct StackComponentView: View {
         isScrollableByDefault: Bool = false,
         onDismiss: @escaping () -> Void,
         additionalPadding: EdgeInsets? = nil,
-        safeAreaTopInsetOverride: CGFloat? = nil,
         showActivityIndicatorOverContent: Bool = false
     ) {
         self.viewModel = viewModel
         self.isScrollableByDefault = isScrollableByDefault
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        self.safeAreaTopInsetOverride = safeAreaTopInsetOverride
         self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
     }
 
@@ -103,7 +100,6 @@ struct StackComponentView: View {
                     horizontalAlignment: horizontalAlignment,
                     distribution: distribution,
                     viewModels: self.viewModel.viewModels,
-                    safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
@@ -116,7 +112,6 @@ struct StackComponentView: View {
                     verticalAlignment: verticalAlignment,
                     distribution: distribution,
                     viewModels: self.viewModel.viewModels,
-                    safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
@@ -128,9 +123,7 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        ignoreSafeArea: self.viewModel.shouldApplySafeAreaInset,
-                        safeAreaInsetExemptChildIndex: self.viewModel.safeAreaInsetExemptChildIndex,
-                        safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
+                        pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
                         onDismiss: self.onDismiss
                     )
                 }
@@ -143,12 +136,6 @@ struct StackComponentView: View {
         .hidden(if: self.showActivityIndicatorOverContent)
         .padding(style.padding.extend(by: style.border?.width ?? 0))
         .padding(additionalPadding)
-        .padding(
-            .top,
-            self.viewModel.shouldApplySafeAreaInsetToEntireStack
-                ? (self.safeAreaTopInsetOverride ?? self.safeAreaInsets.top)
-                : 0
-        )
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
@@ -260,7 +247,6 @@ struct VerticalStack: View {
     let distribution: PaywallComponent.FlexDistribution
 
     let viewModels: [PaywallComponentViewModel]
-    let safeAreaTopInsetOverride: CGFloat?
     let onDismiss: () -> Void
 
     var body: some View {
@@ -278,7 +264,6 @@ struct VerticalStack: View {
             ) {
                 ComponentsView(
                     componentViewModels: self.viewModels,
-                    safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                     onDismiss: self.onDismiss
                 )
             }
@@ -288,7 +273,6 @@ struct VerticalStack: View {
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
                 componentViewModels: self.viewModels,
-                safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                 onDismiss: self.onDismiss
             )
         }
@@ -304,7 +288,6 @@ struct HorizontalStack: View {
     let distribution: PaywallComponent.FlexDistribution
 
     let viewModels: [PaywallComponentViewModel]
-    let safeAreaTopInsetOverride: CGFloat?
     let onDismiss: () -> Void
 
     var body: some View {
@@ -317,7 +300,6 @@ struct HorizontalStack: View {
             ) {
                 ComponentsView(
                     componentViewModels: self.viewModels,
-                    safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                     onDismiss: self.onDismiss
                 )
             }
@@ -327,7 +309,6 @@ struct HorizontalStack: View {
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
                 componentViewModels: self.viewModels,
-                safeAreaTopInsetOverride: self.safeAreaTopInsetOverride,
                 onDismiss: self.onDismiss
             )
         }
@@ -816,7 +797,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -828,7 +808,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
