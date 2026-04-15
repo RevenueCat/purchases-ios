@@ -155,8 +155,9 @@ jobs:
 
       - name: Parse job names
         id: parse
+        env:
+          COMMENT: ${{ github.event.comment.body }}
         run: |
-          COMMENT="${{ github.event.comment.body }}"
           # Extract everything after "@RCGitBot please test "
           JOBS_RAW="${COMMENT#@RCGitBot please test }"
           # Trim whitespace
