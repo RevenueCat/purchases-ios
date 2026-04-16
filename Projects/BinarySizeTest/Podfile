@@ -9,6 +9,7 @@ platform :ios, '13.0'
 target 'BinarySizeTest' do
   use_frameworks!
 
+  pod 'PurchasesCore', :git => 'git@github.com:RevenueCat/purchases-core.git', :branch => 'rust'
   pod 'RevenueCat', path: '../../'
   pod 'RevenueCatUI', path: '../../'
 end

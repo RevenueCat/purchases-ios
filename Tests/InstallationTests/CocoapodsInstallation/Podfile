@@ -2,6 +2,7 @@ target 'CocoapodsInstallation' do
   use_frameworks!
   platform :ios, '11.0'
 
+  pod 'PurchasesCore', :git => 'git@github.com:RevenueCat/purchases-core.git', :branch => 'rust'
   pod 'RevenueCat', path: '../../../'
   
   target 'CocoapodsInstallationTests' do
@@ -14,6 +15,7 @@ target 'CocoapodsRevenueCatUIInstallation' do
   use_frameworks!
   platform :ios, '11.0'
 
+  pod 'PurchasesCore', :git => 'git@github.com:RevenueCat/purchases-core.git', :branch => 'rust'
   pod 'RevenueCat', path: '../../../'
   pod 'RevenueCatUI', path: '../../../'
   
