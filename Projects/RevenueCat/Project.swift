@@ -24,6 +24,9 @@ let project = Project(
                     ]
                 )
             ],
+            dependencies: [
+                .purchasesCore
+            ],
             headers: .headers(
                 public: ["../../Sources/RevenueCat.h"]
             ),
@@ -48,6 +51,9 @@ let project = Project(
                         "../../Sources/LocalReceiptParsing/ReceiptParser-only-files/**/*.swift"
                     ]
                 )
+            ],
+            dependencies: [
+                .purchasesCore
             ],
             headers: .headers(
                 project: ["../../Sources/RevenueCat.h"]
