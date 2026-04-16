@@ -30,7 +30,7 @@ parameters:
     type: boolean
     default: false
   # Set via CircleCI API by the GitHub Action when a PR comment like
-  # "@RCGitBot please test <job1> <job2>, <job3>" is posted.
+  # "@RCGitBot please test <job1> <job2> <job3>" is posted.
   requested_jobs:
     type: string
     default: ""

@@ -4,7 +4,7 @@ set -euo pipefail
 REQUESTED_JOBS="$1"
 CONFIG=".circleci/default_config.yml"
 
-JOBS=$(echo "$REQUESTED_JOBS" | tr ',' ' ' | xargs)
+JOBS=$(echo "$REQUESTED_JOBS" | xargs)
 
 ALLOWED="
   api-tests

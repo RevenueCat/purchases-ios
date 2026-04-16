@@ -166,9 +166,9 @@ jobs:
             echo "::error::No job name(s) provided"
             exit 1
           fi
-          # Validate: only alphanumeric, hyphens, underscores, spaces, and commas
-          if [[ ! "$JOBS_RAW" =~ ^[a-zA-Z0-9_[:space:],-]+$ ]]; then
-            echo "::error::Invalid input: $JOBS_RAW (only alphanumeric, hyphens, underscores, spaces, and commas allowed)"
+          # Validate: only alphanumeric, hyphens, underscores, and spaces
+          if [[ ! "$JOBS_RAW" =~ ^[a-zA-Z0-9_[:space:]-]+$ ]]; then
+            echo "::error::Invalid input: $JOBS_RAW (only alphanumeric, hyphens, underscores, and spaces allowed)"
             exit 1
           fi
           echo "job_names=$JOBS_RAW" >> "$GITHUB_OUTPUT"
