@@ -1298,7 +1298,7 @@ jobs:
       - run:
           name: Run e2e tests (production, app_store)
           command: |
-            bundle exec fastlane run_maestro_e2e_tests backend_environment:production store:app_store output_dir:test_output/production_app_store skip_slack_notification:true \
+            bundle exec fastlane run_maestro_e2e_tests_ios backend_environment:production store:app_store output_dir:test_output/production_app_store skip_slack_notification:true \
               && echo "0" > /tmp/test_exit_codes/production_app_store \
               || (echo "1" > /tmp/test_exit_codes/production_app_store && exit 1)
           no_output_timeout: 15m
@@ -1306,7 +1306,7 @@ jobs:
           name: Run e2e tests (load_shedder_us_east_1, app_store)
           when: always
           command: |
-            bundle exec fastlane run_maestro_e2e_tests backend_environment:load_shedder_us_east_1 store:app_store output_dir:test_output/load_shedder_us_east_1_app_store skip_slack_notification:true \
+            bundle exec fastlane run_maestro_e2e_tests_ios backend_environment:load_shedder_us_east_1 store:app_store output_dir:test_output/load_shedder_us_east_1_app_store skip_slack_notification:true \
               && echo "0" > /tmp/test_exit_codes/load_shedder_us_east_1_app_store \
               || (echo "1" > /tmp/test_exit_codes/load_shedder_us_east_1_app_store && exit 1)
           no_output_timeout: 15m
@@ -1314,7 +1314,7 @@ jobs:
           name: Run e2e tests (load_shedder_us_east_2, app_store)
           when: always
           command: |
-            bundle exec fastlane run_maestro_e2e_tests backend_environment:load_shedder_us_east_2 store:app_store output_dir:test_output/load_shedder_us_east_2_app_store skip_slack_notification:true \
+            bundle exec fastlane run_maestro_e2e_tests_ios backend_environment:load_shedder_us_east_2 store:app_store output_dir:test_output/load_shedder_us_east_2_app_store skip_slack_notification:true \
               && echo "0" > /tmp/test_exit_codes/load_shedder_us_east_2_app_store \
               || (echo "1" > /tmp/test_exit_codes/load_shedder_us_east_2_app_store && exit 1)
           no_output_timeout: 15m
@@ -1322,7 +1322,7 @@ jobs:
           name: Run e2e tests (fallback, app_store)
           when: always
           command: |
-            bundle exec fastlane run_maestro_e2e_tests backend_environment:fallback store:app_store output_dir:test_output/fallback_app_store skip_slack_notification:true \
+            bundle exec fastlane run_maestro_e2e_tests_ios backend_environment:fallback store:app_store output_dir:test_output/fallback_app_store skip_slack_notification:true \
               && echo "0" > /tmp/test_exit_codes/fallback_app_store \
               || (echo "1" > /tmp/test_exit_codes/fallback_app_store && exit 1)
           no_output_timeout: 15m
@@ -1336,7 +1336,7 @@ jobs:
           name: Run e2e tests (production, test_store)
           when: always
           command: |
-            bundle exec fastlane run_maestro_e2e_tests backend_environment:production store:test_store output_dir:test_output/production_test_store skip_slack_notification:true \
+            bundle exec fastlane run_maestro_e2e_tests_ios backend_environment:production store:test_store output_dir:test_output/production_test_store skip_slack_notification:true \
               && echo "0" > /tmp/test_exit_codes/production_test_store \
               || (echo "1" > /tmp/test_exit_codes/production_test_store && exit 1)
           no_output_timeout: 15m

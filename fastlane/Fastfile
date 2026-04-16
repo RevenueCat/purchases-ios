@@ -981,7 +981,7 @@ platform :ios do
   #
   # Note that currently the "test_store" store is only available in the production environment.
   desc "run_maestro_e2e_tests"
-  lane :run_maestro_e2e_tests do |options|
+  lane :run_maestro_e2e_tests_ios do |options|
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
     output_dir = options[:output_dir] || "test_output/maestro"
@@ -1083,15 +1083,10 @@ platform :ios do
 
       UI.message("Using flow directory: #{flow_dir}")
 
-      Fastlane::Actions::RunMaestroE2eTestsAction.run(
-        FastlaneCore::Configuration.create(
-          Fastlane::Actions::RunMaestroE2eTestsAction.available_options,
-          {
-            flow_dir: flow_dir,
-            output_dir: output_dir,
-            environment_name: environment_name
-          }
-        )
+      run_maestro_e2e_tests(
+        flow_dir: flow_dir,
+        output_dir: output_dir,
+        environment_name: environment_name
       )
       success = true
     rescue => e
