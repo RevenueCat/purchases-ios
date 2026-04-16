@@ -51,7 +51,7 @@ parameters:
 jobs:
   setup-dynamic-config:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:current
     resource_class: small
     steps:
       - checkout
