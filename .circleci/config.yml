@@ -19,8 +19,7 @@ parameters:
         update_paywall_templates,
         record_paywall_screenshots,
         tuist,
-        deploy_rct_tester,
-        run-maestro-only
+        deploy_rct_tester
       ]
     default: default
   generate_snapshots:
@@ -2348,16 +2347,6 @@ workflows:
             - slack-secrets
       - integration-tests-all:
           context:
-            - slack-secrets
-
-  # TEMPORARY: isolated maestro e2e test workflow - remove after debugging
-  maestro-only:
-    when:
-      equal: [ run-maestro-only, << pipeline.parameters.action >> ]
-    jobs:
-      - run-all-maestro-e2e-tests:
-          context:
-            - e2e-tests
             - slack-secrets
 
   daily-maestro-e2e-tests:
