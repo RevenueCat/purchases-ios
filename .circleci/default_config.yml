@@ -13,14 +13,14 @@ parameters:
     type: string
     default: default
   generate_snapshots:
-    default: false
     type: boolean
+    default: false
   generate_revenuecatui_snapshots:
-    default: false
     type: boolean
+    default: false
   generate_swiftinterface:
-    default: false
     type: boolean
+    default: false
   requested_jobs:
     type: string
     default: ""
