@@ -446,6 +446,96 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         XCTAssertEqual(self.mockTracker.revenueData[0].placement, "show_time_placement")
     }
 
+    // MARK: - updateFullScreenContentDelegate
+
+    func testUpdateDelegateAfterLoadUpdatesWrapper() async throws {
+        let fakeAd = FakeFullScreenAd()
+        let context = FullScreenLoadContext(
+            placement: "test", adUnitID: "ca-app-pub-test", adFormat: .interstitial,
+            fullScreenContentDelegate: nil, paidEventHandler: nil
+        )
+
+        _ = try await self.rcAdMob.handleLoadOutcome(loadAd: { fakeAd }, context: context)
+
+        let spy = FullScreenContentDelegateSpy()
+        self.rcAdMob.updateFullScreenContentDelegate(on: fakeAd, newDelegate: spy)
+
+        let presentingAd = FakeFullScreenPresentingAd()
+        fakeAd.fullScreenContentDelegate?.adDidRecordImpression?(presentingAd)
+
+        XCTAssertTrue(spy.didRecordImpression)
+        XCTAssertEqual(self.mockTracker.displayedData.count, 1)
+    }
+
+    func testUpdateDelegateAfterDirectOverwriteRestoresWrapper() async throws {
+        let fakeAd = FakeFullScreenAd()
+        let context = FullScreenLoadContext(
+            placement: "test", adUnitID: "ca-app-pub-test", adFormat: .interstitial,
+            fullScreenContentDelegate: nil, paidEventHandler: nil
+        )
+
+        _ = try await self.rcAdMob.handleLoadOutcome(loadAd: { fakeAd }, context: context)
+
+        // Simulate developer overwriting the delegate directly
+        fakeAd.fullScreenContentDelegate = FullScreenContentDelegateSpy()
+
+        let spy = FullScreenContentDelegateSpy()
+        self.rcAdMob.updateFullScreenContentDelegate(on: fakeAd, newDelegate: spy)
+
+        let presentingAd = FakeFullScreenPresentingAd()
+        fakeAd.fullScreenContentDelegate?.adDidRecordImpression?(presentingAd)
+
+        XCTAssertTrue(spy.didRecordImpression)
+        XCTAssertTrue(fakeAd.fullScreenContentDelegate is RCAdMobFullScreenContentDelegate)
+        XCTAssertEqual(self.mockTracker.displayedData.count, 1)
+    }
+
+    func testUpdateDelegateWithNilClearsUserDelegate() async throws {
+        let fakeAd = FakeFullScreenAd()
+        let initialSpy = FullScreenContentDelegateSpy()
+        let context = FullScreenLoadContext(
+            placement: "test", adUnitID: "ca-app-pub-test", adFormat: .interstitial,
+            fullScreenContentDelegate: initialSpy, paidEventHandler: nil
+        )
+
+        _ = try await self.rcAdMob.handleLoadOutcome(loadAd: { fakeAd }, context: context)
+
+        self.rcAdMob.updateFullScreenContentDelegate(on: fakeAd, newDelegate: nil)
+
+        let presentingAd = FakeFullScreenPresentingAd()
+        fakeAd.fullScreenContentDelegate?.adDidRecordImpression?(presentingAd)
+
+        XCTAssertFalse(initialSpy.didRecordImpression)
+        XCTAssertEqual(self.mockTracker.displayedData.count, 1)
+    }
+
+    func testUpdateDelegateWithoutLoadAndTrackFallsBackToDirectAssignment() {
+        let fakeAd = FakeFullScreenAd()
+        let spy = FullScreenContentDelegateSpy()
+
+        self.rcAdMob.updateFullScreenContentDelegate(on: fakeAd, newDelegate: spy)
+
+        XCTAssertTrue(fakeAd.fullScreenContentDelegate === spy)
+    }
+
+    func testPaidEventHandlerStillWorksAfterDelegateUpdate() async throws {
+        let fakeAd = FakeFullScreenAd()
+        let context = FullScreenLoadContext(
+            placement: "original_placement", adUnitID: "ca-app-pub-test", adFormat: .rewarded,
+            fullScreenContentDelegate: nil, paidEventHandler: nil
+        )
+
+        _ = try await self.rcAdMob.handleLoadOutcome(loadAd: { fakeAd }, context: context)
+
+        let spy = FullScreenContentDelegateSpy()
+        self.rcAdMob.updateFullScreenContentDelegate(on: fakeAd, newDelegate: spy)
+
+        fakeAd.paidEventHandler?(Self.makeAdValuePlaceholder())
+
+        XCTAssertEqual(self.mockTracker.revenueData.count, 1)
+        XCTAssertEqual(self.mockTracker.revenueData[0].placement, "original_placement")
+    }
+
     // MARK: - Helpers
 
     private static func makeAdValuePlaceholder() -> GoogleMobileAds.AdValue {
