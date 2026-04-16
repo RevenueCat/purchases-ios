@@ -150,6 +150,7 @@ extension PresentedStackPartial: PresentedPartial {
         with other: PaywallComponent.PartialStackComponent?
     ) -> Self {
 
+        let name = other?.name ?? base?.name
         let visible = other?.visible ?? base?.visible
         let dimension = other?.dimension ?? base?.dimension
         let size = other?.size ?? base?.size
@@ -164,6 +165,7 @@ extension PresentedStackPartial: PresentedPartial {
         let badge = other?.badge ?? base?.badge
 
         return .init(
+            name: name,
             visible: visible,
             dimension: dimension,
             size: size,

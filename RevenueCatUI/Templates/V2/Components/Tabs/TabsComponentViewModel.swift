@@ -28,7 +28,9 @@ class TabsComponentViewModel {
     let controlStackViewModel: StackComponentViewModel
     let tabViewModels: [String: TabViewModel]
     let tabIds: [String]
+    let tabContextNamesById: [String: String]
     let defaultTabId: String?
+    let name: String?
 
     init(
         component: PaywallComponent.TabsComponent,
@@ -43,7 +45,13 @@ class TabsComponentViewModel {
             return (tabViewModel.tab.id, tabViewModel)
         })
         self.tabIds = tabViewModels.map(\.tab.id)
+        self.tabContextNamesById = Dictionary(
+            uniqueKeysWithValues: tabViewModels.compactMap { tabViewModel in
+                tabViewModel.name.map { (tabViewModel.tab.id, $0) }
+            }
+        )
         self.defaultTabId = component.defaultTabId
+        self.name = component.name
         self.uiConfigProvider = uiConfigProvider
 
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
@@ -97,6 +105,10 @@ class TabViewModel {
     let stackViewModel: StackComponentViewModel
     let defaultSelectedPackage: Package?
     let packages: [Package]
+
+    var name: String? {
+        return self.tab.name
+    }
 
     init(
         tab: PaywallComponent.TabsComponent.Tab,
