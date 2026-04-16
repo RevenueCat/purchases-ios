@@ -2466,6 +2466,9 @@ workflows:
       - spm-revenuecat-ui-watchos:
           context:
             - slack-secrets
+      - record-and-upload-paywalls-v1-snapshots:
+          context:
+            - slack-secrets
       - installation-tests-all-but-carthage:
           context:
             - slack-secrets
@@ -2528,6 +2531,7 @@ workflows:
             - spm-revenuecat-ui-ios-16
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
+            - record-and-upload-paywalls-v1-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
