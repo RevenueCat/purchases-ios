@@ -56,4 +56,7 @@ jobs:
 workflows:
   setup:
     jobs:
-      - setup-dynamic-config
+      - setup-dynamic-config:
+          filters:
+            tags:
+              only: /.*/
