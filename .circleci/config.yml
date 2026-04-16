@@ -62,7 +62,7 @@ jobs:
                 name: Generate requested jobs configuration
                 environment:
                   REQUESTED_JOBS: << pipeline.parameters.requested_jobs >>
-                command: bash .circleci/generate-requested-jobs-config.sh "$REQUESTED_JOBS"
+                command: node .circleci/generate-requested-jobs-config.js
             - continuation/continue:
                 configuration_path: /tmp/requested-jobs-config.yml
       - unless:
