@@ -15,7 +15,6 @@ ALLOWED="
   backend-integration-tests-other
   build-tv-watch-mac-and-visionos
   check-api-changes
-  danger
   docs-build
   emerge_binary_size_analysis
   emerge_purchases_ui_snapshot_tests
