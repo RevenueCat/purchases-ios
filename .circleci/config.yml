@@ -14,7 +14,6 @@ parameters:
       [
         default,
         bump,
-        run-manual-tests,
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
