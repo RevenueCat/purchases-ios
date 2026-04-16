@@ -60,7 +60,9 @@ jobs:
           steps:
             - run:
                 name: Generate requested jobs configuration
-                command: bash .circleci/generate-requested-jobs-config.sh "<< pipeline.parameters.requested_jobs >>"
+                environment:
+                  REQUESTED_JOBS: << pipeline.parameters.requested_jobs >>
+                command: bash .circleci/generate-requested-jobs-config.sh "$REQUESTED_JOBS"
             - continuation/continue:
                 configuration_path: /tmp/requested-jobs-config.yml
       - unless:
