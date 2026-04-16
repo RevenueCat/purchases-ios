@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -404,7 +404,6 @@ struct MultiTierPreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in },
             colorScheme: .light
         )

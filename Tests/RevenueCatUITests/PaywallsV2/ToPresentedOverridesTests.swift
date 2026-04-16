@@ -14,7 +14,7 @@
 
 import Nimble
 @_spi(Internal) import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2
@@ -355,6 +355,20 @@ class ToPresentedOverridesTests: TestCase {
                     .init(extendedConditions: [.unsupported], properties: .init())
                 ]
             )
+        )
+
+        expect(PaywallComponent.package(package).containsUnsupportedConditions()).to(beTrue())
+    }
+
+    func testPackageWithUnsupportedConditionInOwnOverrides_ReturnsTrue() throws {
+        let package = PaywallComponent.PackageComponent(
+            packageID: "monthly",
+            isSelectedByDefault: false,
+            applePromoOfferProductCode: nil,
+            stack: .init(components: []),
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init(visible: false))
+            ]
         )
 
         expect(PaywallComponent.package(package).containsUnsupportedConditions()).to(beTrue())

@@ -14,7 +14,7 @@
 
 import Foundation
 
-public struct PaywallComponentsData: Codable, Equatable, Sendable {
+@_spi(Internal) public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
     public struct ComponentsConfig: Codable, Equatable, Sendable {
 
@@ -29,6 +29,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public struct PaywallComponentsConfig: Codable, Equatable, Sendable {
 
         public var stack: PaywallComponent.StackComponent
+        @_spi(Internal) public let header: PaywallComponent.HeaderComponent?
         public let stickyFooter: PaywallComponent.StickyFooterComponent?
         public var background: PaywallComponent.Background
 
@@ -37,7 +38,20 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
             stickyFooter: PaywallComponent.StickyFooterComponent?,
             background: PaywallComponent.Background
         ) {
+            self.header = nil
             self.stack = stack
+            self.stickyFooter = stickyFooter
+            self.background = background
+        }
+
+        @_spi(Internal) public init(
+            stack: PaywallComponent.StackComponent,
+            header: PaywallComponent.HeaderComponent?,
+            stickyFooter: PaywallComponent.StickyFooterComponent?,
+            background: PaywallComponent.Background
+        ) {
+            self.stack = stack
+            self.header = header
             self.stickyFooter = stickyFooter
             self.background = background
         }
@@ -137,7 +151,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
 }
 
-extension PaywallComponentsData {
+@_spi(Internal) extension PaywallComponentsData {
 
     // swiftlint:disable:next function_body_length
     public init(from decoder: Decoder) throws {
@@ -233,7 +247,7 @@ extension PaywallComponentsData {
 
 }
 
-extension PaywallComponentsData {
+@_spi(Internal) extension PaywallComponentsData {
 
     public struct EquatableError: Equatable, Sendable {
         let description: String

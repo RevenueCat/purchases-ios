@@ -12,7 +12,7 @@
 //  Created by Jay Shortway on 02/10/2024.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -261,7 +261,6 @@ fileprivate extension ButtonComponentViewModel {
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
-            firstItemIgnoresSafeAreaInfo: nil,
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),

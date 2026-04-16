@@ -368,7 +368,8 @@ extension PaywallComponent {
             }
             return false
         case .package(let component):
-            return component.stack.containsUnsupportedConditions()
+            return component.overrides?.hasUnsupportedCondition() == true ||
+                   component.stack.containsUnsupportedConditions()
         case .purchaseButton(let component):
             return component.stack.containsUnsupportedConditions()
         case .stickyFooter(let component):
@@ -387,6 +388,8 @@ extension PaywallComponent {
             return component.containsUnsupportedConditions()
         case .countdown(let component):
             return component.containsUnsupportedConditions()
+        case .fallbackHeader:
+            return false
         }
     }
 

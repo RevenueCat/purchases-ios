@@ -33,6 +33,7 @@ enum DualColorImageGenerator {
     static let redGreen = create(color1: .red, color2: .green)!
     static let blueGreen = create(color1: .blue, color2: .green)!
     static let purpleOrange = create(color1: .purple, color2: .orange)!
+    static let purpleOrangeWide = create(color1: .purple, color2: .orange, size: .init(width: 400, height: 200))!
     static let blackWhite = create(color1: .black, color2: .white)!
     // swiftlint:enable force_unwrapping
 

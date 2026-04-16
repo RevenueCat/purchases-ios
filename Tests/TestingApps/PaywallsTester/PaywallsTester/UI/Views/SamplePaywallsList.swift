@@ -7,7 +7,7 @@
 
 
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 #if DEBUG
 @_spi(Internal) @testable import RevenueCatUI
 #else
