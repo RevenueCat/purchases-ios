@@ -6,7 +6,7 @@ GIT
 
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: ca2b191e4584a46a5fa9ad4b418af0f56a338cd3
+  revision: d1e580865d34d9a50c7429d0316a6e75f4873d9d
   branch: pallares/maestro-retry
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
