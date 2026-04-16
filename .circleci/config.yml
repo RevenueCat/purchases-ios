@@ -6,7 +6,7 @@ orbs:
   continuation: circleci/continuation@1.1.0
 
 # Pipeline parameters accepted via the API / CircleCI UI.
-# All parameters declared here are implicitly forwarded to continue_config.yml.
+# All parameters declared here are implicitly forwarded to default_config.yml.
 parameters:
   action:
     type: enum
@@ -73,7 +73,7 @@ jobs:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
             - continuation/continue:
-                configuration_path: .circleci/continue_config.yml
+                configuration_path: .circleci/default_config.yml
 
 workflows:
   setup:
