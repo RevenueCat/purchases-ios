@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event.issue.pull_request &&
-      trim(github.event.comment.body) == '@RCGitBot please test' &&
+      github.event.comment.body == '@RCGitBot please test' &&
       github.repository == 'RevenueCat/purchases-ios'
 
     steps:
