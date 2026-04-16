@@ -1083,10 +1083,15 @@ platform :ios do
 
       UI.message("Using flow directory: #{flow_dir}")
 
-      run_maestro_e2e_tests(
-        flow_dir: flow_dir,
-        output_dir: output_dir,
-        environment_name: environment_name
+      Fastlane::Actions::RunMaestroE2eTestsAction.run(
+        FastlaneCore::Configuration.create(
+          Fastlane::Actions::RunMaestroE2eTestsAction.available_options,
+          {
+            flow_dir: flow_dir,
+            output_dir: output_dir,
+            environment_name: environment_name
+          }
+        )
       )
       success = true
     rescue => e
