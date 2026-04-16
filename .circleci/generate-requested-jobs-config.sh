@@ -24,9 +24,7 @@ ALLOWED="
   installation-tests-carthage
   integration-tests-all
   lint
-  loadshedder-integration-tests-old-major
   pod-lib-lint
-  record-and-push-paywall-template-screenshots
   revenuecat-admob-tests
   run-all-maestro-e2e-tests
   run-revenuecat-ui-ios-18-and-17
@@ -64,6 +62,7 @@ head -n "$WF_LINE" "$CONFIG" > /tmp/requested-jobs-config.yml
   for JOB in $JOBS; do
     echo "      - ${JOB}:"
     echo "          context:"
+    echo "            - e2e-tests"
     echo "            - slack-secrets"
   done
 } >> /tmp/requested-jobs-config.yml
