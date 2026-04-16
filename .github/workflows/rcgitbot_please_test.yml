@@ -126,7 +126,7 @@ jobs:
           gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions \
             -f content="$REACTION"
 
-  # Trigger CircleCI job(s) on-demand via "@RCGitBot please test <job1> <job2>, <job3>".
+  # Trigger CircleCI job(s) on-demand via "@RCGitBot please test <job1> <job2> <job3>".
   # Triggers a new CircleCI pipeline; the setup config generates a continuation
   # config containing only a workflow with the requested job(s).
   run-specific-jobs:
