@@ -24,12 +24,12 @@ let project = Project(
                     ]
                 )
             ],
-            dependencies: [
-                .purchasesCore
-            ],
             headers: .headers(
                 public: ["../../Sources/RevenueCat.h"]
             ),
+            dependencies: [
+                .purchasesCore
+            ],
             settings: .settings(
                 base: [
                     "APPLICATION_EXTENSION_API_ONLY": "YES"
@@ -52,12 +52,12 @@ let project = Project(
                     ]
                 )
             ],
-            dependencies: [
-                .purchasesCore
-            ],
             headers: .headers(
                 project: ["../../Sources/RevenueCat.h"]
             ),
+            dependencies: [
+                .purchasesCore
+            ],
             settings: .settings(
                 base: [
                     "APPLICATION_EXTENSION_API_ONLY": "YES",
