@@ -30,15 +30,15 @@ import Foundation
             public var description: String {
                 switch self {
                 case .inAppCheckout:
-                    "in_app_checkout"
+                    return "in_app_checkout"
                 case .webCheckout:
-                    "web_checkout"
+                    return "web_checkout"
                 case .webProductSelection:
-                    "web_product_selection"
+                    return "web_product_selection"
                 case .customWebCheckout:
-                    "custom_web_checkout"
+                    return "custom_web_checkout"
                 case .unknown:
-                    "unknown"
+                    return "unknown"
                 }
             }
 
