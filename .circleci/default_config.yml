@@ -21,6 +21,9 @@ parameters:
   generate_swiftinterface:
     default: false
     type: boolean
+  requested_jobs:
+    type: string
+    default: ""
   GHA_Event:
     type: string
     default: ""
