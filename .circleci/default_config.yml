@@ -80,6 +80,13 @@ aliases:
           - /^.*-customercenter.alpha.*/
       branches:
         ignore: /.*/
+  # TEMPORARY: for testing tag propagation through dynamic config. Remove before merging.
+  test-tags: &test-tags
+    filters:
+      tags:
+        only: /^test-tag-.*/
+      branches:
+        ignore: /.*/
   release-branches-and-main: &release-branches-and-main
     filters:
       tags:
@@ -2562,3 +2569,8 @@ workflows:
             - revenuecat/tag-current-branch
           <<: *release-branches
 
+  # TEMPORARY: for testing tag propagation through dynamic config. Remove before merging.
+  test-tag-workflow:
+    jobs:
+      - lint:
+          <<: *test-tags
