@@ -57,11 +57,11 @@ final class PurchaseHandler: ObservableObject {
 
     /// Whether a purchase is currently in progress
     @Published
-    fileprivate(set) var packageBeingPurchased: Package?
+    var packageBeingPurchased: Package?
 
     /// Whether a purchase or restore is currently in progress
     @Published
-    fileprivate(set) var actionTypeInProgress: ActionType?
+    var actionTypeInProgress: ActionType?
 
     /// Whether a purchase or restore is currently in progress
     var actionInProgress: Bool {
