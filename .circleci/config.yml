@@ -56,17 +56,12 @@ jobs:
     resource_class: small
     steps:
       - checkout
-      - run:
-          name: Determine pipeline configuration
-          command: |
-            REQUESTED_JOBS="<< pipeline.parameters.requested_jobs >>"
-
-            if [ -n "$REQUESTED_JOBS" ]; then
-              bash .circleci/generate-requested-jobs-config.sh "$REQUESTED_JOBS"
-            fi
       - when:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
+            - run:
+                name: Generate requested jobs configuration
+                command: bash .circleci/generate-requested-jobs-config.sh "<< pipeline.parameters.requested_jobs >>"
             - continuation/continue:
                 configuration_path: /tmp/requested-jobs-config.yml
       - unless:
