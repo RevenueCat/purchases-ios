@@ -21,7 +21,7 @@ env:
       true: ${MAESTRO_STORE == 'test_store'}
     commands:
       - takeScreenshot: "${SCREENSHOT_PREFIX} - Test Store Purchase Alert"
-      - assertVisible: "Test purchase"
+      - assertVisible: "Test Store Purchase"
       - tapOn:
           text: "Test valid purchase"
 

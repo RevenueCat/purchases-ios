@@ -49,26 +49,42 @@ struct DefaultPaywallPreviews: PreviewProvider {
         webCheckoutUrl: nil
     )
 
-    static var previews: some View {
-        DefaultPaywallView(
-            handler: .mock(),
-            offering: offering,
-            appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailProvider()
-        )
-        .background(Color.white)
-        .previewDisplayName("Fallback Paywall R/G")
+    @ViewBuilder
+    static var redGreen: some View {
 
-        DefaultPaywallView(
-            handler: .mock(),
-            offering: offering,
-            appName: "RevenueCat",
-            iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailProvider()
-        )
-        .background(Color.black)
-        .environment(\.colorScheme, .dark)
-        .previewDisplayName("Fallback Paywall R/G Dark")
+            DefaultPaywallView(
+                handler: .mock(),
+                offering: offering,
+                appName: "RevenueCat",
+                iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailProvider()
+            )
+            .background(Color.white)
+            .previewDisplayName("Fallback Paywall R/G")
 
+            DefaultPaywallView(
+                handler: .mock(),
+                offering: offering,
+                appName: "RevenueCat",
+                iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailProvider()
+            )
+            .background(Color.white)
+            .previewDisplayName("Fallback Paywall Spanish (Buttons only)")
+            .environment(\.locale, .init(identifier: "es-es"))
+
+            DefaultPaywallView(
+                handler: .mock(),
+                offering: offering,
+                appName: "RevenueCat",
+                iconDetailProvider: DualColorImageGenerator.redGreen.toAppIconDetailProvider()
+            )
+            .background(Color.black)
+            .environment(\.colorScheme, .dark)
+            .previewDisplayName("Fallback Paywall R/G Dark")
+
+    }
+
+    @ViewBuilder
+    static var blueGreen: some View {
         DefaultPaywallView(
             handler: .mock(),
             offering: offering,
@@ -87,7 +103,10 @@ struct DefaultPaywallPreviews: PreviewProvider {
         .background(Color.black)
         .environment(\.colorScheme, .dark)
         .previewDisplayName("Fallback Paywall B/G Dark")
+    }
 
+    @ViewBuilder
+    static var purpleOrange: some View {
         DefaultPaywallView(
             handler: .mock(),
             offering: offering,
@@ -106,7 +125,10 @@ struct DefaultPaywallPreviews: PreviewProvider {
         .background(Color.black)
         .environment(\.colorScheme, .dark)
         .previewDisplayName("Fallback Paywall P/O Dark")
+    }
 
+    @ViewBuilder
+    static var warningPaywall: some View {
         DefaultPaywallView(
             handler: .mock(),
             warning: .missingLocalization,
@@ -152,6 +174,13 @@ struct DefaultPaywallPreviews: PreviewProvider {
         .environment(\.colorScheme, .dark)
         .accentColor(.yellow)
         .previewDisplayName("Warning Paywall - no paywall Dark")
+    }
+
+    static var previews: some View {
+        redGreen
+        blueGreen
+        purpleOrange
+        warningPaywall
     }
 }
 

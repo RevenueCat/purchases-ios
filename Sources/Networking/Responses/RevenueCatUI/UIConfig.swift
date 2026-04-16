@@ -16,7 +16,7 @@ import Foundation
 
 #if !os(tvOS) // For Paywalls V2
 
-public struct UIConfig: Codable, Equatable, Sendable {
+@_spi(Internal) public struct UIConfig: Codable, Equatable, Sendable {
 
     public struct AppConfig: Codable, Equatable, Sendable {
 
@@ -197,7 +197,7 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
 #else
 
-public struct UIConfig: Codable, Equatable, Sendable {
+@_spi(Internal) public struct UIConfig: Codable, Equatable, Sendable {
 
 }
 

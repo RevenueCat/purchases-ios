@@ -42,10 +42,20 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
         fileManager: LargeItemCacheType = FileManager.default,
         applicationSupportDirectory: URL? = nil
     ) {
+        let directoryType: DirectoryHelper.DirectoryType
+        #if os(tvOS)
+        if applicationSupportDirectory != nil {
+            Logger.warn(CacheStrings.application_support_not_available_on_tvos)
+        }
+        directoryType = .cache
+        #else
+        directoryType = .applicationSupport(overrideURL: applicationSupportDirectory)
+        #endif
+
         self.cache = SynchronizedLargeItemCache(
             cache: fileManager,
             basePath: "local-transaction-metadata-\(apiKey)",
-            directoryType: .applicationSupport(overrideURL: applicationSupportDirectory)
+            directoryType: directoryType
         )
     }
 

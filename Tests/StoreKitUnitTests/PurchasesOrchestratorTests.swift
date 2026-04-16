@@ -51,7 +51,7 @@ protocol PurchasesOrchestratorTests {
 
     func testPurchaseWithDifferentProductDoesNotIncludePaywallData() async throws
 
-    func testPurchaseBeforePaywallEventDoesNotIncludePaywallData() async throws
+    func testCachedPaywallEventIsAttributedRegardlessOfEventCreationDate() async throws
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSyncsPaywallEvents() async throws

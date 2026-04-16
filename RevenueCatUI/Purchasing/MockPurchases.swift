@@ -20,7 +20,7 @@
 final class MockPurchases: PaywallPurchasesType {
 
     typealias CustomerInfoBlock = @Sendable () async throws -> CustomerInfo
-    typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
+    typealias PurchaseBlock = @Sendable (Package, PromotionalOffer?, PaywallEvent?) async throws -> PurchaseResultData
     typealias RestoreBlock = @Sendable () async throws -> CustomerInfo
     typealias TrackEventBlock = @Sendable (PaywallEvent) async -> Void
 
@@ -61,12 +61,15 @@ final class MockPurchases: PaywallPurchasesType {
         return try await self.customerInfoBlock()
     }
 
-    func purchase(package: Package) async throws -> PurchaseResultData {
-        return try await self.purchaseBlock(package)
-    }
+    private(set) var lastPurchasePaywallEvent: PaywallEvent?
 
-    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
-        return try await self.purchaseBlock(package)
+    func purchase(
+        package: Package,
+        promotionalOffer: PromotionalOffer?,
+        paywallEvent: PaywallEvent?
+    ) async throws -> PurchaseResultData {
+        self.lastPurchasePaywallEvent = paywallEvent
+        return try await self.purchaseBlock(package, promotionalOffer, paywallEvent)
     }
 
     func restorePurchases() async throws -> CustomerInfo {
@@ -77,10 +80,28 @@ final class MockPurchases: PaywallPurchasesType {
         await self.trackEventBlock(paywallEvent)
     }
 
-    private(set) var cachedPresentedOfferingContextByProductID: [String: PresentedOfferingContext] = [:]
+    struct CachedPurchaseData {
+        let presentedOfferingContext: PresentedOfferingContext
+        let paywallEvent: PaywallEvent?
+    }
 
-    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
-        self.cachedPresentedOfferingContextByProductID[productIdentifier] = context
+    private(set) var cachedPurchaseDataByProductID: [String: CachedPurchaseData] = [:]
+    private(set) var clearedProductIDs: [String] = []
+
+    func cachePurchaseData(
+        presentedOfferingContext: PresentedOfferingContext,
+        paywallEvent: PaywallEvent?,
+        productIdentifier: String
+    ) {
+        self.cachedPurchaseDataByProductID[productIdentifier] = CachedPurchaseData(
+            presentedOfferingContext: presentedOfferingContext,
+            paywallEvent: paywallEvent
+        )
+    }
+
+    func clearCachedPurchaseData(productIdentifier: String) {
+        self.cachedPurchaseDataByProductID.removeValue(forKey: productIdentifier)
+        self.clearedProductIDs.append(productIdentifier)
     }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -107,8 +128,10 @@ extension PaywallPurchasesType {
         purchase: @escaping (@escaping MockPurchases.PurchaseBlock) -> MockPurchases.PurchaseBlock,
         restore: @escaping (@escaping MockPurchases.RestoreBlock) -> MockPurchases.RestoreBlock
     ) -> PaywallPurchasesType {
-        return MockPurchases { package in
-            try await purchase(self.purchase(package:))(package)
+        return MockPurchases { package, promotionalOffer, paywallEvent in
+            try await purchase({ pkg, offer, event in
+                try await self.purchase(package: pkg, promotionalOffer: offer, paywallEvent: event)
+            })(package, promotionalOffer, paywallEvent)
         } restorePurchases: {
             try await restore(self.restorePurchases)()
         } trackEvent: { event in
@@ -122,8 +145,8 @@ extension PaywallPurchasesType {
     func map(
         trackEvent: @escaping (@escaping MockPurchases.TrackEventBlock) -> MockPurchases.TrackEventBlock
     ) -> PaywallPurchasesType {
-        return MockPurchases { package in
-            try await self.purchase(package: package)
+        return MockPurchases { package, promotionalOffer, paywallEvent in
+            try await self.purchase(package: package, promotionalOffer: promotionalOffer, paywallEvent: paywallEvent)
         } restorePurchases: {
             try await self.restorePurchases()
         } trackEvent: { event in

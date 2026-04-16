@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 8/27/24.
 // swiftlint:disable file_length
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2

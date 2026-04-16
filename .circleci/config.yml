@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.14.0
+  revenuecat: revenuecat/sdks-common-config@3.16.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -124,20 +124,6 @@ commands:
           channel: "feed-circleci-ios-failures"
           event: fail
           template: basic_fail_1
-
-  install-runtime:
-    parameters:
-      runtime-name:
-        type: string
-    steps:
-      - install-dependencies:
-          install_xcbeautify: false
-          install_xcodes: true
-      - run:
-          name: Install simulator
-          command: | # Print all available simulators and install required one
-            xcodes runtimes
-            sudo xcodes runtimes install "<< parameters.runtime-name >>"
 
   install-bundle-dependencies:
     parameters:
@@ -527,6 +513,9 @@ commands:
           name: Generate Tuist workspace
           command: |
             export PATH="$HOME/.local/share/mise/shims:$PATH"
+            # Skip external test/dev dependencies to speed up tuist install.
+            # No CI job currently needs them (tests run via SPM, not Tuist).
+            export TUIST_INCLUDE_TEST_DEPENDENCIES=false
             if [ -n "<< parameters.query >>" ]; then
               tuist install && tuist generate << parameters.query >> --no-open
             else
@@ -621,6 +610,35 @@ jobs:
           command: bundle exec fastlane run_api_tests
       - slack-notify-on-fail
 
+  revenuecat-admob-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "26.3"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatAdMob Release Build
+          command: cd AdapterSDKs/RevenueCatAdMob && swift build -c release
+          no_output_timeout: 30m
+      - run:
+          name: RevenueCatAdMob unit tests
+          command: bundle exec fastlane test_revenuecat_admob
+          no_output_timeout: 10m
+          environment:
+            DEVICE: iPhone 17,OS=26.2
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecat_admob
+      - store_test_results:
+          path: fastlane/test_output/revenuecat_admob/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
+      - slack-notify-on-fail
+
   spm-receipt-parser:
     executor:
       name: macos-executor
@@ -653,10 +671,6 @@ jobs:
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
-          version: "revenuecatui-15"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
           version: "revenuecatui-15"
       - compress_result_bundle:
           directory: fastlane/test_output
@@ -695,10 +709,6 @@ jobs:
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
-          version: "revenuecatui-16"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
           version: "revenuecatui-16"
       - compress_result_bundle:
           directory: fastlane/test_output
@@ -749,10 +759,6 @@ jobs:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-18"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
-          version: "revenuecatui-18"
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
       - store_artifacts:
@@ -784,15 +790,34 @@ jobs:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-17"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
-          version: "revenuecatui-17"
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output-revenuecatui-17
+      - slack-notify-on-fail
+
+  record-and-upload-paywalls-v1-snapshots:
+    executor:
+      name: macos-executor
+      xcode_version: "26.3"
+
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: Record V1 snapshots and upload to Emerge
+          command: bundle exec fastlane record_and_upload_v1_snapshots
+          no_output_timeout: 15m
+          environment:
+            DEVICE: iPhone 17,OS=26.2
+      - store_test_results:
+          path: fastlane/test_output/v1-snapshots/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: v1-snapshots
       - slack-notify-on-fail
 
   run-revenuecat-ui-ios-26:
@@ -820,10 +845,6 @@ jobs:
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
-          version: "revenuecatui-26"
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          job: "create_snapshots_repo_pr"
           version: "revenuecatui-26"
       - compress_result_bundle:
           directory: fastlane/test_output
@@ -1097,21 +1118,12 @@ jobs:
           no_output_timeout: 30m
 
       # Start iOS 14.5 runtime download in the background so it can proceed
-      # while iOS 15 tests run.
+      # while iOS 15 tests run. Includes timeout detection and retry logic
+      # to handle hangs during the "Installing Runtime" phase.
       - run:
           name: Start iOS 14.5 runtime installation (background)
           command: |
-            {
-              echo "=== Available runtimes ===" > /tmp/ios14_runtime_install.log
-              xcodes runtimes >> /tmp/ios14_runtime_install.log 2>&1
-              echo "=== Installing iOS 14.5 ===" >> /tmp/ios14_runtime_install.log
-              sudo xcodes runtimes install "iOS 14.5" >> /tmp/ios14_runtime_install.log 2>&1
-              if [ $? -eq 0 ]; then
-                touch /tmp/ios14_runtime_ready
-              else
-                touch /tmp/ios14_runtime_failed
-              fi
-            } &
+            scripts/install-ios-runtime.sh "iOS 14.5" &
             disown
             echo "Started iOS 14.5 runtime installation in background"
 
@@ -1149,27 +1161,8 @@ jobs:
       # === iOS 14 tests ===
       - run:
           name: Wait for iOS 14.5 runtime installation
-          command: |
-            MAX_WAIT=1800  # 30 minutes
-            ELAPSED=0
-            echo "Waiting for iOS 14.5 runtime installation to complete..."
-            while [ ! -f /tmp/ios14_runtime_ready ] && [ ! -f /tmp/ios14_runtime_failed ]; do
-              if [ $ELAPSED -ge $MAX_WAIT ]; then
-                echo "Timed out after ${MAX_WAIT}s waiting for iOS 14.5 runtime installation."
-                echo "Installation log:"
-                cat /tmp/ios14_runtime_install.log 2>/dev/null || echo "(no log found)"
-                exit 1
-              fi
-              sleep 10
-              ELAPSED=$((ELAPSED + 10))
-              echo "Still waiting... ${ELAPSED}s elapsed ($(date))"
-            done
-            if [ -f /tmp/ios14_runtime_failed ]; then
-              echo "iOS 14.5 runtime installation failed:"
-              cat /tmp/ios14_runtime_install.log
-              exit 1
-            fi
-            echo "iOS 14.5 runtime is ready"
+          command: scripts/wait-for-ios-runtime.sh
+          no_output_timeout: 30m
       - run:
           name: Run iOS 14 tests
           command: bundle exec fastlane test_ios skip_sk_tests:true
@@ -1709,26 +1702,6 @@ jobs:
           name: Run Danger
           command: bundle exec danger --verbose
 
-  tag-release-branch:
-    docker:
-      - image: cimg/ruby:3.2.0
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
-    steps:
-      - checkout
-      - revenuecat/setup-git-credentials
-      - revenuecat/trust-github-key
-      - install-rubydocker-dependencies
-      - run:
-          name: Check Release PR is approved
-          command: |
-            echo "Verifying that the release PR has been approved by an org member with write permissions."
-            echo "This check prevents tagging a release before the PR is properly reviewed."
-            bundle exec fastlane run validate_pr_approved
-      - run:
-          name: Tag branch
-          command: bundle exec fastlane tag_current_branch
-
   release-train:
     executor:
       name: macos-executor
@@ -1872,13 +1845,14 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - run:
           name: Fetch paywall-preview-resources
           command: bundle exec fastlane ios fetch_paywall_preview_resources
       - run:
           name: Clone paywall-rendering-validation repository
-          command: git clone https://github.com/RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
-      - revenuecat/setup-git-credentials
+          command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
       - run:
           name: Set GitHub token environment variable
           command: |
@@ -1908,7 +1882,6 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - revenuecat/install-public-api-diff
       - run:
           name: Generate PR branch swiftinterface
           command: |
@@ -1981,6 +1954,18 @@ jobs:
             git remote set-url origin git@github.com:RevenueCat/purchases-ios-spm.git
             git push origin
             git push --tags
+
+  deploy-to-purchases-ios-admob:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - checkout
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
+      - run:
+          name: Deploy RevenueCatAdMob to purchases-ios-admob
+          command: ci_scripts/deploy-admob-spm.sh "${CIRCLE_TAG}"
 
   bump-sdk-in-rc-mobile-app:
     docker:
@@ -2182,6 +2167,11 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - record-and-upload-paywalls-v1-snapshots:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
 
       # Installation Tests
       - installation-tests-all-but-carthage:
@@ -2202,6 +2192,11 @@ workflows:
           context:
             - slack-secrets
       - spm-receipt-parser:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - revenuecat-admob-tests:
           requires:
             - approve-full-tests
           context:
@@ -2253,10 +2248,12 @@ workflows:
             - spm-revenuecat-ui-ios-16
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
+            - record-and-upload-paywalls-v1-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
             - spm-receipt-parser
+            - revenuecat-admob-tests
             - deploy-purchase-tester
             - run-all-maestro-e2e-tests
             - docs-build
@@ -2274,6 +2271,10 @@ workflows:
           <<: *release-tags
       - deploy-to-spm:
           <<: *release-tags
+      - deploy-to-purchases-ios-admob:
+          requires:
+            - deploy-to-spm
+          <<: *release-tags
       - docs-deploy:
           <<: *release-tags
       - deploy-purchase-tester:
@@ -2283,6 +2284,7 @@ workflows:
           requires:
             - push-revenuecatui-pod
             - deploy-to-spm
+            - deploy-to-purchases-ios-admob
             - docs-deploy
             - deploy-purchase-tester
           <<: *release-tags
@@ -2295,7 +2297,7 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
-      - revenuecat/enable-auto-merge-release-pr:
+      - revenuecat/merge-release-pr:
           repo_name: purchases-ios
           requires:
             - make-release
@@ -2488,6 +2490,9 @@ workflows:
       - api-tests:
           context:
             - slack-secrets
+      - revenuecat-admob-tests:
+          context:
+            - slack-secrets
       - deploy-purchase-tester:
           dry_run: true
           context:
@@ -2541,6 +2546,7 @@ workflows:
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
+            - revenuecat-admob-tests
             - deploy-purchase-tester
             - emerge_binary_size_analysis
 
@@ -2557,13 +2563,13 @@ workflows:
             - release-checks
             - all-tests-succeeded
           <<: *release-branches
-      - tag-release-branch:
+      - revenuecat/tag-current-branch:
           requires:
             - approve-release
           <<: *release-branches
 
       - all-tasks-passed:
           requires:
-            - tag-release-branch
+            - revenuecat/tag-current-branch
           <<: *release-branches
 

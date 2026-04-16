@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if canImport(UIKit)

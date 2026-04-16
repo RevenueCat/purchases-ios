@@ -5,7 +5,7 @@
 //  Created by Nacho Soto on 7/27/23.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 #if DEBUG
 @testable import RevenueCatUI
 #else
@@ -141,7 +141,13 @@ struct APIKeyDashboardList: View {
 
             self.offerings = .success(
                 .init(
-                    sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
+                    sections: Array(offeringsBySection.keys).sorted {
+                        switch ($0.name, $1.name) {
+                        case (nil, _): return false
+                        case (_, nil): return true
+                        default: return $0.description < $1.description
+                        }
+                    },
                     offeringsBySection: offeringsBySection
                 )
             )
@@ -209,7 +215,7 @@ struct APIKeyDashboardList: View {
                                 #else
                                 OfferButton(offering: offering) {
                                     self.isLoadingPaywall = true
-                                    self.presentedPaywall = .init(offering: offering, mode: .default)
+                                    self.presentPaywallOffering = offering
                                 }
                                     #if !os(watchOS)
                                     .contextMenu {
@@ -263,6 +269,7 @@ struct APIKeyDashboardList: View {
         #endif
                 .presentPaywallIfNeededModifier(offering: $offeringToPresent)
                 .presentPaywall(offering: $presentPaywallOffering, onDismiss: { })
+                .customPaywallVariables(self.customVariables)
                 .onChange(of: offeringToPresent) { offering in
                     if offering != nil {
                         self.isLoadingPaywall = false

@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 1/27/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -35,7 +35,7 @@ class CarouselComponentViewModel {
         component: PaywallComponent.CarouselComponent,
         pageStackViewModels: [StackComponentViewModel],
         discardRules: Bool = false
-    ) throws {
+    ) {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component

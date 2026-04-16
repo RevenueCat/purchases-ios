@@ -33,6 +33,7 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
+    private let eventDispatcher: EventDispatcher
 
     /// Where responsibility for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
@@ -56,11 +57,11 @@ final class PurchaseHandler: ObservableObject {
 
     /// Whether a purchase is currently in progress
     @Published
-    fileprivate(set) var packageBeingPurchased: Package?
+    var packageBeingPurchased: Package?
 
     /// Whether a purchase or restore is currently in progress
     @Published
-    fileprivate(set) var actionTypeInProgress: ActionType?
+    var actionTypeInProgress: ActionType?
 
     /// Whether a purchase or restore is currently in progress
     var actionInProgress: Bool {
@@ -137,6 +138,7 @@ final class PurchaseHandler: ObservableObject {
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
+        eventDispatcher: EventDispatcher? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -145,6 +147,7 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
+        self.eventDispatcher = eventDispatcher ?? Self.backgroundEventDispatcher
         self.performPurchase = performPurchase
         self.performRestore = performRestore
 
@@ -269,16 +272,15 @@ extension PurchaseHandler {
         }
 
         self.startAction(.purchase)
-        self.trackPurchaseInitiated(package: package)
+        let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        if let paywallEvent { self.track(paywallEvent) }
 
         do {
             let result: PurchaseResultData
 
-            if let promotionalOffer {
-                result = try await self.purchases.purchase(package: package, promotionalOffer: promotionalOffer)
-            } else {
-                result = try await self.purchases.purchase(package: package)
-            }
+            result = try await self.purchases.purchase(package: package,
+                                                       promotionalOffer: promotionalOffer,
+                                                       paywallEvent: paywallEvent)
 
             if result.userCancelled {
                 self.trackCancelledPurchase(package: package)
@@ -320,16 +322,25 @@ extension PurchaseHandler {
         }
 
         self.startAction(.purchase)
-        self.trackPurchaseInitiated(package: package)
+        let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        if let paywallEvent { self.track(paywallEvent) }
+        let productIdentifier = package.storeProduct.productIdentifier
+        self.purchases.cachePurchaseData(
+            presentedOfferingContext: package.presentedOfferingContext,
+            paywallEvent: paywallEvent,
+            productIdentifier: productIdentifier
+        )
 
         let result = await externalPurchaseMethod(package)
 
         if result.userCancelled {
             self.trackCancelledPurchase(package: package)
+            self.purchases.clearCachedPurchaseData(productIdentifier: productIdentifier)
         }
 
         if let error = result.error {
             self.trackPurchaseError(package: package, error: error)
+            self.purchases.clearCachedPurchaseData(productIdentifier: productIdentifier)
             self.purchaseError = error
             throw error
         }
@@ -477,15 +488,12 @@ extension PurchaseHandler {
         return true
     }
 
-    /// Tracks a purchase initiated event.
-    /// - Parameters:
-    ///   - package: The package being purchased
-    /// - Returns: whether the event was tracked
-    @discardableResult
-    func trackPurchaseInitiated(package: Package) -> Bool {
+    /// Creates a purchase-initiated paywall event for the given package.
+    /// - Returns: the event, or `nil` if event data is unavailable.
+    func createPurchaseInitiatedEvent(package: Package) -> PaywallEvent? {
         guard let data = self.eventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
-            return false
+            return nil
         }
 
         let purchaseData = data.withPurchaseInfo(
@@ -494,13 +502,7 @@ extension PurchaseHandler {
             errorCode: nil,
             errorMessage: nil
         )
-        self.track(.purchaseInitiated(.init(), purchaseData))
-        self.purchases.cachePresentedOfferingContext(
-            package.presentedOfferingContext,
-            productIdentifier: package.storeProduct.productIdentifier
-        )
-
-        return true
+        return PaywallEvent.purchaseInitiated(.init(), purchaseData)
     }
 
     /// Tracks a purchase error event.
@@ -575,7 +577,8 @@ extension PurchaseHandler {
     ) -> Self {
         return .init(
             isConfigured: self.isConfigured,
-            purchases: self.purchases.map(purchase: purchase, restore: restore)
+            purchases: self.purchases.map(purchase: purchase, restore: restore),
+            eventDispatcher: self.eventDispatcher
         )
     }
 
@@ -584,7 +587,8 @@ extension PurchaseHandler {
     ) -> Self {
         return .init(
             isConfigured: self.isConfigured,
-            purchases: self.purchases.map(trackEvent: trackEvent)
+            purchases: self.purchases.map(trackEvent: trackEvent),
+            eventDispatcher: self.eventDispatcher
         )
     }
 
@@ -598,8 +602,26 @@ extension PurchaseHandler {
 private extension PurchaseHandler {
 
     func track(_ event: PaywallEvent) {
-        Task.detached(priority: .background) { [purchases = self.purchases] in
+        self.eventDispatcher { [purchases = self.purchases] in
             await purchases.track(paywallEvent: event)
+        }
+    }
+
+}
+
+// MARK: - Event Dispatching
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchaseHandler {
+
+    /// Closure that schedules async work for event tracking.
+    /// Production uses `Task.detached(priority: .background)`;
+    /// tests can inject `Task { }` to inherit the caller's priority.
+    typealias EventDispatcher = @Sendable (@Sendable @escaping () async -> Void) -> Void
+
+    static let backgroundEventDispatcher: EventDispatcher = { work in
+        Task.detached(priority: .background) {
+            await work()
         }
     }
 
@@ -630,11 +652,11 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         return info
     }
 
-    func purchase(package: Package) async throws -> PurchaseResultData {
-        throw ErrorCode.configurationError
-    }
-
-    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+    func purchase(
+        package: Package,
+        promotionalOffer: PromotionalOffer?,
+        paywallEvent: PaywallEvent?
+    ) async throws -> PurchaseResultData {
         throw ErrorCode.configurationError
     }
 
@@ -644,7 +666,11 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     func track(paywallEvent: PaywallEvent) async {}
 
-    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {}
+    func cachePurchaseData(presentedOfferingContext: PresentedOfferingContext,
+                           paywallEvent: PaywallEvent?,
+                           productIdentifier: String) {}
+
+    func clearCachedPurchaseData(productIdentifier: String) {}
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {}
@@ -769,6 +795,20 @@ extension EnvironmentValues {
     var purchaseInitiatedAction: PurchaseInitiatedAction? {
         get { self[PurchaseInitiatedActionKey.self] }
         set { self[PurchaseInitiatedActionKey.self] = newValue }
+    }
+}
+
+/// `EnvironmentKey` for storing the restore initiated interceptor action.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct RestoreInitiatedActionKey: EnvironmentKey {
+    static let defaultValue: RestoreInitiatedAction? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var restoreInitiatedAction: RestoreInitiatedAction? {
+        get { self[RestoreInitiatedActionKey.self] }
+        set { self[RestoreInitiatedActionKey.self] = newValue }
     }
 }
 

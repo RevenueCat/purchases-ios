@@ -11,10 +11,17 @@ var projects: [Path] = [
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",
-    "./Projects/RevenueCatTests",
     "./Projects/BinarySizeTest",
     "./Projects/RCTTester"
 ]
+
+// These projects depend on external packages (Nimble, SnapshotTesting, OHHTTPStubs, GoogleMobileAds).
+// Exclude them when TUIST_INCLUDE_TEST_DEPENDENCIES=false to allow skipping those downloads on CI.
+if Environment.includeTestDependencies {
+    projects.append("./Projects/RevenueCatTests")
+    projects.append("./Projects/RevenueCatAdMob")
+    projects.append("./Projects/AdMobIntegrationSample")
+}
 
 // Include RevenueCat/RevenueCatUI Tuist projects only when using local Xcode project dependencies.
 // In all other modes (localSwiftPackage, remoteSwiftPackage, remoteXcodeProject), the SPM package

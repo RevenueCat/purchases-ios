@@ -12,7 +12,7 @@
 //  Created by Mark Villacampa on 15/1/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -406,7 +406,7 @@ fileprivate extension TimelineComponentViewModel {
                     component: descriptionComponent
                 )
             }
-            return try TimelineItemViewModel(
+            return TimelineItemViewModel(
                 component: item,
                 title: try TextComponentViewModel(
                     localizationProvider: localizationProvider,
@@ -414,7 +414,7 @@ fileprivate extension TimelineComponentViewModel {
                     component: item.title
                 ),
                 description: description,
-                icon: try IconComponentViewModel(
+                icon: IconComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: item.icon
@@ -423,7 +423,7 @@ fileprivate extension TimelineComponentViewModel {
             )
         }
 
-        try self.init(
+        self.init(
             component: component,
             items: models,
             uiConfigProvider: uiConfigProvider

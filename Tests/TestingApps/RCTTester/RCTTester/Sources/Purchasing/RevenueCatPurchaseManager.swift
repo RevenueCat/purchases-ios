@@ -5,7 +5,9 @@
 
 import Foundation
 import RevenueCat
+#if !os(tvOS)
 import RevenueCatUI
+#endif
 
 /// Purchase manager for the standard RevenueCat integration mode.
 ///
@@ -19,10 +21,11 @@ final class RevenueCatPurchaseManager: PurchaseManager {
 
     // MARK: - PurchaseManager
 
-    /// Returns `nil` because RevenueCat handles purchases within paywalls.
+    #if !os(tvOS)
     var myAppPurchaseLogic: MyAppPurchaseLogic? {
         return nil
     }
+    #endif
 
     /// Purchases a package using RevenueCat's built-in purchase method.
     func purchase(package: Package) async -> PurchaseOperationResult {

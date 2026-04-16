@@ -18,3 +18,4 @@
 "Continue" = "teruskan";
 "Default_offer_details_with_intro_offer" = "Mulakan percubaan {{ sub_offer_duration }} anda, kemudian {{ total_price_and_per_month }}.";
 "Something went wrong" = "Ada sesuatu yang tidak kena";
+"Purchase" = "Beli";

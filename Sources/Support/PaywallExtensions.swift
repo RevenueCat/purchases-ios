@@ -157,10 +157,11 @@ private extension View {
                     $0.storeProduct.productIdentifier == product.id
                 }?.presentedOfferingContext
 
-                Purchases.shared.cachePresentedOfferingContext(
-                    offeringContext ?? .init(
+                Purchases.shared.cachePurchaseData(
+                    presentedOfferingContext: offeringContext ?? .init(
                         offeringIdentifier: offering.identifier
                     ),
+                    paywallEvent: nil,
                     productIdentifier: product.id
                 )
             }
