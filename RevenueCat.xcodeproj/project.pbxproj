@@ -1276,6 +1276,7 @@
 		B34D2AA0269606E400D88C3A /* IntroEligibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3DF6A4F269524080030D57C /* IntroEligibility.swift */; };
 		B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34D2AA526976FC700D88C3A /* ErrorCode.swift */; };
 		B35042C426CDB79A00905B95 /* Purchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35042C326CDB79A00905B95 /* Purchases.swift */; };
+		AA000003AABBCCDD00000003 /* NativeHttpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000004AABBCCDD00000004 /* NativeHttpClient.swift */; };
 		B35042C626CDD3B100905B95 /* PurchasesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */; };
 		B359DDF027EAA2B4003ABA54 /* MockDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B516F26D44E8D00BD2BD7 /* MockDateProvider.swift */; };
 		B35F9E0926B4BEED00095C3F /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35F9E0826B4BEED00095C3F /* String+Extensions.swift */; };
@@ -2818,6 +2819,7 @@
 		B34605EA279A766C0031CA74 /* OperationQueue+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OperationQueue+Extensions.swift"; sourceTree = "<group>"; };
 		B34D2AA526976FC700D88C3A /* ErrorCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorCode.swift; sourceTree = "<group>"; };
 		B35042C326CDB79A00905B95 /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
+		AA000004AABBCCDD00000004 /* NativeHttpClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeHttpClient.swift; sourceTree = "<group>"; };
 		B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDelegate.swift; sourceTree = "<group>"; };
 		B35F9E0826B4BEED00095C3F /* String+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
 		B36824BD268FBC5B00957E4C /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
@@ -6034,6 +6036,7 @@
 				887E7B582C13CD2C002977DE /* PurchasesAreCompletedBy.swift */,
 				4D2C7D0A2CC40A35002562BC /* PurchaseParams.swift */,
 				57FD7B1428DA4037009CA4E4 /* PurchasesType.swift */,
+				AA000004AABBCCDD00000004 /* NativeHttpClient.swift */,
 				B35042C326CDB79A00905B95 /* Purchases.swift */,
 				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
 				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
@@ -6246,6 +6249,9 @@
 			dependencies = (
 			);
 			name = RevenueCat;
+			packageProductDependencies = (
+				AA000002AABBCCDD00000002 /* PurchasesCore */,
+			);
 			productName = Purchases;
 			productReference = 2DC5621624EC63420031F69B /* RevenueCat.framework */;
 			productType = "com.apple.product-type.framework";
@@ -6555,6 +6561,7 @@
 				2D803F6126F144830069D717 /* XCRemoteSwiftPackageReference "nimble" */,
 				2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
 				57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				AA000001AABBCCDD00000001 /* XCRemoteSwiftPackageReference "purchases-core" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
@@ -7108,6 +7115,7 @@
 				16BCA36C2E4D9B5700B39E7F /* SimpleNetworkServiceType.swift in Sources */,
 				57EAE52D274468900060EB74 /* RawDataContainer.swift in Sources */,
 				B35042C426CDB79A00905B95 /* Purchases.swift in Sources */,
+				AA000003AABBCCDD00000003 /* NativeHttpClient.swift in Sources */,
 				16BCA3682E4D9B0C00B39E7F /* FileRepository.swift in Sources */,
 				2D1015DE275A57FC0086173F /* SubscriptionPeriod.swift in Sources */,
 				57C0BB6929F840BD00827807 /* FrameworkDisambiguation.swift in Sources */,
@@ -9713,6 +9721,14 @@
 				minimumVersion = 1.11.0;
 			};
 		};
+		AA000001AABBCCDD00000001 /* XCRemoteSwiftPackageReference "purchases-core" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:RevenueCat/purchases-core.git";
+			requirement = {
+				branch = rust;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -9815,6 +9831,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
+		};
+		AA000002AABBCCDD00000002 /* PurchasesCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA000001AABBCCDD00000001 /* XCRemoteSwiftPackageReference "purchases-core" */;
+			productName = PurchasesCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
