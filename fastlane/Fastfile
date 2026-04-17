@@ -1448,7 +1448,7 @@ platform :ios do
           base: base_branch,
           api_token: ENV["GITHUB_TOKEN"],
           head: branch_name,
-          labels: ["pr:other", "test"]
+          labels: ["pr:other", "pr:changelog_ignore", "test"]
         )
       end
     ensure
