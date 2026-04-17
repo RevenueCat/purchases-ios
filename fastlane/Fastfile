@@ -125,7 +125,8 @@ platform :ios do
       nil,
       nil,
       version,
-      filter_labels: ['pr:admob']
+      filter_labels: ['pr:admob'],
+      cross_repo_pr_reference: 'RevenueCat/purchases-ios'
     )
 
     changelog_path = File.join(Dir.tmpdir, 'CHANGELOG.admob.latest.md')
