@@ -2732,7 +2732,7 @@
 		887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PresentIfNeededTests.swift; sourceTree = "<group>"; };
 		887A62232C1D168B00E1A461 /* PurchaseCompletedHandlerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaseCompletedHandlerTests.swift; sourceTree = "<group>"; };
 		887A63212C1D174200E1A461 /* RevenueCatUITestsDev.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RevenueCatUITestsDev.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		887A63482C1D17A200E1A461 /* RevenueCatUIDev.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCatUIDev.xctestplan; path = RevenueCatUI/RevenueCatUIDev.xctestplan; sourceTree = SOURCE_ROOT; };
+		887A63482C1D17A200E1A461 /* RevenueCatUIDev.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCatUIDev.xctestplan; path = Tests/RevenueCatUITests/TestPlans/RevenueCatUIDev.xctestplan; sourceTree = SOURCE_ROOT; };
 		887E7B582C13CD2C002977DE /* PurchasesAreCompletedBy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesAreCompletedBy.swift; sourceTree = "<group>"; };
 		88A543DE2C37A45B0039C6A5 /* TemplatePackageSetting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TemplatePackageSetting.swift; path = RevenueCatUI/Views/TemplatePackageSetting.swift; sourceTree = SOURCE_ROOT; };
 		88A543E02C37A4820039C6A5 /* TemplateView+MultiTier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TemplateView+MultiTier.swift"; sourceTree = "<group>"; };
@@ -5742,6 +5742,7 @@
 				887A62192C1D168B00E1A461 /* CI-Snapshots.xctestplan */,
 				887A621A2C1D168B00E1A461 /* RevenueCatUI-UnitTests.xctestplan */,
 				887A621B2C1D168B00E1A461 /* RevenueCatUI.xctestplan */,
+				887A63482C1D17A200E1A461 /* RevenueCatUIDev.xctestplan */,
 			);
 			path = TestPlans;
 			sourceTree = "<group>";
@@ -5767,7 +5768,6 @@
 				887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */,
 				887A62232C1D168B00E1A461 /* PurchaseCompletedHandlerTests.swift */,
 				88AD4C472C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift */,
-				887A63482C1D17A200E1A461 /* RevenueCatUIDev.xctestplan */,
 			);
 			name = RevenueCatUITests;
 			path = Tests/RevenueCatUITests;
