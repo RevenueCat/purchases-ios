@@ -165,7 +165,8 @@ private extension CarouselTabSwitchTests {
         let tabControlContext = TabControlContext(
             controlStackViewModel: tabsViewModel.controlStackViewModel,
             tabIds: tabsViewModel.tabIds,
-            defaultTabId: tabsViewModel.defaultTabId
+            defaultTabId: tabsViewModel.defaultTabId,
+            name: nil
         )
 
         return (tabsViewModel, tab2CarouselVM, tabControlContext)
