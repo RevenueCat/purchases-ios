@@ -30,7 +30,7 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:RevenueCatUI/RevenueCatUIDev.xctestplan"
+            reference = "container:Tests/RevenueCatUITests/TestPlans/RevenueCatUIDev.xctestplan"
             default = "YES">
          </TestPlanReference>
       </TestPlans>
