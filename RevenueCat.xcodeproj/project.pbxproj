@@ -123,6 +123,11 @@
 		1D58A16C2ED59AD90086809D /* ConnectionErrorReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D58A16B2ED59AD90086809D /* ConnectionErrorReason.swift */; };
 		1D73D6612EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */; };
 		1D73D6622EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */; };
+		1D76F2532F921C8F00863AF8 /* ComponentInteractionData+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D76F2522F921C8F00863AF8 /* ComponentInteractionData+Factories.swift */; };
+		1D76F25A2F921CA100863AF8 /* PlanSelectionDefaultPackage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D76F2592F921CA100863AF8 /* PlanSelectionDefaultPackage.swift */; };
+		1D76F25C2F921D3500863AF8 /* PaywallEventTrackerTestDispatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D76F25B2F921D3500863AF8 /* PaywallEventTrackerTestDispatcher.swift */; };
+		1D76F25E2F921D7400863AF8 /* TierSelectorComponentInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D76F25D2F921D7400863AF8 /* TierSelectorComponentInteractionTests.swift */; };
+		1D76F2602F921DB800863AF8 /* ButtonComponentViewModelInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D76F25F2F921DB800863AF8 /* ButtonComponentViewModelInteractionTests.swift */; };
 		1DB9B2A72E57373900252D58 /* OfferingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DB9B2A62E57373600252D58 /* OfferingTests.swift */; };
 		1DCD7FD22F0E9E68009396DD /* DirectoryHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DCD7FD12F0E9E68009396DD /* DirectoryHelper.swift */; };
 		1DE37A102F61AE08009CA3AC /* CustomPaywallImpressionParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE37A0F2F61AE08009CA3AC /* CustomPaywallImpressionParams.swift */; };
@@ -1694,6 +1699,11 @@
 		1D291F712F154834008E4FDA /* CacheStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStrings.swift; sourceTree = "<group>"; };
 		1D58A16B2ED59AD90086809D /* ConnectionErrorReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionErrorReason.swift; sourceTree = "<group>"; };
 		1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockHTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
+		1D76F2522F921C8F00863AF8 /* ComponentInteractionData+Factories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ComponentInteractionData+Factories.swift"; sourceTree = "<group>"; };
+		1D76F2592F921CA100863AF8 /* PlanSelectionDefaultPackage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSelectionDefaultPackage.swift; sourceTree = "<group>"; };
+		1D76F25B2F921D3500863AF8 /* PaywallEventTrackerTestDispatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventTrackerTestDispatcher.swift; sourceTree = "<group>"; };
+		1D76F25D2F921D7400863AF8 /* TierSelectorComponentInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TierSelectorComponentInteractionTests.swift; sourceTree = "<group>"; };
+		1D76F25F2F921DB800863AF8 /* ButtonComponentViewModelInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentViewModelInteractionTests.swift; sourceTree = "<group>"; };
 		1DB9B2A62E57373600252D58 /* OfferingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingTests.swift; sourceTree = "<group>"; };
 		1DCD7FD12F0E9E68009396DD /* DirectoryHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryHelper.swift; sourceTree = "<group>"; };
 		1DE37A0F2F61AE08009CA3AC /* CustomPaywallImpressionParams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywallImpressionParams.swift; sourceTree = "<group>"; };
@@ -2722,7 +2732,7 @@
 		887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PresentIfNeededTests.swift; sourceTree = "<group>"; };
 		887A62232C1D168B00E1A461 /* PurchaseCompletedHandlerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaseCompletedHandlerTests.swift; sourceTree = "<group>"; };
 		887A63212C1D174200E1A461 /* RevenueCatUITestsDev.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RevenueCatUITestsDev.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		887A63482C1D17A200E1A461 /* RevenueCatUIDev.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCatUIDev.xctestplan; path = RevenueCatUI/RevenueCatUIDev.xctestplan; sourceTree = SOURCE_ROOT; };
+		887A63482C1D17A200E1A461 /* RevenueCatUIDev.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCatUIDev.xctestplan; path = Tests/RevenueCatUITests/TestPlans/RevenueCatUIDev.xctestplan; sourceTree = SOURCE_ROOT; };
 		887E7B582C13CD2C002977DE /* PurchasesAreCompletedBy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesAreCompletedBy.swift; sourceTree = "<group>"; };
 		88A543DE2C37A45B0039C6A5 /* TemplatePackageSetting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TemplatePackageSetting.swift; path = RevenueCatUI/Views/TemplatePackageSetting.swift; sourceTree = SOURCE_ROOT; };
 		88A543E02C37A4820039C6A5 /* TemplateView+MultiTier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TemplateView+MultiTier.swift"; sourceTree = "<group>"; };
@@ -3370,6 +3380,7 @@
 				0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */,
 				2C74571E2CE7028A004ACE52 /* ScreenCondition.swift */,
 				AC06C294F30E7D8000000002 /* SelectedPackageId.swift */,
+				1D76F2592F921CA100863AF8 /* PlanSelectionDefaultPackage.swift */,
 				19B7F3F7BB1256FB17221052 /* CarouselState.swift */,
 			);
 			path = EnvironmentObjects;
@@ -3385,6 +3396,7 @@
 				E1C0A009BEEF0001CCDD0001 /* HeaderComponentTests.swift */,
 				03F446202D2F73210046129A /* StackComponentTests.swift */,
 				03C7305A2D35985500297FEC /* TextComponentTests.swift */,
+				1D76F25F2F921DB800863AF8 /* ButtonComponentViewModelInteractionTests.swift */,
 				03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */,
 				2C08B2E82CD40DBF0024857B /* ButtonComponentTests.swift */,
 				038213DA2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift */,
@@ -5425,6 +5437,7 @@
 			children = (
 				FD1C1B052DF9B94F00794B88 /* VirtualCurrenciesFixtures.swift */,
 				356979DF2CCFDA9C00EE6A9E /* CustomerInfoFixtures.swift */,
+				1D76F2522F921C8F00863AF8 /* ComponentInteractionData+Factories.swift */,
 				887A5FC92C1D037000E1A461 /* Errors */,
 				887A5FCD2C1D037000E1A461 /* IntroEligibility */,
 				887A5FCE2C1D037000E1A461 /* Constants.swift */,
@@ -5664,6 +5677,7 @@
 			children = (
 				169FF4EB2F4E014B00D2F8ED /* ColorComputationHelpersTests.swift */,
 				887A612E2C1D168B00E1A461 /* AsyncTestHelpers.swift */,
+				1D76F25B2F921D3500863AF8 /* PaywallEventTrackerTestDispatcher.swift */,
 				887A612F2C1D168B00E1A461 /* AvailabilityChecks.swift */,
 				887A61302C1D168B00E1A461 /* CurrentTestCaseTracker.swift */,
 				887A61312C1D168B00E1A461 /* DataExtensions.swift */,
@@ -5711,6 +5725,7 @@
 				887A62102C1D168B00E1A461 /* PaywallViewDynamicTypeTests.swift */,
 				887A62112C1D168B00E1A461 /* PaywallViewLocalizationTests.swift */,
 				887A62122C1D168B00E1A461 /* Template1ViewTests.swift */,
+				1D76F25D2F921D7400863AF8 /* TierSelectorComponentInteractionTests.swift */,
 				887A62132C1D168B00E1A461 /* Template2ViewTests.swift */,
 				887A62142C1D168B00E1A461 /* Template3ViewTests.swift */,
 				887A62152C1D168B00E1A461 /* Template4ViewTests.swift */,
@@ -5727,6 +5742,7 @@
 				887A62192C1D168B00E1A461 /* CI-Snapshots.xctestplan */,
 				887A621A2C1D168B00E1A461 /* RevenueCatUI-UnitTests.xctestplan */,
 				887A621B2C1D168B00E1A461 /* RevenueCatUI.xctestplan */,
+				887A63482C1D17A200E1A461 /* RevenueCatUIDev.xctestplan */,
 			);
 			path = TestPlans;
 			sourceTree = "<group>";
@@ -5752,7 +5768,6 @@
 				887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */,
 				887A62232C1D168B00E1A461 /* PurchaseCompletedHandlerTests.swift */,
 				88AD4C472C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift */,
-				887A63482C1D17A200E1A461 /* RevenueCatUIDev.xctestplan */,
 			);
 			name = RevenueCatUITests;
 			path = Tests/RevenueCatUITests;
@@ -7828,6 +7843,7 @@
 			files = (
 				88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */,
 				88B1BB042C813A3C001B7EE5 /* StackComponentViewModel.swift in Sources */,
+				1D76F25A2F921CA100863AF8 /* PlanSelectionDefaultPackage.swift in Sources */,
 				1ED4CA9F2CC25A5F0021AB8F /* SafariView.swift in Sources */,
 				887A60CC2C1D037000E1A461 /* PaywallFontProvider.swift in Sources */,
 				2C91068E2CE2481A00189565 /* SizeModifier.swift in Sources */,
@@ -8065,6 +8081,7 @@
 				5798C9712DF1985700F44400 /* PurchaseInformation+History.swift in Sources */,
 				5798C9722DF1985700F44400 /* DiscountsHandler.swift in Sources */,
 				5798C9732DF1985700F44400 /* PurchaseHistoryViewModel.swift in Sources */,
+				1D76F2532F921C8F00863AF8 /* ComponentInteractionData+Factories.swift in Sources */,
 				5798C9742DF1985700F44400 /* Transaction.swift in Sources */,
 				5798C9752DF1985700F44400 /* SubscriptionDetailView.swift in Sources */,
 				5798C9772DF1985700F44400 /* FallbackNoSubscriptionsView.swift in Sources */,
@@ -8151,10 +8168,13 @@
 				166BA7A32F84028600BB46C9 /* ControlInteractionLoggerTests.swift in Sources */,
 				169FF4EC2F4E014B00D2F8ED /* ColorComputationHelpersTests.swift in Sources */,
 				777FB4882C661C0600CD4749 /* SemanticVersionTests.swift in Sources */,
+				1D76F25C2F921D3500863AF8 /* PaywallEventTrackerTestDispatcher.swift in Sources */,
 				88AD4C482C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift in Sources */,
 				FD4253DE2F1DBD7E0073D2DE /* FileImageLoaderTests.swift in Sources */,
 				887A633D2C1D177800E1A461 /* Template2ViewTests.swift in Sources */,
 				887A633E2C1D177800E1A461 /* Template3ViewTests.swift in Sources */,
+				1D76F25E2F921D7400863AF8 /* TierSelectorComponentInteractionTests.swift in Sources */,
+				1D76F2602F921DB800863AF8 /* ButtonComponentViewModelInteractionTests.swift in Sources */,
 				755B63E52E7438D500919833 /* TestLogHandler.swift in Sources */,
 				030F918C2D55C9DC0085103F /* LocaleFinderTests.swift in Sources */,
 				1DEF759C2ECF13A600614CB2 /* EmailValidatorTests.swift in Sources */,
