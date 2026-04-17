@@ -160,13 +160,16 @@ struct LoadedTabsComponentView: View {
         }
     }
 
+    /// `tabControlContext` is nil in production (the view owns its context); tests may pass
+    /// an external instance to drive tab switches programmatically without UI interaction.
     init(viewModel: TabsComponentViewModel,
          parentPackageContext: PackageContext,
-         onDismiss: @escaping () -> Void) {
+         onDismiss: @escaping () -> Void,
+         tabControlContext: TabControlContext? = nil) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
 
-        self._tabControlContext = .init(wrappedValue: TabControlContext(
+        self._tabControlContext = .init(wrappedValue: tabControlContext ?? TabControlContext(
             controlStackViewModel: viewModel.controlStackViewModel,
             tabIds: viewModel.tabIds,
             defaultTabId: viewModel.defaultTabId,
@@ -246,6 +249,7 @@ struct LoadedTabsComponentView: View {
                 },
                 onDismiss: self.onDismiss
             )
+            .id(self.tabControlContext.selectedTabId)
             .environmentObject(self.tabControlContext)
             .environmentObject(tierPackageContext)
             .environment(\.planSelectionDefaultPackage, activeTabViewModel.defaultSelectedPackage)
