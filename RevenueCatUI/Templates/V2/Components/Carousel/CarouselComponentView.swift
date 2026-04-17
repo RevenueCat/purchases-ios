@@ -99,7 +99,9 @@ struct CarouselComponentView: View {
                     self.carouselHeight = newHeight
                 }
                 .onAppear {
+                    #if DEBUG
                     self.viewModel.onViewAppear?()
+                    #endif
                 }
                 // Style the carousel
                 .size(style.size)
