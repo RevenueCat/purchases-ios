@@ -76,17 +76,11 @@ const workflow = requestedJobs
       return `      - ${job}`;
     }
     const contextLines = contexts.map((ctx) => `            - ${ctx}`).join("\n");
-    return `      - ${job}:
-          context:
-${contextLines}`;
+    return `      - ${job}:\n          context:\n${contextLines}`;
   })
   .join("\n");
 
-const output = `${header}
-  on-demand-jobs:
-    jobs:
-${workflow}
-`;
+const output = `${header}\n  on-demand-jobs:\n    jobs:\n${workflow}\n`;
 
 fs.writeFileSync(OUTPUT, output);
 console.log(`Generated ${OUTPUT} with jobs: ${requestedJobs.join(", ")}`);
