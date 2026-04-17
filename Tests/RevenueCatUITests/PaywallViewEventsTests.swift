@@ -212,6 +212,7 @@ private extension BasePaywallViewEventsTests {
         case .exitOffer: self.exitOfferEventExpectation.fulfill()
         case .purchaseInitiated: break
         case .purchaseError: break
+        case .componentInteraction: break
         }
     }
 
@@ -260,6 +261,7 @@ private extension PaywallEvent {
         case exitOffer
         case purchaseInitiated
         case purchaseError
+        case componentInteraction
 
     }
 
@@ -271,6 +273,7 @@ private extension PaywallEvent {
         case .exitOffer: return .exitOffer
         case .purchaseInitiated: return .purchaseInitiated
         case .purchaseError: return .purchaseError
+        case .componentInteraction: return .componentInteraction
         }
     }
 

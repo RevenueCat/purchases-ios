@@ -20,16 +20,19 @@ import Foundation
     final class ButtonComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let name: String?
         public let action: Action
         public let stack: PaywallComponent.StackComponent
         public let transition: PaywallComponent.Transition?
 
         public init(
+            name: String? = nil,
             action: Action,
             stack: PaywallComponent.StackComponent,
             transition: PaywallComponent.Transition? = nil
         ) {
             self.type = .button
+            self.name = name
             self.action = action
             self.stack = stack
             self.transition = transition
@@ -37,6 +40,7 @@ import Foundation
 
         private enum CodingKeys: String, CodingKey {
             case type
+            case name
             case action
             case stack
             case transition
@@ -45,6 +49,7 @@ import Foundation
         required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.type = try container.decode(ComponentType.self, forKey: .type)
+            self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.action = try container.decode(Action.self, forKey: .action)
             self.stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
             self.transition = try container.decodeIfPresent(PaywallComponent.Transition.self, forKey: .transition)
@@ -53,13 +58,15 @@ import Foundation
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(type, forKey: .type)
+            try container.encodeIfPresent(name, forKey: .name)
             try container.encode(action, forKey: .action)
             try container.encode(stack, forKey: .stack)
-            try container.encode(transition, forKey: .transition)
+            try container.encodeIfPresent(transition, forKey: .transition)
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(name)
             hasher.combine(action)
             hasher.combine(stack)
             hasher.combine(transition)
@@ -67,6 +74,7 @@ import Foundation
 
         public static func == (lhs: ButtonComponent, rhs: ButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.name == rhs.name &&
                    lhs.action == rhs.action &&
                    lhs.stack == rhs.stack &&
                    lhs.transition == rhs.transition

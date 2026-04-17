@@ -191,6 +191,20 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
         expect(result) == 0
     }
 
+    func testFlushingPaywallComponentInteractionEvents() async throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .button,
+            componentName: nil,
+            componentValue: "restore_purchases"
+        )
+        try await self.purchases.track(
+            paywallEvent: .componentInteraction(.init(), self.eventData, interaction)
+        )
+
+        let result = try await self.purchases.flushPaywallEvents(count: 1)
+        expect(result) == 1
+    }
+
     func testRemembersEventsWhenReopeningApp() async throws {
         try await self.purchases.track(paywallEvent: .cancel(.init(), self.eventData))
         try await self.purchases.track(paywallEvent: .close(.init(), self.eventData))
