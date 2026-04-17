@@ -28,8 +28,9 @@ class CustomerInfoResponseHandler {
         isDebug: Bool = {
             #if DEBUG
             return true
-            #endif
+            #else
             return false
+            #endif
         }()
     ) {
         self.offlineCreator = offlineCreator

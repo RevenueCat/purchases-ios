@@ -33,6 +33,8 @@ struct ButtonComponentView: View {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @Environment(\.componentInteractionLogger) var componentInteractionLogger
+
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -90,6 +92,10 @@ struct ButtonComponentView: View {
     }
 
     private func performAction() async throws {
+        // Intentionally track before branching so unknown actions are surfaced as diagnostic telemetry.
+        // These should be excluded from product funnel analytics by filtering componentValue == "unknown".
+        self.trackButtonComponentInteraction()
+
         switch viewModel.action {
         case .restorePurchases:
             try await restorePurchases()
@@ -98,7 +104,12 @@ struct ButtonComponentView: View {
         case .navigateBack:
             onDismiss()
         case .unknown:
-            break
+            Logger.warning(
+                Strings.paywall_unknown_button_action_tracked_for_diagnostics(
+                    componentName: self.viewModel.component.name,
+                    actionValue: self.viewModel.action.paywallComponentInteractionValue
+                )
+            )
         case .sheet(let sheet):
             if let sheetStackViewModel = self.viewModel.sheetStackViewModel {
                 let sheetViewModel = SheetViewModel(
@@ -108,6 +119,14 @@ struct ButtonComponentView: View {
                 openSheet(sheetViewModel)
             }
         }
+    }
+
+    private func trackButtonComponentInteraction() {
+        self.componentInteractionLogger(.paywallNonPurchaseButtonAction(
+            componentName: self.viewModel.component.name,
+            componentValue: self.viewModel.action.paywallComponentInteractionValue,
+            componentURL: self.viewModel.action.paywallComponentInteractionURL
+        ))
     }
 
     private func restorePurchases() async throws {
@@ -243,6 +262,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
+        .environmentObject(PurchaseHandler.default())
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Default")
     }

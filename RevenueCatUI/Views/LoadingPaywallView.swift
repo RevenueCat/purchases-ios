@@ -91,7 +91,8 @@ private extension LoadingPaywallView {
             uniqueKeysWithValues: packages.map { ($0, .unknown) }
         )
     })
-    static let purchaseHandler: PurchaseHandler = .init(purchases: LoadingPaywallPurchases())
+    static let purchases = LoadingPaywallPurchases()
+    static let purchaseHandler: PurchaseHandler = .init(purchases: purchases, eventTracker: .init(purchases: purchases))
 
     static let offeringIdentifier = "offering"
     static let weeklyPackage = Package(
