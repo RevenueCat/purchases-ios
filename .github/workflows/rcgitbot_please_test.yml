@@ -158,8 +158,16 @@ jobs:
         env:
           COMMENT: ${{ github.event.comment.body }}
         run: |
-          # Extract everything after "@RCGitBot please test "
-          JOBS_RAW="${COMMENT#@RCGitBot please test }"
+          # GHA's startsWith() is case-insensitive, so lowercase the comment before stripping
+          # the prefix. Then use the length to slice the original, preserving job name case
+          # (e.g. backend-integration-tests-SK1).
+          PREFIX="@rcgitbot please test "
+          COMMENT_LOWER="$(echo "$COMMENT" | tr '[:upper:]' '[:lower:]')"
+          if [[ "$COMMENT_LOWER" != "$PREFIX"* ]]; then
+            echo "::error::Comment does not start with '@RCGitBot please test '"
+            exit 1
+          fi
+          JOBS_RAW="${COMMENT:${#PREFIX}}"
           # Trim whitespace
           JOBS_RAW=$(echo "$JOBS_RAW" | xargs)
           if [[ -z "$JOBS_RAW" ]]; then
