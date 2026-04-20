@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 8/8/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 protocol HTTPRequestPath {
@@ -88,6 +90,7 @@ extension HTTPRequest {
 
         case getCustomerInfo(appUserID: String)
         case getOfferings(appUserID: String)
+        case getWorkflow(appUserID: String, workflowID: String)
         case getIntroEligibility(appUserID: String)
         case logIn
         case postAttributionData(appUserID: String)
@@ -176,6 +179,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
+                .getWorkflow,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -202,6 +206,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
+                .getWorkflow,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -236,7 +241,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior:
             return true
-        case .getIntroEligibility,
+        case .getWorkflow,
+                .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,
@@ -258,7 +264,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior:
             return true
-        case .getOfferings,
+        case .getWorkflow,
+                .getOfferings,
                 .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
@@ -284,6 +291,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .getOfferings(appUserID):
             return "subscribers/\(Self.escape(appUserID))/offerings"
+
+        case let .getWorkflow(appUserID, workflowID):
+            return "subscribers/\(Self.escape(appUserID))/workflows/\(Self.escape(workflowID))"
 
         case let .getIntroEligibility(appUserID):
             return "subscribers/\(Self.escape(appUserID))/intro_eligibility"
@@ -341,6 +351,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getOfferings:
             return "get_offerings"
+
+        case .getWorkflow:
+            return "get_workflow"
 
         case .getIntroEligibility:
             return "get_intro_eligibility"

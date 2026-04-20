@@ -942,6 +942,17 @@ public extension Purchases {
         return self.offeringsManager.cachedOfferings
     }
 
+    @_spi(Internal)
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowResponse {
+        return try await Async.call { completion in
+            self.backend.offerings.getWorkflow(
+                appUserID: self.appUserID,
+                workflowID: offeringID,
+                completion: completion
+            )
+        }
+    }
+
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }

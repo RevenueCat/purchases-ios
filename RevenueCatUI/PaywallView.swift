@@ -404,6 +404,15 @@ private extension PaywallView {
             return try await Purchases.shared.offerings().current.orThrow(PaywallError.noCurrentOffering)
 
         case let .offeringIdentifier(identifier, presentedOfferingContext):
+            #if ENABLE_WORKFLOWS_ENDPOINT
+            if let offering = try? await self.loadOfferingFromWorkflow(
+                identifier: identifier,
+                presentedOfferingContext: presentedOfferingContext
+            ) {
+                return offering
+            }
+            #endif
+
             let offering = try await Purchases.shared.offerings()
                 .offering(identifier: identifier)
                 .orThrow(PaywallError.offeringNotFound(identifier: identifier))
@@ -415,6 +424,40 @@ private extension PaywallView {
             return offering
         }
     }
+
+    #if ENABLE_WORKFLOWS_ENDPOINT
+    func loadOfferingFromWorkflow(
+        identifier: String,
+        presentedOfferingContext: PresentedOfferingContext?
+    ) async throws -> Offering {
+        let workflowResponse = try await Purchases.shared.workflow(forOfferingIdentifier: identifier)
+        let workflow = workflowResponse.workflow
+
+        let initialStepID = workflow.initialStepId ?? workflow.steps.first?.id
+        guard let stepID = initialStepID,
+              let step = workflow.steps.first(where: { $0.id == stepID }),
+              let screenID = step.screenId,
+              let screen = workflow.screens[screenID] else {
+            throw PaywallError.offeringNotFound(identifier: identifier)
+        }
+
+        let baseOffering = try await Purchases.shared.offerings()
+            .offering(identifier: screen.offeringId)
+            .orThrow(PaywallError.offeringNotFound(identifier: screen.offeringId))
+
+        let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
+            screen: screen,
+            uiConfig: workflow.uiConfig
+        )
+
+        let offering = baseOffering.withPaywallComponents(paywallComponents)
+
+        if let presentedOfferingContext {
+            return offering.withPresentedOfferingContext(presentedOfferingContext)
+        }
+        return offering
+    }
+    #endif
 
 }
 
