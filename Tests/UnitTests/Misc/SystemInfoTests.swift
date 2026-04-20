@@ -130,8 +130,8 @@ class SystemInfoTests: TestCase {
         let info = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            apiKey: "api_key",
             sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true),
+            apiKey: "api_key",
             preferredLocalesProvider: .mock()
         )
 
@@ -142,8 +142,8 @@ class SystemInfoTests: TestCase {
         let info = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            apiKey: "api_key",
             sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: false),
+            apiKey: "api_key",
             preferredLocalesProvider: .mock()
         )
 
@@ -200,9 +200,9 @@ private extension SystemInfo {
 
         return SystemInfo(platformInfo: nil,
                           finishTransactions: false,
-                          apiKey: "api_key",
                           bundle: bundle,
                           sandboxEnvironmentDetector: sandboxDetector,
+                          apiKey: "api_key",
                           preferredLocalesProvider: .mock())
     }
 

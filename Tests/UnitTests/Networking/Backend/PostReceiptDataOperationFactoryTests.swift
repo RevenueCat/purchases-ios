@@ -27,9 +27,9 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         let systemInfo = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            apiKey: "api_key",
             storefrontProvider: MockStorefrontProvider(),
             storeKitVersion: .default,
+            apiKey: "api_key",
             responseVerificationMode: .disabled,
             isAppBackgrounded: false,
             preferredLocalesProvider: .mock()

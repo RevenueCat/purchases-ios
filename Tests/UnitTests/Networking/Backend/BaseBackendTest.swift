@@ -58,9 +58,9 @@ class BaseBackendTests: TestCase {
         self.systemInfo =  SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            apiKey: "api_key",
             storefrontProvider: MockStorefrontProvider(),
             storeKitVersion: storeKitVersion,
+            apiKey: "api_key",
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings,
             isAppBackgrounded: false,
