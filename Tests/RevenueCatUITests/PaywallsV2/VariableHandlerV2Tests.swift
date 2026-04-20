@@ -168,6 +168,99 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("US$"))
     }
 
+    func testProductCurrencySymbolSupportsPrefixSymbolsWithPunctuation() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 6.99,
+                currencyCode: "BOB",
+                localizedPriceString: "Bs.6.99",
+                productIdentifier: "com.revenuecat.product.currency_symbol_prefix_punctuation",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "es_BO")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("Bs."))
+    }
+
+    func testProductCurrencySymbolSupportsSuffixSymbols() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 6.99,
+                currencyCode: "SEK",
+                localizedPriceString: "6,99 kr",
+                productIdentifier: "com.revenuecat.product.currency_symbol_suffix",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "sv_SE")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("kr"))
+    }
+
+    func testProductCurrencySymbolFallsBackWhenDisplayedPriceHasNoDigits() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 0,
+                currencyCode: "USD",
+                localizedPriceString: "Free",
+                productIdentifier: "com.revenuecat.product.currency_symbol_free",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "en_US")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$"))
+    }
+
     func testProductPeriodly() {
         let result = variableHandler.processVariables(
             in: "{{ product.periodly }}",

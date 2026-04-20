@@ -562,7 +562,6 @@ extension VariablesV2 {
         // the formatter locale instead of the product's displayed currency token.
         return package.storeProduct.localizedPriceString.currencySymbolFromPriceString
             ?? package.storeProduct.priceFormatter?.currencySymbol
-            ?? package.storeProduct.currencyCode
             ?? ""
     }
 
@@ -1096,12 +1095,12 @@ private extension VariablesV2 {
 private extension String {
 
     var currencySymbolFromPriceString: String? {
-        let ignoredScalars = CharacterSet.decimalDigits
-            .union(.whitespacesAndNewlines)
-            .union(CharacterSet(charactersIn: ".,'’٬٫-−+()[]"))
+        guard let firstDigit = self.firstIndex(where: \.isNumber),
+              let lastDigit = self.lastIndex(where: \.isNumber) else {
+            return nil
+        }
 
-        let symbolScalars = self.unicodeScalars.filter { !ignoredScalars.contains($0) }
-        let symbol = String(String.UnicodeScalarView(symbolScalars))
+        let symbol = "\(self[..<firstDigit])\(self[self.index(after: lastDigit)...])"
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
         return symbol.isEmpty ? nil : symbol
