@@ -103,12 +103,7 @@ private extension GetWorkflowOperation {
     ) -> Result<WorkflowFetchResult, BackendError> {
         switch processingResult {
         case .success(let processed):
-            do {
-                let workflow = try PublishedWorkflow.create(with: processed.workflowData)
-                return .success(WorkflowFetchResult(workflow: workflow, enrolledVariants: processed.enrolledVariants))
-            } catch {
-                return .failure(BackendError.networkError(NetworkError.decoding(error, processed.workflowData)))
-            }
+            return .success(WorkflowFetchResult(workflow: processed.workflow, enrolledVariants: processed.enrolledVariants))
         case .failure(let processingError as WorkflowDetailProcessingError):
             switch processingError {
             case .cdnFetchFailed(let underlyingError):

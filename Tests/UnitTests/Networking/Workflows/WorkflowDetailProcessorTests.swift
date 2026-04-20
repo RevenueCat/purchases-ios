@@ -28,14 +28,14 @@ class WorkflowDetailProcessorTests: TestCase {
         self.fetchedUrls = []
         self.processor = WorkflowDetailProcessor(cdnFetch: { [weak self] url, _, completion in
             self?.fetchedUrls.append(url)
-            completion(.success((try? JSONSerialization.data(withJSONObject: ["id": "from_cdn"])) ?? Data()))
+            completion(.success(Self.minimalWorkflowData(id: "from_cdn")))
         })
     }
 
     func testInlineUnwrapsData() throws {
         let envelope: [String: Any] = [
             "action": "inline",
-            "data": ["id": "wf_inline"]
+            "data": Self.minimalWorkflowDict(id: "wf_inline")
         ]
         let data = try JSONSerialization.data(withJSONObject: envelope)
 
@@ -44,8 +44,7 @@ class WorkflowDetailProcessorTests: TestCase {
         }
 
         expect(result).to(beSuccess { value in
-            let parsed = try? JSONSerialization.jsonObject(with: value.workflowData) as? [String: Any]
-            expect(parsed?["id"] as? String) == "wf_inline"
+            expect(value.workflow.id) == "wf_inline"
             expect(value.enrolledVariants).to(beNil())
         })
     }
@@ -53,7 +52,7 @@ class WorkflowDetailProcessorTests: TestCase {
     func testInlineExtractsEnrolledVariants() throws {
         let envelope: [String: Any] = [
             "action": "inline",
-            "data": ["id": "wf1"],
+            "data": Self.minimalWorkflowDict(id: "wf1"),
             "enrolled_variants": ["a": "b"]
         ]
         let data = try JSONSerialization.data(withJSONObject: envelope)
@@ -64,6 +63,57 @@ class WorkflowDetailProcessorTests: TestCase {
 
         expect(result).to(beSuccess { value in
             expect(value.enrolledVariants) == ["a": "b"]
+        })
+    }
+
+    func testInlinePreservesFloatNumericPrecision() throws {
+        // Regression: prior JSONSerialization round-trip silently coerced 1.0 → 1 and
+        // mangled small exponents. AnyDecodable fields (paramValues, outputs, config, metadata)
+        // were affected — value as? Double returned nil if the value was re-encoded as Int.
+        let jsonString = """
+        {
+            "action": "inline",
+            "data": {
+                "id": "wf_floats",
+                "display_name": "Float Test",
+                "initial_step_id": "step_1",
+                "steps": {
+                    "step_1": {
+                        "id": "step_1",
+                        "type": "screen",
+                        "param_values": {"one_point_o": 1.0, "tiny": 1e-06}
+                    }
+                },
+                "screens": {},
+                "ui_config": {
+                    "app": {"colors": {}, "fonts": {}},
+                    "localizations": {},
+                    "variable_config": {
+                        "variable_compatibility_map": {},
+                        "function_compatibility_map": {}
+                    }
+                }
+            }
+        }
+        """
+        let data = Data(jsonString.utf8)
+
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beSuccess { value in
+            let step = value.workflow.steps["step_1"]
+            if case .double(let d) = step?.paramValues["onePointO"] {
+                expect(d) == 1.0
+            } else {
+                fail("Expected .double(1.0), got \(String(describing: step?.paramValues["onePointO"]))")
+            }
+            if case .double(let d) = step?.paramValues["tiny"] {
+                expect(d).to(beCloseTo(1e-06, within: 1e-20))
+            } else {
+                fail("Expected .double for tiny, got \(String(describing: step?.paramValues["tiny"]))")
+            }
         })
     }
 
@@ -81,8 +131,7 @@ class WorkflowDetailProcessorTests: TestCase {
 
         expect(self.fetchedUrls) == ["https://cdn.example/w.json"]
         expect(result).to(beSuccess { value in
-            let parsed = try? JSONSerialization.jsonObject(with: value.workflowData) as? [String: Any]
-            expect(parsed?["id"] as? String) == "from_cdn"
+            expect(value.workflow.id) == "from_cdn"
             expect(value.enrolledVariants) == ["x": "y"]
         })
     }
@@ -101,7 +150,7 @@ class WorkflowDetailProcessorTests: TestCase {
     func testUseCdnPassesThroughCdnHashMismatchFromFetch() throws {
         let processor = WorkflowDetailProcessor(cdnFetch: { _, _, completion in
             completion(.failure(WorkflowDetailProcessingError.cdnHashMismatch))
-        }, responseVerificationMode: .disabled)
+        })
 
         let envelope: [String: Any] = ["action": "use_cdn", "url": "https://x", "hash": "abc"]
         let data = try JSONSerialization.data(withJSONObject: envelope)
@@ -121,7 +170,7 @@ class WorkflowDetailProcessorTests: TestCase {
     func testUseCdnPropagatesIOErrorAsCdnFetchFailed() throws {
         let failingProcessor = WorkflowDetailProcessor(cdnFetch: { _, _, completion in
             completion(.failure(URLError(.notConnectedToInternet)))
-        }, responseVerificationMode: .disabled)
+        })
 
         let envelope: [String: Any] = ["action": "use_cdn", "url": "https://x"]
         let data = try JSONSerialization.data(withJSONObject: envelope)
@@ -164,8 +213,12 @@ class WorkflowDetailProcessorTests: TestCase {
     // MARK: - CDN hash verification
 
     func testUseCdnSucceedsWithValidHash() throws {
-        let cdnData = try JSONSerialization.data(withJSONObject: ["id": "from_cdn"])
+        let cdnData = Self.minimalWorkflowData(id: "wf_cdn")
         let expectedHash = cdnData.sha256String
+
+        let processor = WorkflowDetailProcessor(cdnFetch: { _, _, completion in
+            completion(.success(cdnData))
+        })
 
         let envelope: [String: Any] = [
             "action": "use_cdn",
@@ -175,12 +228,11 @@ class WorkflowDetailProcessorTests: TestCase {
         let data = try JSONSerialization.data(withJSONObject: envelope)
 
         let result = waitUntilValue { completed in
-            self.processor.process(data, completion: completed)
+            processor.process(data, completion: completed)
         }
 
         expect(result).to(beSuccess { value in
-            let parsed = try? JSONSerialization.jsonObject(with: value.workflowData) as? [String: Any]
-            expect(parsed?["id"] as? String) == "from_cdn"
+            expect(value.workflow.id) == "wf_cdn"
         })
     }
 
@@ -240,3 +292,40 @@ class WorkflowDetailProcessorTests: TestCase {
 
 }
 
+// MARK: - Fixtures
+
+private extension WorkflowDetailProcessorTests {
+
+    static let minimalUiConfig: [String: Any] = [
+        "app": [
+            "colors": [:] as [String: Any],
+            "fonts": [:] as [String: Any]
+        ] as [String: Any],
+        "localizations": [:] as [String: Any],
+        "variable_config": [
+            "variable_compatibility_map": [:] as [String: String],
+            "function_compatibility_map": [:] as [String: String]
+        ] as [String: Any]
+    ]
+
+    static func minimalWorkflowDict(id: String) -> [String: Any] {
+        return [
+            "id": id,
+            "display_name": "Test Workflow",
+            "initial_step_id": "step_1",
+            "steps": [
+                "step_1": [
+                    "id": "step_1",
+                    "type": "screen"
+                ] as [String: Any]
+            ] as [String: Any],
+            "screens": [:] as [String: Any],
+            "ui_config": minimalUiConfig
+        ]
+    }
+
+    static func minimalWorkflowData(id: String) -> Data {
+        return (try? JSONSerialization.data(withJSONObject: minimalWorkflowDict(id: id))) ?? Data()
+    }
+
+}

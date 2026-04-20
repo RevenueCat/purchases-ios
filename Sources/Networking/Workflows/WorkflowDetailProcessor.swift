@@ -35,7 +35,7 @@ enum WorkflowDetailProcessingError: Error {
 
 struct WorkflowDetailProcessingResult {
 
-    let workflowData: Data
+    let workflow: PublishedWorkflow
     let enrolledVariants: [String: String]?
 
 }
@@ -67,7 +67,7 @@ final class WorkflowDetailProcessor: Sendable {
 
         switch action {
         case .inline:
-            self.processInline(json: json, enrolledVariants: enrolledVariants, completion: completion)
+            self.processInline(rawData: data, enrolledVariants: enrolledVariants, completion: completion)
 
         case .useCdn:
             self.processCdn(json: json, enrolledVariants: enrolledVariants, completion: completion)
@@ -78,18 +78,18 @@ final class WorkflowDetailProcessor: Sendable {
         return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
     }
 
+    private struct InlineEnvelope: Decodable {
+        let data: PublishedWorkflow
+    }
+
     private func processInline(
-        json: [String: Any],
+        rawData: Data,
         enrolledVariants: [String: String]?,
         completion: @escaping (Result<WorkflowDetailProcessingResult, Error>) -> Void
     ) {
-        guard let inlineData = json["data"] else {
-            completion(.failure(WorkflowDetailProcessingError.missingInlineData))
-            return
-        }
         do {
-            let workflowData = try JSONSerialization.data(withJSONObject: inlineData)
-            completion(.success(.init(workflowData: workflowData, enrolledVariants: enrolledVariants)))
+            let envelope = try JSONDecoder.default.decode(InlineEnvelope.self, jsonData: rawData)
+            completion(.success(.init(workflow: envelope.data, enrolledVariants: enrolledVariants)))
         } catch {
             completion(.failure(error))
         }
@@ -108,12 +108,17 @@ final class WorkflowDetailProcessor: Sendable {
 
         self.cdnFetch(cdnUrl, expectedHash) { result in
             switch result {
-            case .success(let workflowData):
-                if let error = self.verifyCdnHashIfNeeded(workflowData, expectedHash: expectedHash) {
+            case .success(let cdnData):
+                if let error = self.verifyCdnHashIfNeeded(cdnData, expectedHash: expectedHash) {
                     completion(.failure(error))
                     return
                 }
-                completion(.success(.init(workflowData: workflowData, enrolledVariants: enrolledVariants)))
+                do {
+                    let workflow = try PublishedWorkflow.create(with: cdnData)
+                    completion(.success(.init(workflow: workflow, enrolledVariants: enrolledVariants)))
+                } catch {
+                    completion(.failure(error))
+                }
             case .failure(let error):
                 if case WorkflowDetailProcessingError.cdnHashMismatch = error {
                     completion(.failure(error))
