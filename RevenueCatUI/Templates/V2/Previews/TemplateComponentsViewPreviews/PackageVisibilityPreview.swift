@@ -166,7 +166,6 @@ private enum PackageVisibilityPreview {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in },
             colorScheme: .light,
             introEligibilityContext: .forPreview(packages: availablePackages, eligibility: eligibility)

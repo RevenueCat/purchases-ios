@@ -121,7 +121,8 @@ private enum PurchaseButtonInPackagePreview {
                         shape: .pill
                     ),
                     action: .inAppCheckout,
-                    method: .inAppCheckout
+                    method: .inAppCheckout,
+                    name: nil
                 ))
             ],
             dimension: .vertical(.center, .start),
@@ -226,7 +227,8 @@ private enum PurchaseButtonInPackagePreview {
                     shape: .pill
                 ),
                 action: .inAppCheckout,
-                method: .inAppCheckout
+                method: .inAppCheckout,
+                name: nil
             )),
             .text(orText),
             .package(.init(
@@ -346,7 +348,6 @@ struct PurchaseButtonInPackagePreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in },
             colorScheme: .light
         )

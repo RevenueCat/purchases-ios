@@ -239,7 +239,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
         await MainActor.run {
             let testView = Text("test")
                 .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterPromotionalOfferSuccess {
+                .onCustomerCenterPromotionalOfferSucceeded { (_, _, _) in
                     expectation.fulfill()
                 }
 

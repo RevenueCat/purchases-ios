@@ -114,7 +114,6 @@ final class PackageValidatorTests: TestCase {
                 )
             ),
             packageValidator: packageValidator,
-            firstItemIgnoresSafeAreaInfo: nil,
             purchaseButtonCollector: nil,
             offering: offering,
             localizationProvider: localizationProvider,
@@ -131,7 +130,6 @@ final class PackageValidatorTests: TestCase {
                 )
             ),
             packageValidator: packageValidator,
-            firstItemIgnoresSafeAreaInfo: nil,
             purchaseButtonCollector: nil,
             offering: offering,
             localizationProvider: localizationProvider,

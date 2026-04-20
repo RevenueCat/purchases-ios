@@ -327,19 +327,6 @@ public struct PaywallView: View {
             #endif
             // Show the actually V2 paywall for full screen
             case .fullScreen:
-                let dataForV1DefaultPaywall = DataForV1DefaultPaywall(
-                    offering: offering,
-                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
-                    paywall: paywall,
-                    template: PaywallData.defaultTemplate,
-                    mode: self.mode,
-                    fonts: fonts,
-                    displayCloseButton: self.displayCloseButton,
-                    introEligibility: checker,
-                    purchaseHandler: purchaseHandler,
-                    locale: purchaseHandler.preferredLocaleOverride ?? .current,
-                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-                )
 
                 PaywallsV2View(
                     paywallComponents: paywallComponents,
@@ -347,6 +334,7 @@ public struct PaywallView: View {
                     purchaseHandler: purchaseHandler,
                     introEligibilityChecker: checker,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                    displayCloseButton: self.displayCloseButton,
                     onDismiss: {
                         guard let onRequestedDismissal = self.onRequestedDismissal else {
                             self.dismiss()
@@ -354,7 +342,6 @@ public struct PaywallView: View {
                         }
                         onRequestedDismissal()
                     },
-                    fallbackContent: .paywallV1View(dataForV1DefaultPaywall),
                     failedToLoadFont: { fontConfig in
                         if Purchases.isConfigured {
                             Purchases.shared.failedToLoadFontWithConfig(fontConfig)
@@ -508,6 +495,9 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.paywallSource)
     private var paywallSource
 
+    @State
+    private var paywallSessionID: PaywallEvent.SessionID = .init()
+
     init(
         offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,
@@ -566,10 +556,14 @@ struct LoadedOfferingPaywallView: View {
             )
         } else {
             self.paywall
-                .createView(for: self.offering,
-                            template: self.template,
-                            configuration: configuration,
-                            introEligibility: self.introEligibility)
+                .createView(
+                    for: self.offering,
+                    template: self.template,
+                    configuration: configuration,
+                    introEligibility: self.introEligibility,
+                    mode: self.mode,
+                    purchaseHandler: purchaseHandler
+                )
         }
     }
 
@@ -586,9 +580,24 @@ struct LoadedOfferingPaywallView: View {
         )
         let view = paywallView(withConfig: configuration)
             .environmentObject(self.introEligibility)
+            .environment(
+                \.componentInteractionLogger,
+                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+            )
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
+            .onAppear {
+                if error != nil {
+                    self.purchaseHandler.trackPaywallImpression(self.createEventData(forDefaultPaywall: true))
+                } else {
+                    switch configuration {
+                    case .success:
+                        self.purchaseHandler.trackPaywallImpression(self.createEventData(forDefaultPaywall: false))
+                    case .failure:
+                        self.purchaseHandler.trackPaywallImpression(self.createEventData(forDefaultPaywall: true))
+                    }
+                }
+            }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
                 if hasPurchased {
@@ -633,11 +642,11 @@ struct LoadedOfferingPaywallView: View {
         }
     }
 
-    private func createEventData() -> PaywallEvent.Data {
+    private func createEventData(forDefaultPaywall: Bool) -> PaywallEvent.Data {
         return .init(
             offering: self.offering,
-            paywall: self.paywall,
-            sessionID: .init(),
+            paywall: forDefaultPaywall ? self.paywall.toDefaultPaywallData() : self.paywall,
+            sessionID: self.paywallSessionID,
             displayMode: self.mode,
             locale: .current,
             darkMode: self.colorScheme == .dark,
@@ -675,6 +684,21 @@ struct LoadedOfferingPaywallView: View {
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallData {
+    func toDefaultPaywallData() -> PaywallData {
+        PaywallData(
+            id: self.id,
+            templateName: PaywallData.defaultTemplate.rawValue,
+            config: self.config,
+            localization: self.localizedConfiguration ?? .init(title: "", callToAction: ""),
+            assetBaseURL: PaywallData.defaultTemplateBaseURL,
+            revision: PaywallData.revisionID,
+            locale: .current
+        )
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
