@@ -1967,6 +1967,20 @@ jobs:
           name: Deploy RevenueCatAdMob to purchases-ios-admob
           command: ci_scripts/deploy-admob-spm.sh "${CIRCLE_TAG}"
 
+  make-admob-release:
+    docker:
+      - image: cimg/ruby:3.2.0
+    resource_class: small
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - revenuecat/trust-github-key
+      - install-rubydocker-dependencies
+      - run:
+          name: Create GitHub release for purchases-ios-admob
+          command: bundle exec fastlane admob_github_release version:"${CIRCLE_TAG}"
+
   bump-sdk-in-rc-mobile-app:
     docker:
       - image: cimg/ruby:3.2.0
@@ -2275,6 +2289,10 @@ workflows:
           requires:
             - deploy-to-spm
           <<: *release-tags
+      - make-admob-release:
+          requires:
+            - deploy-to-purchases-ios-admob
+          <<: *release-tags
       - docs-deploy:
           <<: *release-tags
       - deploy-purchase-tester:
@@ -2284,7 +2302,6 @@ workflows:
           requires:
             - push-revenuecatui-pod
             - deploy-to-spm
-            - deploy-to-purchases-ios-admob
             - docs-deploy
             - deploy-purchase-tester
           <<: *release-tags
