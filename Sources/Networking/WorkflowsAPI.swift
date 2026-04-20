@@ -30,9 +30,12 @@ class WorkflowsAPI {
         )
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    private static let workflowsFileRepository = FileRepository(basePath: "RevenueCat/workflows")
+
     private static func defaultCdnFetch(httpClient: HTTPClient) -> WorkflowCdnFetch {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            return Self.fileCachedCdnFetch()
+            return Self.fileCachedCdnFetch(fileRepository: Self.workflowsFileRepository)
         }
         return Self.httpCdnFetch(httpClient: httpClient)
     }
