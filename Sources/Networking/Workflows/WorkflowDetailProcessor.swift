@@ -17,8 +17,9 @@ import Foundation
 ///
 /// - Parameters:
 ///   - cdnUrl: The CDN URL string to fetch from.
+///   - expectedHash: The SHA-256 hash the server advertised for this content, if any.
 ///   - completion: Called with the raw `Data` on success, or an `Error` on failure.
-typealias WorkflowCdnFetch = @Sendable (String, @escaping (Result<Data, Error>) -> Void) -> Void
+typealias WorkflowCdnFetch = @Sendable (String, String?, @escaping (Result<Data, Error>) -> Void) -> Void
 
 /// Typed errors thrown by `WorkflowDetailProcessor` so callers can distinguish failure modes.
 enum WorkflowDetailProcessingError: Error {
@@ -110,7 +111,7 @@ final class WorkflowDetailProcessor: @unchecked Sendable {
         }
         let expectedHash = json["hash"] as? String
 
-        self.cdnFetch(cdnUrl) { result in
+        self.cdnFetch(cdnUrl, expectedHash) { result in
             switch result {
             case .success(let workflowData):
                 if let error = self.verifyCdnHashIfNeeded(workflowData, expectedHash: expectedHash) {

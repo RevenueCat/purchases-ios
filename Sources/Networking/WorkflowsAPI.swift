@@ -42,16 +42,17 @@ class WorkflowsAPI {
     private static func fileCachedCdnFetch(
         fileRepository: FileRepositoryType = FileRepository.shared
     ) -> WorkflowCdnFetch {
-        return { cdnUrl, completion in
+        return { cdnUrl, hash, completion in
             guard let url = URL(string: cdnUrl) else {
                 completion(.failure(URLError(.badURL)))
                 return
             }
+            let checksum = hash.map { Checksum(algorithm: .sha256, value: $0) }
             Task {
                 do {
                     let cachedURL = try await fileRepository.generateOrGetCachedFileURL(
                         for: url,
-                        withChecksum: nil
+                        withChecksum: checksum
                     )
                     completion(.success(try Data(contentsOf: cachedURL)))
                 } catch {
@@ -62,7 +63,7 @@ class WorkflowsAPI {
     }
 
     private static func httpCdnFetch(httpClient: HTTPClient) -> WorkflowCdnFetch {
-        return { cdnUrl, completion in
+        return { cdnUrl, _, completion in
             guard let url = URL(string: cdnUrl) else {
                 completion(.failure(URLError(.badURL)))
                 return

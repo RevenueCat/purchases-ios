@@ -26,7 +26,7 @@ class WorkflowDetailProcessorTests: TestCase {
         try super.setUpWithError()
 
         self.fetchedUrls = []
-        self.processor = WorkflowDetailProcessor(cdnFetch: { [weak self] url, completion in
+        self.processor = WorkflowDetailProcessor(cdnFetch: { [weak self] url, _, completion in
             self?.fetchedUrls.append(url)
             completion(.success((try? JSONSerialization.data(withJSONObject: ["id": "from_cdn"])) ?? Data()))
         }, responseVerificationMode: .disabled)
@@ -99,7 +99,7 @@ class WorkflowDetailProcessorTests: TestCase {
     }
 
     func testUseCdnPropagatesIOErrorAsCdnFetchFailed() throws {
-        let failingProcessor = WorkflowDetailProcessor(cdnFetch: { _, completion in
+        let failingProcessor = WorkflowDetailProcessor(cdnFetch: { _, _, completion in
             completion(.failure(URLError(.notConnectedToInternet)))
         }, responseVerificationMode: .disabled)
 
@@ -312,7 +312,7 @@ private extension WorkflowDetailProcessorTests {
     func processorWithVerification(
         mode: Signing.ResponseVerificationMode
     ) -> WorkflowDetailProcessor {
-        return WorkflowDetailProcessor(cdnFetch: { [weak self] url, completion in
+        return WorkflowDetailProcessor(cdnFetch: { [weak self] url, _, completion in
             self?.fetchedUrls.append(url)
             completion(.success(
                 (try? JSONSerialization.data(withJSONObject: ["id": "from_cdn"])) ?? Data()
