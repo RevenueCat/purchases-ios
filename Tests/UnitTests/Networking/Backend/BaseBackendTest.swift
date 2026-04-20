@@ -60,7 +60,7 @@ class BaseBackendTests: TestCase {
             finishTransactions: true,
             storefrontProvider: MockStorefrontProvider(),
             storeKitVersion: storeKitVersion,
-            apiKey: "api_key",
+            apiKey: Self.apiKey,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings,
             isAppBackgrounded: false,

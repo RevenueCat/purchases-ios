@@ -53,7 +53,7 @@ class BackendSubscriberAttributesTests: TestCase {
         finishTransactions: true,
         storefrontProvider: MockStorefrontProvider(),
         storeKitVersion: .versionForTests,
-        apiKey: "api_key",
+        apiKey: BackendSubscriberAttributesTests.apiKey,
         responseVerificationMode: .disabled,
         isAppBackgrounded: false,
         preferredLocalesProvider: .mock(locales: ["en-US"])
