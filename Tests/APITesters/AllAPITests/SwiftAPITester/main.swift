@@ -72,7 +72,5 @@ func main() -> Int {
 
     checkDangerousSettingsAPI()
 
-    checkPurchasesInternalAPI()
-
     return 0
 }
