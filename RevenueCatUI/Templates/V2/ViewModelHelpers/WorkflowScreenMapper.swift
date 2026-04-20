@@ -17,7 +17,7 @@
 enum WorkflowScreenMapper {
 
     static func toPaywallComponents(
-        screen: WorkflowResponse.WorkflowScreen,
+        screen: WorkflowScreen,
         uiConfig: UIConfig
     ) -> Offering.PaywallComponents {
         let data = PaywallComponentsData(

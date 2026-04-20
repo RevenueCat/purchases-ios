@@ -19,18 +19,15 @@ class OfferingsAPI {
     typealias OfferSigningResponseHandler = Backend.ResponseHandler<PostOfferForSigningOperation.SigningData>
     typealias OfferingsResponseHandler = Backend.ResponseHandler<Offerings.Contents>
     typealias WebOfferingProductsResponseHandler = Backend.ResponseHandler<WebOfferingProductsResponse>
-    typealias WorkflowResponseHandler = Backend.ResponseHandler<WorkflowResponse>
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
     private let webOfferingProductsCallbacksCache: CallbackCache<WebOfferingProductsCallback>
-    private let workflowCallbacksCache: CallbackCache<WorkflowCallback>
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.offeringsCallbacksCache = .init()
         self.webOfferingProductsCallbacksCache = .init()
-        self.workflowCallbacksCache = .init()
     }
 
     func getOfferings(appUserID: String,
@@ -69,27 +66,6 @@ class OfferingsAPI {
 
         let webProductsCallback = WebOfferingProductsCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.webOfferingProductsCallbacksCache.add(webProductsCallback)
-
-        self.backendConfig.addCacheableOperation(
-            with: factory,
-            delay: .none,
-            cacheStatus: cacheStatus
-        )
-    }
-
-    func getWorkflow(appUserID: String,
-                     workflowID: String,
-                     completion: @escaping WorkflowResponseHandler) {
-        let config = GetWorkflowOperation.Configuration(httpClient: self.backendConfig.httpClient,
-                                                        appUserID: appUserID,
-                                                        workflowID: workflowID)
-        let factory = GetWorkflowOperation.createFactory(
-            configuration: config,
-            workflowCallbackCache: self.workflowCallbacksCache
-        )
-
-        let workflowCallback = WorkflowCallback(cacheKey: factory.cacheKey, completion: completion)
-        let cacheStatus = self.workflowCallbacksCache.add(workflowCallback)
 
         self.backendConfig.addCacheableOperation(
             with: factory,

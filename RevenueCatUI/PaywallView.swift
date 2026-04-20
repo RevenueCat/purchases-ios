@@ -430,12 +430,10 @@ private extension PaywallView {
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?
     ) async throws -> Offering {
-        let workflowResponse = try await Purchases.shared.workflow(forOfferingIdentifier: identifier)
-        let workflow = workflowResponse.workflow
+        let fetchResult = try await Purchases.shared.workflow(forOfferingIdentifier: identifier)
+        let workflow = fetchResult.workflow
 
-        let initialStepID = workflow.initialStepId ?? workflow.steps.first?.id
-        guard let stepID = initialStepID,
-              let step = workflow.steps.first(where: { $0.id == stepID }),
+        guard let step = workflow.steps[workflow.initialStepId],
               let screenID = step.screenId,
               let screen = workflow.screens[screenID] else {
             throw PaywallError.offeringNotFound(identifier: identifier)
@@ -443,7 +441,7 @@ private extension PaywallView {
 
         let baseOffering = try await Purchases.shared.offerings()
             .offering(identifier: screen.offeringId)
-            .orThrow(PaywallError.offeringNotFound(identifier: screen.offeringId))
+            .orThrow(PaywallError.offeringNotFound(identifier: screen.offeringId ?? identifier))
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,

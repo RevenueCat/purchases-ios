@@ -90,7 +90,6 @@ extension HTTPRequest {
 
         case getCustomerInfo(appUserID: String)
         case getOfferings(appUserID: String)
-        case getWorkflow(appUserID: String, workflowID: String)
         case getIntroEligibility(appUserID: String)
         case logIn
         case postAttributionData(appUserID: String)
@@ -104,6 +103,7 @@ extension HTTPRequest {
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
+        case getWorkflow(appUserID: String, workflowId: String)
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
@@ -237,12 +237,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
+                .getWorkflow,
                 .appHealthReport,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior:
             return true
-        case .getWorkflow,
-                .getIntroEligibility,
+        case .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,
@@ -292,9 +292,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getOfferings(appUserID):
             return "subscribers/\(Self.escape(appUserID))/offerings"
 
-        case let .getWorkflow(appUserID, workflowID):
-            return "subscribers/\(Self.escape(appUserID))/workflows/\(Self.escape(workflowID))"
-
         case let .getIntroEligibility(appUserID):
             return "subscribers/\(Self.escape(appUserID))/intro_eligibility"
 
@@ -336,6 +333,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .getVirtualCurrencies(appUserID):
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
+
+        case let .getWorkflow(appUserID, workflowId):
+            return "subscribers/\(Self.escape(appUserID))/workflows/\(Self.escape(workflowId))"
 
         case .postCreateTicket:
             return "customercenter/support/create-ticket"

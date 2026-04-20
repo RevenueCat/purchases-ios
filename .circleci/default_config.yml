@@ -21,6 +21,9 @@ parameters:
   generate_swiftinterface:
     type: boolean
     default: false
+  requested_jobs:
+    type: string
+    default: ""
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string

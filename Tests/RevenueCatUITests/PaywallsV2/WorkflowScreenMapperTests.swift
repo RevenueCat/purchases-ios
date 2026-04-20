@@ -75,7 +75,7 @@ private extension WorkflowScreenMapperTests {
         assetBaseURL: String = "https://assets.pawwalls.com",
         revision: Int = 3,
         defaultLocale: String = "en_US"
-    ) throws -> WorkflowResponse.WorkflowScreen {
+    ) throws -> RevenueCat.WorkflowScreen {
         let json = """
         {
             "offering_id": "\(offeringId)",
@@ -115,7 +115,7 @@ private extension WorkflowScreenMapperTests {
         let data = try XCTUnwrap(json.data(using: .utf8))
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(WorkflowResponse.WorkflowScreen.self, from: data)
+        return try decoder.decode(RevenueCat.WorkflowScreen.self, from: data)
     }
 
     static func makeUIConfig() throws -> UIConfig {

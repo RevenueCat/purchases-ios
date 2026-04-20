@@ -943,11 +943,12 @@ public extension Purchases {
     }
 
     @_spi(Internal)
-    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowResponse {
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowFetchResult {
         return try await Async.call { completion in
-            self.backend.offerings.getWorkflow(
+            self.backend.workflowsAPI.getWorkflow(
                 appUserID: self.appUserID,
-                workflowID: offeringID,
+                workflowId: offeringID,
+                isAppBackgrounded: false,
                 completion: completion
             )
         }

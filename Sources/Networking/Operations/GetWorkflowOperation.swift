@@ -8,43 +8,45 @@
 //      https://opensource.org/licenses/MIT
 //
 //  GetWorkflowOperation.swift
+//
+//  Created by RevenueCat.
 
 import Foundation
 
 final class GetWorkflowOperation: CacheableNetworkOperation {
 
-    struct Configuration: AppUserConfiguration, NetworkConfiguration {
-
-        let httpClient: HTTPClient
-        let appUserID: String
-        let workflowID: String
-
-    }
-
-    private let workflowCallbackCache: CallbackCache<WorkflowCallback>
-    private let configuration: Configuration
+    private let workflowDetailCallbackCache: CallbackCache<WorkflowDetailCallback>
+    private let configuration: AppUserConfiguration
+    private let workflowId: String
+    private let detailProcessor: WorkflowDetailProcessor
 
     static func createFactory(
-        configuration: Configuration,
-        workflowCallbackCache: CallbackCache<WorkflowCallback>
+        configuration: UserSpecificConfiguration,
+        workflowId: String,
+        detailProcessor: WorkflowDetailProcessor,
+        workflowDetailCallbackCache: CallbackCache<WorkflowDetailCallback>
     ) -> CacheableNetworkOperationFactory<GetWorkflowOperation> {
         return CacheableNetworkOperationFactory<GetWorkflowOperation>({ cacheKey in
-                    .init(
-                        configuration: configuration,
-                        workflowCallbackCache: workflowCallbackCache,
-                        cacheKey: cacheKey
-                    )
+                .init(
+                    configuration: configuration,
+                    workflowId: workflowId,
+                    detailProcessor: detailProcessor,
+                    workflowDetailCallbackCache: workflowDetailCallbackCache,
+                    cacheKey: cacheKey
+                )
             },
-            individualizedCacheKeyPart: "\(configuration.appUserID)_\(configuration.workflowID)")
+            individualizedCacheKeyPart: configuration.appUserID + "\n" + workflowId)
     }
 
-    private init(
-        configuration: Configuration,
-        workflowCallbackCache: CallbackCache<WorkflowCallback>,
-        cacheKey: String
-    ) {
+    private init(configuration: UserSpecificConfiguration,
+                 workflowId: String,
+                 detailProcessor: WorkflowDetailProcessor,
+                 workflowDetailCallbackCache: CallbackCache<WorkflowDetailCallback>,
+                 cacheKey: String) {
         self.configuration = configuration
-        self.workflowCallbackCache = workflowCallbackCache
+        self.workflowId = workflowId
+        self.detailProcessor = detailProcessor
+        self.workflowDetailCallbackCache = workflowDetailCallbackCache
 
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
@@ -62,29 +64,68 @@ private extension GetWorkflowOperation {
 
     func getWorkflow(completion: @escaping () -> Void) {
         let appUserID = self.configuration.appUserID
-        let workflowID = self.configuration.workflowID
 
         guard appUserID.isNotEmpty else {
-            self.workflowCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+            self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))
             }
             completion()
             return
         }
 
-        let request = HTTPRequest(method: .get, path: .getWorkflow(appUserID: appUserID, workflowID: workflowID))
+        let request = HTTPRequest(
+            method: .get,
+            path: .getWorkflow(appUserID: appUserID, workflowId: self.workflowId)
+        )
 
-        httpClient.perform(request) { (response: VerifiedHTTPResponse<WorkflowResponse>.Result) in
-            defer {
-                completion()
-            }
+        httpClient.perform(request) { (response: VerifiedHTTPResponse<Data>.Result) in
+            self.handleResponse(response, completion: completion)
+        }
+    }
 
-            self.workflowCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                callbackObject.completion(response
-                    .map(\.body)
-                    .mapError(BackendError.networkError)
-                )
+    func handleResponse(_ response: VerifiedHTTPResponse<Data>.Result, completion: @escaping () -> Void) {
+        switch response {
+        case .failure(let networkError):
+            defer { completion() }
+            self.distribute(.failure(BackendError.networkError(networkError)))
+
+        case .success(let verifiedResponse):
+            self.detailProcessor.process(verifiedResponse.body) { processingResult in
+                defer { completion() }
+                self.distribute(self.backendResult(from: processingResult, envelopeData: verifiedResponse.body))
             }
+        }
+    }
+
+    func backendResult(
+        from processingResult: Result<WorkflowDetailProcessingResult, Error>,
+        envelopeData: Data
+    ) -> Result<WorkflowFetchResult, BackendError> {
+        switch processingResult {
+        case .success(let processed):
+            return .success(WorkflowFetchResult(workflow: processed.workflow,
+                                                enrolledVariants: processed.enrolledVariants))
+        case .failure(let processingError as WorkflowDetailProcessingError):
+            switch processingError {
+            case .cdnFetchFailed(let underlyingError):
+                return .failure(.networkError(NetworkError.networkError(underlyingError)))
+            case .invalidEnvelopeJson,
+                    .unknownAction,
+                    .missingInlineData,
+                    .missingCdnUrl,
+                    .cdnHashMismatch:
+                return .failure(.networkError(NetworkError.decoding(processingError, envelopeData)))
+            }
+        case .failure(let error):
+            return .failure(.networkError(NetworkError.decoding(error, envelopeData)))
+        }
+    }
+
+    func distribute(_ result: Result<WorkflowFetchResult, BackendError>) {
+        self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(
+            withCacheable: self
+        ) { callbackObject in
+            callbackObject.completion(result)
         }
     }
 

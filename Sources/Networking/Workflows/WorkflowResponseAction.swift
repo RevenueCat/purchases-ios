@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WorkflowCallback.swift
+//  WorkflowResponseAction.swift
+//
+//  Created by RevenueCat.
 
 import Foundation
 
-struct WorkflowCallback: CacheKeyProviding {
-
-    let cacheKey: String
-    let completion: (Result<WorkflowResponse, BackendError>) -> Void
-
+enum WorkflowResponseAction: String {
+    case inline
+    case useCdn = "use_cdn"
 }
