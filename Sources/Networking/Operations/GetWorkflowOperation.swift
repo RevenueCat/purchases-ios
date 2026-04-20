@@ -113,7 +113,12 @@ private extension GetWorkflowOperation {
             switch processingError {
             case .cdnFetchFailed(let underlyingError):
                 return .failure(.networkError(NetworkError.networkError(underlyingError)))
-            case .invalidEnvelopeJson, .unknownAction, .missingInlineData, .missingCdnUrl, .missingCdnHash, .cdnHashMismatch:
+            case .invalidEnvelopeJson,
+                    .unknownAction,
+                    .missingInlineData,
+                    .missingCdnUrl,
+                    .missingCdnHash,
+                    .cdnHashMismatch:
                 return .failure(.networkError(NetworkError.decoding(processingError, envelopeData)))
             }
         case .failure(let error):
