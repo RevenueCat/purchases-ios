@@ -92,11 +92,7 @@ jobs:
                   # generate_*, GHA_*, etc.) are implicitly forwarded by CircleCI.
                   # run_deploy_paywalls_tester is declared only in default_config.yml,
                   # so it won't trigger the "Conflicting pipeline parameters" error.
-                  cat > /tmp/pipeline-parameters.json <<EOF
-                  {
-                    "run_deploy_paywalls_tester": ${DEPLOY_PAYWALLS_TESTER}
-                  }
-                  EOF
+                  echo "{\"run_deploy_paywalls_tester\": ${DEPLOY_PAYWALLS_TESTER}}" > /tmp/pipeline-parameters.json
                   echo "Generated /tmp/pipeline-parameters.json:"
                   cat /tmp/pipeline-parameters.json
             - continuation/continue:
