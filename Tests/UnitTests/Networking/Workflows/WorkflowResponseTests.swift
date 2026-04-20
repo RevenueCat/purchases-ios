@@ -133,6 +133,19 @@ class WorkflowResponseTests: TestCase {
 
         expect(action.type) == "step"
         expect(action.stepId) == "step_3"
+        expect(action.value).to(beNil())
+    }
+
+    func testDecodeWorkflowTriggerActionWithValue() throws {
+        let json = """
+        { "type": "step", "value": "step_override" }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action.type) == "step"
+        expect(action.stepId).to(beNil())
+        expect(action.value) == "step_override"
     }
 
     func testDecodeWorkflowTrigger() throws {
