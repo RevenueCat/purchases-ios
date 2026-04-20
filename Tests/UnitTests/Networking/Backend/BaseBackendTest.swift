@@ -132,8 +132,7 @@ extension BaseBackendTests {
             self.diagnosticsTracker = nil
         }
 
-        return MockHTTPClient(apiKey: Self.apiKey,
-                              systemInfo: self.systemInfo,
+        return MockHTTPClient(systemInfo: self.systemInfo,
                               eTagManager: eTagManager,
                               diagnosticsTracker: self.diagnosticsTracker,
                               sourceTestFile: file)

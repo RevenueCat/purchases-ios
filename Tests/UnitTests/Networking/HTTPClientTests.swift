@@ -75,8 +75,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
         _ systemInfo: SystemInfo,
         operationDispatcher: OperationDispatcher = MockOperationDispatcher()
     ) -> HTTPClient {
-        return HTTPClient(apiKey: self.apiKey,
-                          systemInfo: systemInfo,
+        return HTTPClient(systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
