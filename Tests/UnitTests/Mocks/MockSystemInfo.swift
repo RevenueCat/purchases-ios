@@ -27,16 +27,9 @@ class MockSystemInfo: SystemInfo {
                      apiKey: String = "mock_api_key",
                      apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
-                     dangerousSettings: DangerousSettings? = nil,
+                     dangerousSettings: DangerousSettings,
                      clock: ClockType = TestClock(),
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
-        let dangerousSettings = dangerousSettings ?? DangerousSettings(
-            autoSyncPurchases: true,
-            customEntitlementComputation: customEntitlementsComputation,
-            internalSettings: DangerousSettings.Internal.default,
-            uiPreviewMode: false
-        )
-
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
                   bundle: bundle,
@@ -53,7 +46,7 @@ class MockSystemInfo: SystemInfo {
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
                      customEntitlementsComputation: Bool = false,
-                     uiPreviewMode: Bool,
+                     uiPreviewMode: Bool = false,
                      bundle: Bundle = .main,
                      storeKitVersion: StoreKitVersion = .default,
                      apiKey: String = "mock_api_key",
