@@ -24,6 +24,7 @@ class Backend {
     let customerCenterConfig: CustomerCenterConfigAPI
     let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
     let virtualCurrenciesAPI: VirtualCurrenciesAPI
+    let adsAPI: AdsAPI
 
     private let config: BackendConfiguration
 
@@ -63,6 +64,7 @@ class Backend {
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
+        let adsAPI = AdsAPI(backendConfig: backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -73,7 +75,8 @@ class Backend {
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
-                  virtualCurrenciesAPI: virtualCurrenciesAPI)
+                  virtualCurrenciesAPI: virtualCurrenciesAPI,
+                  adsAPI: adsAPI)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -85,7 +88,8 @@ class Backend {
                   internalAPI: InternalAPI,
                   customerCenterConfig: CustomerCenterConfigAPI,
                   redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
-                  virtualCurrenciesAPI: VirtualCurrenciesAPI) {
+                  virtualCurrenciesAPI: VirtualCurrenciesAPI,
+                  adsAPI: AdsAPI) {
         self.config = backendConfig
 
         self.customer = customerAPI
@@ -97,6 +101,7 @@ class Backend {
         self.customerCenterConfig = customerCenterConfig
         self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
         self.virtualCurrenciesAPI = virtualCurrenciesAPI
+        self.adsAPI = adsAPI
     }
 
     func clearHTTPClientCaches() {
