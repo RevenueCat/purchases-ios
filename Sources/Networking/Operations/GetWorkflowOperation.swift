@@ -28,7 +28,7 @@ final class GetWorkflowOperation: CacheableNetworkOperation {
         configuration: Configuration,
         workflowCallbackCache: CallbackCache<WorkflowCallback>
     ) -> CacheableNetworkOperationFactory<GetWorkflowOperation> {
-        return .init({ cacheKey in
+        return CacheableNetworkOperationFactory<GetWorkflowOperation>({ cacheKey in
                     .init(
                         configuration: configuration,
                         workflowCallbackCache: workflowCallbackCache,
