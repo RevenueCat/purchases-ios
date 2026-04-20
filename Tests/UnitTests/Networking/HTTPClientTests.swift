@@ -35,8 +35,6 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
     // Something very specific on purpose to make sure we can differentiate it in tests from adjusted timeouts
     let defaultRequestTimeout: TimeInterval = 3.21
 
-    fileprivate let apiKey = "MockAPIKey"
-
     override func setUpWithError() throws {
         try super.setUpWithError()
 
