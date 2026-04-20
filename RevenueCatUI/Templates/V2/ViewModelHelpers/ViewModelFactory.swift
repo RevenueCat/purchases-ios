@@ -513,7 +513,8 @@ struct ViewModelFactory {
             )
         case .fallbackHeader:
             // fallbackHeader is filtered out in toStackViewModel and should never reach here.
-            fatalError("fallbackHeader should have been filtered before view model creation")
+            assertionFailure("fallbackHeader should have been filtered before view model creation")
+            throw TemplateError.unexpectedComponent
         }
     }
 

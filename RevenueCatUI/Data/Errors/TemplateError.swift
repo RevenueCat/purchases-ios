@@ -35,6 +35,9 @@ enum TemplateError: Error {
     /// No packages from the `PackageType` list could be found.
     case couldNotFindAnyPackages(expectedTypes: [String])
 
+    /// A component that should have been filtered out reached view model creation.
+    case unexpectedComponent
+
 }
 
 extension TemplateError: CustomNSError {
@@ -64,6 +67,9 @@ extension TemplateError: CustomNSError {
 
         case let .couldNotFindAnyPackages(expectedTypes):
             return "Couldn't find any requested packages: \(expectedTypes)"
+
+        case .unexpectedComponent:
+            return "A component that should have been filtered reached view model creation."
         }
     }
 
