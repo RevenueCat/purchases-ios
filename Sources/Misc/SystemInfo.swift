@@ -37,11 +37,6 @@ class SystemInfo {
     let storeKitVersion: StoreKitVersion
 
     /// The public API key used to configure the SDK.
-    ///
-    /// Stored here so that adapter modules importing the SDK with `@_spi(Internal)`
-    /// can read the configured key (e.g., for AdMob SSV `customRewardString`).
-    /// The key is already public plaintext in the app binary, so exposing it does not
-    /// introduce a security risk.
     let apiKey: String
 
     private var _apiKeyValidationResult: Configuration.APIKeyValidationResult
