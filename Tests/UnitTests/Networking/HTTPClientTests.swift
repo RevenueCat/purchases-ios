@@ -2196,6 +2196,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                apiKey: "api_key",
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .allServersDown)
@@ -2237,6 +2238,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                apiKey: "api_key",
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: nil)
@@ -2274,6 +2276,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                apiKey: "api_key",
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .init { _ in
