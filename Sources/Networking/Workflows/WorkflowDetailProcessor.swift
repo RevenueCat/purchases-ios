@@ -42,7 +42,8 @@ struct WorkflowDetailProcessingResult {
 
 /// Normalizes a successful workflow-detail HTTP payload:
 /// `inline` (unwraps `data`) or `use_cdn` (fetches JSON from CDN).
-final class WorkflowDetailProcessor: Sendable {
+// @unchecked because responseVerificationMode is set once at init and never mutated.
+final class WorkflowDetailProcessor: @unchecked Sendable {
 
     private let cdnFetch: WorkflowCdnFetch
     private let responseVerificationMode: Signing.ResponseVerificationMode
