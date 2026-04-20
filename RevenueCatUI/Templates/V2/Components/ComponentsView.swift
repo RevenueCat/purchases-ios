@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 11/17/24.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -22,37 +22,37 @@ struct ComponentsView: View {
     @Environment(\.safeAreaInsets)
     private var safeAreaInsets
 
+    @Environment(\.overlaidHeaderHeight)
+    private var overlaidHeaderHeight
+
     let componentViewModels: [PaywallComponentViewModel]
-    let applySafeAreaInsetForZStackChildren: Bool
+    /// When true, applies safe area top padding to all children except the first.
+    /// Used for ZStacks where the first child is a hero image that bleeds into the safe area.
+    private let pushNonFirstChildrenBelowSafeArea: Bool
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
 
     init(
         componentViewModels: [PaywallComponentViewModel],
-        ignoreSafeArea: Bool = false,
+        pushNonFirstChildrenBelowSafeArea: Bool = false,
         onDismiss: @escaping () -> Void,
         defaultPackage: Package? = nil
     ) {
         self.componentViewModels = componentViewModels
-        self.applySafeAreaInsetForZStackChildren = ignoreSafeArea
+        self.pushNonFirstChildrenBelowSafeArea = pushNonFirstChildrenBelowSafeArea
         self.onDismiss = onDismiss
         self.defaultPackage = defaultPackage
     }
 
     var body: some View {
-        self.layoutComponents(self.componentViewModels)
-    }
-
-    @ViewBuilder
-    func layoutComponents(_ componentViewModels: [PaywallComponentViewModel]) -> some View {
         ForEach(Array(componentViewModels.enumerated()), id: \.offset) { index, item in
             view(for: item)
-            // Applies a top padding to mimmic safe area insets
-            // This was designed to be applied to for ZStacks when
-            // they have a full width header image and are the first
-            // component in the paywall. This will keep the other
-            // components from going into the safe area.
-            .padding(.top, (self.applySafeAreaInsetForZStackChildren && index > 0) ? self.safeAreaInsets.top : 0)
+                .padding(
+                    .top,
+                    index > 0 && pushNonFirstChildrenBelowSafeArea
+                        ? max(safeAreaInsets.top, overlaidHeaderHeight)
+                        : 0
+                )
         }
     }
 
@@ -69,7 +69,10 @@ struct ComponentsView: View {
         case .icon(let viewModel):
             IconComponentView(viewModel: viewModel)
         case .stack(let viewModel):
-            StackComponentView(viewModel: viewModel, onDismiss: onDismiss)
+            StackComponentView(
+                viewModel: viewModel,
+                onDismiss: onDismiss
+            )
         case .button(let viewModel):
             ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
         case .package(let viewModel):

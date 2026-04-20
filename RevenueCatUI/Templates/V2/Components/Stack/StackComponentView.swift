@@ -11,7 +11,7 @@
 //
 //  Created by James Borthwick on 2024-08-20.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 // swiftlint:disable file_length
@@ -120,7 +120,7 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        ignoreSafeArea: self.viewModel.shouldApplySafeAreaInset,
+                        pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
                         onDismiss: self.onDismiss
                     )
                 }
@@ -295,7 +295,10 @@ struct HorizontalStack: View {
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing
             ) {
-                ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
+                ComponentsView(
+                    componentViewModels: self.viewModels,
+                    onDismiss: self.onDismiss
+                )
             }
         case .flex:
             FlexHStack(
@@ -791,7 +794,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -803,7 +805,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,

@@ -14,7 +14,7 @@
 import Foundation
 
 // swiftlint:disable missing_docs nesting
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     final class TimelineComponent: PaywallComponentBase {
 

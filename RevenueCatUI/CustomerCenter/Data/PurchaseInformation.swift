@@ -216,7 +216,9 @@ struct PurchaseInformation {
         let isSubscriptionType = transaction.isSubscription && transaction.store != .promotional
 
         self.title = Self.determineTitle(
+            entitlement: entitlement,
             subscribedProduct: subscribedProduct,
+            store: transaction.store,
             isSubscription: isSubscriptionType,
             localization: localization
         )
@@ -537,12 +539,18 @@ extension PurchaseInformation {
     }
 
     private static func determineTitle(
+        entitlement: EntitlementInfo?,
         subscribedProduct: StoreProduct?,
+        store: Store,
         isSubscription: Bool,
         localization: CustomerCenterConfigData.Localization
     ) -> String {
         if let localizedTitle = subscribedProduct?.localizedTitle, !localizedTitle.isEmpty {
             return localizedTitle
+        }
+
+        if store == .promotional, let identifier = entitlement?.identifier, !identifier.isEmpty {
+            return identifier
         }
 
         let purchaseTypeKey: CCLocalizedString = isSubscription ? .typeSubscription : .typeOneTimePurchase

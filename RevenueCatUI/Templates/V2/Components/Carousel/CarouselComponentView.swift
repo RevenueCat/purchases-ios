@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -43,6 +43,8 @@ struct CarouselComponentView: View {
     private var customVariables
     @Environment(\.selectedPackageId)
     private var selectedPackageId
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
 
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
@@ -81,7 +83,14 @@ struct CarouselComponentView: View {
                         pageControl: style.pageControl,
                         msTimePerSlide: style.autoAdvance?.msTimePerPage,
                         msTransitionTime: style.autoAdvance?.msTransitionTime,
-                        autoAdvanceTransitionType: style.autoAdvance?.transitionType
+                        autoAdvanceTransitionType: style.autoAdvance?.transitionType,
+                        onUserInitiatedPageIndexChange: { originPageIndex, destinationPageIndex in
+                            self.trackCarouselComponentInteraction(
+                                originPageIndex: originPageIndex,
+                                destinationPageIndex: destinationPageIndex,
+                                defaultPageIndex: style.initialPageIndex
+                            )
+                        }
                     ).clipped()
                 }
                 // Need to set height since geometry reader has no intrinsic height
@@ -100,6 +109,25 @@ struct CarouselComponentView: View {
                 .padding(style.margin)
             }
         }
+    }
+
+    private func trackCarouselComponentInteraction(
+        originPageIndex: Int,
+        destinationPageIndex: Int,
+        defaultPageIndex: Int
+    ) {
+        let destinationContextName = self.viewModel.pageContextName(at: destinationPageIndex)
+
+        _ = self.componentInteractionLogger(.paywallCarouselPageChange(
+            componentName: self.viewModel.componentName,
+            destinationPageIndex: destinationPageIndex,
+            context: .init(
+                originPageIndex: originPageIndex,
+                defaultPageIndex: defaultPageIndex,
+                originContextName: self.viewModel.pageContextName(at: originPageIndex),
+                destinationContextName: destinationContextName
+            )
+        ))
     }
 
 }
@@ -130,6 +158,8 @@ private struct CarouselView<Content: View>: View {
     private let cardWidth: CGFloat
 
     private let pageControl: DisplayablePageControl?
+
+    private let onUserInitiatedPageIndexChange: ((Int, Int) -> Void)?
 
     /// Optional auto-play timings (in milliseconds).
     private let msTimePerSlide: Int?
@@ -180,7 +210,8 @@ private struct CarouselView<Content: View>: View {
         /// If either of these is nil, auto‐play is off.
         msTimePerSlide: Int?,
         msTransitionTime: Int?,
-        autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType?
+        autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType?,
+        onUserInitiatedPageIndexChange: ((Int, Int) -> Void)? = nil
     ) {
         self.width = width
         self.pageAlignment = pageAlignment
@@ -190,6 +221,7 @@ private struct CarouselView<Content: View>: View {
         self.spacing = spacing
         self.cardWidth = cardWidth
         self.pageControl = pageControl
+        self.onUserInitiatedPageIndexChange = onUserInitiatedPageIndexChange
         self.msTimePerSlide = msTimePerSlide
         self.msTransitionTime = msTransitionTime
         self.autoAdvanceTransitionType = autoAdvanceTransitionType
@@ -435,6 +467,9 @@ private struct CarouselView<Content: View>: View {
 
     private func handleDragEnd(translation: CGFloat) {
         let threshold = cardWidth * 0.2
+        let originalPageIndexBefore: Int? = self.originalCount > 0
+            ? (self.loop ? self.index % self.originalCount : self.index)
+            : nil
 
         withAnimation(.easeInOut(duration: 0.25)) {
             self.dragOffset = 0
@@ -458,6 +493,19 @@ private struct CarouselView<Content: View>: View {
 
         // Pause auto-play for 10 seconds
         pauseAutoPlay(for: 10)
+
+        // `onUserInitiatedPageIndexChange` is only invoked from here so timer-driven auto-advance does not emit
+        // paywall_component_interacted events (see `startAutoPlayIfNeeded`).
+        guard self.isInitialized,
+              let originalPageIndexBefore,
+              self.originalCount > 0 else { return }
+
+        let originalPageIndexAfter = self.loop
+            ? self.index % self.originalCount
+            : self.index
+        guard originalPageIndexAfter != originalPageIndexBefore else { return }
+
+        self.onUserInitiatedPageIndexChange?(originalPageIndexBefore, originalPageIndexAfter)
     }
 
     private var autoPlayEnabled: Bool {
@@ -838,6 +886,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
         }
         .padding(.vertical)
         .previewRequiredPaywallsV2Properties()
+        .environmentObject(PurchaseHandler.default())
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Examples")
     }

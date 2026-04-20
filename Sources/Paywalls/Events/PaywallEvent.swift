@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 9/5/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 /// The type of exit offer shown.
@@ -18,6 +20,30 @@ public enum ExitOfferType: String, Codable, Sendable {
 
     /// An exit offer shown when the user attempts to dismiss the paywall without interacting.
     case dismiss
+
+}
+
+/// The type for the paywall component interactions.
+public enum ComponentInteractionType: String, Codable, Sendable, Hashable {
+
+    /// Tab control button selection.
+    /// For precise navigation analytics, prefer the explicit origin / destination fields when present.
+    case tab
+    /// Tab control toggle (`component_value` is `"on"` or `"off"`); wire value is `"switch"`.
+    case toggleSwitch = "switch"
+    /// Carousel page change.
+    /// For precise navigation analytics, prefer the explicit origin / destination fields when present.
+    case carousel
+    /// Non-purchase button (`component_value` is the action discriminator).
+    case button
+    /// Tappable link in paywall text / markdown (`component_url` is set).
+    case text
+    /// User selected a subscription package / plan (for example, a package row tap).
+    case package
+    /// Package-selection bottom sheet lifecycle (`component_value` is `open` / `close`), not a package row tap.
+    case packageSelectionSheet = "package_selection_sheet"
+    /// Purchase button of any type was tapped
+    case purchaseButton = "purchase_button"
 
 }
 
@@ -48,7 +74,7 @@ public enum PaywallEvent: FeatureEvent {
         switch self {
         case .purchaseInitiated, .purchaseError:
             return false
-        case .impression, .cancel, .close, .exitOffer:
+        case .impression, .cancel, .close, .exitOffer, .componentInteraction:
             return true
         }
     }
@@ -57,7 +83,7 @@ public enum PaywallEvent: FeatureEvent {
         switch self {
         case .impression:
             return true
-        case .cancel, .close, .exitOffer, .purchaseInitiated, .purchaseError:
+        case .cancel, .close, .exitOffer, .componentInteraction, .purchaseInitiated, .purchaseError:
             return false
         }
     }
@@ -79,6 +105,9 @@ public enum PaywallEvent: FeatureEvent {
 
     /// A purchase from the paywall failed with an error.
     case purchaseError(CreationData, Data)
+
+    /// User interacted with a paywall control (tabs, carousel, non-purchase button, etc.).
+    case componentInteraction(CreationData, Data, ComponentInteractionData)
 
 }
 
@@ -125,8 +154,8 @@ extension PaywallEvent {
         var errorMessage: String?
 
         #if !os(tvOS) // For Paywalls V2
+        @_spi(Internal)
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-        @available(*, deprecated, message: "This initializer will be removed in a future version.")
         public init(
             offering: Offering,
             paywallComponentsData: PaywallComponentsData,
@@ -271,6 +300,101 @@ extension PaywallEvent {
 
 extension PaywallEvent {
 
+    /// Data for a ``PaywallEvent/componentInteraction(_:_:_:)`` event.
+    /// For navigable controls like tab buttons and carousel page changes, prefer the explicit
+    /// origin / destination fields over `componentValue` when they are available.
+    public struct ComponentInteractionData {
+
+        // swiftlint:disable missing_docs
+        public var componentType: ComponentInteractionType
+        public var componentName: String?
+        /// Compatibility field describing the interaction.
+        /// For navigable controls, prefer the explicit origin / destination fields when they are present.
+        public var componentValue: String
+        /// Destination URL for URL-based controls (e.g. terms, privacy, generic links), when applicable.
+        public var componentURL: URL?
+        /// 0-based index for the source context before a user-initiated navigation interaction.
+        public var originIndex: Int?
+        /// 0-based index for the destination context after a user-initiated navigation interaction.
+        public var destinationIndex: Int?
+        /// Optional source context name from the paywall JSON (for example, the previous tab or carousel page).
+        public var originContextName: String?
+        /// Optional destination context name from the paywall JSON (for example, the selected tab or carousel page).
+        public var destinationContextName: String?
+        /// 0-based default index configured for the navigable component, when applicable.
+        public var defaultIndex: Int?
+        /// RevenueCat package identifier before a plan-selection interaction, when applicable.
+        public var originPackageIdentifier: String?
+        /// RevenueCat package identifier after a plan-selection interaction, when applicable.
+        public var destinationPackageIdentifier: String?
+        /// RevenueCat package identifier for the configured default plan in the current scope (offering or tab),
+        /// when applicable.
+        public var defaultPackageIdentifier: String?
+        /// Store product identifier before a plan-selection interaction, when applicable.
+        public var originProductIdentifier: String?
+        /// Store product identifier after a plan-selection interaction, when applicable.
+        public var destinationProductIdentifier: String?
+        /// Store product identifier for the configured default plan in the current scope, when applicable.
+        public var defaultProductIdentifier: String?
+        /// Package identifier for the paywall package-selection sheet lifecycle
+        /// (`component_value` is `open` / `close`).
+        public var currentPackageIdentifier: String?
+        /// Root paywall package identifier after the package-selection sheet dismisses (e.g. after revert to default).
+        public var resultingPackageIdentifier: String?
+        /// Store product identifier paired with ``currentPackageIdentifier`` for sheet lifecycle events.
+        public var currentProductIdentifier: String?
+        /// Store product identifier paired with ``resultingPackageIdentifier`` for sheet lifecycle events.
+        public var resultingProductIdentifier: String?
+
+        public init(
+            componentType: ComponentInteractionType,
+            componentName: String? = nil,
+            componentValue: String,
+            componentURL: URL? = nil,
+            originIndex: Int? = nil,
+            destinationIndex: Int? = nil,
+            originContextName: String? = nil,
+            destinationContextName: String? = nil,
+            defaultIndex: Int? = nil,
+            originPackageIdentifier: String? = nil,
+            destinationPackageIdentifier: String? = nil,
+            defaultPackageIdentifier: String? = nil,
+            originProductIdentifier: String? = nil,
+            destinationProductIdentifier: String? = nil,
+            defaultProductIdentifier: String? = nil,
+            currentPackageIdentifier: String? = nil,
+            resultingPackageIdentifier: String? = nil,
+            currentProductIdentifier: String? = nil,
+            resultingProductIdentifier: String? = nil
+        ) {
+            self.componentType = componentType
+            self.componentName = componentName
+            self.componentValue = componentValue
+            self.componentURL = componentURL
+            self.originIndex = originIndex
+            self.destinationIndex = destinationIndex
+            self.originContextName = originContextName
+            self.destinationContextName = destinationContextName
+            self.defaultIndex = defaultIndex
+            self.originPackageIdentifier = originPackageIdentifier
+            self.destinationPackageIdentifier = destinationPackageIdentifier
+            self.defaultPackageIdentifier = defaultPackageIdentifier
+            self.originProductIdentifier = originProductIdentifier
+            self.destinationProductIdentifier = destinationProductIdentifier
+            self.defaultProductIdentifier = defaultProductIdentifier
+            self.currentPackageIdentifier = currentPackageIdentifier
+            self.resultingPackageIdentifier = resultingPackageIdentifier
+            self.currentProductIdentifier = currentProductIdentifier
+            self.resultingProductIdentifier = resultingProductIdentifier
+        }
+        // swiftlint:enable missing_docs
+
+    }
+
+}
+
+extension PaywallEvent {
+
     /// - Returns: the underlying ``PaywallEvent/CreationData-swift.struct`` for this event.
     public var creationData: CreationData {
         switch self {
@@ -280,6 +404,7 @@ extension PaywallEvent {
         case let .exitOffer(creationData, _, _): return creationData
         case let .purchaseInitiated(creationData, _): return creationData
         case let .purchaseError(creationData, _): return creationData
+        case let .componentInteraction(creationData, _, _): return creationData
         }
     }
 
@@ -292,14 +417,23 @@ extension PaywallEvent {
         case let .exitOffer(_, data, _): return data
         case let .purchaseInitiated(_, data): return data
         case let .purchaseError(_, data): return data
+        case let .componentInteraction(_, data, _): return data
         }
     }
 
     /// - Returns: the underlying ``PaywallEvent/ExitOfferData-swift.struct`` for exit offer events, nil otherwise.
     public var exitOfferData: ExitOfferData? {
         switch self {
-        case .impression, .cancel, .close, .purchaseInitiated, .purchaseError: return nil
+        case .impression, .cancel, .close, .purchaseInitiated, .purchaseError, .componentInteraction: return nil
         case let .exitOffer(_, _, exitOfferData): return exitOfferData
+        }
+    }
+
+    /// - Returns: control interaction payload for ``PaywallEvent/componentInteraction(_:_:_:)``, nil for other events.
+    public var componentInteractionData: ComponentInteractionData? {
+        switch self {
+        case .impression, .cancel, .close, .exitOffer, .purchaseInitiated, .purchaseError: return nil
+        case let .componentInteraction(_, _, interactionData): return interactionData
         }
     }
 
@@ -338,4 +472,5 @@ extension PaywallEvent.Data {
 extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
 extension PaywallEvent.Data: Equatable, Codable, Sendable {}
 extension PaywallEvent.ExitOfferData: Equatable, Codable, Sendable {}
+extension PaywallEvent.ComponentInteractionData: Equatable, Codable, Sendable {}
 extension PaywallEvent: Equatable, Codable, Sendable {}

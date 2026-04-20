@@ -22,24 +22,18 @@ internal extension GoogleMobileAds.InterstitialAd {
         placement: String?,
         fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
-        rcAdMob: RCAdMob,
-        completion: @escaping (GoogleMobileAds.InterstitialAd?, Error?) -> Void
-    ) {
-        Self.load(with: adUnitID, request: request) { loadedAd, error in
-            rcAdMob.handleLoadOutcome(
-                loadedAd: loadedAd,
-                error: error,
-                context: FullScreenLoadContext(
-                    placement: placement,
-                    adUnitID: adUnitID,
-                    adFormat: RevenueCat.AdFormat.interstitial,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler,
-                    responseInfo: loadedAd?.responseInfo
-                ),
-                completion: completion
+        rcAdMob: RCAdMob
+    ) async throws -> GoogleMobileAds.InterstitialAd {
+        try await rcAdMob.handleLoadOutcome(
+            loadAd: { try await Self.load(with: adUnitID, request: request) },
+            context: FullScreenLoadContext(
+                placement: placement,
+                adUnitID: adUnitID,
+                adFormat: RevenueCat.AdFormat.interstitial,
+                fullScreenContentDelegate: fullScreenContentDelegate,
+                paidEventHandler: paidEventHandler
             )
-        }
+        )
     }
 }
 
@@ -55,24 +49,31 @@ internal extension GoogleMobileAds.InterstitialAd {
     ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
     ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
     ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
-    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
-        placement: String?,
+        placement: String? = nil,
         fullScreenContentDelegate: (any GoogleMobileAds.FullScreenContentDelegate)? = nil,
-        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
-        completion: @escaping (GoogleMobileAds.InterstitialAd?, Error?) -> Void
-    ) {
-        self.loadAndTrack(
+        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil
+    ) async throws -> GoogleMobileAds.InterstitialAd {
+        try await self.loadAndTrack(
             withAdUnitID: adUnitID,
             request: request,
             placement: placement,
             fullScreenContentDelegate: fullScreenContentDelegate,
             paidEventHandler: paidEventHandler,
-            rcAdMob: .shared,
-            completion: completion
+            rcAdMob: .shared
         )
+    }
+
+    /// Presents the interstitial ad and overrides the placement used for RevenueCat analytics.
+    ///
+    /// Call this instead of `present(from:)` when you want to specify or override the placement at show time.
+    /// The placement passed here takes precedence over any placement provided at load time.
+    @MainActor
+    func present(from viewController: UIViewController, placement: String?) {
+        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        self.present(from: viewController)
     }
 }
 
@@ -88,24 +89,18 @@ internal extension GoogleMobileAds.AppOpenAd {
         placement: String?,
         fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
-        rcAdMob: RCAdMob,
-        completion: @escaping (GoogleMobileAds.AppOpenAd?, Error?) -> Void
-    ) {
-        Self.load(with: adUnitID, request: request) { loadedAd, error in
-            rcAdMob.handleLoadOutcome(
-                loadedAd: loadedAd,
-                error: error,
-                context: FullScreenLoadContext(
-                    placement: placement,
-                    adUnitID: adUnitID,
-                    adFormat: RevenueCat.AdFormat.appOpen,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler,
-                    responseInfo: loadedAd?.responseInfo
-                ),
-                completion: completion
+        rcAdMob: RCAdMob
+    ) async throws -> GoogleMobileAds.AppOpenAd {
+        try await rcAdMob.handleLoadOutcome(
+            loadAd: { try await Self.load(with: adUnitID, request: request) },
+            context: FullScreenLoadContext(
+                placement: placement,
+                adUnitID: adUnitID,
+                adFormat: RevenueCat.AdFormat.appOpen,
+                fullScreenContentDelegate: fullScreenContentDelegate,
+                paidEventHandler: paidEventHandler
             )
-        }
+        )
     }
 }
 
@@ -121,24 +116,31 @@ internal extension GoogleMobileAds.AppOpenAd {
     ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
     ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
     ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
-    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
-        placement: String?,
+        placement: String? = nil,
         fullScreenContentDelegate: (any GoogleMobileAds.FullScreenContentDelegate)? = nil,
-        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
-        completion: @escaping (GoogleMobileAds.AppOpenAd?, Error?) -> Void
-    ) {
-        self.loadAndTrack(
+        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil
+    ) async throws -> GoogleMobileAds.AppOpenAd {
+        try await self.loadAndTrack(
             withAdUnitID: adUnitID,
             request: request,
             placement: placement,
             fullScreenContentDelegate: fullScreenContentDelegate,
             paidEventHandler: paidEventHandler,
-            rcAdMob: .shared,
-            completion: completion
+            rcAdMob: .shared
         )
+    }
+
+    /// Presents the app open ad and overrides the placement used for RevenueCat analytics.
+    ///
+    /// Call this instead of `present(from:)` when you want to specify or override the placement at show time.
+    /// The placement passed here takes precedence over any placement provided at load time.
+    @MainActor
+    func present(from viewController: UIViewController, placement: String?) {
+        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        self.present(from: viewController)
     }
 }
 
@@ -154,24 +156,18 @@ internal extension GoogleMobileAds.RewardedAd {
         placement: String?,
         fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
-        rcAdMob: RCAdMob,
-        completion: @escaping (GoogleMobileAds.RewardedAd?, Error?) -> Void
-    ) {
-        Self.load(with: adUnitID, request: request) { loadedAd, error in
-            rcAdMob.handleLoadOutcome(
-                loadedAd: loadedAd,
-                error: error,
-                context: FullScreenLoadContext(
-                    placement: placement,
-                    adUnitID: adUnitID,
-                    adFormat: RevenueCat.AdFormat.rewarded,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler,
-                    responseInfo: loadedAd?.responseInfo
-                ),
-                completion: completion
+        rcAdMob: RCAdMob
+    ) async throws -> GoogleMobileAds.RewardedAd {
+        try await rcAdMob.handleLoadOutcome(
+            loadAd: { try await Self.load(with: adUnitID, request: request) },
+            context: FullScreenLoadContext(
+                placement: placement,
+                adUnitID: adUnitID,
+                adFormat: RevenueCat.AdFormat.rewarded,
+                fullScreenContentDelegate: fullScreenContentDelegate,
+                paidEventHandler: paidEventHandler
             )
-        }
+        )
     }
 }
 
@@ -187,24 +183,35 @@ internal extension GoogleMobileAds.RewardedAd {
     ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
     ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
     ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
-    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
-        placement: String?,
+        placement: String? = nil,
         fullScreenContentDelegate: (any GoogleMobileAds.FullScreenContentDelegate)? = nil,
-        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
-        completion: @escaping (GoogleMobileAds.RewardedAd?, Error?) -> Void
-    ) {
-        self.loadAndTrack(
+        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil
+    ) async throws -> GoogleMobileAds.RewardedAd {
+        try await self.loadAndTrack(
             withAdUnitID: adUnitID,
             request: request,
             placement: placement,
             fullScreenContentDelegate: fullScreenContentDelegate,
             paidEventHandler: paidEventHandler,
-            rcAdMob: .shared,
-            completion: completion
+            rcAdMob: .shared
         )
+    }
+
+    /// Presents the rewarded ad and overrides the placement used for RevenueCat analytics.
+    ///
+    /// Call this instead of `present(from:userDidEarnRewardHandler:)` when you want to specify or override
+    /// the placement at show time. The placement passed here takes precedence over any placement provided at load time.
+    @MainActor
+    func present(
+        from viewController: UIViewController,
+        placement: String?,
+        userDidEarnRewardHandler: @escaping () -> Void
+    ) {
+        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        self.present(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
     }
 }
 
@@ -220,24 +227,18 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
         placement: String?,
         fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
-        rcAdMob: RCAdMob,
-        completion: @escaping (GoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
-    ) {
-        Self.load(with: adUnitID, request: request) { loadedAd, error in
-            rcAdMob.handleLoadOutcome(
-                loadedAd: loadedAd,
-                error: error,
-                context: FullScreenLoadContext(
-                    placement: placement,
-                    adUnitID: adUnitID,
-                    adFormat: RevenueCat.AdFormat.rewardedInterstitial,
-                    fullScreenContentDelegate: fullScreenContentDelegate,
-                    paidEventHandler: paidEventHandler,
-                    responseInfo: loadedAd?.responseInfo
-                ),
-                completion: completion
+        rcAdMob: RCAdMob
+    ) async throws -> GoogleMobileAds.RewardedInterstitialAd {
+        try await rcAdMob.handleLoadOutcome(
+            loadAd: { try await Self.load(with: adUnitID, request: request) },
+            context: FullScreenLoadContext(
+                placement: placement,
+                adUnitID: adUnitID,
+                adFormat: RevenueCat.AdFormat.rewardedInterstitial,
+                fullScreenContentDelegate: fullScreenContentDelegate,
+                paidEventHandler: paidEventHandler
             )
-        }
+        )
     }
 }
 
@@ -253,24 +254,35 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
     ///   - fullScreenContentDelegate: Optional delegate for full-screen content callbacks.
     ///     Held **weakly** internally; the caller must retain this instance for the lifetime of the ad.
     ///   - paidEventHandler: Optional handler invoked when a paid event is recorded.
-    ///   - completion: Called with the loaded ad or an error.
     static func loadAndTrack(
         withAdUnitID adUnitID: String,
         request: GoogleMobileAds.Request,
-        placement: String?,
+        placement: String? = nil,
         fullScreenContentDelegate: (any GoogleMobileAds.FullScreenContentDelegate)? = nil,
-        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil,
-        completion: @escaping (GoogleMobileAds.RewardedInterstitialAd?, Error?) -> Void
-    ) {
-        self.loadAndTrack(
+        paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? = nil
+    ) async throws -> GoogleMobileAds.RewardedInterstitialAd {
+        try await self.loadAndTrack(
             withAdUnitID: adUnitID,
             request: request,
             placement: placement,
             fullScreenContentDelegate: fullScreenContentDelegate,
             paidEventHandler: paidEventHandler,
-            rcAdMob: .shared,
-            completion: completion
+            rcAdMob: .shared
         )
+    }
+
+    /// Presents the rewarded interstitial ad and overrides the placement used for RevenueCat analytics.
+    ///
+    /// Call this instead of `present(from:userDidEarnRewardHandler:)` when you want to specify or override
+    /// the placement at show time. The placement passed here takes precedence over any placement provided at load time.
+    @MainActor
+    func present(
+        from viewController: UIViewController,
+        placement: String?,
+        userDidEarnRewardHandler: @escaping () -> Void
+    ) {
+        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        self.present(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
     }
 }
 
@@ -278,6 +290,7 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
 internal protocol RCFullScreenAdTracking: AnyObject {
     var fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate? { get set }
     var paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? { get set }
+    var responseInfo: GoogleMobileAds.ResponseInfo { get }
 }
 
 @available(iOS 15.0, *)
@@ -289,6 +302,75 @@ extension GoogleMobileAds.RewardedAd: RCFullScreenAdTracking {}
 @available(iOS 15.0, *)
 extension GoogleMobileAds.RewardedInterstitialAd: RCFullScreenAdTracking {}
 
+// MARK: - Delegate reassignment
+
+@available(iOS 15.0, *)
+internal extension RCFullScreenAdTracking {
+
+    @MainActor
+    func rcSetTrackingFullScreenContentDelegate(
+        _ delegate: GoogleMobileAds.FullScreenContentDelegate?
+    ) {
+        RCAdMob.shared.updateFullScreenContentDelegate(on: self, newDelegate: delegate)
+    }
+}
+
+@available(iOS 15.0, *)
+@_spi(Experimental) public extension GoogleMobileAds.InterstitialAd {
+
+    /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
+    ///
+    /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
+    /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
+    /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
+    func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
+        self.rcSetTrackingFullScreenContentDelegate(delegate)
+    }
+}
+
+@available(iOS 15.0, *)
+@_spi(Experimental) public extension GoogleMobileAds.AppOpenAd {
+
+    /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
+    ///
+    /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
+    /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
+    /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
+    func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
+        self.rcSetTrackingFullScreenContentDelegate(delegate)
+    }
+}
+
+@available(iOS 15.0, *)
+@_spi(Experimental) public extension GoogleMobileAds.RewardedAd {
+
+    /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
+    ///
+    /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
+    /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
+    /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
+    func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
+        self.rcSetTrackingFullScreenContentDelegate(delegate)
+    }
+}
+
+@available(iOS 15.0, *)
+@_spi(Experimental) public extension GoogleMobileAds.RewardedInterstitialAd {
+
+    /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
+    ///
+    /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
+    /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
+    /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
+    func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
+        self.rcSetTrackingFullScreenContentDelegate(delegate)
+    }
+}
+
 @available(iOS 15.0, *)
 internal struct FullScreenLoadContext {
     let placement: String?
@@ -296,7 +378,6 @@ internal struct FullScreenLoadContext {
     let adFormat: RevenueCat.AdFormat
     let fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?
     let paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?
-    let responseInfo: GoogleMobileAds.ResponseInfo?
 }
 
 #endif

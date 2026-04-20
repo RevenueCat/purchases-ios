@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 6/11/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -45,6 +45,14 @@ struct ImageComponentView: View {
 
     let viewModel: ImageComponentViewModel
 
+    var renderForPreview: Bool {
+        #if DEBUG
+        return ProcessInfo.isRunningForPreviews
+        #else
+        false
+        #endif
+    }
+
     @State var size: CGSize?
 
     var body: some View {
@@ -66,60 +74,83 @@ struct ImageComponentView: View {
                     width: self.imageSize(style: style).width,
                     height: self.imageSize(style: style).height
                 )
-
                 ZStack {
-                    // IMPORTANT: Please keep this... needed to force size
-                    //
-                    // We need the max width of the parent view an image of a fill or
-                    // fixed width doesn't push passed the bounds.
-                    //
-                    // Once we have the size once, we can remove the Color.clear
                     if self.size == nil {
-                        Color.clear
-                    }
-
-                    RemoteImage(
-                        url: style.url,
-                        lowResUrl: style.lowResUrl,
-                        darkUrl: style.darkUrl,
-                        darkLowResUrl: style.darkLowResUrl,
-                        // The expectedSize is important
-                        // It renders a clear image if actual image is being fetched
-                        expectedSize: expectedSize
-                    ) { (image, size) in
-                        self.renderImage(
-                            image,
-                            size,
-                            maxWidth: self.calculateMaxWidth(
-                                parentWidth: self.size?.width ?? 0,
-                                style: style
+                        // We cannot correctly render the image until we know the space the image can fill
+                        // this will fill the space so we can get the correct measurements and render the image
+                        self.decorate(Color.clear, with: style)
+                    } else if renderForPreview {
+                        #if DEBUG
+                        self.decorate(
+                            self.renderImage(
+                                DualColorImageGenerator.purpleOrangeWide.image.resizable(),
+                                size ?? .zero,
+                                maxWidth: self.calculateMaxWidth(
+                                    parentWidth: self.size?.width ?? 0,
+                                    style: style
+                                ),
+                                with: style
                             ),
                             with: style
                         )
-                    }
-                    .applyMediaWidth(size: style.size)
-                    .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
-                    .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
-                        view.overlay(
-                            Color.clear
-                                .backgroundStyle(.color(colorOverlay))
+                        #else
+                        EmptyView()
+                        #endif
+                    } else {
+                        self.decorate(
+                            RemoteImage(
+                                url: style.url,
+                                lowResUrl: style.lowResUrl,
+                                darkUrl: style.darkUrl,
+                                darkLowResUrl: style.darkLowResUrl,
+                                // The expectedSize is important
+                                // It renders a clear image if actual image is being fetched
+                                expectedSize: expectedSize
+                            ) { (image, size) in
+                                self.renderImage(
+                                    image,
+                                    size,
+                                    maxWidth: self.calculateMaxWidth(
+                                        parentWidth: self.size?.width ?? 0,
+                                        style: style
+                                    ),
+                                    with: style
+                                )
+                            },
+                            with: style
                         )
-                    })
-                    .clipped()
-                    .padding(style.padding.extend(by: style.border?.width ?? 0))
-                    .shape(border: style.border,
-                           shape: style.shape)
-                    .applyIfLet(style.shadow, apply: { view, shadow in
-                        // We need to use the normal shadow modifier and not our custom one for png images
-                        view.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
-                    })
-                    .padding(style.margin)
+                    }
                 }
                 .id(style.url)
                 .onSizeChange({ size = $0 })
 
             }
         }
+    }
+
+    private func decorate<Content: View>(
+        _ content: Content,
+        with style: ImageComponentStyle
+    ) -> some View {
+        content
+            .applyMediaWidth(size: style.size)
+            .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+            .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
+                view.overlay(
+                    Color.clear
+                        .backgroundStyle(.color(colorOverlay))
+                )
+            })
+            .clipped()
+            .padding(style.padding.extend(by: style.border?.width ?? 0))
+            .shape(border: style.border,
+                   shape: style.shape)
+            .compositingGroup() // ensure borders and images are a single layer that gets shaded.
+            .applyIfLet(style.shadow, apply: { view, shadow in
+                // We need to use the normal shadow modifier and not our custom one for png images
+                view.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
+            })
+            .padding(style.margin)
     }
 
     private func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
@@ -182,6 +213,8 @@ struct ImageComponentView_Previews: PreviewProvider {
         width: Int,
         height: Int
     ) -> some View {
+        let borderWidth: UInt = 4
+
         ImageComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
@@ -202,8 +235,17 @@ struct ImageComponentView_Previews: PreviewProvider {
                     ),
                     size: size,
                     fitMode: fitMode,
-                    border: .init(color: .init(light: .hex("#ff0000")), width: 4)
+                    border: .init(color: .init(light: .hex("#ff0000")), width: Double(borderWidth))
                 )
+            ),
+            size: estimatedImageComponentSize(
+                previewWidth: previewDimension,
+                width: width,
+                height: height,
+                size: size,
+                fitMode: fitMode,
+                horizontalInsets: CGFloat(borderWidth) * 2,
+                verticalInsets: CGFloat(borderWidth) * 2
             )
         )
         Text(.init("width: **\(size.width)** height: **\(size.height)**\n" +
@@ -211,7 +253,63 @@ struct ImageComponentView_Previews: PreviewProvider {
                    "width: **\(width)** height: **\(height)**"))
     }
 
+    // For the Emerge snapshot pipeline, we have to have the image available on first pass
+    // This is for prepopulating the size of the view so the snapshot test can be taken
+    // locally, the estimated size will be overwritten and the preview will render the
+    // actual computed size.
+    static func estimatedImageComponentSize(
+        previewWidth: CGFloat,
+        width: Int,
+        height: Int,
+        size: PaywallComponent.Size,
+        fitMode: PaywallComponent.FitMode,
+        horizontalInsets: CGFloat = 0,
+        verticalInsets: CGFloat = 0
+    ) -> CGSize {
+        _ = fitMode
+
+        let intrinsicWidth = max(CGFloat(width), 1)
+        let intrinsicHeight = max(CGFloat(height), 1)
+        let aspectRatio = intrinsicWidth / intrinsicHeight
+        let availableContentWidth = max(0, previewWidth - horizontalInsets)
+
+        let estimatedContentWidth: CGFloat
+        switch size.width {
+        case .fixed(let value):
+            estimatedContentWidth = CGFloat(value)
+        case .fill:
+            estimatedContentWidth = availableContentWidth
+        case .fit:
+            switch size.height {
+            case .fixed(let value):
+                estimatedContentWidth = min(availableContentWidth, CGFloat(value) * aspectRatio)
+            case .fit, .fill:
+                estimatedContentWidth = min(availableContentWidth, intrinsicWidth)
+            case .relative:
+                estimatedContentWidth = min(availableContentWidth, intrinsicWidth)
+            }
+        case .relative(let value):
+            estimatedContentWidth = max(0, availableContentWidth * CGFloat(value))
+        }
+
+        let estimatedContentHeight: CGFloat
+        switch size.height {
+        case .fixed(let value):
+            estimatedContentHeight = CGFloat(value)
+        case .fit, .fill:
+            estimatedContentHeight = estimatedContentWidth / aspectRatio
+        case .relative:
+            estimatedContentHeight = estimatedContentWidth / aspectRatio
+        }
+
+        return CGSize(
+            width: estimatedContentWidth + horizontalInsets,
+            height: estimatedContentHeight + verticalInsets
+        )
+    }
+
     static var fixedHeight: UInt = 360
+    static var previewDimension: CGFloat = 400
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
@@ -246,7 +344,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             }.background(.blue)
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Image stretching horizontally beyond bounds")
 
         ScrollView {
@@ -277,278 +375,258 @@ struct ImageComponentView_Previews: PreviewProvider {
             }.background(.blue)
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Image streching vertically when height=fit")
-
-        // Light - Fit
-        VStack {
-            ImageComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [:]
-                    ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                    component: .init(
-                        source: .init(
-                            light: .init(
-                                width: 750,
-                                height: 530,
-                                original: catUrl,
-                                heic: catUrl,
-                                heicLowRes: catUrl
-                            )
-                        ),
-                        fitMode: .fit,
-                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
-                        shadow: .init(
-                            color: .init(
-                                light: .hex("#000000"),
-                                dark: .hex("#000000")
-                            ),
-                            radius: 5, x: 5, y: 5
-                        )
-                    )
-                )
-            )
-        }
-        .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
-        .previewDisplayName("Light - Fit")
 
         // Light - Fill
         VStack {
-            ImageComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [:]
+            createImage(
+                fitMode: .fit,
+                maskShape: nil,
+                colorOverlay: nil,
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                    component: .init(
-                        source: .init(
-                            light: .init(
-                                width: 750,
-                                height: 530,
-                                original: catUrl,
-                                heic: catUrl,
-                                heicLowRes: catUrl
-                            )
-                        ),
-                        fitMode: .fill,
-                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
-                        shadow: .init(
-                            color: .init(
-                                light: .hex("#000000"),
-                                dark: .hex("#000000")
-                            ),
-                            radius: 5, x: 5, y: 5
-                        )
-                    )
+                    radius: 5, x: 5, y: 5
+                )
+            )
+            createImage(
+                fitMode: .fill,
+                maskShape: nil,
+                colorOverlay: nil,
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
+                    ),
+                    radius: 5, x: 5, y: 5
                 )
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
-        .previewDisplayName("Light - Fill")
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
+        .previewDisplayName("Light")
 
         // Light - Gradient
         VStack {
-            ImageComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [:]
+            createImage(
+                fitMode: .fit,
+                maskShape: nil,
+                colorOverlay: .init(light: .linear(0, [
+                    .init(color: "#ffffff", percent: 0),
+                    .init(color: "#ffffff00", percent: 40)
+                ])),
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                    component: .init(
-                        source: .init(
-                            light: .init(
-                                width: 750,
-                                height: 530,
-                                original: catUrl,
-                                heic: catUrl,
-                                heicLowRes: catUrl
-                            )
-                        ),
-                        fitMode: .fill,
-                        colorOverlay: .init(light: .linear(0, [
-                            .init(color: "#ffffff", percent: 0),
-                            .init(color: "#ffffff00", percent: 40)
-                        ])),
-                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
-                        shadow: .init(
-                            color: .init(
-                                light: .hex("#000000"),
-                                dark: .hex("#000000")
-                            ),
-                            radius: 5, x: 5, y: 5
-                        )
-                    )
+                    radius: 5, x: 5, y: 5
+                )
+            )
+            createImage(
+                fitMode: .fill,
+                maskShape: nil,
+                colorOverlay: .init(light: .linear(0, [
+                    .init(color: "#ffffff", percent: 0),
+                    .init(color: "#ffffff00", percent: 40)
+                ])),
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
+                    ),
+                    radius: 5, x: 5, y: 5
                 )
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Light - Gradient")
 
         // Light - Fit with Rounded Corner
         VStack {
-            ImageComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [:]
+            createImage(
+                fitMode: .fit,
+                maskShape: .rectangle(.init(topLeading: 40, topTrailing: 40, bottomLeading: 40, bottomTrailing: 40)),
+                colorOverlay: nil,
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                    component: .init(
-                        source: .init(
-                            light: .init(
-                                width: 750,
-                                height: 530,
-                                original: catUrl,
-                                heic: catUrl,
-                                heicLowRes: catUrl
-                            )
-                        ),
-                        fitMode: .fit,
-                        maskShape: .rectangle(.init(topLeading: 40,
-                                                    topTrailing: 40,
-                                                    bottomLeading: 40,
-                                                    bottomTrailing: 40)),
-                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
-                        shadow: .init(
-                            color: .init(
-                                light: .hex("#000000"),
-                                dark: .hex("#000000")
-                            ),
-                            radius: 5, x: 5, y: 5
-                        )
-                    )
+                    radius: 5, x: 5, y: 5
+                )
+            )
+            createImage(
+                fitMode: .fill,
+                maskShape: .rectangle(.init(topLeading: 40, topTrailing: 40, bottomLeading: 40, bottomTrailing: 40)),
+                colorOverlay: nil,
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
+                    ),
+                    radius: 5, x: 5, y: 5
                 )
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Light - Rounded Corner")
 
         // Light - Fit with Circle
         VStack {
-            ImageComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [:]
+            createImage(
+                fitMode: .fit,
+                maskShape: .circle,
+                colorOverlay: nil,
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                    component: .init(
-                        source: .init(
-                            light: .init(
-                                width: 750,
-                                height: 530,
-                                original: catUrl,
-                                heic: catUrl,
-                                heicLowRes: catUrl
-                            )
-                        ),
-                        fitMode: .fit,
-                        maskShape: .circle,
-                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
-                        shadow: .init(
-                            color: .init(
-                                light: .hex("#000000"),
-                                dark: .hex("#000000")
-                            ),
-                            radius: 5, x: 5, y: 5
-                        )
-                    )
+                    radius: 5, x: 5, y: 5
+                )
+            )
+            createImage(
+                fitMode: .fill,
+                maskShape: .circle,
+                colorOverlay: nil,
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
+                    ),
+                    radius: 5, x: 5, y: 5
                 )
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
         .previewDisplayName("Light - Circle")
 
         // Light - Fit with Convex
         VStack {
-            ImageComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [:]
+            createImage(
+                fitMode: .fit,
+                maskShape: .convex,
+                colorOverlay: nil,
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                    component: .init(
-                        source: .init(
-                            light: .init(
-                                width: 750,
-                                height: 530,
-                                original: catUrl,
-                                heic: catUrl,
-                                heicLowRes: catUrl
-                            )
-                        ),
-                        fitMode: .fit,
-                        maskShape: .convex,
-                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
-                        shadow: .init(
-                            color: .init(
-                                light: .hex("#000000"),
-                                dark: .hex("#000000")
-                            ),
-                            radius: 5, x: 5, y: 5
-                        )
-                    )
+                    radius: 5, x: 5, y: 5
+                )
+            )
+            createImage(
+                fitMode: .fill,
+                maskShape: .convex,
+                colorOverlay: nil,
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
+                    ),
+                    radius: 5, x: 5, y: 5
                 )
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
-        .previewDisplayName("Light - Fit with Convex")
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
+        .previewDisplayName("Light - Fit/Fill with Convex")
 
         // Light - Fit with Concave
         VStack {
-            ImageComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [:]
+            createImage(
+                fitMode: .fit,
+                maskShape: .concave,
+                colorOverlay: nil,
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                    component: .init(
-                        source: .init(
-                            light: .init(
-                                width: 750,
-                                height: 530,
-                                original: catUrl,
-                                heic: catUrl,
-                                heicLowRes: catUrl
-                            )
-                        ),
-                        fitMode: .fit,
-                        maskShape: .concave,
-                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
-                        shadow: .init(
-                            color: .init(
-                                light: .hex("#000000"),
-                                dark: .hex("#000000")
-                            ),
-                            radius: 5, x: 5, y: 5
-                        )
-                    )
+                    radius: 5, x: 5, y: 5
+                )
+            )
+
+            createImage(
+                fitMode: .fill,
+                maskShape: .concave,
+                colorOverlay: nil,
+                border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                shadow: .init(
+                    color: .init(
+                        light: .hex("#000000"),
+                        dark: .hex("#000000")
+                    ),
+                    radius: 5, x: 5, y: 5
                 )
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 400, height: 400))
-        .previewDisplayName("Light - Fit with Concave")
+        .previewLayout(.fixed(width: previewDimension, height: previewDimension))
+        .previewDisplayName("Light - Fit and Fill with Concave")
+    }
+
+    static func createImage(
+        fitMode: PaywallComponent.FitMode,
+        maskShape: PaywallComponent.MaskShape?,
+        colorOverlay: PaywallComponent.ColorScheme?,
+        border: PaywallComponent.Border?,
+        shadow: PaywallComponent.Shadow?
+    ) -> some View {
+        ImageComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [:]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    source: .init(
+                        light: .init(
+                            width: 750,
+                            height: 530,
+                            original: catUrl,
+                            heic: catUrl,
+                            heicLowRes: catUrl
+                        )
+                    ),
+                    size: .init(width: .fixed(200), height: .fixed(141)),
+                    fitMode: fitMode,
+                    maskShape: maskShape,
+                    colorOverlay: colorOverlay,
+                    border: border,
+                    shadow: shadow
+                )
+            ),
+            size: estimatedImageComponentSize(
+                previewWidth: previewDimension,
+                width: 750,
+                height: 530,
+                size: .init(width: .fixed(200), height: .fixed(200)),
+                fitMode: .fill,
+                horizontalInsets: CGFloat(8),
+                verticalInsets: CGFloat(8)
+            )
+        )
     }
 }
 

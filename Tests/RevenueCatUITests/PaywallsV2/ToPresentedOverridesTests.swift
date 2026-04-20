@@ -14,7 +14,7 @@
 
 import Nimble
 @_spi(Internal) import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2
@@ -360,6 +360,20 @@ class ToPresentedOverridesTests: TestCase {
         expect(PaywallComponent.package(package).containsUnsupportedConditions()).to(beTrue())
     }
 
+    func testPackageWithUnsupportedConditionInOwnOverrides_ReturnsTrue() throws {
+        let package = PaywallComponent.PackageComponent(
+            packageID: "monthly",
+            isSelectedByDefault: false,
+            applePromoOfferProductCode: nil,
+            stack: .init(components: []),
+            overrides: [
+                .init(extendedConditions: [.unsupported], properties: .init(visible: false))
+            ]
+        )
+
+        expect(PaywallComponent.package(package).containsUnsupportedConditions()).to(beTrue())
+    }
+
     func testButtonSheetWithUnsupportedCondition_ReturnsTrue() throws {
         let sheetText = PaywallComponent.TextComponent(
             text: "text_1",
@@ -458,7 +472,7 @@ class ToPresentedOverridesTests: TestCase {
             .init(extendedConditions: [.medium], properties: .init())
         ]
 
-        let result = try overrides.toPresentedOverrides { $0 }
+        let result = overrides.toPresentedOverrides { $0 }
         expect(result.count).to(equal(4))
     }
 
@@ -468,7 +482,7 @@ class ToPresentedOverridesTests: TestCase {
             .init(extendedConditions: [.medium, .selected], properties: .init())
         ]
 
-        let result = try overrides.toPresentedOverrides { $0 }
+        let result = overrides.toPresentedOverrides { $0 }
 
         expect(result.count).to(equal(2))
         expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
@@ -481,7 +495,7 @@ class ToPresentedOverridesTests: TestCase {
     func testToPresentedOverrides_WithEmptyOverrides_SucceedsAndReturnsEmptyArray() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = []
 
-        let result = try overrides.toPresentedOverrides { $0 }
+        let result = overrides.toPresentedOverrides { $0 }
 
         expect(result).to(beEmpty())
     }
@@ -501,7 +515,7 @@ class ToPresentedOverridesTests: TestCase {
             .init(extendedConditions: [.medium], properties: .init())
         ]
 
-        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        let result = overrides.toPresentedOverrides(discardRules: true) { $0 }
         // Only legacy conditions survive
         expect(result.count).to(equal(2))
         expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
@@ -517,7 +531,7 @@ class ToPresentedOverridesTests: TestCase {
             .init(extendedConditions: [.medium], properties: .init())
         ]
 
-        let result = try overrides.toPresentedOverrides(discardRules: false) { $0 }
+        let result = overrides.toPresentedOverrides(discardRules: false) { $0 }
         expect(result.count).to(equal(3))
     }
 
@@ -531,7 +545,7 @@ class ToPresentedOverridesTests: TestCase {
             .init(extendedConditions: [.selected], properties: .init())
         ]
 
-        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        let result = overrides.toPresentedOverrides(discardRules: true) { $0 }
         expect(result.count).to(equal(2))
         expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.introOffer]))
         expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.selected]))
@@ -540,7 +554,7 @@ class ToPresentedOverridesTests: TestCase {
     func testToPresentedOverrides_WithDiscardRulesTrue_EmptyOverrides_ReturnsEmpty() throws {
         let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = []
 
-        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        let result = overrides.toPresentedOverrides(discardRules: true) { $0 }
         expect(result).to(beEmpty())
     }
 
@@ -551,7 +565,7 @@ class ToPresentedOverridesTests: TestCase {
             .init(extendedConditions: [.medium], properties: .init())
         ]
 
-        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        let result = overrides.toPresentedOverrides(discardRules: true) { $0 }
         expect(result.count).to(equal(2))
         expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
         expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.medium]))
@@ -568,7 +582,7 @@ class ToPresentedOverridesTests: TestCase {
             .init(extendedConditions: [.medium], properties: .init())
         ]
 
-        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        let result = overrides.toPresentedOverrides(discardRules: true) { $0 }
         expect(result.count).to(equal(2))
         expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
         expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.medium]))
@@ -581,7 +595,7 @@ class ToPresentedOverridesTests: TestCase {
             .init(extendedConditions: [.introOffer], properties: .init())
         ]
 
-        let result = try overrides.toPresentedOverrides(discardRules: true) { $0 }
+        let result = overrides.toPresentedOverrides(discardRules: true) { $0 }
         expect(result.count).to(equal(3))
     }
 

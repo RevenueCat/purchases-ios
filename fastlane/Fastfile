@@ -28,20 +28,6 @@ def run_plugin_action_in_current_directory(&block)
   Dir.chdir(Dir["*/"].first.chomp("/"), &block)
 end
 
-# Post-process JUnit XML to include environment name in testcase names
-def postprocess_maestro_junit_report(output_dir:, environment_name:)
-  junit_file = "#{output_dir}/report.xml"
-  if File.exist?(junit_file)
-    UI.message("Adding environment name (#{environment_name}) to test names in JUnit report...")
-    content = File.read(junit_file)
-    modified_content = content.gsub(/<testcase([^>]*)name="([^"]+)"/) do |match|
-      prefix = $1
-      test_name = $2
-      "<testcase#{prefix}name=\"#{test_name} (#{environment_name})\""
-    end
-    File.write(junit_file, modified_content)
-  end
-end
 
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
@@ -67,7 +53,6 @@ files_to_update_on_latest_stable_releases = {
 }
 
 REPO_NAME = 'purchases-ios'
-SNAPSHOTS_REPO_NAME = 'purchases-ios-snapshots'
 PAYWALL_PREVIEW_RESOURCES_REPO_NAME = 'paywall-preview-resources'
 CHANGELOG_LATEST_PATH = './CHANGELOG.latest.md'
 CHANGELOG_PATH = './CHANGELOG.md'
@@ -126,6 +111,43 @@ platform :ios do
       github_api_token: ENV["GITHUB_TOKEN"],
       changelog_latest_path: CHANGELOG_LATEST_PATH,
       upload_assets: ['RevenueCat.xcframework.zip', 'RevenueCatUI.xcframework.zip']
+    )
+  end
+
+  desc "Make github release for purchases-ios-admob"
+  lane :admob_github_release do |options|
+    version = options[:version] || current_version_number
+    changelog = Fastlane::Helper::VersioningHelper.auto_generate_changelog(
+      REPO_NAME,
+      ENV["GITHUB_TOKEN"],
+      0,
+      false,
+      nil,
+      nil,
+      version,
+      filter_labels: ['pr:admob'],
+      cross_repo_pr_reference: 'RevenueCat/purchases-ios'
+    )
+
+    changelog_path = File.join(Dir.tmpdir, 'CHANGELOG.admob.latest.md')
+    File.write(changelog_path, changelog.empty? ? "Release #{version}" : changelog)
+
+    # Resolve the commit SHA for the tag on purchases-ios-admob, since the current
+    # repo HEAD belongs to purchases-ios and would be invalid for that repo.
+    tag_ref_resp = github_api(
+      server_url: 'https://api.github.com',
+      api_token: ENV["GITHUB_TOKEN"],
+      http_method: 'GET',
+      path: "/repos/RevenueCat/purchases-ios-admob/git/ref/tags/#{version}"
+    )
+    admob_commitish = JSON.parse(tag_ref_resp[:body])['object']['sha']
+
+    create_github_release(
+      version: version,
+      repo_name: 'purchases-ios-admob',
+      github_api_token: ENV["GITHUB_TOKEN"],
+      changelog_latest_path: changelog_path,
+      commitish: admob_commitish
     )
   end
 
@@ -407,6 +429,58 @@ platform :ios do
     # build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
   end
 
+  desc "Record V1 template snapshots and upload to Emerge"
+  lane :record_and_upload_v1_snapshots do
+    platform = ENV['PLATFORM'] || 'iOS Simulator'
+    destination = ENV['DEVICE'] || "iPhone 17,OS=26.2"
+    sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+
+    begin
+      xcodebuild(
+        workspace: '.',
+        scheme: 'RevenueCatUI',
+        destination: "platform=" + platform + ",name=" + destination,
+        sdk: sdk,
+        result_bundle_path: 'fastlane/test_output/v1-snapshots.xcresult',
+        report_formats: [:junit],
+        report_path: 'fastlane/test_output/v1-snapshots/tests.xml',
+        test: true,
+        xcargs: "-testPlan CI-V1-Snapshots"
+      )
+    rescue => e
+      snapshots_path = File.expand_path("../Tests/RevenueCatUITests/Templates/__Snapshots__")
+      pngs = Dir.glob("#{snapshots_path}/**/*.png")
+      if pngs.empty?
+        UI.user_error!("Tests failed and no snapshots were recorded — this is likely a build or runtime error, not a snapshot recording failure: #{e.message}")
+      end
+      UI.important("V1 snapshot tests failed but #{pngs.count} snapshots were recorded — this is probably expected because recording mode causes assertion failures, please verify the diff in Emerge: #{e.message}")
+    end
+
+    upload_v1_snapshots_to_emerge
+  end
+
+  desc "Upload V1 template snapshots to Emerge using BYOS"
+  lane :upload_v1_snapshots_to_emerge do
+    snapshots_path = File.expand_path("../Tests/RevenueCatUITests/Templates/__Snapshots__")
+    pngs = Dir.glob("#{snapshots_path}/**/*.png")
+    UI.user_error!("No snapshot PNGs found in #{snapshots_path}. Recording may have failed.") if pngs.empty?
+    UI.message("Found #{pngs.count} snapshot images to upload")
+
+    pr_number = detect_pr_number
+
+    args = [
+      "bundle", "exec", "emerge", "upload", "snapshots",
+      "--name", "PaywallsTester V1 swift-snapshot-testing",
+      "--id", "com.revenuecat.PaywallsTester.v1-snapshots",
+      "--repo-name", "RevenueCat/purchases-ios",
+      "--client-library", "swift-snapshot-testing",
+      "--project-root", File.expand_path("../Tests/RevenueCatUITests/Templates")
+    ]
+    args.push("--pr-number", pr_number) if pr_number
+
+    sh(*args)
+  end
+
   lane :build_paywalls_tester_for_emerge_ios do |options|
     scan(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
@@ -564,7 +638,7 @@ platform :ios do
     )
   end
 
-  private_lane :send_to_emerge do |options|
+  private_lane :detect_pr_number do
     pr_url = ENV["CIRCLE_PULL_REQUEST"]
     branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
     pr_number = nil
@@ -576,6 +650,11 @@ platform :ios do
     elsif branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
       pr_number = $1
     end
+    pr_number
+  end
+
+  private_lane :send_to_emerge do |options|
+    pr_number = detect_pr_number
 
     emerge_args = {repo_name: "RevenueCat/purchases-ios"}
     emerge_args[:pr_number] = pr_number if pr_number
@@ -712,8 +791,6 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
-
-    fetch_snapshots
 
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
@@ -946,7 +1023,7 @@ platform :ios do
   #
   # Note that currently the "test_store" store is only available in the production environment.
   desc "run_maestro_e2e_tests"
-  lane :run_maestro_e2e_tests do |options|
+  lane :run_maestro_e2e_tests_ios do |options|
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
     output_dir = options[:output_dir] || "test_output/maestro"
@@ -1044,40 +1121,16 @@ platform :ios do
 
     success = false
     begin
-      # Construct the flow directory path
       flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests"
-
-      # Verify the flow directory exists
-      unless File.directory?(flow_dir)
-        UI.user_error!("Flow directory not found: #{flow_dir}")
-      end
 
       UI.message("Using flow directory: #{flow_dir}")
 
-      # CI-level retries for flaky Maestro tests
-      max_retries = 5
-      attempt = 0
-
-      while attempt <= max_retries && !success
-        attempt_output_dir = "#{output_dir}/attempt_#{attempt}"
-        FileUtils.mkdir_p(attempt_output_dir)
-
-        begin
-          sh("maestro", "test", "--format", "junit", "--output", "#{attempt_output_dir}/report.xml", "--test-output-dir", attempt_output_dir, flow_dir)
-          success = true
-          postprocess_maestro_junit_report(output_dir: attempt_output_dir, environment_name: environment_name)
-          # Copy successful attempt's report to main output_dir
-          FileUtils.cp("#{attempt_output_dir}/report.xml", "#{output_dir}/report.xml")
-        rescue => e
-          UI.error("Maestro test attempt #{attempt} failed: #{e.message}")
-          postprocess_maestro_junit_report(output_dir: attempt_output_dir, environment_name: environment_name)
-          if attempt >= max_retries
-            raise e
-          end
-          attempt += 1
-          UI.message("Retrying... #{attempt}/#{max_retries}")
-        end
-      end
+      run_maestro_e2e_tests(
+        flow_dir: flow_dir,
+        output_dir: output_dir,
+        environment_name: environment_name
+      )
+      success = true
     rescue => e
       raise e
     ensure
@@ -1362,17 +1415,6 @@ platform :ios do
     end
   end
 
-  desc "Creates a new PR on purchases-ios-snapshots after new snapshot files were generated"
-  lane :create_snapshots_repo_pr do |options|
-    Dir.chdir("../Tests/#{SNAPSHOTS_REPO_NAME}") { |dir|
-     push_snapshot_pr(
-      version: options[:version],
-      repo: "revenuecat/#{SNAPSHOTS_REPO_NAME}",
-      base_branch: "main",
-      files_to_add: "."
-     )
-    }
-  end
 
   private_lane :push_snapshot_pr do |options|
     version = options[:version]
@@ -1601,66 +1643,64 @@ platform :ios do
       UI.success("✓ Extracted #{xcframework_name}")
     end
 
-    # Generate Tuist workspace with XCFrameworkInstallationTests included
-    UI.message("Generating Tuist workspace with XCFrameworkInstallationTests...")
+    # Generate Tuist project for XCFrameworkInstallationTests
+    UI.message("Generating Tuist project for XCFrameworkInstallationTests...")
     tuist_generate(env_vars: { "INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS" => "true" })
 
-    workspace_path = File.join(project_root, "RevenueCat-Tuist.xcworkspace")
+    # Use the project directly instead of the workspace to ensure the build
+    # uses the xcframeworks and not source targets from other workspace projects.
+    project_path = File.join(project_root, "Projects", "XCFrameworkInstallationTests", "XCFrameworkInstallationTests.xcodeproj")
 
-    # Build for each destination to verify xcframework integration
-    # These destinations match the platforms exported in the xcframework:
-    # iOS, macOS, Mac Catalyst, watchOS, visionOS
-    destinations = [
-      {
-        destination: "generic/platform=iOS Simulator",
-        description: "iOS Simulator"
-      },
-      {
-        destination: "generic/platform=iOS",
-        description: "iOS Device"
-      },
-      {
-        destination: "generic/platform=macOS,variant=Mac Catalyst",
-        description: "Mac Catalyst"
-      },
-      {
-        destination: "generic/platform=macOS",
-        description: "macOS"
-      },
-      {
-        destination: "generic/platform=watchOS Simulator",
-        description: "watchOS Simulator"
-      },
-      {
-        destination: "generic/platform=watchOS",
-        description: "watchOS Device"
-      },
-      {
-        destination: "generic/platform=visionOS Simulator",
-        description: "visionOS Simulator"
-      },
-      {
-        destination: "generic/platform=visionOS",
-        description: "visionOS Device"
-      }
-    ]
-
-    # Build for each destination
-    UI.message("\nBuilding XCFrameworkInstallationTests for #{destinations.length} destination(s)...")
-    destinations.each_with_index do |dest_info, index|
-      UI.message("\n[#{index + 1}/#{destinations.length}] Building for #{dest_info[:description]}...")
-      xcodebuild(
-        workspace: workspace_path,
-        scheme: "XCFrameworkInstallationTests",
-        destination: dest_info[:destination],
-        configuration: "Debug",
-        derivedDataPath: File.join(project_root, "build"),
-        clean: index == 0  # Only clean on first build
-      )
-      UI.success("✓ Built successfully for #{dest_info[:description]}")
+    unless File.directory?(project_path)
+      UI.user_error!("XCFrameworkInstallationTests project not found at #{project_path}")
     end
 
-    UI.success("\n✓ XCFramework integration test passed - XCFrameworkInstallationTests built successfully for all destinations")
+    # RevenueCat xcframework: all platforms
+    revenuecat_destinations = [
+      { destination: "generic/platform=iOS Simulator", description: "iOS Simulator" },
+      { destination: "generic/platform=iOS", description: "iOS Device" },
+      { destination: "generic/platform=macOS,variant=Mac Catalyst", description: "Mac Catalyst" },
+      { destination: "generic/platform=macOS", description: "macOS" },
+      { destination: "generic/platform=watchOS Simulator", description: "watchOS Simulator" },
+      { destination: "generic/platform=watchOS", description: "watchOS Device" },
+      { destination: "generic/platform=visionOS Simulator", description: "visionOS Simulator" },
+      { destination: "generic/platform=visionOS", description: "visionOS Device" }
+    ]
+
+    # RevenueCatUI xcframework: iOS, Mac Catalyst, watchOS only
+    revenuecatui_destinations = [
+      { destination: "generic/platform=iOS Simulator", description: "iOS Simulator" },
+      { destination: "generic/platform=iOS", description: "iOS Device" },
+      { destination: "generic/platform=macOS,variant=Mac Catalyst", description: "Mac Catalyst" },
+      { destination: "generic/platform=watchOS Simulator", description: "watchOS Simulator" },
+      { destination: "generic/platform=watchOS", description: "watchOS Device" }
+    ]
+
+    schemes = [
+      { scheme: "XCFrameworkInstallationTests", destinations: revenuecat_destinations },
+      { scheme: "XCFrameworkUIInstallationTests", destinations: revenuecatui_destinations }
+    ]
+
+    schemes.each do |scheme_info|
+      scheme = scheme_info[:scheme]
+      destinations = scheme_info[:destinations]
+
+      UI.message("\nBuilding #{scheme} for #{destinations.length} destination(s)...")
+      destinations.each_with_index do |dest_info, index|
+        UI.message("[#{index + 1}/#{destinations.length}] Building #{scheme} for #{dest_info[:description]}...")
+        xcodebuild(
+          project: project_path,
+          scheme: scheme,
+          destination: dest_info[:destination],
+          configuration: "Debug",
+          derivedDataPath: File.join(project_root, "build"),
+          xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO"
+        )
+        UI.success("✓ Built successfully for #{dest_info[:description]}")
+      end
+    end
+
+    UI.success("\n✓ XCFramework integration test passed - all schemes built successfully for all destinations")
   end
 
   desc "Run BackendIntegrationTests"
@@ -1668,7 +1708,6 @@ platform :ios do
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
     test_configuration = generate_snapshots ? "GenerateSnapshots" : "Default"
 
-    fetch_snapshots
     replace_api_key_integration_tests
 
     success = false
@@ -2116,23 +2155,6 @@ platform :ios do
     )
   end
 
-  desc "Clones or updates snapshots repo"
-  lane :fetch_snapshots do
-    Dir.chdir("../Tests") do
-      if !File.directory?(SNAPSHOTS_REPO_NAME)
-        UI.important("Cloning snapshots repo")
-
-        sh "git", "clone", "https://github.com/RevenueCat/#{SNAPSHOTS_REPO_NAME}.git"
-      end
-
-      commit = current_snapshots_commit
-      UI.message("Updating snapshots repo to #{commit}")
-      Dir.chdir(SNAPSHOTS_REPO_NAME) do
-        sh "git", "fetch", "origin"
-        sh "git", "checkout", commit
-      end
-    end
-  end
 
   desc "Clones or updates paywall-preview-resources repo"
   lane :fetch_paywall_preview_resources do
@@ -2263,19 +2285,6 @@ platform :ios do
     end
   end
 
-  desc "Updates purchases-ios-snapshots-commit to point to latest commit on main"
-  lane :update_snapshots_repo do
-    new_hash = ""
-
-    Dir.chdir("../Tests/#{SNAPSHOTS_REPO_NAME}") do
-      sh "git", "checkout", "main"
-      sh "git", "pull", "--rebase", "origin"
-      new_hash = sh("git", "rev-parse", "HEAD")
-    end
-
-    UI.important("Updating snapshot commit to #{new_hash}")
-    update_snapshots_commit(new_hash)
-  end
 
   lane :deploy_to_spm do
     source_repo = ENV["CIRCLE_REPOSITORY_URL"] || "https://github.com/revenuecat/#{REPO_NAME}"
@@ -2459,19 +2468,6 @@ lane :load_spm_dependencies do
   Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("xcodebuild", "-list")
   end
-end
-
-# Snapshots
-
-def snapshots_commit_file
-  "#{File.dirname(__FILE__)}/../Tests/#{SNAPSHOTS_REPO_NAME}-commit"
-end
-
-def current_snapshots_commit
-  File.read(snapshots_commit_file).strip
-end
-def update_snapshots_commit(hash)
-  File.write(snapshots_commit_file, hash)
 end
 
 def paywall_preview_resources_commit_file

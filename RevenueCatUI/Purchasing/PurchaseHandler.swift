@@ -33,6 +33,10 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
+    private let paywallEventTracker: PaywallEventTracker
+
+    /// Side-by-side paywalls should use separate `PurchaseHandler` instances so each keeps its own session.
+    private var activePaywallSessionID: PaywallEvent.SessionID?
 
     /// Where responsibility for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
@@ -56,11 +60,11 @@ final class PurchaseHandler: ObservableObject {
 
     /// Whether a purchase is currently in progress
     @Published
-    fileprivate(set) var packageBeingPurchased: Package?
+    var packageBeingPurchased: Package?
 
     /// Whether a purchase or restore is currently in progress
     @Published
-    fileprivate(set) var actionTypeInProgress: ActionType?
+    var actionTypeInProgress: ActionType?
 
     /// Whether a purchase or restore is currently in progress
     var actionInProgress: Bool {
@@ -113,24 +117,20 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var restoreError: Error?
 
-    private var eventData: PaywallEvent.Data?
-
-    /// Whether the close event has already been tracked for the current session.
-    /// Used to prevent duplicate close tracking from both dismiss handlers and onDisappear.
-    private var hasTrackedClose: Bool = false
-
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
                      performRestore: PerformRestore? = nil,
                      purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
                          .default
-                         .purchaseCompletedPublisher()
+                         .purchaseCompletedPublisher(),
+                     eventTracker: PaywallEventTracker = .shared
     ) {
         self.init(isConfigured: true,
                   purchases: purchases,
                   performPurchase: performPurchase,
                   performRestore: performRestore,
-                  purchaseResultPublisher: purchaseResultPublisher
+                  purchaseResultPublisher: purchaseResultPublisher,
+                  eventTracker: eventTracker
         )
     }
 
@@ -141,10 +141,12 @@ final class PurchaseHandler: ObservableObject {
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
             .default
-            .purchaseCompletedPublisher()
+            .purchaseCompletedPublisher(),
+        eventTracker: PaywallEventTracker
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
+        self.paywallEventTracker = eventTracker
         self.performPurchase = performPurchase
         self.performRestore = performRestore
 
@@ -183,11 +185,18 @@ final class PurchaseHandler: ObservableObject {
                                       performRestore: PerformRestore?,
                                       customerInfo: CustomerInfo? = nil,
                                       purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat) -> Self {
-        return .init(isConfigured: false,
-                     purchases: NotConfiguredPurchases(customerInfo: customerInfo,
-                                                       purchasesAreCompletedBy: purchasesAreCompletedBy),
-                                                       performPurchase: performPurchase,
-                                                       performRestore: performRestore)
+        let purchases = NotConfiguredPurchases(
+            customerInfo: customerInfo,
+            purchasesAreCompletedBy: purchasesAreCompletedBy
+        )
+
+        return .init(
+            isConfigured: false,
+            purchases: purchases,
+            performPurchase: performPurchase,
+            performRestore: performRestore,
+            eventTracker: .init(purchases: purchases)
+        )
     }
 
     private func setResult(_ result: PurchaseResultData) {
@@ -207,8 +216,12 @@ final class PurchaseHandler: ObservableObject {
     /// We reset both `sessionPurchaseResult` (used for exit offer logic) and `purchaseResult`
     /// (used for `onPurchaseCompleted` preference) to avoid stale values triggering handlers.
     func resetForNewSession() {
+        if let sessionID = self.activePaywallSessionID {
+            self.paywallEventTracker.discardSession(sessionID: sessionID)
+        }
         self.sessionPurchaseResult = nil
         self.purchaseResult = nil
+        self.activePaywallSessionID = nil
     }
 
 }
@@ -438,68 +451,40 @@ extension PurchaseHandler {
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
-        // Auto-track close for previous session if it wasn't tracked yet (within same app session).
-        // This handles edge cases where onDisappear or deinit didn't fire (SwiftUI bugs, lifecycle issues).
-        // Note: Does not recover close events across app restarts - those are permanently lost.
-        if self.eventData != nil && !self.hasTrackedClose {
-            self.trackPaywallClose()
-        }
+        self.activePaywallSessionID = eventData.sessionIdentifier
+        self.paywallEventTracker.trackPaywallImpression(eventData)
+    }
 
-        self.eventData = eventData
-        self.hasTrackedClose = false
-        self.track(.impression(.init(), eventData))
+    func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {
+        return self.paywallEventTracker.componentInteractionLogger(sessionID: sessionID)
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallClose() -> Bool {
-        guard let data = self.eventData, !self.hasTrackedClose else {
-            if self.eventData == nil {
-                Logger.debug("Attempted to track paywall close but eventData is nil")
-            } else if self.hasTrackedClose {
-                Logger.debug("Attempted to track paywall close but close was already tracked")
-            }
+        guard let sessionID = self.activePaywallSessionID else {
             return false
         }
-
-        self.track(.close(.init(), data))
-        self.hasTrackedClose = true
-        return true
+        // Keep `activePaywallSessionID` set after close so `trackExitOffer` can still resolve paywall data.
+        return self.paywallEventTracker.trackPaywallClose(sessionID: sessionID)
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
     fileprivate func trackCancelledPurchase(package: Package) -> Bool {
-        guard let data = self.eventData else {
-            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+        guard let sessionID = self.activePaywallSessionID else {
             return false
         }
-
-        let cancelData = data.withPurchaseInfo(
-            packageId: package.identifier,
-            productId: package.storeProduct.productIdentifier,
-            errorCode: nil,
-            errorMessage: nil
-        )
-        self.track(.cancel(.init(), cancelData))
-        return true
+        return self.paywallEventTracker.trackCancelledPurchase(package: package, sessionID: sessionID)
     }
 
     /// Creates a purchase-initiated paywall event for the given package.
     /// - Returns: the event, or `nil` if event data is unavailable.
     func createPurchaseInitiatedEvent(package: Package) -> PaywallEvent? {
-        guard let data = self.eventData else {
-            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+        guard let sessionID = self.activePaywallSessionID else {
             return nil
         }
-
-        let purchaseData = data.withPurchaseInfo(
-            packageId: package.identifier,
-            productId: package.storeProduct.productIdentifier,
-            errorCode: nil,
-            errorMessage: nil
-        )
-        return PaywallEvent.purchaseInitiated(.init(), purchaseData)
+        return self.paywallEventTracker.createPurchaseInitiatedEvent(package: package, sessionID: sessionID)
     }
 
     /// Tracks a purchase error event.
@@ -509,40 +494,27 @@ extension PurchaseHandler {
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPurchaseError(package: Package, error: Error) -> Bool {
-        guard let data = self.eventData else {
-            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+        guard let sessionID = self.activePaywallSessionID else {
             return false
         }
-
-        let nsError = error as NSError
-        let purchaseData = data.withPurchaseInfo(
-            packageId: package.identifier,
-            productId: package.storeProduct.productIdentifier,
-            errorCode: nsError.code,
-            errorMessage: error.localizedDescription
-        )
-        self.track(.purchaseError(.init(), purchaseData))
-        return true
+        return self.paywallEventTracker.trackPurchaseError(package: package, error: error, sessionID: sessionID)
     }
 
-    /// Tracks an exit offer event and clears the pending exit offer flag.
+    /// Tracks an exit offer event.
     /// - Parameters:
     ///   - exitOfferType: The type of exit offer
     ///   - exitOfferingIdentifier: The offering identifier of the exit offer
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackExitOffer(exitOfferType: ExitOfferType, exitOfferingIdentifier: String) -> Bool {
-        guard let data = self.eventData else {
-            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+        guard let sessionID = self.activePaywallSessionID else {
             return false
         }
-
-        let exitOfferData = PaywallEvent.ExitOfferData(
+        return self.paywallEventTracker.trackExitOffer(
             exitOfferType: exitOfferType,
-            exitOfferingIdentifier: exitOfferingIdentifier
+            exitOfferingIdentifier: exitOfferingIdentifier,
+            sessionID: sessionID
         )
-        self.track(.exitOffer(.init(), data, exitOfferData))
-        return true
     }
 
     private func startAction(_ type: PurchaseHandler.ActionType) {
@@ -572,18 +544,22 @@ extension PurchaseHandler {
         purchase: @escaping (@escaping MockPurchases.PurchaseBlock) -> MockPurchases.PurchaseBlock,
         restore: @escaping (@escaping MockPurchases.RestoreBlock) -> MockPurchases.RestoreBlock
     ) -> Self {
+        let purchases = self.purchases.map(purchase: purchase, restore: restore)
         return .init(
             isConfigured: self.isConfigured,
-            purchases: self.purchases.map(purchase: purchase, restore: restore)
+            purchases: purchases,
+            eventTracker: self.paywallEventTracker.withPurchases(purchases)
         )
     }
 
     func map(
         trackEvent: @escaping (@escaping MockPurchases.TrackEventBlock) -> MockPurchases.TrackEventBlock
     ) -> Self {
+        let purchases = self.purchases.map(trackEvent: trackEvent)
         return .init(
             isConfigured: self.isConfigured,
-            purchases: self.purchases.map(trackEvent: trackEvent)
+            purchases: purchases,
+            eventTracker: self.paywallEventTracker.withPurchases(purchases)
         )
     }
 
@@ -597,9 +573,7 @@ extension PurchaseHandler {
 private extension PurchaseHandler {
 
     func track(_ event: PaywallEvent) {
-        Task.detached(priority: .background) { [purchases = self.purchases] in
-            await purchases.track(paywallEvent: event)
-        }
+        self.paywallEventTracker.track(event)
     }
 
 }

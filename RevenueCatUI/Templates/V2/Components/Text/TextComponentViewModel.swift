@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if canImport(UIKit)
@@ -95,6 +95,7 @@ class TextComponentViewModel {
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? self.component.visible ?? true,
+            name: partial?.name ?? self.component.name,
             text: Self.processText(text, config: config),
             fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
@@ -213,6 +214,7 @@ struct LocalizedTextPartial: PresentedPartial {
             text: other?.text ?? base?.text,
             partial: PaywallComponent.PartialTextComponent(
                 visible: otherPartial?.visible ?? basePartial?.visible,
+                name: otherPartial?.name ?? basePartial?.name,
                 text: otherPartial?.text ?? basePartial?.text,
                 fontName: otherPartial?.fontName ?? basePartial?.fontName,
                 fontWeight: otherPartial?.fontWeightResolved ?? basePartial?.fontWeightResolved,
@@ -249,6 +251,7 @@ extension LocalizedTextPartial {
 struct TextComponentStyle {
 
     let visible: Bool
+    let name: String?
     let text: String
     let fontWeight: Font.Weight
     let color: DisplayableColorScheme
@@ -263,6 +266,7 @@ struct TextComponentStyle {
     init(
         uiConfigProvider: UIConfigProvider,
         visible: Bool,
+        name: String?,
         text: String,
         fontName: String?,
         fontWeight: PaywallComponent.FontWeight,
@@ -275,6 +279,7 @@ struct TextComponentStyle {
         horizontalAlignment: PaywallComponent.HorizontalAlignment
     ) {
         self.visible = visible
+        self.name = name
         self.text = text
         self.fontWeight = fontWeight.fontWeight
         self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)
