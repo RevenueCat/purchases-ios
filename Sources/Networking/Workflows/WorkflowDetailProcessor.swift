@@ -29,7 +29,6 @@ enum WorkflowDetailProcessingError: Error {
     case unknownAction(String)
     case missingInlineData
     case missingCdnUrl
-    case missingCdnHash
     case cdnHashMismatch
 
 }
@@ -43,16 +42,12 @@ struct WorkflowDetailProcessingResult {
 
 /// Normalizes a successful workflow-detail HTTP payload:
 /// `inline` (unwraps `data`) or `use_cdn` (fetches JSON from CDN).
-// @unchecked because responseVerificationMode is set once at init and never mutated.
-final class WorkflowDetailProcessor: @unchecked Sendable {
+final class WorkflowDetailProcessor: Sendable {
 
     private let cdnFetch: WorkflowCdnFetch
-    private let responseVerificationMode: Signing.ResponseVerificationMode
 
-    init(cdnFetch: @escaping WorkflowCdnFetch,
-         responseVerificationMode: Signing.ResponseVerificationMode) {
+    init(cdnFetch: @escaping WorkflowCdnFetch) {
         self.cdnFetch = cdnFetch
-        self.responseVerificationMode = responseVerificationMode
     }
 
     func process(_ data: Data, completion: @escaping (Result<WorkflowDetailProcessingResult, Error>) -> Void) {
@@ -120,24 +115,21 @@ final class WorkflowDetailProcessor: @unchecked Sendable {
                 }
                 completion(.success(.init(workflowData: workflowData, enrolledVariants: enrolledVariants)))
             case .failure(let error):
-                completion(.failure(WorkflowDetailProcessingError.cdnFetchFailed(error)))
+                if case WorkflowDetailProcessingError.cdnHashMismatch = error {
+                    completion(.failure(error))
+                } else {
+                    completion(.failure(WorkflowDetailProcessingError.cdnFetchFailed(error)))
+                }
             }
         }
     }
 
-    /// Returns an error if hash verification fails and enforcement requires it. Returns `nil` if verification
-    /// passes or is not enabled.
     private func verifyCdnHashIfNeeded(_ data: Data, expectedHash: String?) -> Error? {
-        guard self.responseVerificationMode.isEnabled else { return nil }
-
-        guard let expectedHash else {
-            Logger.warn(Strings.network.workflow_cdn_hash_missing)
-            return self.responseVerificationMode.isEnforced ? WorkflowDetailProcessingError.missingCdnHash : nil
-        }
+        guard let expectedHash else { return nil }
 
         guard Self.verifyCdnHash(data, expectedHash: expectedHash) else {
             Logger.warn(Strings.network.workflow_cdn_hash_mismatch)
-            return self.responseVerificationMode.isEnforced ? WorkflowDetailProcessingError.cdnHashMismatch : nil
+            return WorkflowDetailProcessingError.cdnHashMismatch
         }
 
         return nil

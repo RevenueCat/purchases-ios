@@ -26,8 +26,7 @@ class WorkflowsAPI {
         self.backendConfig = backendConfig
         self.workflowDetailCallbackCache = .init()
         self.detailProcessor = WorkflowDetailProcessor(
-            cdnFetch: cdnFetch ?? Self.defaultCdnFetch(httpClient: backendConfig.httpClient),
-            responseVerificationMode: backendConfig.systemInfo.responseVerificationMode
+            cdnFetch: cdnFetch ?? Self.defaultCdnFetch(httpClient: backendConfig.httpClient)
         )
     }
 
@@ -55,6 +54,8 @@ class WorkflowsAPI {
                         withChecksum: checksum
                     )
                     completion(.success(try Data(contentsOf: cachedURL)))
+                } catch FileRepository.Error.checksumMismatch {
+                    completion(.failure(WorkflowDetailProcessingError.cdnHashMismatch))
                 } catch {
                     completion(.failure(error))
                 }

@@ -117,7 +117,6 @@ private extension GetWorkflowOperation {
                     .unknownAction,
                     .missingInlineData,
                     .missingCdnUrl,
-                    .missingCdnHash,
                     .cdnHashMismatch:
                 return .failure(.networkError(NetworkError.decoding(processingError, envelopeData)))
             }
