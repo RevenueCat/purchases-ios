@@ -28,6 +28,7 @@ enum WorkflowDetailProcessingError: Error {
     case unknownAction(String)
     case missingInlineData
     case missingCdnUrl
+    case missingCdnHash
     case cdnHashMismatch
 
 }
@@ -127,13 +128,14 @@ final class WorkflowDetailProcessor: Sendable {
     private func verifyCdnHashIfNeeded(_ data: Data, expectedHash: String?) -> Error? {
         guard self.responseVerificationMode.isEnabled else { return nil }
 
-        guard let expectedHash, Self.verifyCdnHash(data, expectedHash: expectedHash) else {
-            Logger.warn(Strings.network.workflow_cdn_hash_mismatch)
+        guard let expectedHash else {
+            Logger.warn(Strings.network.workflow_cdn_hash_missing)
+            return self.responseVerificationMode.isEnforced ? WorkflowDetailProcessingError.missingCdnHash : nil
+        }
 
-            if self.responseVerificationMode.isEnforced {
-                return WorkflowDetailProcessingError.cdnHashMismatch
-            }
-            return nil
+        guard Self.verifyCdnHash(data, expectedHash: expectedHash) else {
+            Logger.warn(Strings.network.workflow_cdn_hash_mismatch)
+            return self.responseVerificationMode.isEnforced ? WorkflowDetailProcessingError.cdnHashMismatch : nil
         }
 
         return nil

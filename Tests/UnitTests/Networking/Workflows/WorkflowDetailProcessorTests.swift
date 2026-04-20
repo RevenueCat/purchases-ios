@@ -276,8 +276,8 @@ class WorkflowDetailProcessorTests: TestCase {
         }
 
         expect(result).to(beFailure { error in
-            guard case WorkflowDetailProcessingError.cdnHashMismatch = error else {
-                fail("Expected cdnHashMismatch, got \(error)")
+            guard case WorkflowDetailProcessingError.missingCdnHash = error else {
+                fail("Expected missingCdnHash, got \(error)")
                 return
             }
         })
