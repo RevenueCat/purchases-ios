@@ -139,27 +139,8 @@ final class WorkflowDetailProcessor: Sendable {
         return nil
     }
 
-    /// Verifies that the SHA-256 hash of the CDN content (excluding the `hash` field)
-    /// matches the expected hash from the envelope.
-    ///
-    /// The canonical form matches the backend: sorted keys, compact separators (`","`/`":"`),
-    /// with the `hash` key excluded from the preimage.
     static func verifyCdnHash(_ data: Data, expectedHash: String) -> Bool {
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return false
-        }
-
-        let preimage = json.filter { $0.key != "hash" }
-
-        guard let canonicalData = try? JSONSerialization.data(
-            withJSONObject: preimage,
-            options: [.sortedKeys, .withoutEscapingSlashes]
-        ) else {
-            return false
-        }
-
-        let computedHash = canonicalData.sha256String
-        return computedHash == expectedHash
+        return data.sha256String == expectedHash
     }
 
 }

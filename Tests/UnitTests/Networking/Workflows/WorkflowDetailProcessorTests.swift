@@ -222,9 +222,9 @@ class WorkflowDetailProcessorTests: TestCase {
     // MARK: - CDN hash verification (enforced mode)
 
     func testUseCdnSucceedsWithValidHashInEnforcedMode() throws {
+        let cdnData = try JSONSerialization.data(withJSONObject: ["id": "from_cdn"])
+        let expectedHash = cdnData.sha256String
         let processor = self.processorWithVerification(mode: .enforced(Signing.loadPublicKey()))
-
-        let expectedHash = "b9c022b65b0163693e3a4feb85299a46a31d46b5c408c15a70537190af8652a8"
 
         let envelope: [String: Any] = [
             "action": "use_cdn",
@@ -283,72 +283,19 @@ class WorkflowDetailProcessorTests: TestCase {
         })
     }
 
-    func testUseCdnHashIgnoresHashFieldInCdnContent() throws {
-        // CDN content may include a "hash" field — it should be excluded from the preimage
-        let cdnContentWithHash: [String: Any] = ["id": "wf1", "hash": "embedded_hash"]
-        let cdnContentWithoutHash: [String: Any] = ["id": "wf1"]
-
-        let cdnData = try JSONSerialization.data(withJSONObject: cdnContentWithHash)
-        let processor = WorkflowDetailProcessor(cdnFetch: { _, completion in
-            completion(.success(cdnData))
-        }, responseVerificationMode: .enforced(Signing.loadPublicKey()))
-
-        // Compute expected hash from content without "hash" field
-        let preimageData = try JSONSerialization.data(
-            withJSONObject: cdnContentWithoutHash,
-            options: [.sortedKeys, .withoutEscapingSlashes]
-        )
-        let expectedHash = preimageData.sha256String
-
-        let envelope: [String: Any] = [
-            "action": "use_cdn",
-            "url": "https://cdn.example/w.json",
-            "hash": expectedHash
-        ]
-        let data = try JSONSerialization.data(withJSONObject: envelope)
-
-        let result = waitUntilValue { completed in
-            processor.process(data, completion: completed)
-        }
-
-        expect(result).to(beSuccess())
-    }
-
     // MARK: - verifyCdnHash (unit tests for the static method)
 
     func testVerifyCdnHashReturnsTrueForMatchingHash() throws {
-        let content: [String: Any] = ["id": "wf_abc", "steps": ["a": 1]]
-        let contentData = try JSONSerialization.data(withJSONObject: content)
-
-        let preimageData = try JSONSerialization.data(
-            withJSONObject: content,
-            options: [.sortedKeys, .withoutEscapingSlashes]
-        )
-        let hash = preimageData.sha256String
+        let contentData = try JSONSerialization.data(withJSONObject: ["id": "wf_abc", "steps": ["a": 1]])
+        let hash = contentData.sha256String
 
         expect(WorkflowDetailProcessor.verifyCdnHash(contentData, expectedHash: hash)) == true
     }
 
     func testVerifyCdnHashReturnsFalseForMismatch() throws {
-        let content: [String: Any] = ["id": "wf_abc"]
-        let contentData = try JSONSerialization.data(withJSONObject: content)
+        let contentData = try JSONSerialization.data(withJSONObject: ["id": "wf_abc"])
 
         expect(WorkflowDetailProcessor.verifyCdnHash(contentData, expectedHash: "wrong")) == false
-    }
-
-    func testVerifyCdnHashExcludesHashField() throws {
-        let contentWithHash: [String: Any] = ["id": "wf_abc", "hash": "some_value"]
-        let contentData = try JSONSerialization.data(withJSONObject: contentWithHash)
-
-        // Hash should be computed over {"id":"wf_abc"} only
-        let preimage: [String: Any] = ["id": "wf_abc"]
-        let preimageData = try JSONSerialization.data(
-            withJSONObject: preimage,
-            options: [.sortedKeys, .withoutEscapingSlashes]
-        )
-        let hash = preimageData.sha256String
-
-        expect(WorkflowDetailProcessor.verifyCdnHash(contentData, expectedHash: hash)) == true
     }
 
     func testVerifyCdnHashReturnsFalseForInvalidData() {

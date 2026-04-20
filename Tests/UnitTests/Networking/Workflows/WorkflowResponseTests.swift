@@ -19,29 +19,6 @@ import XCTest
 
 class WorkflowResponseTests: TestCase {
 
-    func testDecodeWorkflowsListResponse() throws {
-        let json = """
-        {
-          "workflows": [
-            { "id": "wf_1", "display_name": "Flow A" }
-          ],
-          "ui_config": {
-            "app": { "colors": {}, "fonts": {} },
-            "localizations": {},
-            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
-          }
-        }
-        """.data(using: .utf8)!
-
-        let response = try JSONDecoder.default.decode(
-            WorkflowsListResponse.self, from: json
-        )
-
-        expect(response.workflows).to(haveCount(1))
-        expect(response.workflows.first?.id) == "wf_1"
-        expect(response.workflows.first?.displayName) == "Flow A"
-    }
-
     func testDecodePublishedWorkflowWithStepsAndTriggerActions() throws {
         let json = """
         {

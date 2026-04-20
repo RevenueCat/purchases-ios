@@ -32,6 +32,36 @@ class WorkflowsAPI {
     }
 
     private static func defaultCdnFetch(httpClient: HTTPClient) -> WorkflowCdnFetch {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            return Self.fileCachedCdnFetch()
+        }
+        return Self.httpCdnFetch(httpClient: httpClient)
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    private static func fileCachedCdnFetch(
+        fileRepository: FileRepositoryType = FileRepository.shared
+    ) -> WorkflowCdnFetch {
+        return { cdnUrl, completion in
+            guard let url = URL(string: cdnUrl) else {
+                completion(.failure(URLError(.badURL)))
+                return
+            }
+            Task {
+                do {
+                    let cachedURL = try await fileRepository.generateOrGetCachedFileURL(
+                        for: url,
+                        withChecksum: nil
+                    )
+                    completion(.success(try Data(contentsOf: cachedURL)))
+                } catch {
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+
+    private static func httpCdnFetch(httpClient: HTTPClient) -> WorkflowCdnFetch {
         return { cdnUrl, completion in
             guard let url = URL(string: cdnUrl) else {
                 completion(.failure(URLError(.badURL)))
