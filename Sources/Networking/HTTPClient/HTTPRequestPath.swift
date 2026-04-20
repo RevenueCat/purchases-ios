@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 8/8/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 protocol HTTPRequestPath {
@@ -104,6 +106,7 @@ extension HTTPRequest {
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
+        case adMobSSVStatus(appUserID: String, clientTransactionID: String)
 
     }
 
@@ -189,7 +192,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getVirtualCurrencies,
                 .appHealthReport,
                 .postCreateTicket,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .adMobSSVStatus:
             return true
 
         case .health,
@@ -218,7 +222,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .isPurchaseAllowedByRestoreBehavior:
             return true
         case .health,
-             .appHealthReportAvailability:
+             .appHealthReportAvailability,
+             // ETags would let `pending` responses 304 even after the backend has
+             // transitioned to `validated`/`failed`. Each poll must reflect fresh server state.
+             .adMobSSVStatus:
             return false
         }
     }
@@ -243,7 +250,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket:
+                .postCreateTicket,
+                .adMobSSVStatus:
             return false
         }
     }
@@ -268,7 +276,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealthReport,
-                .postCreateTicket:
+                .postCreateTicket,
+                .adMobSSVStatus:
             return false
         }
     }
@@ -331,6 +340,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "customercenter/support/create-ticket"
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
             return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
+
+        case let .adMobSSVStatus(appUserID, clientTransactionID):
+            return "subscribers/\(Self.escape(appUserID))/ads/admob/ssv/\(Self.escape(clientTransactionID))"
         }
     }
 
@@ -388,6 +400,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "post_create_ticket"
         case .isPurchaseAllowedByRestoreBehavior:
             return "post_restore_eligibility"
+
+        case .adMobSSVStatus:
+            return "get_admob_ssv_status"
         }
     }
 
