@@ -956,14 +956,19 @@ platform :ios do
   desc "archive all platforms"
   lane :archive_all_platforms do
     platforms = {
-      'ios' => 'generic/platform=ios',
-      'tvos' => 'generic/platform=tvos',
-      'catalyst' => 'generic/platform=macOS,variant=Mac Catalyst'
+      'ios' => { destination: 'generic/platform=ios' },
+      'tvos' => { destination: 'generic/platform=tvos' },
+      'catalyst' => { destination: 'generic/platform=macOS,variant=Mac Catalyst', catalyst_platform: 'macos' }
     }
 
-    platforms.each do |platform, destination|
-      match(type: "appstore", platform: platform, readonly: true)
-      gym(export_method: "app-store", destination: destination)
+    platforms.each do |platform, config|
+      match_options = { type: "appstore", platform: platform, readonly: true }
+      match_options[:additional_cert_types] = "mac_installer_distribution" if config[:catalyst_platform] == "macos"
+      match(**match_options)
+
+      gym_options = { export_method: "app-store", destination: config[:destination] }
+      gym_options[:catalyst_platform] = config[:catalyst_platform] if config[:catalyst_platform]
+      gym(**gym_options)
     end
   end
 
