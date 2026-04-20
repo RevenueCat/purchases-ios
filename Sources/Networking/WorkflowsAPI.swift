@@ -15,10 +15,8 @@ import Foundation
 
 class WorkflowsAPI {
 
-    typealias WorkflowsListResponseHandler = Backend.ResponseHandler<WorkflowsListResponse>
     typealias WorkflowDetailResponseHandler = Backend.ResponseHandler<WorkflowFetchResult>
 
-    private let workflowsListCallbackCache: CallbackCache<WorkflowsListCallback>
     private let workflowDetailCallbackCache: CallbackCache<WorkflowDetailCallback>
     private let backendConfig: BackendConfiguration
     private let detailProcessor: WorkflowDetailProcessor
@@ -26,7 +24,6 @@ class WorkflowsAPI {
     init(backendConfig: BackendConfiguration,
          cdnFetch: WorkflowCdnFetch? = nil) {
         self.backendConfig = backendConfig
-        self.workflowsListCallbackCache = .init()
         self.workflowDetailCallbackCache = .init()
         self.detailProcessor = WorkflowDetailProcessor(
             cdnFetch: cdnFetch ?? Self.defaultCdnFetch(httpClient: backendConfig.httpClient),
@@ -42,26 +39,6 @@ class WorkflowsAPI {
             }
             httpClient.fetchRawData(from: url, completion: completion)
         }
-    }
-
-    func getWorkflows(appUserID: String,
-                      isAppBackgrounded: Bool,
-                      completion: @escaping WorkflowsListResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
-        let factory = GetWorkflowsOperation.createFactory(
-            configuration: config,
-            workflowsCallbackCache: self.workflowsListCallbackCache
-        )
-
-        let callback = WorkflowsListCallback(cacheKey: factory.cacheKey, completion: completion)
-        let cacheStatus = self.workflowsListCallbackCache.add(callback)
-
-        self.backendConfig.addCacheableOperation(
-            with: factory,
-            delay: .default(forBackgroundedApp: isAppBackgrounded),
-            cacheStatus: cacheStatus
-        )
     }
 
     func getWorkflow(appUserID: String,

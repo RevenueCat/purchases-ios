@@ -103,7 +103,6 @@ extension HTTPRequest {
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
-        case getWorkflows(appUserID: String)
         case getWorkflow(appUserID: String, workflowId: String)
         case postRedeemWebPurchase
         case postCreateTicket
@@ -191,7 +190,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
-                .getWorkflows,
                 .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket,
@@ -219,7 +217,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
-                .getWorkflows,
                 .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket,
@@ -240,7 +237,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
-                .getWorkflows,
                 .getWorkflow,
                 .appHealthReport,
                 .appHealthReportAvailability,
@@ -277,7 +273,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
-                .getWorkflows,
                 .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket:
@@ -339,9 +334,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getVirtualCurrencies(appUserID):
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
-        case let .getWorkflows(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/workflows?type=paywall"
-
         case let .getWorkflow(appUserID, workflowId):
             return "subscribers/\(Self.escape(appUserID))/workflows/\(Self.escape(workflowId))"
 
@@ -398,9 +390,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getVirtualCurrencies:
             return "get_virtual_currencies"
-
-        case .getWorkflows:
-            return "get_workflows"
 
         case .getWorkflow:
             return "get_workflow"

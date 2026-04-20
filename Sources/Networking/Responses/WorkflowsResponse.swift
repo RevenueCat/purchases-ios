@@ -13,22 +13,6 @@
 
 import Foundation
 
-// MARK: - List response
-
-struct WorkflowSummary {
-
-    let id: String
-    let displayName: String
-
-}
-
-struct WorkflowsListResponse {
-
-    let workflows: [WorkflowSummary]
-    let uiConfig: UIConfig
-
-}
-
 // MARK: - Detail models
 
 struct WorkflowTrigger {
@@ -102,9 +86,6 @@ struct WorkflowFetchResult {
 
 // MARK: - Codable
 
-extension WorkflowSummary: Codable, Equatable, Sendable {}
-extension WorkflowsListResponse: Codable, Equatable, Sendable {}
-
 extension WorkflowTrigger: Codable, Equatable, Sendable {}
 extension WorkflowTriggerAction: Codable, Equatable, Sendable {}
 extension WorkflowStep: Codable, Equatable, Sendable {}
@@ -128,5 +109,4 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
 extension PublishedWorkflow: Codable, Equatable, Sendable {}
 extension WorkflowFetchResult: Equatable, Sendable {}
 
-extension WorkflowsListResponse: HTTPResponseBody {}
 extension PublishedWorkflow: HTTPResponseBody {}

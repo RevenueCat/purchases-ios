@@ -20,21 +20,6 @@ class MockWorkflowsAPI: WorkflowsAPI {
         super.init(backendConfig: MockBackendConfiguration())
     }
 
-    var invokedGetWorkflows = false
-    var invokedGetWorkflowsCount = 0
-    var invokedGetWorkflowsParameters: (appUserID: String, isAppBackgrounded: Bool)?
-    var stubbedGetWorkflowsResult: Result<WorkflowsListResponse, BackendError>?
-
-    override func getWorkflows(appUserID: String,
-                               isAppBackgrounded: Bool,
-                               completion: @escaping WorkflowsListResponseHandler) {
-        self.invokedGetWorkflows = true
-        self.invokedGetWorkflowsCount += 1
-        self.invokedGetWorkflowsParameters = (appUserID, isAppBackgrounded)
-
-        completion(self.stubbedGetWorkflowsResult ?? .failure(.missingAppUserID()))
-    }
-
     var invokedGetWorkflow = false
     var invokedGetWorkflowCount = 0
     var invokedGetWorkflowParameters: (appUserID: String, workflowId: String, isAppBackgrounded: Bool)?

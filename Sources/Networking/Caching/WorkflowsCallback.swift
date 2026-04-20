@@ -13,13 +13,6 @@
 
 import Foundation
 
-struct WorkflowsListCallback: CacheKeyProviding {
-
-    let cacheKey: String
-    let completion: (Result<WorkflowsListResponse, BackendError>) -> Void
-
-}
-
 struct WorkflowDetailCallback: CacheKeyProviding {
 
     let cacheKey: String
