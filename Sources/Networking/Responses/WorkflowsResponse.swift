@@ -27,8 +27,7 @@ struct WorkflowTrigger {
 struct WorkflowTriggerAction {
 
     let type: String
-    let stepId: String?
-    let value: String?
+    let stepId: String
 
 }
 
