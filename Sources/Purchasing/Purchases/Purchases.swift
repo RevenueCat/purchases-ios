@@ -2121,12 +2121,7 @@ extension Purchases {
         }
     }
 
-    /// The public API key the SDK was configured with.
-    ///
-    /// Exposed via `@_spi(Internal)` so adapter modules (e.g., RevenueCatAdMob) that import
-    /// the SDK with `@_spi(Internal) import RevenueCat` can read the configured key when
-    /// constructing payloads such as AdMob SSV `customRewardString`. The key is already
-    /// public plaintext in the app binary, so exposing it does not introduce a security risk.
+    /// Exposed so adapter modules (e.g., RevenueCatAdMob) can read the configured key.
     @_spi(Internal) public var apiKey: String {
         return self.systemInfo.apiKey
     }
