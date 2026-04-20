@@ -1,4 +1,4 @@
-name: Approve Full Test Suite
+name: "@RCGitBot please test"
 
 on:
   issue_comment:
@@ -111,6 +111,123 @@ jobs:
           fi
 
           echo "Successfully approved '$APPROVAL_JOB_NAME' in workflow '$WORKFLOW_NAME'"
+
+      - name: React to comment
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          if [[ "$JOB_STATUS" == "success" ]]; then
+            REACTION="+1"
+          else
+            REACTION="-1"
+          fi
+          gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions \
+            -f content="$REACTION"
+
+  # Trigger CircleCI job(s) on-demand via "@RCGitBot please test <job1> <job2> <job3>".
+  # Triggers a new CircleCI pipeline; the setup config generates a continuation
+  # config containing only a workflow with the requested job(s).
+  run-specific-jobs:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '@RCGitBot please test ') &&
+      github.repository == 'RevenueCat/purchases-ios'
+
+    steps:
+      - name: Check membership in RevenueCat Org
+        env:
+          READ_ORG_GITHUB_TOKEN: ${{ secrets.READ_ORG_GITHUB_TOKEN }}
+        id: verify
+        run: |
+          RESPONSE=$(curl -s -o /dev/null \
+            --head \
+            -w "%{http_code}" \
+            -H "Authorization: Bearer $READ_ORG_GITHUB_TOKEN" \
+            https://api.github.com/orgs/RevenueCat/members/${{ github.event.comment.user.login }})
+          if [[ "$RESPONSE" != "204" ]]; then
+            echo "User is not a member of the organization"
+            exit 1
+          fi
+          echo "User is a member of the organization"
+
+      - name: Parse job names
+        id: parse
+        env:
+          COMMENT: ${{ github.event.comment.body }}
+        run: |
+          # GHA's startsWith() is case-insensitive, so lowercase the comment before stripping
+          # the prefix. Then use the length to slice the original, preserving job name case
+          # (e.g. backend-integration-tests-SK1).
+          PREFIX="@rcgitbot please test "
+          COMMENT_LOWER="$(echo "$COMMENT" | tr '[:upper:]' '[:lower:]')"
+          if [[ "$COMMENT_LOWER" != "$PREFIX"* ]]; then
+            echo "::error::Comment does not start with '@RCGitBot please test '"
+            exit 1
+          fi
+          JOBS_RAW="${COMMENT:${#PREFIX}}"
+          # Trim whitespace
+          JOBS_RAW=$(echo "$JOBS_RAW" | xargs)
+          if [[ -z "$JOBS_RAW" ]]; then
+            echo "::error::No job name(s) provided"
+            exit 1
+          fi
+          # Validate: only alphanumeric, hyphens, underscores, and spaces
+          if [[ ! "$JOBS_RAW" =~ ^[a-zA-Z0-9_[:space:]-]+$ ]]; then
+            echo "::error::Invalid input: $JOBS_RAW (only alphanumeric, hyphens, underscores, and spaces allowed)"
+            exit 1
+          fi
+          echo "job_names=$JOBS_RAW" >> "$GITHUB_OUTPUT"
+          echo "Parsed job(s): $JOBS_RAW"
+
+      - name: Get PR branch
+        id: get-branch
+        run: echo "branch=$(gh pr view "$PR_NO" --repo "$REPO" --json headRefName --jq '.headRefName')" >> "$GITHUB_OUTPUT"
+        env:
+          REPO: ${{ github.repository }}
+          PR_NO: ${{ github.event.issue.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger CircleCI pipeline
+        id: trigger
+        env:
+          CCI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
+          BRANCH: ${{ steps.get-branch.outputs.branch }}
+          JOB_NAMES: ${{ steps.parse.outputs.job_names }}
+        run: |
+          PROJECT_SLUG="gh/RevenueCat/purchases-ios"
+
+          RESPONSE=$(curl -s --max-time 15 -w "\n%{http_code}" -X POST \
+            -H "Circle-Token: $CCI_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"branch\": \"$BRANCH\", \"parameters\": {\"requested_jobs\": \"$JOB_NAMES\"}}" \
+            "https://circleci.com/api/v2/project/$PROJECT_SLUG/pipeline")
+
+          HTTP_STATUS=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [[ "$HTTP_STATUS" != "201" ]]; then
+            echo "::error::Failed to trigger pipeline. CircleCI returned HTTP $HTTP_STATUS"
+            echo "$BODY"
+            exit 1
+          fi
+
+          PIPELINE_ID=$(echo "$BODY" | jq -r '.id')
+          PIPELINE_NUMBER=$(echo "$BODY" | jq -r '.number')
+          echo "pipeline_number=$PIPELINE_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "Triggered pipeline #$PIPELINE_NUMBER (id: $PIPELINE_ID) for job(s) '$JOB_NAMES' on branch '$BRANCH'"
+
+      - name: Post pipeline link
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PIPELINE_NUMBER: ${{ steps.trigger.outputs.pipeline_number }}
+          JOB_NAMES: ${{ steps.parse.outputs.job_names }}
+        run: |
+          gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
+            -f body="🚀 Triggered **$JOB_NAMES** → [Pipeline #$PIPELINE_NUMBER](https://app.circleci.com/pipelines/gh/RevenueCat/purchases-ios/$PIPELINE_NUMBER)"
 
       - name: React to comment
         if: always()

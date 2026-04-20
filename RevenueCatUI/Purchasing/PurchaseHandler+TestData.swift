@@ -17,6 +17,14 @@ import Foundation
 
 #if DEBUG
 
+/// Uses `Task { }` so paywall events reach `MockPurchases.track` promptly. The production
+/// ``PaywallEventTracker/dispatcher()`` uses `Task.detached(priority: .background)`, which can delay
+/// delivery enough that XCTest expectations time out.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private let paywallEventMockDispatcher: PaywallEventTracker.EventDispatcher = { work in
+    Task { await work() }
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
@@ -55,11 +63,19 @@ extension PurchaseHandler {
             }
         return self.init(
             purchases: purchases,
-            eventDispatcher: Self.testEventDispatcher,
             performPurchase: performPurchase,
             performRestore: performRestore,
-            purchaseResultPublisher: purchaseResultPublisher
+            purchaseResultPublisher: purchaseResultPublisher,
+            eventTracker: .init(purchases: purchases, eventDispatcher: paywallEventMockDispatcher)
         )
+    }
+
+    /// Creates a mock `PurchaseHandler` that is already in the purchasing state.
+    static func purchasing(package: Package = TestData.annualPackage) -> Self {
+        let handler = Self.mock()
+        handler.actionTypeInProgress = .purchase
+        handler.packageBeingPurchased = package
+        return handler
     }
 
     static func cancelling(
@@ -76,17 +92,18 @@ extension PurchaseHandler {
 
     /// - Returns: `PurchaseHandler` that throws `error` for purchases and restores.
     static func failing(_ error: Error) -> Self {
+        let purchases = MockPurchases { _, _, _ in
+            throw error
+        } restorePurchases: {
+            throw error
+        } trackEvent: { event in
+            Logger.debug("Tracking event: \(event)")
+        } customerInfo: {
+            throw error
+        }
         return self.init(
-            purchases: MockPurchases { _, _, _ in
-                throw error
-            } restorePurchases: {
-                throw error
-            } trackEvent: { event in
-                Logger.debug("Tracking event: \(event)")
-            } customerInfo: {
-                throw error
-            },
-            eventDispatcher: Self.testEventDispatcher
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases, eventDispatcher: paywallEventMockDispatcher)
         )
     }
 
@@ -111,19 +128,6 @@ extension Task where Success == Never, Failure == Never {
 
     static func sleep(seconds: TimeInterval) async {
         try? await Self.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension PurchaseHandler {
-
-    /// Test event dispatcher that uses `Task { }` instead of `Task.detached(priority: .background)`.
-    /// Non-detached tasks inherit the caller's actor context and priority, so events are delivered
-    /// promptly without the aggressive deprioritization that `Task.detached(priority: .background)`
-    /// causes on iOS 26+ CI environments.
-    static let testEventDispatcher: EventDispatcher = { work in
-        Task { await work() }
     }
 
 }

@@ -136,4 +136,66 @@ class ButtonComponentViewModel {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension ButtonComponentViewModel.Action {
+
+    var paywallComponentInteractionValue: String {
+        switch self {
+        case .restorePurchases:
+            return "restore_purchases"
+        case .navigateBack:
+            return "navigate_back"
+        case .unknown:
+            return "unknown"
+        case .sheet:
+            return "navigate_to_sheet"
+        case .navigateTo(let destination):
+            return destination.paywallComponentInteractionValue
+        }
+    }
+
+    var paywallComponentInteractionURL: URL? {
+        switch self {
+        case .navigateTo(let destination):
+            return destination.paywallComponentInteractionURL
+        case .restorePurchases, .navigateBack, .unknown, .sheet:
+            return nil
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension ButtonComponentViewModel.Destination {
+
+    fileprivate var paywallComponentInteractionValue: String {
+        switch self {
+        case .customerCenter:
+            return "navigate_to_customer_center"
+        case .offerCodeRedemptionSheet:
+            return "navigate_to_offer_code"
+        case .url:
+            return "navigate_to_url"
+        case .privacyPolicy:
+            return "navigate_to_privacy_policy"
+        case .terms:
+            return "navigate_to_terms"
+        case .webPaywallLink:
+            return "navigate_to_web_paywall_link"
+        case .unknown:
+            return "navigate_to_unknown"
+        }
+    }
+
+    fileprivate var paywallComponentInteractionURL: URL? {
+        switch self {
+        case .url(let url, _), .privacyPolicy(let url, _), .terms(let url, _), .webPaywallLink(let url, _):
+            return url
+        case .customerCenter, .offerCodeRedemptionSheet, .unknown:
+            return nil
+        }
+    }
+
+}
+
 #endif

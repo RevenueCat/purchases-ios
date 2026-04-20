@@ -182,6 +182,46 @@ class FallbackComponentTests: TestCase {
         }
     }
 
+    func testFallbackHeaderDecodesAsFallbackHeaderNotAsStack() throws {
+        let jsonString = """
+        {
+            "type": "fallback_header",
+            "fallback": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedComponent = try JSONDecoder.default.decode(PaywallComponent.self, from: jsonData)
+
+        switch decodedComponent {
+        case .fallbackHeader:
+            // Expected: SDK recognizes fallback_header and does not fall through to the fallback stack
+            break
+        default:
+            XCTFail("Expected .fallbackHeader but got \(decodedComponent)")
+        }
+    }
+
+    func testFallbackHeaderEncodesAndRedecodes() throws {
+        let jsonString = """
+        {
+            "type": "fallback_header",
+            "fallback": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedComponent = try JSONDecoder.default.decode(PaywallComponent.self, from: jsonData)
+
+        let encodedData = try JSONEncoder.default.encode(decodedComponent)
+        let redecodedComponent = try JSONDecoder.default.decode(PaywallComponent.self, from: encodedData)
+
+        switch redecodedComponent {
+        case .fallbackHeader:
+            break
+        default:
+            XCTFail("Expected .fallbackHeader but got \(redecodedComponent)")
+        }
+    }
+
 }
 
 #endif

@@ -190,6 +190,159 @@ class EventsManagerTests: TestCase {
         expect(map["type"] as? String) == "paywall_purchase_error"
     }
 
+    func testPaywallComponentInteractionToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ComponentInteractionData(componentType: .carousel, componentValue: "1")
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_component_interacted"
+        expect(map["component_type"] as? String) == "carousel"
+        expect(map["component_value"] as? String) == "1"
+        expect(map["component_url"]).to(beNil())
+    }
+
+    func testPaywallComponentInteractionToMap_IncludesComponentURLWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let url = URL(string: "https://example.com/terms")!
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .button,
+            componentName: "terms",
+            componentValue: "navigate_to_terms",
+            componentURL: url
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_url"] as? String) == url.absoluteString
+    }
+
+    func testPaywallComponentInteractionToMap_IncludesNavigationFieldsWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .tab,
+            componentName: "plans_tabs",
+            componentValue: "annual",
+            originIndex: 0,
+            destinationIndex: 1,
+            originContextName: "monthly",
+            destinationContextName: "annual",
+            defaultIndex: 0
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["origin_index"] as? Int) == 0
+        expect(map["destination_index"] as? Int) == 1
+        expect(map["origin_context_name"] as? String) == "monthly"
+        expect(map["destination_context_name"] as? String) == "annual"
+        expect(map["default_index"] as? Int) == 0
+    }
+
+    func testPaywallComponentInteractionToMap_IncludesPlanSelectionIdentifiersWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .package,
+            componentName: "annual_package",
+            componentValue: "annual",
+            originPackageIdentifier: "monthly",
+            destinationPackageIdentifier: "annual",
+            defaultPackageIdentifier: "annual",
+            originProductIdentifier: "com.monthly",
+            destinationProductIdentifier: "com.annual",
+            defaultProductIdentifier: "com.annual"
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "package"
+        expect(map["origin_package_id"] as? String) == "monthly"
+        expect(map["destination_package_id"] as? String) == "annual"
+        expect(map["default_package_id"] as? String) == "annual"
+        expect(map["origin_product_id"] as? String) == "com.monthly"
+        expect(map["destination_product_id"] as? String) == "com.annual"
+        expect(map["default_product_id"] as? String) == "com.annual"
+    }
+
+    func testPaywallComponentInteractionToMap_IncludesPackageSelectionSheetLifecycleFieldsWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .packageSelectionSheet,
+            componentName: "all_plans_sheet",
+            componentValue: "close",
+            currentPackageIdentifier: "monthly_standard",
+            resultingPackageIdentifier: "annual_premium",
+            currentProductIdentifier: "com.example.sub.monthly",
+            resultingProductIdentifier: "com.example.sub.annual"
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "package_selection_sheet"
+        expect(map["component_name"] as? String) == "all_plans_sheet"
+        expect(map["component_value"] as? String) == "close"
+        expect(map["current_package_id"] as? String) == "monthly_standard"
+        expect(map["current_product_id"] as? String) == "com.example.sub.monthly"
+        expect(map["resulting_package_id"] as? String) == "annual_premium"
+        expect(map["resulting_product_id"] as? String) == "com.example.sub.annual"
+    }
+
+    func testPaywallComponentInteractionToMap_TextMarkdownLinkUsesTextComponentType() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let url = URL(string: "https://example.com/help")!
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .text,
+            componentName: nil,
+            componentValue: "navigate_to_url",
+            componentURL: url
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "text"
+        expect(map["component_value"] as? String) == "navigate_to_url"
+        expect(map["component_url"] as? String) == url.absoluteString
+    }
+
+    func testPaywallComponentInteractionToMap_TextMarkdownLinkIncludesComponentNameWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let url = URL(string: "https://example.com/help")!
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .text,
+            componentName: "legal_footer",
+            componentValue: "navigate_to_url",
+            componentURL: url
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "text"
+        expect(map["component_name"] as? String) == "legal_footer"
+    }
+
+    func testTrackComponentInteractionEventStores() async throws {
+        let event: PaywallEvent = .componentInteraction(
+            .random(),
+            .random(),
+            .init(componentType: .button, componentValue: "navigate_back")
+        )
+
+        await self.manager.track(featureEvent: event)
+
+        let events = await self.store.storedEvents
+        expect(events) == [
+            try createStoredFeatureEvent(from: event)
+        ]
+    }
+
     // MARK: - toMap (Customer Center Events)
 
     func testCustomerCenterImpressionToMap() {

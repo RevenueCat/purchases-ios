@@ -302,6 +302,75 @@ extension GoogleMobileAds.RewardedAd: RCFullScreenAdTracking {}
 @available(iOS 15.0, *)
 extension GoogleMobileAds.RewardedInterstitialAd: RCFullScreenAdTracking {}
 
+// MARK: - Delegate reassignment
+
+@available(iOS 15.0, *)
+internal extension RCFullScreenAdTracking {
+
+    @MainActor
+    func rcSetTrackingFullScreenContentDelegate(
+        _ delegate: GoogleMobileAds.FullScreenContentDelegate?
+    ) {
+        RCAdMob.shared.updateFullScreenContentDelegate(on: self, newDelegate: delegate)
+    }
+}
+
+@available(iOS 15.0, *)
+@_spi(Experimental) public extension GoogleMobileAds.InterstitialAd {
+
+    /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
+    ///
+    /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
+    /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
+    /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
+    func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
+        self.rcSetTrackingFullScreenContentDelegate(delegate)
+    }
+}
+
+@available(iOS 15.0, *)
+@_spi(Experimental) public extension GoogleMobileAds.AppOpenAd {
+
+    /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
+    ///
+    /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
+    /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
+    /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
+    func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
+        self.rcSetTrackingFullScreenContentDelegate(delegate)
+    }
+}
+
+@available(iOS 15.0, *)
+@_spi(Experimental) public extension GoogleMobileAds.RewardedAd {
+
+    /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
+    ///
+    /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
+    /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
+    /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
+    func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
+        self.rcSetTrackingFullScreenContentDelegate(delegate)
+    }
+}
+
+@available(iOS 15.0, *)
+@_spi(Experimental) public extension GoogleMobileAds.RewardedInterstitialAd {
+
+    /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
+    ///
+    /// Use this instead of assigning ``fullScreenContentDelegate`` directly when the ad was loaded
+    /// via ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:completion:)``.
+    /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
+    @MainActor
+    func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
+        self.rcSetTrackingFullScreenContentDelegate(delegate)
+    }
+}
+
 @available(iOS 15.0, *)
 internal struct FullScreenLoadContext {
     let placement: String?

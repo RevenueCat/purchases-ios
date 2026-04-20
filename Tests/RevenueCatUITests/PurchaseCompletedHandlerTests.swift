@@ -33,7 +33,7 @@ class PurchaseCompletedHandlerTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.purchaseHandler
         )
-            .onPurchaseStarted {
+            .onPurchaseStarted { _ in
                 started = true
             }
             .onPurchaseStarted { package in
