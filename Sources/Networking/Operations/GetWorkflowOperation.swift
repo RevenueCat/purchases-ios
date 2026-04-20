@@ -26,7 +26,7 @@ final class GetWorkflowOperation: CacheableNetworkOperation {
         detailProcessor: WorkflowDetailProcessor,
         workflowDetailCallbackCache: CallbackCache<WorkflowDetailCallback>
     ) -> CacheableNetworkOperationFactory<GetWorkflowOperation> {
-        return .init({ cacheKey in
+        return CacheableNetworkOperationFactory<GetWorkflowOperation>({ cacheKey in
                 .init(
                     configuration: configuration,
                     workflowId: workflowId,
@@ -103,7 +103,8 @@ private extension GetWorkflowOperation {
     ) -> Result<WorkflowFetchResult, BackendError> {
         switch processingResult {
         case .success(let processed):
-            return .success(WorkflowFetchResult(workflow: processed.workflow, enrolledVariants: processed.enrolledVariants))
+            return .success(WorkflowFetchResult(workflow: processed.workflow,
+                                                enrolledVariants: processed.enrolledVariants))
         case .failure(let processingError as WorkflowDetailProcessingError):
             switch processingError {
             case .cdnFetchFailed(let underlyingError):
