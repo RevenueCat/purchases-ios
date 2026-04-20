@@ -123,7 +123,11 @@ struct CustomVariablesEditorView: View {
                     Text(type.rawValue).tag(type)
                 }
             }
+            #if os(watchOS)
+            .pickerStyle(.wheel)
+            #else
             .pickerStyle(.segmented)
+            #endif
 
             switch newVariableType {
             case .string:

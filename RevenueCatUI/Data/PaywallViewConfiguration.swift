@@ -17,6 +17,10 @@ struct PaywallViewConfiguration {
     var customerInfo: CustomerInfo?
     var mode: PaywallViewMode
     var fonts: PaywallFontProvider
+
+    /// This is a configuration value that is for V1 paywalls and the fallback paywall. V2 paywalls
+    /// can have their own close buttons configured via the dashboard, so it's not used by the
+    /// PaywallsV2View success path.
     var displayCloseButton: Bool
     let useDraftPaywall: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?

@@ -114,6 +114,7 @@ import Foundation
 
         let type: ComponentType
 
+        public let name: String?
         public let visible: Bool?
         public let size: Size?
         public let padding: Padding?
@@ -136,6 +137,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialCarouselComponent>?
 
         public init(
+            name: String? = nil,
             visible: Bool? = nil,
             size: PaywallComponent.Size? = nil,
             padding: PaywallComponent.Padding? = .zero,
@@ -156,6 +158,7 @@ import Foundation
         ) {
             self.type = .carousel
 
+            self.name = name
             self.visible = visible
             self.size = size
             self.padding = padding
@@ -177,6 +180,7 @@ import Foundation
 
         public static func == (lhs: CarouselComponent, rhs: CarouselComponent) -> Bool {
             return lhs.type == rhs.type &&
+                lhs.name == rhs.name &&
                 lhs.visible == rhs.visible &&
                 lhs.size == rhs.size &&
                 lhs.padding == rhs.padding &&
@@ -199,6 +203,7 @@ import Foundation
         // MARK: - Hashable
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(size)
             hasher.combine(padding)

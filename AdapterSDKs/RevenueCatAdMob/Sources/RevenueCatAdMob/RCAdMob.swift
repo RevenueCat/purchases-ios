@@ -178,6 +178,19 @@ internal final class RCAdMob {
         )
     }
 
+    @MainActor
+    func updateFullScreenContentDelegate(
+        on fullScreenAd: some RCFullScreenAdTracking,
+        newDelegate: GoogleMobileAds.FullScreenContentDelegate?
+    ) {
+        if let wrapper = fullScreenAd.fullScreenContentDelegate as? RCAdMobFullScreenContentDelegate {
+            wrapper.delegate = newDelegate
+            return
+        }
+
+        fullScreenAd.fullScreenContentDelegate = newDelegate
+    }
+
     func retainNativeDelegate(_ delegate: AnyObject, for object: AnyObject) {
         objc_setAssociatedObject(
             object,

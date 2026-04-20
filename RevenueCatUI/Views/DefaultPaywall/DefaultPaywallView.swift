@@ -15,7 +15,7 @@
 #if canImport(AppKit)
 import AppKit
 #endif
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
@@ -56,6 +56,8 @@ struct DefaultPaywallView: View {
 
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.locale) var locale
+
+    @Environment(\.componentInteractionLogger) var componentInteractionLogger
 
     @StateObject var appIconDetailProvider: AppIconDetailProvider
 
@@ -169,6 +171,14 @@ struct DefaultPaywallView: View {
                 VStack {
                     let purchaseButton = Button {
                         if let selected {
+                            let method = PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout
+                            self.componentInteractionLogger(.paywallPurchaseButtonAction(
+                                componentName: nil,
+                                componentValue: method.description,
+                                componentURL: nil,
+                                currentPackageIdentifier: selected.identifier,
+                                currentProductIdentifier: selected.storeProduct.productIdentifier
+                            ))
                             Task(priority: .userInitiated) {
                                 do {
                                     _ = try await handler.purchase(package: selected)
@@ -197,6 +207,7 @@ struct DefaultPaywallView: View {
                     }
 
                     let restoreButton = Button {
+                        self.componentInteractionLogger(.paywallFooterRestorePurchases())
                         Task(priority: .userInitiated) {
                             do {
                                 _ = try await handler.restorePurchases()

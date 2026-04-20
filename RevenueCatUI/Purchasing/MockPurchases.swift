@@ -16,8 +16,9 @@
 #if DEBUG
 
 /// An implementation of `PaywallPurchasesType` that allows creating custom blocks.
+/// `Sendable` is unchecked: DEBUG-only mock with mutable test state; used from tests / main actor.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class MockPurchases: PaywallPurchasesType {
+final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
 
     typealias CustomerInfoBlock = @Sendable () async throws -> CustomerInfo
     typealias PurchaseBlock = @Sendable (Package, PromotionalOffer?, PaywallEvent?) async throws -> PurchaseResultData

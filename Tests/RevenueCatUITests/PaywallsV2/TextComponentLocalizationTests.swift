@@ -348,7 +348,7 @@ class TextComponentLocalizationTests: TestCase {
             ]
         )
 
-        let viewModel = try StackComponentViewModel(
+        let viewModel = StackComponentViewModel(
             component: stackComponent,
             viewModels: [],
             badgeViewModels: [],

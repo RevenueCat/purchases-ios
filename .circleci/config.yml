@@ -5,9 +5,8 @@ setup: true
 orbs:
   continuation: circleci/continuation@1.1.0
 
-# These parameters mirror the ones in continue_config.yml so that
-# externally-triggered pipelines (API, scheduled, GitHub Actions) can
-# pass values through to the continuation config.
+# Pipeline parameters accepted via the API / CircleCI UI.
+# All parameters declared here are implicitly forwarded to default_config.yml.
 parameters:
   action:
     type: enum
@@ -15,23 +14,27 @@ parameters:
       [
         default,
         bump,
-        run-manual-tests,
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist,
         deploy_rct_tester
       ]
     default: default
   generate_snapshots:
-    default: false
     type: boolean
+    default: false
   generate_revenuecatui_snapshots:
-    default: false
     type: boolean
+    default: false
   generate_swiftinterface:
-    default: false
     type: boolean
+    default: false
+  # Set via CircleCI API by the GitHub Action when a PR comment like
+  # "@RCGitBot please test <job1> <job2> <job3>" is posted.
+  requested_jobs:
+    type: string
+    default: ""
+  # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
     default: ""
@@ -48,63 +51,62 @@ parameters:
 jobs:
   setup-dynamic-config:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:current
     resource_class: small
     steps:
       - checkout
-      - run:
-          name: Determine path-based pipeline parameters
-          command: |
-            # Determine path-based parameters
-            DEPLOY_PAYWALLS_TESTER=false
-            if git rev-parse HEAD~1 >/dev/null 2>&1; then
-              CHANGED=$(git diff HEAD~1 --name-only -- RevenueCatUI/ Tests/TestingApps/PaywallsTester/)
-              if [ -n "$CHANGED" ]; then
-                DEPLOY_PAYWALLS_TESTER=true
-                echo "PaywallsTester-relevant changes detected:"
-                echo "$CHANGED"
-              else
-                echo "No changes in RevenueCatUI/ or Tests/TestingApps/PaywallsTester/"
-              fi
-            else
-              echo "No parent commit found (initial commit?), skipping path check"
-            fi
-            echo "run-deploy-paywalls-tester=${DEPLOY_PAYWALLS_TESTER}"
+      - when:
+          condition: << pipeline.parameters.requested_jobs >>
+          steps:
+            - run:
+                name: Generate requested jobs configuration
+                environment:
+                  REQUESTED_JOBS: << pipeline.parameters.requested_jobs >>
+                command: node .circleci/generate-requested-jobs-config.js
+            - continuation/continue:
+                configuration_path: /tmp/requested-jobs-config.yml
+      - unless:
+          condition: << pipeline.parameters.requested_jobs >>
+          steps:
+            - run:
+                name: Determine path-based pipeline parameters
+                command: |
+                  # Detect changes in paths that require deploying PaywallsTester.
+                  # The deploy-paywalls-tester workflow is additionally gated on
+                  # branch=main and not-scheduled in default_config.yml.
+                  DEPLOY_PAYWALLS_TESTER=false
+                  if git rev-parse HEAD~1 >/dev/null 2>&1; then
+                    CHANGED=$(git diff HEAD~1 --name-only -- RevenueCatUI/ Tests/TestingApps/PaywallsTester/)
+                    if [ -n "$CHANGED" ]; then
+                      DEPLOY_PAYWALLS_TESTER=true
+                      echo "PaywallsTester-relevant changes detected:"
+                      echo "$CHANGED"
+                    else
+                      echo "No changes in RevenueCatUI/ or Tests/TestingApps/PaywallsTester/"
+                    fi
+                  else
+                    echo "No parent commit found (initial commit?), skipping path check"
+                  fi
 
-            # Build the parameter JSON forwarding all original pipeline
-            # parameters plus path-based ones to the continuation config.
-            python3 -c "
-            import json, sys
-            params = {
-                'action': sys.argv[1],
-                'generate_snapshots': sys.argv[2] == 'true',
-                'generate_revenuecatui_snapshots': sys.argv[3] == 'true',
-                'generate_swiftinterface': sys.argv[4] == 'true',
-                'GHA_Event': sys.argv[5],
-                'GHA_Actor': sys.argv[6],
-                'GHA_Action': sys.argv[7],
-                'GHA_Meta': sys.argv[8],
-                'run-deploy-paywalls-tester': sys.argv[9] == 'true',
-            }
-            with open('/tmp/pipeline-parameters.json', 'w') as f:
-                json.dump(params, f, indent=2)
-            print('Generated parameters:')
-            print(json.dumps(params, indent=2))
-            " \
-              "<< pipeline.parameters.action >>" \
-              "<< pipeline.parameters.generate_snapshots >>" \
-              "<< pipeline.parameters.generate_revenuecatui_snapshots >>" \
-              "<< pipeline.parameters.generate_swiftinterface >>" \
-              "<< pipeline.parameters.GHA_Event >>" \
-              "<< pipeline.parameters.GHA_Actor >>" \
-              "<< pipeline.parameters.GHA_Action >>" \
-              "<< pipeline.parameters.GHA_Meta >>" \
-              "${DEPLOY_PAYWALLS_TESTER}"
-      - continuation/continue:
-          parameters: /tmp/pipeline-parameters.json
-          configuration_path: .circleci/continue_config.yml
+                  # Only pass the computed param; other pipeline parameters (action,
+                  # generate_*, GHA_*, etc.) are implicitly forwarded by CircleCI.
+                  # run_deploy_paywalls_tester is declared only in default_config.yml,
+                  # so it won't trigger the "Conflicting pipeline parameters" error.
+                  cat > /tmp/pipeline-parameters.json <<EOF
+                  {
+                    "run_deploy_paywalls_tester": ${DEPLOY_PAYWALLS_TESTER}
+                  }
+                  EOF
+                  echo "Generated /tmp/pipeline-parameters.json:"
+                  cat /tmp/pipeline-parameters.json
+            - continuation/continue:
+                configuration_path: .circleci/default_config.yml
+                parameters: /tmp/pipeline-parameters.json
 
 workflows:
   setup:
     jobs:
-      - setup-dynamic-config
+      - setup-dynamic-config:
+          filters:
+            tags:
+              only: /.*/
