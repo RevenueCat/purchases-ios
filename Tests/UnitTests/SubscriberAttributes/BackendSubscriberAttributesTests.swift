@@ -51,6 +51,7 @@ class BackendSubscriberAttributesTests: TestCase {
     private let systemInfo = SystemInfo(
         platformInfo: .init(flavor: "Unity", version: "2.3.3"),
         finishTransactions: true,
+        apiKey: "api_key",
         storefrontProvider: MockStorefrontProvider(),
         storeKitVersion: .versionForTests,
         responseVerificationMode: .disabled,

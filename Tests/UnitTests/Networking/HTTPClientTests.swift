@@ -1498,6 +1498,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     preferredLocalesProvider: .mock())
 
         self.client = self.createClient(systemInfo)
@@ -1538,6 +1539,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
@@ -1577,6 +1579,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: true,
+                                                   apiKey: "api_key",
                                                    preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
@@ -1590,6 +1593,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let headerName = "X-UI-Preview-Mode"
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     dangerousSettings: .init(uiPreviewMode: true),
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
@@ -1614,6 +1618,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let headerName = "X-UI-Preview-Mode"
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     dangerousSettings: .init(uiPreviewMode: false),
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
@@ -1686,6 +1691,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: false,
+                                                   apiKey: "api_key",
                                                    preferredLocalesProvider: .mock()))
 
         waitUntil { completion in

@@ -207,7 +207,7 @@ class SystemInfo {
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKitVersion: StoreKitVersion = .default,
-         apiKey: String = "",
+         apiKey: String,
          apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
