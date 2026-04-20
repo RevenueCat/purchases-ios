@@ -35,7 +35,6 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             preferredLocalesProvider: .mock()
         )
         let httpClient = MockHTTPClient(
-            apiKey: "test_key",
             systemInfo: systemInfo,
             eTagManager: MockETagManager(),
             diagnosticsTracker: nil
