@@ -111,7 +111,7 @@ class BackendGetWorkflowTests: BaseBackendTests {
 
     func testGetWorkflowUseCdnFetchesWorkflowFromCdnUrl() throws {
         let cdnWorkflowData = try JSONSerialization.data(withJSONObject: Self.minimalWorkflowData)
-        self.stubbedCdnFetch = { _, completion in completion(.success(cdnWorkflowData)) }
+        self.stubbedCdnFetch = { _, _, completion in completion(.success(cdnWorkflowData)) }
 
         self.httpClient.mock(
             requestPath: .getWorkflow(appUserID: Self.userID, workflowId: "wf_1"),

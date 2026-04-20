@@ -96,7 +96,8 @@ class BaseBackendTests: TestCase {
         self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         self.redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         self.virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-        self.workflowsAPI = WorkflowsAPI(backendConfig: backendConfig, cdnFetch: { [weak self] cdnUrl, hash, completion in
+        self.workflowsAPI = WorkflowsAPI(backendConfig: backendConfig,
+                                         cdnFetch: { [weak self] cdnUrl, hash, completion in
             self?.stubbedCdnFetch(cdnUrl, hash, completion) ?? completion(.success(Data()))
         })
 
