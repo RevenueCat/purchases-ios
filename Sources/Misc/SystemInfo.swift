@@ -35,6 +35,15 @@ class SystemInfo {
     }
 
     let storeKitVersion: StoreKitVersion
+
+    /// The public API key used to configure the SDK.
+    ///
+    /// Stored here so that adapter modules importing the SDK with `@_spi(Internal)`
+    /// can read the configured key (e.g., for AdMob SSV `customRewardString`).
+    /// The key is already public plaintext in the app binary, so exposing it does not
+    /// introduce a security risk.
+    let apiKey: String
+
     private var _apiKeyValidationResult: Configuration.APIKeyValidationResult
     var apiKeyValidationResult: Configuration.APIKeyValidationResult {
         get { return self._apiKeyValidationResult }
@@ -203,6 +212,7 @@ class SystemInfo {
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKitVersion: StoreKitVersion = .default,
+         apiKey: String = "",
          apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
@@ -217,6 +227,7 @@ class SystemInfo {
         self._isAppBackgroundedState = .init(isAppBackgrounded ?? false)
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
+        self.apiKey = apiKey
         self._apiKeyValidationResult = apiKeyValidationResult
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.storefrontProvider = storefrontProvider
