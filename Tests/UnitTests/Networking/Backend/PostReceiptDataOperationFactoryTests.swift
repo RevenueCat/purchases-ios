@@ -29,13 +29,12 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             finishTransactions: true,
             storefrontProvider: MockStorefrontProvider(),
             storeKitVersion: .default,
-            apiKey: "api_key",
+            apiKey: "test_key",
             responseVerificationMode: .disabled,
             isAppBackgrounded: false,
             preferredLocalesProvider: .mock()
         )
         let httpClient = MockHTTPClient(
-            apiKey: "test_key",
             systemInfo: systemInfo,
             eTagManager: MockETagManager(),
             diagnosticsTracker: nil

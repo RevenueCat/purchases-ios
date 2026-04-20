@@ -53,7 +53,7 @@ class BackendSubscriberAttributesTests: TestCase {
         finishTransactions: true,
         storefrontProvider: MockStorefrontProvider(),
         storeKitVersion: .versionForTests,
-        apiKey: "api_key",
+        apiKey: BackendSubscriberAttributesTests.apiKey,
         responseVerificationMode: .disabled,
         isAppBackgrounded: false,
         preferredLocalesProvider: .mock(locales: ["en-US"])
@@ -650,8 +650,7 @@ class BackendSubscriberAttributesTests: TestCase {
             self.mockDiagnosticsTracker = MockDiagnosticsTracker()
         }
 
-        return MockHTTPClient(apiKey: Self.apiKey,
-                              systemInfo: self.systemInfo,
+        return MockHTTPClient(systemInfo: self.systemInfo,
                               eTagManager: self.mockETagManager,
                               diagnosticsTracker: self.mockDiagnosticsTracker,
                               sourceTestFile: file)
