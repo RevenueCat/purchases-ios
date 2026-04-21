@@ -10,6 +10,7 @@
 //  WorkflowsResponse.swift
 //
 //  Created by RevenueCat.
+// swiftlint:disable missing_docs
 
 import Foundation
 
@@ -53,6 +54,7 @@ struct WorkflowTriggerAction {
     let name: String?
     public let templateName: String
     @DefaultDecodable.Zero
+    // swiftlint:disable:next identifier_name
     var _revision: Int
     public var revision: Int { _revision }
     public let assetBaseURL: URL
@@ -96,6 +98,7 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case name
         case templateName
+        // swiftlint:disable:next identifier_name
         case _revision = "revision"
         case assetBaseURL = "assetBaseUrl"
         case componentsConfig

@@ -157,7 +157,7 @@ public struct PaywallView: View {
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
         self._offering = .init(
-            initialValue: configuration.content.extractInitialOffering()
+            initialValue: configuration.content.cachedInitialOffering()
         )
         self._customerInfo = .init(
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
@@ -396,107 +396,7 @@ private extension PaywallView {
     }
 
     func loadOffering() async throws -> Offering {
-        switch self.contentToDisplay {
-        case let .offering(offering):
-            return offering
-
-        case .defaultOffering:
-            return try await Purchases.shared.offerings().current.orThrow(PaywallError.noCurrentOffering)
-
-        case let .offeringIdentifier(identifier, presentedOfferingContext):
-            #if ENABLE_WORKFLOWS_ENDPOINT
-            if let offering = try? await self.loadOfferingFromWorkflow(
-                identifier: identifier,
-                presentedOfferingContext: presentedOfferingContext
-            ) {
-                return offering
-            }
-            #endif
-
-            let offering = try await Purchases.shared.offerings()
-                .offering(identifier: identifier)
-                .orThrow(PaywallError.offeringNotFound(identifier: identifier))
-
-            if let presentedOfferingContext {
-                return offering.withPresentedOfferingContext(presentedOfferingContext)
-            }
-
-            return offering
-        }
-    }
-
-    #if ENABLE_WORKFLOWS_ENDPOINT
-    func loadOfferingFromWorkflow(
-        identifier: String,
-        presentedOfferingContext: PresentedOfferingContext?
-    ) async throws -> Offering {
-        let fetchResult = try await Purchases.shared.workflow(forOfferingIdentifier: identifier)
-        let workflow = fetchResult.workflow
-
-        guard let step = workflow.steps[workflow.initialStepId],
-              let screenID = step.screenId,
-              let screen = workflow.screens[screenID] else {
-            throw PaywallError.offeringNotFound(identifier: identifier)
-        }
-
-        let baseOffering = try await Purchases.shared.offerings()
-            .offering(identifier: screen.offeringId)
-            .orThrow(PaywallError.offeringNotFound(identifier: screen.offeringId ?? identifier))
-
-        let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
-            screen: screen,
-            uiConfig: workflow.uiConfig
-        )
-
-        let offering = baseOffering.withPaywallComponents(paywallComponents)
-
-        if let presentedOfferingContext {
-            return offering.withPresentedOfferingContext(presentedOfferingContext)
-        }
-        return offering
-    }
-    #endif
-
-}
-
-// MARK: -
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallViewConfiguration.Content {
-
-    func extractInitialOffering() -> Offering? {
-        switch self {
-        case let .offering(offering):
-            return offering
-        case .defaultOffering:
-            return Self.loadCachedCurrentOfferingIfPossible()
-        case let .offeringIdentifier(identifier, presentedOfferingContext):
-            let offering = Self.loadCachedOfferingIfPossible(
-                identifier: identifier
-            )
-
-            if let presentedOfferingContext {
-                return offering?.withPresentedOfferingContext(presentedOfferingContext)
-            }
-
-            return offering
-        }
-    }
-
-    private static func loadCachedCurrentOfferingIfPossible() -> Offering? {
-        if Purchases.isConfigured {
-            return Purchases.shared.cachedOfferings?.current
-        } else {
-            return nil
-        }
-    }
-
-    private static func loadCachedOfferingIfPossible(identifier: String) -> Offering? {
-        if Purchases.isConfigured {
-            return Purchases.shared.cachedOfferings?.offering(identifier: identifier)
-        } else {
-            return nil
-        }
+        return try await self.contentToDisplay.resolveOfferingOrThrow()
     }
 
 }
