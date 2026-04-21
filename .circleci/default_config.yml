@@ -1121,9 +1121,23 @@ jobs:
             echo "Started iOS 14.5 runtime installation in background"
 
       # === iOS 15 tests ===
+      # When generating snapshots, skip StoreKit tests on iOS 15.
+      #
+      # During snapshot-generation pipelines this job has been observed to
+      # sometimes run indefinitely in an infinite loop: the first test from a
+      # `StoreKitConfigTestCase`-derived class stalls inside `setUp` (before
+      # any test body runs), hits the test plan's 180s
+      # `maximumTestExecutionTimeAllowance`, and xcodebuild's built-in
+      # runner-crash recovery then retries the same tests and stalls again —
+      # indefinitely. Root cause is not confirmed.
+      #
+      # Skipping SK tests here costs no snapshot coverage: the only snapshot-
+      # producing test in the StoreKit test target is `DebugViewSwiftUITests`,
+      # which is `@available(iOS 16.0, *)` and is recorded by the iOS 16+
+      # jobs.
       - run:
           name: Run iOS 15 tests
-          command: bundle exec fastlane test_ios
+          command: bundle exec fastlane test_ios skip_sk_tests:<< pipeline.parameters.generate_snapshots >>
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 13 (15.5)
