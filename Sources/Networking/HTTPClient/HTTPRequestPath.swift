@@ -254,9 +254,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket,
-                .adMobSSVStatus:
+                .postCreateTicket:
             return false
+        case .adMobSSVStatus:
+            return true
         }
     }
 
@@ -268,7 +269,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getVirtualCurrencies,
                 .health,
                 .appHealthReportAvailability,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .adMobSSVStatus:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -281,8 +283,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .getWorkflow,
                 .appHealthReport,
-                .postCreateTicket,
-                .adMobSSVStatus:
+                .postCreateTicket:
             return false
         }
     }

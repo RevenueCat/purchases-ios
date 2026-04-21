@@ -23,6 +23,7 @@ class HTTPRequestTests: TestCase {
 
     private static let userID = "the_user"
     private static let anonymousUser = "$RCAnonymousID:8252eb283bbc4453a3f81c978f1a6ee1"
+    private static let clientTransactionID = "AABBCCDD-1111-2222-3333-444455556666"
 
     private static let paths: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: userID),
@@ -34,13 +35,15 @@ class HTTPRequestTests: TestCase {
         .postReceiptData,
         .postSubscriberAttributes(appUserID: userID),
         .health,
-        .getProductEntitlementMapping
+        .getProductEntitlementMapping,
+        .adMobSSVStatus(appUserID: userID, clientTransactionID: clientTransactionID)
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
-        .health
+        .health,
+        .adMobSSVStatus(appUserID: userID, clientTransactionID: clientTransactionID)
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
@@ -48,13 +51,15 @@ class HTTPRequestTests: TestCase {
         .postReceiptData,
         .health,
         .getOfferings(appUserID: userID),
-        .getProductEntitlementMapping
+        .getProductEntitlementMapping,
+        .adMobSSVStatus(appUserID: userID, clientTransactionID: clientTransactionID)
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
-        .health
+        .health,
+        .adMobSSVStatus(appUserID: userID, clientTransactionID: clientTransactionID)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: anonymousUser),
