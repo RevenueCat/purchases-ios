@@ -4,6 +4,9 @@ on:
   issue_comment:
     types: [created]
 
+# Deny-all baseline: each job must declare its own `permissions:` block.
+permissions: {}
+
 jobs:
   approve-full-tests:
     runs-on: ubuntu-latest
