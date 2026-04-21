@@ -11,7 +11,7 @@ jobs:
       github.event.issue.pull_request &&
       github.event.comment.body == '@RCGitBot please test' &&
       github.repository == 'RevenueCat/purchases-ios' &&
-      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+      github.event.comment.author_association == 'MEMBER'
     permissions:
       issues: write
       pull-requests: read
@@ -31,7 +31,7 @@ jobs:
             echo "::error::Invalid user login: $COMMENT_USER"
             exit 1
           fi
-          RESPONSE=$(curl -s -o /dev/null \
+          RESPONSE=$(curl -s --max-time 15 -o /dev/null \
             --head \
             -w "%{http_code}" \
             -H "Authorization: Bearer $READ_ORG_GITHUB_TOKEN" \
@@ -148,7 +148,7 @@ jobs:
       github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '@RCGitBot please test ') &&
       github.repository == 'RevenueCat/purchases-ios' &&
-      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+      github.event.comment.author_association == 'MEMBER'
     permissions:
       issues: write
       pull-requests: read
@@ -166,7 +166,7 @@ jobs:
             echo "::error::Invalid user login: $COMMENT_USER"
             exit 1
           fi
-          RESPONSE=$(curl -s -o /dev/null \
+          RESPONSE=$(curl -s --max-time 15 -o /dev/null \
             --head \
             -w "%{http_code}" \
             -H "Authorization: Bearer $READ_ORG_GITHUB_TOKEN" \
