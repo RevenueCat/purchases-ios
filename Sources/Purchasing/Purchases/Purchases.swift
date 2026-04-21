@@ -351,6 +351,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             finishTransactions: !observerMode,
             operationDispatcher: operationDispatcher,
             storeKitVersion: storeKitVersion,
+            apiKey: apiKey,
             apiKeyValidationResult: apiKeyValidationResult,
             responseVerificationMode: responseVerificationMode,
             dangerousSettings: dangerousSettings,
@@ -390,7 +391,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let transactionFetcher = StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
         let backend = Backend(
-            apiKey: apiKey,
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
             eTagManager: eTagManager,
@@ -2130,6 +2130,11 @@ extension Purchases {
                 )
             }
         }
+    }
+
+    /// Exposed so adapter modules (e.g., RevenueCatAdMob) can read the configured key.
+    @_spi(Internal) public var apiKey: String {
+        return self.systemInfo.apiKey
     }
 
     // swiftlint:disable missing_docs
