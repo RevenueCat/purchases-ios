@@ -81,7 +81,7 @@ module ApiDiffHelper
     scheme.downcase
   end
 
-  def swiftinterface_pattern_for_sdk(sdk, module_name = "RevenueCat")
+  def swiftinterface_pattern_for_sdk(sdk, module_name)
     case sdk
     when "iphonesimulator"
       "**/Release-iphonesimulator/**/Objects-normal/**/#{module_name}.swiftinterface"
@@ -106,7 +106,7 @@ module ApiDiffHelper
     end
   end
 
-  def find_swiftinterface_file(derived_data_dir, sdk, module_name = "RevenueCat")
+  def find_swiftinterface_file(derived_data_dir, sdk, module_name)
     pattern = swiftinterface_pattern_for_sdk(sdk, module_name)
     Dir.glob("#{derived_data_dir}/#{pattern}")
        .reject { |path| path.include?("private") }
@@ -149,8 +149,6 @@ module ApiDiffHelper
       return result
     end
 
-    error_output = nil
-
     begin
       output = Fastlane::Actions.sh(
         api_diff_tool,
@@ -158,8 +156,7 @@ module ApiDiffHelper
         "--old",
         old_file,
         "--new",
-        new_file,
-        error_callback: ->(command_output) { error_output = command_output }
+        new_file
       )
       output = output.encode("UTF-8", invalid: :replace, undef: :replace)
       no_changes = output.include?("# ✅ No changes detected") || output.empty?
@@ -174,8 +171,7 @@ module ApiDiffHelper
       result[:success] = true
     rescue => error
       Fastlane::UI.error("❌ Breaking API changes detected for #{platform_name}")
-      result[:diff] = error_output || error.message
-      result[:diff] = result[:diff].encode("UTF-8", invalid: :replace, undef: :replace) if result[:diff]
+      result[:diff] = error.message.encode("UTF-8", invalid: :replace, undef: :replace)
     end
 
     result
