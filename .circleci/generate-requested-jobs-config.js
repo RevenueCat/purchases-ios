@@ -19,6 +19,9 @@ const JOBS = {
   "backend-integration-tests-other": ["slack-secrets"],
   "build-tv-watch-mac-and-visionos": ["slack-secrets"],
   "check-api-changes": ["slack-secrets-ios"],
+  // TEMP: remove before merging — added to test the on-demand upload of
+  // PaywallsTester via `@RCGitBot please test deploy-paywalls-tester`.
+  "deploy-paywalls-tester": ["slack-secrets"],
   "docs-build": ["slack-secrets"],
   "emerge_binary_size_analysis": ["slack-secrets"],
   "emerge_purchases_ui_snapshot_tests": ["slack-secrets"],
