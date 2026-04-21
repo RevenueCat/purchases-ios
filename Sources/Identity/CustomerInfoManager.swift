@@ -463,7 +463,14 @@ private extension CustomerInfoManager {
                     switch result {
                     case .success:
                         completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
-                    case .failure:
+                    case .failure(let error):
+                        // If posting the unfinished transaction fails, fall back to fetching
+                        // CustomerInfo directly so observers are still notified instead of
+                        // being silently skipped.
+                        Logger.warn(
+                            // swiftlint:disable:next line_length
+                            Strings.customerInfo.posting_receipt_for_unfinished_transaction_failed_falling_back_to_get_customerinfo(error)
+                        )
                         self.requestCustomerInfo(appUserID: appUserID,
                                                  isAppBackgrounded: isAppBackgrounded) { fallbackResult in
                             completion(CustomerInfoDataResult(result: fallbackResult,
