@@ -64,6 +64,7 @@ struct WorkflowTriggerAction {
     @DefaultDecodable.EmptyDictionary
     var config: [String: AnyDecodable]
     public let offeringId: String?
+    public let offeringIdentifier: String?
 
 }
 
@@ -106,6 +107,7 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
         case defaultLocale
         case config
         case offeringId
+        case offeringIdentifier
     }
 
 }

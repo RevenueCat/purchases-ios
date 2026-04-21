@@ -130,6 +130,60 @@ class WorkflowResponseTests: TestCase {
         expect(trigger.componentId) == "wagcLsIVjN"
     }
 
+    func testDecodeWorkflowScreenOfferingFields() throws {
+        let jsonBothFields = """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          "default_locale": "en_US",
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          },
+          "offering_id": "id_internal_123",
+          "offering_identifier": "default"
+        }
+        """.data(using: .utf8)!
+
+        let screen = try JSONDecoder.default.decode(WorkflowScreen.self, from: jsonBothFields)
+
+        expect(screen.offeringId) == "id_internal_123"
+        expect(screen.offeringIdentifier) == "default"
+    }
+
+    func testDecodeWorkflowScreenOfferingFieldsAbsent() throws {
+        let json = """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          "default_locale": "en_US",
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let screen = try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
+
+        expect(screen.offeringId).to(beNil())
+        expect(screen.offeringIdentifier).to(beNil())
+    }
+
     func testDecodeWorkflowStepDefaults() throws {
         let json = """
         { "id": "step_1", "type": "screen" }
