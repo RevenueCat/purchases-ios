@@ -943,6 +943,7 @@ public extension Purchases {
     }
 
     @_spi(Internal)
+    // The backend uses the offering identifier as the workflow lookup key.
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowFetchResult {
         return try await Async.call { completion in
             self.backend.workflowsAPI.getWorkflow(
