@@ -688,10 +688,13 @@ jobs:
           install_xcbeautify: false
       - update-spm-installation-commit
       # === SPM RevenueCatUI Release Build (Xcode 15) ===
-      - run:
-          name: SPM RevenueCatUI Release Build (Xcode 15)
-          command: swift build -c release --target RevenueCatUI
-          no_output_timeout: 5m
+      - unless:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          steps:
+            - run:
+                name: SPM RevenueCatUI Release Build (Xcode 15)
+                command: swift build -c release --target RevenueCatUI
+                no_output_timeout: 5m
       # === RevenueCatUI iOS 16 tests ===
       - run:
           name: SPM RevenueCatUI Tests
@@ -725,10 +728,13 @@ jobs:
       - update-spm-installation-commit
 
       # === SPM RevenueCatUI Release Build (Xcode 16) ===
-      - run:
-          name: SPM RevenueCatUI Release Build (Xcode 16)
-          command: swift build -c release --target RevenueCatUI
-          no_output_timeout: 5m
+      - unless:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          steps:
+            - run:
+                name: SPM RevenueCatUI Release Build (Xcode 16)
+                command: swift build -c release --target RevenueCatUI
+                no_output_timeout: 5m
 
       # === RevenueCatUI iOS 18 tests ===
       - run:
@@ -825,10 +831,13 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
       - update-spm-installation-commit
-      - run:
-          name: SPM RevenueCatUI Release Build
-          command: swift build -c release --target RevenueCatUI
-          no_output_timeout: 5m
+      - unless:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          steps:
+            - run:
+                name: SPM RevenueCatUI Release Build
+                command: swift build -c release --target RevenueCatUI
+                no_output_timeout: 5m
       - run:
           name: SPM RevenueCatUI Tests
           command: bundle exec fastlane test_revenuecatui
@@ -940,10 +949,13 @@ jobs:
       - install-dependencies
 
       # === SPM Release Build (Xcode 26) ===
-      - run:
-          name: SPM Release Build (Xcode 26)
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
+      - unless:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: SPM Release Build (Xcode 26)
+                command: swift build -c release --target RevenueCat
+                no_output_timeout: 30m
 
       # === iOS 26 tests ===
       - run:
@@ -979,10 +991,13 @@ jobs:
       - install-dependencies
 
       # === SPM Release Build (Xcode 16) ===
-      - run:
-          name: SPM Release Build (Xcode 16)
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
+      - unless:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: SPM Release Build (Xcode 16)
+                command: swift build -c release --target RevenueCat
+                no_output_timeout: 30m
 
       # === iOS 18 tests ===
       - run:
@@ -1061,10 +1076,13 @@ jobs:
       - update-spm-installation-commit
 
       # === SPM Release Build (Xcode 15) ===
-      - run:
-          name: SPM Release Build (Xcode 15)
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
+      - unless:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: SPM Release Build (Xcode 15)
+                command: swift build -c release --target RevenueCat
+                no_output_timeout: 30m
 
       # === iOS 16 tests ===
       - run:
