@@ -111,10 +111,10 @@ extension BackendError: PurchasesErrorConvertible {
                                                     line: source.line)
 
         case let .missingClientTransactionID(source):
-            return ErrorUtils.unknownError(message: "Missing client transaction ID.",
-                                           fileName: source.file,
-                                           functionName: source.function,
-                                           line: source.line)
+            return ErrorUtils.configurationError(message: "Missing client transaction ID.",
+                                                 fileName: source.file,
+                                                 functionName: source.function,
+                                                 line: source.line)
 
         case let .missingTransactionJWS(source):
             return ErrorUtils.storeProblemError(fileName: source.file,
