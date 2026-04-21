@@ -35,6 +35,10 @@ class MockAdsAPI: AdsAPI {
         invokedGetAdMobSSVStatusCount += 1
         invokedGetAdMobSSVStatusParameters = (appUserID, clientTransactionID)
 
-        completion(stubbedGetAdMobSSVStatusResult ?? .failure(.missingAppUserID()))
+        guard let result = stubbedGetAdMobSSVStatusResult else {
+            preconditionFailure("Expected stubbedGetAdMobSSVStatusResult to be set before calling getAdMobSSVStatus")
+        }
+
+        completion(result)
     }
 }
