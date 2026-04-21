@@ -104,13 +104,13 @@ class WorkflowDetailProcessorTests: TestCase {
 
         expect(result).to(beSuccess { value in
             let step = value.workflow.steps["step_1"]
-            if case .double(let d) = step?.paramValues["onePointO"] {
-                expect(d) == 1.0
+            if case .double(let doubleValue) = step?.paramValues["onePointO"] {
+                expect(doubleValue) == 1.0
             } else {
                 fail("Expected .double(1.0), got \(String(describing: step?.paramValues["onePointO"]))")
             }
-            if case .double(let d) = step?.paramValues["tiny"] {
-                expect(d).to(beCloseTo(1e-06, within: 1e-20))
+            if case .double(let doubleValue) = step?.paramValues["tiny"] {
+                expect(doubleValue).to(beCloseTo(1e-06, within: 1e-20))
             } else {
                 fail("Expected .double for tiny, got \(String(describing: step?.paramValues["tiny"]))")
             }
