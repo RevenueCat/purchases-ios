@@ -216,6 +216,31 @@ extension HTTPClient {
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension HTTPClient: @unchecked Sendable {}
 
+// MARK: - CDN
+
+internal extension HTTPClient {
+
+    /// Fetches raw data from an arbitrary URL using the client's configured `URLSession`.
+    ///
+    /// Use this for CDN or other non-RC-API requests where the SDK's path-based request building
+    /// is not applicable, but we still want the same session configuration (timeouts, connection limits).
+    func fetchRawData(from url: URL, completion: @escaping (Result<Data, Error>) -> Void) {
+        self.session.dataTask(with: url) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+            } else if let httpResponse = response as? HTTPURLResponse,
+                      !(200..<300).contains(httpResponse.statusCode) {
+                completion(.failure(URLError(.badServerResponse)))
+            } else if let data = data {
+                completion(.success(data))
+            } else {
+                completion(.failure(URLError(.unknown)))
+            }
+        }.resume()
+    }
+
+}
+
 // MARK: - Private
 
 internal extension HTTPClient {
