@@ -48,11 +48,14 @@ jobs:
           fi
           echo "Found pipeline: $PIPELINE_ID"
 
-          # 2. Find the danger workflow in that pipeline
+          # 2. Find the most recent `danger` workflow in that pipeline.
+          # Rerunning a workflow adds a new entry to the pipeline's workflow
+          # list, so after the first rerun there can be multiple matches.
+          # CircleCI returns items newest-first; pick the first one.
           WORKFLOW_ID=$(curl -s --max-time 15 \
             -H "Circle-Token: $CCI_TOKEN" \
             "https://circleci.com/api/v2/pipeline/$PIPELINE_ID/workflow" \
-            | jq -r --arg name "$WORKFLOW_NAME" '.items[] | select(.name == $name) | .id')
+            | jq -r --arg name "$WORKFLOW_NAME" 'first(.items[] | select(.name == $name)) | .id')
 
           if [[ -z "$WORKFLOW_ID" || "$WORKFLOW_ID" == "null" ]]; then
             echo "::error::No '$WORKFLOW_NAME' workflow found in pipeline $PIPELINE_ID"
