@@ -143,7 +143,7 @@ let project = Project(
                 .revenueCatUI,
                 .storeKit
             ],
-            settings: .appTarget
+            settings: .appTarget(including: ([:] as SettingsDictionary).appendingExtraSwiftConditions())
         )
     ],
     schemes: schemes,
