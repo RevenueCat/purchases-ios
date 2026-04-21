@@ -2,77 +2,22 @@ name: Re-run Danger on label change
 
 # When Danger fails on CircleCI because a required label is missing, adding
 # the label doesn't produce a new commit, so CircleCI never re-runs Danger.
-# This workflow fires on label changes and re-runs just the `danger` workflow
-# of the PR branch's most recent CircleCI pipeline.
+# Delegates to the shared reusable workflow in sdk-github-workflows.
 
 on:
   pull_request:
     types: [labeled, unlabeled]
 
-# Deny-all baseline: each job must declare its own `permissions:` block.
 permissions: {}
 
 jobs:
   rerun-danger:
-    runs-on: ubuntu-latest
-    # Gate on:
-    #   - Canonical repo only (skip forks of this repo that inherit the file).
-    #   - Internal PRs only (skip PRs from forks — they don't get secrets on
-    #     `pull_request`, so the CircleCI call would fail anyway).
-    # Label events are already restricted by GitHub to triage+ permission,
-    # so no explicit actor check is needed.
-    if: |
-      github.repository == 'RevenueCat/purchases-ios' &&
-      github.event.pull_request.head.repo.full_name == github.repository
-    permissions: {}
-
-    steps:
-      - name: Rerun Danger workflow on CircleCI
-        env:
-          CCI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
-          BRANCH: ${{ github.event.pull_request.head.ref }}
-        run: |
-          PROJECT_SLUG="gh/RevenueCat/purchases-ios"
-          WORKFLOW_NAME="danger"
-
-          # 1. Get the most recent pipeline for this branch
-          PIPELINE_ID=$(curl -s --max-time 15 -G \
-            -H "Circle-Token: $CCI_TOKEN" \
-            --data-urlencode "branch=$BRANCH" \
-            "https://circleci.com/api/v2/project/$PROJECT_SLUG/pipeline" \
-            | jq -r '.items[0].id')
-
-          if [[ -z "$PIPELINE_ID" || "$PIPELINE_ID" == "null" ]]; then
-            echo "::error::No CircleCI pipeline found for branch '$BRANCH'"
-            exit 1
-          fi
-          echo "Found pipeline: $PIPELINE_ID"
-
-          # 2. Find the most recent `danger` workflow in that pipeline.
-          # Rerunning a workflow adds a new entry to the pipeline's workflow
-          # list, so after the first rerun there can be multiple matches.
-          # CircleCI returns items newest-first; pick the first one.
-          WORKFLOW_ID=$(curl -s --max-time 15 \
-            -H "Circle-Token: $CCI_TOKEN" \
-            "https://circleci.com/api/v2/pipeline/$PIPELINE_ID/workflow" \
-            | jq -r --arg name "$WORKFLOW_NAME" 'first(.items[] | select(.name == $name)) | .id')
-
-          if [[ -z "$WORKFLOW_ID" || "$WORKFLOW_ID" == "null" ]]; then
-            echo "::error::No '$WORKFLOW_NAME' workflow found in pipeline $PIPELINE_ID"
-            exit 1
-          fi
-          echo "Found workflow: $WORKFLOW_ID"
-
-          # 3. Rerun it from scratch
-          HTTP_STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" -X POST \
-            -H "Circle-Token: $CCI_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"from_failed": false}' \
-            "https://circleci.com/api/v2/workflow/$WORKFLOW_ID/rerun")
-
-          if [[ "$HTTP_STATUS" != "202" ]]; then
-            echo "::error::Failed to rerun workflow. CircleCI returned HTTP $HTTP_STATUS"
-            exit 1
-          fi
-
-          echo "Successfully re-ran '$WORKFLOW_NAME' workflow for branch '$BRANCH'"
+    # Only run on the canonical repo (not on forks of this repo that would
+    # inherit the workflow file). The shared workflow handles the fork-PR
+    # filter internally.
+    if: github.repository == 'RevenueCat/purchases-ios'
+    uses: revenuecat/sdk-github-workflows/.github/workflows/rerun-danger.yml@40440ad13e742630fed7597b2b410af5121defa5
+    with:
+      project_slug: gh/RevenueCat/purchases-ios
+    secrets:
+      CIRCLECI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
