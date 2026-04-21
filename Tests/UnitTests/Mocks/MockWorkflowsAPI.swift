@@ -12,7 +12,7 @@
 //  Created by RevenueCat.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
 
