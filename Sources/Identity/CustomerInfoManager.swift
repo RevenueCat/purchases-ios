@@ -415,6 +415,7 @@ private extension CustomerInfoManager {
 
     }
 
+    // swiftlint:disable:next function_body_length
     private func getCustomerInfoData(appUserID: String,
                                      isAppBackgrounded: Bool,
                                      completion: @escaping @Sendable (CustomerInfoDataResult) -> Void) {
