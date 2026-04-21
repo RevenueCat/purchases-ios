@@ -37,14 +37,8 @@ final class GetAdMobSSVStatusOperation: CacheableNetworkOperation {
                     cacheKey: cacheKey
                 )
         },
-                     // Cache key includes the per-ad UUID so concurrent polls for the same
-                     // ad dedupe; sequential retry-loop calls each fire a fresh request
-                     // because callbacks are removed from the cache once a request finishes.
-                     //
-                     // Newline separator avoids ambiguity between the two inputs: any other
-                     // delimiter that can appear in `appUserID` or `clientTransactionID`
-                     // (e.g. `-`) risks collisions like `("a-b", "c")` vs. `("a", "b-c")`
-                     // collapsing to the same key. Newlines are not valid in either input.
+                     // Use app user ID + client transaction ID to dedupe concurrent polls.
+                     // Newline separator avoids collisions (e.g. ("a-b","c") vs ("a","b-c")).
                      individualizedCacheKeyPart: configuration.appUserID + "\n" + configuration.clientTransactionID)
     }
 
