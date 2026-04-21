@@ -157,8 +157,8 @@ public struct PaywallView: View {
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
         self._offering = .init(
-            initialValue: configuration.content.cachedInitialOffering(
-                purchases: configuration.purchaseHandler.purchasesInstance
+            initialValue: configuration.purchaseHandler.cachedInitialOffering(
+                for: configuration.content
             )
         )
         self._customerInfo = .init(
@@ -398,9 +398,7 @@ private extension PaywallView {
     }
 
     func loadOffering() async throws -> Offering {
-        return try await self.contentToDisplay.resolveOfferingOrThrow(
-            purchases: self.purchaseHandler.purchasesInstance
-        )
+        return try await self.purchaseHandler.resolveOfferingOrThrow(for: self.contentToDisplay)
     }
 
 }

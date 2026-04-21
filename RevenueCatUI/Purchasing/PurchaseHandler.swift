@@ -35,8 +35,6 @@ final class PurchaseHandler: ObservableObject {
     private let purchases: PaywallPurchasesType
     private let paywallEventTracker: PaywallEventTracker
 
-    var purchasesInstance: any PaywallPurchasesType { self.purchases }
-
     /// Side-by-side paywalls should use separate `PurchaseHandler` instances so each keeps its own session.
     private var activePaywallSessionID: PaywallEvent.SessionID?
 
@@ -248,6 +246,117 @@ extension PurchaseHandler {
         self.purchases.invalidateCustomerInfoCache()
     }
 #endif
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchaseHandler {
+
+    func cachedInitialOffering(for content: PaywallViewConfiguration.Content) -> Offering? {
+        switch content {
+        case let .offering(offering):
+            return offering
+        case .defaultOffering:
+            return self.purchases.cachedOfferings?.current
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            #if ENABLE_WORKFLOWS_ENDPOINT
+            return nil
+            #else
+            let offering = self.purchases.cachedOfferings?.offering(identifier: identifier)
+
+            if let presentedOfferingContext {
+                return offering?.withPresentedOfferingContext(presentedOfferingContext)
+            }
+
+            return offering
+            #endif
+        }
+    }
+
+    func resolveOffering(for content: PaywallViewConfiguration.Content) async -> Offering? {
+        if case let .offering(offering) = content {
+            return offering
+        }
+
+        do {
+            return try await self.resolveOfferingOrThrow(for: content)
+        } catch {
+            Logger.error(Strings.errorFetchingOfferings(error))
+            return nil
+        }
+    }
+
+    func resolveOfferingOrThrow(for content: PaywallViewConfiguration.Content) async throws -> Offering {
+        switch content {
+        case let .offering(offering):
+            return offering
+        case .defaultOffering:
+            return try await self.purchases.offerings().current.orThrow(PaywallError.noCurrentOffering)
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            return try await self.resolveOfferingIdentifier(
+                identifier: identifier,
+                presentedOfferingContext: presentedOfferingContext
+            )
+        }
+    }
+
+    private func resolveOfferingIdentifier(
+        identifier: String,
+        presentedOfferingContext: PresentedOfferingContext?
+    ) async throws -> Offering {
+        #if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
+        return try await self.resolveWorkflowOfferingIdentifier(
+            identifier: identifier,
+            presentedOfferingContext: presentedOfferingContext
+        )
+        #else
+        let offering = try await self.purchases.offerings()
+            .offering(identifier: identifier)
+            .orThrow(PaywallError.offeringNotFound(identifier: identifier))
+
+        if let presentedOfferingContext {
+            return offering.withPresentedOfferingContext(presentedOfferingContext)
+        }
+
+        return offering
+        #endif
+    }
+
+    #if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
+    private func resolveWorkflowOfferingIdentifier(
+        identifier: String,
+        presentedOfferingContext: PresentedOfferingContext?
+    ) async throws -> Offering {
+        async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
+        async let allOfferingsTask = self.purchases.offerings()
+
+        let (fetchResult, allOfferings) = try await (fetchResultTask, allOfferingsTask)
+        let workflow = fetchResult.workflow
+
+        guard let step = workflow.steps[workflow.initialStepId],
+              let screenID = step.screenId,
+              let screen = workflow.screens[screenID] else {
+            throw PaywallError.offeringNotFound(identifier: identifier)
+        }
+
+        let baseOffering = try allOfferings
+            .offering(identifier: screen.offeringId)
+            .orThrow(PaywallError.offeringNotFound(identifier: screen.offeringId ?? identifier))
+
+        let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
+            screen: screen,
+            uiConfig: workflow.uiConfig
+        )
+
+        let offering = baseOffering.withPaywallComponents(paywallComponents)
+
+        if let presentedOfferingContext {
+            return offering.withPresentedOfferingContext(presentedOfferingContext)
+        }
+
+        return offering
+    }
+    #endif
 
 }
 

@@ -418,9 +418,7 @@ public class PaywallViewController: UIViewController {
     /// Prefetches the exit offer for the current offering.
     @MainActor
     private func prefetchExitOffer() async {
-        guard let offering = await self.configuration.content.resolveOffering(
-            purchases: self.purchaseHandler.purchasesInstance
-        ) else {
+        guard let offering = await self.purchaseHandler.resolveOffering(for: self.configuration.content) else {
             return
         }
         self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)

@@ -18,68 +18,34 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PaywallViewConfigurationTests: TestCase {
 
-    private var userDefaults: UserDefaults!
-    private var userDefaultsSuiteName: String!
-
-    override func setUp() {
-        super.setUp()
-
-        Purchases.clearSingleton()
-
-        let suiteName = "PaywallViewConfigurationTests.\(UUID().uuidString)"
-        self.userDefaultsSuiteName = suiteName
-        self.userDefaults = UserDefaults(suiteName: suiteName)
-        self.userDefaults.removePersistentDomain(forName: suiteName)
-    }
-
-    override func tearDown() {
-        Purchases.clearSingleton()
-
-        if let suiteName = self.userDefaultsSuiteName {
-            self.userDefaults.removePersistentDomain(forName: suiteName)
-        }
-
-        self.userDefaults = nil
-        self.userDefaultsSuiteName = nil
-
-        super.tearDown()
-    }
-
     func testCachedInitialOfferingReturnsProvidedOfferingForOfferingContent() {
+        let handler = Self.createPurchaseHandler()
         let offering = TestData.offeringWithNoIntroOffer
 
-        let result = PaywallViewConfiguration.Content
-            .offering(offering)
-            .cachedInitialOffering()
+        let result = handler.cachedInitialOffering(for: .offering(offering))
 
         expect(result) === offering
     }
 
     func testResolveOfferingOrThrowReturnsProvidedOfferingForOfferingContent() async throws {
+        let handler = Self.createPurchaseHandler()
         let offering = TestData.offeringWithNoIntroOffer
 
-        let result = try await PaywallViewConfiguration.Content
-            .offering(offering)
-            .resolveOfferingOrThrow()
+        let result = try await handler.resolveOfferingOrThrow(for: .offering(offering))
 
         expect(result) === offering
     }
 
-    func testOfferingIdentifierCachedInitialOfferingDependsOnWorkflowResolutionMode() throws {
-        let purchases = Purchases.configure(
-            with: Configuration.Builder(withAPIKey: "api_key")
-                .with(userDefaults: self.userDefaults)
-                .with(dangerousSettings: DangerousSettings(uiPreviewMode: true))
-                .build()
-        )
-        let deviceCache = try XCTUnwrap(Self.deviceCache(from: purchases))
+    func testOfferingIdentifierCachedInitialOfferingDependsOnWorkflowResolutionMode() {
         let cachedOffering = TestData.offeringWithNoIntroOffer
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
 
-        deviceCache.cacheInMemory(offerings: Self.createOfferings(cachedOffering))
+        purchases.cachedOfferings = Self.createOfferings(cachedOffering)
 
-        let result = PaywallViewConfiguration.Content
-            .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil)
-            .cachedInitialOffering()
+        let result = handler.cachedInitialOffering(
+            for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil)
+        )
 
         #if ENABLE_WORKFLOWS_ENDPOINT
         expect(result).to(beNil())
@@ -93,8 +59,26 @@ final class PaywallViewConfigurationTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallViewConfigurationTests {
 
-    static func deviceCache(from purchases: Purchases) -> DeviceCache? {
-        return Mirror(reflecting: purchases).descendant("deviceCache") as? DeviceCache
+    static func createPurchaseHandler(purchases: MockPurchases = createMockPurchases()) -> PurchaseHandler {
+        return PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases)
+        )
+    }
+
+    static func createMockPurchases() -> MockPurchases {
+        return MockPurchases { _, _, _ in
+            (
+                transaction: nil,
+                customerInfo: TestData.customerInfo,
+                userCancelled: false
+            )
+        } restorePurchases: {
+            TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            TestData.customerInfo
+        }
     }
 
     static func createOfferings(_ offering: Offering) -> Offerings {
