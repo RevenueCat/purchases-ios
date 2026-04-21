@@ -70,34 +70,10 @@ jobs:
           steps:
             - run:
                 name: Determine path-based pipeline parameters
-                command: |
-                  # Detect changes in paths that require deploying PaywallsTester.
-                  # The deploy-paywalls-tester workflow is additionally gated on
-                  # branch=main and not-scheduled in default_config.yml.
-                  DEPLOY_PAYWALLS_TESTER=false
-                  if git rev-parse HEAD~1 >/dev/null 2>&1; then
-                    CHANGED=$(git diff HEAD~1 --name-only -- RevenueCatUI/ Tests/TestingApps/PaywallsTester/)
-                    if [ -n "$CHANGED" ]; then
-                      DEPLOY_PAYWALLS_TESTER=true
-                      echo "PaywallsTester-relevant changes detected:"
-                      echo "$CHANGED"
-                    else
-                      echo "No changes in RevenueCatUI/ or Tests/TestingApps/PaywallsTester/"
-                    fi
-                  else
-                    echo "No parent commit found (initial commit?), skipping path check"
-                  fi
-
-                  # Only pass the computed param; other pipeline parameters (action,
-                  # generate_*, GHA_*, etc.) are implicitly forwarded by CircleCI.
-                  # run_deploy_paywalls_tester is declared only in default_config.yml,
-                  # so it won't trigger the "Conflicting pipeline parameters" error.
-                  echo "{\"run_deploy_paywalls_tester\": ${DEPLOY_PAYWALLS_TESTER}}" > /tmp/pipeline-parameters.json
-                  echo "Generated /tmp/pipeline-parameters.json:"
-                  cat /tmp/pipeline-parameters.json
+                command: node .circleci/generate-default-config-parameters.js
             - continuation/continue:
                 configuration_path: .circleci/default_config.yml
-                parameters: /tmp/pipeline-parameters.json
+                parameters: /tmp/default-config-parameters.json
 
 workflows:
   setup:
