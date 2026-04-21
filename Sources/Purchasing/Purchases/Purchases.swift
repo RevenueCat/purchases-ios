@@ -1573,15 +1573,11 @@ public extension Purchases {
 
 extension Purchases {
 
-    /// Polls the backend once for the current AdMob SSV verification status of a
-    /// previously-loaded rewarded ad, keyed by the SDK-generated `client_transaction_id`.
+    /// Polls the backend once for AdMob SSV verification status using `client_transaction_id`.
     ///
-    /// Used by RC-shipped ad adapters (e.g. `RevenueCatAdMob`) inside their own retry
-    /// loop after AdMob's `userDidEarnRewardHandler` fires. Not intended for external
-    /// developer use — the adapter is the supported integration surface.
+    /// Internal API for RC ad adapters.
     ///
-    /// Cancelling the calling `Task` does not cancel the in-flight HTTP request;
-    /// adapters needing cancellation must short-circuit at the awaited result.
+    /// Cancelling the calling `Task` does not cancel the in-flight HTTP request.
     @_spi(Internal) public func pollAdMobSSVStatus(
         clientTransactionID: String
     ) async throws -> AdMobSSVPollStatus {
