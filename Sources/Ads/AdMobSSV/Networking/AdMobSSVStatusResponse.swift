@@ -41,7 +41,12 @@ extension AdMobSSVStatusResponse: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let rawStatus = try container.decode(String.self, forKey: .status)
-        self.status = Status(rawValue: rawStatus) ?? .unknown
+        if let status = Status(rawValue: rawStatus) {
+            self.status = status
+        } else {
+            Logger.warn(Strings.backendError.unknown_admob_ssv_status(status: rawStatus))
+            self.status = .unknown
+        }
     }
 }
 
