@@ -13,13 +13,7 @@
 
 import Foundation
 
-/// Backend transport for ad-network–related endpoints.
-///
-/// Today this only hosts AdMob SSV polling. As the SDK grows additional ad-network
-/// endpoints (e.g. other SSV providers, ad-event APIs that don't fit the existing
-/// `InternalAPI` events pipeline), they should land here. If the surface area grows
-/// unwieldy or the endpoints diverge by network, split into per-network classes
-/// (`AdMobAPI`, etc.).
+/// Backend transport for ad-related endpoints.
 class AdsAPI {
 
     typealias AdMobSSVStatusResponseHandler = Backend.ResponseHandler<AdMobSSVStatusResponse>
