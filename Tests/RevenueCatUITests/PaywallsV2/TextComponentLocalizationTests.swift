@@ -368,6 +368,88 @@ class TextComponentLocalizationTests: TestCase {
         expect(style.visible).to(beTrue())
     }
 
+    // MARK: - Intro offer hidden by optimistic promo offer (StackComponentViewModel integration)
+    //
+    // Mirrors a real paywall layout where two stacks sit in a .zlayer container:
+    //   - introPriceStack: visible only when `intro_offer` condition is met
+    //   - promoPriceStack: visible only when `selected + promo_offer` conditions are both met
+    //
+    // Because the later sibling draws on top in a .zlayer, if promoPriceStack becomes visible
+    // prematurely (before the offer is signed), it covers introPriceStack — hiding the intro
+    // price display even though intro eligibility is already resolved.
+    //
+    // The fix: component views pass `isSignedEligible` (true only when signed) instead of
+    // `isMostLikelyEligible` (true as soon as subscription history is known). These tests
+    // drive `StackComponentViewModel.styles()` directly with the two possible boolean values
+    // to verify that visibility is gated on actual signing, not optimistic eligibility.
+
+    @MainActor
+    func testIntroStackVisible_PromoStackHidden_WhenPromoNotYetSigned() throws {
+        // After intro eligibility resolves but before promo signing completes,
+        // `isSignedEligible` returns false. introPriceStack must be visible;
+        // promoPriceStack must remain hidden so it cannot cover the intro display.
+        let (introPriceStack, promoPriceStack) = try self.makeZLayeredPriceStacks()
+
+        let introVisible = self.captureVisibility(
+            from: introPriceStack,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: false  // isSignedEligible == false before signing
+        )
+        let promoVisible = self.captureVisibility(
+            from: promoPriceStack,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: false
+        )
+
+        expect(introVisible).to(beTrue())
+        expect(promoVisible).to(beFalse())
+    }
+
+    @MainActor
+    func testPromoStackBecomesVisible_WhenOptimisticEligibility_BugRepro() throws {
+        // BUG: `isMostLikelyEligible` returns true as soon as subscription history is known,
+        // before signing completes. This makes promoPriceStack visible prematurely, covering
+        // introPriceStack in the .zlayer and hiding the intro price display.
+        let (introPriceStack, promoPriceStack) = try self.makeZLayeredPriceStacks()
+
+        let introVisible = self.captureVisibility(
+            from: introPriceStack,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: true  // isMostLikelyEligible == true (optimistic, not yet signed)
+        )
+        let promoVisible = self.captureVisibility(
+            from: promoPriceStack,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: true
+        )
+
+        // Both become visible — promoPriceStack now draws on top of introPriceStack in
+        // .zlayer, hiding the intro price. This is the broken state the fix prevents.
+        expect(introVisible).to(beTrue())
+        expect(promoVisible).to(beTrue())
+    }
+
+    @MainActor
+    func testBothStacksVisible_WhenPromoActuallySigned() throws {
+        // When `isSignedEligible` returns true (offer is signed), promoPriceStack correctly
+        // becomes visible and draws on top of introPriceStack — intended behavior.
+        let (introPriceStack, promoPriceStack) = try self.makeZLayeredPriceStacks()
+
+        let introVisible = self.captureVisibility(
+            from: introPriceStack,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: true  // isSignedEligible == true after signing
+        )
+        let promoVisible = self.captureVisibility(
+            from: promoPriceStack,
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: true
+        )
+
+        expect(introVisible).to(beTrue())
+        expect(promoVisible).to(beTrue())
+    }
+
     // MARK: - Helpers
 
     private static let black = PaywallComponent.ColorScheme(
@@ -418,6 +500,59 @@ class TextComponentLocalizationTests: TestCase {
             uiConfigProvider: try Self.createUIConfigProvider(),
             component: textComponent
         )
+    }
+
+    /// Returns an (introPriceStack, promoPriceStack) pair that mirrors the Logia paywall
+    /// z-layer layout:
+    ///   - introPriceStack: hidden by default, shown when `intro_offer` condition matches
+    ///   - promoPriceStack: hidden by default, shown when `selected + promo_offer` both match
+    private func makeZLayeredPriceStacks() throws -> (intro: StackComponentViewModel,
+                                                      promo: StackComponentViewModel) {
+        let intro = StackComponentViewModel(
+            component: PaywallComponent.StackComponent(
+                visible: false,
+                components: [],
+                dimension: .zlayer(.center),
+                overrides: [
+                    .init(extendedConditions: [.introOffer], properties: .init(visible: true))
+                ]
+            ),
+            viewModels: [],
+            badgeViewModels: [],
+            uiConfigProvider: try Self.createUIConfigProvider()
+        )
+        let promo = StackComponentViewModel(
+            component: PaywallComponent.StackComponent(
+                visible: false,
+                components: [],
+                dimension: .zlayer(.center),
+                overrides: [
+                    .init(extendedConditions: [.selected, .promoOffer], properties: .init(visible: true))
+                ]
+            ),
+            viewModels: [],
+            badgeViewModels: [],
+            uiConfigProvider: try Self.createUIConfigProvider()
+        )
+        return (intro, promo)
+    }
+
+    private func captureVisibility(
+        from viewModel: StackComponentViewModel,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool
+    ) -> Bool {
+        let style = viewModel.styles(
+            state: .selected,
+            condition: .compact,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: nil,
+            customVariables: [:],
+            colorScheme: .light
+        )
+
+        return style.visible
     }
 
 }

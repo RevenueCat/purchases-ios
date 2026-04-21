@@ -38,6 +38,24 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         set { _ = newValue }
     }
 
+    var cachedOfferings: Offerings?
+
+#if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
+    var workflowBlock: ((String) async throws -> WorkflowFetchResult)?
+
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowFetchResult {
+        guard let block = workflowBlock else { throw ErrorCode.configurationError }
+        return try await block(offeringID)
+    }
+#endif
+
+    var offeringsBlock: (() async throws -> Offerings)?
+
+    func offerings() async throws -> Offerings {
+        guard let block = offeringsBlock else { throw ErrorCode.configurationError }
+        return try await block()
+    }
+
     let subscriptionHistoryTracker = SubscriptionHistoryTracker()
 
     init(

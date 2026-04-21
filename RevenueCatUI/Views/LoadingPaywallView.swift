@@ -170,6 +170,16 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         SubscriptionHistoryTracker()
     }
 
+    func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
+
+    var cachedOfferings: Offerings? { nil }
+
+#if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowFetchResult {
+        throw ErrorCode.configurationError
+    }
+#endif
+
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         fatalError("Should not be able to purchase")
     }

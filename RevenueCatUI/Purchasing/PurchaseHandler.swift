@@ -35,6 +35,8 @@ final class PurchaseHandler: ObservableObject {
     private let purchases: PaywallPurchasesType
     private let paywallEventTracker: PaywallEventTracker
 
+    var purchasesInstance: any PaywallPurchasesType { self.purchases }
+
     /// Side-by-side paywalls should use separate `PurchaseHandler` instances so each keeps its own session.
     private var activePaywallSessionID: PaywallEvent.SessionID?
 
@@ -597,6 +599,16 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         self.customerInfo = customerInfo
         self.purchasesAreCompletedBy = purchasesAreCompletedBy
     }
+
+    func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
+
+    var cachedOfferings: Offerings? { nil }
+
+#if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowFetchResult {
+        throw ErrorCode.configurationError
+    }
+#endif
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         guard let info = customerInfo else { throw ErrorCode.configurationError }

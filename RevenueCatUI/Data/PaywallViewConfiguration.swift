@@ -107,17 +107,17 @@ extension PaywallViewConfiguration.Content {
     }
 
     /// Returns a cached offering to display immediately while the fully resolved offering loads.
-    func cachedInitialOffering() -> Offering? {
+    func cachedInitialOffering(purchases: any PaywallPurchasesType) -> Offering? {
         switch self {
         case let .offering(offering):
             return offering
         case .defaultOffering:
-            return Self.loadCachedCurrentOfferingIfPossible()
+            return purchases.cachedOfferings?.current
         case let .offeringIdentifier(identifier, presentedOfferingContext):
             #if ENABLE_WORKFLOWS_ENDPOINT
             return nil
             #else
-            let offering = Self.loadCachedOfferingIfPossible(identifier: identifier)
+            let offering = purchases.cachedOfferings?.offering(identifier: identifier)
 
             if let presentedOfferingContext {
                 return offering?.withPresentedOfferingContext(presentedOfferingContext)
@@ -130,73 +130,46 @@ extension PaywallViewConfiguration.Content {
 
     /// Resolves the content to an `Offering` by fetching from the backend if needed.
     /// - Returns: The resolved `Offering`, or `nil` if it couldn't be fetched.
-    func resolveOffering() async -> Offering? {
-        switch self {
-        case let .offering(offering):
+    func resolveOffering(purchases: any PaywallPurchasesType) async -> Offering? {
+        if case let .offering(offering) = self {
             return offering
-        case .defaultOffering, .offeringIdentifier:
-            guard Purchases.isConfigured else { return nil }
-
-            do {
-                switch self {
-                case .defaultOffering:
-                    return try await Purchases.shared.offerings().current
-                case let .offeringIdentifier(identifier, presentedOfferingContext):
-                    return try await Self.resolveOfferingIdentifier(
-                        identifier: identifier,
-                        presentedOfferingContext: presentedOfferingContext
-                    )
-                case .offering:
-                    fatalError("Already handled above")
-                }
-            } catch {
-                Logger.error(Strings.errorFetchingOfferings(error))
-                return nil
-            }
+        }
+        do {
+            return try await resolveOfferingOrThrow(purchases: purchases)
+        } catch {
+            Logger.error(Strings.errorFetchingOfferings(error))
+            return nil
         }
     }
 
-    func resolveOfferingOrThrow() async throws -> Offering {
+    func resolveOfferingOrThrow(purchases: any PaywallPurchasesType) async throws -> Offering {
         switch self {
         case let .offering(offering):
             return offering
         case .defaultOffering:
-            return try await Purchases.shared.offerings().current.orThrow(PaywallError.noCurrentOffering)
+            return try await purchases.offerings().current.orThrow(PaywallError.noCurrentOffering)
         case let .offeringIdentifier(identifier, presentedOfferingContext):
             return try await Self.resolveOfferingIdentifier(
                 identifier: identifier,
-                presentedOfferingContext: presentedOfferingContext
+                presentedOfferingContext: presentedOfferingContext,
+                purchases: purchases
             )
-        }
-    }
-
-    private static func loadCachedCurrentOfferingIfPossible() -> Offering? {
-        if Purchases.isConfigured {
-            return Purchases.shared.cachedOfferings?.current
-        } else {
-            return nil
-        }
-    }
-
-    private static func loadCachedOfferingIfPossible(identifier: String) -> Offering? {
-        if Purchases.isConfigured {
-            return Purchases.shared.cachedOfferings?.offering(identifier: identifier)
-        } else {
-            return nil
         }
     }
 
     private static func resolveOfferingIdentifier(
         identifier: String,
-        presentedOfferingContext: PresentedOfferingContext?
+        presentedOfferingContext: PresentedOfferingContext?,
+        purchases: any PaywallPurchasesType
     ) async throws -> Offering {
         #if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
         return try await Self.resolveWorkflowOfferingIdentifier(
             identifier: identifier,
-            presentedOfferingContext: presentedOfferingContext
+            presentedOfferingContext: presentedOfferingContext,
+            purchases: purchases
         )
         #else
-        let offering = try await Purchases.shared.offerings()
+        let offering = try await purchases.offerings()
             .offering(identifier: identifier)
             .orThrow(PaywallError.offeringNotFound(identifier: identifier))
 
@@ -208,13 +181,16 @@ extension PaywallViewConfiguration.Content {
         #endif
     }
 
-    #if !os(tvOS)
-    #if ENABLE_WORKFLOWS_ENDPOINT
+    #if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
     private static func resolveWorkflowOfferingIdentifier(
         identifier: String,
-        presentedOfferingContext: PresentedOfferingContext?
+        presentedOfferingContext: PresentedOfferingContext?,
+        purchases: any PaywallPurchasesType
     ) async throws -> Offering {
-        let fetchResult = try await Purchases.shared.workflow(forOfferingIdentifier: identifier)
+        async let fetchResultTask = purchases.workflow(forOfferingIdentifier: identifier)
+        async let allOfferingsTask = purchases.offerings()
+
+        let (fetchResult, allOfferings) = try await (fetchResultTask, allOfferingsTask)
         let workflow = fetchResult.workflow
 
         guard let step = workflow.steps[workflow.initialStepId],
@@ -223,7 +199,7 @@ extension PaywallViewConfiguration.Content {
             throw PaywallError.offeringNotFound(identifier: identifier)
         }
 
-        let baseOffering = try await Purchases.shared.offerings()
+        let baseOffering = try allOfferings
             .offering(identifier: screen.offeringId)
             .orThrow(PaywallError.offeringNotFound(identifier: screen.offeringId ?? identifier))
 
@@ -240,7 +216,6 @@ extension PaywallViewConfiguration.Content {
 
         return offering
     }
-    #endif
     #endif
 
 }
