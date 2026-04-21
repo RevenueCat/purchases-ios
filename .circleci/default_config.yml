@@ -1105,10 +1105,15 @@ jobs:
       - update-spm-installation-commit
 
       # === SPM Release Build (Xcode 14) ===
-      - run:
-          name: SPM Release Build (Xcode 14)
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
+      # Skipped on snapshot-generation pipelines: no snapshots depend on the
+      # SPM release build, so we can save CI time.
+      - unless:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: SPM Release Build (Xcode 14)
+                command: swift build -c release --target RevenueCat
+                no_output_timeout: 30m
 
       # Start iOS 14.5 runtime download in the background so it can proceed
       # while iOS 15 tests run. Includes timeout detection and retry logic
