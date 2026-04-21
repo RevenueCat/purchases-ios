@@ -98,11 +98,12 @@ struct CarouselComponentView: View {
                 .onPreferenceChange(HeightPreferenceKey.self) { newHeight in
                     self.carouselHeight = newHeight
                 }
+                #if DEBUG
+                // Hook for running tests
                 .onAppear {
-                    #if DEBUG
                     self.viewModel.onViewAppear?()
-                    #endif
                 }
+                #endif
                 // Style the carousel
                 .size(style.size)
                 .padding(style.padding.extend(by: style.border?.width ?? 0))
