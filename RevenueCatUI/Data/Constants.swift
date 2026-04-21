@@ -110,6 +110,8 @@ enum PaywallComponentInteraction {
     static let restoreButtonName = "restore_button"
     static let termsLinkName = "terms_link"
     static let privacyLinkName = "privacy_link"
+    static let tierSelectorName = "tier_selector"
+    static let purchaseButtonName = "purchase_button"
 
     enum ComponentValue: String {
         case toggleAllPlans = "toggle_all_plans"

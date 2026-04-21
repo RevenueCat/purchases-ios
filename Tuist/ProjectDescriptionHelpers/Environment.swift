@@ -91,4 +91,19 @@ extension Environment {
         let value = ProcessInfo.processInfo.environment["TUIST_RC_API_KEY"] ?? ""
         return value.isEmpty ? nil : value
     }
+
+    /// Returns extra Swift compilation conditions to inject into all targets.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// # Single flag
+    /// TUIST_SWIFT_CONDITIONS="ENABLE_WORKFLOWS_ENDPOINT" tuist generate PaywallsTester
+    ///
+    /// # Multiple flags
+    /// TUIST_SWIFT_CONDITIONS="ENABLE_WORKFLOWS_ENDPOINT MY_OTHER_FLAG" tuist generate
+    /// ```
+    public static var extraSwiftConditions: [String] {
+        let value = ProcessInfo.processInfo.environment["TUIST_SWIFT_CONDITIONS"] ?? ""
+        return value.split(separator: " ").map(String.init).filter { !$0.isEmpty }
+    }
 }
