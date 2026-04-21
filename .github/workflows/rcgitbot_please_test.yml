@@ -20,30 +20,6 @@ jobs:
       pull-requests: read
 
     steps:
-      - name: Check membership in RevenueCat Org
-        env:
-          READ_ORG_GITHUB_TOKEN: ${{ secrets.READ_ORG_GITHUB_TOKEN }}
-          COMMENT_USER: ${{ github.event.comment.user.login }}
-        id: verify
-        # ensure that only RevenueCat members can trigger this. According to Github docs, only 204
-        # response codes correspond to members of the organization.
-        run: |
-          # Validate before using in a URL to avoid any possibility of script/URL injection.
-          if [[ ! "$COMMENT_USER" =~ ^[A-Za-z0-9-]+$ ]]; then
-            echo "::error::Invalid user login"
-            exit 1
-          fi
-          RESPONSE=$(curl -s --max-time 15 -o /dev/null \
-            --head \
-            -w "%{http_code}" \
-            -H "Authorization: Bearer $READ_ORG_GITHUB_TOKEN" \
-            "https://api.github.com/orgs/RevenueCat/members/$COMMENT_USER")
-          if [[ "$RESPONSE" != "204" ]]; then
-            echo "User is not a member of the organization"
-            exit 1
-          fi
-          echo "User is a member of the organization"
-
       # GitHub Actions `issue_comment` workflows always run from the default branch,
       # so we resolve the PR's head branch to find its CircleCI pipeline and approve
       # the hold job in the existing workflow.
@@ -156,28 +132,6 @@ jobs:
       pull-requests: read
 
     steps:
-      - name: Check membership in RevenueCat Org
-        env:
-          READ_ORG_GITHUB_TOKEN: ${{ secrets.READ_ORG_GITHUB_TOKEN }}
-          COMMENT_USER: ${{ github.event.comment.user.login }}
-        id: verify
-        run: |
-          # Validate before using in a URL to avoid any possibility of script/URL injection.
-          if [[ ! "$COMMENT_USER" =~ ^[A-Za-z0-9-]+$ ]]; then
-            echo "::error::Invalid user login"
-            exit 1
-          fi
-          RESPONSE=$(curl -s --max-time 15 -o /dev/null \
-            --head \
-            -w "%{http_code}" \
-            -H "Authorization: Bearer $READ_ORG_GITHUB_TOKEN" \
-            "https://api.github.com/orgs/RevenueCat/members/$COMMENT_USER")
-          if [[ "$RESPONSE" != "204" ]]; then
-            echo "User is not a member of the organization"
-            exit 1
-          fi
-          echo "User is a member of the organization"
-
       - name: Parse job names
         id: parse
         env:
