@@ -2032,15 +2032,13 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
-      # TEMP: only run the ios-15-and-14 job while verifying the skip_sk_tests
-      # fix under snapshot-generation pipelines. Revert before merging.
-      # - run-test-ios-26
-      # - run-test-ios-18-and-17
-      # - run-test-ios-16
+      - run-test-ios-26
+      - run-test-ios-18-and-17
+      - run-test-ios-16
       - run-test-ios-15-and-14
-      # - run-test-tvos-and-macos
-      # - run-test-watchos
-      # - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
+      - run-test-tvos-and-macos
+      - run-test-watchos
+      - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
 
 
   generate_revenuecatui_snapshots:
