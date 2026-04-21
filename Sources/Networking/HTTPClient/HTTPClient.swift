@@ -23,7 +23,6 @@ class HTTPClient {
 
     let systemInfo: SystemInfo
     let timeout: TimeInterval
-    let apiKey: String
     let authHeaders: RequestHeaders
 
     private let session: URLSession
@@ -43,8 +42,7 @@ class HTTPClient {
         TimeInterval(3)
     ]
 
-    init(apiKey: String,
-         systemInfo: SystemInfo,
+    init(systemInfo: SystemInfo,
          eTagManager: ETagManager,
          signing: SigningType,
          diagnosticsTracker: DiagnosticsTrackerType?,
@@ -70,8 +68,7 @@ class HTTPClient {
         self.dnsChecker = dnsChecker
         self.retriableStatusCodes = retriableStatusCodes
         self.timeout = requestTimeout
-        self.apiKey = apiKey
-        self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
+        self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: systemInfo.apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
         self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(

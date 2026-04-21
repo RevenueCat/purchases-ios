@@ -32,7 +32,6 @@ class MockBackend: Backend {
     public convenience init() {
         let systemInfo = MockSystemInfo(platformInfo: nil,
                                         finishTransactions: false,
-                                        dangerousSettings: nil,
                                         preferredLocalesProvider: .mock())
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
