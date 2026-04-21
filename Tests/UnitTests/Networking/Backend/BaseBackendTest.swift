@@ -64,6 +64,7 @@ class BaseBackendTests: TestCase {
             finishTransactions: true,
             storefrontProvider: MockStorefrontProvider(),
             storeKitVersion: storeKitVersion,
+            apiKey: Self.apiKey,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings,
             isAppBackgrounded: false,
@@ -140,8 +141,7 @@ extension BaseBackendTests {
             self.diagnosticsTracker = nil
         }
 
-        return MockHTTPClient(apiKey: Self.apiKey,
-                              systemInfo: self.systemInfo,
+        return MockHTTPClient(systemInfo: self.systemInfo,
                               eTagManager: eTagManager,
                               diagnosticsTracker: self.diagnosticsTracker,
                               sourceTestFile: file)
