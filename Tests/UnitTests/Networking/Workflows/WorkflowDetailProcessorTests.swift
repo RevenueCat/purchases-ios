@@ -86,6 +86,46 @@ class WorkflowDetailProcessorTests: TestCase {
         })
     }
 
+    func testStepDictionaryKeysPreserveCamelCase() throws {
+        // camelCase keys like "stepTwo" must also survive decoding unchanged.
+        let jsonString = """
+        {
+            "action": "inline",
+            "data": {
+                "id": "wf1",
+                "display_name": "Test",
+                "initial_step_id": "stepTwo",
+                "steps": {
+                    "stepTwo": {
+                        "id": "stepTwo",
+                        "type": "screen"
+                    }
+                },
+                "screens": {},
+                "ui_config": {
+                    "app": {"colors": {}, "fonts": {}},
+                    "localizations": {},
+                    "variable_config": {
+                        "variable_compatibility_map": {},
+                        "function_compatibility_map": {}
+                    }
+                }
+            }
+        }
+        """
+        let data = Data(jsonString.utf8)
+
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beSuccess { value in
+            let workflow = value.workflow
+            expect(workflow.initialStepId) == "stepTwo"
+            expect(workflow.steps[workflow.initialStepId]).notTo(beNil())
+        })
+    }
+
     func testTriggerActionDictionaryKeysMatchActionId() throws {
         // "btn_wagcLsIVjN" in trigger_actions must survive decoding unchanged so that
         // step.triggerActions[trigger.actionId] returns the action. Guards against any future
