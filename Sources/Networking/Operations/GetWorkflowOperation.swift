@@ -111,6 +111,7 @@ private extension GetWorkflowOperation {
                 return .failure(.networkError(NetworkError.networkError(underlyingError)))
             case .invalidEnvelopeJson,
                     .unknownAction,
+                    .missingInlineData,
                     .missingCdnUrl,
                     .cdnHashMismatch:
                 return .failure(.networkError(NetworkError.decoding(processingError, envelopeData)))

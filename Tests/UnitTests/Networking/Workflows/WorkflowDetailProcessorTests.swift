@@ -66,22 +66,87 @@ class WorkflowDetailProcessorTests: TestCase {
         })
     }
 
-    func testInlinePreservesFloatNumericPrecision() throws {
-        // Regression: prior JSONSerialization round-trip silently coerced 1.0 → 1 and
-        // mangled small exponents. AnyDecodable fields (paramValues, outputs, config, metadata)
-        // were affected — value as? Double returned nil if the value was re-encoded as Int.
+    func testStepDictionaryKeysMatchInitialStepId() throws {
+        // "step_1" in steps must survive decoding unchanged so workflow.steps[workflow.initialStepId]
+        // returns a non-nil step. Guards against any future decoder change that would alter
+        // dictionary keys and break workflow navigation.
+        let envelope: [String: Any] = [
+            "action": "inline",
+            "data": Self.minimalWorkflowDict(id: "wf1")
+        ]
+        let data = try JSONSerialization.data(withJSONObject: envelope)
+
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beSuccess { value in
+            let workflow = value.workflow
+            expect(workflow.steps[workflow.initialStepId]).notTo(beNil())
+        })
+    }
+
+    func testStepDictionaryKeysPreserveCamelCase() throws {
+        // camelCase keys like "stepTwo" must also survive decoding unchanged.
         let jsonString = """
         {
             "action": "inline",
             "data": {
-                "id": "wf_floats",
-                "display_name": "Float Test",
+                "id": "wf1",
+                "display_name": "Test",
+                "initial_step_id": "stepTwo",
+                "steps": {
+                    "stepTwo": {
+                        "id": "stepTwo",
+                        "type": "screen"
+                    }
+                },
+                "screens": {},
+                "ui_config": {
+                    "app": {"colors": {}, "fonts": {}},
+                    "localizations": {},
+                    "variable_config": {
+                        "variable_compatibility_map": {},
+                        "function_compatibility_map": {}
+                    }
+                }
+            }
+        }
+        """
+        let data = Data(jsonString.utf8)
+
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beSuccess { value in
+            let workflow = value.workflow
+            expect(workflow.initialStepId) == "stepTwo"
+            expect(workflow.steps[workflow.initialStepId]).notTo(beNil())
+        })
+    }
+
+    func testTriggerActionDictionaryKeysMatchActionId() throws {
+        // "btn_wagcLsIVjN" in trigger_actions must survive decoding unchanged so that
+        // step.triggerActions[trigger.actionId] returns the action. Guards against any future
+        // decoder change that would alter dictionary keys.
+        let jsonString = """
+        {
+            "action": "inline",
+            "data": {
+                "id": "wf1",
+                "display_name": "Test",
                 "initial_step_id": "step_1",
                 "steps": {
                     "step_1": {
                         "id": "step_1",
                         "type": "screen",
-                        "param_values": {"one_point_o": 1.0, "tiny": 1e-06}
+                        "trigger_actions": {
+                            "btn_wagcLsIVjN": {
+                                "type": "navigate",
+                                "step_id": "step_2"
+                            }
+                        }
                     }
                 },
                 "screens": {},
@@ -104,10 +169,54 @@ class WorkflowDetailProcessorTests: TestCase {
 
         expect(result).to(beSuccess { value in
             let step = value.workflow.steps["step_1"]
-            if case .double(let doubleValue) = step?.paramValues["onePointO"] {
-                expect(doubleValue) == 1.0
+            expect(step).notTo(beNil())
+            let action = step?.triggerActions["btn_wagcLsIVjN"]
+            expect(action).notTo(beNil())
+            expect(action?.stepId) == "step_2"
+        })
+    }
+
+    func testInlinePreservesFloatNumericPrecision() throws {
+        // Whole-number floats like 1.0 are decoded as .int by AnyDecodable (Foundation
+        // allows decoding 1.0 as Int); use fractional values to exercise the .double path.
+        let jsonString = """
+        {
+            "action": "inline",
+            "data": {
+                "id": "wf_floats",
+                "display_name": "Float Test",
+                "initial_step_id": "step_1",
+                "steps": {
+                    "step_1": {
+                        "id": "step_1",
+                        "type": "screen",
+                        "param_values": {"one_point_o": 1.5, "tiny": 1e-06}
+                    }
+                },
+                "screens": {},
+                "ui_config": {
+                    "app": {"colors": {}, "fonts": {}},
+                    "localizations": {},
+                    "variable_config": {
+                        "variable_compatibility_map": {},
+                        "function_compatibility_map": {}
+                    }
+                }
+            }
+        }
+        """
+        let data = Data(jsonString.utf8)
+
+        let result = waitUntilValue { completed in
+            self.processor.process(data, completion: completed)
+        }
+
+        expect(result).to(beSuccess { value in
+            let step = value.workflow.steps["step_1"]
+            if case .double(let doubleValue) = step?.paramValues["one_point_o"] {
+                expect(doubleValue) == 1.5
             } else {
-                fail("Expected .double(1.0), got \(String(describing: step?.paramValues["onePointO"]))")
+                fail("Expected .double(1.5), got \(String(describing: step?.paramValues["one_point_o"]))")
             }
             if case .double(let doubleValue) = step?.paramValues["tiny"] {
                 expect(doubleValue).to(beCloseTo(1e-06, within: 1e-20))

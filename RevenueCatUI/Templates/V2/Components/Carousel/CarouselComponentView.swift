@@ -270,6 +270,9 @@ private struct CarouselView<Content: View>: View {
                             )
                         )
                         .frame(width: cardWidth)
+                        // Clip each page so tall/scrollable stack content cannot paint outside the
+                        // card width (avoids transient gray overlays from neighbor compositing).
+                        .clipped()
                 }
             }
             .frame(width: self.width, alignment: .leading)

@@ -27,6 +27,7 @@ enum WorkflowDetailProcessingError: Error {
     case cdnFetchFailed(Error)
     case invalidEnvelopeJson
     case unknownAction(String)
+    case missingInlineData
     case missingCdnUrl
     case cdnHashMismatch
 
@@ -39,6 +40,8 @@ struct WorkflowDetailProcessingResult {
 
 }
 
+/// Normalizes a successful workflow-detail HTTP payload:
+/// `inline` (unwraps `data`) or `use_cdn` (fetches JSON from CDN).
 final class WorkflowDetailProcessor: Sendable {
 
     private let cdnFetch: WorkflowCdnFetch

@@ -191,6 +191,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
+                .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior:
@@ -218,6 +219,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
+                .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior:
@@ -274,6 +276,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket:
             return false
@@ -393,6 +396,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getVirtualCurrencies:
             return "get_virtual_currencies"
+
+        case .getWorkflow:
+            return "get_workflow"
 
         case .appHealthReportAvailability:
             return "get_app_health_report_availability"

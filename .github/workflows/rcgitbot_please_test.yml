@@ -4,33 +4,22 @@ on:
   issue_comment:
     types: [created]
 
+# Deny-all baseline: each job must declare its own `permissions:` block.
+permissions: {}
+
 jobs:
   approve-full-tests:
     runs-on: ubuntu-latest
     if: |
       github.event.issue.pull_request &&
       github.event.comment.body == '@RCGitBot please test' &&
-      github.repository == 'RevenueCat/purchases-ios'
+      github.repository == 'RevenueCat/purchases-ios' &&
+      github.event.comment.author_association == 'MEMBER'
+    permissions:
+      issues: write
+      pull-requests: read
 
     steps:
-      - name: Check membership in RevenueCat Org
-        env:
-          READ_ORG_GITHUB_TOKEN: ${{ secrets.READ_ORG_GITHUB_TOKEN }}
-        id: verify
-        # ensure that only RevenueCat members can trigger this. According to Github docs, only 204
-        # response codes correspond to members of the organization.
-        run: |
-          RESPONSE=$(curl -s -o /dev/null \
-            --head \
-            -w "%{http_code}" \
-            -H "Authorization: Bearer $READ_ORG_GITHUB_TOKEN" \
-            https://api.github.com/orgs/RevenueCat/members/${{ github.event.comment.user.login }})
-          if [[ "$RESPONSE" != "204" ]]; then
-            echo "User is not a member of the organization"
-            exit 1
-          fi
-          echo "User is a member of the organization"
-
       # GitHub Actions `issue_comment` workflows always run from the default branch,
       # so we resolve the PR's head branch to find its CircleCI pipeline and approve
       # the hold job in the existing workflow.
@@ -117,13 +106,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JOB_STATUS: ${{ job.status }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
         run: |
           if [[ "$JOB_STATUS" == "success" ]]; then
             REACTION="+1"
           else
             REACTION="-1"
           fi
-          gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions \
+          gh api "repos/$REPO/issues/comments/$COMMENT_ID/reactions" \
             -f content="$REACTION"
 
   # Trigger CircleCI job(s) on-demand via "@RCGitBot please test <job1> <job2> <job3>".
@@ -134,25 +125,13 @@ jobs:
     if: |
       github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '@RCGitBot please test ') &&
-      github.repository == 'RevenueCat/purchases-ios'
+      github.repository == 'RevenueCat/purchases-ios' &&
+      github.event.comment.author_association == 'MEMBER'
+    permissions:
+      issues: write
+      pull-requests: read
 
     steps:
-      - name: Check membership in RevenueCat Org
-        env:
-          READ_ORG_GITHUB_TOKEN: ${{ secrets.READ_ORG_GITHUB_TOKEN }}
-        id: verify
-        run: |
-          RESPONSE=$(curl -s -o /dev/null \
-            --head \
-            -w "%{http_code}" \
-            -H "Authorization: Bearer $READ_ORG_GITHUB_TOKEN" \
-            https://api.github.com/orgs/RevenueCat/members/${{ github.event.comment.user.login }})
-          if [[ "$RESPONSE" != "204" ]]; then
-            echo "User is not a member of the organization"
-            exit 1
-          fi
-          echo "User is a member of the organization"
-
       - name: Parse job names
         id: parse
         env:
@@ -225,8 +204,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PIPELINE_NUMBER: ${{ steps.trigger.outputs.pipeline_number }}
           JOB_NAMES: ${{ steps.parse.outputs.job_names }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
+          gh api "repos/$REPO/issues/$ISSUE_NUMBER/comments" \
             -f body="🚀 Triggered **$JOB_NAMES** → [Pipeline #$PIPELINE_NUMBER](https://app.circleci.com/pipelines/gh/RevenueCat/purchases-ios/$PIPELINE_NUMBER)"
 
       - name: React to comment
@@ -234,11 +215,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JOB_STATUS: ${{ job.status }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
         run: |
           if [[ "$JOB_STATUS" == "success" ]]; then
             REACTION="+1"
           else
             REACTION="-1"
           fi
-          gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions \
+          gh api "repos/$REPO/issues/comments/$COMMENT_ID/reactions" \
             -f content="$REACTION"

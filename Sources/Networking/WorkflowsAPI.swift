@@ -42,7 +42,7 @@ class WorkflowsAPI {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     private static func fileCachedCdnFetch(
-        fileRepository: FileRepositoryType = FileRepository.shared
+        fileRepository: FileRepositoryType
     ) -> WorkflowCdnFetch {
         return { cdnUrl, hash, completion in
             guard let url = URL(string: cdnUrl) else {

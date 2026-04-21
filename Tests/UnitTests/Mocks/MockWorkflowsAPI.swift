@@ -14,7 +14,7 @@
 import Foundation
 @testable import RevenueCat
 
-class MockWorkflowsAPI: WorkflowsAPI {
+class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
 
     init() {
         super.init(backendConfig: MockBackendConfiguration())
