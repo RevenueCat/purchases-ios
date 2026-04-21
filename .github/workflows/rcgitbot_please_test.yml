@@ -28,8 +28,7 @@ jobs:
         # ensure that only RevenueCat members can trigger this. According to Github docs, only 204
         # response codes correspond to members of the organization.
         run: |
-          # Defense-in-depth: GitHub usernames are restricted, but validate before
-          # using in a URL to avoid any possibility of script/URL injection.
+          # Validate before using in a URL to avoid any possibility of script/URL injection.
           if [[ ! "$COMMENT_USER" =~ ^[A-Za-z0-9-]+$ ]]; then
             echo "::error::Invalid user login: $COMMENT_USER"
             exit 1
@@ -163,8 +162,7 @@ jobs:
           COMMENT_USER: ${{ github.event.comment.user.login }}
         id: verify
         run: |
-          # Defense-in-depth: GitHub usernames are restricted, but validate before
-          # using in a URL to avoid any possibility of script/URL injection.
+          # Validate before using in a URL to avoid any possibility of script/URL injection.
           if [[ ! "$COMMENT_USER" =~ ^[A-Za-z0-9-]+$ ]]; then
             echo "::error::Invalid user login: $COMMENT_USER"
             exit 1
