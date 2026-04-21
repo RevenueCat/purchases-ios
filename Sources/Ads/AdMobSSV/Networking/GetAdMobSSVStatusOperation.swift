@@ -66,6 +66,7 @@ private extension GetAdMobSSVStatusOperation {
 
     func getAdMobSSVStatus(completion: @escaping () -> Void) {
         let appUserID = self.configuration.appUserID
+        let clientTransactionID = self.configuration.clientTransactionID
 
         guard appUserID.isNotEmpty else {
             self.callbackCache.performOnAllItemsAndRemoveFromCache(
@@ -78,11 +79,22 @@ private extension GetAdMobSSVStatusOperation {
             return
         }
 
+        guard clientTransactionID.isNotEmpty else {
+            self.callbackCache.performOnAllItemsAndRemoveFromCache(
+                withCacheable: self
+            ) { callback in
+                callback.completion(.failure(.missingClientTransactionID()))
+            }
+            completion()
+
+            return
+        }
+
         let request = HTTPRequest(
             method: .get,
             path: .adMobSSVStatus(
                 appUserID: appUserID,
-                clientTransactionID: self.configuration.clientTransactionID
+                clientTransactionID: clientTransactionID
             )
         )
 

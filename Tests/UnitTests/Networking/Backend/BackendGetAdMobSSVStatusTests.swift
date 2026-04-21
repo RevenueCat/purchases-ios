@@ -206,6 +206,30 @@ final class BackendGetAdMobSSVStatusTests: BaseBackendTests {
         expect(receivedError) == .missingAppUserID()
     }
 
+    func testGetAdMobSSVStatusSkipsBackendCallIfClientTransactionIDIsEmpty() {
+        waitUntil { completed in
+            self.adsAPI.getAdMobSSVStatus(
+                appUserID: Self.userID,
+                clientTransactionID: ""
+            ) { _ in completed() }
+        }
+
+        expect(self.httpClient.calls).to(beEmpty())
+    }
+
+    func testGetAdMobSSVStatusCallsCompletionWithErrorIfClientTransactionIDIsEmpty() {
+        let receivedError = waitUntilValue { completed in
+            self.adsAPI.getAdMobSSVStatus(
+                appUserID: Self.userID,
+                clientTransactionID: ""
+            ) { result in
+                completed(result.error)
+            }
+        }
+
+        expect(receivedError) == .missingClientTransactionID()
+    }
+
     // MARK: - Caching / dedupe
 
     func testGetAdMobSSVStatusDedupesConcurrentCallsForSameTransactionID() {

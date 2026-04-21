@@ -1581,6 +1581,10 @@ extension Purchases {
     @_spi(Internal) public func pollAdMobSSVStatus(
         clientTransactionID: String
     ) async throws -> AdMobSSVPollStatus {
+        guard clientTransactionID.isNotEmpty else {
+            throw BackendError.missingClientTransactionID().asPublicError
+        }
+
         let response = try await Async.call { completion in
             self.backend.adsAPI.getAdMobSSVStatus(
                 appUserID: self.appUserID,
