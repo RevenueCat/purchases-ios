@@ -49,6 +49,7 @@ enum NetworkStrings {
     case api_request_redirect(from: URL, to: URL)
     case operation_state(NetworkOperation.Type, state: String)
     case request_handled_by_load_shedder(HTTPRequestPath)
+    case workflow_cdn_hash_mismatch
 
     #if DEBUG
     case api_request_forcing_server_error(HTTPRequest)
@@ -141,6 +142,9 @@ extension NetworkStrings: LogMessage {
 
         case let .request_handled_by_load_shedder(path):
             return "Request was handled by load shedder: \(path.relativePath)"
+
+        case .workflow_cdn_hash_mismatch:
+            return "Workflow CDN content hash does not match the expected hash from the server."
 
         case let .api_request_queued_for_retry(httpMethod, retryNumber, path, backoffInterval):
             return "Queued request \(httpMethod) \(path) for retry number \(retryNumber) in \(backoffInterval) seconds."

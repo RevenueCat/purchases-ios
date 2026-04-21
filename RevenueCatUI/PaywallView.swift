@@ -600,16 +600,9 @@ struct LoadedOfferingPaywallView: View {
             }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
-                if hasPurchased {
-                    guard let onRequestedDismissal = self.onRequestedDismissal else {
-                        if self.mode.isFullScreen {
-                            Logger.debug(Strings.dismissing_paywall)
-                            self.dismiss()
-                        }
-                        return
-                    }
-                    onRequestedDismissal()
-                }
+                guard hasPurchased else { return }
+
+                self.dismissAfterPurchaseCompletionCallbacks()
             }
 
         if self.displayCloseButton {
@@ -660,6 +653,23 @@ struct LoadedOfferingPaywallView: View {
             return configuration.colors.closeButtonColor
         case .failure:
             return nil
+        }
+    }
+
+    private func dismissAfterPurchaseCompletionCallbacks() {
+        // Defer dismissal so purchase completion preferences propagate to parent modifiers first.
+        DispatchQueue.main.async {
+            guard self.purchaseHandler.hasPurchasedInSession else { return }
+
+            guard let onRequestedDismissal = self.onRequestedDismissal else {
+                if self.mode.isFullScreen {
+                    Logger.debug(Strings.dismissing_paywall)
+                    self.dismiss()
+                }
+                return
+            }
+
+            onRequestedDismissal()
         }
     }
 
