@@ -2199,6 +2199,7 @@ platform :ios do
 
             Dir.chdir("..") do
               sh("xcodebuild", "clean", "build",
+                 "-workspace", ".",
                  "-scheme", scheme,
                  "-derivedDataPath", ".build",
                  "-configuration", "Release",
