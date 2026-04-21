@@ -3,7 +3,7 @@ import ProjectDescription
 extension SettingsDictionary {
 
     /// Appends any flags from `TUIST_SWIFT_CONDITIONS` to `SWIFT_ACTIVE_COMPILATION_CONDITIONS`.
-    public func appendingExtraSwiftConditions() -> SettingsDictionary {
+    public func appendingTuistSwiftConditions() -> SettingsDictionary {
         let flags = Environment.extraSwiftConditions
         guard !flags.isEmpty else { return self }
         return merging([

@@ -30,7 +30,7 @@ let project = Project(
             settings: .settings(
                 base: ([
                     "APPLICATION_EXTENSION_API_ONLY": "YES"
-                ] as SettingsDictionary).appendingExtraSwiftConditions()
+                ] as SettingsDictionary).appendingTuistSwiftConditions()
             )
         ),
 

@@ -21,7 +21,7 @@ let project = Project(
                 .revenueCat
             ],
             settings: .settings(
-                base: ([:] as SettingsDictionary).appendingExtraSwiftConditions()
+                base: ([:] as SettingsDictionary).appendingTuistSwiftConditions()
             )
         )
     ],
