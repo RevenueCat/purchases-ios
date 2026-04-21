@@ -1135,13 +1135,9 @@ jobs:
       # producing test in the StoreKit test target is `DebugViewSwiftUITests`,
       # which is `@available(iOS 16.0, *)` and is recorded by the iOS 16+
       # jobs.
-      #
-      # The command is additionally wrapped in a 10-minute `timeout` as a
-      # defensive cap: `no_output_timeout` does not fire in the observed
-      # retry-loop scenario (xcodebuild keeps emitting output every retry).
       - run:
           name: Run iOS 15 tests
-          command: timeout 10m bundle exec fastlane test_ios skip_sk_tests:<< pipeline.parameters.generate_snapshots >>
+          command: bundle exec fastlane test_ios skip_sk_tests:<< pipeline.parameters.generate_snapshots >>
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 13 (15.5)
