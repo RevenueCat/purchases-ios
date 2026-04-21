@@ -688,6 +688,12 @@ platform :ios do
     # See https://developer.apple.com/forums/thread/724068 and `FB12223404`.
     skip_sk_tests = options[:skip_sk_tests]
 
+    # TEMP DEBUG: verify CircleCI pipeline parameter interpolation into skip_sk_tests.
+    UI.message("[DEBUG test_ios] options = #{options.inspect}")
+    UI.message("[DEBUG test_ios] options[:skip_sk_tests] = #{options[:skip_sk_tests].inspect} (class: #{options[:skip_sk_tests].class})")
+    UI.message("[DEBUG test_ios] skip_sk_tests (after assignment) = #{skip_sk_tests.inspect} (class: #{skip_sk_tests.class})")
+    UI.message("[DEBUG test_ios] generate_snapshots = #{generate_snapshots.inspect}")
+
     if generate_snapshots
       if skip_sk_tests
         test_plan = "CI-RevenueCat-Snapshots"
@@ -699,6 +705,8 @@ platform :ios do
     else
       test_plan = "CI-AllTests"
     end
+
+    UI.message("[DEBUG test_ios] selected test_plan = #{test_plan}")
 
     scan(
       step_name: "scan - iPhone",
