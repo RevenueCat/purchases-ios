@@ -459,7 +459,16 @@ private extension CustomerInfoManager {
                         postReceiptSource: Self.sourceForUnfinishedTransaction,
                         currentUserID: appUserID
                     )
-                    completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
+                    switch result {
+                    case .success:
+                        completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
+                    case .failure:
+                        self.requestCustomerInfo(appUserID: appUserID,
+                                                 isAppBackgrounded: isAppBackgrounded) { fallbackResult in
+                            completion(CustomerInfoDataResult(result: fallbackResult,
+                                                              hadUnsyncedPurchasesBefore: true))
+                        }
+                    }
                 } else {
                     self.requestCustomerInfo(appUserID: appUserID,
                                              isAppBackgrounded: isAppBackgrounded) { result in

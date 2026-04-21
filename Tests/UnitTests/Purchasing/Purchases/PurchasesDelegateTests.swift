@@ -165,6 +165,40 @@ class PurchasesDelegateTests: BasePurchasesTests {
         )
     }
 
+    func testDelegateIsNotifiedWhenReceiptPostFailsButGetCustomerInfoSucceeds() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // Wait for the initial fetch from `setupPurchases` to deliver the default
+        // empty CustomerInfo to the delegate.
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+
+        // `MockTransaction` has an empty product identifier, which makes
+        // `TransactionPoster` return `.missingTransactionProductIdentifier` — a
+        // stand-in for a backend receipt rejection.
+        let unfinishedTransaction = StoreTransaction(sk1Transaction: MockTransaction())
+        expect(unfinishedTransaction.productIdentifier) == ""
+        self.mockTransactionFetcher.stubbedUnfinishedTransactions = [unfinishedTransaction]
+
+        // A different CustomerInfo so `sendUpdateIfChanged` fires again on the fallback.
+        let newerCustomerInfo = try CustomerInfo(data: [
+            "request_date": "2025-12-21T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": Self.appUserID,
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": NSNull()
+            ] as [String: Any]
+        ])
+        self.backend.overrideCustomerInfoResult = .success(newerCustomerInfo)
+
+        self.deviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.notificationCenter.fireNotifications()
+
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(2))
+        expect(self.purchasesDelegate.customerInfo) === newerCustomerInfo
+    }
+
     // See https://github.com/RevenueCat/purchases-ios/issues/2410
     func testDelegateWithGetCustomerInfoCallDoesNotDeadlock() throws {
         final class GetCustomerInfoPurchasesDelegate: NSObject, PurchasesDelegate {
