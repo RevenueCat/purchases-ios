@@ -1569,47 +1569,6 @@ public extension Purchases {
 
 }
 
-// MARK: - AdMob SSV (Internal SPI)
-
-extension Purchases {
-
-    /// Polls the backend once for AdMob SSV verification status using `client_transaction_id`.
-    ///
-    /// Internal API for RC ad adapters.
-    ///
-    /// Cancelling the calling `Task` does not cancel the in-flight HTTP request.
-    @_spi(Internal) public func pollAdMobSSVStatus(
-        clientTransactionID: String
-    ) async throws -> AdMobSSVPollStatus {
-        guard clientTransactionID.isNotEmpty else {
-            throw BackendError.missingClientTransactionID().asPublicError
-        }
-
-        let response = try await Async.call { completion in
-            self.backend.adsAPI.getAdMobSSVStatus(
-                appUserID: self.appUserID,
-                clientTransactionID: clientTransactionID
-            ) { result in
-                completion(result.mapError(\.asPublicError))
-            }
-        }
-
-        switch response.status {
-        case .validated:
-            return .validated
-        case .pending:
-            return .pending
-        case .failed:
-            return .failed
-        case .unknown:
-            // Defensive: treat unrecognized future statuses as still-pending so the
-            // adapter keeps polling rather than firing a false terminal outcome.
-            return .pending
-        }
-    }
-
-}
-
 // MARK: - Preferred locale
 
 extension Purchases {
