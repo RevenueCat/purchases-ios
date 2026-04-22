@@ -133,6 +133,12 @@ final class BackendGetAdMobSSVStatusTests: BaseBackendTests {
 
         let response = try XCTUnwrap(result?.value)
         expect(response.status) == .unknown
+
+        expect(self.logger.messages.map(\.message)).to(
+            containElementSatisfying {
+                $0.contains(Strings.backendError.unknown_admob_ssv_status(status: "some_future_state").description)
+            }
+        )
     }
 
     // MARK: - Error handling
