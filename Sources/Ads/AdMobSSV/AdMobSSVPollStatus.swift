@@ -16,7 +16,7 @@ import Foundation
 /// Result of a single AdMob SSV status poll. Returned by
 /// `Purchases.pollAdMobSSVStatus(clientTransactionID:)` and consumed by
 /// RC-shipped ad adapters (e.g. `RevenueCatAdMob`).
-@_spi(Internal) public enum AdMobSSVPollStatus: String, Sendable {
+@_spi(Internal) public enum AdMobSSVPollStatus: Sendable {
     /// AdMob's SSV postback was received and validated by the backend.
     case validated
 
