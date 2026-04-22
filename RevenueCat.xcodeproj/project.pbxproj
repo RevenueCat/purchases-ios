@@ -1319,6 +1319,7 @@
 		B3E26A4A26BE0A8E003ACCF3 /* Error+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */; };
 		B3F3E8DA277158FE0047A5B9 /* DNSChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F3E8D9277158FE0047A5B9 /* DNSChecker.swift */; };
 		B3F8418F26F3A93400E560FB /* ErrorCodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */; };
+		B413E5A02F97B3B900B5F0CA /* CarouselTabSwitchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */; };
 		C074AAE036B449898E1FEF58 /* CustomPaywallVariables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93B46553B99148F3A60B8BFB /* CustomPaywallVariables.swift */; };
 		D0DA209A2F23BBEC00BA3B77 /* AdEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */; };
 		DB3395CA2F840A2B0079250C /* WorkflowsCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395C92F840A2B0079250C /* WorkflowsCallback.swift */; };
@@ -2879,6 +2880,7 @@
 		B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Error+Extensions.swift"; sourceTree = "<group>"; };
 		B3F3E8D9277158FE0047A5B9 /* DNSChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSChecker.swift; sourceTree = "<group>"; };
 		B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorCodeTests.swift; sourceTree = "<group>"; };
+		B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselTabSwitchTests.swift; sourceTree = "<group>"; };
 		CC1A2B3C2E1234AB00AABBCC /* CustomVariablesEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariablesEditorView.swift; sourceTree = "<group>"; };
 		D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventTests.swift; sourceTree = "<group>"; };
 		DB3395C92F840A2B0079250C /* WorkflowsCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsCallback.swift; sourceTree = "<group>"; };
@@ -3147,6 +3149,7 @@
 				75909EAA2E74286E009ABBA7 /* UIConfigProviderTests.swift */,
 				077AC81FEBE38D1468AE8670 /* VideoAutoplayHandlerTests.swift */,
 				B29E428C04E073334CD13B58 /* CarouselStateTests.swift */,
+				B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */,
 			);
 			path = PaywallsV2;
 			sourceTree = "<group>";
@@ -8245,6 +8248,7 @@
 				887A63432C1D177800E1A461 /* LocalizationTests.swift in Sources */,
 				030890842D2B77E70069677B /* VariableHandlerV2Tests.swift in Sources */,
 				FACD00022F61A1230073D2DE /* TextComponentLocalizationTests.swift in Sources */,
+				B413E5A02F97B3B900B5F0CA /* CarouselTabSwitchTests.swift in Sources */,
 				FACD00042F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift in Sources */,
 				FB5A72022F65F5B9005C64A1 /* ViewModelFactoryTests.swift in Sources */,
 				FACD00082F61A1230073D2DE /* PackageComponentViewTests.swift in Sources */,
