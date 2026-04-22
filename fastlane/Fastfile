@@ -1396,7 +1396,7 @@ platform :ios do
     else
       sh("git", "checkout", "-b", branch_name)
       sh("git", "add", "../api/*.swiftinterface")
-      sh("git", "commit", "-m", "[skip ci] Update baseline swiftinterface files")
+      sh("git", "commit", "-m", "Update baseline swiftinterface files")
       sh("git", "push", "origin", branch_name)
 
       circle_user = ENV["CIRCLE_USERNAME"]
@@ -1439,7 +1439,7 @@ platform :ios do
       if file_count == 0
         UI.important("No files to be committed")
       else
-        sh("git", "commit", "-m", "[skip ci] Generating new test snapshots")
+        sh("git", "commit", "-m", "Generating new test snapshots")
         sh("git", "push", "origin", branch_name)
 
         circle_user = ENV["CIRCLE_USERNAME"]
