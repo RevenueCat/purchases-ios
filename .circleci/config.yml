@@ -29,6 +29,11 @@ parameters:
   generate_swiftinterface:
     type: boolean
     default: false
+  # Set via CircleCI API by the GitHub Action when a PR comment like
+  # "@RCGitBot please test <job1> <job2> <job3>" is posted.
+  requested_jobs:
+    type: string
+    default: ""
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
@@ -46,12 +51,25 @@ parameters:
 jobs:
   setup-dynamic-config:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:current
     resource_class: small
     steps:
       - checkout
-      - continuation/continue:
-          configuration_path: .circleci/default_config.yml
+      - when:
+          condition: << pipeline.parameters.requested_jobs >>
+          steps:
+            - run:
+                name: Generate requested jobs configuration
+                environment:
+                  REQUESTED_JOBS: << pipeline.parameters.requested_jobs >>
+                command: node .circleci/generate-requested-jobs-config.js
+            - continuation/continue:
+                configuration_path: /tmp/requested-jobs-config.yml
+      - unless:
+          condition: << pipeline.parameters.requested_jobs >>
+          steps:
+            - continuation/continue:
+                configuration_path: .circleci/default_config.yml
 
 workflows:
   setup:
