@@ -130,7 +130,7 @@ module ApiDiffHelper
     end
   end
 
-  def run_api_diff(api_diff_tool, old_file, new_file, platform_name)
+  def run_api_diff(old_file, new_file, platform_name)
     result = {
       platform: platform_name,
       success: false,
@@ -149,29 +149,12 @@ module ApiDiffHelper
       return result
     end
 
-    begin
-      output = Fastlane::Actions.sh(
-        api_diff_tool,
-        "swift-interface",
-        "--old",
-        old_file,
-        "--new",
-        new_file
-      )
-      output = output.encode("UTF-8", invalid: :replace, undef: :replace)
-      no_changes = output.include?("# ✅ No changes detected") || output.empty?
-
-      if no_changes
-        Fastlane::UI.success("✅ No breaking API changes for #{platform_name}")
-      else
-        Fastlane::UI.important("ℹ️ Non-breaking public API changes detected for #{platform_name}")
-        result[:diff] = output
-        puts output
-      end
+    if FileUtils.identical?(old_file, new_file)
+      Fastlane::UI.success("✅ No API changes for #{platform_name}")
       result[:success] = true
-    rescue => error
-      Fastlane::UI.error("❌ Breaking API changes detected for #{platform_name}")
-      result[:diff] = error.message.encode("UTF-8", invalid: :replace, undef: :replace)
+    else
+      Fastlane::UI.error("❌ API changes detected for #{platform_name}")
+      result[:diff] = `diff -u "#{old_file}" "#{new_file}"`.encode('UTF-8', invalid: :replace, undef: :replace)
     end
 
     result
@@ -179,7 +162,7 @@ module ApiDiffHelper
 
   def print_failure_summary(failed_platforms)
     Fastlane::UI.error("=" * 60)
-    Fastlane::UI.error("BREAKING API CHANGES DETECTED")
+    Fastlane::UI.error("API CHANGES DETECTED")
     Fastlane::UI.error("=" * 60)
     Fastlane::UI.error("")
     Fastlane::UI.error("Platforms with changes: #{failed_platforms.map { |p| p[:platform] }.join(', ')}")
@@ -194,7 +177,7 @@ module ApiDiffHelper
     end
 
     Fastlane::UI.error("=" * 60)
-    Fastlane::UI.error("If these breaking changes are intentional and approved, update the baseline files.")
+    Fastlane::UI.error("To fix: Update the baseline files if these changes are intentional.")
     Fastlane::UI.error("Run: bundle exec fastlane ios update_swiftinterface_baselines")
     Fastlane::UI.error("Optional: add scheme:RevenueCat or scheme:RevenueCatUI")
     Fastlane::UI.error("=" * 60)
