@@ -1598,9 +1598,7 @@ extension Purchases {
         case .failed:
             return .failed
         case .unknown:
-            // Defensive: treat unrecognized future statuses as still-pending so the
-            // adapter keeps polling rather than firing a false terminal outcome.
-            return .pending
+            return .unknown
         }
     }
 

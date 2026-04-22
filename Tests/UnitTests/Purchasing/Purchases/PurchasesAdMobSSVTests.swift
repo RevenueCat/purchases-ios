@@ -31,13 +31,13 @@ final class PurchasesAdMobSSVTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
-    func testPollAdMobSSVStatusMapsUnknownStatusToPending() async throws {
+    func testPollAdMobSSVStatusMapsUnknownStatusToUnknown() async throws {
         let transactionID = "AABBCCDD-1111-2222-3333-444455556666"
         try self.mockAdsAPI.stubbedGetAdMobSSVStatusResult = .success(.init(status: .unknown))
 
         let status = try await self.purchases.pollAdMobSSVStatus(clientTransactionID: transactionID)
 
-        expect(status) == .pending
+        expect(status) == .unknown
         expect(try self.mockAdsAPI.invokedGetAdMobSSVStatusCount) == 1
         expect(try self.mockAdsAPI.invokedGetAdMobSSVStatusParameters?.appUserID)
             == self.identityManager.currentAppUserID

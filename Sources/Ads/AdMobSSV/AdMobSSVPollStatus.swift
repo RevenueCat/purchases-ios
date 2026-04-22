@@ -27,4 +27,7 @@ import Foundation
 
     /// AdMob's SSV postback was received but rejected by the backend.
     case failed
+
+    /// The backend returned an unrecognized status value.
+    case unknown
 }
