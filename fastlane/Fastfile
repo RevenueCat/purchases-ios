@@ -2074,8 +2074,10 @@ platform :ios do
 
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
     bundle_id = "com.revenuecat.PaywallsTester"
-    provisioning_profile_name = "match AppStore #{bundle_id}"
+    ios_provisioning_profile_name = "match AppStore #{bundle_id}"
+    macos_provisioning_profile_name = "match AppStore #{bundle_id} macos"
 
+    # Build release notes with SDK version and optional commit hash
     sdk_version = current_version_number
     if sdk_version.include?("SNAPSHOT")
       commit_hash = `git rev-parse --short HEAD`.strip
@@ -2087,9 +2089,11 @@ platform :ios do
     UI.message("Paywalls Tester release notes: #{changelog}")
 
     paywalls_tester_root = "#{project_root}/Tests/TestingApps/PaywallsTester"
-    xcodeproj_path = "#{paywalls_tester_root}/PaywallsTester.xcodeproj"
-    workspace_path = "#{paywalls_tester_root}/PaywallsTester.xcworkspace"
 
+    # Write CI.xcconfig with the API key and provisioning profile names before
+    # generating the Tuist workspace. Global.xcconfig (used by all Tuist
+    # projects) optionally includes CI.xcconfig, so these must be present
+    # before project generation.
     api_key = ENV['PAYWALLS_TESTER_REVENUECAT_API_KEY'] || ""
     if api_key.empty?
       UI.user_error!("PAYWALLS_TESTER_REVENUECAT_API_KEY environment variable is required")
@@ -2098,11 +2102,24 @@ platform :ios do
     xcconfig_path = "#{project_root}/CI.xcconfig"
     File.write(xcconfig_path, [
       "// Auto-generated for Paywalls Tester deployment. Do not commit to VCS.",
-      "REVENUECAT_API_KEY = #{api_key}"
+      "REVENUECAT_API_KEY = #{api_key}",
+      "PAYWALLS_TESTER_IOS_PROVISIONING_PROFILE = #{ios_provisioning_profile_name}",
+      "PAYWALLS_TESTER_MACOS_PROVISIONING_PROFILE = #{macos_provisioning_profile_name}"
     ].join("\n"))
-    UI.success("Created CI.xcconfig with REVENUECAT_API_KEY")
+    UI.success("Created CI.xcconfig with Paywalls Tester deployment variables")
+
+    # Generate the Tuist workspace (must happen after CI.xcconfig is written)
+    tuist_generate(query: "PaywallsTester")
+
+    workspace_path = "#{project_root}/RevenueCat-Tuist.xcworkspace"
+    xcodeproj_path = "#{project_root}/Projects/PaywallsTester/PaywallsTester.xcodeproj"
+
+    wait_processing_timeout_duration_in_seconds = 60 * 20
 
     # --- iOS ---
+    # Fetch certificates and provisioning profiles, and increment build number.
+    # increment_build_number modifies the generated .xcodeproj directly,
+    # which is the only reliable way to set the build number for Tuist projects.
     Dir.chdir("#{paywalls_tester_root}/fastlane") do
       match(readonly: true, platform: "ios")
       increment_build_number(
@@ -2111,6 +2128,11 @@ platform :ios do
       )
     end
 
+    # PROVISIONING_PROFILE_SPECIFIER is set at the target level in the Tuist
+    # Project.swift via the PAYWALLS_TESTER_*_PROVISIONING_PROFILE xcconfig
+    # variables (written to CI.xcconfig above). It must NOT be passed as an
+    # xcarg because xcargs apply globally to all targets, including SPM
+    # resource bundle targets which don't support provisioning profiles.
     build_ios_app(
       workspace: workspace_path,
       scheme: "PaywallsTester - Live Config",
@@ -2122,14 +2144,12 @@ platform :ios do
               "CODE_SIGN_IDENTITY='Apple Distribution'",
       export_options: {
         signingStyle: "manual",
-        manageAppVersionAndBuildNumber: true,
+        manageAppVersionAndBuildNumber: false,
         provisioningProfiles: {
-          bundle_id => provisioning_profile_name,
+          bundle_id => ios_provisioning_profile_name,
         }
       }
     )
-
-    wait_processing_timeout_duration_in_seconds = 60 * 20
 
     if not dry_run
       upload_to_testflight(
@@ -2161,9 +2181,9 @@ platform :ios do
               "CODE_SIGN_IDENTITY='Apple Distribution'",
       export_options: {
         signingStyle: "manual",
-        manageAppVersionAndBuildNumber: true,
+        manageAppVersionAndBuildNumber: false,
         provisioningProfiles: {
-          bundle_id => "#{provisioning_profile_name} macos",
+          bundle_id => macos_provisioning_profile_name,
         }
       }
     )

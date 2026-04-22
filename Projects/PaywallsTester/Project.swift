@@ -144,7 +144,17 @@ let project = Project(
                 .revenueCatUI,
                 .storeKit
             ],
-            settings: .appTarget(including: ([:] as SettingsDictionary).appendingTuistSwiftConditions())
+            settings: .appTarget(including: ([
+                "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+                "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
+                // PROVISIONING_PROFILE_SPECIFIER is set at the target level via the
+                // PAYWALLS_TESTER_*_PROVISIONING_PROFILE xcconfig variables (written to
+                // CI.xcconfig by the `deploy_paywalls_tester` lane). It must NOT be passed
+                // as an xcarg because xcargs apply globally to all targets, including SPM
+                // resource bundle targets which don't support provisioning profiles.
+                "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": "$(PAYWALLS_TESTER_IOS_PROVISIONING_PROFILE)",
+                "PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]": "$(PAYWALLS_TESTER_MACOS_PROVISIONING_PROFILE)"
+            ] as SettingsDictionary).appendingTuistSwiftConditions())
         )
     ],
     schemes: schemes,
