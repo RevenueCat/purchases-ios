@@ -255,6 +255,33 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
+    func testOnPurchaseCompletedInvokedBeforeRequestedDismissal() throws {
+        let handler: PurchaseHandler = .mock()
+        var callbackOrder: [String] = []
+
+        let dispose = try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: handler
+        )
+            .onPurchaseCompleted { _ in
+                callbackOrder.append("onPurchaseCompleted")
+            }
+            .onRequestedDismissal {
+                callbackOrder.append("onRequestedDismissal")
+            }
+            .addToHierarchy()
+
+        defer { dispose() }
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        expect(callbackOrder).toEventually(equal(["onPurchaseCompleted", "onRequestedDismissal"]))
+    }
+
     private static let purchaseHandler: PurchaseHandler = .mock()
     private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer

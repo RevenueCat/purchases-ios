@@ -28,9 +28,9 @@ let project = Project(
                 public: ["../../Sources/RevenueCat.h"]
             ),
             settings: .settings(
-                base: [
+                base: ([
                     "APPLICATION_EXTENSION_API_ONLY": "YES"
-                ]
+                ] as SettingsDictionary).appendingTuistSwiftConditions()
             )
         ),
 

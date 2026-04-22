@@ -93,6 +93,7 @@ struct PurchaseButton: View {
 
             let selectedContent = self.selectedPackage.content
             self.componentInteractionLogger(.paywallPurchaseButtonAction(
+                componentName: PaywallComponentInteraction.purchaseButtonName,
                 componentValue: PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout.description,
                 currentPackageIdentifier: selectedContent.identifier,
                 currentProductIdentifier: selectedContent.storeProduct.productIdentifier
