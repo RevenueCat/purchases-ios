@@ -47,11 +47,7 @@ final class PaywallViewConfigurationTests: TestCase {
             for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil)
         )
 
-        #if ENABLE_WORKFLOWS_ENDPOINT
-        expect(result).to(beNil())
-        #else
         expect(result?.identifier) == cachedOffering.identifier
-        #endif
     }
 
 }

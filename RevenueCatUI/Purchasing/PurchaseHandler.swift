@@ -259,9 +259,11 @@ extension PurchaseHandler {
         case .defaultOffering:
             return self.purchases.cachedOfferings?.current
         case let .offeringIdentifier(identifier, presentedOfferingContext):
-            #if ENABLE_WORKFLOWS_ENDPOINT
-            return nil
-            #else
+            #if !os(tvOS)
+            if ProcessInfo.processInfo.arguments.contains("-EnableWorkflowsEndpoint") {
+                return nil
+            }
+            #endif
             let offering = self.purchases.cachedOfferings?.offering(identifier: identifier)
 
             if let presentedOfferingContext {
@@ -269,7 +271,6 @@ extension PurchaseHandler {
             }
 
             return offering
-            #endif
         }
     }
 
@@ -304,12 +305,14 @@ extension PurchaseHandler {
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?
     ) async throws -> Offering {
-        #if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
-        return try await self.resolveWorkflowOfferingIdentifier(
-            identifier: identifier,
-            presentedOfferingContext: presentedOfferingContext
-        )
-        #else
+        #if !os(tvOS)
+        if ProcessInfo.processInfo.arguments.contains("-EnableWorkflowsEndpoint") {
+            return try await self.resolveWorkflowOfferingIdentifier(
+                identifier: identifier,
+                presentedOfferingContext: presentedOfferingContext
+            )
+        }
+        #endif
         let offering = try await self.purchases.offerings()
             .offering(identifier: identifier)
             .orThrow(PaywallError.offeringNotFound(identifier: identifier))
@@ -319,10 +322,9 @@ extension PurchaseHandler {
         }
 
         return offering
-        #endif
     }
 
-    #if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
+    #if !os(tvOS)
     private func resolveWorkflowOfferingIdentifier(
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?
@@ -714,7 +716,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     var cachedOfferings: Offerings? { nil }
 
-#if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
+#if !os(tvOS)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowFetchResult {
         throw ErrorCode.configurationError
     }

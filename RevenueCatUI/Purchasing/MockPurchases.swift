@@ -40,7 +40,7 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
 
     var cachedOfferings: Offerings?
 
-#if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
+#if !os(tvOS)
     var workflowBlock: ((String) async throws -> WorkflowFetchResult)?
 
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowFetchResult {
@@ -165,7 +165,7 @@ extension PaywallPurchasesType {
 
         mapped.cachedOfferings = self.cachedOfferings
         mapped.offeringsBlock = { try await self.offerings() }
-        #if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
+        #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         #endif
 
@@ -192,7 +192,7 @@ extension PaywallPurchasesType {
 
         mapped.cachedOfferings = self.cachedOfferings
         mapped.offeringsBlock = { try await self.offerings() }
-        #if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
+        #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         #endif
 

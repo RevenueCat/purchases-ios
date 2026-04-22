@@ -34,7 +34,7 @@ protocol PaywallPurchasesType: Sendable {
 
     var cachedOfferings: Offerings? { get }
 
-#if ENABLE_WORKFLOWS_ENDPOINT && !os(tvOS)
+#if !os(tvOS)
     @Sendable
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowFetchResult
 #endif
