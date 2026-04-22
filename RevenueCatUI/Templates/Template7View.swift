@@ -226,6 +226,7 @@ struct Template7View: TemplateViewType {
                                         tierName: self.tierNames[tier],
                                         tierId: tier.id
                                     ),
+                                    componentName: PaywallComponentInteraction.tierSelectorName,
                                     originPackage: originPackage,
                                     destinationPackage: destinationPackage
                                 )

@@ -286,11 +286,20 @@ struct PaywallsV2View: View {
                 self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
             )
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
-                if hasPurchased {
-                    self.onDismiss()
-                }
+                guard hasPurchased else { return }
+
+                self.dismissAfterPurchaseCompletionCallbacks()
             }
 
+    }
+
+    private func dismissAfterPurchaseCompletionCallbacks() {
+        // Defer dismissal so purchase completion preferences propagate to parent modifiers first.
+        DispatchQueue.main.async {
+            guard self.purchaseHandler.hasPurchasedInSession else { return }
+
+            self.onDismiss()
+        }
     }
 
     private func createEventData(forDefaultPaywall: Bool = false) -> PaywallEvent.Data {

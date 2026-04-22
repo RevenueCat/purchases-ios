@@ -56,6 +56,12 @@ class CarouselComponentViewModel {
         return self.pageContextNames[index]
     }
 
+    /// Invoked each time the carousel's `onAppear` fires. Set in tests to detect that the
+    /// carousel view was recreated (and its `@State` reset) after a tab switch.
+    #if DEBUG
+    var onViewAppear: (() -> Void)?
+    #endif
+
     @ViewBuilder
     // swiftlint:disable:next function_parameter_count
     func styles(
