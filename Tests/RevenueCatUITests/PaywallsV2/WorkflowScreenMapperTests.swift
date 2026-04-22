@@ -21,7 +21,7 @@ final class WorkflowScreenMapperTests: TestCase {
 
     func testMapsPaywallComponentsDataFieldsFromScreen() throws {
         let screen = try Self.makeScreen(
-            offeringId: "offering_a",
+            offeringIdentifier: "offering_a",
             templateName: "componentsTest",
             assetBaseURL: "https://assets.pawwalls.com",
             revision: 7,
@@ -70,7 +70,7 @@ final class WorkflowScreenMapperTests: TestCase {
 private extension WorkflowScreenMapperTests {
 
     static func makeScreen(
-        offeringId: String = "offering_a",
+        offeringIdentifier: String = "offering_a",
         templateName: String = "componentsTest",
         assetBaseURL: String = "https://assets.pawwalls.com",
         revision: Int = 3,
@@ -78,7 +78,7 @@ private extension WorkflowScreenMapperTests {
     ) throws -> RevenueCat.WorkflowScreen {
         let json = """
         {
-            "offering_id": "\(offeringId)",
+            "offering_identifier": "\(offeringIdentifier)",
             "template_name": "\(templateName)",
             "asset_base_url": "\(assetBaseURL)",
             "revision": \(revision),

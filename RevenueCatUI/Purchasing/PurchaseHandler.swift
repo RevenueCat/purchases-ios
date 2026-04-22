@@ -341,7 +341,7 @@ extension PurchaseHandler {
             throw PaywallError.offeringNotFound(identifier: identifier)
         }
 
-        let resolvedOfferingId = screen.offeringIdentifier ?? screen.offeringId
+        let resolvedOfferingId = screen.offeringIdentifier
         let baseOffering = try allOfferings
             .offering(identifier: resolvedOfferingId)
             .orThrow(PaywallError.offeringNotFound(identifier: resolvedOfferingId ?? identifier))

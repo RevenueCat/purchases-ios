@@ -130,8 +130,8 @@ class WorkflowResponseTests: TestCase {
         expect(trigger.componentId) == "wagcLsIVjN"
     }
 
-    func testDecodeWorkflowScreenOfferingFields() throws {
-        let jsonBothFields = """
+    func testDecodeWorkflowScreenOfferingIdentifier() throws {
+        let json = """
         {
           "template_name": "tmpl",
           "asset_base_url": "https://assets.revenuecat.com",
@@ -149,14 +149,12 @@ class WorkflowResponseTests: TestCase {
               "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
             }
           },
-          "offering_id": "id_internal_123",
           "offering_identifier": "default"
         }
         """.data(using: .utf8)!
 
-        let screen = try JSONDecoder.default.decode(WorkflowScreen.self, from: jsonBothFields)
+        let screen = try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
 
-        expect(screen.offeringId) == "id_internal_123"
         expect(screen.offeringIdentifier) == "default"
     }
 
@@ -184,7 +182,6 @@ class WorkflowResponseTests: TestCase {
 
         let screen = try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
 
-        expect(screen.offeringId).to(beNil())
         expect(screen.offeringIdentifier).to(beNil())
     }
 
