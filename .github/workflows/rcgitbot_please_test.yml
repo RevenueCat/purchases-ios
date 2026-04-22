@@ -16,8 +16,7 @@ jobs:
       github.repository == 'RevenueCat/purchases-ios' &&
       github.event.comment.author_association == 'MEMBER'
     permissions:
-      issues: write
-      pull-requests: read
+      pull-requests: write
 
     steps:
       # GitHub Actions `issue_comment` workflows always run from the default branch,
@@ -128,8 +127,7 @@ jobs:
       github.repository == 'RevenueCat/purchases-ios' &&
       github.event.comment.author_association == 'MEMBER'
     permissions:
-      issues: write
-      pull-requests: read
+      pull-requests: write
 
     steps:
       - name: Parse job names
