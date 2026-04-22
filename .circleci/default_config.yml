@@ -1910,7 +1910,6 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - revenuecat/install-public-api-diff
       - run:
           name: Generate RevenueCat swiftinterface
           command: |
@@ -1955,7 +1954,6 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - revenuecat/install-public-api-diff
       - run:
           name: Generate RevenueCatUI swiftinterface
           command: |

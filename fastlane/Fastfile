@@ -1404,7 +1404,7 @@ platform :ios do
     end
   end
 
-  desc "Generate and update baseline swiftinterface files locally"
+  desc "Generate and update baseline swiftinterface files"
   lane :update_swiftinterface_baselines do |options|
     schemes = if options[:scheme]
                 [options[:scheme]]
