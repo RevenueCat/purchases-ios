@@ -2116,6 +2116,14 @@ workflows:
             matches:
               pattern: "^(main|release/.*)$"
               value: << pipeline.git.branch >>
+        - or:
+            - not:
+                matches:
+                  pattern: "^generated_(snapshots|swiftinterface)/.*"
+                  value: << pipeline.git.branch >>
+            - matches:
+                pattern: "^generated_(snapshots|swiftinterface)/main-.*"
+                value: << pipeline.git.branch >>
     jobs:
       # =============================================================
       # Reduced Test Suite: Auto-run on every push
@@ -2383,6 +2391,15 @@ workflows:
           <<: *only-main-branch
 
   danger:
+    when:
+      or:
+        - not:
+            matches:
+              pattern: "^generated_(snapshots|swiftinterface)/.*"
+              value: << pipeline.git.branch >>
+        - matches:
+            pattern: "^generated_(snapshots|swiftinterface)/main-.*"
+            value: << pipeline.git.branch >>
     jobs:
       - danger
 

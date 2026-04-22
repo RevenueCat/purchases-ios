@@ -47,6 +47,7 @@ class MockBackend: Backend {
         let redeemWebPurchaseAPI = MockRedeemWebPurchaseAPI()
         let virtualCurrenciesAPI = MockVirtualCurrenciesAPI()
         let workflowsAPI = MockWorkflowsAPI()
+        let adsAPI = MockAdsAPI()
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -58,7 +59,8 @@ class MockBackend: Backend {
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
                   virtualCurrenciesAPI: virtualCurrenciesAPI,
-                  workflowsAPI: workflowsAPI)
+                  workflowsAPI: workflowsAPI,
+                  adsAPI: adsAPI)
     }
 
     override func post(receipt: EncodedAppleReceipt,
