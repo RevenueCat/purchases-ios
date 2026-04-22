@@ -165,6 +165,57 @@ class PurchasesDelegateTests: BasePurchasesTests {
         )
     }
 
+    func testDelegateIsNotifiedWhenReceiptPostFailsButGetCustomerInfoSucceeds() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // Wait for the initial fetch from `setupPurchases` to deliver the default
+        // empty CustomerInfo to the delegate.
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        let initialGetCustomerInfoCallCount = self.backend.getCustomerInfoCallCount
+
+        // An unfinished transaction with a real product identifier triggers the
+        // receipt-post path end-to-end.
+        let payment = SKMutablePayment()
+        payment.productIdentifier = "com.revenuecat.test.product"
+        let underlyingTransaction = MockTransaction()
+        underlyingTransaction.mockPayment = payment
+        let unfinishedTransaction = StoreTransaction(sk1Transaction: underlyingTransaction)
+        self.mockTransactionFetcher.stubbedUnfinishedTransactions = [unfinishedTransaction]
+
+        // Simulate a backend-side rejection of the posted receipt (as with 7934).
+        self.backend.postReceiptResult = .failure(
+            .networkError(.errorResponse(
+                .init(code: .unknownBackendError,
+                      originalCode: BackendErrorCode.unknownBackendError.rawValue,
+                      message: nil),
+                .invalidRequest
+            ))
+        )
+
+        // A different CustomerInfo so `sendUpdateIfChanged` fires again on the fallback.
+        let newerCustomerInfo = try CustomerInfo(data: [
+            "request_date": "2025-12-21T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": Self.appUserID,
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": NSNull()
+            ] as [String: Any]
+        ])
+        self.backend.overrideCustomerInfoResult = .success(newerCustomerInfo)
+
+        self.deviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.notificationCenter.fireNotifications()
+
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(2))
+        expect(self.purchasesDelegate.customerInfo) === newerCustomerInfo
+
+        // The receipt was posted (and rejected) before the fallback GET ran.
+        expect(self.backend.postReceiptDataCalled) == true
+        expect(self.backend.getCustomerInfoCallCount) == initialGetCustomerInfoCallCount + 1
+    }
+
     // See https://github.com/RevenueCat/purchases-ios/issues/2410
     func testDelegateWithGetCustomerInfoCallDoesNotDeadlock() throws {
         final class GetCustomerInfoPurchasesDelegate: NSObject, PurchasesDelegate {
