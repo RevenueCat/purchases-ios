@@ -173,7 +173,7 @@ struct DefaultPaywallView: View {
                         if let selected {
                             let method = PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout
                             self.componentInteractionLogger(.paywallPurchaseButtonAction(
-                                componentName: nil,
+                                componentName: PaywallComponentInteraction.purchaseButtonName,
                                 componentValue: method.description,
                                 componentURL: nil,
                                 currentPackageIdentifier: selected.identifier,
