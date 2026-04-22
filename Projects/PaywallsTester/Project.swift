@@ -163,7 +163,15 @@ let project = Project(
                         // as an xcarg because xcargs apply globally to all targets, including SPM
                         // resource bundle targets which don't support provisioning profiles.
                         "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": "$(PAYWALLS_TESTER_IOS_PROVISIONING_PROFILE)",
-                        "PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]": "$(PAYWALLS_TESTER_MACOS_PROVISIONING_PROFILE)"
+                        "PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]": "$(PAYWALLS_TESTER_MACOS_PROVISIONING_PROFILE)",
+                        // Mac App Store requires app sandbox. The macOS-only entitlements
+                        // file enables `com.apple.security.app-sandbox` (plus network.client
+                        // so the app can reach RevenueCat's backend). We scope
+                        // CODE_SIGN_ENTITLEMENTS to the macOS SDK to avoid applying the
+                        // sandbox entitlement to the iOS build, which would require an iOS
+                        // provisioning profile with matching capabilities.
+                        "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]":
+                            "../../Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester-macOS.entitlements"
                     ] as SettingsDictionary).appendingTuistSwiftConditions())
         )
     ],
