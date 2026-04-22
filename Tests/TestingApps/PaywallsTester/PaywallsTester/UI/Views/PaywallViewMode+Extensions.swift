@@ -19,6 +19,7 @@ enum PaywallTesterViewMode {
     case condensedFooter
     case presentIfNeeded
     case presentPaywall
+    case workflow
 }
 
 internal extension PaywallTesterViewMode {
@@ -40,13 +41,14 @@ internal extension PaywallTesterViewMode {
             .footer,
             .condensedFooter,
             .presentIfNeeded,
-            .presentPaywall
+            .presentPaywall,
+            .workflow
         ]
         #endif
     }
     
     var isAvailableOnExamples: Bool {
-        return self != .presentIfNeeded && self != .presentPaywall
+        return self != .presentIfNeeded && self != .presentPaywall && self != .workflow
     }
 
     var mode: PaywallViewMode {
@@ -59,6 +61,7 @@ internal extension PaywallTesterViewMode {
         #endif
         case .presentIfNeeded: return .fullScreen
         case .presentPaywall: return .fullScreen
+        case .workflow: return .fullScreen
         }
     }
 
@@ -72,6 +75,7 @@ internal extension PaywallTesterViewMode {
         #endif
         case .presentIfNeeded: return "signpost.right.and.left"
         case .presentPaywall: return "rectangle.portrait.and.arrow.forward"
+        case .workflow: return "arrow.trianglehead.branch"
         }
     }
 
@@ -91,6 +95,8 @@ internal extension PaywallTesterViewMode {
             return "Present If Needed"
         case .presentPaywall:
             return "Present Paywall"
+        case .workflow:
+            return "Workflow"
         }
     }
 

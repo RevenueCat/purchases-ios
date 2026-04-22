@@ -308,6 +308,8 @@ struct APIKeyDashboardList: View {
                 self.offeringToPresent = offering
             case .presentPaywall:
                 self.presentPaywallOffering = offering
+            case .workflow:
+                self.presentedPaywall = .init(offering: offering, mode: selectedMode)
             }
         } label: {
             Text(selectedMode.name)
