@@ -91,4 +91,19 @@ extension Environment {
         let value = ProcessInfo.processInfo.environment["TUIST_RC_API_KEY"] ?? ""
         return value.isEmpty ? nil : value
     }
+
+    /// Returns extra launch arguments to inject into scheme run actions, enabled by default.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// # Single argument
+    /// TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint" tuist generate PaywallsTester
+    ///
+    /// # Multiple arguments
+    /// TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint -MyOtherFlag" tuist generate
+    /// ```
+    public static var extraLaunchArguments: [String] {
+        let value = ProcessInfo.processInfo.environment["TUIST_LAUNCH_ARGUMENTS"] ?? ""
+        return value.split(separator: " ").map(String.init).filter { !$0.isEmpty }
+    }
 }
