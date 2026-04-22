@@ -143,7 +143,8 @@ class WorkflowResponseTests: TestCase {
                 "type": "stack", "components": [],
                 "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
                 "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
-                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
               },
               "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
             }
@@ -172,7 +173,8 @@ class WorkflowResponseTests: TestCase {
                 "type": "stack", "components": [],
                 "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
                 "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
-                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
               },
               "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
             }
