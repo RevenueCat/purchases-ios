@@ -22,16 +22,19 @@ import XCTest
 @MainActor
 final class CarouselTabSwitchTests: TestCase {
 
-    /// Regression test for a bug in `TabsComponentView.swift` where `LoadedTabComponentView`
-    /// was rendered without an `.id()` modifier keyed on the selected tab ID.
-    ///
-    /// Without `.id()`, SwiftUI preserved `CarouselView`'s `@State` (including `data` and `index`)
-    /// when switching between tabs, so the carousel continued to display the previous tab's content.
+    /// Regression test for a bug where `CarouselView`'s `@State` (`data`, `index`) was not
+    /// reset when switching tabs, so the carousel continued to display the previous tab's content.
     /// Only a manual swipe inside the carousel would update the stale `@State`.
     ///
-    /// Fix: `.id(tabControlContext.selectedTabId)` was added to `LoadedTabComponentView` in
-    /// `LoadedTabsComponentView.body` (`TabsComponentView.swift`). This forces SwiftUI to
-    /// recreate `CarouselView` on each tab switch, triggering `onAppear` and `setupData()`.
+    /// Root cause: `CarouselView` initialises its page data in `onAppear` via `setupData()`.
+    /// Without a view-identity change, SwiftUI reuses the same `CarouselView` instance across
+    /// tab switches and `onAppear` never re-fires.
+    ///
+    /// Fix: `.id(ObjectIdentifier(viewModel))` is applied to the `GeometryReader`/`CarouselView`
+    /// block inside `CarouselComponentView`. When the tab switches, `CarouselComponentView`
+    /// receives a new `CarouselComponentViewModel` instance, the ID changes, SwiftUI recreates
+    /// only `CarouselView` (not the entire tab subtree), and `onAppear`/`setupData()` run with
+    /// the new tab's pages.
     ///
     /// The test verifies the fix by counting how many times the Tab 2 carousel's `onAppear`
     /// fires. With the fix the carousel is destroyed and recreated on tab switch → count = 1.
@@ -81,13 +84,12 @@ final class CarouselTabSwitchTests: TestCase {
 
         // After switching tabs the Tab 2 carousel must have appeared exactly once.
         //
-        // BUG (now fixed): without `.id(tabControlContext.selectedTabId)` on
-        // `LoadedTabComponentView`, SwiftUI reuses the existing view — `onAppear`
-        // never fires for the Tab 2 carousel, `setupData()` is never called, and
-        // the carousel keeps showing Tab 1's stale `@State`. Count stays at 0.
+        // BUG (now fixed): SwiftUI reused `CarouselView` across tab switches — `onAppear`
+        // never fired for Tab 2's carousel, `setupData()` was never called, and the carousel
+        // kept showing Tab 1's stale `@State`. Count stayed at 0.
         //
-        // FIX: `.id(tabControlContext.selectedTabId)` forces SwiftUI to destroy and
-        // recreate `LoadedTabComponentView` on every tab switch. The new carousel's
+        // FIX: `.id(ObjectIdentifier(viewModel))` in `CarouselComponentView` forces SwiftUI
+        // to recreate only `CarouselView` when the ViewModel instance changes on tab switch.
         // `onAppear` fires and `setupData()` runs with Tab 2's pages. Count becomes 1.
         XCTAssertEqual(
             tab2CarouselAppearCount,

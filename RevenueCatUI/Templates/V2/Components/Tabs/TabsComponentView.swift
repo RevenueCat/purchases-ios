@@ -249,7 +249,6 @@ struct LoadedTabsComponentView: View {
                 },
                 onDismiss: self.onDismiss
             )
-            .id(self.tabControlContext.selectedTabId)
             .environmentObject(self.tabControlContext)
             .environmentObject(tierPackageContext)
             .environment(\.planSelectionDefaultPackage, activeTabViewModel.defaultSelectedPackage)

@@ -99,11 +99,14 @@ struct CarouselComponentView: View {
                     self.carouselHeight = newHeight
                 }
                 #if DEBUG
-                // Hook for running tests
                 .onAppear {
                     self.viewModel.onViewAppear?()
                 }
                 #endif
+                // Recreate CarouselView (resetting its @State) when the ViewModel instance changes,
+                // e.g. on a tab switch. Scoped here so only the carousel is torn down, not the
+                // entire tab subtree.
+                .id(ObjectIdentifier(self.viewModel))
                 // Style the carousel
                 .size(style.size)
                 .padding(style.padding.extend(by: style.border?.width ?? 0))
