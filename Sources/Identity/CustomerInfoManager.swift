@@ -415,6 +415,7 @@ private extension CustomerInfoManager {
 
     }
 
+    // swiftlint:disable:next function_body_length
     private func getCustomerInfoData(appUserID: String,
                                      isAppBackgrounded: Bool,
                                      completion: @escaping @Sendable (CustomerInfoDataResult) -> Void) {
@@ -459,7 +460,23 @@ private extension CustomerInfoManager {
                         postReceiptSource: Self.sourceForUnfinishedTransaction,
                         currentUserID: appUserID
                     )
-                    completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
+                    switch result {
+                    case .success:
+                        completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
+                    case .failure(let error):
+                        // If posting the unfinished transaction fails, fall back to fetching
+                        // CustomerInfo directly so observers are still notified instead of
+                        // being silently skipped.
+                        Logger.warn(
+                            // swiftlint:disable:next line_length
+                            Strings.customerInfo.posting_receipt_for_unfinished_transaction_failed_falling_back_to_get_customerinfo(error)
+                        )
+                        self.requestCustomerInfo(appUserID: appUserID,
+                                                 isAppBackgrounded: isAppBackgrounded) { fallbackResult in
+                            completion(CustomerInfoDataResult(result: fallbackResult,
+                                                              hadUnsyncedPurchasesBefore: true))
+                        }
+                    }
                 } else {
                     self.requestCustomerInfo(appUserID: appUserID,
                                              isAppBackgrounded: isAppBackgrounded) { result in
