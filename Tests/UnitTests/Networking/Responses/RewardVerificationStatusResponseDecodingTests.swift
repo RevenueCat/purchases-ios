@@ -1,0 +1,68 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  RewardVerificationStatusResponseDecodingTests.swift
+//
+//  Created by Pol Miro on 22/04/2026.
+
+import Foundation
+import Nimble
+import XCTest
+
+@testable import RevenueCat
+
+// swiftlint:disable:next type_name
+final class RewardVerificationStatusResponseDecodingTests: TestCase {
+
+    func testDecodesVerifiedStatus() throws {
+        let response = try Self.decode(["status": "verified"])
+        expect(response.status) == .verified
+    }
+
+    func testDecodesPendingStatus() throws {
+        let response = try Self.decode(["status": "pending"])
+        expect(response.status) == .pending
+    }
+
+    func testDecodesFailedStatus() throws {
+        let response = try Self.decode(["status": "failed"])
+        expect(response.status) == .failed
+    }
+
+    func testDecodesLegacyValidatedWireValueAsVerified() throws {
+        // Backwards compatibility: backends that emit the legacy `"validated"` value
+        // are still mapped to `.verified` so adapters keep working during the rollout
+        // window.
+        let response = try Self.decode(["status": "validated"])
+        expect(response.status) == .verified
+    }
+
+    func testDecodesUnrecognizedStatusAsUnknown() throws {
+        let unrecognized = "some_future_value"
+        let response = try Self.decode(["status": unrecognized])
+        expect(response.status) == .unknown
+
+        // Guard the warning log: a future refactor that drops the warning would silently
+        // strip diagnostics for unmapped backend status values, so this is asserted here
+        // (mirroring `testGetRewardVerificationStatusUnknownStatusDecodesAsUnknown`).
+        expect(self.logger.messages.map(\.message)).to(
+            containElementSatisfying {
+                $0.contains(
+                    Strings.backendError.unknown_reward_verification_status(status: unrecognized).description
+                )
+            }
+        )
+    }
+
+    private static func decode(_ json: [String: Any]) throws -> RewardVerificationStatusResponse {
+        let data = try JSONSerialization.data(withJSONObject: json)
+        return try RewardVerificationStatusResponse.create(with: data)
+    }
+
+}
