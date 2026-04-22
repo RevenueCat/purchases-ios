@@ -222,13 +222,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .adMobSSVStatus:
             return true
         case .health,
-             .appHealthReportAvailability,
-             // ETags would let `pending` responses 304 even after the backend has
-             // transitioned to `validated`/`failed`. Each poll must reflect fresh server state.
-             .adMobSSVStatus:
+             .appHealthReportAvailability:
             return false
         }
     }

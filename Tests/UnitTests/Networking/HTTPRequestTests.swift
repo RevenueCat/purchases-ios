@@ -42,8 +42,7 @@ class HTTPRequestTests: TestCase {
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
-        .health,
-        .adMobSSVStatus(appUserID: userID, clientTransactionID: clientTransactionID)
+        .health
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
