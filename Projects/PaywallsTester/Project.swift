@@ -36,22 +36,24 @@ if let customPath = Environment.storekitConfigPath {
     try? fileManager.copyItem(at: sourceURL, to: destURL)
 }
 
+// Keep destinations narrow to the platforms we actually ship via TestFlight.
+// Adding broader destinations (e.g. .macCatalyst, .macWithiPadDesign,
+// .appleVisionWithiPadDesign) enables SUPPORTS_MACCATALYST=YES,
+// SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD=YES, and
+// SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD=YES on the target, which makes the iOS
+// archive ambiguous for Xcode 26's `xcodebuild -exportArchive`
+// (IDEDistributionMethodManager fails with "Unknown Distribution Error"). We
+// ship separate iOS and macOS archives, so only these three destinations are
+// needed.
 let allDestinations: Destinations = [
     .iPhone,
     .iPad,
-    .mac,
-    .macWithiPadDesign,
-    .macCatalyst,
-    .appleWatch,
-    .appleTv,
-    .appleVision,
-    .appleVisionWithiPadDesign
+    .mac
 ]
 
 let allDeploymentTargets: DeploymentTargets = .multiplatform(
     iOS: "15.0",
-    watchOS: "10.0",
-    visionOS: "1.3"
+    macOS: "13.0"
 )
 
 // Use custom StoreKit config if TUIST_SK_CONFIG_PATH is set, otherwise use default
