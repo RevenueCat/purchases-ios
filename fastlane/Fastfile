@@ -2170,10 +2170,15 @@ platform :ios do
       )
     end
 
+    # sdk: 'macosx' is required because the PaywallsTester Tuist target is
+    # multiplatform (SUPPORTED_PLATFORMS includes both iphoneos and macosx). Gym
+    # needs this hint to build for macOS and therefore package a .pkg; without
+    # it, gym defaults to the IPA code path and fails with "IPA invalid".
     build_mac_app(
       workspace: workspace_path,
       scheme: "PaywallsTester - Live Config",
       destination: 'generic/platform=macOS',
+      sdk: 'macosx',
       xcodebuild_formatter: '',
       export_method: 'app-store',
       xcargs: "CODE_SIGN_STYLE=Manual " \
