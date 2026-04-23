@@ -112,6 +112,51 @@ class WorkflowResponseTests: TestCase {
         expect(action.stepId) == "step_3"
     }
 
+    func testDecodeWorkflowTriggerActionConditionsTypeHasNilStepId() throws {
+        // Server can send trigger_actions with type "conditions" which have no step_id field.
+        // stepId must be optional so decoding doesn't fail for the entire workflow.
+        let json = """
+        { "type": "conditions", "conditions": { "if": [] } }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action.type) == "conditions"
+        expect(action.stepId).to(beNil())
+    }
+
+    func testDecodeWorkflowWithConditionsTriggerActionSucceeds() throws {
+        let json = """
+        {
+          "id": "wf_cond",
+          "display_name": "Cond",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": {
+              "id": "step_1",
+              "type": "screen",
+              "trigger_actions": {
+                "btn_1": { "type": "step", "step_id": "step_2" },
+                "btn_2": { "type": "conditions", "conditions": { "if": [] } }
+              }
+            }
+          },
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.steps["step_1"]?.triggerActions["btn_1"]?.stepId) == "step_2"
+        expect(workflow.steps["step_1"]?.triggerActions["btn_2"]?.type) == "conditions"
+        expect(workflow.steps["step_1"]?.triggerActions["btn_2"]?.stepId).to(beNil())
+    }
+
     func testDecodeWorkflowTrigger() throws {
         let json = """
         {

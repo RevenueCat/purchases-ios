@@ -41,7 +41,8 @@ final class WorkflowNavigator: ObservableObject {
               let actionId = trigger.actionId,
               let triggerAction = step.stepTriggerActions[actionId],
               triggerAction.type == "step",
-              let nextStep = workflow.steps[triggerAction.stepId] else {
+              let stepId = triggerAction.stepId,
+              let nextStep = workflow.steps[stepId] else {
             return nil
         }
 
