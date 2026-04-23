@@ -175,7 +175,7 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     var cachedOfferings: Offerings? { nil }
 
 #if !os(tvOS)
-    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowFetchResult {
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         throw ErrorCode.configurationError
     }
 #endif

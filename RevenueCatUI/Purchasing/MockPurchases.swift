@@ -41,9 +41,9 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     var cachedOfferings: Offerings?
 
 #if !os(tvOS)
-    var workflowBlock: ((String) async throws -> WorkflowFetchResult)?
+    var workflowBlock: ((String) async throws -> WorkflowDataResult)?
 
-    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowFetchResult {
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         guard let block = workflowBlock else { throw ErrorCode.configurationError }
         return try await block(offeringID)
     }

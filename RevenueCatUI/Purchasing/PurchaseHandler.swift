@@ -260,7 +260,7 @@ extension PurchaseHandler {
             return self.purchases.cachedOfferings?.current
         case let .offeringIdentifier(identifier, presentedOfferingContext):
             #if !os(tvOS)
-            if ProcessInfo.processInfo.arguments.contains("-EnableWorkflowsEndpoint") {
+            if ProcessInfo.processInfo.workflowsEndpointEnabled {
                 return nil
             }
             #endif
@@ -306,7 +306,7 @@ extension PurchaseHandler {
         presentedOfferingContext: PresentedOfferingContext?
     ) async throws -> Offering {
         #if !os(tvOS)
-        if ProcessInfo.processInfo.arguments.contains("-EnableWorkflowsEndpoint") {
+        if ProcessInfo.processInfo.workflowsEndpointEnabled {
             return try await self.resolveWorkflowOfferingIdentifier(
                 identifier: identifier,
                 presentedOfferingContext: presentedOfferingContext
@@ -717,7 +717,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     var cachedOfferings: Offerings? { nil }
 
 #if !os(tvOS)
-    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowFetchResult {
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         throw ErrorCode.configurationError
     }
 #endif
@@ -910,3 +910,13 @@ private extension CustomerInfo {
     }
 
 }
+
+#if !os(tvOS)
+private extension ProcessInfo {
+
+    var workflowsEndpointEnabled: Bool {
+        arguments.contains("-EnableWorkflowsEndpoint")
+    }
+
+}
+#endif

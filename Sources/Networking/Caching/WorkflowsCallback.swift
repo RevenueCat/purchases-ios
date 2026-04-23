@@ -16,6 +16,6 @@ import Foundation
 struct WorkflowDetailCallback: CacheKeyProviding {
 
     let cacheKey: String
-    let completion: (Result<WorkflowFetchResult, BackendError>) -> Void
+    let completion: (Result<WorkflowDataResult, BackendError>) -> Void
 
 }

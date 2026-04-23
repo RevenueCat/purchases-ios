@@ -80,7 +80,7 @@ struct WorkflowTriggerAction {
 
 }
 
-@_spi(Internal) public struct WorkflowFetchResult {
+@_spi(Internal) public struct WorkflowDataResult {
 
     public let workflow: PublishedWorkflow
     public let enrolledVariants: [String: String]?
@@ -111,6 +111,6 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
 }
 
 extension PublishedWorkflow: Codable, Equatable, Sendable {}
-extension WorkflowFetchResult: Equatable, Sendable {}
+extension WorkflowDataResult: Equatable, Sendable {}
 
 extension PublishedWorkflow: HTTPResponseBody {}

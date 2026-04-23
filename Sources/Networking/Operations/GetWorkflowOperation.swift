@@ -100,11 +100,13 @@ private extension GetWorkflowOperation {
     func backendResult(
         from processingResult: Result<WorkflowDetailProcessingResult, Error>,
         envelopeData: Data
-    ) -> Result<WorkflowFetchResult, BackendError> {
+    ) -> Result<WorkflowDataResult, BackendError> {
         switch processingResult {
         case .success(let processed):
-            return .success(WorkflowFetchResult(workflow: processed.workflow,
-                                                enrolledVariants: processed.enrolledVariants))
+            return .success(WorkflowDataResult(
+                workflow: processed.workflow,
+                enrolledVariants: processed.enrolledVariants
+            ))
         case .failure(let processingError as WorkflowDetailProcessingError):
             switch processingError {
             case .cdnFetchFailed(let underlyingError):
@@ -121,7 +123,7 @@ private extension GetWorkflowOperation {
         }
     }
 
-    func distribute(_ result: Result<WorkflowFetchResult, BackendError>) {
+    func distribute(_ result: Result<WorkflowDataResult, BackendError>) {
         self.workflowDetailCallbackCache.performOnAllItemsAndRemoveFromCache(
             withCacheable: self
         ) { callbackObject in
