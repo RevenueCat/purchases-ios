@@ -36,22 +36,24 @@ if let customPath = Environment.storekitConfigPath {
     try? fileManager.copyItem(at: sourceURL, to: destURL)
 }
 
+// Keep destinations narrow to the platforms we actually ship via TestFlight.
+// Adding broader destinations (e.g. .macCatalyst, .macWithiPadDesign,
+// .appleVisionWithiPadDesign) enables SUPPORTS_MACCATALYST=YES,
+// SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD=YES, and
+// SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD=YES on the target, which makes the iOS
+// archive ambiguous for Xcode 26's `xcodebuild -exportArchive`
+// (IDEDistributionMethodManager fails with "Unknown Distribution Error"). We
+// ship separate iOS and macOS archives, so only these three destinations are
+// needed.
 let allDestinations: Destinations = [
     .iPhone,
     .iPad,
-    .mac,
-    .macWithiPadDesign,
-    .macCatalyst,
-    .appleWatch,
-    .appleTv,
-    .appleVision,
-    .appleVisionWithiPadDesign
+    .mac
 ]
 
 let allDeploymentTargets: DeploymentTargets = .multiplatform(
     iOS: "15.0",
-    watchOS: "10.0",
-    visionOS: "1.3"
+    macOS: "13.0"
 )
 
 // Use custom StoreKit config if TUIST_SK_CONFIG_PATH is set, otherwise use default
@@ -144,7 +146,33 @@ let project = Project(
                 .revenueCatUI,
                 .storeKit
             ],
-            settings: .appTarget(including: ([:] as SettingsDictionary).appendingTuistSwiftConditions())
+                    settings: .appTarget(including: ([
+                        "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+                        "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
+                        // MARKETING_VERSION / CURRENT_PROJECT_VERSION back the
+                        // `$(MARKETING_VERSION)` and `$(CURRENT_PROJECT_VERSION)` placeholders in
+                        // the custom Info.plist (used as CFBundleShortVersionString and
+                        // CFBundleVersion). Without these defaults the values end up empty and
+                        // TestFlight rejects the upload. CURRENT_PROJECT_VERSION is overwritten at
+                        // deploy time by `increment_build_number`.
+                        "MARKETING_VERSION": "1.0",
+                        "CURRENT_PROJECT_VERSION": "1",
+                        // PROVISIONING_PROFILE_SPECIFIER is set at the target level via the
+                        // PAYWALLS_TESTER_*_PROVISIONING_PROFILE xcconfig variables (written to
+                        // CI.xcconfig by the `deploy_paywalls_tester` lane). It must NOT be passed
+                        // as an xcarg because xcargs apply globally to all targets, including SPM
+                        // resource bundle targets which don't support provisioning profiles.
+                        "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": "$(PAYWALLS_TESTER_IOS_PROVISIONING_PROFILE)",
+                        "PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]": "$(PAYWALLS_TESTER_MACOS_PROVISIONING_PROFILE)",
+                        // Mac App Store requires app sandbox. The macOS-only entitlements
+                        // file enables `com.apple.security.app-sandbox` (plus network.client
+                        // so the app can reach RevenueCat's backend). We scope
+                        // CODE_SIGN_ENTITLEMENTS to the macOS SDK to avoid applying the
+                        // sandbox entitlement to the iOS build, which would require an iOS
+                        // provisioning profile with matching capabilities.
+                        "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]":
+                            "../../Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester-macOS.entitlements"
+                    ] as SettingsDictionary).appendingTuistSwiftConditions())
         )
     ],
     schemes: schemes,

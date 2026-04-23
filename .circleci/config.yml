@@ -74,8 +74,12 @@ jobs:
       - unless:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
+            - run:
+                name: Determine path-based pipeline parameters
+                command: node .circleci/generate-default-config-parameters.js
             - continuation/continue:
                 configuration_path: .circleci/default_config.yml
+                parameters: /tmp/default-config-parameters.json
 
 workflows:
   setup:

@@ -27,6 +27,11 @@ parameters:
   requested_jobs:
     type: string
     default: ""
+  # Set by the setup config (config.yml) when files change under RevenueCatUI/ or
+  # Tests/TestingApps/PaywallsTester/. Gates the deploy-paywalls-tester workflow.
+  run_deploy_paywalls_tester:
+    type: boolean
+    default: false
   # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
@@ -1790,6 +1795,25 @@ jobs:
           command: bundle exec fastlane deploy_purchase_tester dry_run:<< parameters.dry_run >>
       - slack-notify-on-fail
 
+  deploy-paywalls-tester:
+    executor:
+      name: macos-executor
+      xcode_version: "26.3"
+    parameters:
+      dry_run:
+        type: boolean
+        default: false
+    steps:
+      - checkout
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
+      - install-dependencies
+      - revenuecat/install-tuist
+      - run:
+          name: Submit Paywalls Tester
+          command: bundle exec fastlane deploy_paywalls_tester dry_run:<< parameters.dry_run >>
+      - slack-notify-on-fail
+
   deploy-rct-tester:
     executor:
       name: macos-executor
@@ -2471,6 +2495,22 @@ workflows:
     jobs:
       - deploy-rct-tester:
           dry_run: false
+
+  # Deploy Paywalls Tester to TestFlight when relevant files change on main.
+  # The run_deploy_paywalls_tester parameter is set by the setup config's
+  # path-filtering logic (checks RevenueCatUI/ and Tests/TestingApps/PaywallsTester/).
+  deploy-paywalls-tester:
+    when:
+      and:
+        - << pipeline.parameters.run_deploy_paywalls_tester >>
+        - not:
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["main", << pipeline.git.branch >>]
+    jobs:
+      - deploy-paywalls-tester:
+          dry_run: false
+          context:
+            - slack-secrets
 
   release-or-main:
     when:
