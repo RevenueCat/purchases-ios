@@ -72,7 +72,7 @@ internal extension GoogleMobileAds.InterstitialAd {
     /// The placement passed here takes precedence over any placement provided at load time.
     @MainActor
     func present(from viewController: UIViewController, placement: String?) {
-        Tracking.Adapter.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         self.present(from: viewController)
     }
 }
@@ -139,7 +139,7 @@ internal extension GoogleMobileAds.AppOpenAd {
     /// The placement passed here takes precedence over any placement provided at load time.
     @MainActor
     func present(from viewController: UIViewController, placement: String?) {
-        Tracking.Adapter.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         self.present(from: viewController)
     }
 }
@@ -210,7 +210,7 @@ internal extension GoogleMobileAds.RewardedAd {
         placement: String?,
         userDidEarnRewardHandler: @escaping () -> Void
     ) {
-        Tracking.Adapter.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         self.present(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
     }
 }
@@ -281,7 +281,7 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
         placement: String?,
         userDidEarnRewardHandler: @escaping () -> Void
     ) {
-        Tracking.Adapter.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         self.present(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
     }
 }

@@ -24,7 +24,8 @@ internal extension Tracking {
 
         let tracker: Tracker
 
-        private static var fullScreenDelegateKey: UInt8 = 0
+        let fullScreenDelegateStore = FullScreenDelegateStore()
+
         private static var nativeDelegateKey: UInt8 = 0
 
         // Missing response metadata is not expected, but keep a deterministic fallback value also for type safety.
@@ -148,19 +149,6 @@ internal extension Tracking {
             return Int(micros.int64Value)
         }
 
-        func retrieveFullScreenDelegate(for object: AnyObject) -> FullScreenContentDelegate? {
-            objc_getAssociatedObject(object, &Self.fullScreenDelegateKey) as? FullScreenContentDelegate
-        }
-
-        func retainFullScreenDelegate(_ delegate: AnyObject, for object: AnyObject) {
-            objc_setAssociatedObject(
-                object,
-                &Self.fullScreenDelegateKey,
-                delegate,
-                .OBJC_ASSOCIATION_RETAIN_NONATOMIC
-            )
-        }
-
         @MainActor
         func updateFullScreenContentDelegate(
             on fullScreenAd: some FullScreenAd,
@@ -226,7 +214,7 @@ internal extension Tracking {
                     adFormat: adFormat,
                     responseInfoProvider: { responseInfo }
                 )
-                self.retainFullScreenDelegate(trackingDelegate, for: loadedAd)
+                self.fullScreenDelegateStore.retain(trackingDelegate, for: loadedAd)
                 loadedAd.fullScreenContentDelegate = trackingDelegate
                 loadedAd.paidEventHandler = { [weak self, weak trackingDelegate] adValue in
                     self?.trackRevenue(
