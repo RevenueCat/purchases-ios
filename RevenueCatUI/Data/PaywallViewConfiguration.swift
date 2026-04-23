@@ -7,7 +7,7 @@
 
 import Foundation
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 /// Parameters needed to configure a ``PaywallView``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -104,31 +104,6 @@ extension PaywallViewConfiguration.Content {
     /// - Returns: `Content.offering` or `Content.defaultOffering` if `nil`.
     static func optionalOffering(_ offering: Offering?) -> Self {
         return offering.map(Self.offering) ?? .defaultOffering
-    }
-
-    /// Resolves the content to an `Offering` by fetching from the backend if needed.
-    /// - Returns: The resolved `Offering`, or `nil` if it couldn't be fetched.
-    func resolveOffering() async -> Offering? {
-        switch self {
-        case let .offering(offering):
-            return offering
-        case .defaultOffering, .offeringIdentifier:
-            guard Purchases.isConfigured else { return nil }
-
-            do {
-                switch self {
-                case .defaultOffering:
-                    return try await Purchases.shared.offerings().current
-                case let .offeringIdentifier(identifier, _):
-                    return try await Purchases.shared.offerings().offering(identifier: identifier)
-                case .offering:
-                    fatalError("Already handled above")
-                }
-            } catch {
-                Logger.error(Strings.errorFetchingOfferings(error))
-                return nil
-            }
-        }
     }
 
 }
