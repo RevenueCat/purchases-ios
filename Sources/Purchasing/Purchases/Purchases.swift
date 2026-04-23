@@ -1582,20 +1582,20 @@ public extension Purchases {
 
 }
 
-// MARK: - AdMob SSV (Internal SPI)
+// MARK: - Reward Verification (Internal SPI)
 
 extension Purchases {
 
-    /// Polls the backend once for AdMob SSV verification status using `client_transaction_id`.
+    /// Polls the backend once for reward verification status using `client_transaction_id`.
     ///
     /// Internal API for RC ad adapters.
     ///
     /// Cancelling the calling `Task` does not cancel the in-flight HTTP request.
-    @_spi(Internal) public func pollAdMobSSVStatus(
+    @_spi(Internal) public func pollRewardVerificationStatus(
         clientTransactionID: String
-    ) async throws -> AdMobSSVPollStatus {
+    ) async throws -> RewardVerificationPollStatus {
         let response = try await Async.call { completion in
-            self.backend.adsAPI.getAdMobSSVStatus(
+            self.backend.adsAPI.getRewardVerificationStatus(
                 appUserID: self.appUserID,
                 clientTransactionID: clientTransactionID
             ) { result in
@@ -1604,8 +1604,8 @@ extension Purchases {
         }
 
         switch response.status {
-        case .validated:
-            return .validated
+        case .verified:
+            return .verified
         case .pending:
             return .pending
         case .failed:
