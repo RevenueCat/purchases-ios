@@ -29,6 +29,12 @@ parameters:
   generate_swiftinterface:
     type: boolean
     default: false
+  # Opt-in workaround for when GitHub's search index is degraded. Forwarded
+  # to the revenuecat_internal fastlane plugin's `fallback_pr_lookup` flag.
+  # Keep false by default so we don't mask real search/index issues.
+  bump_with_fallback_pr_lookup:
+    type: boolean
+    default: false
   # Set via CircleCI API by the GitHub Action when a PR comment like
   # "@RCGitBot please test <job1> <job2> <job3>" is posted.
   requested_jobs:
