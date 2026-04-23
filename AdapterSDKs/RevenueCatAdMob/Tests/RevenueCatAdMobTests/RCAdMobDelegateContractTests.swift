@@ -9,32 +9,32 @@ final class RCAdMobDelegateContractTests: RCAdMobTestCase {
 
     func testFullScreenTrackingDelegateImplementsExpectedCallbacks() {
         XCTAssertTrue(
-            RCAdMobFullScreenContentDelegate.instancesRespond(
+            Tracking.FullScreenContentDelegate.instancesRespond(
                 to: NSSelectorFromString("adDidRecordImpression:")
             )
         )
         XCTAssertTrue(
-            RCAdMobFullScreenContentDelegate.instancesRespond(
+            Tracking.FullScreenContentDelegate.instancesRespond(
                 to: NSSelectorFromString("adDidRecordClick:")
             )
         )
         XCTAssertTrue(
-            RCAdMobFullScreenContentDelegate.instancesRespond(
+            Tracking.FullScreenContentDelegate.instancesRespond(
                 to: NSSelectorFromString("adWillPresentFullScreenContent:")
             )
         )
         XCTAssertTrue(
-            RCAdMobFullScreenContentDelegate.instancesRespond(
+            Tracking.FullScreenContentDelegate.instancesRespond(
                 to: NSSelectorFromString("adWillDismissFullScreenContent:")
             )
         )
         XCTAssertTrue(
-            RCAdMobFullScreenContentDelegate.instancesRespond(
+            Tracking.FullScreenContentDelegate.instancesRespond(
                 to: NSSelectorFromString("adDidDismissFullScreenContent:")
             )
         )
         XCTAssertTrue(
-            RCAdMobFullScreenContentDelegate.instancesRespond(
+            Tracking.FullScreenContentDelegate.instancesRespond(
                 to: NSSelectorFromString("ad:didFailToPresentFullScreenContentWithError:")
             )
         )
@@ -42,37 +42,37 @@ final class RCAdMobDelegateContractTests: RCAdMobTestCase {
 
     func testBannerTrackingDelegateImplementsExpectedCallbacks() {
         XCTAssertTrue(
-            RCAdMobBannerViewDelegate.instancesRespond(
+            Tracking.BannerViewDelegate.instancesRespond(
                 to: NSSelectorFromString("bannerViewDidReceiveAd:")
             )
         )
         XCTAssertTrue(
-            RCAdMobBannerViewDelegate.instancesRespond(
+            Tracking.BannerViewDelegate.instancesRespond(
                 to: NSSelectorFromString("bannerView:didFailToReceiveAdWithError:")
             )
         )
         XCTAssertTrue(
-            RCAdMobBannerViewDelegate.instancesRespond(
+            Tracking.BannerViewDelegate.instancesRespond(
                 to: NSSelectorFromString("bannerViewDidRecordImpression:")
             )
         )
         XCTAssertTrue(
-            RCAdMobBannerViewDelegate.instancesRespond(
+            Tracking.BannerViewDelegate.instancesRespond(
                 to: NSSelectorFromString("bannerViewDidRecordClick:")
             )
         )
         XCTAssertTrue(
-            RCAdMobBannerViewDelegate.instancesRespond(
+            Tracking.BannerViewDelegate.instancesRespond(
                 to: NSSelectorFromString("bannerViewWillPresentScreen:")
             )
         )
         XCTAssertTrue(
-            RCAdMobBannerViewDelegate.instancesRespond(
+            Tracking.BannerViewDelegate.instancesRespond(
                 to: NSSelectorFromString("bannerViewWillDismissScreen:")
             )
         )
         XCTAssertTrue(
-            RCAdMobBannerViewDelegate.instancesRespond(
+            Tracking.BannerViewDelegate.instancesRespond(
                 to: NSSelectorFromString("bannerViewDidDismissScreen:")
             )
         )
@@ -80,27 +80,27 @@ final class RCAdMobDelegateContractTests: RCAdMobTestCase {
 
     func testNativeTrackingDelegateImplementsExpectedCallbacks() {
         XCTAssertTrue(
-            RCAdMobNativeAdDelegate.instancesRespond(
+            Tracking.NativeAdDelegate.instancesRespond(
                 to: NSSelectorFromString("nativeAdDidRecordImpression:")
             )
         )
         XCTAssertTrue(
-            RCAdMobNativeAdDelegate.instancesRespond(
+            Tracking.NativeAdDelegate.instancesRespond(
                 to: NSSelectorFromString("nativeAdDidRecordClick:")
             )
         )
         XCTAssertTrue(
-            RCAdMobNativeAdDelegate.instancesRespond(
+            Tracking.NativeAdDelegate.instancesRespond(
                 to: NSSelectorFromString("nativeAdWillPresentScreen:")
             )
         )
         XCTAssertTrue(
-            RCAdMobNativeAdDelegate.instancesRespond(
+            Tracking.NativeAdDelegate.instancesRespond(
                 to: NSSelectorFromString("nativeAdWillDismissScreen:")
             )
         )
         XCTAssertTrue(
-            RCAdMobNativeAdDelegate.instancesRespond(
+            Tracking.NativeAdDelegate.instancesRespond(
                 to: NSSelectorFromString("nativeAdDidDismissScreen:")
             )
         )

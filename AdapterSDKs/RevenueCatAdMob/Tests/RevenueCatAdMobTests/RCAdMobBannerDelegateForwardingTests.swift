@@ -10,7 +10,7 @@ final class RCAdMobBannerDelegateForwardingTests: RCAdMobTestCase {
     func testTrackingBannerDelegateForwardsReceiveAndClickCallbacks() {
         let spy = BannerDelegateSpy()
         let bannerView = BannerView(adSize: AdSizeBanner)
-        let trackingDelegate = RCAdMobBannerViewDelegate(
+        let trackingDelegate = Tracking.BannerViewDelegate(
             delegate: spy,
             placement: "home_banner"
         )
@@ -25,7 +25,7 @@ final class RCAdMobBannerDelegateForwardingTests: RCAdMobTestCase {
     func testTrackingBannerDelegateForwardsImpressionAndScreenLifecycleCallbacks() {
         let spy = BannerDelegateSpy()
         let bannerView = BannerView(adSize: AdSizeBanner)
-        let trackingDelegate = RCAdMobBannerViewDelegate(
+        let trackingDelegate = Tracking.BannerViewDelegate(
             delegate: spy,
             placement: "home_banner"
         )
@@ -44,7 +44,7 @@ final class RCAdMobBannerDelegateForwardingTests: RCAdMobTestCase {
     func testTrackingBannerDelegateForwardsFailureCallback() {
         let spy = BannerDelegateSpy()
         let bannerView = BannerView(adSize: AdSizeBanner)
-        let trackingDelegate = RCAdMobBannerViewDelegate(
+        let trackingDelegate = Tracking.BannerViewDelegate(
             delegate: spy,
             placement: "home_banner"
         )
@@ -59,7 +59,7 @@ final class RCAdMobBannerDelegateForwardingTests: RCAdMobTestCase {
 
     func testTrackingBannerDelegateCallbacksDoNotCrashWithoutDelegate() {
         let bannerView = BannerView(adSize: AdSizeBanner)
-        let trackingDelegate = RCAdMobBannerViewDelegate(
+        let trackingDelegate = Tracking.BannerViewDelegate(
             delegate: nil,
             placement: "home_banner"
         )
@@ -81,7 +81,7 @@ final class RCAdMobBannerDelegateForwardingTests: RCAdMobTestCase {
         let bannerBacking = CountingBannerPlaceholder()
         bannerBacking.adUnitID = ""
         let bannerView = unsafeBitCast(bannerBacking, to: BannerView.self)
-        let trackingDelegate = RCAdMobBannerViewDelegate(
+        let trackingDelegate = Tracking.BannerViewDelegate(
             delegate: spy,
             placement: nil
         )

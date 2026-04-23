@@ -148,8 +148,8 @@ internal extension Tracking {
             return Int(micros.int64Value)
         }
 
-        func retrieveFullScreenDelegate(for object: AnyObject) -> RCAdMobFullScreenContentDelegate? {
-            objc_getAssociatedObject(object, &Self.fullScreenDelegateKey) as? RCAdMobFullScreenContentDelegate
+        func retrieveFullScreenDelegate(for object: AnyObject) -> FullScreenContentDelegate? {
+            objc_getAssociatedObject(object, &Self.fullScreenDelegateKey) as? FullScreenContentDelegate
         }
 
         func retainFullScreenDelegate(_ delegate: AnyObject, for object: AnyObject) {
@@ -163,10 +163,10 @@ internal extension Tracking {
 
         @MainActor
         func updateFullScreenContentDelegate(
-            on fullScreenAd: some RCFullScreenAdTracking,
+            on fullScreenAd: some FullScreenAd,
             newDelegate: GoogleMobileAds.FullScreenContentDelegate?
         ) {
-            if let wrapper = fullScreenAd.fullScreenContentDelegate as? RCAdMobFullScreenContentDelegate {
+            if let wrapper = fullScreenAd.fullScreenContentDelegate as? FullScreenContentDelegate {
                 wrapper.delegate = newDelegate
                 return
             }
@@ -185,7 +185,7 @@ internal extension Tracking {
 
         // MARK: - handleLoadOutcome
 
-        func handleLoadOutcome<Ad: AnyObject & RCFullScreenAdTracking>(
+        func handleLoadOutcome<Ad: AnyObject & FullScreenAd>(
             loadAd: () async throws -> Ad,
             context: FullScreenLoadContext
         ) async throws -> Ad {
@@ -218,7 +218,7 @@ internal extension Tracking {
             let paidEventHandler = context.paidEventHandler
 
             return await MainActor.run {
-                let trackingDelegate = RCAdMobFullScreenContentDelegate(
+                let trackingDelegate = FullScreenContentDelegate(
                     adapter: self,
                     delegate: fullScreenContentDelegate,
                     placement: placement,

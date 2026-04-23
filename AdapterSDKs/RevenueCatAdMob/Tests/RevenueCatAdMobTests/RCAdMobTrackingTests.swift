@@ -175,7 +175,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     func testHandleLoadOutcomeOnErrorTracksFailedToLoad() async {
         let error = NSError(domain: "com.google.ads", code: 2, userInfo: nil)
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: "test_placement",
             adUnitID: "ca-app-pub-test",
             adFormat: .interstitial,
@@ -204,7 +204,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     func testHandleLoadOutcomeOnSuccessTracksLoaded() async throws {
         let fakeAd = FakeFullScreenAd()
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: "reward_screen",
             adUnitID: "ca-app-pub-reward",
             adFormat: .rewarded,
@@ -229,7 +229,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     func testHandleLoadOutcomeOnSuccessInstallsFullScreenDelegate() async throws {
         let fakeAd = FakeFullScreenAd()
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: nil, adUnitID: "unit", adFormat: .interstitial,
             fullScreenContentDelegate: nil, paidEventHandler: nil
         )
@@ -239,12 +239,12 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         )
 
         XCTAssertNotNil(fakeAd.fullScreenContentDelegate)
-        XCTAssertTrue(fakeAd.fullScreenContentDelegate is RCAdMobFullScreenContentDelegate)
+        XCTAssertTrue(fakeAd.fullScreenContentDelegate is Tracking.FullScreenContentDelegate)
     }
 
     func testHandleLoadOutcomeOnSuccessInstallsPaidEventHandler() async throws {
         let fakeAd = FakeFullScreenAd()
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: nil, adUnitID: "unit", adFormat: .interstitial,
             fullScreenContentDelegate: nil, paidEventHandler: nil
         )
@@ -294,7 +294,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     func testHandleLoadOutcomeOnSuccessPaidHandlerTracksRevenue() async throws {
         let fakeAd = FakeFullScreenAd()
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: "reward_screen",
             adUnitID: "ca-app-pub-reward",
             adFormat: .rewarded,
@@ -321,7 +321,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
     func testHandleLoadOutcomeOnSuccessPaidHandlerForwardsToUserHandler() async throws {
         let fakeAd = FakeFullScreenAd()
         var userHandlerCalled = false
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: "reward_screen",
             adUnitID: "ca-app-pub-reward",
             adFormat: .rewarded,
@@ -384,7 +384,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
     func testHandleLoadOutcomeForwardsCallbacksToUserDelegate() async throws {
         let fakeAd = FakeFullScreenAd()
         let spy = FullScreenContentDelegateSpy()
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: "test",
             adUnitID: "unit",
             adFormat: .interstitial,
@@ -426,7 +426,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     func testShowTimePlacementOverrideIsUsedInRevenueEvent() async throws {
         let fakeAd = FakeFullScreenAd()
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: "load_time_placement",
             adUnitID: "ca-app-pub-test",
             adFormat: .rewarded,
@@ -438,7 +438,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
             loadAd: { fakeAd }, context: context
         )
         await MainActor.run {
-            (fakeAd.fullScreenContentDelegate as? RCAdMobFullScreenContentDelegate)?.placement = "show_time_placement"
+            (fakeAd.fullScreenContentDelegate as? Tracking.FullScreenContentDelegate)?.placement = "show_time_placement"
         }
         fakeAd.paidEventHandler?(Self.makeAdValuePlaceholder())
 
@@ -450,7 +450,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     func testUpdateDelegateAfterLoadUpdatesWrapper() async throws {
         let fakeAd = FakeFullScreenAd()
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: "test", adUnitID: "ca-app-pub-test", adFormat: .interstitial,
             fullScreenContentDelegate: nil, paidEventHandler: nil
         )
@@ -469,7 +469,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     func testUpdateDelegateAfterDirectOverwriteFallsBackToDirectAssignment() async throws {
         let fakeAd = FakeFullScreenAd()
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: "test", adUnitID: "ca-app-pub-test", adFormat: .interstitial,
             fullScreenContentDelegate: nil, paidEventHandler: nil
         )
@@ -493,7 +493,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
     func testUpdateDelegateWithNilClearsUserDelegate() async throws {
         let fakeAd = FakeFullScreenAd()
         let initialSpy = FullScreenContentDelegateSpy()
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: "test", adUnitID: "ca-app-pub-test", adFormat: .interstitial,
             fullScreenContentDelegate: initialSpy, paidEventHandler: nil
         )
@@ -520,7 +520,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
     func testPaidEventHandlerStillWorksAfterDelegateUpdate() async throws {
         let fakeAd = FakeFullScreenAd()
-        let context = FullScreenLoadContext(
+        let context = Tracking.FullScreenLoadContext(
             placement: "original_placement", adUnitID: "ca-app-pub-test", adFormat: .rewarded,
             fullScreenContentDelegate: nil, paidEventHandler: nil
         )
@@ -569,7 +569,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
     }
 
     func testBannerDelegateTracksLoadedViaTracker() {
-        let bannerDelegate = RCAdMobBannerViewDelegate(
+        let bannerDelegate = Tracking.BannerViewDelegate(
             adapter: self.adapter, delegate: nil, placement: "banner_top"
         )
         let fakeBanner = GoogleMobileAds.BannerView()
@@ -583,7 +583,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
     }
 
     func testBannerDelegateTracksFailedToLoadViaTracker() {
-        let bannerDelegate = RCAdMobBannerViewDelegate(
+        let bannerDelegate = Tracking.BannerViewDelegate(
             adapter: self.adapter, delegate: nil, placement: "banner_bottom"
         )
         let fakeBanner = GoogleMobileAds.BannerView()
@@ -597,7 +597,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
     }
 
     func testBannerDelegateTracksImpressionViaTracker() {
-        let bannerDelegate = RCAdMobBannerViewDelegate(
+        let bannerDelegate = Tracking.BannerViewDelegate(
             adapter: self.adapter, delegate: nil, placement: "banner_mid"
         )
         let fakeBanner = GoogleMobileAds.BannerView()
@@ -610,7 +610,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
     }
 
     func testBannerDelegateTracksClickViaTracker() {
-        let bannerDelegate = RCAdMobBannerViewDelegate(
+        let bannerDelegate = Tracking.BannerViewDelegate(
             adapter: self.adapter, delegate: nil, placement: "banner_mid"
         )
         let fakeBanner = GoogleMobileAds.BannerView()
@@ -624,7 +624,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
 
     func testFullScreenDelegateTracksImpressionViaTracker() {
         let fakeAd = FakeFullScreenPresentingAd()
-        let delegate = RCAdMobFullScreenContentDelegate(
+        let delegate = Tracking.FullScreenContentDelegate(
             adapter: self.adapter,
             delegate: nil,
             placement: "interstitial_mid",
@@ -642,7 +642,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
 
     func testFullScreenDelegateTracksClickViaTracker() {
         let fakeAd = FakeFullScreenPresentingAd()
-        let delegate = RCAdMobFullScreenContentDelegate(
+        let delegate = Tracking.FullScreenContentDelegate(
             adapter: self.adapter,
             delegate: nil,
             placement: "interstitial_mid",
@@ -658,7 +658,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
     }
 
     func testNativeDelegateTracksImpressionViaTracker() {
-        let nativeDelegate = RCAdMobNativeAdDelegate(
+        let nativeDelegate = Tracking.NativeAdDelegate(
             adapter: self.adapter, delegate: nil, placement: "native_feed", adUnitID: "ca-app-pub-native"
         )
         let fakeNativeAd = GoogleMobileAds.NativeAd()
@@ -671,7 +671,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
     }
 
     func testNativeDelegateTracksClickViaTracker() {
-        let nativeDelegate = RCAdMobNativeAdDelegate(
+        let nativeDelegate = Tracking.NativeAdDelegate(
             adapter: self.adapter, delegate: nil, placement: "native_feed", adUnitID: "ca-app-pub-native"
         )
         let fakeNativeAd = GoogleMobileAds.NativeAd()
@@ -687,7 +687,7 @@ final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
 // MARK: - Test doubles
 
 @available(iOS 15.0, *)
-private final class FakeFullScreenAd: NSObject, RCFullScreenAdTracking {
+private final class FakeFullScreenAd: NSObject, Tracking.FullScreenAd {
     var fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?
     var paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?
     let responseInfo: GoogleMobileAds.ResponseInfo = unsafeBitCast(

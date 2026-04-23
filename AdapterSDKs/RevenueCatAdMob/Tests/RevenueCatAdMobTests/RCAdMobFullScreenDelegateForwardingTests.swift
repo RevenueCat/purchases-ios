@@ -11,7 +11,7 @@ final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
 
     func testTrackingFullScreenDelegateForwardsAllCallbacks() {
         let spy = FullScreenDelegateSpy()
-        let subject = RCAdMobFullScreenContentDelegate(
+        let subject = Tracking.FullScreenContentDelegate(
             delegate: spy,
             placement: "interstitial_home",
             adUnitID: "test_unit",
@@ -38,7 +38,7 @@ final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
 
     func testTrackingFullScreenDelegateForwardsAllCallbacksForInterstitialFormat() {
         let spy = FullScreenDelegateSpy()
-        let subject = RCAdMobFullScreenContentDelegate(
+        let subject = Tracking.FullScreenContentDelegate(
             delegate: spy,
             placement: "interstitial_home_explicit",
             adUnitID: "interstitial_test_unit",
@@ -64,7 +64,7 @@ final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
     }
 
     func testTrackingFullScreenDelegateCallbacksDoNotCrashWithoutDelegate() {
-        let subject = RCAdMobFullScreenContentDelegate(
+        let subject = Tracking.FullScreenContentDelegate(
             delegate: nil,
             placement: "interstitial_home",
             adUnitID: "test_unit",
@@ -84,7 +84,7 @@ final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
 
     func testTrackingFullScreenDelegateForwardsAllCallbacksForAppOpenFormat() {
         let spy = FullScreenDelegateSpy()
-        let subject = RCAdMobFullScreenContentDelegate(
+        let subject = Tracking.FullScreenContentDelegate(
             delegate: spy,
             placement: "app_open_launch",
             adUnitID: "app_open_test_unit",
@@ -111,7 +111,7 @@ final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
 
     func testTrackingFullScreenDelegateForwardsAllCallbacksForRewardedFormat() {
         let spy = FullScreenDelegateSpy()
-        let subject = RCAdMobFullScreenContentDelegate(
+        let subject = Tracking.FullScreenContentDelegate(
             delegate: spy,
             placement: "rewarded_bonus",
             adUnitID: "rewarded_test_unit",
@@ -138,7 +138,7 @@ final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
 
     func testTrackingFullScreenDelegateForwardsAllCallbacksForRewardedInterstitialFormat() {
         let spy = FullScreenDelegateSpy()
-        let subject = RCAdMobFullScreenContentDelegate(
+        let subject = Tracking.FullScreenContentDelegate(
             delegate: spy,
             placement: "rewarded_interstitial_bridge",
             adUnitID: "rewarded_interstitial_test_unit",
@@ -167,7 +167,7 @@ final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
         let mockTracker = MockAdTracker()
         let adapter = Tracking.Adapter(tracker: mockTracker)
         let spy = FullScreenDelegateSpy()
-        let subject = RCAdMobFullScreenContentDelegate(
+        let subject = Tracking.FullScreenContentDelegate(
             adapter: adapter,
             delegate: spy,
             placement: "interstitial_home",
@@ -186,7 +186,7 @@ final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
 
     func testTrackingFullScreenDelegateReadsResponseInfoOnlyForTrackedCallbacks() {
         var responseInfoReads = 0
-        let subject = RCAdMobFullScreenContentDelegate(
+        let subject = Tracking.FullScreenContentDelegate(
             delegate: nil,
             placement: nil,
             adUnitID: "",

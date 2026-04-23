@@ -1,5 +1,5 @@
 //
-//  FullScreenAd+RCAdMob.swift
+//  FullScreenAd+Tracking.swift
 //
 //  Created by RevenueCat on 2/13/26.
 //
@@ -26,7 +26,7 @@ internal extension GoogleMobileAds.InterstitialAd {
     ) async throws -> GoogleMobileAds.InterstitialAd {
         try await adapter.handleLoadOutcome(
             loadAd: { try await Self.load(with: adUnitID, request: request) },
-            context: FullScreenLoadContext(
+            context: Tracking.FullScreenLoadContext(
                 placement: placement,
                 adUnitID: adUnitID,
                 adFormat: RevenueCat.AdFormat.interstitial,
@@ -93,7 +93,7 @@ internal extension GoogleMobileAds.AppOpenAd {
     ) async throws -> GoogleMobileAds.AppOpenAd {
         try await adapter.handleLoadOutcome(
             loadAd: { try await Self.load(with: adUnitID, request: request) },
-            context: FullScreenLoadContext(
+            context: Tracking.FullScreenLoadContext(
                 placement: placement,
                 adUnitID: adUnitID,
                 adFormat: RevenueCat.AdFormat.appOpen,
@@ -160,7 +160,7 @@ internal extension GoogleMobileAds.RewardedAd {
     ) async throws -> GoogleMobileAds.RewardedAd {
         try await adapter.handleLoadOutcome(
             loadAd: { try await Self.load(with: adUnitID, request: request) },
-            context: FullScreenLoadContext(
+            context: Tracking.FullScreenLoadContext(
                 placement: placement,
                 adUnitID: adUnitID,
                 adFormat: RevenueCat.AdFormat.rewarded,
@@ -231,7 +231,7 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
     ) async throws -> GoogleMobileAds.RewardedInterstitialAd {
         try await adapter.handleLoadOutcome(
             loadAd: { try await Self.load(with: adUnitID, request: request) },
-            context: FullScreenLoadContext(
+            context: Tracking.FullScreenLoadContext(
                 placement: placement,
                 adUnitID: adUnitID,
                 adFormat: RevenueCat.AdFormat.rewardedInterstitial,
@@ -286,29 +286,48 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
     }
 }
 
+// MARK: - Tracking.FullScreenAd
+
 @available(iOS 15.0, *)
-internal protocol RCFullScreenAdTracking: AnyObject {
-    var fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate? { get set }
-    var paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? { get set }
-    var responseInfo: GoogleMobileAds.ResponseInfo { get }
+internal extension Tracking {
+
+    /// Internal protocol that abstracts over the four GMA full-screen ad types
+    /// (`InterstitialAd`, `AppOpenAd`, `RewardedAd`, `RewardedInterstitialAd`)
+    /// so the adapter can install tracking delegates and paid-event wrappers generically.
+    protocol FullScreenAd: AnyObject {
+        var fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate? { get set }
+        var paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)? { get set }
+        var responseInfo: GoogleMobileAds.ResponseInfo { get }
+    }
+
+    /// Parameters captured at load time and consumed when wiring up the tracking delegate
+    /// and paid-event handler after a successful full-screen ad load.
+    struct FullScreenLoadContext {
+        let placement: String?
+        let adUnitID: String
+        let adFormat: RevenueCat.AdFormat
+        let fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?
+        let paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?
+    }
+
 }
 
 @available(iOS 15.0, *)
-extension GoogleMobileAds.InterstitialAd: RCFullScreenAdTracking {}
+extension GoogleMobileAds.InterstitialAd: Tracking.FullScreenAd {}
 @available(iOS 15.0, *)
-extension GoogleMobileAds.AppOpenAd: RCFullScreenAdTracking {}
+extension GoogleMobileAds.AppOpenAd: Tracking.FullScreenAd {}
 @available(iOS 15.0, *)
-extension GoogleMobileAds.RewardedAd: RCFullScreenAdTracking {}
+extension GoogleMobileAds.RewardedAd: Tracking.FullScreenAd {}
 @available(iOS 15.0, *)
-extension GoogleMobileAds.RewardedInterstitialAd: RCFullScreenAdTracking {}
+extension GoogleMobileAds.RewardedInterstitialAd: Tracking.FullScreenAd {}
 
 // MARK: - Delegate reassignment
 
 @available(iOS 15.0, *)
-internal extension RCFullScreenAdTracking {
+internal extension Tracking.FullScreenAd {
 
     @MainActor
-    func rcSetTrackingFullScreenContentDelegate(
+    func setTrackingDelegate(
         _ delegate: GoogleMobileAds.FullScreenContentDelegate?
     ) {
         Tracking.Adapter.shared.updateFullScreenContentDelegate(on: self, newDelegate: delegate)
@@ -325,7 +344,7 @@ internal extension RCFullScreenAdTracking {
     /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
     @MainActor
     func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
-        self.rcSetTrackingFullScreenContentDelegate(delegate)
+        self.setTrackingDelegate(delegate)
     }
 }
 
@@ -339,7 +358,7 @@ internal extension RCFullScreenAdTracking {
     /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
     @MainActor
     func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
-        self.rcSetTrackingFullScreenContentDelegate(delegate)
+        self.setTrackingDelegate(delegate)
     }
 }
 
@@ -353,7 +372,7 @@ internal extension RCFullScreenAdTracking {
     /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
     @MainActor
     func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
-        self.rcSetTrackingFullScreenContentDelegate(delegate)
+        self.setTrackingDelegate(delegate)
     }
 }
 
@@ -367,17 +386,8 @@ internal extension RCFullScreenAdTracking {
     /// If the ad was not loaded via `loadAndTrack`, this falls back to direct assignment.
     @MainActor
     func setTrackingFullScreenContentDelegate(_ delegate: GoogleMobileAds.FullScreenContentDelegate?) {
-        self.rcSetTrackingFullScreenContentDelegate(delegate)
+        self.setTrackingDelegate(delegate)
     }
-}
-
-@available(iOS 15.0, *)
-internal struct FullScreenLoadContext {
-    let placement: String?
-    let adUnitID: String
-    let adFormat: RevenueCat.AdFormat
-    let fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?
-    let paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?
 }
 
 #endif
