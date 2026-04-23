@@ -107,7 +107,7 @@ extension HTTPRequest {
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
-        case adMobSSVStatus(appUserID: String, clientTransactionID: String)
+        case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
 
     }
 
@@ -195,7 +195,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .adMobSSVStatus:
+                .rewardVerificationStatus:
             return true
 
         case .health,
@@ -223,7 +223,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .adMobSSVStatus:
+                .rewardVerificationStatus:
             return true
         case .health,
              .appHealthReportAvailability:
@@ -254,7 +254,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
-        case .adMobSSVStatus:
+        case .rewardVerificationStatus:
             return true
         }
     }
@@ -268,7 +268,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
-                .adMobSSVStatus:
+                .rewardVerificationStatus:
             return true
         case .getWorkflow,
                 .getOfferings,
@@ -348,8 +348,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
             return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
 
-        case let .adMobSSVStatus(appUserID, clientTransactionID):
-            return "subscribers/\(Self.escape(appUserID))/ads/admob/ssv/\(Self.escape(clientTransactionID))"
+        case let .rewardVerificationStatus(appUserID, clientTransactionID):
+            return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
         }
     }
 
@@ -411,8 +411,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .isPurchaseAllowedByRestoreBehavior:
             return "post_restore_eligibility"
 
-        case .adMobSSVStatus:
-            return "get_admob_ssv_status"
+        case .rewardVerificationStatus:
+            return "get_reward_verification_status"
         }
     }
 
