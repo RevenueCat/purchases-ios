@@ -13,15 +13,15 @@
 
 import Foundation
 
-/// Decoded body of
-/// `GET /v1/subscribers/{app_user_id}/ads/reward_verifications/{client_transaction_id}`.
-///
-/// The endpoint returns 200 with a `status` of `verified`, `pending`, or `failed`.
-/// Unrecognized future values decode to `.unknown` so the caller can choose how to
-/// handle them rather than failing decode.
 struct RewardVerificationStatusResponse: Equatable {
 
     let status: Status
+    let verifiedReward: VerifiedReward?
+
+    init(status: Status, verifiedReward: VerifiedReward? = nil) {
+        self.status = status
+        self.verifiedReward = verifiedReward
+    }
 
     enum Status: String, Codable, Equatable {
 
@@ -33,10 +33,21 @@ struct RewardVerificationStatusResponse: Equatable {
     }
 }
 
-extension RewardVerificationStatusResponse: Codable {
+extension RewardVerificationStatusResponse: Decodable {
 
     private enum CodingKeys: String, CodingKey {
         case status
+        case reward
+    }
+
+    private enum RewardCodingKeys: String, CodingKey {
+        case type
+        case code
+        case amount
+    }
+
+    private enum RewardType {
+        static let virtualCurrency = "virtual_currency"
     }
 
     init(from decoder: Decoder) throws {
@@ -47,6 +58,43 @@ extension RewardVerificationStatusResponse: Codable {
         } else {
             Logger.warn(Strings.backendError.unknown_reward_verification_status(status: rawStatus))
             self.status = .unknown
+        }
+
+        if self.status == .verified {
+            self.verifiedReward = Self.decodeVerifiedReward(from: container)
+        } else {
+            self.verifiedReward = nil
+        }
+    }
+
+    private static func decodeVerifiedReward(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) -> VerifiedReward {
+        guard container.contains(.reward),
+              let rewardContainer = try? container.nestedContainer(
+                keyedBy: RewardCodingKeys.self,
+                forKey: .reward
+              ) else {
+            return .noReward
+        }
+
+        let rewardType = (try? rewardContainer.decode(String.self, forKey: .type)) ?? ""
+
+        switch rewardType {
+        case RewardType.virtualCurrency:
+            guard let code = try? rewardContainer.decode(String.self, forKey: .code),
+                  let amount = try? rewardContainer.decode(Decimal.self, forKey: .amount) else {
+                Logger.warn(
+                    Strings.backendError.malformed_reward_verification_reward_payload(type: rewardType)
+                )
+                return .unsupportedReward
+            }
+            return .virtualCurrency(VirtualCurrencyReward(code: code, amount: amount))
+        default:
+            Logger.warn(
+                Strings.backendError.unsupported_reward_verification_reward_type(type: rewardType)
+            )
+            return .unsupportedReward
         }
     }
 }

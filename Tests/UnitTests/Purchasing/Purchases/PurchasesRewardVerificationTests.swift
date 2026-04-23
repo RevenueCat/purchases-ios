@@ -44,12 +44,45 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
         expect(try self.mockAdsAPI.invokedGetRewardVerificationStatusParameters?.clientTransactionID) == transactionID
     }
 
-    func testPollRewardVerificationStatusMapsVerifiedStatus() async throws {
-        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(.init(status: .verified))
+    func testPollRewardVerificationStatusMapsVerifiedStatusWithVirtualCurrencyReward() async throws {
+        let reward = VirtualCurrencyReward(code: "coins", amount: 10)
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
+            .init(status: .verified, verifiedReward: .virtualCurrency(reward))
+        )
 
         let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
 
-        expect(status) == .verified
+        expect(status) == .verified(.virtualCurrency(reward))
+    }
+
+    func testPollRewardVerificationStatusMapsVerifiedStatusWithNoReward() async throws {
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
+            .init(status: .verified, verifiedReward: .noReward)
+        )
+
+        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
+
+        expect(status) == .verified(.noReward)
+    }
+
+    func testPollRewardVerificationStatusMapsVerifiedStatusWithUnsupportedReward() async throws {
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
+            .init(status: .verified, verifiedReward: .unsupportedReward)
+        )
+
+        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
+
+        expect(status) == .verified(.unsupportedReward)
+    }
+
+    func testPollRewardVerificationStatusVerifiedWithoutRewardFallsBackToNoReward() async throws {
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
+            .init(status: .verified, verifiedReward: nil)
+        )
+
+        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
+
+        expect(status) == .verified(.noReward)
     }
 
     func testPollRewardVerificationStatusMapsPendingStatus() async throws {

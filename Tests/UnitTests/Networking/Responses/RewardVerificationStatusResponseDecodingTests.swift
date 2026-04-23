@@ -15,10 +15,12 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 // swiftlint:disable:next type_name
 final class RewardVerificationStatusResponseDecodingTests: TestCase {
+
+    // MARK: - Status decoding
 
     func testDecodesVerifiedStatus() throws {
         let response = try Self.decode(["status": "verified"])
@@ -40,9 +42,6 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
         let response = try Self.decode(["status": unrecognized])
         expect(response.status) == .unknown
 
-        // Guard the warning log: a future refactor that drops the warning would silently
-        // strip diagnostics for unmapped backend status values, so this is asserted here
-        // (mirroring `testGetRewardVerificationStatusUnknownStatusDecodesAsUnknown`).
         expect(self.logger.messages.map(\.message)).to(
             containElementSatisfying {
                 $0.contains(
@@ -67,6 +66,103 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
                 )
             }
         )
+    }
+
+    // MARK: - Reward payload decoding
+
+    func testDecodesVerifiedWithVirtualCurrencyReward() throws {
+        let response = try Self.decode([
+            "status": "verified",
+            "reward": [
+                "type": "virtual_currency",
+                "code": "coins",
+                "amount": 10
+            ]
+        ])
+        expect(response.status) == .verified
+        expect(response.verifiedReward) == .virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 10))
+    }
+
+    func testDecodesVerifiedWithVirtualCurrencyRewardPreservesDecimalPrecision() throws {
+        let response = try Self.decode([
+            "status": "verified",
+            "reward": [
+                "type": "virtual_currency",
+                "code": "gems",
+                "amount": Decimal(string: "0.123456789")!
+            ]
+        ])
+        expect(response.verifiedReward)
+            == .virtualCurrency(VirtualCurrencyReward(code: "gems", amount: Decimal(string: "0.123456789")!))
+    }
+
+    func testDecodesVerifiedWithMissingRewardFieldAsNoReward() throws {
+        let response = try Self.decode(["status": "verified"])
+        expect(response.status) == .verified
+        expect(response.verifiedReward) == .noReward
+    }
+
+    func testDecodesVerifiedWithNullRewardAsNoReward() throws {
+        let json = #"{"status":"verified","reward":null}"#
+        let response = try RewardVerificationStatusResponse.create(with: Data(json.utf8))
+        expect(response.status) == .verified
+        expect(response.verifiedReward) == .noReward
+    }
+
+    func testDecodesVerifiedWithUnknownRewardTypeAsUnsupportedReward() throws {
+        let unknownType = "physical_item"
+        let response = try Self.decode([
+            "status": "verified",
+            "reward": [
+                "type": unknownType,
+                "sku": "tshirt"
+            ]
+        ])
+        expect(response.status) == .verified
+        expect(response.verifiedReward) == .unsupportedReward
+        expect(self.logger.messages.map(\.message)).to(
+            containElementSatisfying {
+                $0.contains(
+                    Strings.backendError
+                        .unsupported_reward_verification_reward_type(type: unknownType)
+                        .description
+                )
+            }
+        )
+    }
+
+    func testDecodesVerifiedWithMalformedVirtualCurrencyAsUnsupportedReward() throws {
+        let response = try Self.decode([
+            "status": "verified",
+            "reward": [
+                "type": "virtual_currency",
+                "code": "coins"
+            ]
+        ])
+        expect(response.status) == .verified
+        expect(response.verifiedReward) == .unsupportedReward
+        expect(self.logger.messages.map(\.message)).to(
+            containElementSatisfying {
+                $0.contains(
+                    Strings.backendError
+                        .malformed_reward_verification_reward_payload(type: "virtual_currency")
+                        .description
+                )
+            }
+        )
+    }
+
+    func testNonVerifiedStatusDoesNotCarryReward() throws {
+        let response = try Self.decode([
+            "status": "pending",
+            "reward": [
+                "type": "virtual_currency",
+                "code": "coins",
+                "amount": 10
+            ]
+        ])
+        expect(response.status) == .pending
+        expect(response.verifiedReward).to(beNil())
     }
 
     private static func decode(_ json: [String: Any]) throws -> RewardVerificationStatusResponse {
