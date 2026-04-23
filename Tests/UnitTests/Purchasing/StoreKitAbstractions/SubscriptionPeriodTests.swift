@@ -45,6 +45,15 @@ class SubscriptionPeriodTests: TestCase {
 
     // Note: can't test creation from `StoreKit.Product.SubscriptionPeriod` because it has no public constructors.
 
+    func testCodableRoundTrip() throws {
+        let period = SubscriptionPeriod(value: 3, unit: .month)
+
+        let data = try JSONEncoder().encode(period)
+        let decoded = try JSONDecoder().decode(SubscriptionPeriod.self, from: data)
+
+        expect(decoded) == period
+    }
+
     func testPricePerWeek() {
         let tests: [Test] = [
             .init(p(1, .day), 1, 7),
