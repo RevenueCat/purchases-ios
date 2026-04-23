@@ -16,19 +16,19 @@ import Foundation
 
 // MARK: - Detail models
 
-struct WorkflowTrigger {
+@_spi(Internal) public struct WorkflowTrigger {
 
-    let name: String?
-    let type: String
-    let actionId: String?
-    let componentId: String?
+    public let name: String?
+    public let type: String
+    public let actionId: String?
+    public let componentId: String?
 
 }
 
-struct WorkflowTriggerAction {
+@_spi(Internal) public struct WorkflowTriggerAction {
 
-    let type: String
-    let stepId: String
+    public let type: String
+    public let stepId: String
 
 }
 
@@ -45,6 +45,9 @@ struct WorkflowTriggerAction {
     var outputs: [String: AnyDecodable]
     @DefaultDecodable.EmptyDictionary
     var triggerActions: [String: WorkflowTriggerAction]
+
+    public var stepTriggers: [WorkflowTrigger] { triggers }
+    public var stepTriggerActions: [String: WorkflowTriggerAction] { triggerActions }
     let metadata: [String: AnyDecodable]?
 
 }
