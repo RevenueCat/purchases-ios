@@ -52,6 +52,23 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
         )
     }
 
+    func testDecodesLiteralUnknownStatusAsUnknownAndLogsWarning() throws {
+        let rawUnknown = "unknown"
+        let response = try Self.decode(["status": rawUnknown])
+        expect(response.status) == .unknown
+
+        // The decoder treats a literal `"unknown"` wire value the same as any other
+        // unmapped value: it should still emit the warning so we get diagnostics if
+        // the backend ever starts sending it.
+        expect(self.logger.messages.map(\.message)).to(
+            containElementSatisfying {
+                $0.contains(
+                    Strings.backendError.unknown_reward_verification_status(status: rawUnknown).description
+                )
+            }
+        )
+    }
+
     private static func decode(_ json: [String: Any]) throws -> RewardVerificationStatusResponse {
         let data = try JSONSerialization.data(withJSONObject: json)
         return try RewardVerificationStatusResponse.create(with: data)
