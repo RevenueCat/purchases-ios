@@ -43,6 +43,7 @@ class ButtonComponentViewModel {
     }
 
     let component: PaywallComponent.ButtonComponent
+    let id: String?
     let localizationProvider: LocalizationProvider
     let action: Action
     let stackViewModel: StackComponentViewModel
@@ -57,6 +58,7 @@ class ButtonComponentViewModel {
         sheetStackViewModel: StackComponentViewModel? = nil
     ) throws {
         self.component = component
+        self.id = component.id
         self.localizationProvider = localizationProvider
         self.stackViewModel = stackViewModel
         self.sheetStackViewModel = sheetStackViewModel
