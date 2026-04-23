@@ -16,6 +16,12 @@ import Foundation
 struct RewardVerificationStatusResponse: Equatable {
 
     let status: Status
+    let verifiedReward: VerifiedReward?
+
+    init(status: Status, verifiedReward: VerifiedReward? = nil) {
+        self.status = status
+        self.verifiedReward = verifiedReward
+    }
 
     enum Status: Equatable {
 
@@ -91,6 +97,43 @@ extension RewardVerificationStatusResponse: Decodable {
                   !code.isEmpty,
                   let amount = try? rewardContainer.decode(Int.self, forKey: .amount),
                   amount > 0 else {
+                Logger.warn(
+                    Strings.backendError.malformed_reward_verification_reward_payload(type: rewardType)
+                )
+                return .unsupportedReward
+            }
+            return .virtualCurrency(VirtualCurrencyReward(code: code, amount: amount))
+        default:
+            Logger.warn(
+                Strings.backendError.unsupported_reward_verification_reward_type(type: rewardType)
+            )
+            return .unsupportedReward
+        }
+
+        if self.status == .verified {
+            self.verifiedReward = Self.decodeVerifiedReward(from: container)
+        } else {
+            self.verifiedReward = nil
+        }
+    }
+
+    private static func decodeVerifiedReward(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) -> VerifiedReward {
+        guard container.contains(.reward),
+              let rewardContainer = try? container.nestedContainer(
+                keyedBy: RewardCodingKeys.self,
+                forKey: .reward
+              ) else {
+            return .noReward
+        }
+
+        let rewardType = (try? rewardContainer.decode(String.self, forKey: .type)) ?? ""
+
+        switch rewardType {
+        case RewardType.virtualCurrency:
+            guard let code = try? rewardContainer.decode(String.self, forKey: .code),
+                  let amount = try? rewardContainer.decode(Decimal.self, forKey: .amount) else {
                 Logger.warn(
                     Strings.backendError.malformed_reward_verification_reward_payload(type: rewardType)
                 )
