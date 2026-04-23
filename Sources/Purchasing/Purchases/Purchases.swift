@@ -1573,7 +1573,7 @@ public extension Purchases {
 
 extension Purchases {
 
-    /// Polls the backend once for AdMob reward verification status using `client_transaction_id`.
+    /// Polls the backend once for reward verification status using `client_transaction_id`.
     ///
     /// Internal API for RC ad adapters.
     ///
