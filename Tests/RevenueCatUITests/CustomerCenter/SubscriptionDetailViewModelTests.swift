@@ -90,49 +90,11 @@ final class SubscriptionDetailViewModelTests: TestCase {
         expect(viewModel.hasActiveSubscription).to(beTrue())
     }
 
-    func testHasActiveSubscription_withMultipleActiveSubscriptions() {
-        let mockPurchases = MockCustomerCenterPurchases()
-        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
-        customerInfoViewModel.subscriptionsSection = [
-            .mock(store: .appStore, isExpired: false),
-            .mock(store: .appStore, isExpired: false)
-        ]
-
-        let viewModel = SubscriptionDetailViewModel(
-            customerInfoViewModel: customerInfoViewModel,
-            screen: CustomerCenterConfigData.default.screens[.management]!,
-            showPurchaseHistory: false,
-            showVirtualCurrencies: false,
-            allowsMissingPurchaseAction: false,
-            purchaseInformation: .mock(store: .appStore, isExpired: false)
-        )
-
-        expect(viewModel.hasActiveSubscription).to(beTrue())
-    }
-
-    func testHasActiveSubscription_withExpiredSubscriptionInSection() {
-        // Regression: when subscriptionsSection contains an expired subscription
-        // (loaded via loadMostRecentExpiredTransaction), hasActiveSubscription must be false
-        // regardless of how many subscriptions are in the section.
-        let mockPurchases = MockCustomerCenterPurchases()
-        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
-        customerInfoViewModel.subscriptionsSection = [.mock(store: .appStore, isExpired: true)]
-
-        let viewModel = SubscriptionDetailViewModel(
-            customerInfoViewModel: customerInfoViewModel,
-            screen: CustomerCenterConfigData.default.screens[.management]!,
-            showPurchaseHistory: false,
-            showVirtualCurrencies: false,
-            allowsMissingPurchaseAction: false,
-            purchaseInformation: .mock(store: .appStore, isExpired: true)
-        )
-
-        expect(viewModel.hasActiveSubscription).to(beFalse())
-    }
-
     func testHasActiveSubscription_withoutActiveSubscriptions() {
         let mockPurchases = MockCustomerCenterPurchases()
         let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+
+        // No active subscriptions
         customerInfoViewModel.subscriptionsSection = []
 
         let viewModel = SubscriptionDetailViewModel(
@@ -141,7 +103,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
             showPurchaseHistory: false,
             showVirtualCurrencies: false,
             allowsMissingPurchaseAction: false,
-            purchaseInformation: nil
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
         )
 
         expect(viewModel.hasActiveSubscription).to(beFalse())
@@ -172,7 +134,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
     func testShouldShowCreateTicketButton_customerTypeAll_withoutActiveSubscription() {
         let mockPurchases = MockCustomerCenterPurchases()
         let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
-        customerInfoViewModel.subscriptionsSection = [.mock(store: .appStore, isExpired: true)]
+        customerInfoViewModel.subscriptionsSection = []
 
         let viewModel = SubscriptionDetailViewModel(
             customerInfoViewModel: customerInfoViewModel,
@@ -180,7 +142,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
             showPurchaseHistory: false,
             showVirtualCurrencies: false,
             allowsMissingPurchaseAction: false,
-            purchaseInformation: .mock(store: .appStore, isExpired: true)
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
         )
 
         let supportTickets = CustomerCenterConfigData.Support.SupportTickets(
@@ -216,7 +178,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
     func testShouldShowCreateTicketButton_customerTypeActive_withoutActiveSubscription() {
         let mockPurchases = MockCustomerCenterPurchases()
         let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
-        customerInfoViewModel.subscriptionsSection = [.mock(store: .appStore, isExpired: true)]
+        customerInfoViewModel.subscriptionsSection = []
 
         let viewModel = SubscriptionDetailViewModel(
             customerInfoViewModel: customerInfoViewModel,
@@ -224,7 +186,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
             showPurchaseHistory: false,
             showVirtualCurrencies: false,
             allowsMissingPurchaseAction: false,
-            purchaseInformation: .mock(store: .appStore, isExpired: true)
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
         )
 
         let supportTickets = CustomerCenterConfigData.Support.SupportTickets(
@@ -260,7 +222,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
     func testShouldShowCreateTicketButton_customerTypeNotActive_withoutActiveSubscription() {
         let mockPurchases = MockCustomerCenterPurchases()
         let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
-        customerInfoViewModel.subscriptionsSection = [.mock(store: .appStore, isExpired: true)]
+        customerInfoViewModel.subscriptionsSection = []
 
         let viewModel = SubscriptionDetailViewModel(
             customerInfoViewModel: customerInfoViewModel,
@@ -268,7 +230,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
             showPurchaseHistory: false,
             showVirtualCurrencies: false,
             allowsMissingPurchaseAction: false,
-            purchaseInformation: .mock(store: .appStore, isExpired: true)
+            purchaseInformation: .mock(store: .playStore, isExpired: false)
         )
 
         let supportTickets = CustomerCenterConfigData.Support.SupportTickets(

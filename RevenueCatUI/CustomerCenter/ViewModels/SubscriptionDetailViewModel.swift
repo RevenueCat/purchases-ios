@@ -38,7 +38,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     }
 
     var hasActiveSubscription: Bool {
-        customerInfoViewModel.subscriptionsSection.contains(where: { !$0.isExpired })
+        !customerInfoViewModel.subscriptionsSection.isEmpty
     }
 
     func shouldShowCreateTicketButton(
