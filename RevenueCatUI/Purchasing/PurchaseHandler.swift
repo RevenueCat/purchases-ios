@@ -936,7 +936,7 @@ private extension CustomerInfo {
 }
 
 #if !os(tvOS)
-extension ProcessInfo {
+private extension ProcessInfo {
 
     var workflowsEndpointEnabled: Bool {
         arguments.contains("-EnableWorkflowsEndpoint")
