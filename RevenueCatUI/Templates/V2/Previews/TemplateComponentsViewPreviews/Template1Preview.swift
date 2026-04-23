@@ -125,7 +125,8 @@ private enum Template1Preview {
             shape: .pill
         ),
         action: .inAppCheckout,
-        method: .inAppCheckout
+        method: .inAppCheckout,
+        name: nil
     )
 
     static let contentStack = PaywallComponent.StackComponent(

@@ -32,7 +32,6 @@ class MockBackend: Backend {
     public convenience init() {
         let systemInfo = MockSystemInfo(platformInfo: nil,
                                         finishTransactions: false,
-                                        dangerousSettings: nil,
                                         preferredLocalesProvider: .mock())
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
@@ -47,6 +46,8 @@ class MockBackend: Backend {
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = MockRedeemWebPurchaseAPI()
         let virtualCurrenciesAPI = MockVirtualCurrenciesAPI()
+        let workflowsAPI = MockWorkflowsAPI()
+        let adsAPI = MockAdsAPI()
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -57,7 +58,9 @@ class MockBackend: Backend {
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
-                  virtualCurrenciesAPI: virtualCurrenciesAPI)
+                  virtualCurrenciesAPI: virtualCurrenciesAPI,
+                  workflowsAPI: workflowsAPI,
+                  adsAPI: adsAPI)
     }
 
     override func post(receipt: EncodedAppleReceipt,

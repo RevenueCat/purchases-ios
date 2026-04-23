@@ -66,11 +66,11 @@ internal extension PaywallTesterViewMode {
         switch self {
         case .fullScreen: return "iphone"
         case .sheet: return "iphone"
-        #if !os(watchOS)
+        #if !os(watchOS) && !os(macOS)
         case .footer: return "lanyardcard"
         case .condensedFooter: return "ruler"
-        case .presentIfNeeded: return "signpost.right.and.left"
         #endif
+        case .presentIfNeeded: return "signpost.right.and.left"
         case .presentPaywall: return "rectangle.portrait.and.arrow.forward"
         }
     }
@@ -81,14 +81,14 @@ internal extension PaywallTesterViewMode {
             return "Fullscreen"
         case .sheet:
             return "Sheet"
-        #if !os(watchOS)
+        #if !os(watchOS) && !os(macOS)
         case .footer:
             return "Footer"
         case .condensedFooter:
             return "Condensed Footer"
+        #endif
         case .presentIfNeeded:
             return "Present If Needed"
-        #endif
         case .presentPaywall:
             return "Present Paywall"
         }

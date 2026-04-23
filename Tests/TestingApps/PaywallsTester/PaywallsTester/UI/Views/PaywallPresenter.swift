@@ -84,13 +84,14 @@ struct PaywallPresenter: View {
                                                condensed: true)
 #endif
 #endif
+#endif
+
         case .presentIfNeeded:
             fatalError()
 
         case .presentPaywall:
             fatalError()
 
-#endif
         }
     }
 

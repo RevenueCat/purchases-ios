@@ -221,12 +221,17 @@ func checkPaywallEvent(_ event: PaywallEvent) {
     case let .purchaseError(creationData, data):
         checkPaywallEventCreationData(creationData)
         checkPaywallEventData(data)
+    case let .componentInteraction(creationData, data, interactionData):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
+        checkComponentInteractionData(interactionData)
     @unknown default: break
     }
 
     let _: PaywallEvent.CreationData = event.creationData
     let _: PaywallEvent.Data = event.data
     let _: PaywallEvent.ExitOfferData? = event.exitOfferData
+    let _: PaywallEvent.ComponentInteractionData? = event.componentInteractionData
 }
 
 func checkPaywallEventCreationData(_ creationData: PaywallEvent.CreationData) {
@@ -303,5 +308,49 @@ func checkExitOfferData(_ data: PaywallEvent.ExitOfferData) {
     let _: PaywallEvent.ExitOfferData = PaywallEvent.ExitOfferData(
         exitOfferType: exitOfferType,
         exitOfferingIdentifier: exitOfferingIdentifier
+    )
+}
+
+func checkComponentInteractionData(_ data: PaywallEvent.ComponentInteractionData) {
+    let componentType: ComponentInteractionType = data.componentType
+    let componentName: String? = data.componentName
+    let componentValue: String = data.componentValue
+    let componentURL: URL? = data.componentURL
+    let originIndex: Int? = data.originIndex
+    let destinationIndex: Int? = data.destinationIndex
+    let originContextName: String? = data.originContextName
+    let destinationContextName: String? = data.destinationContextName
+    let defaultIndex: Int? = data.defaultIndex
+    let originPackageIdentifier: String? = data.originPackageIdentifier
+    let destinationPackageIdentifier: String? = data.destinationPackageIdentifier
+    let defaultPackageIdentifier: String? = data.defaultPackageIdentifier
+    let originProductIdentifier: String? = data.originProductIdentifier
+    let destinationProductIdentifier: String? = data.destinationProductIdentifier
+    let defaultProductIdentifier: String? = data.defaultProductIdentifier
+    let currentPackageIdentifier: String? = data.currentPackageIdentifier
+    let resultingPackageIdentifier: String? = data.resultingPackageIdentifier
+    let currentProductIdentifier: String? = data.currentProductIdentifier
+    let resultingProductIdentifier: String? = data.resultingProductIdentifier
+
+    let _: PaywallEvent.ComponentInteractionData = PaywallEvent.ComponentInteractionData(
+        componentType: componentType,
+        componentName: componentName,
+        componentValue: componentValue,
+        componentURL: componentURL,
+        originIndex: originIndex,
+        destinationIndex: destinationIndex,
+        originContextName: originContextName,
+        destinationContextName: destinationContextName,
+        defaultIndex: defaultIndex,
+        originPackageIdentifier: originPackageIdentifier,
+        destinationPackageIdentifier: destinationPackageIdentifier,
+        defaultPackageIdentifier: defaultPackageIdentifier,
+        originProductIdentifier: originProductIdentifier,
+        destinationProductIdentifier: destinationProductIdentifier,
+        defaultProductIdentifier: defaultProductIdentifier,
+        currentPackageIdentifier: currentPackageIdentifier,
+        resultingPackageIdentifier: resultingPackageIdentifier,
+        currentProductIdentifier: currentProductIdentifier,
+        resultingProductIdentifier: resultingProductIdentifier
     )
 }

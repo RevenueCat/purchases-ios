@@ -17,13 +17,11 @@ class MockBackendConfiguration: BackendConfiguration {
 
     init() {
         let systemInfo = MockSystemInfo(finishTransactions: false)
-        let mockAPIKey = "mockAPIKey"
         var diagnosticsTracker: DiagnosticsTrackerType?
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             diagnosticsTracker = MockDiagnosticsTracker()
         }
-        let httpClient = MockHTTPClient(apiKey: mockAPIKey,
-                                        systemInfo: systemInfo,
+        let httpClient = MockHTTPClient(systemInfo: systemInfo,
                                         eTagManager: MockETagManager(),
                                         diagnosticsTracker: diagnosticsTracker,
                                         requestTimeout: 7)

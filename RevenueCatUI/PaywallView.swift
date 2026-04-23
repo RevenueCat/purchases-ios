@@ -495,6 +495,9 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.paywallSource)
     private var paywallSource
 
+    @State
+    private var paywallSessionID: PaywallEvent.SessionID = .init()
+
     init(
         offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,
@@ -577,6 +580,10 @@ struct LoadedOfferingPaywallView: View {
         )
         let view = paywallView(withConfig: configuration)
             .environmentObject(self.introEligibility)
+            .environment(
+                \.componentInteractionLogger,
+                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+            )
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear {
@@ -593,16 +600,9 @@ struct LoadedOfferingPaywallView: View {
             }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
-                if hasPurchased {
-                    guard let onRequestedDismissal = self.onRequestedDismissal else {
-                        if self.mode.isFullScreen {
-                            Logger.debug(Strings.dismissing_paywall)
-                            self.dismiss()
-                        }
-                        return
-                    }
-                    onRequestedDismissal()
-                }
+                guard hasPurchased else { return }
+
+                self.dismissAfterPurchaseCompletionCallbacks()
             }
 
         if self.displayCloseButton {
@@ -639,7 +639,7 @@ struct LoadedOfferingPaywallView: View {
         return .init(
             offering: self.offering,
             paywall: forDefaultPaywall ? self.paywall.toDefaultPaywallData() : self.paywall,
-            sessionID: .init(),
+            sessionID: self.paywallSessionID,
             displayMode: self.mode,
             locale: .current,
             darkMode: self.colorScheme == .dark,
@@ -653,6 +653,23 @@ struct LoadedOfferingPaywallView: View {
             return configuration.colors.closeButtonColor
         case .failure:
             return nil
+        }
+    }
+
+    private func dismissAfterPurchaseCompletionCallbacks() {
+        // Defer dismissal so purchase completion preferences propagate to parent modifiers first.
+        DispatchQueue.main.async {
+            guard self.purchaseHandler.hasPurchasedInSession else { return }
+
+            guard let onRequestedDismissal = self.onRequestedDismissal else {
+                if self.mode.isFullScreen {
+                    Logger.debug(Strings.dismissing_paywall)
+                    self.dismiss()
+                }
+                return
+            }
+
+            onRequestedDismissal()
         }
     }
 

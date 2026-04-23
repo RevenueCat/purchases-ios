@@ -80,6 +80,23 @@ public enum ExitOfferType : Swift.String, Swift.Codable, Swift.Sendable {
     get
   }
 }
+public enum ComponentInteractionType : Swift.String, Swift.Codable, Swift.Sendable, Swift.Hashable {
+  case tab
+  case toggleSwitch
+  case carousel
+  case button
+  case text
+  case package
+  case packageSelectionSheet
+  case purchaseButton
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
 public enum PaywallEvent {
   public typealias ID = Foundation.UUID
   public typealias SessionID = Foundation.UUID
@@ -89,6 +106,7 @@ public enum PaywallEvent {
   case exitOffer(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data, RevenueCat.PaywallEvent.ExitOfferData)
   case purchaseInitiated(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data)
   case purchaseError(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data)
+  case componentInteraction(RevenueCat.PaywallEvent.CreationData, RevenueCat.PaywallEvent.Data, RevenueCat.PaywallEvent.ComponentInteractionData)
 }
 extension RevenueCat.PaywallEvent {
   public struct CreationData {
@@ -119,6 +137,32 @@ extension RevenueCat.PaywallEvent {
   }
 }
 extension RevenueCat.PaywallEvent {
+  public struct ComponentInteractionData {
+    public var componentType: RevenueCat.ComponentInteractionType
+    public var componentName: Swift.String?
+    public var componentValue: Swift.String
+    public var componentURL: Foundation.URL?
+    public var originIndex: Swift.Int?
+    public var destinationIndex: Swift.Int?
+    public var originContextName: Swift.String?
+    public var destinationContextName: Swift.String?
+    public var defaultIndex: Swift.Int?
+    public var originPackageIdentifier: Swift.String?
+    public var destinationPackageIdentifier: Swift.String?
+    public var defaultPackageIdentifier: Swift.String?
+    public var originProductIdentifier: Swift.String?
+    public var destinationProductIdentifier: Swift.String?
+    public var defaultProductIdentifier: Swift.String?
+    public var currentPackageIdentifier: Swift.String?
+    public var resultingPackageIdentifier: Swift.String?
+    public var currentProductIdentifier: Swift.String?
+    public var resultingProductIdentifier: Swift.String?
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init(componentType: RevenueCat.ComponentInteractionType, componentName: Swift.String? = nil, componentValue: Swift.String, componentURL: Foundation.URL? = nil, originIndex: Swift.Int? = nil, destinationIndex: Swift.Int? = nil, originContextName: Swift.String? = nil, destinationContextName: Swift.String? = nil, defaultIndex: Swift.Int? = nil, originPackageIdentifier: Swift.String? = nil, destinationPackageIdentifier: Swift.String? = nil, defaultPackageIdentifier: Swift.String? = nil, originProductIdentifier: Swift.String? = nil, destinationProductIdentifier: Swift.String? = nil, defaultProductIdentifier: Swift.String? = nil, currentPackageIdentifier: Swift.String? = nil, resultingPackageIdentifier: Swift.String? = nil, currentProductIdentifier: Swift.String? = nil, resultingProductIdentifier: Swift.String? = nil)
+    #endif
+  }
+}
+extension RevenueCat.PaywallEvent {
   public var creationData: RevenueCat.PaywallEvent.CreationData {
     get
   }
@@ -127,6 +171,11 @@ extension RevenueCat.PaywallEvent {
   }
   #if compiler(>=5.3) && $NonescapableTypes
   public var exitOfferData: RevenueCat.PaywallEvent.ExitOfferData? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var componentInteractionData: RevenueCat.PaywallEvent.ComponentInteractionData? {
     get
   }
   #endif
@@ -143,6 +192,11 @@ extension RevenueCat.PaywallEvent.Data : Swift.Equatable, Swift.Codable, Swift.S
 }
 extension RevenueCat.PaywallEvent.ExitOfferData : Swift.Equatable, Swift.Codable, Swift.Sendable {
   public static func == (a: RevenueCat.PaywallEvent.ExitOfferData, b: RevenueCat.PaywallEvent.ExitOfferData) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+extension RevenueCat.PaywallEvent.ComponentInteractionData : Swift.Equatable, Swift.Codable, Swift.Sendable {
+  public static func == (a: RevenueCat.PaywallEvent.ComponentInteractionData, b: RevenueCat.PaywallEvent.ComponentInteractionData) -> Swift.Bool
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
@@ -3712,6 +3766,7 @@ extension RevenueCat.VerificationResult : Swift.RawRepresentable {}
 extension RevenueCat.ExitOfferType : Swift.Equatable {}
 extension RevenueCat.ExitOfferType : Swift.Hashable {}
 extension RevenueCat.ExitOfferType : Swift.RawRepresentable {}
+extension RevenueCat.ComponentInteractionType : Swift.RawRepresentable {}
 extension RevenueCat.StoreProduct : Swift.Sendable {}
 extension RevenueCat.StoreProduct.ProductCategory : Swift.Equatable {}
 extension RevenueCat.StoreProduct.ProductCategory : Swift.Hashable {}

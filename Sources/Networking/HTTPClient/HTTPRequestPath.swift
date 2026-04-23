@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 8/8/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 protocol HTTPRequestPath {
@@ -101,9 +103,11 @@ extension HTTPRequest {
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
+        case getWorkflow(appUserID: String, workflowId: String)
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
+        case adMobSSVStatus(appUserID: String, clientTransactionID: String)
 
     }
 
@@ -187,9 +191,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
+                .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .adMobSSVStatus:
             return true
 
         case .health,
@@ -213,9 +219,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
+                .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .adMobSSVStatus:
             return true
         case .health,
              .appHealthReportAvailability:
@@ -232,6 +240,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
+                .getWorkflow,
                 .appHealthReport,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior:
@@ -245,6 +254,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
+        case .adMobSSVStatus:
+            return true
         }
     }
 
@@ -256,7 +267,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getVirtualCurrencies,
                 .health,
                 .appHealthReportAvailability,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .adMobSSVStatus:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -267,6 +279,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket:
             return false
@@ -327,10 +340,16 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getVirtualCurrencies(appUserID):
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
+        case let .getWorkflow(appUserID, workflowId):
+            return "subscribers/\(Self.escape(appUserID))/workflows/\(Self.escape(workflowId))"
+
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
             return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
+
+        case let .adMobSSVStatus(appUserID, clientTransactionID):
+            return "subscribers/\(Self.escape(appUserID))/ads/admob/ssv/\(Self.escape(clientTransactionID))"
         }
     }
 
@@ -381,6 +400,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getVirtualCurrencies:
             return "get_virtual_currencies"
 
+        case .getWorkflow:
+            return "get_workflow"
+
         case .appHealthReportAvailability:
             return "get_app_health_report_availability"
 
@@ -388,6 +410,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "post_create_ticket"
         case .isPurchaseAllowedByRestoreBehavior:
             return "post_restore_eligibility"
+
+        case .adMobSSVStatus:
+            return "get_admob_ssv_status"
         }
     }
 

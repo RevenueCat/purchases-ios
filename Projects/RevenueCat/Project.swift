@@ -31,9 +31,9 @@ let project = Project(
                 .purchasesCore
             ],
             settings: .settings(
-                base: [
+                base: ([
                     "APPLICATION_EXTENSION_API_ONLY": "YES"
-                ]
+                ] as SettingsDictionary).appendingTuistSwiftConditions()
             )
         ),
 

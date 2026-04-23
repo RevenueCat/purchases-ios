@@ -1190,6 +1190,7 @@ class GetCustomerInfoTrackingTests: BaseCustomerInfoManagerTests {
 
         let backendError = BackendError.missingReceiptFile(URL(string: "file://receipt"))
         self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .failure(backendError)
+        self.mockBackend.stubbedGetCustomerInfoResult = .failure(backendError)
 
         do {
             _ = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
