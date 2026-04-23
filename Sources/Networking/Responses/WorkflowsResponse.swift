@@ -10,6 +10,7 @@
 //  WorkflowsResponse.swift
 //
 //  Created by RevenueCat.
+// swiftlint:disable missing_docs
 
 import Foundation
 
@@ -31,11 +32,11 @@ struct WorkflowTriggerAction {
 
 }
 
-struct WorkflowStep {
+@_spi(Internal) public struct WorkflowStep {
 
-    let id: String
+    public let id: String
     let type: String
-    let screenId: String?
+    public let screenId: String?
     @DefaultDecodable.EmptyDictionary
     var paramValues: [String: AnyDecodable]
     @DefaultDecodable.EmptyArray
@@ -48,39 +49,41 @@ struct WorkflowStep {
 
 }
 
-struct WorkflowScreen {
+@_spi(Internal) public struct WorkflowScreen {
 
     let name: String?
-    let templateName: String
+    public let templateName: String
     @DefaultDecodable.Zero
-    var revision: Int
-    let assetBaseURL: URL
-    let componentsConfig: PaywallComponentsData.ComponentsConfig
-    let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
-    let defaultLocale: PaywallComponent.LocaleID
+    // swiftlint:disable:next identifier_name
+    var _revision: Int
+    public var revision: Int { _revision }
+    public let assetBaseURL: URL
+    public let componentsConfig: PaywallComponentsData.ComponentsConfig
+    public let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+    public let defaultLocale: PaywallComponent.LocaleID
     @DefaultDecodable.EmptyDictionary
     var config: [String: AnyDecodable]
-    let offeringId: String?
+    public let offeringIdentifier: String?
 
 }
 
-struct PublishedWorkflow {
+@_spi(Internal) public struct PublishedWorkflow {
 
-    let id: String
+    public let id: String
     let displayName: String
-    let initialStepId: String
-    let steps: [String: WorkflowStep]
-    let screens: [String: WorkflowScreen]
-    let uiConfig: UIConfig
+    public let initialStepId: String
+    public let steps: [String: WorkflowStep]
+    public let screens: [String: WorkflowScreen]
+    public let uiConfig: UIConfig
     let contentMaxWidth: Int?
     let metadata: [String: AnyDecodable]?
 
 }
 
-struct WorkflowFetchResult {
+@_spi(Internal) public struct WorkflowDataResult {
 
-    let workflow: PublishedWorkflow
-    let enrolledVariants: [String: String]?
+    public let workflow: PublishedWorkflow
+    public let enrolledVariants: [String: String]?
 
 }
 
@@ -95,18 +98,19 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case name
         case templateName
-        case revision
+        // swiftlint:disable:next identifier_name
+        case _revision = "revision"
         case assetBaseURL = "assetBaseUrl"
         case componentsConfig
         case componentsLocalizations
         case defaultLocale
         case config
-        case offeringId
+        case offeringIdentifier
     }
 
 }
 
 extension PublishedWorkflow: Codable, Equatable, Sendable {}
-extension WorkflowFetchResult: Equatable, Sendable {}
+extension WorkflowDataResult: Equatable, Sendable {}
 
 extension PublishedWorkflow: HTTPResponseBody {}

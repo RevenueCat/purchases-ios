@@ -180,6 +180,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
+                .getWorkflow,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -191,7 +192,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
-                .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -208,6 +208,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
+                .getWorkflow,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -219,7 +220,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
-                .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -270,7 +270,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus:
             return true
-        case .getOfferings,
+        case .getWorkflow,
+                .getOfferings,
                 .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
@@ -279,7 +280,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
-                .getWorkflow,
                 .appHealthReport,
                 .postCreateTicket:
             return false
@@ -361,6 +361,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getOfferings:
             return "get_offerings"
 
+        case .getWorkflow:
+            return "get_workflow"
+
         case .getIntroEligibility:
             return "get_intro_eligibility"
 
@@ -399,9 +402,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getVirtualCurrencies:
             return "get_virtual_currencies"
-
-        case .getWorkflow:
-            return "get_workflow"
 
         case .appHealthReportAvailability:
             return "get_app_health_report_availability"

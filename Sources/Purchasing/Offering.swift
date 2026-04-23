@@ -11,6 +11,7 @@
 //
 //  Created by Joshua Liebowitz on 7/9/21.
 //
+// swiftlint:disable file_length
 
 import Foundation
 
@@ -313,6 +314,20 @@ public extension Offering {
             paywallComponents: paywallComponents,
             draftPaywallComponents: draftPaywallComponents,
             availablePackages: availablePackages.map { $0.withPresentedOfferingContext(presentedOfferingContext) },
+            webCheckoutUrl: webCheckoutUrl
+        )
+    }
+
+    /// Copies the Offering, replacing `paywallComponents` with the provided value.
+    func withPaywallComponents(_ paywallComponents: PaywallComponents) -> Self {
+        return Self(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: paywall,
+            paywallComponents: paywallComponents,
+            draftPaywallComponents: draftPaywallComponents,
+            availablePackages: availablePackages,
             webCheckoutUrl: webCheckoutUrl
         )
     }
