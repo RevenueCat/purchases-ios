@@ -5,7 +5,7 @@ import GoogleMobileAds
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
-final class RCAdMobNativeDelegateForwardingTests: RCAdMobTestCase {
+final class NativeDelegateForwardingTests: AdapterTestCase {
 
     func testTrackingNativeDelegateForwardsScreenLifecycleCallbacks() {
         let spy = NativeDelegateSpy()

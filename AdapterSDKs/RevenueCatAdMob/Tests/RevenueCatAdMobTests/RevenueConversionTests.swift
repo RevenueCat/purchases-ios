@@ -6,7 +6,7 @@ import GoogleMobileAds
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
-final class RCAdMobRevenueConversionTests: RCAdMobTestCase {
+final class RevenueConversionTests: AdapterTestCase {
 
     func testRevenueMicrosConvertsFractionalUnitsToMicros() {
         XCTAssertEqual(

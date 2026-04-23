@@ -7,7 +7,7 @@ import GoogleMobileAds
 
 @MainActor
 @available(iOS 15.0, *)
-final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
+final class FullScreenDelegateForwardingTests: AdapterTestCase {
 
     func testTrackingFullScreenDelegateForwardsAllCallbacks() {
         let spy = FullScreenDelegateSpy()

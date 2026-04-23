@@ -5,7 +5,7 @@ import XCTest
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
-final class RCAdMobDelegateContractTests: RCAdMobTestCase {
+final class DelegateContractTests: AdapterTestCase {
 
     func testFullScreenTrackingDelegateImplementsExpectedCallbacks() {
         XCTAssertTrue(

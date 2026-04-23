@@ -81,7 +81,7 @@ final class MockAdTracker: Tracking.Tracker {
 @MainActor
 @available(iOS 15.0, *)
 // swiftlint:disable:next type_body_length
-final class RCAdMobTrackingTests: RCAdMobTestCase {
+final class AdapterTrackingTests: AdapterTestCase {
 
     private var mockTracker: MockAdTracker!
     private var adapter: Tracking.Adapter!
@@ -557,7 +557,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
 
 @MainActor
 @available(iOS 15.0, *)
-final class RCAdMobDelegateTrackingTests: RCAdMobTestCase {
+final class AdapterDelegateTrackingTests: AdapterTestCase {
 
     private var mockTracker: MockAdTracker!
     private var adapter: Tracking.Adapter!

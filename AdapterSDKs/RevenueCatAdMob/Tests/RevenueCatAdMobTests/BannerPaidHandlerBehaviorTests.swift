@@ -7,7 +7,7 @@ import GoogleMobileAds
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
-final class RCAdMobBannerPaidHandlerBehaviorTests: RCAdMobTestCase {
+final class BannerPaidHandlerBehaviorTests: AdapterTestCase {
 
     func testLoadAndTrackPrefersExplicitPaidHandlerOverExistingOne() {
         let bannerView = BannerView(adSize: AdSizeBanner)

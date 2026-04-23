@@ -4,9 +4,9 @@ import XCTest
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
-final class RCAdMobDelegateRetentionTests: RCAdMobTestCase {
+final class FullScreenDelegateStoreTests: AdapterTestCase {
 
-    func testRetainFullScreenDelegateKeepsDelegateAliveWhileOwnerExists() {
+    func testRetainKeepsDelegateAliveWhileOwnerExists() {
         var owner: NSObject? = NSObject()
         weak var weakDelegate: NSObject?
 
@@ -19,29 +19,6 @@ final class RCAdMobDelegateRetentionTests: RCAdMobTestCase {
             }
 
             Tracking.Adapter.shared.fullScreenDelegateStore.retain(strongDelegate, for: owner)
-            delegate = nil
-
-            XCTAssertNotNil(weakDelegate)
-        }
-
-        owner = nil
-        self.flushRunLoop()
-        XCTAssertNil(weakDelegate)
-    }
-
-    func testRetainNativeDelegateKeepsDelegateAliveWhileOwnerExists() {
-        var owner: NSObject? = NSObject()
-        weak var weakDelegate: NSObject?
-
-        autoreleasepool {
-            var delegate: NSObject? = NSObject()
-            weakDelegate = delegate
-            guard let owner, let strongDelegate = delegate else {
-                XCTFail("Expected owner and delegate to be non-nil")
-                return
-            }
-
-            Tracking.Adapter.shared.nativeDelegateStore.retain(strongDelegate, for: owner)
             delegate = nil
 
             XCTAssertNotNil(weakDelegate)
