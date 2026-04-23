@@ -8,12 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-import ObjectiveC.runtime
 @_spi(Experimental) import RevenueCat
-
-private enum NativeAdLoaderAssociatedKeys {
-    static var trackingProxy: UInt8 = 0
-}
 
 @available(iOS 15.0, *)
 internal extension GoogleMobileAds.AdLoader {
@@ -34,12 +29,7 @@ internal extension GoogleMobileAds.AdLoader {
             delegate: previousDelegate,
             nativeAdDelegate: nativeAdDelegate
         )
-        objc_setAssociatedObject(
-            self,
-            &NativeAdLoaderAssociatedKeys.trackingProxy,
-            proxy,
-            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
-        )
+        adapter.nativeAdLoaderProxyStore.retain(proxy, for: self)
         self.delegate = proxy
         self.load(request)
     }

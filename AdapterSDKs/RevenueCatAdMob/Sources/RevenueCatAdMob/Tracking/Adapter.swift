@@ -26,6 +26,7 @@ internal extension Tracking {
 
         let fullScreenDelegateStore = FullScreenDelegateStore()
         let nativeDelegateStore = NativeDelegateStore()
+        let nativeAdLoaderProxyStore = NativeAdLoaderProxyStore()
 
         // Missing response metadata is not expected, but keep a deterministic fallback value also for type safety.
         private static let fallbackValue = ""
