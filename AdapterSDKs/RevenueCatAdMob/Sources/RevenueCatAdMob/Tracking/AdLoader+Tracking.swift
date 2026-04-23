@@ -125,7 +125,7 @@ internal extension Tracking {
                 placement: self.placement,
                 adUnitID: self.adUnitID
             )
-            self.adapter.retainNativeDelegate(trackingDelegate, for: nativeAd)
+            self.adapter.nativeDelegateStore.retain(trackingDelegate, for: nativeAd)
             nativeAd.delegate = trackingDelegate
 
             let adapter = self.adapter

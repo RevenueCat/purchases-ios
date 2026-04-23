@@ -25,8 +25,7 @@ internal extension Tracking {
         let tracker: Tracker
 
         let fullScreenDelegateStore = FullScreenDelegateStore()
-
-        private static var nativeDelegateKey: UInt8 = 0
+        let nativeDelegateStore = NativeDelegateStore()
 
         // Missing response metadata is not expected, but keep a deterministic fallback value also for type safety.
         private static let fallbackValue = ""
@@ -160,15 +159,6 @@ internal extension Tracking {
             }
 
             fullScreenAd.fullScreenContentDelegate = newDelegate
-        }
-
-        func retainNativeDelegate(_ delegate: AnyObject, for object: AnyObject) {
-            objc_setAssociatedObject(
-                object,
-                &Self.nativeDelegateKey,
-                delegate,
-                .OBJC_ASSOCIATION_RETAIN_NONATOMIC
-            )
         }
 
         // MARK: - handleLoadOutcome

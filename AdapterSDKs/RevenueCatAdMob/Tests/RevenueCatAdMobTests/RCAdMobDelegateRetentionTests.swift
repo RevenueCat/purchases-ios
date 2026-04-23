@@ -41,7 +41,7 @@ final class RCAdMobDelegateRetentionTests: RCAdMobTestCase {
                 return
             }
 
-            Tracking.Adapter.shared.retainNativeDelegate(strongDelegate, for: owner)
+            Tracking.Adapter.shared.nativeDelegateStore.retain(strongDelegate, for: owner)
             delegate = nil
 
             XCTAssertNotNil(weakDelegate)
