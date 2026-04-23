@@ -83,17 +83,28 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
         expect(response.verifiedReward) == .virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 10))
     }
 
-    func testDecodesVerifiedWithVirtualCurrencyRewardPreservesDecimalPrecision() throws {
+    func testDecodesVerifiedWithVirtualCurrencyRewardWithFractionalAmountAsUnsupportedReward() throws {
+        // The backend models the amount as an integer; a fractional value is malformed
+        // and should not be silently truncated.
         let response = try Self.decode([
             "status": "verified",
             "reward": [
                 "type": "virtual_currency",
                 "code": "gems",
-                "amount": Decimal(string: "0.123456789")!
+                "amount": 0.5
             ]
         ])
-        expect(response.verifiedReward)
-            == .virtualCurrency(VirtualCurrencyReward(code: "gems", amount: Decimal(string: "0.123456789")!))
+        expect(response.status) == .verified
+        expect(response.verifiedReward) == .unsupportedReward
+        expect(self.logger.messages.map(\.message)).to(
+            containElementSatisfying {
+                $0.contains(
+                    Strings.backendError
+                        .malformed_reward_verification_reward_payload(type: "virtual_currency")
+                        .description
+                )
+            }
+        )
     }
 
     func testDecodesVerifiedWithMissingRewardFieldAsNoReward() throws {

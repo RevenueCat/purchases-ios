@@ -20,10 +20,10 @@ import Foundation
     public let code: String
 
     /// The reward amount.
-    public let amount: Decimal
+    public let amount: Int
 
     /// Creates a virtual-currency reward.
-    public init(code: String, amount: Decimal) {
+    public init(code: String, amount: Int) {
         self.code = code
         self.amount = amount
     }

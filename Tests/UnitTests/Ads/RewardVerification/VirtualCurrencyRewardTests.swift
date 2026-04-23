@@ -32,15 +32,4 @@ final class VirtualCurrencyRewardTests: TestCase {
         expect(lhs) != VirtualCurrencyReward(code: "coins", amount: 6)
     }
 
-    func testSupportsArbitraryDecimalPrecision() {
-        // Decimal preserves the full payload precision the backend may emit; sanity-check
-        // a fractional and a large-scale value to make sure we don't accidentally truncate
-        // to Int/Double in a future refactor.
-        let fractional = VirtualCurrencyReward(code: "coins", amount: Decimal(string: "0.123456789")!)
-        expect(fractional.amount) == Decimal(string: "0.123456789")!
-
-        let large = VirtualCurrencyReward(code: "coins", amount: Decimal(string: "9999999999999999")!)
-        expect(large.amount) == Decimal(string: "9999999999999999")!
-    }
-
 }
