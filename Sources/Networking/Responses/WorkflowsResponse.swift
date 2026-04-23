@@ -28,7 +28,7 @@ import Foundation
 @_spi(Internal) public struct WorkflowTriggerAction {
 
     public let type: String
-    public let stepId: String
+    public let stepId: String?
 
 }
 

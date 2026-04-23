@@ -147,6 +147,25 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.currentStepId) == "step_1"
     }
 
+    func testTriggerActionWithConditionsTypeReturnsNil() throws {
+        // A "conditions" trigger action has no step_id. The navigator must not crash
+        // and must return nil (no navigation), leaving the current step unchanged.
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithConditionsTriggerAction(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let result = navigator.triggerAction(componentId: "btn_abc")
+
+        expect(result).to(beNil())
+        expect(navigator.currentStepId) == "step_1"
+        expect(navigator.canNavigateBack) == false
+    }
+
     // MARK: - navigateBack
 
     func testNavigateBackFromInitialStepReturnsNil() throws {
@@ -288,6 +307,27 @@ private extension WorkflowNavigatorTests {
           "type": "screen",
           "triggers": \(triggersJSON),
           "trigger_actions": \(actionsJSON)
+        }
+        """
+        return StepDescriptor(id: id, json: json)
+    }
+
+    /// Creates a `StepDescriptor` where the trigger action has type "conditions" (no step_id field).
+    func makeStepWithConditionsTriggerAction(
+        id: String,
+        componentId: String,
+        actionId: String
+    ) -> StepDescriptor {
+        let json = """
+        {
+          "id": "\(id)",
+          "type": "screen",
+          "triggers": [
+            {"name":"Button","type":"on_press","action_id":"\(actionId)","component_id":"\(componentId)"}
+          ],
+          "trigger_actions": {
+            "\(actionId)": {"type":"conditions","conditions":{"if":[]}}
+          }
         }
         """
         return StepDescriptor(id: id, json: json)
