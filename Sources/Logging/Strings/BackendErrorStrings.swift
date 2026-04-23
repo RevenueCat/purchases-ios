@@ -24,6 +24,7 @@ enum BackendErrorStrings {
 
     // Posting offerIdForSigning failed due to a signature problem.
     case signature_error(signatureDataString: Any?)
+    case unknown_admob_ssv_status(status: String)
 
 }
 
@@ -41,6 +42,8 @@ extension BackendErrorStrings: LogMessage {
             return "Offerings response contained no offerings"
         case .signature_error(let signatureDataString):
             return "Missing 'signatureData' or its structure changed:\n\(String(describing: signatureDataString))"
+        case let .unknown_admob_ssv_status(status):
+            return "Received unknown AdMob SSV status: \(status)"
         }
     }
 

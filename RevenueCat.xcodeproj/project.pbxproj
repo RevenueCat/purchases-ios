@@ -1197,6 +1197,14 @@
 		88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */; };
 		88DE93E12C211CBC0086B6D8 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
 		88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */; };
+		900D26F82F96927E00D32EDF /* AdMobSSVPollStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D26F52F96927E00D32EDF /* AdMobSSVPollStatus.swift */; };
+		900D26F92F96927E00D32EDF /* AdMobSSVStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D26F22F96927E00D32EDF /* AdMobSSVStatusResponse.swift */; };
+		900D26FA2F96927E00D32EDF /* GetAdMobSSVStatusOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D26F32F96927E00D32EDF /* GetAdMobSSVStatusOperation.swift */; };
+		900D26FB2F96927E00D32EDF /* AdsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D26F72F96927E00D32EDF /* AdsAPI.swift */; };
+		900D26FC2F96927E00D32EDF /* AdMobSSVStatusCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D26F12F96927E00D32EDF /* AdMobSSVStatusCallback.swift */; };
+		900D27032F96929800D32EDF /* MockAdsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D27022F96929800D32EDF /* MockAdsAPI.swift */; };
+		900D27072F96943200D32EDF /* BackendGetAdMobSSVStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D27062F96943200D32EDF /* BackendGetAdMobSSVStatusTests.swift */; };
+		900D27082F96950000D32EDF /* MockAdsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D27022F96929800D32EDF /* MockAdsAPI.swift */; };
 		901DE80E2EA0E097007EAA86 /* AdTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901DE80D2EA0E096007EAA86 /* AdTracker.swift */; };
 		9025C53D2EA66E2500845BCE /* PostFeatureEventsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9025C53C2EA66E2500845BCE /* PostFeatureEventsOperation.swift */; };
 		903A04342EB35929009B9CE4 /* EventsHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A04332EB35929009B9CE4 /* EventsHTTPRequestPath.swift */; };
@@ -2767,6 +2775,13 @@
 		88B1BAE82C813A3C001B7EE5 /* StackComponentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackComponentView.swift; sourceTree = "<group>"; };
 		88B1BAE92C813A3C001B7EE5 /* StackComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackComponentViewModel.swift; sourceTree = "<group>"; };
 		88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallStackComponent.swift; sourceTree = "<group>"; };
+		900D26F12F96927E00D32EDF /* AdMobSSVStatusCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobSSVStatusCallback.swift; sourceTree = "<group>"; };
+		900D26F22F96927E00D32EDF /* AdMobSSVStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobSSVStatusResponse.swift; sourceTree = "<group>"; };
+		900D26F32F96927E00D32EDF /* GetAdMobSSVStatusOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetAdMobSSVStatusOperation.swift; sourceTree = "<group>"; };
+		900D26F52F96927E00D32EDF /* AdMobSSVPollStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobSSVPollStatus.swift; sourceTree = "<group>"; };
+		900D26F72F96927E00D32EDF /* AdsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsAPI.swift; sourceTree = "<group>"; };
+		900D27022F96929800D32EDF /* MockAdsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAdsAPI.swift; sourceTree = "<group>"; };
+		900D27062F96943200D32EDF /* BackendGetAdMobSSVStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetAdMobSSVStatusTests.swift; sourceTree = "<group>"; };
 		901DE80D2EA0E096007EAA86 /* AdTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdTracker.swift; sourceTree = "<group>"; };
 		9025C53C2EA66E2500845BCE /* PostFeatureEventsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostFeatureEventsOperation.swift; sourceTree = "<group>"; };
 		903A04332EB35929009B9CE4 /* EventsHTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsHTTPRequestPath.swift; sourceTree = "<group>"; };
@@ -4100,6 +4115,7 @@
 		2DDF41DD24F6F4F9005BC22D /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				900D27022F96929800D32EDF /* MockAdsAPI.swift */,
 				1699BC6C2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift */,
 				903A065F2EB4B728009B9CE4 /* MockEventsManager.swift */,
 				16BCA3782E4D9C0400B39E7F /* MockSimpleNetworkService.swift */,
@@ -5055,6 +5071,7 @@
 		5796A38427D6B83C00653165 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				900D27062F96943200D32EDF /* BackendGetAdMobSSVStatusTests.swift */,
 				5796A39727D6C07D00653165 /* __Snapshots__ */,
 				5796A38927D6B96300653165 /* BackendGetCustomerInfoTests.swift */,
 				5796A38F27D6BCD100653165 /* BackendGetIntroEligibilityTests.swift */,
@@ -5883,6 +5900,25 @@
 			path = Stack;
 			sourceTree = "<group>";
 		};
+		900D26F42F96927E00D32EDF /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				900D26F12F96927E00D32EDF /* AdMobSSVStatusCallback.swift */,
+				900D26F22F96927E00D32EDF /* AdMobSSVStatusResponse.swift */,
+				900D26F32F96927E00D32EDF /* GetAdMobSSVStatusOperation.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
+		900D26F62F96927E00D32EDF /* AdMobSSV */ = {
+			isa = PBXGroup;
+			children = (
+				900D26F42F96927E00D32EDF /* Networking */,
+				900D26F52F96927E00D32EDF /* AdMobSSVPollStatus.swift */,
+			);
+			path = AdMobSSV;
+			sourceTree = "<group>";
+		};
 		903A042B2EB35609009B9CE4 /* FeatureEvents */ = {
 			isa = PBXGroup;
 			children = (
@@ -5938,6 +5974,8 @@
 		9094B4192E96A9A70094AD5F /* Ads */ = {
 			isa = PBXGroup;
 			children = (
+				900D26F62F96927E00D32EDF /* AdMobSSV */,
+				900D26F72F96927E00D32EDF /* AdsAPI.swift */,
 				901DE80D2EA0E096007EAA86 /* AdTracker.swift */,
 				9094B4182E96A9A70094AD5F /* Events */,
 			);
@@ -6883,6 +6921,7 @@
 				F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */,
 				F5355163286B70E0009CA47A /* OfferingsManagerStoreKitTests.swift in Sources */,
 				35C272A22BC4084C005A0CE8 /* MockDiagnosticsTracker.swift in Sources */,
+				900D27082F96950000D32EDF /* MockAdsAPI.swift in Sources */,
 				5791A1C82767FC9400C972AA /* ManageSubscriptionsHelperTests.swift in Sources */,
 				4D322E3A2B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift in Sources */,
 				1EFA95162CDBAB7500CA5951 /* MockWebPurchaseRedemptionHelper.swift in Sources */,
@@ -7029,6 +7068,11 @@
 				FD3A85FC2DDE7532005F3C79 /* VirtualCurrencies.swift in Sources */,
 				4F6BEDE22A26B69500CD9322 /* DebugContentViews.swift in Sources */,
 				B3B5FBBC269D121B00104A0C /* Offerings.swift in Sources */,
+				900D26F82F96927E00D32EDF /* AdMobSSVPollStatus.swift in Sources */,
+				900D26F92F96927E00D32EDF /* AdMobSSVStatusResponse.swift in Sources */,
+				900D26FA2F96927E00D32EDF /* GetAdMobSSVStatusOperation.swift in Sources */,
+				900D26FB2F96927E00D32EDF /* AdsAPI.swift in Sources */,
+				900D26FC2F96927E00D32EDF /* AdMobSSVStatusCallback.swift in Sources */,
 				9A65E03B25918B0900DE00B0 /* CustomerInfoStrings.swift in Sources */,
 				5721360F28B4602C006C46BE /* Purchases+nonasync.swift in Sources */,
 				57DE806D28074976008D6C6F /* Storefront.swift in Sources */,
@@ -7470,6 +7514,7 @@
 				903A05962EB3AE3C009B9CE4 /* AdEventStoreTests.swift in Sources */,
 				16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */,
 				5757EDE72DEE08C100AC4BE1 /* StoreKitVersionTests.swift in Sources */,
+				900D27032F96929800D32EDF /* MockAdsAPI.swift in Sources */,
 				57057FF828B0048900995F21 /* TestLogHandler.swift in Sources */,
 				57E415F12846997B00EA5460 /* PurchasesAttributionDataTests.swift in Sources */,
 				2DDF41CF24F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift in Sources */,
@@ -7501,6 +7546,7 @@
 				2DDF41E124F6F527005BC22D /* MockReceiptParser.swift in Sources */,
 				75ABFDB52D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift in Sources */,
 				57E415EB2846962500EA5460 /* PurchasesSyncPurchasesTests.swift in Sources */,
+				900D27072F96943200D32EDF /* BackendGetAdMobSSVStatusTests.swift in Sources */,
 				5766AAC5283E843300FA6091 /* PurchasesConfiguringTests.swift in Sources */,
 				351B514D26D44A8600BD2BD7 /* MockHTTPClient.swift in Sources */,
 				4FBBD4E42A620539001CBA21 /* PaywallColorTests.swift in Sources */,
