@@ -34,6 +34,7 @@ struct ButtonComponentView: View {
     private var purchaseHandler: PurchaseHandler
 
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
+    @Environment(\.workflowTriggerAction) private var workflowTriggerAction
 
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
@@ -92,6 +93,13 @@ struct ButtonComponentView: View {
     }
 
     private func performAction() async throws {
+        if let id = viewModel.id,
+           let triggerWorkflow = workflowTriggerAction,
+           triggerWorkflow(id) {
+            trackButtonComponentInteraction()
+            return
+        }
+
         // Intentionally track before branching so unknown actions are surfaced as diagnostic telemetry.
         // These should be excluded from product funnel analytics by filtering componentValue == "unknown".
         self.trackButtonComponentInteraction()
