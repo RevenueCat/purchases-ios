@@ -128,6 +128,7 @@
                           "action" : {
                             "type" : "navigate_back"
                           },
+                          "id" : "68b5fP9Fpd",
                           "name" : "",
                           "stack" : {
                             "components" : [
@@ -1260,6 +1261,7 @@
                             "action" : {
                               "type" : "restore_purchases"
                             },
+                            "id" : "vLoUgvChkK",
                             "name" : "",
                             "stack" : {
                               "components" : [
