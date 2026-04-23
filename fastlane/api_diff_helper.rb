@@ -72,7 +72,6 @@ module ApiDiffHelper
   ].freeze
 
   PR_SWIFTINTERFACE_DIR = "/tmp/pr-swiftinterface".freeze
-  API_DIFFS_DIR = "/tmp/api-diffs".freeze
 
   module_function
 
@@ -107,7 +106,7 @@ module ApiDiffHelper
        .reject { |path| path.include?("private") }
   end
 
-  def run_api_diff(api_diff_tool, old_file, new_file, platform_name)
+  def run_api_diff(old_file, new_file, platform_name)
     result = {
       platform: platform_name,
       success: false,
@@ -126,28 +125,12 @@ module ApiDiffHelper
       return result
     end
 
-    begin
-      output = Fastlane::Actions.sh(api_diff_tool, "swift-interface", "--old", old_file, "--new", new_file)
-      no_changes = output.include?("# ✅ No changes detected") || output.empty?
-
-      if no_changes
-        Fastlane::UI.success("✅ No API changes for #{platform_name}")
-        result[:success] = true
-      else
-        Fastlane::UI.error("❌ API changes detected for #{platform_name}")
-        result[:diff] = output
-      end
-    rescue => e
-      Fastlane::UI.error("❌ Breaking API changes detected for #{platform_name}")
-      begin
-        result[:diff] = Fastlane::Actions.sh(
-          api_diff_tool, "swift-interface", "--old", old_file, "--new", new_file,
-          error_callback: ->(r) { r }
-        )
-      rescue => diff_e
-        result[:diff] = diff_e.message
-      end
-      result[:diff] = result[:diff].encode('UTF-8', invalid: :replace, undef: :replace) if result[:diff]
+    if FileUtils.identical?(old_file, new_file)
+      Fastlane::UI.success("✅ No API changes for #{platform_name}")
+      result[:success] = true
+    else
+      Fastlane::UI.error("❌ API changes detected for #{platform_name}")
+      result[:diff] = `diff -u "#{old_file}" "#{new_file}"`.encode('UTF-8', invalid: :replace, undef: :replace)
     end
 
     result

@@ -220,12 +220,13 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchasingPackageWithPresentedOfferingContext() async throws {
         let package = try await self.monthlyPackage
 
-        try self.purchases.cachePresentedOfferingContext(
-            PresentedOfferingContext(
+        try self.purchases.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(
                 offeringIdentifier: package.offeringIdentifier,
                 placementIdentifier: "a_placement",
                 targetingContext: nil
             ),
+            paywallEvent: nil,
             productIdentifier: package.storeProduct.productIdentifier
         )
 

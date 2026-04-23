@@ -15,7 +15,7 @@
 #if canImport(AppKit)
 import AppKit
 #endif
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
@@ -29,10 +29,12 @@ struct DefaultPaywallView: View {
         warning: PaywallWarning? = nil,
         offering: Offering?,
         appName: String = AppStyleExtractor.getAppName(),
-        iconDetailProvider: AppIconDetailProvider = AppIconDetailProvider()
+        iconDetailProvider: AppIconDetailProvider = AppIconDetailProvider(),
+        isFooterPaywall: Bool = false
     ) {
         self.handler = handler
         self.appName = appName
+        self.isFooterPaywall = isFooterPaywall
         self._warning = .init(initialValue: warning)
         self._appIconDetailProvider = StateObject(wrappedValue: iconDetailProvider)
         if let packages = offering?.availablePackages, !packages.isEmpty {
@@ -46,12 +48,16 @@ struct DefaultPaywallView: View {
 
     let handler: PurchaseHandler
     let appName: String
+    let isFooterPaywall: Bool
 
     @State private var warning: PaywallWarning?
     @State private var products: [Package]
     @State private var selected: Package?
 
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.locale) var locale
+
+    @Environment(\.componentInteractionLogger) var componentInteractionLogger
 
     @StateObject var appIconDetailProvider: AppIconDetailProvider
 
@@ -98,11 +104,9 @@ struct DefaultPaywallView: View {
     }
 
     @ViewBuilder
-    var warningTitle: some View {
-        if shouldShowWarning {
-            Text("RevenueCat Paywalls")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .center)
+    var spacer: some View {
+        if !isFooterPaywall {
+            Spacer()
         }
     }
 
@@ -110,12 +114,17 @@ struct DefaultPaywallView: View {
 
     var body: some View {
         VStack {
-            warningTitle
-            Spacer()
+            if shouldShowWarning && !isFooterPaywall {
+                Text("RevenueCat Paywalls")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+
+            spacer
 
             if shouldShowWarning, let warning {
                 DefaultPaywallWarning(warning: warning)
-            } else {
+            } else if !isFooterPaywall {
                 VStack(alignment: .center, spacing: 16) {
                     ZStack {
                         appIconDetailProvider.image
@@ -140,7 +149,8 @@ struct DefaultPaywallView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
             }
-            Spacer()
+
+            spacer
 
             VStack {
                 ForEach(products) { product in
@@ -161,16 +171,25 @@ struct DefaultPaywallView: View {
                 VStack {
                     let purchaseButton = Button {
                         if let selected {
+                            let method = PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout
+                            self.componentInteractionLogger(.paywallPurchaseButtonAction(
+                                componentName: PaywallComponentInteraction.purchaseButtonName,
+                                componentValue: method.description,
+                                componentURL: nil,
+                                currentPackageIdentifier: selected.identifier,
+                                currentProductIdentifier: selected.storeProduct.productIdentifier
+                            ))
                             Task(priority: .userInitiated) {
                                 do {
                                     _ = try await handler.purchase(package: selected)
                                 } catch {
-                                    // PurchaseHandler tracks the error internally
+                                    Logger.debug(Strings.purchase_failed(error))
                                 }
                             }
                         }
                     } label: {
-                        Text("Purchase")
+                        Text(Localization.localizedBundle(locale)
+                            .localizedString(forKey: "Purchase", value: nil, table: nil))
                             .bold()
                             .frame(maxWidth: .infinity, alignment: .center)
                             .foregroundStyle(foregroundOnAccentColor)
@@ -188,15 +207,17 @@ struct DefaultPaywallView: View {
                     }
 
                     let restoreButton = Button {
+                        self.componentInteractionLogger(.paywallFooterRestorePurchases())
                         Task(priority: .userInitiated) {
                             do {
                                 _ = try await handler.restorePurchases()
                             } catch {
-                                // PurchaseHandler tracks the error internally
+                                Logger.debug(Strings.restore_purchases_failed(error))
                             }
                         }
                     } label: {
-                        Text("Restore Purchases")
+                        Text(Localization.localizedBundle(locale)
+                            .localizedString(forKey: "Restore purchases", value: nil, table: nil))
                     }
                         .padding(.top, 8)
 
@@ -230,7 +251,7 @@ struct DefaultPaywallView: View {
 
 // MARK: - Helpers
 
-extension View {
+private extension View {
     // centers content but doesn't allow it to get too wide, this looks better on full screens like an ipad
     func fillWithReadableContentWidth() -> some View {
         self
@@ -241,6 +262,6 @@ extension View {
     }
 }
 
-extension Color {
+internal extension Color {
     static let revenueCatBrandRed = Color(red: 0.949, green: 0.329, blue: 0.357) // #f2545b
 }

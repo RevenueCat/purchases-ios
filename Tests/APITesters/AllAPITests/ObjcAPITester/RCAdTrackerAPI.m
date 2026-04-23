@@ -35,7 +35,6 @@
         RCAdFormat *rewardedInterstitial __unused = RCAdFormat.rewardedInterstitial;
         RCAdFormat *native __unused = RCAdFormat.native;
         RCAdFormat *appOpen __unused = RCAdFormat.appOpen;
-        RCAdFormat *mrec __unused = RCAdFormat.mrec;
         RCAdFormat *other __unused = RCAdFormat.other;
         NSString *formatRawValue __unused = banner.rawValue;
 
@@ -85,7 +84,7 @@
         // AdOpened API - with placement
         RCAdOpened *openedWithPlacement __unused = [[RCAdOpened alloc] initWithNetworkName:@"AdMob"
                                                                                mediatorName:RCMediatorName.appLovin
-                                                                                   adFormat:RCAdFormat.mrec
+                                                                                   adFormat:RCAdFormat.other
                                                                                   placement:@"home_screen"
                                                                                    adUnitId:@"ca-app-pub-123"
                                                                                impressionId:@"impression-123"];

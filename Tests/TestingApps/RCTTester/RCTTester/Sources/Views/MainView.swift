@@ -4,7 +4,9 @@
 //
 
 import SwiftUI
+#if !os(tvOS)
 import RevenueCatUI
+#endif
 
 struct MainView: View {
 

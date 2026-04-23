@@ -42,6 +42,14 @@ extension Environment {
         }
     }
 
+    /// Returns whether to include external test/dev dependencies (Nimble, SnapshotTesting, OHHTTPStubs, GoogleMobileAds, etc.)
+    /// and the projects that depend on them (RevenueCatTests, RevenueCatAdMob, AdMobIntegrationSample).
+    /// Defaults to `true`. Set `TUIST_INCLUDE_TEST_DEPENDENCIES=false` to skip them and speed up `tuist install` on CI.
+    public static var includeTestDependencies: Bool {
+        let envValue = ProcessInfo.processInfo.environment["TUIST_INCLUDE_TEST_DEPENDENCIES"] ?? "true"
+        return envValue.lowercased() != "false"
+    }
+
     /// Returns whether to include the XCFrameworkInstallationTests project in the workspace.
     /// This is determined by the `TUIST_INCLUDE_XCFRAMEWORK_INSTALLATION_TESTS` environment variable, defaulting to `false` if not set.
     ///
@@ -82,5 +90,35 @@ extension Environment {
     public static var rcApiKey: String? {
         let value = ProcessInfo.processInfo.environment["TUIST_RC_API_KEY"] ?? ""
         return value.isEmpty ? nil : value
+    }
+
+    /// Returns extra launch arguments to inject into scheme run actions, enabled by default.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// # Single argument
+    /// TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint" tuist generate PaywallsTester
+    ///
+    /// # Multiple arguments
+    /// TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint -MyOtherFlag" tuist generate
+    /// ```
+    public static var extraLaunchArguments: [String] {
+        let value = ProcessInfo.processInfo.environment["TUIST_LAUNCH_ARGUMENTS"] ?? ""
+        return value.split(separator: " ").map(String.init).filter { !$0.isEmpty }
+    }
+
+    /// Returns extra Swift compilation conditions to inject into all targets.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// # Single flag
+    /// TUIST_SWIFT_CONDITIONS="ENABLE_WORKFLOWS_ENDPOINT" tuist generate PaywallsTester
+    ///
+    /// # Multiple flags
+    /// TUIST_SWIFT_CONDITIONS="ENABLE_WORKFLOWS_ENDPOINT MY_OTHER_FLAG" tuist generate
+    /// ```
+    public static var extraSwiftConditions: [String] {
+        let value = ProcessInfo.processInfo.environment["TUIST_SWIFT_CONDITIONS"] ?? ""
+        return value.split(separator: " ").map(String.init).filter { !$0.isEmpty }
     }
 }

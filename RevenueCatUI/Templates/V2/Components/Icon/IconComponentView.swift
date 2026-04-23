@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 6/11/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -75,8 +75,8 @@ struct IconComponentView: View {
                        uiConfigProvider: self.viewModel.uiConfigProvider)
                 .shadow(shadow: style.iconBackgroundShadow,
                         shape: style.iconBackgroundShape?.toInsettableShape())
-                .padding(style.margin)
                 .size(style.size)
+                .padding(style.margin)
             }
         }
     }
@@ -122,8 +122,7 @@ struct IconComponentView_Previews: PreviewProvider {
         // Default
         VStack {
             IconComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
+                viewModel: .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
@@ -154,8 +153,7 @@ struct IconComponentView_Previews: PreviewProvider {
         // Default - Background
         VStack {
             IconComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
+                viewModel: .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]

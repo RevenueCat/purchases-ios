@@ -14,16 +14,30 @@
 import Foundation
 
 /// Parameters for tracking a custom paywall impression event.
-@_spi(Experimental) @objc(RCCustomPaywallImpressionParams)
+@objc(RCCustomPaywallImpressionParams)
 public final class CustomPaywallImpressionParams: NSObject, Sendable {
 
     /// An optional identifier for the custom paywall being shown.
     @objc public let paywallId: String?
 
+    /// An optional identifier for the offering associated with the custom paywall.
+    /// If not provided, the SDK will use the current offering identifier from the cache.
+    @objc public let offeringId: String?
+
     /// Creates parameters for a custom paywall impression.
-    /// - Parameter paywallId: An optional identifier for the custom paywall being shown.
-    @objc public init(paywallId: String? = nil) {
+    /// - Parameters:
+    ///   - paywallId: An optional identifier for the custom paywall being shown.
+    ///   - offeringId: An optional identifier for the offering associated with the custom paywall.
+    ///     If `nil`, the SDK will use the current offering identifier from the cache.
+    @objc public init(paywallId: String? = nil, offeringId: String?) {
         self.paywallId = paywallId
+        self.offeringId = offeringId
+    }
+
+    /// Creates parameters with only a paywall identifier.
+    /// - Parameter paywallId: An optional identifier for the custom paywall being shown.
+    @objc public convenience init(paywallId: String? = nil) {
+        self.init(paywallId: paywallId, offeringId: nil)
     }
 
 }

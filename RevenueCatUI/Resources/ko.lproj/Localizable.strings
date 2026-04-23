@@ -18,3 +18,4 @@
 "Continue" = "계속";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} 무료 체험을 시작한 후 {{ total_price_and_per_month }}을(를) 시작하세요.";
 "Something went wrong" = "문제가 발생했습니다";
+"Purchase" = "구매";

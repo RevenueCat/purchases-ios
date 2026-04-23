@@ -26,6 +26,7 @@ enum PaywallWarning {
     case invalidTemplate(String)
     case invalidVariables(Set<String>)
     case invalidIcons(Set<String>)
+    case other(Error)
 
     var title: String {
         switch self {
@@ -49,6 +50,8 @@ enum PaywallWarning {
             return "Unrecognized variables"
         case .invalidIcons:
             return "Invalid icon names"
+        case .other:
+            return "Unknown error occurred"
         }
     }
 
@@ -76,6 +79,8 @@ enum PaywallWarning {
             return "The following variables are not recognized: \(set.joined(separator: ", ")). Please check the docs for a list of valid variables."
         case .invalidIcons(let set):
             return "The following icon names are not valid: \(set.joined(separator: ", ")). Please check `PaywallIcon` for the list of valid icon names."
+        case .other(let error):
+            return "\(error)"
         }
     }
 
@@ -114,6 +119,15 @@ enum PaywallWarning {
             return .invalidVariables(set)
         case .invalidIcons(let set):
             return .invalidIcons(set)
+        case .platformNotSupported:
+            return .other(from)
         }
+    }
+
+    static func from(error: Error) -> PaywallWarning {
+        if let error = error as? Offering.PaywallValidationError {
+            return from(error)
+        }
+        return .other(error)
     }
 }

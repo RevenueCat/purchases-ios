@@ -38,7 +38,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     }
 
     var hasActiveSubscription: Bool {
-        !customerInfoViewModel.subscriptionsSection.isEmpty
+        customerInfoViewModel.subscriptionsSection.contains(where: { !$0.isExpired })
     }
 
     func shouldShowCreateTicketButton(
@@ -100,6 +100,8 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     func didAppear() {
         cancellables.removeAll()
 
+        // promotionalOfferSuccessPublisher fires in both paths: with-transaction
+        // (via handleAction side effect) and nil-transaction (direct send).
         actionWrapper.promotionalOfferSuccessPublisher
             .sink { [weak self] in self?.refreshPurchase() }
             .store(in: &cancellables)

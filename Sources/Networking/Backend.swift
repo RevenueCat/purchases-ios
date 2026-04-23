@@ -24,11 +24,12 @@ class Backend {
     let customerCenterConfig: CustomerCenterConfigAPI
     let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
     let virtualCurrenciesAPI: VirtualCurrenciesAPI
+    let workflowsAPI: WorkflowsAPI
+    let adsAPI: AdsAPI
 
     private let config: BackendConfiguration
 
     convenience init(
-        apiKey: String,
         systemInfo: SystemInfo,
         httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
         eTagManager: ETagManager,
@@ -38,10 +39,9 @@ class Backend {
         diagnosticsTracker: DiagnosticsTrackerType?,
         dateProvider: DateProvider = DateProvider()
     ) {
-        let httpClient = HTTPClient(apiKey: apiKey,
-                                    systemInfo: systemInfo,
+        let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
-                                    signing: Signing(apiKey: apiKey, clock: systemInfo.clock),
+                                    signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
                                     requestTimeout: httpClientTimeout,
                                     operationDispatcher: OperationDispatcher.default)
@@ -65,6 +65,8 @@ class Backend {
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
+        let workflowsAPI = WorkflowsAPI(backendConfig: backendConfig)
+        let adsAPI = AdsAPI(backendConfig: backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -75,7 +77,9 @@ class Backend {
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
-                  virtualCurrenciesAPI: virtualCurrenciesAPI)
+                  virtualCurrenciesAPI: virtualCurrenciesAPI,
+                  workflowsAPI: workflowsAPI,
+                  adsAPI: adsAPI)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -87,7 +91,9 @@ class Backend {
                   internalAPI: InternalAPI,
                   customerCenterConfig: CustomerCenterConfigAPI,
                   redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
-                  virtualCurrenciesAPI: VirtualCurrenciesAPI) {
+                  virtualCurrenciesAPI: VirtualCurrenciesAPI,
+                  workflowsAPI: WorkflowsAPI,
+                  adsAPI: AdsAPI) {
         self.config = backendConfig
 
         self.customer = customerAPI
@@ -99,6 +105,8 @@ class Backend {
         self.customerCenterConfig = customerCenterConfig
         self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
         self.virtualCurrenciesAPI = virtualCurrenciesAPI
+        self.workflowsAPI = workflowsAPI
+        self.adsAPI = adsAPI
     }
 
     func clearHTTPClientCaches() {

@@ -84,13 +84,20 @@ struct PaywallPresenter: View {
                                                condensed: true)
 #endif
 #endif
+#endif
+
         case .presentIfNeeded:
             fatalError()
 
         case .presentPaywall:
             fatalError()
 
-#endif
+        case .workflow:
+            PaywallView(configuration: .init(
+                content: .offeringIdentifier(offering.identifier, presentedOfferingContext: nil),
+                purchaseHandler: .default()
+            ))
+
         }
     }
 

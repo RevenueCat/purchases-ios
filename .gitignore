@@ -44,10 +44,14 @@ Tests/paywall-preview-resources
 # Local clone of `paywall-rendering-validation` repo to be available for tests.
 Tests/paywall-rendering-validation
 
-# Local clone of `purchases-ios-snapshots` repo to be available for tests.
-Tests/purchases-ios-snapshots
+
+# Recorded V1 template snapshots (uploaded to Emerge, not stored in git)
+Tests/RevenueCatUITests/Templates/__Snapshots__
 
 # SPM
+
+# SwiftPM/Xcode-generated workspace metadata (machine-specific, avoid noisy diffs and CI variance)
+AdapterSDKs/RevenueCatAdMob/.swiftpm/
 
 # This is the "SPM" scheme, which is duplicated with the scheme in the project
 # and that breaks Carthage because it appears twice in `xcodebuild -list`
@@ -98,6 +102,7 @@ Examples/**/xcshareddata/**
 # We can't avoid the whole folder yet because RC and RCUI need to be tested through the package, rather than the workspace
 .swiftpm/xcode/xcshareddata/xcschemes/ReceiptParser.xcscheme
 .swiftpm/xcode/xcshareddata/xcschemes/RevenueCat_CustomEntitlementComputation.xcscheme
+.swiftpm/xcode/xcshareddata/xcschemes/RevenueCatAdMob.xcscheme
 Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.storekit
 
 # Claude Code

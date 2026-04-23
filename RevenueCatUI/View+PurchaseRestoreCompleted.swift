@@ -86,6 +86,25 @@ public struct PurchaseInitiatedAction: Sendable {
     }
 }
 
+/// A wrapper for the restore initiated callback action.
+/// This allows intercepting and gating restore flows before they proceed.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct RestoreInitiatedAction: Sendable {
+    private let action: @Sendable (ResumeAction) -> Void
+
+    /// Creates a new restore initiated action.
+    /// - Parameter action: The closure to invoke when restore is initiated.
+    ///   The closure receives a resume callback that must be called to proceed.
+    public init(_ action: @escaping @Sendable (ResumeAction) -> Void) {
+        self.action = action
+    }
+
+    /// Invokes the action with the resume callback.
+    func callAsFunction(resume: ResumeAction) {
+        action(resume)
+    }
+}
+
 /// A wrapper for the offer code redemption initiated callback action.
 /// This allows intercepting and gating offer code redemption before it proceeds.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -237,6 +256,10 @@ extension View {
     ///  }
     /// ```
     ///
+    /// - Note: This callback is invoked after restore has started.
+    ///   If you need to intercept restore before it begins (for example, to require authentication
+    ///   or conditionally cancel the flow), use ``onRestoreInitiated(_:)`` instead.
+    ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
     public func onRestoreStarted(
@@ -345,6 +368,38 @@ extension View {
         _ action: @escaping @Sendable (RevenueCat.Package, ResumeAction) -> Void
     ) -> some View {
         self.environment(\.purchaseInitiatedAction, PurchaseInitiatedAction(action))
+    }
+
+    /// Invokes the given closure when restore is about to be initiated,
+    /// allowing you to intercept and gate the restore (e.g., for authentication).
+    /// The restore will not proceed until the `resume` callback is invoked.
+    ///
+    /// Example:
+    /// ```swift
+    ///  var body: some View {
+    ///     PaywallView()
+    ///         .onRestoreInitiated { resume in
+    ///             print("Intercepting restore")
+    ///             // Perform authentication or other pre-restore logic
+    ///             authenticateUser { success in
+    ///                 if success {
+    ///                     resume()
+    ///                     print("Auth complete. Restore started")
+    ///                 } else {
+    ///                     resume(shouldProceed: false)
+    ///                     print("Auth failed, restore flow canceled")
+    ///                 }
+    ///             }
+    ///         }
+    ///  }
+    /// ```
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
+    public func onRestoreInitiated(
+        _ action: @escaping @Sendable (ResumeAction) -> Void
+    ) -> some View {
+        self.environment(\.restoreInitiatedAction, RestoreInitiatedAction(action))
     }
 
     /// Invokes the given closure when offer code redemption is about to be initiated,
