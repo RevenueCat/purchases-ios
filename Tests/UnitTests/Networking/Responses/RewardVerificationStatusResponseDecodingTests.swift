@@ -109,6 +109,22 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
         expect(response.verifiedReward) == .noReward
     }
 
+    func testDecodesVerifiedWithNonObjectRewardAsUnsupportedReward() throws {
+        let json = #"{"status":"verified","reward":"not_an_object"}"#
+        let response = try RewardVerificationStatusResponse.create(with: Data(json.utf8))
+        expect(response.status) == .verified
+        expect(response.verifiedReward) == .unsupportedReward
+        expect(self.logger.messages.map(\.message)).to(
+            containElementSatisfying {
+                $0.contains(
+                    Strings.backendError
+                        .unexpected_reward_verification_reward_value
+                        .description
+                )
+            }
+        )
+    }
+
     func testDecodesVerifiedWithUnknownRewardTypeAsUnsupportedReward() throws {
         let unknownType = "physical_item"
         let response = try Self.decode([

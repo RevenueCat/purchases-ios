@@ -27,6 +27,7 @@ enum BackendErrorStrings {
     case unknown_reward_verification_status(status: String)
     case unsupported_reward_verification_reward_type(type: String)
     case malformed_reward_verification_reward_payload(type: String)
+    case unexpected_reward_verification_reward_value
 
 }
 
@@ -50,6 +51,8 @@ extension BackendErrorStrings: LogMessage {
             return "Received unsupported reward verification reward type: \(type)"
         case let .malformed_reward_verification_reward_payload(type):
             return "Received malformed reward verification reward payload for type: \(type)"
+        case .unexpected_reward_verification_reward_value:
+            return "Received unexpected reward verification reward value: expected a JSON object"
         }
     }
 

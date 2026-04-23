@@ -71,11 +71,16 @@ extension RewardVerificationStatusResponse: Decodable {
         from container: KeyedDecodingContainer<CodingKeys>
     ) -> VerifiedReward {
         guard container.contains(.reward),
-              let rewardContainer = try? container.nestedContainer(
-                keyedBy: RewardCodingKeys.self,
-                forKey: .reward
-              ) else {
+              (try? container.decodeNil(forKey: .reward)) != true else {
             return .noReward
+        }
+
+        guard let rewardContainer = try? container.nestedContainer(
+            keyedBy: RewardCodingKeys.self,
+            forKey: .reward
+        ) else {
+            Logger.warn(Strings.backendError.unexpected_reward_verification_reward_value)
+            return .unsupportedReward
         }
 
         let rewardType = (try? rewardContainer.decode(String.self, forKey: .type)) ?? ""
