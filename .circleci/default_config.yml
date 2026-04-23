@@ -21,6 +21,9 @@ parameters:
   generate_swiftinterface:
     type: boolean
     default: false
+  bump_with_fallback_pr_lookup:
+    type: boolean
+    default: false
   requested_jobs:
     type: string
     default: ""
@@ -1740,7 +1743,7 @@ jobs:
       - install-dependencies
       - run:
           name: Create automatic PR
-          command: bundle exec fastlane automatic_bump
+          command: bundle exec fastlane automatic_bump fallback_pr_lookup:<< pipeline.parameters.bump_with_fallback_pr_lookup >>
 
   integration-tests-all:
     executor:
