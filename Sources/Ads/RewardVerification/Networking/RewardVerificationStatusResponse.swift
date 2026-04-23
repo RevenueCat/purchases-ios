@@ -42,16 +42,9 @@ extension RewardVerificationStatusResponse: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let rawStatus = try container.decode(String.self, forKey: .status)
-        switch rawStatus {
-        case "verified", "validated":
-            // `validated` is accepted for backwards compatibility with backends that
-            // haven't yet been updated to emit `verified`.
-            self.status = .verified
-        case Status.pending.rawValue:
-            self.status = .pending
-        case Status.failed.rawValue:
-            self.status = .failed
-        default:
+        if let known = Status(rawValue: rawStatus), known != .unknown {
+            self.status = known
+        } else {
             Logger.warn(Strings.backendError.unknown_reward_verification_status(status: rawStatus))
             self.status = .unknown
         }

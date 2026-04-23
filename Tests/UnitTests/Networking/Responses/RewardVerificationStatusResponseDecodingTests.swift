@@ -35,14 +35,6 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
         expect(response.status) == .failed
     }
 
-    func testDecodesLegacyValidatedWireValueAsVerified() throws {
-        // Backwards compatibility: backends that emit the legacy `"validated"` value
-        // are still mapped to `.verified` so adapters keep working during the rollout
-        // window.
-        let response = try Self.decode(["status": "validated"])
-        expect(response.status) == .verified
-    }
-
     func testDecodesUnrecognizedStatusAsUnknown() throws {
         let unrecognized = "some_future_value"
         let response = try Self.decode(["status": unrecognized])
