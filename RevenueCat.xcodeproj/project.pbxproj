@@ -59,6 +59,7 @@
 		03F446262D2FE1510046129A /* MaskShapePropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */; };
 		03F446552D303E350046129A /* PaddingPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446542D303E350046129A /* PaddingPropertyTests.swift */; };
 		03F446572D303FA10046129A /* CornerRadiusesPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */; };
+		150BEBF14F59182317CDA8DA /* WorkflowContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = F598F832810DB534092FBED3 /* WorkflowContext.swift */; };
 		161627FE2F50987800DEEDEB /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 161627FD2F50987800DEEDEB /* Media.xcassets */; };
 		16216FEF2EBB8641008ACFE9 /* ResumeAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16216FEE2EBB8641008ACFE9 /* ResumeAction.swift */; };
 		162170152EBE50F0008ACFE9 /* LocaleComparisonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162170142EBE50F0008ACFE9 /* LocaleComparisonTests.swift */; };
@@ -2955,6 +2956,7 @@
 		F584742F278D00C0001B1CE6 /* MockDNSChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDNSChecker.swift; sourceTree = "<group>"; };
 		F591492526B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKPaymentTransactionExtensionsTests.swift; sourceTree = "<group>"; };
 		F591492726B9956C00D32E58 /* MockTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockTransaction.swift; sourceTree = "<group>"; };
+		F598F832810DB534092FBED3 /* WorkflowContext.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowContext.swift; sourceTree = "<group>"; };
 		F5BE423F26962ACF00254A30 /* ReceiptRefreshPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptRefreshPolicy.swift; sourceTree = "<group>"; };
 		F5BE424126965F9F00254A30 /* ProductRequestData+Initialization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProductRequestData+Initialization.swift"; sourceTree = "<group>"; };
 		F5BE4244269676E200254A30 /* StoreKitRequestFetcherTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreKitRequestFetcherTests.swift; sourceTree = "<group>"; };
@@ -5578,6 +5580,7 @@
 				887A5FEE2C1D037000E1A461 /* PaywallPurchasesType.swift */,
 				887A5FEF2C1D037000E1A461 /* PurchaseHandler.swift */,
 				887A5FF02C1D037000E1A461 /* PurchaseHandler+TestData.swift */,
+				F598F832810DB534092FBED3 /* WorkflowContext.swift */,
 			);
 			path = Purchasing;
 			sourceTree = "<group>";
@@ -8254,6 +8257,7 @@
 				6561C746FE7043F5E5AC75C1 /* CarouselState.swift in Sources */,
 				961B6FC99052B19102AE5AEC /* WorkflowNavigator.swift in Sources */,
 				97B9F00926E0977B0DAAD7D7 /* EnvironmentValues+Workflow.swift in Sources */,
+				150BEBF14F59182317CDA8DA /* WorkflowContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
