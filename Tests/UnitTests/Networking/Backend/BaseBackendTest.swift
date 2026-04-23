@@ -37,6 +37,7 @@ class BaseBackendTests: TestCase {
     private(set) var redeemWebPurchaseAPI: RedeemWebPurchaseAPI!
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
     private(set) var workflowsAPI: WorkflowsAPI!
+    private(set) var adsAPI: AdsAPI!
     /// Controls what the CDN fetch returns. Tests can reassign this before triggering a `use_cdn` response
     /// because the closure registered with `WorkflowsAPI` captures `self` and reads this property at call time.
     var stubbedCdnFetch: WorkflowCdnFetch = { _, _, completion in completion(.success(Data())) }
@@ -101,6 +102,7 @@ class BaseBackendTests: TestCase {
                                          cdnFetch: { [weak self] cdnUrl, hash, completion in
             self?.stubbedCdnFetch(cdnUrl, hash, completion) ?? completion(.success(Data()))
         })
+        self.adsAPI = AdsAPI(backendConfig: backendConfig)
 
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,
@@ -112,7 +114,8 @@ class BaseBackendTests: TestCase {
                                customerCenterConfig: self.customerCenterConfig,
                                redeemWebPurchaseAPI: self.redeemWebPurchaseAPI,
                                virtualCurrenciesAPI: self.virtualCurrenciesAPI,
-                               workflowsAPI: self.workflowsAPI)
+                               workflowsAPI: self.workflowsAPI,
+                               adsAPI: self.adsAPI)
     }
 
     var verificationMode: Configuration.EntitlementVerificationMode {

@@ -157,7 +157,9 @@ public struct PaywallView: View {
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
         self._offering = .init(
-            initialValue: configuration.content.extractInitialOffering()
+            initialValue: configuration.purchaseHandler.cachedInitialOffering(
+                for: configuration.content
+            )
         )
         self._customerInfo = .init(
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
@@ -396,66 +398,7 @@ private extension PaywallView {
     }
 
     func loadOffering() async throws -> Offering {
-        switch self.contentToDisplay {
-        case let .offering(offering):
-            return offering
-
-        case .defaultOffering:
-            return try await Purchases.shared.offerings().current.orThrow(PaywallError.noCurrentOffering)
-
-        case let .offeringIdentifier(identifier, presentedOfferingContext):
-            let offering = try await Purchases.shared.offerings()
-                .offering(identifier: identifier)
-                .orThrow(PaywallError.offeringNotFound(identifier: identifier))
-
-            if let presentedOfferingContext {
-                return offering.withPresentedOfferingContext(presentedOfferingContext)
-            }
-
-            return offering
-        }
-    }
-
-}
-
-// MARK: -
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallViewConfiguration.Content {
-
-    func extractInitialOffering() -> Offering? {
-        switch self {
-        case let .offering(offering):
-            return offering
-        case .defaultOffering:
-            return Self.loadCachedCurrentOfferingIfPossible()
-        case let .offeringIdentifier(identifier, presentedOfferingContext):
-            let offering = Self.loadCachedOfferingIfPossible(
-                identifier: identifier
-            )
-
-            if let presentedOfferingContext {
-                return offering?.withPresentedOfferingContext(presentedOfferingContext)
-            }
-
-            return offering
-        }
-    }
-
-    private static func loadCachedCurrentOfferingIfPossible() -> Offering? {
-        if Purchases.isConfigured {
-            return Purchases.shared.cachedOfferings?.current
-        } else {
-            return nil
-        }
-    }
-
-    private static func loadCachedOfferingIfPossible(identifier: String) -> Offering? {
-        if Purchases.isConfigured {
-            return Purchases.shared.cachedOfferings?.offering(identifier: identifier)
-        } else {
-            return nil
-        }
+        return try await self.purchaseHandler.resolveOfferingOrThrow(for: self.contentToDisplay)
     }
 
 }

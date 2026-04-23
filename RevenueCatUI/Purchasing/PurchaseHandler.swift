@@ -252,6 +252,120 @@ extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
+    func cachedInitialOffering(for content: PaywallViewConfiguration.Content) -> Offering? {
+        switch content {
+        case let .offering(offering):
+            return offering
+        case .defaultOffering:
+            return self.purchases.cachedOfferings?.current
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            #if !os(tvOS)
+            if ProcessInfo.processInfo.workflowsEndpointEnabled {
+                return nil
+            }
+            #endif
+            let offering = self.purchases.cachedOfferings?.offering(identifier: identifier)
+
+            if let presentedOfferingContext {
+                return offering?.withPresentedOfferingContext(presentedOfferingContext)
+            }
+
+            return offering
+        }
+    }
+
+    func resolveOffering(for content: PaywallViewConfiguration.Content) async -> Offering? {
+        if case let .offering(offering) = content {
+            return offering
+        }
+
+        do {
+            return try await self.resolveOfferingOrThrow(for: content)
+        } catch {
+            Logger.error(Strings.errorFetchingOfferings(error))
+            return nil
+        }
+    }
+
+    func resolveOfferingOrThrow(for content: PaywallViewConfiguration.Content) async throws -> Offering {
+        switch content {
+        case let .offering(offering):
+            return offering
+        case .defaultOffering:
+            return try await self.purchases.offerings().current.orThrow(PaywallError.noCurrentOffering)
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            return try await self.resolveOfferingIdentifier(
+                identifier: identifier,
+                presentedOfferingContext: presentedOfferingContext
+            )
+        }
+    }
+
+    private func resolveOfferingIdentifier(
+        identifier: String,
+        presentedOfferingContext: PresentedOfferingContext?
+    ) async throws -> Offering {
+        #if !os(tvOS)
+        if ProcessInfo.processInfo.workflowsEndpointEnabled {
+            return try await self.resolveWorkflowOfferingIdentifier(
+                identifier: identifier,
+                presentedOfferingContext: presentedOfferingContext
+            )
+        }
+        #endif
+        let offering = try await self.purchases.offerings()
+            .offering(identifier: identifier)
+            .orThrow(PaywallError.offeringNotFound(identifier: identifier))
+
+        if let presentedOfferingContext {
+            return offering.withPresentedOfferingContext(presentedOfferingContext)
+        }
+
+        return offering
+    }
+
+    #if !os(tvOS)
+    private func resolveWorkflowOfferingIdentifier(
+        identifier: String,
+        presentedOfferingContext: PresentedOfferingContext?
+    ) async throws -> Offering {
+        async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
+        async let allOfferingsTask = self.purchases.offerings()
+
+        let (fetchResult, allOfferings) = try await (fetchResultTask, allOfferingsTask)
+        let workflow = fetchResult.workflow
+
+        guard let step = workflow.steps[workflow.initialStepId],
+              let screenID = step.screenId,
+              let screen = workflow.screens[screenID] else {
+            throw PaywallError.offeringNotFound(identifier: identifier)
+        }
+
+        let resolvedOfferingId = screen.offeringIdentifier
+        let baseOffering = try allOfferings
+            .offering(identifier: resolvedOfferingId)
+            .orThrow(PaywallError.offeringNotFound(identifier: resolvedOfferingId ?? identifier))
+
+        let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
+            screen: screen,
+            uiConfig: workflow.uiConfig
+        )
+
+        let offering = baseOffering.withPaywallComponents(paywallComponents)
+
+        if let presentedOfferingContext {
+            return offering.withPresentedOfferingContext(presentedOfferingContext)
+        }
+
+        return offering
+    }
+    #endif
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchaseHandler {
+
     // MARK: - Purchase
 
     @MainActor
@@ -598,6 +712,16 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         self.purchasesAreCompletedBy = purchasesAreCompletedBy
     }
 
+    func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
+
+    var cachedOfferings: Offerings? { nil }
+
+#if !os(tvOS)
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
+        throw ErrorCode.configurationError
+    }
+#endif
+
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         guard let info = customerInfo else { throw ErrorCode.configurationError }
         return info
@@ -786,3 +910,13 @@ private extension CustomerInfo {
     }
 
 }
+
+#if !os(tvOS)
+private extension ProcessInfo {
+
+    var workflowsEndpointEnabled: Bool {
+        arguments.contains("-EnableWorkflowsEndpoint")
+    }
+
+}
+#endif

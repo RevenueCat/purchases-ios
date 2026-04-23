@@ -942,6 +942,19 @@ public extension Purchases {
         return self.offeringsManager.cachedOfferings
     }
 
+    @_spi(Internal)
+    // The backend uses the offering identifier as the workflow lookup key.
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
+        return try await Async.call { completion in
+            self.backend.workflowsAPI.getWorkflow(
+                appUserID: self.appUserID,
+                workflowId: offeringID,
+                isAppBackgrounded: false,
+                completion: completion
+            )
+        }
+    }
+
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }
@@ -1566,6 +1579,41 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     static let paywallImageDownloadSession: URLSession = PaywallCacheWarming.downloadSession
+
+}
+
+// MARK: - AdMob SSV (Internal SPI)
+
+extension Purchases {
+
+    /// Polls the backend once for AdMob SSV verification status using `client_transaction_id`.
+    ///
+    /// Internal API for RC ad adapters.
+    ///
+    /// Cancelling the calling `Task` does not cancel the in-flight HTTP request.
+    @_spi(Internal) public func pollAdMobSSVStatus(
+        clientTransactionID: String
+    ) async throws -> AdMobSSVPollStatus {
+        let response = try await Async.call { completion in
+            self.backend.adsAPI.getAdMobSSVStatus(
+                appUserID: self.appUserID,
+                clientTransactionID: clientTransactionID
+            ) { result in
+                completion(result.mapError(\.asPublicError))
+            }
+        }
+
+        switch response.status {
+        case .validated:
+            return .validated
+        case .pending:
+            return .pending
+        case .failed:
+            return .failed
+        case .unknown:
+            return .unknown
+        }
+    }
 
 }
 

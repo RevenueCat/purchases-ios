@@ -21,6 +21,9 @@ parameters:
   generate_swiftinterface:
     type: boolean
     default: false
+  bump_with_fallback_pr_lookup:
+    type: boolean
+    default: false
   requested_jobs:
     type: string
     default: ""
@@ -1740,7 +1743,7 @@ jobs:
       - install-dependencies
       - run:
           name: Create automatic PR
-          command: bundle exec fastlane automatic_bump
+          command: bundle exec fastlane automatic_bump fallback_pr_lookup:<< pipeline.parameters.bump_with_fallback_pr_lookup >>
 
   integration-tests-all:
     executor:
@@ -2136,6 +2139,14 @@ workflows:
             matches:
               pattern: "^(main|release/.*)$"
               value: << pipeline.git.branch >>
+        - or:
+            - not:
+                matches:
+                  pattern: "^generated_(snapshots|swiftinterface)/.*"
+                  value: << pipeline.git.branch >>
+            - matches:
+                pattern: "^generated_(snapshots|swiftinterface)/main-.*"
+                value: << pipeline.git.branch >>
     jobs:
       # =============================================================
       # Reduced Test Suite: Auto-run on every push
@@ -2407,6 +2418,15 @@ workflows:
           <<: *only-main-branch
 
   danger:
+    when:
+      or:
+        - not:
+            matches:
+              pattern: "^generated_(snapshots|swiftinterface)/.*"
+              value: << pipeline.git.branch >>
+        - matches:
+            pattern: "^generated_(snapshots|swiftinterface)/main-.*"
+            value: << pipeline.git.branch >>
     jobs:
       - danger
 
