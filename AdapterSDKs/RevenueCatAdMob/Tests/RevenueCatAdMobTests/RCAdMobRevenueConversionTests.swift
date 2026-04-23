@@ -10,14 +10,14 @@ final class RCAdMobRevenueConversionTests: RCAdMobTestCase {
 
     func testRevenueMicrosConvertsFractionalUnitsToMicros() {
         XCTAssertEqual(
-            RCAdMob.revenueMicros(from: NSDecimalNumber(string: "0.005")),
+            Tracking.Adapter.revenueMicros(from: NSDecimalNumber(string: "0.005")),
             5000
         )
     }
 
     func testRevenueMicrosConvertsWholeAndFractionalUnitsToMicros() {
         XCTAssertEqual(
-            RCAdMob.revenueMicros(from: NSDecimalNumber(string: "1.5")),
+            Tracking.Adapter.revenueMicros(from: NSDecimalNumber(string: "1.5")),
             1_500_000
         )
     }

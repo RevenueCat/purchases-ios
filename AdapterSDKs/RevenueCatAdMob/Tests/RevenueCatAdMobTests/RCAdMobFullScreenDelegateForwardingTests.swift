@@ -165,10 +165,10 @@ final class RCAdMobFullScreenDelegateForwardingTests: RCAdMobTestCase {
 
     func testDidFailToPresentFullScreenContentDoesNotTriggerTracking() {
         let mockTracker = MockAdTracker()
-        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adapter = Tracking.Adapter(tracker: mockTracker)
         let spy = FullScreenDelegateSpy()
         let subject = RCAdMobFullScreenContentDelegate(
-            rcAdMob: rcAdMob,
+            adapter: adapter,
             delegate: spy,
             placement: "interstitial_home",
             adUnitID: "test_unit",

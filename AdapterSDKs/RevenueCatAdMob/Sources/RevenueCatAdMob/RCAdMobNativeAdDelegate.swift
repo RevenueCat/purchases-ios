@@ -14,17 +14,17 @@ import GoogleMobileAds
 internal final class RCAdMobNativeAdDelegate: NSObject, GoogleMobileAds.NativeAdDelegate {
 
     weak var delegate: GoogleMobileAds.NativeAdDelegate?
-    private let rcAdMob: RCAdMob
+    private let adapter: Tracking.Adapter
     private let placement: String?
     private let adUnitID: String
 
     init(
-        rcAdMob: RCAdMob = .shared,
+        adapter: Tracking.Adapter = .shared,
         delegate: GoogleMobileAds.NativeAdDelegate?,
         placement: String?,
         adUnitID: String
     ) {
-        self.rcAdMob = rcAdMob
+        self.adapter = adapter
         self.delegate = delegate
         self.placement = placement
         self.adUnitID = adUnitID
@@ -32,7 +32,7 @@ internal final class RCAdMobNativeAdDelegate: NSObject, GoogleMobileAds.NativeAd
 
     func nativeAdDidRecordImpression(_ nativeAd: GoogleMobileAds.NativeAd) {
         let responseInfo: GoogleMobileAds.ResponseInfo? = nativeAd.responseInfo
-        self.rcAdMob.trackDisplayed(
+        self.adapter.trackDisplayed(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: self.adUnitID,
@@ -43,7 +43,7 @@ internal final class RCAdMobNativeAdDelegate: NSObject, GoogleMobileAds.NativeAd
 
     func nativeAdDidRecordClick(_ nativeAd: GoogleMobileAds.NativeAd) {
         let responseInfo: GoogleMobileAds.ResponseInfo? = nativeAd.responseInfo
-        self.rcAdMob.trackOpened(
+        self.adapter.trackOpened(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: self.adUnitID,

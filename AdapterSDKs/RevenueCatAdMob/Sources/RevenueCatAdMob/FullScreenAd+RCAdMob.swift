@@ -22,9 +22,9 @@ internal extension GoogleMobileAds.InterstitialAd {
         placement: String?,
         fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
-        rcAdMob: RCAdMob
+        adapter: Tracking.Adapter
     ) async throws -> GoogleMobileAds.InterstitialAd {
-        try await rcAdMob.handleLoadOutcome(
+        try await adapter.handleLoadOutcome(
             loadAd: { try await Self.load(with: adUnitID, request: request) },
             context: FullScreenLoadContext(
                 placement: placement,
@@ -62,7 +62,7 @@ internal extension GoogleMobileAds.InterstitialAd {
             placement: placement,
             fullScreenContentDelegate: fullScreenContentDelegate,
             paidEventHandler: paidEventHandler,
-            rcAdMob: .shared
+            adapter: .shared
         )
     }
 
@@ -72,7 +72,7 @@ internal extension GoogleMobileAds.InterstitialAd {
     /// The placement passed here takes precedence over any placement provided at load time.
     @MainActor
     func present(from viewController: UIViewController, placement: String?) {
-        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        Tracking.Adapter.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
         self.present(from: viewController)
     }
 }
@@ -89,9 +89,9 @@ internal extension GoogleMobileAds.AppOpenAd {
         placement: String?,
         fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
-        rcAdMob: RCAdMob
+        adapter: Tracking.Adapter
     ) async throws -> GoogleMobileAds.AppOpenAd {
-        try await rcAdMob.handleLoadOutcome(
+        try await adapter.handleLoadOutcome(
             loadAd: { try await Self.load(with: adUnitID, request: request) },
             context: FullScreenLoadContext(
                 placement: placement,
@@ -129,7 +129,7 @@ internal extension GoogleMobileAds.AppOpenAd {
             placement: placement,
             fullScreenContentDelegate: fullScreenContentDelegate,
             paidEventHandler: paidEventHandler,
-            rcAdMob: .shared
+            adapter: .shared
         )
     }
 
@@ -139,7 +139,7 @@ internal extension GoogleMobileAds.AppOpenAd {
     /// The placement passed here takes precedence over any placement provided at load time.
     @MainActor
     func present(from viewController: UIViewController, placement: String?) {
-        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        Tracking.Adapter.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
         self.present(from: viewController)
     }
 }
@@ -156,9 +156,9 @@ internal extension GoogleMobileAds.RewardedAd {
         placement: String?,
         fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
-        rcAdMob: RCAdMob
+        adapter: Tracking.Adapter
     ) async throws -> GoogleMobileAds.RewardedAd {
-        try await rcAdMob.handleLoadOutcome(
+        try await adapter.handleLoadOutcome(
             loadAd: { try await Self.load(with: adUnitID, request: request) },
             context: FullScreenLoadContext(
                 placement: placement,
@@ -196,7 +196,7 @@ internal extension GoogleMobileAds.RewardedAd {
             placement: placement,
             fullScreenContentDelegate: fullScreenContentDelegate,
             paidEventHandler: paidEventHandler,
-            rcAdMob: .shared
+            adapter: .shared
         )
     }
 
@@ -210,7 +210,7 @@ internal extension GoogleMobileAds.RewardedAd {
         placement: String?,
         userDidEarnRewardHandler: @escaping () -> Void
     ) {
-        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        Tracking.Adapter.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
         self.present(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
     }
 }
@@ -227,9 +227,9 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
         placement: String?,
         fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
-        rcAdMob: RCAdMob
+        adapter: Tracking.Adapter
     ) async throws -> GoogleMobileAds.RewardedInterstitialAd {
-        try await rcAdMob.handleLoadOutcome(
+        try await adapter.handleLoadOutcome(
             loadAd: { try await Self.load(with: adUnitID, request: request) },
             context: FullScreenLoadContext(
                 placement: placement,
@@ -267,7 +267,7 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
             placement: placement,
             fullScreenContentDelegate: fullScreenContentDelegate,
             paidEventHandler: paidEventHandler,
-            rcAdMob: .shared
+            adapter: .shared
         )
     }
 
@@ -281,7 +281,7 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
         placement: String?,
         userDidEarnRewardHandler: @escaping () -> Void
     ) {
-        RCAdMob.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
+        Tracking.Adapter.shared.retrieveFullScreenDelegate(for: self)?.placement = placement
         self.present(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
     }
 }
@@ -311,7 +311,7 @@ internal extension RCFullScreenAdTracking {
     func rcSetTrackingFullScreenContentDelegate(
         _ delegate: GoogleMobileAds.FullScreenContentDelegate?
     ) {
-        RCAdMob.shared.updateFullScreenContentDelegate(on: self, newDelegate: delegate)
+        Tracking.Adapter.shared.updateFullScreenContentDelegate(on: self, newDelegate: delegate)
     }
 }
 

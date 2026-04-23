@@ -14,22 +14,22 @@ import GoogleMobileAds
 internal final class RCAdMobBannerViewDelegate: NSObject, GoogleMobileAds.BannerViewDelegate {
 
     weak var delegate: GoogleMobileAds.BannerViewDelegate?
-    private let rcAdMob: RCAdMob
+    private let adapter: Tracking.Adapter
     private let placement: String?
 
     init(
-        rcAdMob: RCAdMob = .shared,
+        adapter: Tracking.Adapter = .shared,
         delegate: GoogleMobileAds.BannerViewDelegate?,
         placement: String?
     ) {
-        self.rcAdMob = rcAdMob
+        self.adapter = adapter
         self.delegate = delegate
         self.placement = placement
     }
 
     func bannerViewDidReceiveAd(_ bannerView: GoogleMobileAds.BannerView) {
         let responseInfo: GoogleMobileAds.ResponseInfo? = bannerView.responseInfo
-        self.rcAdMob.trackLoaded(
+        self.adapter.trackLoaded(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: bannerView.adUnitID,
@@ -39,7 +39,7 @@ internal final class RCAdMobBannerViewDelegate: NSObject, GoogleMobileAds.Banner
     }
 
     func bannerView(_ bannerView: GoogleMobileAds.BannerView, didFailToReceiveAdWithError error: any Error) {
-        self.rcAdMob.trackFailedToLoad(
+        self.adapter.trackFailedToLoad(
             placement: self.placement,
             adUnitID: bannerView.adUnitID,
             adFormat: RevenueCat.AdFormat.banner,
@@ -50,7 +50,7 @@ internal final class RCAdMobBannerViewDelegate: NSObject, GoogleMobileAds.Banner
 
     func bannerViewDidRecordImpression(_ bannerView: GoogleMobileAds.BannerView) {
         let responseInfo: GoogleMobileAds.ResponseInfo? = bannerView.responseInfo
-        self.rcAdMob.trackDisplayed(
+        self.adapter.trackDisplayed(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: bannerView.adUnitID,
@@ -61,7 +61,7 @@ internal final class RCAdMobBannerViewDelegate: NSObject, GoogleMobileAds.Banner
 
     func bannerViewDidRecordClick(_ bannerView: GoogleMobileAds.BannerView) {
         let responseInfo: GoogleMobileAds.ResponseInfo? = bannerView.responseInfo
-        self.rcAdMob.trackOpened(
+        self.adapter.trackOpened(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: bannerView.adUnitID,

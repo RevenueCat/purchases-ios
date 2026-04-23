@@ -25,13 +25,13 @@ internal extension GoogleMobileAds.BannerView {
         placement: String?,
         delegate: (any GoogleMobileAds.BannerViewDelegate)?,
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
-        rcAdMob: RCAdMob
+        adapter: Tracking.Adapter
     ) {
         let previousDelegate = (self.delegate as? RCAdMobBannerViewDelegate)?.delegate ?? self.delegate
         let effectiveDelegate = delegate ?? previousDelegate
 
         let trackingDelegate = RCAdMobBannerViewDelegate(
-            rcAdMob: rcAdMob,
+            adapter: adapter,
             delegate: effectiveDelegate,
             placement: placement
         )
@@ -46,7 +46,7 @@ internal extension GoogleMobileAds.BannerView {
         installPaidEventHandlerWrapper(
             paidEventHandler: paidEventHandler,
             placement: placement,
-            rcAdMob: rcAdMob
+            adapter: adapter
         )
 
         self.load(request)
@@ -55,7 +55,7 @@ internal extension GoogleMobileAds.BannerView {
     private func installPaidEventHandlerWrapper(
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
         placement: String?,
-        rcAdMob: RCAdMob
+        adapter: Tracking.Adapter
     ) {
         let storedPaidHandler = objc_getAssociatedObject(self, &RCBannerAssociatedKeys.originalPaidHandler)
             as? ((GoogleMobileAds.AdValue) -> Void)
@@ -74,7 +74,7 @@ internal extension GoogleMobileAds.BannerView {
         self.paidEventHandler = { [weak self] adValue in
             if let self {
                 let responseInfo: GoogleMobileAds.ResponseInfo? = self.responseInfo
-                rcAdMob.trackRevenue(
+                adapter.trackRevenue(
                     placement: placement,
                     adUnitID: self.adUnitID,
                     adFormat: RevenueCat.AdFormat.banner,
@@ -121,7 +121,7 @@ internal extension GoogleMobileAds.BannerView {
             placement: placement,
             delegate: delegate,
             paidEventHandler: paidEventHandler,
-            rcAdMob: .shared
+            adapter: .shared
         )
     }
 

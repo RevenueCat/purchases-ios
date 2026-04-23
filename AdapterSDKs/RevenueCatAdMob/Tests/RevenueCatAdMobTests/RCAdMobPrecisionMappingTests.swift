@@ -9,19 +9,19 @@ import GoogleMobileAds
 final class RCAdMobPrecisionMappingTests: RCAdMobTestCase {
 
     func testPreciseMapsToExact() {
-        XCTAssertEqual(RCAdMob.mapPrecision(.precise).rawValue, "exact")
+        XCTAssertEqual(Tracking.Adapter.mapPrecision(.precise).rawValue, "exact")
     }
 
     func testEstimatedMapsToEstimated() {
-        XCTAssertEqual(RCAdMob.mapPrecision(.estimated).rawValue, "estimated")
+        XCTAssertEqual(Tracking.Adapter.mapPrecision(.estimated).rawValue, "estimated")
     }
 
     func testPublisherProvidedMapsToPublisherDefined() {
-        XCTAssertEqual(RCAdMob.mapPrecision(.publisherProvided).rawValue, "publisher_defined")
+        XCTAssertEqual(Tracking.Adapter.mapPrecision(.publisherProvided).rawValue, "publisher_defined")
     }
 
     func testUnknownMapsToUnknown() {
-        XCTAssertEqual(RCAdMob.mapPrecision(.unknown).rawValue, "unknown")
+        XCTAssertEqual(Tracking.Adapter.mapPrecision(.unknown).rawValue, "unknown")
     }
 
 }

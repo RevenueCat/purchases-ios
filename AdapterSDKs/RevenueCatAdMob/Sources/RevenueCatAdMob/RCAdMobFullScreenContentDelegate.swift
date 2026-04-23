@@ -15,21 +15,21 @@ import GoogleMobileAds
 internal final class RCAdMobFullScreenContentDelegate: NSObject, GoogleMobileAds.FullScreenContentDelegate {
 
     weak var delegate: GoogleMobileAds.FullScreenContentDelegate?
-    private let rcAdMob: RCAdMob
+    private let adapter: Tracking.Adapter
     var placement: String?
     private let adUnitID: String
     private let adFormat: RevenueCat.AdFormat
     private let responseInfoProvider: () -> GoogleMobileAds.ResponseInfo?
 
     init(
-        rcAdMob: RCAdMob = .shared,
+        adapter: Tracking.Adapter = .shared,
         delegate: GoogleMobileAds.FullScreenContentDelegate?,
         placement: String?,
         adUnitID: String,
         adFormat: RevenueCat.AdFormat,
         responseInfoProvider: @escaping () -> GoogleMobileAds.ResponseInfo?
     ) {
-        self.rcAdMob = rcAdMob
+        self.adapter = adapter
         self.delegate = delegate
         self.placement = placement
         self.adUnitID = adUnitID
@@ -39,7 +39,7 @@ internal final class RCAdMobFullScreenContentDelegate: NSObject, GoogleMobileAds
 
     func adDidRecordImpression(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         let responseInfo = self.responseInfoProvider()
-        self.rcAdMob.trackDisplayed(
+        self.adapter.trackDisplayed(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: self.adUnitID,
@@ -50,7 +50,7 @@ internal final class RCAdMobFullScreenContentDelegate: NSObject, GoogleMobileAds
 
     func adDidRecordClick(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
         let responseInfo = self.responseInfoProvider()
-        self.rcAdMob.trackOpened(
+        self.adapter.trackOpened(
             responseInfo: responseInfo,
             placement: self.placement,
             adUnitID: self.adUnitID,

@@ -75,7 +75,7 @@ final class RCAdMobBannerPaidHandlerBehaviorTests: RCAdMobTestCase {
 
     func testBannerPaidEventTracksRevenueViaMockTracker() {
         let mockTracker = MockAdTracker()
-        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adapter = Tracking.Adapter(tracker: mockTracker)
         let bannerView = BannerView(adSize: AdSizeBanner)
         bannerView.adUnitID = "ca-app-pub-banner"
 
@@ -84,7 +84,7 @@ final class RCAdMobBannerPaidHandlerBehaviorTests: RCAdMobTestCase {
             placement: "home_banner",
             delegate: nil,
             paidEventHandler: nil,
-            rcAdMob: rcAdMob
+            adapter: adapter
         )
 
         bannerView.paidEventHandler?(Self.makeAdValuePlaceholder())
@@ -102,7 +102,7 @@ final class RCAdMobBannerPaidHandlerBehaviorTests: RCAdMobTestCase {
 
     func testBannerPaidEventForwardsToUserHandlerAndTracksRevenue() {
         let mockTracker = MockAdTracker()
-        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adapter = Tracking.Adapter(tracker: mockTracker)
         let bannerView = BannerView(adSize: AdSizeBanner)
         bannerView.adUnitID = "ca-app-pub-banner"
         var userHandlerCalled = false
@@ -112,7 +112,7 @@ final class RCAdMobBannerPaidHandlerBehaviorTests: RCAdMobTestCase {
             placement: "home_banner",
             delegate: nil,
             paidEventHandler: { _ in userHandlerCalled = true },
-            rcAdMob: rcAdMob
+            adapter: adapter
         )
 
         bannerView.paidEventHandler?(Self.makeAdValuePlaceholder())
