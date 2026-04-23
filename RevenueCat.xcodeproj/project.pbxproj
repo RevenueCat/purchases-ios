@@ -1341,6 +1341,8 @@
 		DB1FC9512F9A1B23009A95EA /* WorkflowScreenMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1FC9502F9A1B23009A95EA /* WorkflowScreenMapper.swift */; };
 		DB1FC9582F9A1B63009A95EA /* PaywallViewConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1FC9572F9A1B63009A95EA /* PaywallViewConfigurationTests.swift */; };
 		DB1FC95A2F9A1B74009A95EA /* WorkflowScreenMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1FC9592F9A1B74009A95EA /* WorkflowScreenMapperTests.swift */; };
+		90A1B2C52F96927E00D32EDF /* VirtualCurrencyRewardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90A1B2C42F96927E00D32EDF /* VirtualCurrencyRewardTests.swift */; };
+		90A1B2C72F96927E00D32EDF /* VerifiedRewardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90A1B2C62F96927E00D32EDF /* VerifiedRewardTests.swift */; };
 		DB3395CA2F840A2B0079250C /* WorkflowsCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395C92F840A2B0079250C /* WorkflowsCallback.swift */; };
 		DB3395D32F840A400079250C /* GetWorkflowOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D02F840A400079250C /* GetWorkflowOperation.swift */; };
 		DB3395D52F840A570079250C /* WorkflowsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D42F840A570079250C /* WorkflowsResponse.swift */; };
@@ -2920,6 +2922,8 @@
 		DB1FC9502F9A1B23009A95EA /* WorkflowScreenMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowScreenMapper.swift; sourceTree = "<group>"; };
 		DB1FC9572F9A1B63009A95EA /* PaywallViewConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewConfigurationTests.swift; sourceTree = "<group>"; };
 		DB1FC9592F9A1B74009A95EA /* WorkflowScreenMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowScreenMapperTests.swift; sourceTree = "<group>"; };
+		90A1B2C42F96927E00D32EDF /* VirtualCurrencyRewardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyRewardTests.swift; sourceTree = "<group>"; };
+		90A1B2C62F96927E00D32EDF /* VerifiedRewardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifiedRewardTests.swift; sourceTree = "<group>"; };
 		DB3395C92F840A2B0079250C /* WorkflowsCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsCallback.swift; sourceTree = "<group>"; };
 		DB3395D02F840A400079250C /* GetWorkflowOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetWorkflowOperation.swift; sourceTree = "<group>"; };
 		DB3395D42F840A570079250C /* WorkflowsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsResponse.swift; sourceTree = "<group>"; };
@@ -6044,8 +6048,18 @@
 			isa = PBXGroup;
 			children = (
 				9094B43E2E96AA140094AD5F /* Events */,
+				90A1B2C82F96927E00D32EDF /* RewardVerification */,
 			);
 			path = Ads;
+			sourceTree = "<group>";
+		};
+		90A1B2C82F96927E00D32EDF /* RewardVerification */ = {
+			isa = PBXGroup;
+			children = (
+				90A1B2C42F96927E00D32EDF /* VirtualCurrencyRewardTests.swift */,
+				90A1B2C62F96927E00D32EDF /* VerifiedRewardTests.swift */,
+			);
+			path = RewardVerification;
 			sourceTree = "<group>";
 		};
 		B324DC482720C15300103EE9 /* Error Handling */ = {
@@ -7745,6 +7759,8 @@
 				FD18BF492DF0D9C100140FD6 /* VirtualCurrencyManagerTests.swift in Sources */,
 				351B514F26D44ACE00BD2BD7 /* PurchasesSubscriberAttributesTests.swift in Sources */,
 				D0DA209A2F23BBEC00BA3B77 /* AdEventTests.swift in Sources */,
+				90A1B2C52F96927E00D32EDF /* VirtualCurrencyRewardTests.swift in Sources */,
+				90A1B2C72F96927E00D32EDF /* VerifiedRewardTests.swift in Sources */,
 				57DBFA5D28AADA43002D18CA /* PurchasesLogInTests.swift in Sources */,
 				57D62F182D4A73F8000235DC /* CustomerCenterEventCreationDataDefault.swift in Sources */,
 				2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */,
