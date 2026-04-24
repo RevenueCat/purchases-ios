@@ -329,6 +329,20 @@ extension PurchaseHandler {
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?
     ) async throws -> Offering {
+        return try await resolveWorkflowContext(
+            identifier: identifier,
+            presentedOfferingContext: presentedOfferingContext
+        ).offering
+    }
+
+    func resolveWorkflowContext(
+        identifier: String,
+        presentedOfferingContext: PresentedOfferingContext?
+    ) async throws -> (context: WorkflowContext, offering: Offering) {
+        guard ProcessInfo.processInfo.workflowsEndpointEnabled else {
+            throw PaywallError.offeringNotFound(identifier: identifier)
+        }
+
         async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
         async let allOfferingsTask = self.purchases.offerings()
 
@@ -351,13 +365,23 @@ extension PurchaseHandler {
             uiConfig: workflow.uiConfig
         )
 
-        let offering = baseOffering.withPaywallComponents(paywallComponents)
+        let initialOffering = baseOffering.withPaywallComponents(paywallComponents)
 
+        let offering: Offering
         if let presentedOfferingContext {
-            return offering.withPresentedOfferingContext(presentedOfferingContext)
+            offering = initialOffering.withPresentedOfferingContext(presentedOfferingContext)
+        } else {
+            offering = initialOffering
         }
 
-        return offering
+        let context = WorkflowContext(
+            workflow: workflow,
+            allOfferings: allOfferings,
+            initialOffering: offering,
+            presentedOfferingContext: presentedOfferingContext
+        )
+
+        return (context, offering)
     }
     #endif
 
