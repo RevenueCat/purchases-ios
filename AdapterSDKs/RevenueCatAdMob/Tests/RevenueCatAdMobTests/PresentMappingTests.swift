@@ -5,7 +5,7 @@ import XCTest
 @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
-final class PublicOutcomeMappingTests: AdapterTestCase {
+final class PresentMappingTests: AdapterTestCase {
 
     func testMapVirtualCurrencyPositiveAmount() {
         let reward = RevenueCat.VerifiedReward.virtualCurrency(VirtualCurrencyReward(code: "gems", amount: 7))
@@ -25,18 +25,18 @@ final class PublicOutcomeMappingTests: AdapterTestCase {
         XCTAssertTrue(mapped.isUnknown)
     }
 
-    func testMapPublicOutcomeVerified() {
+    func testMapOutcomeVerified() {
         let reward = RevenueCat.VerifiedReward.virtualCurrency(VirtualCurrencyReward(code: "c", amount: 2))
-        let outcome = RewardVerification.mapPublicOutcome(.verified(reward))
-        XCTAssertTrue(outcome.isVerified)
-        XCTAssertEqual(outcome.verifiedReward?.virtualCurrencyCode, "c")
-        XCTAssertEqual(outcome.verifiedReward?.virtualCurrencyAmount, 2)
+        let result = RewardVerification.mapOutcome(.verified(reward))
+        XCTAssertTrue(result.isVerified)
+        XCTAssertEqual(result.verifiedReward?.virtualCurrencyCode, "c")
+        XCTAssertEqual(result.verifiedReward?.virtualCurrencyAmount, 2)
     }
 
-    func testMapPublicOutcomeFailed() {
-        let outcome = RewardVerification.mapPublicOutcome(.failed)
-        XCTAssertTrue(outcome.isFailed)
-        XCTAssertNil(outcome.verifiedReward)
+    func testMapOutcomeFailed() {
+        let result = RewardVerification.mapOutcome(.failed)
+        XCTAssertTrue(result.isFailed)
+        XCTAssertNil(result.verifiedReward)
     }
 }
 

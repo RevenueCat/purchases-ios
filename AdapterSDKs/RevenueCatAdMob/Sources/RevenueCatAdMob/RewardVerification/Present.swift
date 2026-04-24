@@ -8,6 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
+@_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension RewardVerification {
@@ -20,14 +21,14 @@ internal extension RewardVerification {
         static func present(
             capableAd: some CapableAd,
             rewardVerificationStarted: (() -> Void)?,
-            rewardVerificationOutcome: ((RewardVerificationOutcome) -> Void)?,
+            rewardVerificationResult: ((RewardVerificationResult) -> Void)?,
             poller: Poller? = nil,
             performPresent: @MainActor (@escaping () -> Void) -> Void
         ) {
-            if rewardVerificationOutcome != nil {
+            if rewardVerificationResult != nil {
                 precondition(
                     Setup.verificationState(for: capableAd) != nil,
-                    Strings.rewardVerificationOutcomeRequiresEnable
+                    Strings.rewardVerificationResultRequiresEnable
                 )
             }
 
@@ -36,7 +37,7 @@ internal extension RewardVerification {
                 return
             }
 
-            guard let onOutcome = rewardVerificationOutcome else {
+            guard let onResult = rewardVerificationResult else {
                 performPresent { rewardVerificationStarted?() }
                 return
             }
@@ -50,10 +51,36 @@ internal extension RewardVerification {
                     state: state,
                     poller: resolvedPoller,
                     outcomeHandler: { internalOutcome in
-                        onOutcome(RewardVerification.mapPublicOutcome(internalOutcome))
+                        onResult(RewardVerification.mapOutcome(internalOutcome))
                     }
                 )
             }
+        }
+    }
+}
+
+// MARK: - Internal outcome → presentation result
+
+@available(iOS 15.0, *)
+internal extension RewardVerification {
+
+    static func mapVerifiedReward(_ reward: RevenueCat.VerifiedReward) -> RevenueCatAdMob.VerifiedReward {
+        switch reward {
+        case .virtualCurrency(let item):
+            return .virtualCurrency(code: item.code, amount: item.amount)
+        case .noReward:
+            return .none
+        case .unsupportedReward:
+            return .unknown
+        }
+    }
+
+    static func mapOutcome(_ outcome: Outcome) -> RewardVerificationResult {
+        switch outcome {
+        case .verified(let reward):
+            return .verified(self.mapVerifiedReward(reward))
+        case .failed:
+            return .failed
         }
     }
 }

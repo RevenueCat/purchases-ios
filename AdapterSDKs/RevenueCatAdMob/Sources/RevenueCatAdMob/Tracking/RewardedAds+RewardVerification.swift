@@ -24,20 +24,20 @@ import GoogleMobileAds
 
     /// Presents the ad with optional reward-verification callbacks.
     ///
-    /// When `rewardVerificationOutcome` is non-`nil`, you must call ``enableRewardVerification()`` first
+    /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
     /// (enforced with a runtime precondition).
     @MainActor
     func present(
         from viewController: UIViewController,
         placement: String? = nil,
         rewardVerificationStarted: (() -> Void)? = nil,
-        rewardVerificationOutcome: ((RewardVerificationOutcome) -> Void)? = nil
+        rewardVerificationResult: ((RewardVerificationResult) -> Void)? = nil
     ) {
         Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         RewardVerification.Present.present(
             capableAd: self,
             rewardVerificationStarted: rewardVerificationStarted,
-            rewardVerificationOutcome: rewardVerificationOutcome,
+            rewardVerificationResult: rewardVerificationResult,
             performPresent: { wrapped in
                 self.present(from: viewController, userDidEarnRewardHandler: wrapped)
             }
@@ -59,20 +59,20 @@ import GoogleMobileAds
 
     /// Presents the ad with optional reward-verification callbacks.
     ///
-    /// When `rewardVerificationOutcome` is non-`nil`, you must call ``enableRewardVerification()`` first
+    /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
     /// (enforced with a runtime precondition).
     @MainActor
     func present(
         from viewController: UIViewController,
         placement: String? = nil,
         rewardVerificationStarted: (() -> Void)? = nil,
-        rewardVerificationOutcome: ((RewardVerificationOutcome) -> Void)? = nil
+        rewardVerificationResult: ((RewardVerificationResult) -> Void)? = nil
     ) {
         Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         RewardVerification.Present.present(
             capableAd: self,
             rewardVerificationStarted: rewardVerificationStarted,
-            rewardVerificationOutcome: rewardVerificationOutcome,
+            rewardVerificationResult: rewardVerificationResult,
             performPresent: { wrapped in
                 self.present(from: viewController, userDidEarnRewardHandler: wrapped)
             }
