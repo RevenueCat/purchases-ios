@@ -35,19 +35,10 @@ internal extension RewardVerification {
         let sample: @Sendable () -> TimeInterval
     }
 
-    /// Bounded polling loop. Surfaces either `PollerResult.outcome(...)` (a terminal verdict
-    /// from the backend, or `.failed` when the attempt budget is exhausted on repeated
-    /// `pending`/`unknown` or transient errors) or `PollerResult.cancelled` (the caller asked
-    /// to stop).
-    ///
-    /// `run` is intentionally non-throwing: cancellation is encoded in the return type so
-    /// callers don't need a broad catch, and the type system enforces that no other error
-    /// type can escape this layer.
-    ///
-    /// Transient errors (network blips, sleeper failures) are treated as non-answers, exactly
-    /// like `pending`: sleep + jitter, retry — count against the budget. This mirrors how real
-    /// mobile clients actually behave (spotty connections, brief 5xx, etc.) and keeps the
-    /// consumer-facing outcome stable: either we got a verdict, or we didn't.
+    /// Bounded polling loop. Returns a `PollerResult`: `.outcome(...)` for a terminal verdict
+    /// (or `.failed` once the attempt budget is exhausted), `.cancelled` if the underlying
+    /// task is cancelled. Transient throws and `pending`/`unknown` consume retry slots and
+    /// are absorbed within the budget; only `CancellationError` short-circuits the loop.
     struct Poller: Sendable {
 
         static let defaultMaxAttempts = 10
@@ -86,11 +77,9 @@ internal extension RewardVerification {
                     } catch is CancellationError {
                         return .cancelled
                     } catch {
-                        // Sleeper failed transiently — treat like `pending` and try the next
-                        // attempt anyway. In production `TaskSleeper` only throws `CancellationError`,
-                        // so this branch only fires for unusual custom sleepers (mainly tests).
-                        // Pending: warn-log when adapter logging is wired in (transient sleeper
-                        // error on attempt \(attempt): \(error), retrying).
+                        // Transient sleeper failure — treat like `pending`. In production
+                        // `TaskSleeper` only throws `CancellationError`; this branch only
+                        // fires for test doubles.
                         continue
                     }
                 }
@@ -103,20 +92,17 @@ internal extension RewardVerification {
                     case .failed:
                         return .outcome(.failed)
                     case .pending, .unknown:
-                        // Treat `unknown` like `pending`; persistent unknowns surface as `.failed`
-                        // via the bounded retry budget.
+                        // `unknown` is treated like `pending`; persistent unknowns surface as `.failed` via the budget.
                         continue
                     }
                 } catch is CancellationError {
                     return .cancelled
                 } catch {
-                    // Transient throw (URLError, transient backend 5xx, etc.) — treat like
-                    // `pending`. This broad catch IS the product policy: spotty mobile
-                    // connections are not a verdict; retry within budget. Any unknown throw
-                    // type from the SDK polling endpoint should also be absorbed here rather
-                    // than silently bypassing the retry loop.
-                    // Pending: warn-log when adapter logging is wired in (transient SSV poll
-                    // error on attempt \(attempt): \(error), retrying).
+                    // Transient throw (URLError, transient backend 5xx, unknown future error
+                    // types) — treat like `pending`. The broad catch is the policy: the retry
+                    // budget is the only place transient errors surface as a verdict, so
+                    // narrowing this would risk silently bypassing the loop on an unexpected
+                    // throw type. Pending: warn-log when adapter logging is wired in.
                     continue
                 }
             }
