@@ -25,6 +25,7 @@ enum CodableStrings {
     case decoding_error(_ error: Error, _ type: Any.Type)
     case corrupted_data_error(context: DecodingError.Context)
     case typeMismatch(type: Any, context: DecodingError.Context)
+    case failed_to_parse_duration(periodString: String)
 
 }
 
@@ -63,6 +64,8 @@ extension CodableStrings: LogMessage {
         case let .typeMismatch(type, context):
             let description = context.debugDescription
             return "Type '\(type)' mismatch, codingPath:\(context.codingPath), description:\n\(description)"
+        case let .failed_to_parse_duration(periodString):
+            return "Failed to parse ISO duration: \(periodString)"
         }
     }
 
