@@ -93,6 +93,7 @@ import Foundation
             case restorePurchases
             case navigateBack
             case navigateTo(destination: Destination)
+            case workflowTrigger
 
             case unknown
 
@@ -112,6 +113,8 @@ import Foundation
                 case .navigateTo(let destination):
                     try container.encode("navigate_to", forKey: .type)
                     try destination.encode(to: encoder)
+                case .workflowTrigger:
+                    try container.encode("workflow", forKey: .type)
                 case .unknown:
                     try container.encode("unknown", forKey: .type)
                 }
@@ -129,6 +132,8 @@ import Foundation
                 case "navigate_to":
                     let destination = try Destination(from: decoder)
                     self = .navigateTo(destination: destination)
+                case "workflow":
+                    self = .workflowTrigger
                 case "unknown":
                     self = .unknown
                 default:
