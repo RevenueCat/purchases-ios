@@ -36,8 +36,11 @@ internal typealias InternalLogHandler = (_ level: LogLevel,
 
 // This is a `struct` instead of `enum` so that
 // we can use `Logger()` as a `LoggerType`.
-// swiftlint:disable:next convenience_type missing_docs
+// swiftlint:disable:next missing_docs
 @_spi(Internal) public struct Logger {
+
+    /// Creates an SPI-visible logger instance for internal module injection.
+    @_spi(Internal) public init() {}
 
     static var logLevel: LogLevel = Self.defaultLogLevel
     static var internalLogHandler: InternalLogHandler = Self.defaultLogHandler
