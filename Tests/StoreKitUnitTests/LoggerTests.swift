@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 // Note: this is in `StoreKitUnitTests` because it modifies the global `Logger.logLevel`
 // which means it would interfere with other tests if ran concurrently.
