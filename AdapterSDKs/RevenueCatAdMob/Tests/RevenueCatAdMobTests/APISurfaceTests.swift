@@ -165,31 +165,43 @@ final class APISurfaceTests: AdapterTestCase {
 
     @MainActor
     func testPresentWithRewardVerificationEntryPointsRemainAvailableInSwift() {
-        let rewardedPresent: @MainActor (
-            GoogleMobileAds.RewardedAd,
-            UIViewController
-        ) -> Void = { rewardedAd, viewController in
-            rewardedAd.present(
-                from: viewController,
-                placement: nil,
-                rewardVerificationStarted: nil,
-                rewardVerificationResult: nil
+        let rewardedPresent:
+            (GoogleMobileAds.RewardedAd)
+            -> (UIViewController, (() -> Void)?, (@MainActor (RewardVerificationResult) -> Void)?) -> Void
+            = GoogleMobileAds.RewardedAd.present(
+                from:rewardVerificationStarted:rewardVerificationResult:
             )
-        }
-        let rewardedInterstitialPresent: @MainActor (
-            GoogleMobileAds.RewardedInterstitialAd,
-            UIViewController
-        ) -> Void = { rewardedInterstitialAd, viewController in
-            rewardedInterstitialAd.present(
-                from: viewController,
-                placement: nil,
-                rewardVerificationStarted: nil,
-                rewardVerificationResult: nil
+        let rewardedPresentWithPlacement:
+            (GoogleMobileAds.RewardedAd)
+            -> (
+                UIViewController,
+                String?,
+                (() -> Void)?,
+                (@MainActor (RewardVerificationResult) -> Void)?
+            ) -> Void = GoogleMobileAds.RewardedAd.present(
+                from:placement:rewardVerificationStarted:rewardVerificationResult:
             )
-        }
+        let rewardedInterstitialPresent:
+            (GoogleMobileAds.RewardedInterstitialAd)
+            -> (UIViewController, (() -> Void)?, (@MainActor (RewardVerificationResult) -> Void)?) -> Void
+            = GoogleMobileAds.RewardedInterstitialAd.present(
+                from:rewardVerificationStarted:rewardVerificationResult:
+            )
+        let rewardedInterstitialPresentWithPlacement:
+            (GoogleMobileAds.RewardedInterstitialAd)
+            -> (
+                UIViewController,
+                String?,
+                (() -> Void)?,
+                (@MainActor (RewardVerificationResult) -> Void)?
+            ) -> Void = GoogleMobileAds.RewardedInterstitialAd.present(
+                from:placement:rewardVerificationStarted:rewardVerificationResult:
+            )
 
         XCTAssertNotNil(rewardedPresent)
+        XCTAssertNotNil(rewardedPresentWithPlacement)
         XCTAssertNotNil(rewardedInterstitialPresent)
+        XCTAssertNotNil(rewardedInterstitialPresentWithPlacement)
     }
 
 }
