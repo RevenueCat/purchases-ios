@@ -43,8 +43,8 @@ struct ImageComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
-    @Environment(\.forceSizeCalculation)
-    private var forceSizeCalculation
+    @Environment(\.requestSizeCalculation)
+    private var requestSizeCalculation
 
     let viewModel: ImageComponentViewModel
 
@@ -89,66 +89,70 @@ struct ImageComponentView: View {
                     height: self.imageSize(style: style).height
                 )
                 let effectiveSize = self.size ?? self.viewModel.cachedMeasuredSize
-                Group {
-                    if self.forceSizeCalculation {
-                        self.decorate(Color.clear, with: style)
+                let shouldForceSizeCalulation = {
+                    if effectiveSize == nil {
+                        return true
                     } else {
-                        ZStack {
-                            if effectiveSize == nil {
-                                // We cannot correctly render the image until we know the space the image can fill
-                                // this will fill the space so we can get the correct measurements and render the image
-                                self.decorate(Color.clear, with: style)
-                            } else if renderForPreview {
-                                #if DEBUG
-                                self.decorate(
+                        return requestSizeCalculation
+                    }
+                }()
+
+                Group {
+                    ZStack {
+                        if shouldForceSizeCalulation {
+                            // We cannot correctly render the image until we know the space the image can fill
+                            // this will fill the space so we can get the correct measurements and render the image
+                            self.decorate(Color.clear, with: style)
+                        } else if renderForPreview {
+                            #if DEBUG
+                            self.decorate(
+                                self.renderImage(
+                                    DualColorImageGenerator.purpleOrangeWide.image.resizable(),
+                                    effectiveSize ?? .zero,
+                                    maxWidth: self.calculateMaxWidth(
+                                        parentWidth: effectiveSize?.width ?? 0,
+                                        style: style
+                                    ),
+                                    with: style
+                                ),
+                                with: style
+                            )
+                            #else
+                            EmptyView()
+                            #endif
+                        } else {
+                            self.decorate(
+                                RemoteImage(
+                                    url: style.url,
+                                    lowResUrl: style.lowResUrl,
+                                    darkUrl: style.darkUrl,
+                                    darkLowResUrl: style.darkLowResUrl,
+                                    // The expectedSize is important
+                                    // It renders a clear image if actual image is being fetched
+                                    expectedSize: expectedSize
+                                ) { (image, size) in
                                     self.renderImage(
-                                        DualColorImageGenerator.purpleOrangeWide.image.resizable(),
-                                        effectiveSize ?? .zero,
+                                        image,
+                                        size,
                                         maxWidth: self.calculateMaxWidth(
                                             parentWidth: effectiveSize?.width ?? 0,
                                             style: style
                                         ),
                                         with: style
-                                    ),
-                                    with: style
-                                )
-                                #else
-                                EmptyView()
-                                #endif
-                            } else {
-                                self.decorate(
-                                    RemoteImage(
-                                        url: style.url,
-                                        lowResUrl: style.lowResUrl,
-                                        darkUrl: style.darkUrl,
-                                        darkLowResUrl: style.darkLowResUrl,
-                                        // The expectedSize is important
-                                        // It renders a clear image if actual image is being fetched
-                                        expectedSize: expectedSize
-                                    ) { (image, size) in
-                                        self.renderImage(
-                                            image,
-                                            size,
-                                            maxWidth: self.calculateMaxWidth(
-                                                parentWidth: effectiveSize?.width ?? 0,
-                                                style: style
-                                            ),
-                                            with: style
-                                        )
-                                    },
-                                    with: style
-                                )
-                            }
+                                    )
+                                },
+                                with: style
+                            )
                         }
-                        .onSizeChange { newSize in
-                            let effectiveCurrentSize = self.size ?? self.viewModel.cachedMeasuredSize
-                            guard effectiveCurrentSize != newSize else {
-                                return
-                            }
+                    }
+                    .onSizeChange { newSize in
+                        let effectiveCurrentSize = self.size ?? self.viewModel.cachedMeasuredSize
+                        guard effectiveCurrentSize != newSize else {
+                            return
+                        }
 
-                            self.viewModel.cachedMeasuredSize = newSize
-                            self.size = newSize
-                        }
+                        self.viewModel.cachedMeasuredSize = newSize
+                        self.size = newSize
                     }
                 }
             }

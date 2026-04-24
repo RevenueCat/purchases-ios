@@ -276,7 +276,8 @@ private struct CarouselView<Content: View>: View {
                             pageIndex: pageIndex,
                             originalCount: originalCount
                         ))
-                        .environment(\.forceSizeCalculation, !isNextInEitherDirection)
+                        // 
+                        .environment(\.requestSizeCalculation, !isNextInEitherDirection)
                         .frame(width: cardWidth)
                         // Clip each page so tall/scrollable stack content cannot paint outside the
                         // card width (avoids transient gray overlays from neighbor compositing).
