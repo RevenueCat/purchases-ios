@@ -25,6 +25,8 @@ internal extension Tracking {
         let tracker: Tracker
 
         let fullScreenDelegateStore = FullScreenDelegateStore()
+        let bannerDelegateStore = BannerDelegateStore()
+        let bannerPaidEventHandlerStore = BannerPaidEventHandlerStore()
         let nativeDelegateStore = NativeDelegateStore()
         let nativeAdLoaderProxyStore = NativeAdLoaderProxyStore()
 

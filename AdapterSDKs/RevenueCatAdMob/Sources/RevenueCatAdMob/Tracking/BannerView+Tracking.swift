@@ -8,14 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-import ObjectiveC.runtime
 @_spi(Experimental) import RevenueCat
-
-private enum BannerAssociatedKeys {
-    static var trackingDelegate: UInt8 = 0
-    static var originalPaidHandler: UInt8 = 0
-    static var didInstallPaidHandlerWrapper: UInt8 = 0
-}
 
 @available(iOS 15.0, *)
 internal extension GoogleMobileAds.BannerView {
@@ -35,12 +28,7 @@ internal extension GoogleMobileAds.BannerView {
             delegate: effectiveDelegate,
             placement: placement
         )
-        objc_setAssociatedObject(
-            self,
-            &BannerAssociatedKeys.trackingDelegate,
-            trackingDelegate,
-            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
-        )
+        adapter.bannerDelegateStore.retain(trackingDelegate, for: self)
         self.delegate = trackingDelegate
 
         installPaidEventHandlerWrapper(
@@ -57,18 +45,11 @@ internal extension GoogleMobileAds.BannerView {
         placement: String?,
         adapter: Tracking.Adapter
     ) {
-        let storedPaidHandler = objc_getAssociatedObject(self, &BannerAssociatedKeys.originalPaidHandler)
-            as? ((GoogleMobileAds.AdValue) -> Void)
-        let didInstallWrapper = (objc_getAssociatedObject(self, &BannerAssociatedKeys.didInstallPaidHandlerWrapper)
-            as? NSNumber)?.boolValue ?? false
+        let storedPaidHandler = adapter.bannerPaidEventHandlerStore.retrieveOriginalPaidHandler(for: self)
+        let didInstallWrapper = adapter.bannerPaidEventHandlerStore.didInstallWrapper(for: self)
         let previousPaidHandler = didInstallWrapper ? storedPaidHandler : (storedPaidHandler ?? self.paidEventHandler)
         let effectivePaidHandler = paidEventHandler ?? previousPaidHandler
-        objc_setAssociatedObject(
-            self,
-            &BannerAssociatedKeys.originalPaidHandler,
-            effectivePaidHandler,
-            .OBJC_ASSOCIATION_COPY_NONATOMIC
-        )
+        adapter.bannerPaidEventHandlerStore.retainOriginalPaidHandler(effectivePaidHandler, for: self)
 
         let capturedUserHandler = effectivePaidHandler
         self.paidEventHandler = { [weak self] adValue in
@@ -81,20 +62,14 @@ internal extension GoogleMobileAds.BannerView {
                     responseInfo: responseInfo,
                     adValue: adValue
                 )
-                let storedPaidHandler = objc_getAssociatedObject(self, &BannerAssociatedKeys.originalPaidHandler)
-                    as? ((GoogleMobileAds.AdValue) -> Void)
+                let storedPaidHandler = adapter.bannerPaidEventHandlerStore.retrieveOriginalPaidHandler(for: self)
                 storedPaidHandler?(adValue)
             } else {
                 // Banner was deallocated; still invoke user's handler (e.g. ad SDK invoked callback after view gone).
                 capturedUserHandler?(adValue)
             }
         }
-        objc_setAssociatedObject(
-            self,
-            &BannerAssociatedKeys.didInstallPaidHandlerWrapper,
-            NSNumber(value: true),
-            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
-        )
+        adapter.bannerPaidEventHandlerStore.setDidInstallWrapper(for: self)
     }
 
 }
