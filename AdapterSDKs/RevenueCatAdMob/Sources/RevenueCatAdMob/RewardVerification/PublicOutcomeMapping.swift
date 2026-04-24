@@ -12,7 +12,7 @@ import Foundation
 @available(iOS 15.0, *)
 internal extension RewardVerification {
 
-    static func mapValidatedReward(_ reward: VerifiedReward) -> ValidatedReward {
+    static func mapVerifiedReward(_ reward: RevenueCat.VerifiedReward) -> RevenueCatAdMob.VerifiedReward {
         switch reward {
         case .virtualCurrency(let item):
             if item.amount > 0 {
@@ -29,7 +29,7 @@ internal extension RewardVerification {
     static func mapPublicOutcome(_ outcome: Outcome) -> RewardVerificationOutcome {
         switch outcome {
         case .verified(let reward):
-            return .validated(self.mapValidatedReward(reward))
+            return .verified(self.mapVerifiedReward(reward))
         case .failed:
             return .failed
         }

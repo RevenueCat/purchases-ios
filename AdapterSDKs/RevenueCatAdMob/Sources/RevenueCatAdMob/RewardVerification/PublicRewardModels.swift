@@ -9,7 +9,7 @@ import Foundation
 #if os(iOS) && canImport(GoogleMobileAds)
 
 /// Reward payload after a successful reward verification (public, non-`enum` surface).
-@_spi(Experimental) public struct ValidatedReward: Sendable, Equatable {
+@_spi(Experimental) public struct VerifiedReward: Sendable, Equatable {
 
     private enum Storage: Equatable, Sendable {
         case virtualCurrency(code: String, amount: Int)
@@ -24,16 +24,16 @@ import Foundation
     }
 
     /// Virtual currency line item. `amount` must be greater than zero.
-    public static func virtualCurrency(code: String, amount: Int) -> ValidatedReward {
+    public static func virtualCurrency(code: String, amount: Int) -> VerifiedReward {
         precondition(amount > 0, "virtualCurrency amount must be greater than zero")
-        return ValidatedReward(storage: .virtualCurrency(code: code, amount: amount))
+        return VerifiedReward(storage: .virtualCurrency(code: code, amount: amount))
     }
 
     /// Verified reward shape is not modeled in this SDK version.
-    public static let unknown = ValidatedReward(storage: .unknown)
+    public static let unknown = VerifiedReward(storage: .unknown)
 
     /// Verification succeeded with no virtual-currency reward.
-    public static let none = ValidatedReward(storage: .none)
+    public static let none = VerifiedReward(storage: .none)
 
     /// Whether this value represents ``virtualCurrency(code:amount:)``.
     public var isVirtualCurrency: Bool {
@@ -70,7 +70,7 @@ import Foundation
 @_spi(Experimental) public struct RewardVerificationOutcome: Sendable, Equatable {
 
     private enum Storage: Equatable, Sendable {
-        case validated(ValidatedReward)
+        case verified(VerifiedReward)
         case failed
     }
 
@@ -81,22 +81,22 @@ import Foundation
     }
 
     /// Server verification succeeded for this ad’s transaction.
-    public static func validated(_ reward: ValidatedReward) -> RewardVerificationOutcome {
-        RewardVerificationOutcome(storage: .validated(reward))
+    public static func verified(_ reward: VerifiedReward) -> RewardVerificationOutcome {
+        RewardVerificationOutcome(storage: .verified(reward))
     }
 
     /// Verification did not complete successfully (rejected, exhausted polling, error, etc.).
     public static let failed = RewardVerificationOutcome(storage: .failed)
 
     /// Non-`nil` when verification succeeded.
-    public var validatedReward: ValidatedReward? {
-        guard case .validated(let reward) = self.storage else { return nil }
+    public var verifiedReward: VerifiedReward? {
+        guard case .verified(let reward) = self.storage else { return nil }
         return reward
     }
 
-    /// Whether this outcome is ``validated(_:)``.
-    public var isValidated: Bool {
-        self.validatedReward != nil
+    /// Whether this outcome is ``verified(_:)``.
+    public var isVerified: Bool {
+        self.verifiedReward != nil
     }
 
     /// Whether this outcome is ``failed``.
