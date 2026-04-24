@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
 
@@ -68,7 +68,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         }
 
         let response = try XCTUnwrap(result?.value)
-        expect(response.status) == .verified
+        expect(response.status)
+            == .verified(.virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 10)))
     }
 
     func testGetRewardVerificationStatusPending() throws {
@@ -333,7 +334,14 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
 
 private extension BackendGetRewardVerificationStatusTests {
 
-    static let verifiedResponse: [String: Any] = ["status": "verified"]
+    static let verifiedResponse: [String: Any] = [
+        "status": "verified",
+        "reward": [
+            "type": "virtual_currency",
+            "code": "coins",
+            "amount": 10
+        ]
+    ]
     static let pendingResponse: [String: Any] = ["status": "pending"]
     static let failedResponse: [String: Any] = ["status": "failed"]
 

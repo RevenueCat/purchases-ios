@@ -84,7 +84,9 @@ class BasePurchasesTests: TestCase {
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
                                           dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
-        self.backend = MockBackend(backendConfig: config, attributionFetcher: self.attributionFetcher)
+        self.backend = MockBackend(backendConfig: config,
+                                   attributionFetcher: self.attributionFetcher,
+                                   mockAdsAPI: MockAdsAPI())
         self.subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
@@ -472,6 +474,34 @@ extension BasePurchasesTests {
 
         /// Tracks the order in which backend methods are called.
         var callOrder: [MockBackendOperation] = []
+
+        convenience init(backendConfig: BackendConfiguration,
+                         attributionFetcher: AttributionFetcher,
+                         mockAdsAPI: MockAdsAPI) {
+            let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+            let identity = IdentityAPI(backendConfig: backendConfig)
+            let offerings = OfferingsAPI(backendConfig: backendConfig)
+            let webBilling = WebBillingAPI(backendConfig: backendConfig)
+            let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
+            let internalAPI = InternalAPI(backendConfig: backendConfig)
+            let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
+            let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
+            let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
+            let workflowsAPI = WorkflowsAPI(backendConfig: backendConfig)
+
+            self.init(backendConfig: backendConfig,
+                      customerAPI: customer,
+                      identityAPI: identity,
+                      offeringsAPI: offerings,
+                      webBillingAPI: webBilling,
+                      offlineEntitlements: offlineEntitlements,
+                      internalAPI: internalAPI,
+                      customerCenterConfig: customerCenterConfig,
+                      redeemWebPurchaseAPI: redeemWebPurchaseAPI,
+                      virtualCurrenciesAPI: virtualCurrenciesAPI,
+                      workflowsAPI: workflowsAPI,
+                      adsAPI: mockAdsAPI)
+        }
 
         var userID: String?
         var originalApplicationVersion: String?
