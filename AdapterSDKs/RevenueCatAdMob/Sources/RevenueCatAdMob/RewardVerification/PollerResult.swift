@@ -11,9 +11,8 @@ import Foundation
 @available(iOS 15.0, *)
 internal extension RewardVerification {
 
-    /// Terminal result of a single `Poller.run`. Cancellation is encoded explicitly so callers
-    /// don't need a broad catch, and the type system enforces that no other error type can
-    /// escape the polling layer.
+    /// Terminal result of a single `Poller.run`: either an `Outcome` (verdict or budget
+    /// exhaustion) or `.cancelled` (the underlying task was cancelled).
     enum PollerResult: Equatable, Sendable {
         case outcome(Outcome)
         case cancelled

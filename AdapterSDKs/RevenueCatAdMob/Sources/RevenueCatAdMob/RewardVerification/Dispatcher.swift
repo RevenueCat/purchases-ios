@@ -17,13 +17,11 @@ internal extension RewardVerification {
     /// one-shot token intact so a later dispatch on the same `State` can still fire.
     enum Dispatcher {
 
-        /// Drives the Poller and delivers exactly one `Outcome` on the main actor — unless the
-        /// task is cancelled before the Poller produces an outcome, in which case nothing is
+        /// Drives the Poller and delivers exactly one `Outcome` on the main actor. If the
+        /// underlying task is cancelled before the Poller produces an outcome, nothing is
         /// delivered and `state.consumeFireToken()` is preserved for any later dispatch.
-        ///
-        /// Once the Poller returns an outcome, delivery is unconditional: there is no
-        /// `Task.checkCancellation()` between the Poller and the `MainActor` hop, because
-        /// at-most-once delivery wins over respecting late cancellation.
+        /// Once the Poller returns an outcome, delivery is unconditional — there is no
+        /// late cancellation check between the Poller and the `MainActor` hop.
         static func run(
             clientTransactionID: String,
             state: State,
@@ -41,14 +39,10 @@ internal extension RewardVerification {
             }
         }
 
-        /// Fire-and-forget wrapper. Returns the spawned `Task`; cancelling that handle propagates
-        /// to the Poller's `Task.sleep` (and to any cooperative cancellation in the poll request),
-        /// causing `run` to return without delivering an outcome.
-        ///
-        /// Cancellation contract: cancelling the returned task before the Poller produces an
-        /// outcome means *no outcome is delivered* and `state.consumeFireToken()` stays unused —
-        /// a later `dispatch` on the same `State` can still fire. Once the Poller has produced
-        /// an outcome, delivery is unconditional.
+        /// Fire-and-forget wrapper. Returns the spawned `Task`; cancelling it propagates to the
+        /// Poller's `Task.sleep` (and to any cooperative cancellation in the poll request),
+        /// causing `run` to return without delivering an outcome and leaving
+        /// `state.consumeFireToken()` unused for any later dispatch.
         ///
         /// Note: `Task { }` is unstructured, so parent-task cancellation does NOT propagate
         /// automatically — callers must retain and `.cancel()` the returned handle to abort.
