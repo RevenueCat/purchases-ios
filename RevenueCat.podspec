@@ -29,6 +29,8 @@ Pod::Spec.new do |s|
     'SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*]' => '$(inherited) COCOAPODS VISION_OS',
   }
 
+  s.dependency 'PurchasesCore', '~> 0.0.1'
+
   s.source_files = 'Sources/**/*.swift'
   s.exclude_files = 'Sources/LocalReceiptParsing/ReceiptParser-only-files/**'
   

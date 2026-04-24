@@ -65,6 +65,18 @@ extension TargetDependency {
         }
     }
 
+    // MARK: - PurchasesCore (Rust core library)
+
+    /// Returns the PurchasesCore dependency based on the dependency mode
+    public static var purchasesCore: TargetDependency {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage, .remoteSwiftPackage:
+            return .package(product: "PurchasesCore", type: .runtime)
+        case .remoteXcodeProject, .localXcodeProject:
+            return .external(name: "PurchasesCore")
+        }
+    }
+
     // MARK: - RevenueCat
 
     /// RevenueCat as a native Xcode SPM package dependency (used for both local and remote SPM modes)

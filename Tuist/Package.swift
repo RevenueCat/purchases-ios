@@ -39,7 +39,10 @@ if !includeTestDependencies {
 
 let package = Package(
     name: "Dependencies",
-    dependencies: includeTestDependencies ? [
+    dependencies: [
+        // Rust core library (always needed)
+        .package(url: "git@github.com:RevenueCat/purchases-core.git", branch: "rust")
+    ] + (includeTestDependencies ? [
         .package(
             url: "https://github.com/quick/nimble",
             exact: "13.7.1"
@@ -61,5 +64,5 @@ let package = Package(
             url: "https://github.com/AliSoftware/OHHTTPStubs",
             revision: "9.1.0"
         )
-    ] : []
+    ] : [])
 )

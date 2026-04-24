@@ -19,6 +19,7 @@
 // swiftlint:disable missing_docs
 
 import Foundation
+import PurchasesCore
 import StoreKit
 
 // MARK: Block definitions
@@ -1961,6 +1962,35 @@ public extension Purchases {
         preferredLocale: String?,
         automaticDeviceIdentifierCollectionEnabled: Bool = true
     ) -> Purchases {
+        // Call Rust add() function to verify integration
+        let rustResult = PurchasesCore.add(left: 2, right: 3)
+        Logger.debug(Strings.configure.rustAddResult(rustResult))
+        Task {
+            let successResult = try await PurchasesCore.performOperation(mode: OperationMode.success)
+            do {
+                let errorResult = try await PurchasesCore.performOperation(mode: OperationMode.error)
+            } catch {
+                let errorResult = "\(error)"
+            }
+            do {
+                let timeoutResult = try await PurchasesCore.performOperation(mode: OperationMode.timeout)
+            } catch {
+                let timeoutResult = "\(error)"
+                print(timeoutResult)
+            }
+
+            // PoC: 2-way communication — Rust calls back into Swift via HttpClient
+            do {
+                let result = try await PurchasesCore.fetchWithNative(
+                    httpClient: NativeHttpClient(),
+                    url: "https://httpbin.org/get"
+                )
+                print("[iOS] Rust round-trip result: \(result)")
+            } catch {
+                print("[iOS] Rust round-trip error: \(error)")
+            }
+        }
+
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
                   appUserID: appUserID,
