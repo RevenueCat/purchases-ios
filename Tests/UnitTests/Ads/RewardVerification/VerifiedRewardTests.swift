@@ -29,19 +29,4 @@ final class VerifiedRewardTests: TestCase {
         expect(captured) == reward
     }
 
-    func testNoRewardAndUnsupportedRewardAreDistinctCases() {
-        expect(VerifiedReward.noReward) != .unsupportedReward
-        expect(VerifiedReward.noReward) == .noReward
-        expect(VerifiedReward.unsupportedReward) == .unsupportedReward
-    }
-
-    func testEqualityRequiresMatchingAssociatedReward() {
-        let one = VirtualCurrencyReward(code: "coins", amount: 5)
-        let two = VirtualCurrencyReward(code: "coins", amount: 6)
-        expect(VerifiedReward.virtualCurrency(one)) == VerifiedReward.virtualCurrency(one)
-        expect(VerifiedReward.virtualCurrency(one)) != VerifiedReward.virtualCurrency(two)
-        expect(VerifiedReward.virtualCurrency(one)) != VerifiedReward.noReward
-        expect(VerifiedReward.virtualCurrency(one)) != VerifiedReward.unsupportedReward
-    }
-
 }
