@@ -173,7 +173,7 @@ final class APISurfaceTests: AdapterTestCase {
                 from: viewController,
                 placement: nil,
                 rewardVerificationStarted: nil,
-                rewardVerificationOutcome: nil
+                rewardVerificationResult: nil
             )
         }
         let rewardedInterstitialPresent: @MainActor (
@@ -184,7 +184,7 @@ final class APISurfaceTests: AdapterTestCase {
                 from: viewController,
                 placement: nil,
                 rewardVerificationStarted: nil,
-                rewardVerificationOutcome: nil
+                rewardVerificationResult: nil
             )
         }
 

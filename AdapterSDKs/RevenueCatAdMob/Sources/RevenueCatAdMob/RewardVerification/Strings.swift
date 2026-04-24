@@ -19,8 +19,8 @@ internal extension RewardVerification {
             "[String: String] payload — JSONSerialization should never fail on this input. Error: \(error)"
         }
 
-        static let rewardVerificationOutcomeRequiresEnable: String =
-            "Passing a reward verification outcome callback requires calling enableRewardVerification() " +
+        static let rewardVerificationResultRequiresEnable: String =
+            "Passing a reward verification result callback requires calling enableRewardVerification() " +
             "on this ad after load (with the RevenueCat SDK configured)."
     }
 }

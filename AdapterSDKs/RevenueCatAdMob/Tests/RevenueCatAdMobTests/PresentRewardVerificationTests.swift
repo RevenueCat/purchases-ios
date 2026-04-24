@@ -20,7 +20,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         RewardVerification.Present.present(
             capableAd: fakeAd,
             rewardVerificationStarted: { startedCount += 1 },
-            rewardVerificationOutcome: nil,
+            rewardVerificationResult: nil,
             performPresent: performPresent.callable
         )
 
@@ -41,15 +41,15 @@ final class PresentRewardVerificationTests: AdapterTestCase {
             maxAttempts: 5
         )
 
-        let expectation = self.expectation(description: "public outcome")
-        var receivedOutcome: RewardVerificationOutcome?
+        let expectation = self.expectation(description: "verification result")
+        var receivedResult: RewardVerificationResult?
         let performPresent = PerformPresentSpy()
 
         RewardVerification.Present.present(
             capableAd: fakeAd,
             rewardVerificationStarted: nil,
-            rewardVerificationOutcome: { outcome in
-                receivedOutcome = outcome
+            rewardVerificationResult: { result in
+                receivedResult = result
                 expectation.fulfill()
             },
             poller: poller,
@@ -59,10 +59,10 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         performPresent.invokeCapturedHandler()
         self.wait(for: [expectation], timeout: 2.0)
 
-        let outcome = try XCTUnwrap(receivedOutcome)
-        XCTAssertTrue(outcome.isVerified)
-        XCTAssertEqual(outcome.verifiedReward?.virtualCurrencyCode, "coins")
-        XCTAssertEqual(outcome.verifiedReward?.virtualCurrencyAmount, 4)
+        let result = try XCTUnwrap(receivedResult)
+        XCTAssertTrue(result.isVerified)
+        XCTAssertEqual(result.verifiedReward?.virtualCurrencyCode, "coins")
+        XCTAssertEqual(result.verifiedReward?.virtualCurrencyAmount, 4)
     }
 
     func testPresentWithStateAndOutcomeDeliversFailedWhenPollerFails() {
@@ -76,15 +76,15 @@ final class PresentRewardVerificationTests: AdapterTestCase {
             maxAttempts: 5
         )
 
-        let expectation = self.expectation(description: "failed outcome")
-        var receivedOutcome: RewardVerificationOutcome?
+        let expectation = self.expectation(description: "failed result")
+        var receivedResult: RewardVerificationResult?
         let performPresent = PerformPresentSpy()
 
         RewardVerification.Present.present(
             capableAd: fakeAd,
             rewardVerificationStarted: nil,
-            rewardVerificationOutcome: { outcome in
-                receivedOutcome = outcome
+            rewardVerificationResult: { result in
+                receivedResult = result
                 expectation.fulfill()
             },
             poller: poller,
@@ -94,8 +94,8 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         performPresent.invokeCapturedHandler()
         self.wait(for: [expectation], timeout: 2.0)
 
-        let outcome = try XCTUnwrap(receivedOutcome)
-        XCTAssertTrue(outcome.isFailed)
+        let result = try XCTUnwrap(receivedResult)
+        XCTAssertTrue(result.isFailed)
     }
 }
 
