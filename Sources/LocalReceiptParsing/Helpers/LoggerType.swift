@@ -43,9 +43,11 @@ protocol LoggerType {
 }
 
 /// Contains a message that can be output by ``os.Logger``.
-protocol LogMessage: CustomStringConvertible {
+@_spi(Internal) public protocol LogMessage: CustomStringConvertible {
 
+    /// Human-readable text that will be logged.
     var description: String { get }
+    /// Logging category used by the underlying logger backend.
     var category: String { get }
 
 }
