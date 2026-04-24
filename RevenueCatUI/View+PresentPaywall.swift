@@ -521,7 +521,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                     performRestore: myAppPurchaseLogic?.performRestore)
         self._purchaseHandler = .init(wrappedValue: handler)
-        self._promoOfferCache = .init(wrappedValue: PaywallPromoOfferCache(
+        self._promoOfferCache = .init(initialValue: PaywallPromoOfferCache(
             subscriptionHistoryTracker: handler.subscriptionHistoryTracker
         ))
     }
@@ -529,7 +529,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     @StateObject
     private var purchaseHandler: PurchaseHandler
 
-    @StateObject
+    @State
     private var promoOfferCache: PaywallPromoOfferCache
 
     @State
@@ -669,7 +669,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .task {
-            guard let offering = await self.purchaseHandler.resolveOffering(for: self.content) else { return }
+            guard let offering = await self.content.resolveOffering() else { return }
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
         }
     }
@@ -829,7 +829,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     @StateObject
     private var purchaseHandler: PurchaseHandler
 
-    @StateObject
+    @State
     private var promoOfferCache: PaywallPromoOfferCache
 
     init(
@@ -860,7 +860,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         let handler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                               performRestore: myAppPurchaseLogic?.performRestore)
         self._purchaseHandler = .init(wrappedValue: handler)
-        self._promoOfferCache = .init(wrappedValue: PaywallPromoOfferCache(
+        self._promoOfferCache = .init(initialValue: PaywallPromoOfferCache(
             subscriptionHistoryTracker: handler.subscriptionHistoryTracker
         ))
     }
