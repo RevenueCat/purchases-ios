@@ -21,7 +21,7 @@ internal extension RewardVerification {
         static func present(
             capableAd: some CapableAd,
             rewardVerificationStarted: (() -> Void)?,
-            rewardVerificationResult: ((RewardVerificationResult) -> Void)?,
+            rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)?,
             poller: Poller? = nil,
             performPresent: @MainActor (@escaping () -> Void) -> Void
         ) {
