@@ -669,7 +669,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .task {
-            guard let offering = await self.content.resolveOffering() else { return }
+            guard let offering = await self.purchaseHandler.resolveOffering(for: self.content) else { return }
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
         }
     }
