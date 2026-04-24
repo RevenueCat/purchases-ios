@@ -85,38 +85,43 @@ extension Logger {
 /// ```
 @_spi(Internal) extension Logger: LoggerType {
 
-    func verbose(_ message: LogMessage,
-                 fileName: String? = #fileID,
-                 functionName: String? = #function,
-                 line: UInt = #line) {
+    /// Logs a verbose message.
+    public func verbose(_ message: LogMessage,
+                        fileName: String? = #fileID,
+                        functionName: String? = #function,
+                        line: UInt = #line) {
         Self.verbose(message, fileName: fileName, functionName: functionName, line: line)
     }
 
-    func debug(_ message: LogMessage,
-               fileName: String? = #fileID,
-               functionName: String? = #function,
-               line: UInt = #line) {
+    /// Logs a debug message.
+    public func debug(_ message: LogMessage,
+                      fileName: String? = #fileID,
+                      functionName: String? = #function,
+                      line: UInt = #line) {
         Self.debug(message, fileName: fileName, functionName: functionName, line: line)
     }
 
-    func info(_ message: LogMessage,
-              fileName: String? = #fileID,
-              functionName: String? = #function,
-              line: UInt = #line) {
+    /// Logs an info message.
+    public func info(_ message: LogMessage,
+                     fileName: String? = #fileID,
+                     functionName: String? = #function,
+                     line: UInt = #line) {
         Self.info(message, fileName: fileName, functionName: functionName, line: line)
     }
 
-    func warn(_ message: LogMessage,
-              fileName: String? = #fileID,
-              functionName: String? = #function,
-              line: UInt = #line) {
+    /// Logs a warning message.
+    public func warn(_ message: LogMessage,
+                     fileName: String? = #fileID,
+                     functionName: String? = #function,
+                     line: UInt = #line) {
         Self.warn(message, fileName: fileName, functionName: functionName, line: line)
     }
 
-    func error(_ message: LogMessage,
-               fileName: String = #fileID,
-               functionName: String = #function,
-               line: UInt = #line) {
+    /// Logs an error message.
+    public func error(_ message: LogMessage,
+                      fileName: String = #fileID,
+                      functionName: String = #function,
+                      line: UInt = #line) {
         Self.error(message, fileName: fileName, functionName: functionName, line: line)
     }
 
