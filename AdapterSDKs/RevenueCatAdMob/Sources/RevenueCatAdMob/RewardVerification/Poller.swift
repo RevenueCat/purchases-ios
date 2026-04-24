@@ -35,14 +35,18 @@ internal extension RewardVerification {
         let sample: @Sendable () -> TimeInterval
     }
 
-    /// Bounded polling loop. Surfaces only `Outcome.verified` (when the backend confirms) or
-    /// `Outcome.failed` (when the backend rejects, or when the attempt budget is exhausted —
-    /// whether on `pending`/`unknown` or on repeated transient errors). Cancellation is the only
-    /// thing that escapes via `throws`; everything else is absorbed inside the budget.
+    /// Bounded polling loop. Surfaces either `PollerResult.outcome(...)` (a terminal verdict
+    /// from the backend, or `.failed` when the attempt budget is exhausted on repeated
+    /// `pending`/`unknown` or transient errors) or `PollerResult.cancelled` (the caller asked
+    /// to stop).
+    ///
+    /// `run` is intentionally non-throwing: cancellation is encoded in the return type so
+    /// callers don't need a broad catch, and the type system enforces that no other error
+    /// type can escape this layer.
     ///
     /// Transient errors (network blips, sleeper failures) are treated as non-answers, exactly
-    /// like `pending`: log, sleep + jitter, retry — count against the budget. This mirrors how
-    /// real mobile clients actually behave (spotty connections, brief 5xx, etc.) and keeps the
+    /// like `pending`: sleep + jitter, retry — count against the budget. This mirrors how real
+    /// mobile clients actually behave (spotty connections, brief 5xx, etc.) and keeps the
     /// consumer-facing outcome stable: either we got a verdict, or we didn't.
     struct Poller: Sendable {
 
@@ -74,13 +78,13 @@ internal extension RewardVerification {
             )
         }
 
-        func run(clientTransactionID: String) async throws -> Outcome {
+        func run(clientTransactionID: String) async -> PollerResult {
             for attempt in 0..<self.maxAttempts {
                 if attempt > 0 {
                     do {
                         try await self.sleeper.sleep(seconds: self.jitter.sample())
                     } catch is CancellationError {
-                        throw CancellationError()
+                        return .cancelled
                     } catch {
                         // Sleeper failed transiently — treat like `pending` and try the next
                         // attempt anyway. In production `TaskSleeper` only throws `CancellationError`,
@@ -95,28 +99,29 @@ internal extension RewardVerification {
                     let status = try await self.statusPoller.pollStatus(clientTransactionID: clientTransactionID)
                     switch status {
                     case .verified(let reward):
-                        return .verified(reward)
+                        return .outcome(.verified(reward))
                     case .failed:
-                        return .failed
+                        return .outcome(.failed)
                     case .pending, .unknown:
                         // Treat `unknown` like `pending`; persistent unknowns surface as `.failed`
                         // via the bounded retry budget.
                         continue
                     }
                 } catch is CancellationError {
-                    throw CancellationError()
+                    return .cancelled
                 } catch {
                     // Transient throw (URLError, transient backend 5xx, etc.) — treat like
-                    // `pending`. The next iteration will sleep + retry; if every attempt blips,
-                    // we exhaust the budget and surface `.failed`. Mobile clients are spotty by
-                    // nature; one blip is not a verdict.
+                    // `pending`. This broad catch IS the product policy: spotty mobile
+                    // connections are not a verdict; retry within budget. Any unknown throw
+                    // type from the SDK polling endpoint should also be absorbed here rather
+                    // than silently bypassing the retry loop.
                     // Pending: warn-log when adapter logging is wired in (transient SSV poll
                     // error on attempt \(attempt): \(error), retrying).
                     continue
                 }
             }
 
-            return .failed
+            return .outcome(.failed)
         }
     }
 

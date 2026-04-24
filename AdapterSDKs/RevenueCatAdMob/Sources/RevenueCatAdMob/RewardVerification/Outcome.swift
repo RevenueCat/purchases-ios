@@ -20,7 +20,7 @@ internal extension RewardVerification {
     /// the ad has already been shown and the verdict is final. Operator-relevant detail about
     /// *why* `.failed` happened lives in logs at the point of detection inside the Poller, not
     /// on this surface.
-    enum Outcome: @unchecked Sendable {
+    enum Outcome: Equatable, @unchecked Sendable {
         case verified(VerifiedReward)
 
         /// The SSV pipeline did not produce a verified reward. Reasons folded into this case:
