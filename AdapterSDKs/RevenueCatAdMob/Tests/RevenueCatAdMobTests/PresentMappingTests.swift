@@ -2,7 +2,7 @@ import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
 @_spi(Internal) import RevenueCat
-@testable import RevenueCatAdMob
+@_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
 final class PresentMappingTests: AdapterTestCase {
