@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 5/1/23.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 final class MainThreadMonitor {
