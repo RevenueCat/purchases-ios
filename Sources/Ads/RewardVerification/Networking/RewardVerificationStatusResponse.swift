@@ -16,16 +16,10 @@ import Foundation
 struct RewardVerificationStatusResponse: Equatable {
 
     let status: Status
-    let verifiedReward: VerifiedReward?
 
-    init(status: Status, verifiedReward: VerifiedReward? = nil) {
-        self.status = status
-        self.verifiedReward = verifiedReward
-    }
+    enum Status: Equatable {
 
-    enum Status: String, Codable, Equatable {
-
-        case verified
+        case verified(VerifiedReward)
         case pending
         case failed
         case unknown
@@ -53,17 +47,23 @@ extension RewardVerificationStatusResponse: Decodable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let rawStatus = try container.decode(String.self, forKey: .status)
-        if let known = Status(rawValue: rawStatus), known != .unknown {
-            self.status = known
-        } else {
-            Logger.warn(Strings.backendError.unknown_reward_verification_status(status: rawStatus))
-            self.status = .unknown
-        }
+        self.status = Self.decodeStatus(rawStatus, from: container)
+    }
 
-        if self.status == .verified {
-            self.verifiedReward = Self.decodeVerifiedReward(from: container)
-        } else {
-            self.verifiedReward = nil
+    private static func decodeStatus(
+        _ rawStatus: String,
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) -> Status {
+        switch rawStatus {
+        case "verified":
+            return .verified(Self.decodeVerifiedReward(from: container))
+        case "pending":
+            return .pending
+        case "failed":
+            return .failed
+        default:
+            Logger.warn(Strings.backendError.unknown_reward_verification_status(status: rawStatus))
+            return .unknown
         }
     }
 

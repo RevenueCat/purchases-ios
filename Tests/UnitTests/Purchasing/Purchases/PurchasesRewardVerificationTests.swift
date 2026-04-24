@@ -47,7 +47,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
     func testPollRewardVerificationStatusMapsVerifiedStatusWithVirtualCurrencyReward() async throws {
         let reward = VirtualCurrencyReward(code: "coins", amount: 10)
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
-            .init(status: .verified, verifiedReward: .virtualCurrency(reward))
+            .init(status: .verified(.virtualCurrency(reward)))
         )
 
         let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
@@ -57,7 +57,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
 
     func testPollRewardVerificationStatusMapsVerifiedStatusWithNoReward() async throws {
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
-            .init(status: .verified, verifiedReward: .noReward)
+            .init(status: .verified(.noReward))
         )
 
         let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
@@ -67,22 +67,12 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
 
     func testPollRewardVerificationStatusMapsVerifiedStatusWithUnsupportedReward() async throws {
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
-            .init(status: .verified, verifiedReward: .unsupportedReward)
+            .init(status: .verified(.unsupportedReward))
         )
 
         let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
 
         expect(status) == .verified(.unsupportedReward)
-    }
-
-    func testPollRewardVerificationStatusVerifiedWithoutRewardFallsBackToNoReward() async throws {
-        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
-            .init(status: .verified, verifiedReward: nil)
-        )
-
-        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
-
-        expect(status) == .verified(.noReward)
     }
 
     func testPollRewardVerificationStatusMapsPendingStatus() async throws {

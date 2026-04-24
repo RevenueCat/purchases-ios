@@ -1604,8 +1604,8 @@ extension Purchases {
         }
 
         switch response.status {
-        case .verified:
-            return .verified(response.verifiedReward ?? .noReward)
+        case let .verified(reward):
+            return .verified(reward)
         case .pending:
             return .pending
         case .failed:

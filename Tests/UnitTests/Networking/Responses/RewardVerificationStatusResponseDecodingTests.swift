@@ -24,7 +24,7 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
 
     func testDecodesVerifiedStatus() throws {
         let response = try Self.decode(["status": "verified"])
-        expect(response.status) == .verified
+        expect(response.status) == .verified(.noReward)
     }
 
     func testDecodesPendingStatus() throws {
@@ -79,8 +79,7 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
                 "amount": 10
             ]
         ])
-        expect(response.status) == .verified
-        expect(response.verifiedReward) == .virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 10))
+        expect(response.status) == .verified(.virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 10)))
     }
 
     func testDecodesVerifiedWithVirtualCurrencyRewardWithFractionalAmountAsUnsupportedReward() throws {
@@ -94,8 +93,7 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
                 "amount": 0.5
             ]
         ])
-        expect(response.status) == .verified
-        expect(response.verifiedReward) == .unsupportedReward
+        expect(response.status) == .verified(.unsupportedReward)
         expect(self.logger.messages.map(\.message)).to(
             containElementSatisfying {
                 $0.contains(
@@ -109,22 +107,19 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
 
     func testDecodesVerifiedWithMissingRewardFieldAsNoReward() throws {
         let response = try Self.decode(["status": "verified"])
-        expect(response.status) == .verified
-        expect(response.verifiedReward) == .noReward
+        expect(response.status) == .verified(.noReward)
     }
 
     func testDecodesVerifiedWithNullRewardAsNoReward() throws {
         let json = #"{"status":"verified","reward":null}"#
         let response = try RewardVerificationStatusResponse.create(with: Data(json.utf8))
-        expect(response.status) == .verified
-        expect(response.verifiedReward) == .noReward
+        expect(response.status) == .verified(.noReward)
     }
 
     func testDecodesVerifiedWithNonObjectRewardAsUnsupportedReward() throws {
         let json = #"{"status":"verified","reward":"not_an_object"}"#
         let response = try RewardVerificationStatusResponse.create(with: Data(json.utf8))
-        expect(response.status) == .verified
-        expect(response.verifiedReward) == .unsupportedReward
+        expect(response.status) == .verified(.unsupportedReward)
         expect(self.logger.messages.map(\.message)).to(
             containElementSatisfying {
                 $0.contains(
@@ -145,8 +140,7 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
                 "sku": "tshirt"
             ]
         ])
-        expect(response.status) == .verified
-        expect(response.verifiedReward) == .unsupportedReward
+        expect(response.status) == .verified(.unsupportedReward)
         expect(self.logger.messages.map(\.message)).to(
             containElementSatisfying {
                 $0.contains(
@@ -166,8 +160,7 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
                 "code": "coins"
             ]
         ])
-        expect(response.status) == .verified
-        expect(response.verifiedReward) == .unsupportedReward
+        expect(response.status) == .verified(.unsupportedReward)
         expect(self.logger.messages.map(\.message)).to(
             containElementSatisfying {
                 $0.contains(
@@ -179,7 +172,7 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
         )
     }
 
-    func testNonVerifiedStatusDoesNotCarryReward() throws {
+    func testNonVerifiedStatusIgnoresRewardPayload() throws {
         let response = try Self.decode([
             "status": "pending",
             "reward": [
@@ -189,7 +182,6 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
             ]
         ])
         expect(response.status) == .pending
-        expect(response.verifiedReward).to(beNil())
     }
 
     private static func decode(_ json: [String: Any]) throws -> RewardVerificationStatusResponse {
