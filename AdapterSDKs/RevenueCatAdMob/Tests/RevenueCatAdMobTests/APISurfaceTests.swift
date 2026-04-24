@@ -152,5 +152,16 @@ final class APISurfaceTests: AdapterTestCase {
         XCTAssertNotNil(rewardedInterstitialPresent)
     }
 
+    @MainActor
+    func testEnableRewardVerificationEntryPointsRemainAvailableInSwift() {
+        let rewardedEnable: (GoogleMobileAds.RewardedAd) -> Void = { $0.enableRewardVerification() }
+        let rewardedInterstitialEnable: (GoogleMobileAds.RewardedInterstitialAd) -> Void = {
+            $0.enableRewardVerification()
+        }
+
+        XCTAssertNotNil(rewardedEnable)
+        XCTAssertNotNil(rewardedInterstitialEnable)
+    }
+
 }
 #endif
