@@ -307,6 +307,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let requestFetcher: StoreKitRequestFetcher
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
     fileprivate let systemInfo: SystemInfo
+    private var preferredLocaleHonorsLayoutDirection: Bool
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
     private let healthManager: SDKHealthManager
@@ -333,6 +334,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
+                     preferredLocaleHonorsLayoutDirection: Bool = false,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true
     ) {
         if userDefaults != nil {
@@ -708,7 +710,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   diagnosticsTracker: diagnosticsTracker,
                   virtualCurrencyManager: virtualCurrencyManager,
                   healthManager: healthManager,
-                  transactionMetadataSyncHelper: transactionMetadataSyncHelper
+                  transactionMetadataSyncHelper: transactionMetadataSyncHelper,
+                  preferredLocaleHonorsLayoutDirection: preferredLocaleHonorsLayoutDirection
         )
     }
 
@@ -741,7 +744,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          diagnosticsTracker: DiagnosticsTrackerType?,
          virtualCurrencyManager: VirtualCurrencyManagerType,
          healthManager: SDKHealthManager,
-         transactionMetadataSyncHelper: TransactionMetadataSyncHelper
+         transactionMetadataSyncHelper: TransactionMetadataSyncHelper,
+         preferredLocaleHonorsLayoutDirection: Bool = false
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -793,6 +797,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.virtualCurrencyManager = virtualCurrencyManager
         self.healthManager = healthManager
         self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
+        self.preferredLocaleHonorsLayoutDirection = preferredLocaleHonorsLayoutDirection
 
         super.init()
 
@@ -1627,12 +1632,38 @@ extension Purchases {
     ///
     /// Setting this will affect the display of RevenueCat UI components, such as the Paywalls.
     /// - Important: This method only takes effect after `Purchases` has been configured.
+    @objc(overridePreferredUILocale:)
     public func overridePreferredUILocale(_ locale: String?) {
-        guard locale != self.systemInfo.preferredLocaleOverride else {
+        self.overridePreferredUILocale(locale, honorLayoutDirection: false)
+    }
+
+    /// Overrides the preferred locale for RevenueCatUI components.
+    /// - Parameters:
+    ///   - locale: A locale string in the format "language_region" (e.g., "en_US").
+    ///   - honorLayoutDirection: Whether RevenueCatUI should also derive layout direction from the locale.
+    /// Use `nil` to remove the override and use the default user locale determined by the system.
+    ///
+    /// Setting this will affect the display of RevenueCat UI components, such as the Paywalls.
+    /// - Important: This method only takes effect after `Purchases` has been configured.
+    @objc(overridePreferredUILocale:honorLayoutDirection:)
+    public func overridePreferredUILocale(_ locale: String?, honorLayoutDirection: Bool) {
+        let localeChanged = locale != self.systemInfo.preferredLocaleOverride
+        let layoutDirectionChanged = honorLayoutDirection != self.preferredLocaleHonorsLayoutDirection
+
+        guard localeChanged || layoutDirectionChanged else {
             return
         }
 
-        self.systemInfo.overridePreferredLocale(locale)
+        if localeChanged {
+            self.systemInfo.overridePreferredLocale(locale)
+        }
+
+        self.preferredLocaleHonorsLayoutDirection = honorLayoutDirection
+        NotificationCenter.default.post(name: .preferredUILocaleOverrideChanged, object: nil)
+
+        guard localeChanged else {
+            return
+        }
 
         if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
             // Refetches new offerings with preferred locale
@@ -1692,6 +1723,7 @@ public extension Purchases {
                   showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
                   diagnosticsEnabled: configuration.diagnosticsEnabled,
                   preferredLocale: configuration.preferredLocale,
+                  preferredLocaleHonorsLayoutDirection: configuration.preferredLocaleHonorsLayoutDirection,
                   automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled
         )
     }
@@ -1960,6 +1992,7 @@ public extension Purchases {
         showStoreMessagesAutomatically: Bool,
         diagnosticsEnabled: Bool,
         preferredLocale: String?,
+        preferredLocaleHonorsLayoutDirection: Bool = false,
         automaticDeviceIdentifierCollectionEnabled: Bool = true
     ) -> Purchases {
         return self.setDefaultInstance(
@@ -1977,6 +2010,7 @@ public extension Purchases {
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
                   diagnosticsEnabled: diagnosticsEnabled,
                   preferredLocale: preferredLocale,
+                  preferredLocaleHonorsLayoutDirection: preferredLocaleHonorsLayoutDirection,
                   automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled)
         )
     }
@@ -2184,6 +2218,10 @@ extension Purchases {
     // swiftlint:disable missing_docs
     @_spi(Internal) public var preferredLocaleOverride: String? {
         return self.systemInfo.preferredLocaleOverride
+    }
+
+    @_spi(Internal) public var preferredLocaleOverrideHonorsLayoutDirection: Bool {
+        return self.preferredLocaleHonorsLayoutDirection
     }
 
     // swiftlint:disable missing_docs

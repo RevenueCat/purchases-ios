@@ -54,9 +54,11 @@ final class PurchaseHandler: ObservableObject {
         return purchases.preferredLocales.map(Locale.init)
     }
 
-    var preferredLocaleOverride: Locale? {
-        return purchases.preferredLocaleOverride.map(Locale.init)
-    }
+    @Published
+    private(set) var preferredLocaleOverride: Locale?
+
+    @Published
+    private(set) var preferredLocaleOverrideHonorsLayoutDirection: Bool
 
     /// Whether a purchase is currently in progress
     @Published
@@ -149,12 +151,25 @@ final class PurchaseHandler: ObservableObject {
         self.paywallEventTracker = eventTracker
         self.performPurchase = performPurchase
         self.performRestore = performRestore
+        self.preferredLocaleOverride = purchases.preferredLocaleOverride.map(Locale.init)
+        self.preferredLocaleOverrideHonorsLayoutDirection = purchases.preferredLocaleOverrideHonorsLayoutDirection
 
         purchaseResultPublisher
             .removeDuplicates(by: PurchaseResultComparator.compare)
             .receive(on: RunLoop.main)
             .sink { [weak self] result in
                 self?.setResult(result)
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default
+            .preferredUILocaleOverrideChangedPublisher()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.preferredLocaleOverride = self.purchases.preferredLocaleOverride.map(Locale.init)
+                self.preferredLocaleOverrideHonorsLayoutDirection =
+                    self.purchases.preferredLocaleOverrideHonorsLayoutDirection
             }
             .store(in: &cancellables)
     }
@@ -778,6 +793,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     var preferredLocales: [String] { Locale.preferredLanguages }
 
     var preferredLocaleOverride: String? { nil }
+
+    var preferredLocaleOverrideHonorsLayoutDirection: Bool { false }
 
     var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
         SubscriptionHistoryTracker()

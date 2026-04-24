@@ -28,6 +28,8 @@ import SwiftUI
     var appUserID: String { get }
     var isConfigured: Bool { get }
     var storeFrontCountryCode: String? { get }
+    var preferredLocaleOverride: String? { get }
+    var preferredLocaleOverrideHonorsLayoutDirection: Bool { get }
 
     @Sendable
     func customerInfo() async throws -> CustomerInfo

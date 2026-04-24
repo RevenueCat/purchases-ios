@@ -34,6 +34,7 @@ extension PurchaseHandler {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         preferredLocaleOverride: String? = nil,
+        preferredLocaleOverrideHonorsLayoutDirection: Bool = false,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = Just(
             (
                 transaction: nil,
@@ -46,7 +47,8 @@ extension PurchaseHandler {
     ) -> Self {
         let purchases = MockPurchases(
             purchasesAreCompletedBy: purchasesAreCompletedBy,
-            preferredLocaleOverride: preferredLocaleOverride
+            preferredLocaleOverride: preferredLocaleOverride,
+            preferredLocaleOverrideHonorsLayoutDirection: preferredLocaleOverrideHonorsLayoutDirection
         ) { _, _, _ in
                 return (
                     // No current way to create a mock transaction with RevenueCat's public methods.

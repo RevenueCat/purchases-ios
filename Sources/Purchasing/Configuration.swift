@@ -54,6 +54,7 @@ import Foundation
     let responseVerificationMode: Signing.ResponseVerificationMode
     let showStoreMessagesAutomatically: Bool
     let preferredLocale: String?
+    let preferredLocaleHonorsLayoutDirection: Bool
     let automaticDeviceIdentifierCollectionEnabled: Bool
     internal let diagnosticsEnabled: Bool
 
@@ -71,6 +72,7 @@ import Foundation
         self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
         self.diagnosticsEnabled = builder.diagnosticsEnabled
         self.preferredLocale = builder.preferredLocale
+        self.preferredLocaleHonorsLayoutDirection = builder.preferredLocaleHonorsLayoutDirection
         self.automaticDeviceIdentifierCollectionEnabled = builder.automaticDeviceIdentifierCollectionEnabled
     }
 
@@ -120,6 +122,7 @@ import Foundation
         ///
         /// This locale is included in all requests made by `HTTPClient`.
         private(set) var preferredLocale: String?
+        private(set) var preferredLocaleHonorsLayoutDirection: Bool = false
         private(set) var automaticDeviceIdentifierCollectionEnabled: Bool = true
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -349,7 +352,19 @@ import Foundation
         ///
         /// Defaults to `nil`, which means using the default user locale for RevenueCatUI components.
         public func with(preferredUILocaleOverride: String?) -> Builder {
+            return self.with(preferredUILocaleOverride: preferredUILocaleOverride, honorLayoutDirection: false)
+        }
+
+        /// Overrides the preferred locale for RevenueCatUI components.
+        ///
+        /// - Parameters:
+        ///   - preferredUILocaleOverride: A locale string in the format "language_region" (e.g., "en_US").
+        ///   - honorLayoutDirection: Whether RevenueCatUI should also derive layout direction from the locale.
+        ///
+        /// Defaults to `false`, which preserves existing layout behavior.
+        public func with(preferredUILocaleOverride: String?, honorLayoutDirection: Bool) -> Builder {
             self.preferredLocale = preferredUILocaleOverride
+            self.preferredLocaleHonorsLayoutDirection = honorLayoutDirection
             return self
         }
     }

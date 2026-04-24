@@ -26,6 +26,9 @@ protocol PaywallPurchasesType: Sendable {
     /// property is only useful for reading the override value.
     var preferredLocaleOverride: String? { get }
 
+    /// Whether RevenueCatUI should derive layout direction from the preferred locale override.
+    var preferredLocaleOverrideHonorsLayoutDirection: Bool { get }
+
     /// Returns a tracker of user's subscription history
     var subscriptionHistoryTracker: SubscriptionHistoryTracker { get }
 

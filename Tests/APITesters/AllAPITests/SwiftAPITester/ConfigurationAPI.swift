@@ -24,6 +24,7 @@ func checkConfigurationAPI() {
         .with(entitlementVerificationMode: .informational)
         .with(automaticDeviceIdentifierCollectionEnabled: true)
         .with(preferredUILocaleOverride: "de_DE")
+        .with(preferredUILocaleOverride: "he", honorLayoutDirection: true)
         .with(preferredUILocaleOverride: nil)
 
 

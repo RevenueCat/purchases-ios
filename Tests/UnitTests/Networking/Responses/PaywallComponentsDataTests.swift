@@ -37,6 +37,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(components.id) == "pw_test_1"
         expect(components.templateName) == "componentsTEST"
         expect(components.revision) == 3
+        expect(components.componentsConfig.base.layoutDirection) == .rtl
         expect(components.componentsConfig.base.background) == .color(.init(light: .hex("#220000ff"), dark: nil))
         expect(components.componentsConfig.base.stickyFooter) == nil
         expect(components.componentsConfig.base.stack.spacing) == 16
@@ -57,6 +58,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         let components = try XCTUnwrap(offering.paywallComponents)
         expect(components.templateName) == "componentsTEST"
         expect(components.revision) == 3
+        expect(components.componentsConfig.base.layoutDirection).to(beNil())
         expect(components.componentsConfig.base.background) == .color(.init(light: .hex("#220000ff"), dark: nil))
         expect(components.componentsConfig.base.stickyFooter) == nil
         expect(components.componentsConfig.base.stack.spacing) == 16

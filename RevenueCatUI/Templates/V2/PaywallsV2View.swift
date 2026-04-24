@@ -162,6 +162,14 @@ struct PaywallsV2View: View {
                 }
             }
         )
+        .rcApplyLayoutDirection(
+            PaywallLayoutDirectionResolver.resolve(
+                editorLayoutDirection: self.paywallComponentsData.componentsConfig.base.layoutDirection,
+                preferredLocale: self.purchaseHandler.preferredLocaleOverride,
+                honorsPreferredLocaleLayoutDirection:
+                    self.purchaseHandler.preferredLocaleOverrideHonorsLayoutDirection
+            )
+        )
     }
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {

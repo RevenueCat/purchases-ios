@@ -210,6 +210,7 @@ public struct PaywallView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         self.content
+            .rcApplyLayoutDirection(self.preferredLayoutDirection)
             .displayError(self.$error) {
                 guard let onRequestedDismissal = self.onRequestedDismissal else {
                     self.dismiss()
@@ -220,6 +221,14 @@ public struct PaywallView: View {
             // If the parent view uses refreshable, it can be inherited by the paywall view
             // and pulling down in the paywall would execute the parent's refreshable action
             .refreshableDisabled()
+    }
+
+    private var preferredLayoutDirection: LayoutDirection? {
+        return PaywallLayoutDirectionResolver.resolve(
+            editorLayoutDirection: nil,
+            preferredLocale: self.purchaseHandler.preferredLocaleOverride,
+            honorsPreferredLocaleLayoutDirection: self.purchaseHandler.preferredLocaleOverrideHonorsLayoutDirection
+        )
     }
 
     @MainActor
@@ -302,6 +311,7 @@ public struct PaywallView: View {
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) -> some View {
+        let preferredLocale = purchaseHandler.preferredLocaleOverride ?? .current
 
         if let paywallComponents = useDraftPaywall ? offering.draftPaywallComponents : offering.paywallComponents {
             // For V2 paywalls, prefer zeroDecimalPlaceCountries from paywallComponents
@@ -314,7 +324,7 @@ public struct PaywallView: View {
 
             // For fallback view or footer
             let paywall: PaywallData = .createDefault(with: offering.availablePackages,
-                                                      locale: purchaseHandler.preferredLocaleOverride ?? .current)
+                                                      locale: preferredLocale)
 
             switch self.mode {
             // Show the default/fallback paywall for Paywalls V2 footer views
@@ -330,8 +340,16 @@ public struct PaywallView: View {
                     displayCloseButton: self.displayCloseButton,
                     introEligibility: checker,
                     purchaseHandler: purchaseHandler,
-                    locale: purchaseHandler.preferredLocaleOverride ?? .current,
+                    locale: preferredLocale,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+                .rcApplyLayoutDirection(
+                    PaywallLayoutDirectionResolver.resolve(
+                        editorLayoutDirection: paywallComponents.data.componentsConfig.base.layoutDirection,
+                        preferredLocale: purchaseHandler.preferredLocaleOverride,
+                        honorsPreferredLocaleLayoutDirection:
+                            purchaseHandler.preferredLocaleOverrideHonorsLayoutDirection
+                    )
                 )
             #endif
             // Show the actually V2 paywall for full screen
@@ -367,7 +385,7 @@ public struct PaywallView: View {
             )
 
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
-                locale: purchaseHandler.preferredLocaleOverride ?? .current
+                locale: preferredLocale
             )
 
             LoadedOfferingPaywallView(

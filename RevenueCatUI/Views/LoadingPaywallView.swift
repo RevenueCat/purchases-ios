@@ -27,6 +27,8 @@ struct LoadingPaywallView: View {
     var displayCloseButton: Bool
 
     var shimmer: Bool = true
+    var locale: Locale = .current
+    var honorLayoutDirection: Bool = false
 
     var body: some View {
         LoadedOfferingPaywallView(
@@ -46,8 +48,15 @@ struct LoadingPaywallView: View {
             displayCloseButton: self.displayCloseButton,
             introEligibility: Self.introEligibility,
             purchaseHandler: Self.purchaseHandler,
-            locale: Locale.current,
+            locale: self.locale,
             showZeroDecimalPlacePrices: true
+        )
+        .rcApplyLayoutDirection(
+            PaywallLayoutDirectionResolver.resolve(
+                editorLayoutDirection: nil,
+                preferredLocale: self.locale,
+                honorsPreferredLocaleLayoutDirection: self.honorLayoutDirection
+            )
         )
         .allowsHitTesting(false)
         .redacted(reason: .placeholder)
@@ -160,6 +169,8 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     var preferredLocales: [String] { Locale.preferredLanguages }
 
     var preferredLocaleOverride: String? { nil }
+
+    var preferredLocaleOverrideHonorsLayoutDirection: Bool { false }
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return .myApp }

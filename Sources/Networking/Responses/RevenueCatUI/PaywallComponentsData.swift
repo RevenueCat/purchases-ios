@@ -28,32 +28,44 @@ import Foundation
 
     public struct PaywallComponentsConfig: Codable, Equatable, Sendable {
 
+        public enum LayoutDirection: String, Codable, Equatable, Sendable {
+            case system
+            case locale
+            case rtl
+            case ltr
+        }
+
         public var stack: PaywallComponent.StackComponent
         @_spi(Internal) public let header: PaywallComponent.HeaderComponent?
         public let stickyFooter: PaywallComponent.StickyFooterComponent?
         public var background: PaywallComponent.Background
+        @_spi(Internal) public let layoutDirection: LayoutDirection?
 
         public init(
             stack: PaywallComponent.StackComponent,
             stickyFooter: PaywallComponent.StickyFooterComponent?,
-            background: PaywallComponent.Background
+            background: PaywallComponent.Background,
+            layoutDirection: LayoutDirection? = nil
         ) {
             self.header = nil
             self.stack = stack
             self.stickyFooter = stickyFooter
             self.background = background
+            self.layoutDirection = layoutDirection
         }
 
         @_spi(Internal) public init(
             stack: PaywallComponent.StackComponent,
             header: PaywallComponent.HeaderComponent?,
             stickyFooter: PaywallComponent.StickyFooterComponent?,
-            background: PaywallComponent.Background
+            background: PaywallComponent.Background,
+            layoutDirection: LayoutDirection? = nil
         ) {
             self.stack = stack
             self.header = header
             self.stickyFooter = stickyFooter
             self.background = background
+            self.layoutDirection = layoutDirection
         }
 
     }

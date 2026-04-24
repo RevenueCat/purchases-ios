@@ -78,6 +78,12 @@ import Foundation
     @Published
     var nonSubscriptionsSection: [PurchaseInformation] = []
 
+    @Published
+    private(set) var preferredLocaleOverride: Locale?
+
+    @Published
+    private(set) var preferredLocaleOverrideHonorsLayoutDirection: Bool
+
     private(set) var purchasesProvider: CustomerCenterPurchasesType
     private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
@@ -135,6 +141,7 @@ import Foundation
 
     private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
+    private var cancellables: Set<AnyCancellable> = []
 
     init(
         actionWrapper: CustomerCenterActionWrapper,
@@ -150,6 +157,20 @@ import Foundation
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
         self.customerInfo = nil
+        self.preferredLocaleOverride = purchasesProvider.preferredLocaleOverride.map(Locale.init)
+        self.preferredLocaleOverrideHonorsLayoutDirection =
+            purchasesProvider.preferredLocaleOverrideHonorsLayoutDirection
+
+        NotificationCenter.default
+            .preferredUILocaleOverrideChangedPublisher()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.preferredLocaleOverride = self.purchasesProvider.preferredLocaleOverride.map(Locale.init)
+                self.preferredLocaleOverrideHonorsLayoutDirection =
+                    self.purchasesProvider.preferredLocaleOverrideHonorsLayoutDirection
+            }
+            .store(in: &cancellables)
     }
 
     convenience init(
@@ -233,7 +254,7 @@ import Foundation
             return
         }
 
-        let eventData = CustomerCenterEvent.Data(locale: .current,
+        let eventData = CustomerCenterEvent.Data(locale: self.preferredLocaleOverride ?? .current,
                                                  darkMode: darkMode,
                                                  isSandbox: purchasesProvider.isSandbox,
                                                  displayMode: displayMode)
