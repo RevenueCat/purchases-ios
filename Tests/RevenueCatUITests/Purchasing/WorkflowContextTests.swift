@@ -22,11 +22,12 @@ final class WorkflowContextTests: TestCase {
     // MARK: - WorkflowContext
 
     func testWorkflowContextStoresPresentedOfferingContext() throws {
+        let offering = TestData.offeringWithIntroOffer
         let poc = PresentedOfferingContext(offeringIdentifier: "offering_a")
         let context = WorkflowContext(
             workflow: try Self.makeWorkflow(),
-            allOfferings: TestData.offerings,
-            initialOffering: TestData.offering,
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
             presentedOfferingContext: poc
         )
 
@@ -34,10 +35,11 @@ final class WorkflowContextTests: TestCase {
     }
 
     func testWorkflowContextAllowsNilPresentedOfferingContext() throws {
+        let offering = TestData.offeringWithIntroOffer
         let context = WorkflowContext(
             workflow: try Self.makeWorkflow(),
-            allOfferings: TestData.offerings,
-            initialOffering: TestData.offering,
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
             presentedOfferingContext: nil
         )
 
@@ -65,6 +67,26 @@ final class WorkflowContextTests: TestCase {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WorkflowContextTests {
+
+    static func makeOfferings(_ offering: Offering) -> Offerings {
+        return Offerings(
+            offerings: [offering.identifier: offering],
+            currentOfferingID: nil,
+            placements: nil,
+            targeting: nil,
+            contents: .init(
+                response: .init(
+                    currentOfferingId: nil,
+                    offerings: [],
+                    placements: nil,
+                    targeting: nil,
+                    uiConfig: nil
+                ),
+                httpResponseOriginalSource: .mainServer
+            ),
+            loadedFromDiskCache: false
+        )
+    }
 
     static func makeWorkflow() throws -> PublishedWorkflow {
         let json = """
