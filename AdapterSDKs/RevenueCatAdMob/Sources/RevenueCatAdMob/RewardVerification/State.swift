@@ -37,9 +37,7 @@ internal extension RewardVerification {
     /// Per-ad ``RewardVerification/State`` stash, keyed by the vendor ad object.
     typealias StateStore = AssociatedObjectStore<State>
 
-    /// Process-wide singleton store. The underlying `OBJC_ASSOCIATION_RETAIN_NONATOMIC` policy
-    /// is not thread-safe; by convention all calls happen on the main actor (see
-    /// ``RewardVerification/Setup/install(on:apiKey:appUserID:)``).
+    /// Process-wide singleton store. Mutated only on the main actor.
     static let stateStore = StateStore()
 }
 

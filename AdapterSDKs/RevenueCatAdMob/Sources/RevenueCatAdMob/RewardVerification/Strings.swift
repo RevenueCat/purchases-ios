@@ -11,8 +11,7 @@ import Foundation
 @available(iOS 15.0, *)
 internal extension RewardVerification {
 
-    /// Centralised message strings for the RewardVerification subsystem so call sites stay
-    /// readable and message wording is reviewed in one place.
+    /// Centralised message strings for the RewardVerification subsystem.
     enum Strings {
 
         static let customRewardTextEncodingFailed: String =

@@ -35,15 +35,10 @@ internal extension RewardVerification {
         let sample: @Sendable () -> TimeInterval
     }
 
-    /// Bounded polling loop. Returns an `Outcome` for any terminal verdict (verified, backend
-    /// `failed`, exhausted budget, or terminal `ErrorCode` from the SPI). Cancellation and
-    /// truly unexpected throws propagate to the caller, which owns the cancellation policy
-    /// and the safety net (see `Dispatcher.run`).
-    ///
-    /// Retry policy: `pending`/`unknown` and `ErrorCode` cases in the transient allowlist
-    /// (`networkError`, `offlineConnectionError`, `unknownBackendError`) consume one attempt
-    /// slot. Anything else is terminal — non-transient `ErrorCode`s map to `.failed`; other
-    /// throws (CancellationError, unrecognised error types) propagate.
+    /// Bounded polling loop. Retries `pending`/`unknown` statuses and transient `ErrorCode`
+    /// throws within an attempt budget; everything else (terminal `ErrorCode`, sleeper failure,
+    /// any unrecognised throw) collapses to `.failed`. Honors `Task.isCancelled` between
+    /// attempts and exits early without further polling.
     struct Poller: Sendable {
 
         static let defaultMaxAttempts = 10
@@ -74,35 +69,25 @@ internal extension RewardVerification {
             )
         }
 
-        func run(clientTransactionID: String) async throws -> Outcome {
+        func run(clientTransactionID: String) async -> Outcome {
             for attempt in 0..<self.maxAttempts {
+                if Task.isCancelled { return .failed }
                 if attempt > 0 {
-                    // Sleeper failures (in production: only `CancellationError`) propagate.
-                    try await self.sleeper.sleep(seconds: self.jitter.sample())
+                    try? await self.sleeper.sleep(seconds: self.jitter.sample())
                 }
 
                 do {
                     let status = try await self.statusPoller.pollStatus(clientTransactionID: clientTransactionID)
                     switch status {
-                    case .verified(let reward):
-                        return .verified(reward)
-                    case .failed:
-                        return .failed
-                    case .pending, .unknown:
-                        // `unknown` is treated like `pending`; persistent unknowns surface as `.failed` via the budget.
-                        continue
+                    case .verified(let reward): return .verified(reward)
+                    case .failed: return .failed
+                    case .pending, .unknown: continue
                     }
                 } catch let code as ErrorCode where code.isTransientPolling {
-                    // Expected transient backend/network error from the SDK SPI — consume an
-                    // attempt slot and retry within the budget.
                     continue
-                } catch is ErrorCode {
-                    // Known but terminal `ErrorCode` (e.g. signatureVerificationFailed,
-                    // unexpectedBackendResponseError, 4xx-mapped codes). Retrying won't change
-                    // the outcome; surface as `.failed` immediately.
+                } catch {
                     return .failed
                 }
-                // Any other throw (CancellationError, unrecognised error type) propagates.
             }
 
             return .failed
@@ -128,9 +113,7 @@ internal extension RewardVerification {
 
 // MARK: - ErrorCode classification
 
-/// Allowlist of `ErrorCode` cases the polling loop treats as transient (worth retrying within
-/// the attempt budget). Kept narrow on purpose — anything not listed here is either terminal
-/// (returns `.failed` from the loop) or unrecognised (propagates to the caller).
+/// Allowlist of `ErrorCode` cases the polling loop retries instead of surfacing as `.failed`.
 fileprivate extension ErrorCode {
 
     var isTransientPolling: Bool {

@@ -43,10 +43,7 @@ final class ThrowingStatusPoller: RewardVerification.StatusPolling, @unchecked S
     }
 }
 
-/// Suspends the calling task indefinitely on each `pollStatus` call. Used to test cancellation
-/// of an in-flight `Dispatcher.dispatch(...)` Task: cancelling the task wakes the underlying
-/// `Task.sleep` and the call throws `CancellationError`, exactly as a real GMA/network poll would
-/// when its enclosing task is cancelled.
+/// Suspends indefinitely so tests can exercise cancellation of an in-flight Dispatcher task.
 @available(iOS 15.0, *)
 final class HangingStatusPoller: RewardVerification.StatusPolling, @unchecked Sendable {
 

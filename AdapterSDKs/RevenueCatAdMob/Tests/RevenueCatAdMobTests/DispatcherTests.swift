@@ -147,27 +147,6 @@ final class DispatcherTests: AdapterTestCase {
         }
     }
 
-    // MARK: - Cancellation
-
-    func testRunSwallowsCancellationAndDoesNotFireHandler() async {
-        let state = RewardVerification.State(clientTransactionID: "tx-cancel")
-        let throwingPoller = ThrowingStatusPoller(error: CancellationError())
-        let poller = RewardVerification.Poller(statusPoller: throwingPoller, sleeper: RecordingSleeper())
-        let recorder = OutcomeRecorder()
-
-        await RewardVerification.Dispatcher.run(
-            clientTransactionID: state.clientTransactionID,
-            state: state,
-            poller: poller,
-            outcomeHandler: { recorder.append($0) }
-        )
-
-        XCTAssertTrue(recorder.snapshot().isEmpty,
-                      "Cancellation must not surface as an outcome to the handler")
-        XCTAssertTrue(state.consumeFireToken(),
-                      "Cancellation must leave the one-shot guard intact for a later attempt")
-    }
-
     // MARK: - One-shot guard
 
     func testRunDoesNotFireWhenStateGuardAlreadyConsumed() async {

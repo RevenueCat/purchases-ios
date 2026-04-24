@@ -30,11 +30,8 @@ internal extension RewardVerification {
         }
 
         /// Generates a `client_transaction_id`, wires `ServerSideVerificationOptions` onto the ad,
-        /// and stashes per-ad state via `StateStore`. Returns the stashed state, or `nil` if
-        /// payload encoding fails (which also triggers an `assertionFailure`).
-        ///
-        /// `@MainActor` to match the production seam above and to document the
-        /// `StateStore`/GMA-mutation invariant.
+        /// and stashes per-ad state via `StateStore`. Returns `nil` (and trips an
+        /// `assertionFailure`) if payload encoding fails.
         @MainActor
         @discardableResult
         static func install(
