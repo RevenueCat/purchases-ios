@@ -13,7 +13,7 @@ import Foundation
 internal extension RewardVerification {
 
     /// Terminal SSV verdict delivered by `Dispatcher`.
-    enum Outcome: @unchecked Sendable {
+    enum Outcome: Sendable {
         case verified(VerifiedReward)
         case failed
     }
