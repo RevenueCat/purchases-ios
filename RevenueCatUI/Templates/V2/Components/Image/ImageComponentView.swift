@@ -42,6 +42,8 @@ struct ImageComponentView: View {
     private var customVariables
     @Environment(\.selectedPackageId)
     private var selectedPackageId
+    @Environment(\.carouselState)
+    private var carouselState
 
     let viewModel: ImageComponentViewModel
 
@@ -85,64 +87,68 @@ struct ImageComponentView: View {
                     width: self.imageSize(style: style).width,
                     height: self.imageSize(style: style).height
                 )
+                let shouldActivateCarouselImage = self.isWithinImagePreloadWindow
                 let effectiveSize = self.size ?? self.viewModel.cachedMeasuredSize
                 Group {
-
-                    ZStack {
-                        if effectiveSize == nil {
-                            // We cannot correctly render the image until we know the space the image can fill
-                            // this will fill the space so we can get the correct measurements and render the image
-                            self.decorate(Color.clear, with: style)
-                        } else if renderForPreview {
-                            #if DEBUG
-                            self.decorate(
-                                self.renderImage(
-                                    DualColorImageGenerator.purpleOrangeWide.image.resizable(),
-                                    effectiveSize ?? .zero,
-                                    maxWidth: self.calculateMaxWidth(
-                                        parentWidth: effectiveSize?.width ?? 0,
-                                        style: style
-                                    ),
-                                    with: style
-                                ),
-                                with: style
-                            )
-                            #else
-                            EmptyView()
-                            #endif
-                        } else {
-                            self.decorate(
-                                RemoteImage(
-                                    url: style.url,
-                                    lowResUrl: style.lowResUrl,
-                                    darkUrl: style.darkUrl,
-                                    darkLowResUrl: style.darkLowResUrl,
-                                    // The expectedSize is important
-                                    // It renders a clear image if actual image is being fetched
-                                    expectedSize: expectedSize
-                                ) { (image, size) in
+                    if !shouldActivateCarouselImage {
+                        self.decorate(Color.clear, with: style)
+                    } else {
+                        ZStack {
+                            if effectiveSize == nil {
+                                // We cannot correctly render the image until we know the space the image can fill
+                                // this will fill the space so we can get the correct measurements and render the image
+                                self.decorate(Color.clear, with: style)
+                            } else if renderForPreview {
+                                #if DEBUG
+                                self.decorate(
                                     self.renderImage(
-                                        image,
-                                        size,
+                                        DualColorImageGenerator.purpleOrangeWide.image.resizable(),
+                                        effectiveSize ?? .zero,
                                         maxWidth: self.calculateMaxWidth(
                                             parentWidth: effectiveSize?.width ?? 0,
                                             style: style
                                         ),
                                         with: style
-                                    )
-                                },
-                                with: style
-                            )
+                                    ),
+                                    with: style
+                                )
+                                #else
+                                EmptyView()
+                                #endif
+                            } else {
+                                self.decorate(
+                                    RemoteImage(
+                                        url: style.url,
+                                        lowResUrl: style.lowResUrl,
+                                        darkUrl: style.darkUrl,
+                                        darkLowResUrl: style.darkLowResUrl,
+                                        // The expectedSize is important
+                                        // It renders a clear image if actual image is being fetched
+                                        expectedSize: expectedSize
+                                    ) { (image, size) in
+                                        self.renderImage(
+                                            image,
+                                            size,
+                                            maxWidth: self.calculateMaxWidth(
+                                                parentWidth: effectiveSize?.width ?? 0,
+                                                style: style
+                                            ),
+                                            with: style
+                                        )
+                                    },
+                                    with: style
+                                )
+                            }
                         }
-                    }
-                    .onSizeChange { newSize in
-                        let effectiveCurrentSize = self.size ?? self.viewModel.cachedMeasuredSize
-                        guard effectiveCurrentSize != newSize else {
-                            return
-                        }
+                        .onSizeChange { newSize in
+                            let effectiveCurrentSize = self.size ?? self.viewModel.cachedMeasuredSize
+                            guard effectiveCurrentSize != newSize else {
+                                return
+                            }
 
-                        self.viewModel.cachedMeasuredSize = newSize
-                        self.size = newSize
+                            self.viewModel.cachedMeasuredSize = newSize
+                            self.size = newSize
+                        }
                     }
                 }
             }
@@ -172,6 +178,15 @@ struct ImageComponentView: View {
                 view.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
             })
             .padding(style.margin)
+    }
+
+    private var isWithinImagePreloadWindow: Bool {
+        guard let carouselState = self.carouselState else {
+            return true
+        }
+
+        // Preload one page beyond the visible neighbors so the next incoming image is already mounted.
+        return abs(carouselState.activeIndex - carouselState.pageIndex) <= 2
     }
 
     private func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
