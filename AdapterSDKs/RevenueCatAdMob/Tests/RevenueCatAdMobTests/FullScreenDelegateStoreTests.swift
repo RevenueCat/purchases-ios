@@ -1,17 +1,26 @@
 import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
+@_spi(Experimental) import RevenueCat
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
 final class FullScreenDelegateStoreTests: AdapterTestCase {
 
+    @MainActor
     func testRetainKeepsDelegateAliveWhileOwnerExists() {
         var owner: NSObject? = NSObject()
-        weak var weakDelegate: NSObject?
+        weak var weakDelegate: Tracking.FullScreenContentDelegate?
 
         autoreleasepool {
-            var delegate: NSObject? = NSObject()
+            var delegate: Tracking.FullScreenContentDelegate? = Tracking.FullScreenContentDelegate(
+                adapter: .shared,
+                delegate: nil,
+                placement: nil,
+                adUnitID: "test_ad_unit",
+                adFormat: .interstitial,
+                responseInfoProvider: { nil }
+            )
             weakDelegate = delegate
             guard let owner, let strongDelegate = delegate else {
                 XCTFail("Expected owner and delegate to be non-nil")

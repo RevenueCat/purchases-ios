@@ -8,10 +8,15 @@ final class NativeDelegateStoreTests: AdapterTestCase {
 
     func testRetainKeepsDelegateAliveWhileOwnerExists() {
         var owner: NSObject? = NSObject()
-        weak var weakDelegate: NSObject?
+        weak var weakDelegate: Tracking.NativeAdDelegate?
 
         autoreleasepool {
-            var delegate: NSObject? = NSObject()
+            var delegate: Tracking.NativeAdDelegate? = Tracking.NativeAdDelegate(
+                adapter: .shared,
+                delegate: nil,
+                placement: nil,
+                adUnitID: "test_ad_unit"
+            )
             weakDelegate = delegate
             guard let owner, let strongDelegate = delegate else {
                 XCTFail("Expected owner and delegate to be non-nil")
