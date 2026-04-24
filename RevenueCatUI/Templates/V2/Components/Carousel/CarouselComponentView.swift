@@ -276,7 +276,8 @@ private struct CarouselView<Content: View>: View {
                             pageIndex: pageIndex,
                             originalCount: originalCount
                         ))
-                        // 
+                        // ensure rendering doesn't need to wait on size calculations as the item
+                        // attempts to enter the view
                         .environment(\.requestSizeCalculation, !isNextInEitherDirection)
                         .frame(width: cardWidth)
                         // Clip each page so tall/scrollable stack content cannot paint outside the
