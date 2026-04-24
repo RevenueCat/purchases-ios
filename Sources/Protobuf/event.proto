@@ -1,0 +1,25 @@
+// Proto definition for RevenueCat SDK events.
+// To regenerate Swift code: protoc --swift_out=. event.proto
+
+syntax = "proto3";
+
+package revenuecat;
+
+option swift_prefix = "RC";
+
+message Event {
+  string id = 1;
+  string type = 2;
+  string app_user_id = 3;
+  int64 timestamp_millis = 4;
+  map<string, string> properties = 5;
+}
+
+message EventRequest {
+  repeated Event events = 1;
+}
+
+message EventResponse {
+  bool success = 1;
+  string message = 2;
+}

@@ -73,6 +73,15 @@
       }
     },
     {
+      "identity" : "swift-protobuf",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-protobuf",
+      "state" : {
+        "revision" : "a008af1a102ff3dd6cc3764bb69bf63226d0f5f6",
+        "version" : "1.36.1"
+      }
+    },
+    {
       "identity" : "swift-snapshot-testing",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
