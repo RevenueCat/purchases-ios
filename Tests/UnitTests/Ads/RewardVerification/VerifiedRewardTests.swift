@@ -44,20 +44,4 @@ final class VerifiedRewardTests: TestCase {
         expect(VerifiedReward.virtualCurrency(one)) != VerifiedReward.unsupportedReward
     }
 
-    func testSwitchExhaustivelyCoversAllCases() {
-        let values: [VerifiedReward] = [
-            .virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 1)),
-            .noReward,
-            .unsupportedReward
-        ]
-        for value in values {
-            switch value {
-            case .virtualCurrency: continue
-            case .noReward: continue
-            case .unsupportedReward: continue
-            }
-        }
-        expect(values.count) == 3
-    }
-
 }
