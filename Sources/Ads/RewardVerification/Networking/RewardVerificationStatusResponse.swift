@@ -88,6 +88,7 @@ extension RewardVerificationStatusResponse: Decodable {
         switch rewardType {
         case RewardType.virtualCurrency:
             guard let code = try? rewardContainer.decode(String.self, forKey: .code),
+                  !code.isEmpty,
                   let amount = try? rewardContainer.decode(Int.self, forKey: .amount),
                   amount > 0 else {
                 Logger.warn(

@@ -193,6 +193,27 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
         )
     }
 
+    func testDecodesVerifiedWithEmptyVirtualCurrencyCodeAsUnsupportedReward() throws {
+        let response = try Self.decode([
+            "status": "verified",
+            "reward": [
+                "type": "virtual_currency",
+                "code": "",
+                "amount": 10
+            ]
+        ])
+        expect(response.status) == .verified(.unsupportedReward)
+        expect(self.logger.messages.map(\.message)).to(
+            containElementSatisfying {
+                $0.contains(
+                    Strings.backendError
+                        .malformed_reward_verification_reward_payload(type: "virtual_currency")
+                        .description
+                )
+            }
+        )
+    }
+
     func testNonVerifiedStatusIgnoresRewardPayload() throws {
         let response = try Self.decode([
             "status": "pending",
