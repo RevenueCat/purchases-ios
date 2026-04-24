@@ -3,7 +3,7 @@ import XCTest
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
 @_spi(Internal) import RevenueCat
-@testable import RevenueCatAdMob
+@_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
 @MainActor
@@ -29,7 +29,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         XCTAssertEqual(startedCount, 1)
     }
 
-    func testPresentWithStateAndOutcomeDeliversVerifiedOutcome() {
+    func testPresentWithStateAndOutcomeDeliversVerifiedOutcome() throws {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
@@ -65,7 +65,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         XCTAssertEqual(result.verifiedReward?.virtualCurrencyAmount, 4)
     }
 
-    func testPresentWithStateAndOutcomeDeliversFailedWhenPollerFails() {
+    func testPresentWithStateAndOutcomeDeliversFailedWhenPollerFails() throws {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
