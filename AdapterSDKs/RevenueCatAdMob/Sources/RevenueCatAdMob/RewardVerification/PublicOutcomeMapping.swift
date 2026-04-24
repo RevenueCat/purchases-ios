@@ -15,10 +15,7 @@ internal extension RewardVerification {
     static func mapVerifiedReward(_ reward: RevenueCat.VerifiedReward) -> RevenueCatAdMob.VerifiedReward {
         switch reward {
         case .virtualCurrency(let item):
-            if item.amount > 0 {
-                return .virtualCurrency(code: item.code, amount: item.amount)
-            }
-            return .none
+            return .virtualCurrency(code: item.code, amount: item.amount)
         case .noReward:
             return .none
         case .unsupportedReward:

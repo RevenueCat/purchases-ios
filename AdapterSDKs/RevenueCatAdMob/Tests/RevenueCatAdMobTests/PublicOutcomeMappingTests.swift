@@ -15,12 +15,6 @@ final class PublicOutcomeMappingTests: AdapterTestCase {
         XCTAssertEqual(mapped.virtualCurrencyAmount, 7)
     }
 
-    func testMapVirtualCurrencyNonPositiveAmountBecomesNone() {
-        let reward = RevenueCat.VerifiedReward.virtualCurrency(VirtualCurrencyReward(code: "gems", amount: 0))
-        let mapped = RewardVerification.mapVerifiedReward(reward)
-        XCTAssertTrue(mapped.isNone)
-    }
-
     func testMapNoRewardBecomesNone() {
         let mapped = RewardVerification.mapVerifiedReward(.noReward)
         XCTAssertTrue(mapped.isNone)
