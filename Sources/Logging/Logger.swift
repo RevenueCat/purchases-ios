@@ -36,8 +36,8 @@ internal typealias InternalLogHandler = (_ level: LogLevel,
 
 // This is a `struct` instead of `enum` so that
 // we can use `Logger()` as a `LoggerType`.
-// swiftlint:disable:next convenience_type
-struct Logger {
+// swiftlint:disable:next convenience_type missing_docs
+@_spi(Internal) public struct Logger {
 
     static var logLevel: LogLevel = Self.defaultLogLevel
     static var internalLogHandler: InternalLogHandler = Self.defaultLogHandler
@@ -83,7 +83,7 @@ extension Logger {
 /// let logger: LoggerType
 /// logger.info("...")
 /// ```
-extension Logger: LoggerType {
+@_spi(Internal) extension Logger: LoggerType {
 
     func verbose(_ message: LogMessage,
                  fileName: String? = #fileID,
