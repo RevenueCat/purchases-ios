@@ -106,7 +106,7 @@ enum ISODurationFormatter {
             range: NSRange(location: 0, length: nsString.length))
 
         guard let match = match else {
-            print("Failed to parse ISO duration: \(periodString)")
+            Logger.error("Failed to parse ISO duration: \(periodString)")
             return nil
         }
 
