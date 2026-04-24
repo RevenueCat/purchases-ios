@@ -45,11 +45,11 @@ internal extension GoogleMobileAds.BannerView {
         placement: String?,
         adapter: Tracking.Adapter
     ) {
-        let storedPaidHandler = adapter.bannerPaidEventHandlerStore.retrieveOriginalPaidHandler(for: self)
-        let didInstallWrapper = adapter.bannerPaidEventHandlerStore.didInstallWrapper(for: self)
+        let storedPaidHandler = adapter.bannerOriginalPaidHandlerStore.retrieve(for: self)
+        let didInstallWrapper = adapter.bannerDidInstallWrapperStore.retrieve(for: self)?.boolValue ?? false
         let previousPaidHandler = didInstallWrapper ? storedPaidHandler : (storedPaidHandler ?? self.paidEventHandler)
         let effectivePaidHandler = paidEventHandler ?? previousPaidHandler
-        adapter.bannerPaidEventHandlerStore.retainOriginalPaidHandler(effectivePaidHandler, for: self)
+        adapter.bannerOriginalPaidHandlerStore.retain(effectivePaidHandler, for: self)
 
         let capturedUserHandler = effectivePaidHandler
         self.paidEventHandler = { [weak self] adValue in
@@ -62,14 +62,14 @@ internal extension GoogleMobileAds.BannerView {
                     responseInfo: responseInfo,
                     adValue: adValue
                 )
-                let storedPaidHandler = adapter.bannerPaidEventHandlerStore.retrieveOriginalPaidHandler(for: self)
+                let storedPaidHandler = adapter.bannerOriginalPaidHandlerStore.retrieve(for: self)
                 storedPaidHandler?(adValue)
             } else {
                 // Banner was deallocated; still invoke user's handler (e.g. ad SDK invoked callback after view gone).
                 capturedUserHandler?(adValue)
             }
         }
-        adapter.bannerPaidEventHandlerStore.setDidInstallWrapper(for: self)
+        adapter.bannerDidInstallWrapperStore.retain(NSNumber(value: true), for: self)
     }
 
 }
