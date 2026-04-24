@@ -31,7 +31,7 @@ import GoogleMobileAds
         from viewController: UIViewController,
         placement: String? = nil,
         rewardVerificationStarted: (() -> Void)? = nil,
-        rewardVerificationResult: ((RewardVerificationResult) -> Void)? = nil
+        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
         Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         RewardVerification.Present.present(
@@ -66,7 +66,7 @@ import GoogleMobileAds
         from viewController: UIViewController,
         placement: String? = nil,
         rewardVerificationStarted: (() -> Void)? = nil,
-        rewardVerificationResult: ((RewardVerificationResult) -> Void)? = nil
+        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
         Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         RewardVerification.Present.present(
