@@ -13,10 +13,8 @@ import Foundation
 internal extension RewardVerification {
 
     /// Runs the polling loop, hops to the main actor, and fires the outcome handler at most once
-    /// per ad. The Poller's contract guarantees only `CancellationError` ever escapes — every
-    /// other error is absorbed inside the bounded retry loop and surfaces as `Outcome.failed`.
-    /// Cancellation here means "caller asked to stop": deliver nothing, leave the one-shot token
-    /// intact so a later dispatch on the same `State` can still fire.
+    /// per ad. Cancellation here means "caller asked to stop": deliver nothing, leave the
+    /// one-shot token intact so a later dispatch on the same `State` can still fire.
     enum Dispatcher {
 
         /// Drives the Poller and delivers exactly one `Outcome` on the main actor — unless the
@@ -32,19 +30,14 @@ internal extension RewardVerification {
             poller: Poller,
             outcomeHandler: @escaping @Sendable @MainActor (Outcome) -> Void
         ) async {
-            let outcome: Outcome
-            do {
-                outcome = try await poller.run(clientTransactionID: clientTransactionID)
-            } catch {
-                // Poller only ever throws `CancellationError`; everything else folds into
-                // `Outcome.failed` inside the retry loop. On cancellation we silently stop:
-                // no handler fire, fire token preserved.
+            switch await poller.run(clientTransactionID: clientTransactionID) {
+            case .cancelled:
                 return
-            }
-
-            await MainActor.run {
-                guard state.consumeFireToken() else { return }
-                outcomeHandler(outcome)
+            case .outcome(let outcome):
+                await MainActor.run {
+                    guard state.consumeFireToken() else { return }
+                    outcomeHandler(outcome)
+                }
             }
         }
 
