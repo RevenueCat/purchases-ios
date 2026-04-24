@@ -59,7 +59,7 @@ internal extension RewardVerification {
             loadedAd.serverSideVerificationOptions = options
 
             let state = State(clientTransactionID: clientTransactionID)
-            RewardVerification.stateStore.retain(state, for: loadedAd)
+            RewardVerification.stateStore.set(state, for: loadedAd)
             return state
         }
 

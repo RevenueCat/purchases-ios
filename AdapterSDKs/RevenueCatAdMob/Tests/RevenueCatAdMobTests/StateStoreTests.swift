@@ -18,7 +18,7 @@ final class StateStoreTests: AdapterTestCase {
         let host = StateHost()
         let state = RewardVerification.State(clientTransactionID: "tx-store-1")
 
-        RewardVerification.stateStore.retain(state, for: host)
+        RewardVerification.stateStore.set(state, for: host)
 
         let retrieved = try XCTUnwrap(RewardVerification.stateStore.retrieve(for: host))
         XCTAssertTrue(retrieved === state,
@@ -30,8 +30,8 @@ final class StateStoreTests: AdapterTestCase {
         let firstState = RewardVerification.State(clientTransactionID: "tx-first")
         let secondState = RewardVerification.State(clientTransactionID: "tx-second")
 
-        RewardVerification.stateStore.retain(firstState, for: host)
-        RewardVerification.stateStore.retain(secondState, for: host)
+        RewardVerification.stateStore.set(firstState, for: host)
+        RewardVerification.stateStore.set(secondState, for: host)
 
         let retrieved = try XCTUnwrap(RewardVerification.stateStore.retrieve(for: host))
         XCTAssertTrue(retrieved === secondState)
@@ -45,7 +45,7 @@ final class StateStoreTests: AdapterTestCase {
         let secondHost = StateHost()
         let state = RewardVerification.State(clientTransactionID: "tx-only-on-first")
 
-        RewardVerification.stateStore.retain(state, for: firstHost)
+        RewardVerification.stateStore.set(state, for: firstHost)
 
         XCTAssertNotNil(RewardVerification.stateStore.retrieve(for: firstHost))
         XCTAssertNil(RewardVerification.stateStore.retrieve(for: secondHost),
@@ -61,7 +61,7 @@ final class StateStoreTests: AdapterTestCase {
         autoreleasepool {
             let state = RewardVerification.State(clientTransactionID: "tx-retained")
             weakState = state
-            RewardVerification.stateStore.retain(state, for: host)
+            RewardVerification.stateStore.set(state, for: host)
         }
 
         XCTAssertNotNil(weakState,
