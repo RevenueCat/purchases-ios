@@ -14,13 +14,13 @@ final class PollerTests: AdapterTestCase {
 
     // MARK: - Terminal statuses
 
-    func testVerifiedReturnsImmediatelyOnFirstAttemptForwardingPayload() async throws {
+    func testVerifiedReturnsImmediatelyOnFirstAttemptForwardingPayload() async {
         let reward = VirtualCurrencyReward(code: "coins", amount: 3)
         let statusPoller = StubStatusPoller(statuses: [.verified(.virtualCurrency(reward))])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .verified(.virtualCurrency(let earnedReward)) = outcome else {
             return XCTFail("Expected .verified(.virtualCurrency), got \(outcome)")
@@ -30,12 +30,12 @@ final class PollerTests: AdapterTestCase {
         XCTAssertTrue(sleeper.delays.isEmpty)
     }
 
-    func testFailedReturnsAfterFirstAttempt() async throws {
+    func testFailedReturnsAfterFirstAttempt() async {
         let statusPoller = StubStatusPoller(statuses: [.failed])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .failed = outcome else {
             return XCTFail("Expected .failed, got \(outcome)")
@@ -44,12 +44,12 @@ final class PollerTests: AdapterTestCase {
         XCTAssertTrue(sleeper.delays.isEmpty)
     }
 
-    func testPendingThenVerifiedSleepsBetweenAttempts() async throws {
+    func testPendingThenVerifiedSleepsBetweenAttempts() async {
         let statusPoller = StubStatusPoller(statuses: [.pending, .pending, .verified(.noReward)])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .verified(.noReward) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -58,12 +58,12 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays, [1.0, 1.0])
     }
 
-    func testAllPendingReturnsFailedAfterMaxAttempts() async throws {
+    func testAllPendingReturnsFailedAfterMaxAttempts() async {
         let statusPoller = StubStatusPoller(statuses: Array(repeating: .pending, count: 10))
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 10)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .failed = outcome else {
             return XCTFail("Expected .failed, got \(outcome)")
@@ -72,14 +72,14 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 9)
     }
 
-    func testVerifiedOnLastAttemptReturnsVerified() async throws {
+    func testVerifiedOnLastAttemptReturnsVerified() async {
         let statusPoller = StubStatusPoller(
             statuses: Array(repeating: .pending, count: 9) + [.verified(.noReward)]
         )
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 10)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .verified(.noReward) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -88,12 +88,12 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 9)
     }
 
-    func testFailedOnLaterAttemptReturnsFailedWithoutAdditionalPolls() async throws {
+    func testFailedOnLaterAttemptReturnsFailedWithoutAdditionalPolls() async {
         let statusPoller = StubStatusPoller(statuses: [.pending, .pending, .failed])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 10)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .failed = outcome else {
             return XCTFail("Expected .failed, got \(outcome)")
@@ -102,12 +102,12 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 2)
     }
 
-    func testUnknownIsTreatedLikePendingAndKeepsPolling() async throws {
+    func testUnknownIsTreatedLikePendingAndKeepsPolling() async {
         let statusPoller = StubStatusPoller(statuses: [.unknown, .unknown, .verified(.noReward)])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .verified(.noReward) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -118,7 +118,7 @@ final class PollerTests: AdapterTestCase {
 
     // MARK: - Transient `ErrorCode` retry path
 
-    func testTransientErrorCodeOnFirstAttemptIsRetried() async throws {
+    func testTransientErrorCodeOnFirstAttemptIsRetried() async {
         let statusPoller = ScriptedStatusPoller(steps: [
             .throwError(ErrorCode.networkError),
             .status(.verified(.noReward))
@@ -126,7 +126,7 @@ final class PollerTests: AdapterTestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .verified(.noReward) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -135,7 +135,7 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 1, "A transient throw should still consume an inter-attempt sleep")
     }
 
-    func testTransientErrorCodeAfterPendingIsRetried() async throws {
+    func testTransientErrorCodeAfterPendingIsRetried() async {
         let statusPoller = ScriptedStatusPoller(steps: [
             .status(.pending),
             .throwError(ErrorCode.offlineConnectionError),
@@ -144,7 +144,7 @@ final class PollerTests: AdapterTestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .verified(.noReward) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -153,12 +153,12 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 2)
     }
 
-    func testEveryAttemptThrowingTransientExhaustsBudgetAndReturnsFailed() async throws {
+    func testEveryAttemptThrowingTransientExhaustsBudgetAndReturnsFailed() async {
         let statusPoller = ThrowingStatusPoller(error: ErrorCode.unknownBackendError)
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 5)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .failed = outcome else {
             return XCTFail("Expected .failed after exhausting the budget on transient throws, got \(outcome)")
@@ -168,7 +168,7 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 4)
     }
 
-    func testMixedPendingAndTransientThrowsExhaustsBudgetAndReturnsFailed() async throws {
+    func testMixedPendingAndTransientThrowsExhaustsBudgetAndReturnsFailed() async {
         let statusPoller = ScriptedStatusPoller(steps: [
             .status(.pending),
             .throwError(ErrorCode.networkError),
@@ -179,7 +179,7 @@ final class PollerTests: AdapterTestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 5)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .failed = outcome else {
             return XCTFail("Expected .failed, got \(outcome)")
@@ -188,7 +188,7 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 4)
     }
 
-    func testEachTransientErrorCodeIsRetried() async throws {
+    func testEachTransientErrorCodeIsRetried() async {
         let transient: [ErrorCode] = [.networkError, .offlineConnectionError, .unknownBackendError]
         for code in transient {
             let statusPoller = ScriptedStatusPoller(steps: [
@@ -197,7 +197,7 @@ final class PollerTests: AdapterTestCase {
             ])
             let sut = makePoller(statusPoller: statusPoller, sleeper: RecordingSleeper())
 
-            let outcome = try await sut.run(clientTransactionID: "tx-1")
+            let outcome = await sut.run(clientTransactionID: "tx-1")
 
             guard case .verified(.noReward) = outcome else {
                 return XCTFail("Expected .verified for transient code \(code), got \(outcome)")
@@ -208,12 +208,12 @@ final class PollerTests: AdapterTestCase {
 
     // MARK: - Terminal `ErrorCode` path
 
-    func testSignatureVerificationFailedReturnsFailedWithoutRetrying() async throws {
+    func testSignatureVerificationFailedReturnsFailedWithoutRetrying() async {
         let statusPoller = ThrowingStatusPoller(error: ErrorCode.signatureVerificationFailed)
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .failed = outcome else {
             return XCTFail("Expected .failed, got \(outcome)")
@@ -222,12 +222,12 @@ final class PollerTests: AdapterTestCase {
         XCTAssertTrue(sleeper.delays.isEmpty)
     }
 
-    func testUnexpectedBackendResponseErrorReturnsFailedWithoutRetrying() async throws {
+    func testUnexpectedBackendResponseErrorReturnsFailedWithoutRetrying() async {
         let statusPoller = ThrowingStatusPoller(error: ErrorCode.unexpectedBackendResponseError)
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .failed = outcome else {
             return XCTFail("Expected .failed, got \(outcome)")
@@ -235,13 +235,13 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(statusPoller.callCount, 1)
     }
 
-    func testApiEndpointBlockedErrorReturnsFailedWithoutRetrying() async throws {
+    func testApiEndpointBlockedErrorReturnsFailedWithoutRetrying() async {
         // DNS blocking — retrying within ~10s won't unblock the user; surface `.failed` immediately.
         let statusPoller = ThrowingStatusPoller(error: ErrorCode.apiEndpointBlockedError)
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .failed = outcome else {
             return XCTFail("Expected .failed, got \(outcome)")
@@ -249,7 +249,7 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(statusPoller.callCount, 1)
     }
 
-    func testPendingThenTerminalErrorCodeReturnsFailedWithoutAdditionalPolls() async throws {
+    func testPendingThenTerminalErrorCodeReturnsFailedWithoutAdditionalPolls() async {
         let statusPoller = ScriptedStatusPoller(steps: [
             .status(.pending),
             .throwError(ErrorCode.signatureVerificationFailed)
@@ -257,7 +257,7 @@ final class PollerTests: AdapterTestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .failed = outcome else {
             return XCTFail("Expected .failed, got \(outcome)")
@@ -265,88 +265,80 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(statusPoller.callCount, 2)
     }
 
-    // MARK: - Propagating throws (not handled by Poller)
+    // MARK: - Catch-all behaviour
 
-    func testCancellationErrorFromPollStatusPropagates() async {
+    func testCancellationErrorFromPollStatusReturnsFailedWithoutRetrying() async {
+        // `Poller` does not distinguish `CancellationError` from any other non-transient throw —
+        // both collapse to `.failed`. `Dispatcher` is what swallows the delivery when the
+        // surrounding `Task` is actually cancelled.
         let statusPoller = ThrowingStatusPoller(error: CancellationError())
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        do {
-            _ = try await sut.run(clientTransactionID: "tx-1")
-            XCTFail("Expected CancellationError to propagate")
-        } catch is CancellationError {
-            // expected
-        } catch {
-            XCTFail("Expected CancellationError, got \(error)")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .failed = outcome else {
+            return XCTFail("Expected .failed, got \(outcome)")
         }
-        XCTAssertEqual(statusPoller.callCount, 1)
+        XCTAssertEqual(statusPoller.callCount, 1, "Cancellation throws are not retried")
         XCTAssertTrue(sleeper.delays.isEmpty)
     }
 
-    func testCancellationErrorFromSleeperPropagates() async {
-        let statusPoller = StubStatusPoller(statuses: [.pending, .verified(.noReward)])
-        let sleeper = ThrowingSleeper(error: CancellationError())
-        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
-
-        do {
-            _ = try await sut.run(clientTransactionID: "tx-1")
-            XCTFail("Expected CancellationError to propagate")
-        } catch is CancellationError {
-            // expected
-        } catch {
-            XCTFail("Expected CancellationError, got \(error)")
-        }
-        XCTAssertEqual(statusPoller.callCount, 1)
-        XCTAssertEqual(sleeper.callCount, 1)
-    }
-
-    func testUnrecognisedErrorTypeFromPollStatusPropagates() async {
-        // An error type that isn't `ErrorCode` and isn't `CancellationError` shouldn't reach
-        // the loop in production, but if it does the Poller surfaces it to the caller (which
-        // owns the safety net). Verifies we do NOT swallow unknown throws as a transient retry.
-        let sentinel = SentinelError()
-        let statusPoller = ThrowingStatusPoller(error: sentinel)
+    func testUnrecognisedErrorTypeFromPollStatusReturnsFailedWithoutRetrying() async {
+        let statusPoller = ThrowingStatusPoller(error: SentinelError())
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        do {
-            _ = try await sut.run(clientTransactionID: "tx-1")
-            XCTFail("Expected SentinelError to propagate")
-        } catch let error as SentinelError {
-            XCTAssertIdentical(error, sentinel)
-        } catch {
-            XCTFail("Expected SentinelError, got \(error)")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .failed = outcome else {
+            return XCTFail("Expected .failed, got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 1, "Unrecognised throws are not retried")
     }
 
-    func testUnrecognisedErrorTypeFromSleeperPropagates() async {
-        let sentinel = SentinelError()
+    func testCancellationBeforeFirstAttemptShortCircuitsLoopWithoutPolling() async {
+        let statusPoller = StubStatusPoller(statuses: Array(repeating: .pending, count: 10))
+        let sleeper = RecordingSleeper()
+        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 10)
+
+        let task = Task<RewardVerification.Outcome, Never> {
+            await sut.run(clientTransactionID: "tx-1")
+        }
+        task.cancel()
+        let outcome = await task.value
+
+        guard case .failed = outcome else {
+            return XCTFail("Expected .failed after cancellation, got \(outcome)")
+        }
+        XCTAssertEqual(statusPoller.callCount, 0,
+                       "Cancellation must short-circuit before any pollStatus call")
+        XCTAssertTrue(sleeper.delays.isEmpty)
+    }
+
+    func testSleeperFailureIsSwallowedAndLoopContinuesToNextAttempt() async {
+        // Inter-attempt sleeps use `try?`, so a throwing sleeper does not abort the run.
         let statusPoller = StubStatusPoller(statuses: [.pending, .verified(.noReward)])
-        let sleeper = ThrowingSleeper(error: sentinel)
+        let sleeper = ThrowingSleeper(error: SentinelError())
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        do {
-            _ = try await sut.run(clientTransactionID: "tx-1")
-            XCTFail("Expected SentinelError from sleeper to propagate")
-        } catch let error as SentinelError {
-            XCTAssertIdentical(error, sentinel)
-        } catch {
-            XCTFail("Expected SentinelError, got \(error)")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .verified(.noReward) = outcome else {
+            return XCTFail("Expected .verified(.noReward) after sleeper failure was swallowed, got \(outcome)")
         }
-        XCTAssertEqual(statusPoller.callCount, 1, "First poll succeeded; sleep failure aborted the run")
+        XCTAssertEqual(statusPoller.callCount, 2)
         XCTAssertEqual(sleeper.callCount, 1)
     }
 
     // MARK: - Boundaries
 
-    func testMaxAttemptsZeroReturnsFailedWithoutAnyPollOrSleep() async throws {
+    func testMaxAttemptsZeroReturnsFailedWithoutAnyPollOrSleep() async {
         let statusPoller = StubStatusPoller(statuses: [])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 0)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .failed = outcome else {
             return XCTFail("Expected .failed, got \(outcome)")
@@ -355,12 +347,12 @@ final class PollerTests: AdapterTestCase {
         XCTAssertTrue(sleeper.delays.isEmpty)
     }
 
-    func testMaxAttemptsOnePollsOnceWithoutSleeping() async throws {
+    func testMaxAttemptsOnePollsOnceWithoutSleeping() async {
         let statusPoller = StubStatusPoller(statuses: [.pending])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 1)
 
-        let outcome = try await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1")
 
         guard case .failed = outcome else {
             return XCTFail("Expected .failed, got \(outcome)")
@@ -388,7 +380,7 @@ final class PollerTests: AdapterTestCase {
         }
     }
 
-    func testEachJitteredDelayUsedByLoopIsWithinDefaultBounds() async throws {
+    func testEachJitteredDelayUsedByLoopIsWithinDefaultBounds() async {
         let statusPoller = StubStatusPoller(statuses: Array(repeating: .pending, count: 10))
         let sleeper = RecordingSleeper()
         let sut = RewardVerification.Poller(
@@ -398,7 +390,7 @@ final class PollerTests: AdapterTestCase {
             maxAttempts: 10
         )
 
-        _ = try await sut.run(clientTransactionID: "tx-1")
+        _ = await sut.run(clientTransactionID: "tx-1")
 
         XCTAssertEqual(sleeper.delays.count, 9)
         for delay in sleeper.delays {
@@ -407,7 +399,7 @@ final class PollerTests: AdapterTestCase {
         }
     }
 
-    func testJitterIsSampledOncePerInterAttemptSleep() async throws {
+    func testJitterIsSampledOncePerInterAttemptSleep() async {
         let statusPoller = StubStatusPoller(statuses: Array(repeating: .pending, count: 5))
         let sleeper = RecordingSleeper()
         let counter = Counter()
@@ -422,7 +414,7 @@ final class PollerTests: AdapterTestCase {
             maxAttempts: 5
         )
 
-        _ = try await sut.run(clientTransactionID: "tx-1")
+        _ = await sut.run(clientTransactionID: "tx-1")
 
         XCTAssertEqual(counter.value, 4)
         XCTAssertEqual(sleeper.delays.count, 4)
