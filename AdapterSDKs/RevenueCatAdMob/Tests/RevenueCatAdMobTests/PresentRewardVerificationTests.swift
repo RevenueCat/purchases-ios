@@ -29,7 +29,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         XCTAssertEqual(startedCount, 1)
     }
 
-    func testPresentWithStateAndOutcomeDeliversValidatedOutcome() {
+    func testPresentWithStateAndOutcomeDeliversVerifiedOutcome() {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
@@ -60,9 +60,9 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         self.wait(for: [expectation], timeout: 2.0)
 
         let outcome = try XCTUnwrap(receivedOutcome)
-        XCTAssertTrue(outcome.isValidated)
-        XCTAssertEqual(outcome.validatedReward?.virtualCurrencyCode, "coins")
-        XCTAssertEqual(outcome.validatedReward?.virtualCurrencyAmount, 4)
+        XCTAssertTrue(outcome.isVerified)
+        XCTAssertEqual(outcome.verifiedReward?.virtualCurrencyCode, "coins")
+        XCTAssertEqual(outcome.verifiedReward?.virtualCurrencyAmount, 4)
     }
 
     func testPresentWithStateAndOutcomeDeliversFailedWhenPollerFails() {
