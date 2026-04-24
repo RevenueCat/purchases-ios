@@ -67,7 +67,7 @@ final class DispatcherTests: AdapterTestCase {
 
     func testRunFiresFailedOutcomeWhenAllAttemptsThrowTransiently() async {
         let state = RewardVerification.State(clientTransactionID: "tx-transient")
-        let throwingPoller = ThrowingStatusPoller(error: SentinelError())
+        let throwingPoller = ThrowingStatusPoller(error: ErrorCode.networkError)
         let poller = RewardVerification.Poller(
             statusPoller: throwingPoller, sleeper: RecordingSleeper(), maxAttempts: 3
         )
@@ -86,6 +86,29 @@ final class DispatcherTests: AdapterTestCase {
         }
         XCTAssertEqual(throwingPoller.callCount, 3,
                        "Transient throws should be retried up to the attempt budget")
+    }
+
+    func testRunFiresFailedOutcomeWhenPollerThrowsTerminalErrorCode() async {
+        let state = RewardVerification.State(clientTransactionID: "tx-terminal")
+        let throwingPoller = ThrowingStatusPoller(error: ErrorCode.signatureVerificationFailed)
+        let poller = RewardVerification.Poller(
+            statusPoller: throwingPoller, sleeper: RecordingSleeper(), maxAttempts: 3
+        )
+        let recorder = OutcomeRecorder()
+
+        await RewardVerification.Dispatcher.run(
+            clientTransactionID: state.clientTransactionID,
+            state: state,
+            poller: poller,
+            outcomeHandler: { recorder.append($0) }
+        )
+
+        let outcomes = recorder.snapshot()
+        guard case .failed = outcomes.first else {
+            return XCTFail("Expected .failed for terminal ErrorCode, got \(String(describing: outcomes.first))")
+        }
+        XCTAssertEqual(throwingPoller.callCount, 1,
+                       "Terminal ErrorCode must surface as .failed without retries")
     }
 
     func testRunForwardsNoRewardCaseUnchangedThroughVerifiedOutcome() async {

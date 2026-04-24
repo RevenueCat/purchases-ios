@@ -117,27 +117,6 @@ final class ThrowingSleeper: RewardVerification.AsyncSleeper, @unchecked Sendabl
     }
 }
 
-/// Sleeper that throws a sentinel `Error` on the configured 1-based call indices and succeeds
-/// otherwise. Used to verify the Poller absorbs transient sleeper failures (non-cancellation)
-/// and continues polling.
-@available(iOS 15.0, *)
-final class FlakySleeper: RewardVerification.AsyncSleeper, @unchecked Sendable {
-
-    private let throwsOnAttempts: Set<Int>
-    private(set) var callCount = 0
-
-    init(throwsOnAttempts: [Int]) {
-        self.throwsOnAttempts = Set(throwsOnAttempts)
-    }
-
-    func sleep(seconds: TimeInterval) async throws {
-        self.callCount += 1
-        if self.throwsOnAttempts.contains(self.callCount) {
-            throw SentinelError()
-        }
-    }
-}
-
 final class Counter: @unchecked Sendable {
 
     private(set) var value = 0

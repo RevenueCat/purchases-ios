@@ -13,8 +13,9 @@ import Foundation
 internal extension RewardVerification {
 
     /// Runs the polling loop, hops to the main actor, and fires the outcome handler at most once
-    /// per ad. Cancellation here means "caller asked to stop": deliver nothing, leave the
-    /// one-shot token intact so a later dispatch on the same `State` can still fire.
+    /// per ad. Owns cancellation policy and the safety net for unexpected throws so the consumer
+    /// either gets a verdict or, on caller-initiated cancellation, gets nothing with the one-shot
+    /// fire token preserved for a later dispatch.
     enum Dispatcher {
 
         /// Drives the Poller and delivers exactly one `Outcome` on the main actor. If the
@@ -28,14 +29,25 @@ internal extension RewardVerification {
             poller: Poller,
             outcomeHandler: @escaping @Sendable @MainActor (Outcome) -> Void
         ) async {
-            switch await poller.run(clientTransactionID: clientTransactionID) {
-            case .cancelled:
+            let outcome: Outcome
+            do {
+                outcome = try await poller.run(clientTransactionID: clientTransactionID)
+            } catch is CancellationError {
+                // Caller asked to stop: deliver nothing, leave the one-shot token intact so a
+                // later dispatch on the same `State` can still fire.
                 return
-            case .outcome(let outcome):
-                await MainActor.run {
-                    guard state.consumeFireToken() else { return }
-                    outcomeHandler(outcome)
-                }
+            } catch {
+                // Safety net for an unrecognised error type from the Poller. Production should
+                // never reach here — the SPI always throws `ErrorCode` and `Task.sleep` only
+                // throws `CancellationError`. Trip the assertion in DEBUG so we notice; in
+                // RELEASE, deliver `.failed` so the consumer's UI is never left hanging.
+                assertionFailure("Unexpected error from Poller.run: \(error)")
+                outcome = .failed
+            }
+
+            await MainActor.run {
+                guard state.consumeFireToken() else { return }
+                outcomeHandler(outcome)
             }
         }
 
