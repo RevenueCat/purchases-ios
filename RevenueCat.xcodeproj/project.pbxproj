@@ -1335,8 +1335,10 @@
 		B3F3E8DA277158FE0047A5B9 /* DNSChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F3E8D9277158FE0047A5B9 /* DNSChecker.swift */; };
 		B3F8418F26F3A93400E560FB /* ErrorCodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */; };
 		B413E5A02F97B3B900B5F0CA /* CarouselTabSwitchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */; };
+		5E85AC3F5F994698AFF51A3E /* WorkflowPaywallViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFD5F7BD8404B6E828C4E10 /* WorkflowPaywallViewTests.swift */; };
 		BBCED5B1D64CBEB6CDC2CDA7 /* WorkflowNavigatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */; };
 		C074AAE036B449898E1FEF58 /* CustomPaywallVariables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93B46553B99148F3A60B8BFB /* CustomPaywallVariables.swift */; };
+		C53CDAA4FC3E6B51CC70D724 /* WorkflowPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */; };
 		D0DA209A2F23BBEC00BA3B77 /* AdEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */; };
 		DB1FC9512F9A1B23009A95EA /* WorkflowScreenMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1FC9502F9A1B23009A95EA /* WorkflowScreenMapper.swift */; };
 		DB1FC9582F9A1B63009A95EA /* PaywallViewConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1FC9572F9A1B63009A95EA /* PaywallViewConfigurationTests.swift */; };
@@ -2616,6 +2618,7 @@
 		77BA1AB02CCBAB80009BF0EA /* RootViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewModel.swift; sourceTree = "<group>"; };
 		77BA1AB22CCBB6EE009BF0EA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		7AA86A1D9F5AE92988B20230 /* WorkflowContextTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowContextTests.swift; sourceTree = "<group>"; };
+		800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPaywallView.swift; sourceTree = "<group>"; };
 		80CDB7B52E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterStylingUtilities.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
 		830003FE2E26161D00143F9F /* PlatformFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformFont.swift; sourceTree = "<group>"; };
@@ -2949,6 +2952,7 @@
 		EF970D13102945639A882002 /* ATTConsentStatusIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATTConsentStatusIntegrationTests.swift; sourceTree = "<group>"; };
 		EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsFetcherSK1.swift; sourceTree = "<group>"; };
 		F1A05E9E1B04B32B832DB194 /* PaywallCountdownComponent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaywallCountdownComponent.swift; sourceTree = "<group>"; };
+		6EFD5F7BD8404B6E828C4E10 /* WorkflowPaywallViewTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPaywallViewTests.swift; sourceTree = "<group>"; };
 		F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowNavigatorTests.swift; sourceTree = "<group>"; };
 		F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListener.swift; sourceTree = "<group>"; };
 		F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListenerTests.swift; sourceTree = "<group>"; };
@@ -3196,6 +3200,7 @@
 				B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */,
 				DB1FC9592F9A1B74009A95EA /* WorkflowScreenMapperTests.swift */,
 				F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */,
+				6EFD5F7BD8404B6E828C4E10 /* WorkflowPaywallViewTests.swift */,
 			);
 			path = PaywallsV2;
 			sourceTree = "<group>";
@@ -5894,6 +5899,7 @@
 				2C7457452CEA653A004ACE52 /* ViewModelHelpers */,
 				2C7457432CEA6470004ACE52 /* Components */,
 				2C7457222CE713DA004ACE52 /* Previews */,
+				800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */,
 			);
 			path = V2;
 			sourceTree = "<group>";
@@ -8289,6 +8295,7 @@
 				961B6FC99052B19102AE5AEC /* WorkflowNavigator.swift in Sources */,
 				97B9F00926E0977B0DAAD7D7 /* EnvironmentValues+Workflow.swift in Sources */,
 				150BEBF14F59182317CDA8DA /* WorkflowContext.swift in Sources */,
+				C53CDAA4FC3E6B51CC70D724 /* WorkflowPaywallView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8374,6 +8381,7 @@
 				3137AB923EF70929169EB301 /* VideoAutoplayHandlerTests.swift in Sources */,
 				ED85C2AB8EAB82D346A12569 /* CarouselStateTests.swift in Sources */,
 				BBCED5B1D64CBEB6CDC2CDA7 /* WorkflowNavigatorTests.swift in Sources */,
+				5E85AC3F5F994698AFF51A3E /* WorkflowPaywallViewTests.swift in Sources */,
 				32BA5990B3275FB1EB48F01F /* WorkflowContextTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

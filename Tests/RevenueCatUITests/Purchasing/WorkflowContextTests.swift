@@ -46,6 +46,59 @@ final class WorkflowContextTests: TestCase {
         expect(context.presentedOfferingContext).to(beNil())
     }
 
+    func testOfferingForInitialIdentifierReturnsInitialOfferingWithPresentedContext() throws {
+        let presentedOfferingContext = Self.makePresentedOfferingContext()
+        let initialOffering = Self.makeOffering(identifier: "offering_a")
+            .withPresentedOfferingContext(presentedOfferingContext)
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflow(),
+            allOfferings: Self.makeOfferings([initialOffering]),
+            initialOffering: initialOffering,
+            presentedOfferingContext: presentedOfferingContext
+        )
+
+        let resolvedOffering = try XCTUnwrap(context.offering(for: initialOffering.identifier))
+        let packageContext = try XCTUnwrap(resolvedOffering.availablePackages.first?.presentedOfferingContext)
+
+        expect(packageContext.offeringIdentifier) == presentedOfferingContext.offeringIdentifier
+        expect(packageContext.placementIdentifier) == presentedOfferingContext.placementIdentifier
+        expect(packageContext.targetingContext?.revision) == presentedOfferingContext.targetingContext?.revision
+        expect(packageContext.targetingContext?.ruleId) == presentedOfferingContext.targetingContext?.ruleId
+    }
+
+    func testOfferingForStepOfferingPreservesPresentedOfferingContext() throws {
+        let presentedOfferingContext = Self.makePresentedOfferingContext()
+        let initialOffering = Self.makeOffering(identifier: "offering_a")
+            .withPresentedOfferingContext(presentedOfferingContext)
+        let stepOffering = Self.makeOffering(identifier: "offering_b")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflow(),
+            allOfferings: Self.makeOfferings([initialOffering, stepOffering]),
+            initialOffering: initialOffering,
+            presentedOfferingContext: presentedOfferingContext
+        )
+
+        let resolvedOffering = try XCTUnwrap(context.offering(for: stepOffering.identifier))
+        let packageContext = try XCTUnwrap(resolvedOffering.availablePackages.first?.presentedOfferingContext)
+
+        expect(packageContext.offeringIdentifier) == presentedOfferingContext.offeringIdentifier
+        expect(packageContext.placementIdentifier) == presentedOfferingContext.placementIdentifier
+        expect(packageContext.targetingContext?.revision) == presentedOfferingContext.targetingContext?.revision
+        expect(packageContext.targetingContext?.ruleId) == presentedOfferingContext.targetingContext?.ruleId
+    }
+
+    func testOfferingForMissingIdentifierReturnsNil() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflow(),
+            allOfferings: Self.makeOfferings([offering]),
+            initialOffering: offering,
+            presentedOfferingContext: Self.makePresentedOfferingContext()
+        )
+
+        expect(context.offering(for: "offering_missing")).to(beNil())
+    }
+
     // MARK: - resolveWorkflowContext
 
     func testResolveWorkflowContextThrowsWhenFlagIsOff() async throws {
@@ -69,8 +122,12 @@ final class WorkflowContextTests: TestCase {
 private extension WorkflowContextTests {
 
     static func makeOfferings(_ offering: Offering) -> Offerings {
+        return self.makeOfferings([offering])
+    }
+
+    static func makeOfferings(_ offerings: [Offering]) -> Offerings {
         return Offerings(
-            offerings: [offering.identifier: offering],
+            offerings: Dictionary(uniqueKeysWithValues: offerings.map { ($0.identifier, $0) }),
             currentOfferingID: nil,
             placements: nil,
             targeting: nil,
@@ -85,6 +142,25 @@ private extension WorkflowContextTests {
                 httpResponseOriginalSource: .mainServer
             ),
             loadedFromDiskCache: false
+        )
+    }
+
+    static func makeOffering(identifier: String) -> Offering {
+        return Offering(
+            identifier: identifier,
+            serverDescription: "Offering \(identifier)",
+            metadata: [:],
+            paywall: TestData.paywallWithIntroOffer,
+            availablePackages: TestData.packages,
+            webCheckoutUrl: nil
+        )
+    }
+
+    static func makePresentedOfferingContext() -> PresentedOfferingContext {
+        return .init(
+            offeringIdentifier: "offering_a",
+            placementIdentifier: "home_screen",
+            targetingContext: .init(revision: 7, ruleId: "rule_1")
         )
     }
 

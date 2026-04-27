@@ -89,17 +89,11 @@ struct ImageComponentView: View {
                     height: self.imageSize(style: style).height
                 )
                 let effectiveSize = self.size ?? self.viewModel.cachedMeasuredSize
-                let shouldForceSizeCalulation = {
-                    if effectiveSize == nil {
-                        return true
-                    } else {
-                        return requestSizeCalculation
-                    }
-                }()
+                let forceSizeCalculation = shouldForceSizeCalculation(for: effectiveSize)
 
                 Group {
                     ZStack {
-                        if shouldForceSizeCalulation {
+                        if forceSizeCalculation {
                             // We cannot correctly render the image until we know the space the image can fill
                             // this will fill the space so we can get the correct measurements and render the image
                             self.decorate(Color.clear, with: style)
@@ -156,6 +150,14 @@ struct ImageComponentView: View {
                     }
                 }
             }
+        }
+    }
+
+    private func shouldForceSizeCalculation(for effectiveSize: CGSize?) -> Bool {
+        if effectiveSize == nil {
+            return true
+        } else {
+            return requestSizeCalculation
         }
     }
 
