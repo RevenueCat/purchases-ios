@@ -2075,7 +2075,8 @@ platform :ios do
   lane :deploy_rct_tester do
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
     bundle_id = "com.revenuecat.rcttester"
-    provisioning_profile_name = "match AppStore #{bundle_id}"
+    ios_provisioning_profile_name = "match AppStore #{bundle_id}"
+    tvos_provisioning_profile_name = "match AppStore #{bundle_id} tvos"
 
     # Build release notes with SDK version and optional commit hash
     sdk_version = current_version_number
@@ -2102,7 +2103,7 @@ platform :ios do
     File.write(xcconfig_path, [
       "// Auto-generated for RCT Tester deployment. Do not commit to VCS.",
       "REVENUECAT_API_KEY = #{api_key}",
-      "RCT_PROVISIONING_PROFILE = #{provisioning_profile_name}"
+      "RCT_PROVISIONING_PROFILE = #{ios_provisioning_profile_name}"
     ].join("\n"))
     UI.success("Created CI.xcconfig with REVENUECAT_API_KEY and RCT_PROVISIONING_PROFILE")
 
@@ -2113,13 +2114,23 @@ platform :ios do
 
     xcodeproj_path = "#{project_root}/Projects/RCTTester/RCTTester.xcodeproj"
 
+    # Wait 20 minutes for the build to be processed by Apple otherwise fail
+    wait_processing_timeout_duration_in_seconds = 60 * 20
+
+    # Use the same build number for both platforms so they stay in sync.
+    ios_build_number = latest_testflight_build_number(app_identifier: bundle_id, platform: 'ios')
+    tvos_build_number = latest_testflight_build_number(app_identifier: bundle_id, platform: 'appletvos')
+    next_build_number = [ios_build_number, tvos_build_number].max + 1
+    UI.message("Next build number (shared across iOS and tvOS): #{next_build_number}")
+
+    # --- iOS ---
     # Fetch certificates and provisioning profiles, and increment build number.
     # increment_build_number modifies the generated .xcodeproj directly,
     # which is the only reliable way to set the build number for Tuist projects.
     Dir.chdir("#{rct_tester_root}/fastlane") do
       match(readonly: true, platform: "ios")
       increment_build_number(
-        build_number: latest_testflight_build_number(app_identifier: bundle_id, platform: 'ios') + 1,
+        build_number: next_build_number,
         xcodeproj: xcodeproj_path,
       )
     end
@@ -2143,17 +2154,55 @@ platform :ios do
         signingStyle: "manual",
         manageAppVersionAndBuildNumber: false,
         provisioningProfiles: {
-          bundle_id => provisioning_profile_name,
+          bundle_id => ios_provisioning_profile_name,
         }
       }
     )
 
-    # Wait 20 minutes for the build to be processed by Apple otherwise fail
-    wait_processing_timeout_duration_in_seconds = 60 * 20
+    upload_to_testflight(
+      changelog: changelog,
+      app_identifier: bundle_id,
+      wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
+    )
+
+    # --- tvOS ---
+    # Update CI.xcconfig with the tvOS provisioning profile before building
+    File.write(xcconfig_path, [
+      "// Auto-generated for RCT Tester deployment. Do not commit to VCS.",
+      "REVENUECAT_API_KEY = #{api_key}",
+      "RCT_PROVISIONING_PROFILE = #{tvos_provisioning_profile_name}"
+    ].join("\n"))
+
+    Dir.chdir("#{rct_tester_root}/fastlane") do
+      match(readonly: true, platform: "tvos")
+      increment_build_number(
+        build_number: next_build_number,
+        xcodeproj: xcodeproj_path,
+      )
+    end
+
+    build_ios_app(
+      workspace: workspace_path,
+      scheme: "RCTTester - Live Config",
+      destination: "generic/platform=tvos",
+      xcodebuild_formatter: '',
+      export_method: 'app-store',
+      xcargs: "CODE_SIGN_STYLE=Manual " \
+              "DEVELOPMENT_TEAM=8SXR2327BM " \
+              "CODE_SIGN_IDENTITY='Apple Distribution'",
+      export_options: {
+        signingStyle: "manual",
+        manageAppVersionAndBuildNumber: false,
+        provisioningProfiles: {
+          bundle_id => tvos_provisioning_profile_name,
+        }
+      }
+    )
 
     upload_to_testflight(
       changelog: changelog,
       app_identifier: bundle_id,
+      app_platform: 'appletvos',
       wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
     )
   end
