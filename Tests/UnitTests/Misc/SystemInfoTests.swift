@@ -18,6 +18,7 @@ class SystemInfoTests: TestCase {
         let platformInfo = Purchases.PlatformInfo(flavor: flavor, version: "foo")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: false,
+                                    apiKey: "api_key",
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.platformFlavor) == flavor
     }
@@ -27,6 +28,7 @@ class SystemInfoTests: TestCase {
         let platformInfo = Purchases.PlatformInfo(flavor: "foo", version: flavorVersion)
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: false,
+                                    apiKey: "api_key",
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.platformFlavorVersion) == flavorVersion
     }
@@ -41,6 +43,7 @@ class SystemInfoTests: TestCase {
         var finishTransactions = false
         var systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: finishTransactions,
+                                    apiKey: "api_key",
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
@@ -49,6 +52,7 @@ class SystemInfoTests: TestCase {
 
         systemInfo = SystemInfo(platformInfo: nil,
                                 finishTransactions: finishTransactions,
+                                apiKey: "api_key",
                                 preferredLocalesProvider: .mock())
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
@@ -91,6 +95,7 @@ class SystemInfoTests: TestCase {
                                                               locales: ["fr_FR", "de_DE", "en_US"])
         let info = SystemInfo(platformInfo: nil,
                               finishTransactions: false,
+                              apiKey: "api_key",
                               preferredLocalesProvider: localesProvider)
         expect(info.preferredLocales).to(equal(["es_ES", "fr_FR", "de_DE", "en_US"]))
     }
@@ -100,6 +105,7 @@ class SystemInfoTests: TestCase {
                                                               locales: ["fr_FR", "de_DE", "en_US"])
         let info = SystemInfo(platformInfo: nil,
                               finishTransactions: false,
+                              apiKey: "api_key",
                               preferredLocalesProvider: localesProvider)
         expect(info.preferredLocales).to(equal(["fr_FR", "de_DE", "en_US"]))
     }
@@ -125,6 +131,7 @@ class SystemInfoTests: TestCase {
             platformInfo: nil,
             finishTransactions: true,
             sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true),
+            apiKey: "api_key",
             preferredLocalesProvider: .mock()
         )
 
@@ -136,6 +143,7 @@ class SystemInfoTests: TestCase {
             platformInfo: nil,
             finishTransactions: true,
             sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: false),
+            apiKey: "api_key",
             preferredLocalesProvider: .mock()
         )
 
@@ -194,12 +202,14 @@ private extension SystemInfo {
                           finishTransactions: false,
                           bundle: bundle,
                           sandboxEnvironmentDetector: sandboxDetector,
+                          apiKey: "api_key",
                           preferredLocalesProvider: .mock())
     }
 
     static var `default`: SystemInfo {
         return .init(platformInfo: nil,
                      finishTransactions: true,
+                     apiKey: "api_key",
                      preferredLocalesProvider: .mock())
     }
 

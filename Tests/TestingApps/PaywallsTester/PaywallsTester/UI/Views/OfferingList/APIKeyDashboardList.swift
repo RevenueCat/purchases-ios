@@ -141,7 +141,13 @@ struct APIKeyDashboardList: View {
 
             self.offerings = .success(
                 .init(
-                    sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
+                    sections: Array(offeringsBySection.keys).sorted {
+                        switch ($0.name, $1.name) {
+                        case (nil, _): return false
+                        case (_, nil): return true
+                        default: return $0.description < $1.description
+                        }
+                    },
                     offeringsBySection: offeringsBySection
                 )
             )
@@ -218,12 +224,22 @@ struct APIKeyDashboardList: View {
                                     #endif
                                 #endif
                             } else {
+                                #if !os(watchOS)
+                                OfferButton(offering: offering) {
+                                    self.isLoadingPaywall = true
+                                    self.presentedPaywall = .init(offering: offering, mode: .workflow)
+                                }
+                                .contextMenu {
+                                    self.button(for: .workflow, offering: offering)
+                                }
+                                #else
                                 VStack(alignment: .leading) {
                                     Text(offering.id)
                                     Text(offering.serverDescription)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
+                                #endif
                             }
                         }
                     } header: {
@@ -292,12 +308,18 @@ struct APIKeyDashboardList: View {
             switch selectedMode {
             case .fullScreen:
                 self.presentedPaywallCover = .init(offering: offering, mode: selectedMode)
-            case .sheet, .footer, .condensedFooter:
+            case .sheet:
                 self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            #if !os(watchOS) && !os(macOS)
+            case .footer, .condensedFooter:
+                self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            #endif
             case .presentIfNeeded:
                 self.offeringToPresent = offering
             case .presentPaywall:
                 self.presentPaywallOffering = offering
+            case .workflow:
+                self.presentedPaywall = .init(offering: offering, mode: selectedMode)
             }
         } label: {
             Text(selectedMode.name)

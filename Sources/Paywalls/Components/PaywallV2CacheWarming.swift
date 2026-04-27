@@ -42,18 +42,22 @@ extension PaywallComponentsData.PaywallComponentsConfig {
 
     var allImageURLs: [URL] {
         let rootStackImageURLs = self.collectAllImageURLs(in: self.stack)
+        let headerImageURLs = self.header.flatMap {
+            self.collectAllImageURLs(in: $0.stack)
+        } ?? []
         let stickFooterImageURLs = self.stickyFooter.flatMap {
             self.collectAllImageURLs(in: $0.stack)
         } ?? []
 
-        return rootStackImageURLs + stickFooterImageURLs + self.background.allImageURLS
+        return rootStackImageURLs + headerImageURLs + stickFooterImageURLs + self.background.allImageURLS
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
         let rootStackVideoURLs = self.collectAllVideoURLs(in: self.stack)
+        let headerVideoURLs = self.header.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
         let stickFooterVideoURLs = self.stickyFooter.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
 
-        return rootStackVideoURLs + stickFooterVideoURLs + self.background.lowResVideoUrls
+        return rootStackVideoURLs + headerVideoURLs + stickFooterVideoURLs + self.background.lowResVideoUrls
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
@@ -116,7 +120,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     case .customerCenter, .offerCode, .privacyPolicy, .terms, .webPaywallLink, .url, .unknown:
                         break
                     }
-                case .restorePurchases, .navigateBack, .unknown:
+                case .restorePurchases, .navigateBack, .workflowTrigger, .unknown:
                     break
                 }
             case .package(let package):
@@ -185,13 +189,15 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                         includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
                     )
                 }
+            case .fallbackHeader:
+                break
             }
         }
 
         return urls
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func collectAllVideoURLs(in stack: PaywallComponent.StackComponent) -> [URLWithValidation] {
 
         var urls: [URLWithValidation] = []
@@ -240,6 +246,8 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 if let fallback = countdown.fallback {
                     urls += self.collectAllVideoURLs(in: fallback)
                 }
+            case .fallbackHeader:
+                break
             }
         }
 

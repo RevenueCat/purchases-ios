@@ -34,56 +34,6 @@ struct PaywallState {
     var packages: [Package] {
         self.packageInfos.map(\.package)
     }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct DataForV1DefaultPaywall {
-
-    let offering: Offering
-    let activelySubscribedProductIdentifiers: Set<String>
-    let paywall: PaywallData
-    let template: PaywallTemplate
-    let mode: PaywallViewMode
-    let fonts: PaywallFontProvider
-    let displayCloseButton: Bool
-    let introEligibility: TrialOrIntroEligibilityChecker
-    let purchaseHandler: PurchaseHandler
-    let locale: Locale
-    let showZeroDecimalPlacePrices: Bool
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum FallbackContent {
-    case paywallV1View(DataForV1DefaultPaywall)
-    case customView(AnyView)
-
-    @ViewBuilder
-    func view() -> some View {
-        switch self {
-        case .paywallV1View(let data):
-            #if os(macOS)
-            DebugErrorView("Fallback paywalls are unsupported on macOS.", releaseBehavior: .errorView)
-            #else
-            LoadedOfferingPaywallView(
-                offering: data.offering,
-                activelySubscribedProductIdentifiers: data.activelySubscribedProductIdentifiers,
-                paywall: data.paywall,
-                template: data.template,
-                mode: data.mode,
-                fonts: data.fonts,
-                displayCloseButton: data.displayCloseButton,
-                introEligibility: data.introEligibility,
-                purchaseHandler: data.purchaseHandler,
-                locale: data.locale,
-                showZeroDecimalPlacePrices: data.showZeroDecimalPlacePrices
-            )
-            #endif
-        case .customView(let view):
-            view
-        }
-    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -111,9 +61,15 @@ struct PaywallsV2View: View {
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
     private let purchaseHandler: PurchaseHandler
+    /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
+    /// default paywall is shown. This is not used in the success path
+    private let displayCloseButton: Bool
     private let onDismiss: () -> Void
-    private let fallbackContent: FallbackContent
-    @State private var didFinishEligibilityCheck: Bool = false
+    @State
+    private var didFinishEligibilityCheck: Bool = false
+
+    @State
+    private var paywallSessionID: PaywallEvent.SessionID = .init()
 
     @StateObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
@@ -124,8 +80,8 @@ struct PaywallsV2View: View {
         purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
+        displayCloseButton: Bool = false,
         onDismiss: @escaping () -> Void,
-        fallbackContent: FallbackContent,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
@@ -140,8 +96,8 @@ struct PaywallsV2View: View {
         self.uiConfigProvider = uiConfigProvider
         self.offering = offering
         self.purchaseHandler = purchaseHandler
+        self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
-        self.fallbackContent = fallbackContent
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
@@ -187,99 +143,187 @@ struct PaywallsV2View: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
-                // Show fallback paywall and debug error message that
-                // occurred while decoding the paywall
-                self.fallbackViewWithErrorMessage(
-                    "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
-                )
-            } else {
-                switch self.paywallStateManager.state {
-                case .success(let paywallState):
-                    LoadedPaywallsV2View(
-                        introOfferEligibilityContext: introOfferEligibilityContext,
-                        paywallState: paywallState,
-                        uiConfigProvider: self.uiConfigProvider,
-                        selectedPackageContext: self.selectedPackageContext,
-                        onDismiss: self.onDismiss
+        self.addPaywallModifiers(to:
+            VStack(spacing: 0) {
+                if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+                    self.defaultPaywallView(
+                        warning: .from(error: PaywallFallbackError(
+                            // Trim up the error value to not flood the screen with too much content
+                            reason: String("\(errorInfo)".prefix(130))
+                        ))
                     )
-                    .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-                    .environmentObject(self.purchaseHandler)
-                    .environmentObject(self.introOfferEligibilityContext)
-                    .environmentObject(self.paywallPromoOfferCache)
-                    .disabled(self.purchaseHandler.actionInProgress)
-                    .onAppear {
-                        self.purchaseHandler.trackPaywallImpression(
-                            self.createEventData()
-                        )
+                } else {
+                    switch self.paywallStateManager.state {
+                    case .success(let paywallState):
+                        self.loadedPaywallView(paywallState: paywallState)
+                    case .failure(let error):
+                        self.defaultPaywallView(warning: .from(error: error))
                     }
-                    .onDisappear { self.purchaseHandler.trackPaywallClose() }
-                    .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
-                        if hasPurchased {
-                            self.onDismiss()
-                        }
-                    }
-                    .task {
-                        guard !didFinishEligibilityCheck else {
-                            return
-                        }
-
-                        async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
-                            for: paywallState.packages
-                        )
-                        async let promoCheck: Void = paywallPromoOfferCache.computeEligibility(
-                            for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
-                        )
-                        _ = await (introCheck, promoCheck)
-                        didFinishEligibilityCheck = true
-                    }
-                    // Note: preferences need to be applied after `.toolbar` call
-                    .preference(key: PurchaseInProgressPreferenceKey.self,
-                                value: self.purchaseHandler.packageBeingPurchased)
-                    .preference(key: PurchasedResultPreferenceKey.self,
-                                value: .init(data: self.purchaseHandler.sessionPurchaseResult))
-                    .preference(key: RestoredCustomerInfoPreferenceKey.self,
-                                value: self.purchaseHandler.restoredCustomerInfo)
-                    .preference(key: RestoreInProgressPreferenceKey.self,
-                                value: self.purchaseHandler.restoreInProgress)
-                    .preference(key: PurchaseErrorPreferenceKey.self,
-                                value: self.purchaseHandler.purchaseError as NSError?)
-                    .preference(key: RestoreErrorPreferenceKey.self,
-                                value: self.purchaseHandler.restoreError as NSError?)
-                case .failure(let error):
-                    // Show fallback paywall and debug error message that
-                    // occurred while validating data and view models
-                    self.fallbackViewWithErrorMessage(
-                        "Error validating paywall: \(error.localizedDescription)"
-                    )
                 }
             }
-        }
-    }
-
-    @ViewBuilder
-    func fallbackViewWithErrorMessage(_ errorMessage: String) -> some View {
-        let fullMessage = """
-        \(errorMessage)
-        Validate your paywall is correct in the RevenueCat dashboard,
-        update your SDK, or contact RevenueCat support.
-        View console logs for full detail.
-        The displayed paywall contains default configuration.
-        This error will be hidden in production.
-        """
-
-        DebugErrorView(
-            fullMessage,
-            replacement: self.fallbackContent.view()
         )
     }
 
-    private func createEventData() -> PaywallEvent.Data {
+    private func loadedPaywallView(paywallState: PaywallState) -> some View {
+        LoadedPaywallsV2View(
+            introOfferEligibilityContext: introOfferEligibilityContext,
+            paywallState: paywallState,
+            uiConfigProvider: self.uiConfigProvider,
+            selectedPackageContext: self.selectedPackageContext,
+            onDismiss: self.onDismiss
+        )
+        .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        .environmentObject(self.purchaseHandler)
+        .environmentObject(self.introOfferEligibilityContext)
+        .environmentObject(self.paywallPromoOfferCache)
+    }
+
+    @ViewBuilder
+    private func addCloseButtonIfNeeded<Content: View>(to content: Content) -> some View {
+        if self.displayCloseButton {
+            content
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    HStack {
+                        Spacer()
+                        self.makeCloseButton()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 8)
+                }
+        } else {
+            content
+        }
+    }
+
+    private func makeCloseButton() -> some View {
+        Button {
+            self.onDismiss()
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(.primary)
+                .frame(width: 32, height: 32)
+                #if !os(watchOS)
+                .background(.ultraThinMaterial, in: Circle())
+                #endif
+        }
+        .buttonStyle(.plain)
+        .disabled(self.purchaseHandler.actionInProgress)
+        .opacity(
+            self.purchaseHandler.actionInProgress
+            ? Constants.purchaseInProgressButtonOpacity
+            : 1
+        )
+        .accessibilityLabel("Dismiss")
+    }
+
+    private func defaultPaywallView(warning: PaywallWarning) -> some View {
+        addCloseButtonIfNeeded(to:
+            DefaultPaywallView(
+                handler: self.purchaseHandler,
+                warning: warning,
+                offering: self.offering
+            )
+        )
+    }
+
+    private func addPaywallModifiers<Content: View>(to content: Content) -> some View {
+        content
+            .onAppear {
+                let forDefaultPaywall: Bool
+                if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+                    forDefaultPaywall = true
+                } else {
+                    switch self.paywallStateManager.state {
+                    case .success:
+                        forDefaultPaywall = false
+                    case .failure:
+                        forDefaultPaywall = true
+                    }
+                }
+                self.purchaseHandler.trackPaywallImpression(
+                    self.createEventData(forDefaultPaywall: forDefaultPaywall)
+                )
+            }
+            .task {
+                guard !self.didFinishEligibilityCheck else {
+                    return
+                }
+                if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+                    return
+                }
+                guard case let .success(paywallState) = self.paywallStateManager.state else {
+                    return
+                }
+
+                async let introCheck: Void = self.introOfferEligibilityContext.computeEligibility(
+                    for: paywallState.packages
+                )
+                async let promoCheck: Void = self.paywallPromoOfferCache.computeEligibility(
+                    for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                )
+                _ = await (introCheck, promoCheck)
+                self.didFinishEligibilityCheck = true
+            }
+            // Note: preferences need to be applied after `.toolbar` call
+            .preference(key: PurchaseInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.packageBeingPurchased)
+            .preference(key: PurchasedResultPreferenceKey.self,
+                        value: .init(data: self.purchaseHandler.sessionPurchaseResult))
+            .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                        value: self.purchaseHandler.restoredCustomerInfo)
+            .preference(key: RestoreInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.restoreInProgress)
+            .preference(key: PurchaseErrorPreferenceKey.self,
+                        value: self.purchaseHandler.purchaseError as NSError?)
+            .preference(key: RestoreErrorPreferenceKey.self,
+                        value: self.purchaseHandler.restoreError as NSError?)
+            .disabled(self.purchaseHandler.actionInProgress)
+            .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .environment(
+                \.componentInteractionLogger,
+                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+            )
+            .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
+                guard hasPurchased else { return }
+
+                self.dismissAfterPurchaseCompletionCallbacks()
+            }
+
+    }
+
+    private func dismissAfterPurchaseCompletionCallbacks() {
+        // Defer dismissal so purchase completion preferences propagate to parent modifiers first.
+        DispatchQueue.main.async {
+            guard self.purchaseHandler.hasPurchasedInSession else { return }
+
+            self.onDismiss()
+        }
+    }
+
+    private func createEventData(forDefaultPaywall: Bool = false) -> PaywallEvent.Data {
+        let compontentsData: PaywallComponentsData
+        if forDefaultPaywall {
+            // The old default paywall was logged as a default template like this.
+            // Until we have a new log event for the new default paywall we need to contiunue
+            // logging the events like they used to be for data integrity.
+            compontentsData = .init(
+                templateName: PaywallData.defaultTemplate.rawValue,
+                assetBaseURL: PaywallData.defaultTemplateBaseURL,
+                componentsConfig: self.paywallComponentsData.componentsConfig,
+                componentsLocalizations: self.paywallComponentsData.componentsLocalizations,
+                revision: PaywallData.revisionID,
+                defaultLocaleIdentifier: self.paywallComponentsData.defaultLocale
+            )
+        } else {
+            compontentsData = self.paywallComponentsData
+        }
+
         return .init(
             offering: self.offering,
-            paywallComponentsData: self.paywallComponentsData,
-            sessionID: .init(),
+            paywallComponentsData: compontentsData,
+            sessionID: self.paywallSessionID,
             displayMode: .fullScreen,
             locale: .current,
             darkMode: self.colorScheme == .dark,
@@ -327,11 +371,10 @@ private struct LoadedPaywallsV2View: View {
             }
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
-            // If the first view in the first stack is an image,
-            // we will ignore safe area pass the safe area insets in to environment
-            // If the image is in a ZStack, the ZStack will push non-images
-            // down with the inset
-            .applyIf(paywallState.rootViewModel.firstItemIgnoresSafeAreaInfo != nil, apply: { view in
+            .applyIf(
+                paywallState.rootViewModel.headerViewModel != nil
+                || paywallState.rootViewModel.firstItemIsFullWidthMedia,
+                apply: { view in
                 view
                     .edgesIgnoringSafeArea(.top)
             })
@@ -347,6 +390,10 @@ private struct LoadedPaywallsV2View: View {
                 alignment: .top
             )
             .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
+            .environment(
+                \.planSelectionDefaultPackage,
+                paywallState.viewModelFactory.packageValidator.defaultSelectedPackage
+            )
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
         }
@@ -536,6 +583,10 @@ fileprivate extension PaywallsV2View {
 
         return nil
     }
+}
+
+private struct PaywallFallbackError: Error {
+    let reason: String
 }
 
 #endif

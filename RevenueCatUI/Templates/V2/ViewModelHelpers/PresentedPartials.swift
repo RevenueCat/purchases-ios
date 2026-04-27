@@ -388,6 +388,8 @@ extension PaywallComponent {
             return component.containsUnsupportedConditions()
         case .countdown(let component):
             return component.containsUnsupportedConditions()
+        case .fallbackHeader:
+            return false
         }
     }
 

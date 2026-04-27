@@ -58,15 +58,17 @@ struct TextComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let promoOffer = self.paywallPromoOfferCache.get(for: self.packageContext.package)
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
             selectedPackageId: self.selectedPackageId,
             packageContext: self.packageContext,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer,
             countdownTime: countdownTime,
             customVariables: self.customVariables
         ) { style in
@@ -74,7 +76,8 @@ struct TextComponentView: View {
                 NonLocalizedMarkdownText(
                     text: style.text,
                     font: style.font,
-                    fontWeight: style.fontWeight
+                    fontWeight: style.fontWeight,
+                    componentName: style.name
                 )
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
@@ -94,9 +97,16 @@ struct TextComponentView: View {
 /// Parses markdown using AttributedString and does not use bundle assets for localization
 private struct NonLocalizedMarkdownText: View {
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
+    @Environment(\.openURL)
+    private var parentOpenURL
+
     let text: String
     let font: Font
     let fontWeight: Font.Weight
+    let componentName: String?
 
     var markdownText: AttributedString? {
         /*
@@ -139,6 +149,18 @@ private struct NonLocalizedMarkdownText: View {
             if let markdownText = self.markdownText {
                 // Use markdown if we can successfully parse it
                 Text(markdownText)
+                    .environment(\.openURL, OpenURLAction { url in
+                        _ = self.componentInteractionLogger(.paywallTextMarkdownLinkTap(
+                            componentName: self.componentName,
+                            url: url
+                        ))
+#if os(watchOS)
+                        self.parentOpenURL(url)
+#else
+                        self.parentOpenURL(url) { _ in }
+#endif
+                        return .handled
+                    })
             } else {
                 // Display text as is because markdown is priority
                 Text(self.text)

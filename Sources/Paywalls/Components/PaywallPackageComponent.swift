@@ -25,6 +25,7 @@ import Foundation
         public let visible: Bool?
         @_spi(Internal) public let applePromoOfferProductCode: String?
         public let stack: PaywallComponent.StackComponent
+        public let name: String?
 
         public let overrides: ComponentOverrides<PartialPackageComponent>?
 
@@ -34,6 +35,7 @@ import Foundation
             visible: Bool? = nil,
             applePromoOfferProductCode: String?,
             stack: PaywallComponent.StackComponent,
+            name: String? = nil,
             overrides: ComponentOverrides<PartialPackageComponent>? = nil
         ) {
             self.type = .package
@@ -42,6 +44,7 @@ import Foundation
             self.visible = visible
             self.applePromoOfferProductCode = applePromoOfferProductCode
             self.stack = stack
+            self.name = name
             self.overrides = overrides
         }
 
@@ -52,6 +55,7 @@ import Foundation
             hasher.combine(visible)
             hasher.combine(applePromoOfferProductCode)
             hasher.combine(stack)
+            hasher.combine(name)
             hasher.combine(overrides)
         }
 
@@ -62,6 +66,7 @@ import Foundation
                    lhs.visible == rhs.visible &&
                    lhs.applePromoOfferProductCode == rhs.applePromoOfferProductCode &&
                    lhs.stack == rhs.stack &&
+                   lhs.name == rhs.name &&
                    lhs.overrides == rhs.overrides
         }
     }
@@ -94,6 +99,7 @@ extension PaywallComponent.PackageComponent {
         case visible
         case applePromoOfferProductCode
         case stack
+        case name
         case overrides
     }
 

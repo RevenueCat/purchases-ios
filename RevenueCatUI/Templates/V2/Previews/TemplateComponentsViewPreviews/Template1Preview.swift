@@ -125,7 +125,8 @@ private enum Template1Preview {
             shape: .pill
         ),
         action: .inAppCheckout,
-        method: .inAppCheckout
+        method: .inAppCheckout,
+        name: nil
     )
 
     static let contentStack = PaywallComponent.StackComponent(
@@ -224,7 +225,6 @@ struct Template1Preview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in },
             colorScheme: .light
         )

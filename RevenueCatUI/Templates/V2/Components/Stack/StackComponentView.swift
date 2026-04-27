@@ -67,15 +67,17 @@ struct StackComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(
+            for: self.packageContext.package
+        )
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
             colorScheme: colorScheme
@@ -120,7 +122,7 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        ignoreSafeArea: self.viewModel.shouldApplySafeAreaInset,
+                        pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
                         onDismiss: self.onDismiss
                     )
                 }
@@ -295,7 +297,10 @@ struct HorizontalStack: View {
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing
             ) {
-                ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
+                ComponentsView(
+                    componentViewModels: self.viewModels,
+                    onDismiss: self.onDismiss
+                )
             }
         case .flex:
             FlexHStack(
@@ -791,7 +796,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -803,7 +807,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
