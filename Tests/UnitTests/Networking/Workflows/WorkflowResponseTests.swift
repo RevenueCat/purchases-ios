@@ -281,12 +281,11 @@ class WorkflowResponseTests: TestCase {
         expect(step.screenId) == "pw458e23295b7841f8"
         expect(step.triggers).to(haveCount(1))
         expect(step.triggers.first?.name) == "Button"
-        expect(step.triggers.first?.type) == "on_press"
+        expect(step.triggers.first?.type) == .onPress
         expect(step.triggers.first?.actionId) == "btn_wagcLsIVjN"
         expect(step.triggers.first?.componentId) == "wagcLsIVjN"
         expect(step.outputs).to(beEmpty())
-        expect(step.triggerActions["btn_wagcLsIVjN"]?.type) == "step"
-        expect(step.triggerActions["btn_wagcLsIVjN"]?.stepId) == "ztBPCwD"
+        expect(step.triggerActions["btn_wagcLsIVjN"]) == .step(stepId: "ztBPCwD")
         expect(step.metadata).to(beNil())
     }
 
