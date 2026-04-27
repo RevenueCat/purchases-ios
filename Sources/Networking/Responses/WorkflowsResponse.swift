@@ -113,7 +113,7 @@ extension WorkflowTriggerAction: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case type
-        case stepId = "step_id"
+        case stepId
     }
 
     public init(from decoder: Decoder) throws {
