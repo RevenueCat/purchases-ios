@@ -19,37 +19,43 @@ struct WorkflowPaywallView: View {
 
     @Environment(\.colorScheme) private var colorScheme
 
+    enum DismissalAction: Equatable {
+        case dismissWorkflow
+        case navigateBack
+    }
+
     private let context: WorkflowContext
+    private let purchaseHandler: PurchaseHandler
+    private let introEligibilityChecker: TrialOrIntroEligibilityChecker
+    private let showZeroDecimalPlacePrices: Bool
     private let onDismiss: () -> Void
 
     @StateObject private var navigator: WorkflowNavigator
-    @StateObject private var purchaseHandler: PurchaseHandler
+    @State private var hasLoggedInvalidState = false
 
-    init(context: WorkflowContext, onDismiss: @escaping () -> Void) {
+    init(
+        context: WorkflowContext,
+        purchaseHandler: PurchaseHandler,
+        introEligibilityChecker: TrialOrIntroEligibilityChecker,
+        showZeroDecimalPlacePrices: Bool,
+        onDismiss: @escaping () -> Void
+    ) {
         self.context = context
+        self.purchaseHandler = purchaseHandler
+        self.introEligibilityChecker = introEligibilityChecker
+        self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.onDismiss = onDismiss
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
-        self._purchaseHandler = .init(wrappedValue: .default())
     }
 
     var body: some View {
-        if let step = navigator.currentStep,
-           let screenId = step.screenId,
-           let screen = context.workflow.screens[screenId] {
-            let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
-                screen: screen,
-                uiConfig: context.workflow.uiConfig
-            )
-            let offering = screen.offeringIdentifier
-                .flatMap { context.allOfferings.all[$0] }
-                ?? context.initialOffering
-
+        if let stepContent = self.currentStepContent {
             PaywallsV2View(
-                paywallComponents: paywallComponents,
-                offering: offering,
+                paywallComponents: stepContent.paywallComponents,
+                offering: stepContent.offering,
                 purchaseHandler: self.purchaseHandler,
-                introEligibilityChecker: .default(),
-                showZeroDecimalPlacePrices: false,
+                introEligibilityChecker: self.introEligibilityChecker,
+                showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
                 displayCloseButton: false,
                 onDismiss: self.handleDismiss,
                 failedToLoadFont: { fontConfig in
@@ -63,17 +69,74 @@ struct WorkflowPaywallView: View {
             .environment(\.workflowTriggerAction, { componentId in
                 self.navigator.triggerAction(componentId: componentId) != nil
             })
+        } else {
+            Color.clear
+                .accessibilityHidden(true)
+                .onAppear {
+                    self.logInvalidWorkflowStateIfNeeded()
+                }
         }
     }
 
     private func handleDismiss() {
-        if navigator.canNavigateBack {
-            navigator.navigateBack()
-        } else {
+        switch Self.dismissalAction(
+            canNavigateBack: self.navigator.canNavigateBack,
+            hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
+        ) {
+        case .dismissWorkflow:
             onDismiss()
+        case .navigateBack:
+            navigator.navigateBack()
         }
     }
 
+    static func dismissalAction(
+        canNavigateBack: Bool,
+        hasPurchasedInSession: Bool
+    ) -> DismissalAction {
+        guard canNavigateBack, !hasPurchasedInSession else {
+            return .dismissWorkflow
+        }
+
+        return .navigateBack
+    }
+
+    private var currentStepContent: CurrentStepContent? {
+        guard let step = self.navigator.currentStep,
+              let screenId = step.screenId,
+              let screen = self.context.workflow.screens[screenId] else {
+            return nil
+        }
+
+        let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
+            screen: screen,
+            uiConfig: self.context.workflow.uiConfig
+        )
+        let offering = self.context.offering(for: screen.offeringIdentifier) ?? self.context.initialOffering
+
+        return .init(paywallComponents: paywallComponents, offering: offering)
+    }
+
+    private func logInvalidWorkflowStateIfNeeded() {
+        guard !self.hasLoggedInvalidState else {
+            return
+        }
+
+        self.hasLoggedInvalidState = true
+        Logger.error(
+            Strings.workflow_paywall_invalid_state(
+                currentStepId: self.navigator.currentStepId,
+                screenId: self.navigator.currentStep?.screenId
+            )
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct CurrentStepContent {
+    let paywallComponents: Offering.PaywallComponents
+    let offering: Offering
 }
 
 #endif
