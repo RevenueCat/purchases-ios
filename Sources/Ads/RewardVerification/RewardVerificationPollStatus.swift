@@ -13,19 +13,16 @@
 
 import Foundation
 
-/// Result of a single ad reward verification status poll. Returned by
-/// `Purchases.pollRewardVerificationStatus(clientTransactionID:)` and consumed by
-/// RC-shipped ad adapters (e.g. `RevenueCatAdMob`).
-@_spi(Internal) public enum RewardVerificationPollStatus: Sendable {
-    /// The ad network's reward postback was received and verified by the backend.
-    case verified
+/// Result of a single ad reward verification status poll.
+@_spi(Internal) public enum RewardVerificationPollStatus: Sendable, Equatable {
 
-    /// The ad network's reward postback has not yet arrived (or is still being processed).
-    /// The caller is expected to keep polling until the status becomes terminal
-    /// or the caller's own retry budget is exhausted.
+    /// Verified by the backend, with the granted reward payload.
+    case verified(VerifiedReward)
+
+    /// Verification has not yet completed; the caller should keep polling.
     case pending
 
-    /// The ad network's reward postback was received but rejected by the backend.
+    /// The reward postback was rejected by the backend.
     case failed
 
     /// The backend returned an unrecognized status value.

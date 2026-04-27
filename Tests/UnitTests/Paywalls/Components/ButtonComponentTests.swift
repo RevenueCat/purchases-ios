@@ -236,6 +236,31 @@ class ButtonComponentCodableTests: TestCase {
         XCTAssertEqual(decodedButton, buttonComponent)
     }
 
+    func testWorkflowTriggerDecoding() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "action": {
+                "type": "workflow"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        let buttonComponent = PaywallComponent.ButtonComponent(
+            action: .workflowTrigger,
+            stack: .init(
+                components: [],
+                dimension: .vertical(.center, .start),
+                size: .init(width: .fill, height: .fill)
+            )
+        )
+
+        XCTAssertEqual(decodedButton, buttonComponent)
+    }
+
     func testDecodesNameIgnoresExtraIdInJSON() throws {
         let jsonString = """
         {
