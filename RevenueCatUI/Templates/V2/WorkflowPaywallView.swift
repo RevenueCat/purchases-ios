@@ -102,6 +102,9 @@ struct WorkflowPaywallView: View {
         canNavigateBack: Bool,
         hasPurchasedInSession: Bool
     ) -> DismissalAction {
+        // After a purchase, always close the whole workflow regardless of back stack —
+        // navigating back to a previous step post-purchase would be confusing and
+        // could allow the user to purchase again.
         guard canNavigateBack, !hasPurchasedInSession else {
             return .dismissWorkflow
         }
