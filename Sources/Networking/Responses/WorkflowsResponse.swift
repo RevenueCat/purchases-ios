@@ -16,10 +16,32 @@ import Foundation
 
 // MARK: - Detail models
 
+@_spi(Internal) public enum WorkflowTriggerType: String, Codable, Equatable, Sendable {
+    case onPress = "on_press"
+    case unknown
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let value = try container.decode(String.self)
+        self = WorkflowTriggerType(rawValue: value) ?? .unknown
+    }
+}
+
+@_spi(Internal) public enum WorkflowTriggerActionType: String, Codable, Equatable, Sendable {
+    case step
+    case unknown
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let value = try container.decode(String.self)
+        self = WorkflowTriggerActionType(rawValue: value) ?? .unknown
+    }
+}
+
 @_spi(Internal) public struct WorkflowTrigger {
 
     public let name: String?
-    public let type: String
+    public let type: WorkflowTriggerType
     public let actionId: String?
     public let componentId: String?
 
@@ -27,7 +49,7 @@ import Foundation
 
 @_spi(Internal) public struct WorkflowTriggerAction {
 
-    public let type: String
+    public let type: WorkflowTriggerActionType
     public let stepId: String?
 
 }

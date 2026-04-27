@@ -74,7 +74,7 @@ struct WorkflowPaywallView: View {
             )
             .id(navigator.currentStepId)
             .environment(\.workflowTriggerAction, { componentId in
-                self.navigator.triggerAction(componentId: componentId) != nil
+                self.navigator.triggerAction(componentId: componentId, triggerType: .onPress) != nil
             })
         } else {
             Color.clear
