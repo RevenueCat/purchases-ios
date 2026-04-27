@@ -106,7 +106,7 @@ final class WorkflowNavigatorTests: TestCase {
     }
 
     func testTriggerActionWithWrongTypedActionReturnsNil() throws {
-        // triggerAction.type is "other", not "step"
+        // trigger action type is "other", which decodes to .unknown — not .step
         let workflow = try Self.makeWorkflow(
             steps: [
                 makeStep(

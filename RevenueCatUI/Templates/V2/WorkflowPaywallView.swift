@@ -143,8 +143,7 @@ struct WorkflowPaywallView: View {
     private var leadingNavigationItem: some View {
         if navigator.canNavigateBack {
             Button {
-                self.transitionIsForward = false
-                self.navigator.navigateBack()
+                self.handleDismiss()
             } label: {
                 HStack(spacing: 4) {
                     Image(systemName: "chevron.left")
@@ -169,13 +168,16 @@ struct WorkflowPaywallView: View {
         }
     }
 
+    @ViewBuilder
     private var trailingNavigationItem: some View {
-        Button("Close") {
-            self.onDismiss()
+        if navigator.canNavigateBack {
+            Button("Close") {
+                self.onDismiss()
+            }
+            .font(.system(size: 17))
+            .foregroundStyle(.blue)
+            .buttonStyle(.plain)
         }
-        .font(.system(size: 17))
-        .foregroundStyle(.blue)
-        .buttonStyle(.plain)
     }
 
     // MARK: - Helpers

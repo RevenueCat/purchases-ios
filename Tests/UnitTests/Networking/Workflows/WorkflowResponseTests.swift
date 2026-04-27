@@ -50,7 +50,7 @@ class WorkflowResponseTests: TestCase {
 
         expect(workflow.id) == "wf_test"
         expect(workflow.initialStepId) == "step_1"
-        expect(workflow.steps["step_1"]?.triggerActions["btn_1"]?.stepId) == "step_2"
+        expect(workflow.steps["step_1"]?.triggerActions["btn_1"]) == .step(stepId: "step_2")
         expect(workflow.contentMaxWidth) == 100
         expect(workflow.metadata).to(beNil())
     }
@@ -108,21 +108,19 @@ class WorkflowResponseTests: TestCase {
 
         let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
 
-        expect(action.type) == "step"
-        expect(action.stepId) == "step_3"
+        expect(action) == .step(stepId: "step_3")
     }
 
-    func testDecodeWorkflowTriggerActionConditionsTypeHasNilStepId() throws {
-        // Server can send trigger_actions with type "conditions" which have no step_id field.
-        // stepId must be optional so decoding doesn't fail for the entire workflow.
+    func testDecodeWorkflowTriggerActionUnknownTypeDecodesToUnknown() throws {
+        // Server can send trigger_actions with type "conditions" which are not yet handled.
+        // Decoding must not fail for the entire workflow — unknown types decode to .unknown.
         let json = """
         { "type": "conditions", "conditions": { "if": [] } }
         """.data(using: .utf8)!
 
         let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
 
-        expect(action.type) == "conditions"
-        expect(action.stepId).to(beNil())
+        expect(action) == .unknown
     }
 
     func testDecodeWorkflowWithConditionsTriggerActionSucceeds() throws {
@@ -152,9 +150,8 @@ class WorkflowResponseTests: TestCase {
 
         let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
 
-        expect(workflow.steps["step_1"]?.triggerActions["btn_1"]?.stepId) == "step_2"
-        expect(workflow.steps["step_1"]?.triggerActions["btn_2"]?.type) == "conditions"
-        expect(workflow.steps["step_1"]?.triggerActions["btn_2"]?.stepId).to(beNil())
+        expect(workflow.steps["step_1"]?.triggerActions["btn_1"]) == .step(stepId: "step_2")
+        expect(workflow.steps["step_1"]?.triggerActions["btn_2"]) == .unknown
     }
 
     func testDecodeWorkflowTrigger() throws {
@@ -170,7 +167,7 @@ class WorkflowResponseTests: TestCase {
         let trigger = try JSONDecoder.default.decode(WorkflowTrigger.self, from: json)
 
         expect(trigger.name) == "Button"
-        expect(trigger.type) == "on_press"
+        expect(trigger.type) == .onPress
         expect(trigger.actionId) == "btn_wagcLsIVjN"
         expect(trigger.componentId) == "wagcLsIVjN"
     }

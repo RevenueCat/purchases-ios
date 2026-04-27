@@ -23,18 +23,13 @@ import Foundation
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let value = try container.decode(String.self)
-        self = WorkflowTriggerType(rawValue: value) ?? .unknown
-    }
-}
-
-@_spi(Internal) public enum WorkflowTriggerActionType: String, Codable, Equatable, Sendable {
-    case step
-    case unknown
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let value = try container.decode(String.self)
-        self = WorkflowTriggerActionType(rawValue: value) ?? .unknown
+        switch value {
+        case "on_press":
+            self = .onPress
+        default:
+            Logger.warn(Strings.backendError.unknown_workflow_trigger_type(type: value))
+            self = .unknown
+        }
     }
 }
 
@@ -47,11 +42,9 @@ import Foundation
 
 }
 
-@_spi(Internal) public struct WorkflowTriggerAction {
-
-    public let type: WorkflowTriggerActionType
-    public let stepId: String?
-
+@_spi(Internal) public enum WorkflowTriggerAction: Equatable, Sendable {
+    case step(stepId: String)
+    case unknown
 }
 
 @_spi(Internal) public struct WorkflowStep {
@@ -115,7 +108,39 @@ import Foundation
 // MARK: - Codable
 
 extension WorkflowTrigger: Codable, Equatable, Sendable {}
-extension WorkflowTriggerAction: Codable, Equatable, Sendable {}
+
+extension WorkflowTriggerAction: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case stepId = "step_id"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "step":
+            let stepId = try container.decode(String.self, forKey: .stepId)
+            self = .step(stepId: stepId)
+        default:
+            Logger.warn(Strings.backendError.unknown_workflow_trigger_action_type(type: type))
+            self = .unknown
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .step(let stepId):
+            try container.encode("step", forKey: .type)
+            try container.encode(stepId, forKey: .stepId)
+        case .unknown:
+            try container.encode("unknown", forKey: .type)
+        }
+    }
+
+}
 extension WorkflowStep: Codable, Equatable, Sendable {}
 
 extension WorkflowScreen: Codable, Equatable, Sendable {
