@@ -269,15 +269,16 @@ private struct CarouselView<Content: View>: View {
             // Main horizontal "strip" of pages:
             HStack(alignment: self.pageAlignment, spacing: spacing) {
                 ForEach(Array(data.enumerated()), id: \.element.id) { pageIndex, item in
+                    let isNextInEitherDirection = abs(index - pageIndex) <= 2
                     item.view
-                        .environment(
-                            \.carouselState,
-                            CarouselState(
-                                activeIndex: index,
-                                pageIndex: pageIndex,
-                                originalCount: originalCount
-                            )
-                        )
+                        .environment(\.carouselState, CarouselState(
+                            activeIndex: index,
+                            pageIndex: pageIndex,
+                            originalCount: originalCount
+                        ))
+                        // ensure rendering doesn't need to wait on size calculations as the item
+                        // attempts to enter the view
+                        .environment(\.requestSizeCalculation, !isNextInEitherDirection)
                         .frame(width: cardWidth)
                         // Clip each page so tall/scrollable stack content cannot paint outside the
                         // card width (avoids transient gray overlays from neighbor compositing).
