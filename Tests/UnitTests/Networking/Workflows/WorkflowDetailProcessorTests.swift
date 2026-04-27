@@ -143,7 +143,7 @@ class WorkflowDetailProcessorTests: TestCase {
                         "type": "screen",
                         "trigger_actions": {
                             "btn_wagcLsIVjN": {
-                                "type": "navigate",
+                                "type": "step",
                                 "step_id": "step_2"
                             }
                         }
